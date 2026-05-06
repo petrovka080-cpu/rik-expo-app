@@ -8,7 +8,7 @@ const read = (relativePath: string) =>
 
 describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
   it("keeps catalog reference list reads paged with an explicit fail-closed ceiling", () => {
-    const source = read("src/lib/catalog/catalog.transport.ts");
+    const source = read("src/lib/catalog/catalog.transport.supabase.ts");
 
     expect(source).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(source).toContain("loadPagedRowsWithCeiling<T>");

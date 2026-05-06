@@ -54,7 +54,7 @@ const buildIncomingPagedQuery = (
 
 const getFunctionSource = (functionName: string) => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), "src/lib/catalog/catalog.transport.ts"),
+    path.join(process.cwd(), "src/lib/catalog/catalog.transport.supabase.ts"),
     "utf8",
   );
   const start = source.indexOf(`export const ${functionName}`);
@@ -144,10 +144,10 @@ describe("catalog transport bounded rik_items and child list reads", () => {
   });
 
   it("keeps changed catalog transport reads guarded by range or paged ceiling helpers", () => {
-    expect(getFunctionSource("loadCatalogSearchFallbackRows")).toContain(".range(");
-    expect(getFunctionSource("loadCatalogSearchFallbackRows")).toContain('.order("id"');
-    expect(getFunctionSource("loadRikQuickSearchFallbackRows")).toContain(".range(");
-    expect(getFunctionSource("loadRikQuickSearchFallbackRows")).toContain('.order("id"');
-    expect(getFunctionSource("loadIncomingItemRows")).toContain("loadPagedCatalogRows");
+    expect(getFunctionSource("loadCatalogSearchFallbackRowsFromSupabase")).toContain(".range(");
+    expect(getFunctionSource("loadCatalogSearchFallbackRowsFromSupabase")).toContain('.order("id"');
+    expect(getFunctionSource("loadRikQuickSearchFallbackRowsFromSupabase")).toContain(".range(");
+    expect(getFunctionSource("loadRikQuickSearchFallbackRowsFromSupabase")).toContain('.order("id"');
+    expect(getFunctionSource("loadIncomingItemRowsFromSupabase")).toContain("loadPagedCatalogRows");
   });
 });

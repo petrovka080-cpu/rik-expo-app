@@ -1,9 +1,3 @@
-import { supabase } from "../supabaseClient";
-import {
-  loadPagedRowsWithCeiling,
-  normalizePage,
-  type PagedQuery,
-} from "../api/_core";
 import type {
   CatalogGroup,
   ContractorCounterpartyRow,
@@ -19,82 +13,39 @@ import type {
 import {
   normalizeCatalogGroupRows,
   normalizeIncomingItemRows,
-  normalizeSuppliersListRpcArgs,
   normalizeUomRows,
 } from "./catalog.transport.normalize";
-
-const SUPPLIERS_TABLE_SELECT =
-  "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes";
-const SUPPLIERS_COUNTERPARTY_SELECT = "id,name,inn,phone";
-const SUBCONTRACTS_COUNTERPARTY_SELECT =
-  "id,status,contractor_org,contractor_inn,contractor_phone";
-const CONTRACTORS_COUNTERPARTY_SELECT = "id,company_name,phone,inn";
-const CATALOG_SEARCH_FALLBACK_SELECT =
-  "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
-const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
-  "rik_code,name_human,uom_code,kind,name_human_ru";
-const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
-const CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {
-  pageSize: 50,
-  maxPageSize: 100,
-  maxRows: 100,
-};
+import { callCatalogTransportBffRead } from "./catalog.bff.client";
+import type {
+  CatalogTransportBffReadErrorDto,
+  CatalogTransportBffReadResultDto,
+  CatalogTransportBffRequestDto,
+} from "./catalog.bff.contract";
+import {
+  loadCatalogGroupsRowsFromSupabase,
+  loadCatalogSearchFallbackRowsFromSupabase,
+  loadContractorCounterpartyRowsFromSupabase,
+  loadContractorProfileRowsFromSupabase,
+  loadIncomingItemRowsFromSupabase,
+  loadRikQuickSearchFallbackRowsFromSupabase,
+  loadSubcontractCounterpartyRowsFromSupabase,
+  loadSupplierCounterpartyRowsFromSupabase,
+  loadSuppliersTableRowsFromSupabase,
+  loadUomRowsFromSupabase,
+  runCatalogSearchRpcRawFromSupabase,
+  runSuppliersListRpcFromSupabase,
+} from "./catalog.transport.supabase";
 
 type CatalogQueryResult<T> = {
   data: T[] | null;
   error: { message?: string } | null;
 };
 
-type CatalogQueryFactory<T> = () => {
-  range: (from: number, to: number) => PromiseLike<CatalogQueryResult<T>>;
-};
+type CatalogTransportFallback<T> = () => Promise<CatalogQueryResult<T>>;
 
-type CatalogGroupTransportRow = {
-  code?: string | null;
-  name?: string | null;
-  parent_code?: string | null;
-};
-
-type UomTransportRow = {
-  id?: string | null;
-  code?: string | null;
-  name?: string | null;
-};
-
-type IncomingItemTransportRow = {
-  incoming_id?: string | null;
-  incoming_item_id?: string | null;
-  purchase_item_id?: string | null;
-  code?: string | null;
-  name?: string | null;
-  uom?: string | null;
-  qty_expected?: number | null;
-  qty_received?: number | null;
-};
-
-const toCatalogQueryError = (error: unknown): { message?: string } =>
-  typeof error === "object" && error !== null && "message" in error
-    ? (error as { message?: string })
-    : { message: String(error) };
-
-const normalizeRikItemsSearchPreviewPage = (limit: number) => {
-  const page = normalizePage({ pageSize: limit }, CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS);
-  return {
-    from: page.from,
-    to: Math.min(page.to, CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS.maxRows - 1),
-  };
-};
-
-const loadPagedCatalogRows = async <T,>(
-  queryFactory: CatalogQueryFactory<T>,
-): Promise<CatalogQueryResult<T>> => {
-  const result = await loadPagedRowsWithCeiling<T>(
-    () => queryFactory() as unknown as PagedQuery<T>,
-    CATALOG_SAFE_LIST_PAGE_DEFAULTS,
-  );
-  return result.error
-    ? { data: null, error: toCatalogQueryError(result.error) }
-    : { data: result.data ?? [], error: null };
+type CatalogRawRpcResult = {
+  data: unknown;
+  error: { message?: string } | null;
 };
 
 export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
@@ -103,113 +54,110 @@ export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
   "rik_quick_search",
 ];
 
-export const loadSupplierCounterpartyRows = async (searchTerm: string) => {
-  const buildQuery = () => {
-    let query = supabase
-      .from("suppliers")
-      .select(SUPPLIERS_COUNTERPARTY_SELECT)
-      .order("name", { ascending: true })
-      .order("id", { ascending: true });
-    if (searchTerm) {
-      query = query.or(`name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%`);
-    }
-    return query;
-  };
+const bffErrorToCatalogError = (
+  error: CatalogTransportBffReadErrorDto | { message?: string },
+): { message?: string } => ({
+  message: error.message,
+});
 
-  return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery);
+const bffResultToCatalogQueryResult = <T,>(
+  result: CatalogTransportBffReadResultDto,
+): CatalogQueryResult<T> => ({
+  data: result.data === null ? null : (result.data as T[]),
+  error: result.error ? bffErrorToCatalogError(result.error) : null,
+});
+
+const loadCatalogRowsViaBff = async <T,>(
+  request: CatalogTransportBffRequestDto,
+  fallback: CatalogTransportFallback<T>,
+): Promise<CatalogQueryResult<T>> => {
+  const bffResult = await callCatalogTransportBffRead(request);
+  if (bffResult.status === "ok") {
+    return bffResultToCatalogQueryResult<T>(bffResult.response.result);
+  }
+  if (bffResult.status === "error") {
+    return { data: null, error: bffErrorToCatalogError(bffResult.error) };
+  }
+  return await fallback();
 };
 
+export const loadSupplierCounterpartyRows = async (searchTerm: string) =>
+  await loadCatalogRowsViaBff<SupplierCounterpartyRow>(
+    {
+      operation: "catalog.supplier_counterparty.list",
+      args: { searchTerm },
+    },
+    () => loadSupplierCounterpartyRowsFromSupabase(searchTerm),
+  );
+
 export const loadSubcontractCounterpartyRows = async () =>
-  await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>
-    supabase
-      .from("subcontracts")
-      .select(SUBCONTRACTS_COUNTERPARTY_SELECT)
-      .not("status", "eq", "draft")
-      .order("contractor_org", { ascending: true })
-      .order("id", { ascending: true }),
+  await loadCatalogRowsViaBff<SubcontractCounterpartyRow>(
+    {
+      operation: "catalog.subcontract_counterparty.list",
+      args: {},
+    },
+    loadSubcontractCounterpartyRowsFromSupabase,
   );
 
 export const loadContractorCounterpartyRows = async () =>
-  await loadPagedCatalogRows<ContractorCounterpartyRow>(() =>
-    supabase
-      .from("contractors")
-      .select(CONTRACTORS_COUNTERPARTY_SELECT)
-      .order("company_name", { ascending: true })
-      .order("id", { ascending: true }),
+  await loadCatalogRowsViaBff<ContractorCounterpartyRow>(
+    {
+      operation: "catalog.contractor_counterparty.list",
+      args: {},
+    },
+    loadContractorCounterpartyRowsFromSupabase,
   );
 
-export const loadContractorProfileRows = async (withFilter: boolean) => {
-  const buildQuery = () => {
-    let query = supabase
-      .from("user_profiles")
-      .select("*")
-      .order("user_id", { ascending: true });
-    if (withFilter) {
-      query = query.eq("is_contractor", true);
-    }
-    return query;
-  };
-
-  return await loadPagedCatalogRows<ProfileContractorCompatRow>(buildQuery);
-};
+export const loadContractorProfileRows = async (withFilter: boolean) =>
+  await loadCatalogRowsViaBff<ProfileContractorCompatRow>(
+    {
+      operation: "catalog.contractor_profile.list",
+      args: { withFilter },
+    },
+    () => loadContractorProfileRowsFromSupabase(withFilter),
+  );
 
 export const runCatalogSearchRpcRaw = async (
   fn: CatalogSearchRpcName,
   args: CatalogSearchRpcArgs,
-): Promise<{ data: unknown; error: { message?: string } | null }> => {
-  switch (fn) {
-    case "rik_quick_ru":
-      return await supabase.rpc("rik_quick_ru", {
-        p_q: args.p_q,
-        p_limit: args.p_limit,
-      });
-    case "rik_quick_search_typed":
-      return await supabase.rpc("rik_quick_search_typed", {
-        p_q: args.p_q,
-        p_limit: args.p_limit,
-        p_apps: args.p_apps ?? undefined,
-      });
-    case "rik_quick_search":
-      return await supabase.rpc("rik_quick_search", {
-        p_q: args.p_q,
-        p_limit: args.p_limit,
-        p_apps: args.p_apps ?? undefined,
-      });
+): Promise<CatalogRawRpcResult> => {
+  const bffResult = await callCatalogTransportBffRead({
+    operation: "catalog.search.rpc",
+    args: { fn, args },
+  });
+  if (bffResult.status === "ok") {
+    return bffResultToCatalogQueryResult<unknown>(bffResult.response.result);
   }
+  if (bffResult.status === "error") {
+    return { data: null, error: bffErrorToCatalogError(bffResult.error) };
+  }
+  return await runCatalogSearchRpcRawFromSupabase(fn, args);
 };
 
 export const loadCatalogSearchFallbackRows = async (
   searchTerm: string,
   tokens: string[],
   limit: number,
-) => {
-  const page = normalizeRikItemsSearchPreviewPage(limit);
-  let queryBuilder = supabase.from("rik_items").select(CATALOG_SEARCH_FALLBACK_SELECT);
-  if (tokens.length > 0) {
-    tokens.forEach((token) => {
-      queryBuilder = queryBuilder.or(`name_human.ilike.%${token}%,rik_code.ilike.%${token}%`);
-    });
-  } else {
-    queryBuilder = queryBuilder.or(`name_human.ilike.%${searchTerm}%,rik_code.ilike.%${searchTerm}%`);
-  }
-  return await queryBuilder
-    .order("rik_code", { ascending: true })
-    .order("name_human", { ascending: true })
-    .order("id", { ascending: true })
-    .range(page.from, page.to);
-};
+) =>
+  await loadCatalogRowsViaBff(
+    {
+      operation: "catalog.search.fallback",
+      args: { searchTerm, tokens, limit },
+    },
+    () => loadCatalogSearchFallbackRowsFromSupabase(searchTerm, tokens, limit),
+  );
 
 export const loadCatalogGroupsRows = async (): Promise<{
   data: CatalogGroup[] | null;
   error: { message?: string } | null;
 }> => {
-  const result = await loadPagedCatalogRows<CatalogGroupTransportRow>(() =>
-    supabase
-      .from("catalog_groups_clean")
-      .select("code,name,parent_code")
-      .order("code", { ascending: true }),
+  const result = await loadCatalogRowsViaBff<Record<string, unknown>>(
+    {
+      operation: "catalog.groups.list",
+      args: {},
+    },
+    loadCatalogGroupsRowsFromSupabase as CatalogTransportFallback<Record<string, unknown>>,
   );
-
   return {
     data: result.data === null ? null : normalizeCatalogGroupRows(result.data),
     error: result.error,
@@ -220,14 +168,13 @@ export const loadUomRows = async (): Promise<{
   data: UomRef[] | null;
   error: { message?: string } | null;
 }> => {
-  const result = await loadPagedCatalogRows<UomTransportRow>(() =>
-    supabase
-      .from("ref_uoms_clean")
-      .select("id,code,name")
-      .order("code", { ascending: true })
-      .order("id", { ascending: true }),
+  const result = await loadCatalogRowsViaBff<Record<string, unknown>>(
+    {
+      operation: "catalog.uoms.list",
+      args: {},
+    },
+    loadUomRowsFromSupabase as CatalogTransportFallback<Record<string, unknown>>,
   );
-
   return {
     data: result.data === null ? null : normalizeUomRows(result.data),
     error: result.error,
@@ -237,59 +184,52 @@ export const loadUomRows = async (): Promise<{
 export const loadIncomingItemRows = async (
   incomingId: string,
 ): Promise<{ data: IncomingItem[] | null; error: { message?: string } | null }> => {
-  const result = await loadPagedCatalogRows<IncomingItemTransportRow>(() =>
-    supabase
-      .from("wh_incoming_items_clean")
-      .select("incoming_id,incoming_item_id,purchase_item_id,code,name,uom,qty_expected,qty_received")
-      .eq("incoming_id", incomingId)
-      .order("incoming_item_id", { ascending: true }),
+  const result = await loadCatalogRowsViaBff<Record<string, unknown>>(
+    {
+      operation: "catalog.incoming_items.list",
+      args: { incomingId },
+    },
+    () =>
+      loadIncomingItemRowsFromSupabase(incomingId) as Promise<CatalogQueryResult<Record<string, unknown>>>,
   );
-
   return {
     data: result.data === null ? null : normalizeIncomingItemRows(result.data),
     error: result.error,
   };
 };
 
-export const runSuppliersListRpc = async (searchTerm: string | null) =>
-  await supabase.rpc("suppliers_list", normalizeSuppliersListRpcArgs(searchTerm));
-
-export const loadSuppliersTableRows = async (searchTerm: string) => {
-  const buildQuery = () => {
-    let query = supabase
-      .from("suppliers")
-      .select(SUPPLIERS_TABLE_SELECT)
-      .order("name", { ascending: true })
-      .order("id", { ascending: true });
-    if (searchTerm) {
-      query = query.or(
-        `name.ilike.%${searchTerm}%,inn.ilike.%${searchTerm}%,specialization.ilike.%${searchTerm}%`,
-      );
-    }
-    return query;
-  };
-
-  return await loadPagedCatalogRows<SupplierTableRow>(buildQuery);
+export const runSuppliersListRpc = async (searchTerm: string | null) => {
+  const bffResult = await callCatalogTransportBffRead({
+    operation: "catalog.suppliers.rpc",
+    args: { searchTerm },
+  });
+  if (bffResult.status === "ok") {
+    return bffResultToCatalogQueryResult<unknown>(bffResult.response.result);
+  }
+  if (bffResult.status === "error") {
+    return { data: null, error: bffErrorToCatalogError(bffResult.error) };
+  }
+  return await runSuppliersListRpcFromSupabase(searchTerm);
 };
+
+export const loadSuppliersTableRows = async (searchTerm: string) =>
+  await loadCatalogRowsViaBff<SupplierTableRow>(
+    {
+      operation: "catalog.suppliers.table",
+      args: { searchTerm },
+    },
+    () => loadSuppliersTableRowsFromSupabase(searchTerm),
+  );
 
 export const loadRikQuickSearchFallbackRows = async (
   searchTerm: string,
   tokens: string[],
   limit: number,
-) => {
-  const page = normalizeRikItemsSearchPreviewPage(limit);
-  let builder = supabase.from("rik_items").select(RIK_QUICK_SEARCH_FALLBACK_FIELDS);
-  if (tokens.length > 0) {
-    const orFilters = tokens
-      .flatMap((token) => [`name_human.ilike.%${token}%`, `rik_code.ilike.%${token}%`])
-      .join(",");
-    builder = builder.or(orFilters);
-  } else {
-    builder = builder.or(`name_human.ilike.%${searchTerm}%,rik_code.ilike.%${searchTerm}%`);
-  }
-  return await builder
-    .order("rik_code", { ascending: true })
-    .order("name_human", { ascending: true })
-    .order("id", { ascending: true })
-    .range(page.from, page.to);
-};
+) =>
+  await loadCatalogRowsViaBff(
+    {
+      operation: "catalog.rik_quick_search.fallback",
+      args: { searchTerm, tokens, limit },
+    },
+    () => loadRikQuickSearchFallbackRowsFromSupabase(searchTerm, tokens, limit),
+  );

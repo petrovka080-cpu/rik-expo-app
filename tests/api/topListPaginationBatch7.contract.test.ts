@@ -49,7 +49,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
   });
 
   it("page-through-all bounds seven safe catalog list and reference reads", () => {
-    const catalogTransport = read("src/lib/catalog/catalog.transport.ts");
+    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
 
     expect(catalogTransport).toContain(
       "CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }",
@@ -244,6 +244,26 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/scale/rateEnforcementBoundary.test.ts",
       "tests/scale/scaleObservabilityBoundary.test.ts",
     ]);
+    const sCatalogTransportBffReadRoutingAllowedDirtyFiles = new Set([
+      "scripts/server/stagingBffCatalogTransportReadPort.ts",
+      "scripts/server/stagingBffHttpServer.ts",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/lib/catalog/catalog.bff.client.ts",
+      "src/lib/catalog/catalog.bff.contract.ts",
+      "src/lib/catalog/catalog.bff.handler.ts",
+      "src/lib/catalog/catalog.transport.supabase.ts",
+      "src/lib/catalog/catalog.transport.ts",
+      "src/shared/scale/bffClient.ts",
+      "tests/api/catalogTransportBffHandler.contract.test.ts",
+      "tests/api/catalogTransportBffRouting.contract.test.ts",
+      "tests/catalog/catalog.transport.rikItemsBounded.test.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/bffBoundary.test.ts",
+      "tests/scale/bffReadonlyRuntimeConfig.test.ts",
+      "tests/scale/bffStagingServerBoundary.test.ts",
+      "tests/scale/catalogTransportBffReadonlyDbPort.test.ts",
+      "tests/strict-null/catalog.transport.phase4.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -256,6 +276,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sBffMobileSupabaseJwtAuthWiringAllowedDirtyFiles.has(file) &&
         !s50kProviderEnvConventionsAllowedDirtyFiles.has(file) &&
         !sCatalogRequestBffMutationPortingAllowedDirtyFiles.has(file) &&
+        !sCatalogTransportBffReadRoutingAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

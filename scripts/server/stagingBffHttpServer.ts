@@ -27,10 +27,12 @@ import { createDirectorFinanceRpcReadonlyDbPort } from "./stagingBffDirectorFina
 import { createBffReadonlyDbReadPorts } from "./stagingBffReadonlyDbPorts";
 import { createBffCatalogRequestMutationPortsFromEnv } from "./stagingBffCatalogRequestMutationPorts";
 import { createWarehouseApiBffReadonlyDbPort } from "./stagingBffWarehouseApiReadPort";
+import { createCatalogTransportBffReadonlyDbPort } from "./stagingBffCatalogTransportReadPort";
 import type { BffReadPorts } from "../../src/shared/scale/bffReadPorts";
 import type { BffMutationPorts } from "../../src/shared/scale/bffMutationPorts";
 import type { DirectorFinanceBffRpcPort } from "../../src/screens/director/director.finance.bff.handler";
 import type { WarehouseApiBffReadPort } from "../../src/screens/warehouse/warehouse.api.bff.handler";
+import type { CatalogTransportBffReadPort } from "../../src/lib/catalog/catalog.bff.handler";
 
 const DEFAULT_PORT = 3000;
 const MAX_BODY_BYTES = 64 * 1024;
@@ -56,6 +58,7 @@ type StagingBffHttpServerOptions = {
   readPortsFactory?: (env: StagingBffHttpEnv) => BffReadPorts | undefined;
   directorFinanceRpcPortFactory?: (env: StagingBffHttpEnv) => DirectorFinanceBffRpcPort | undefined;
   warehouseApiReadPortFactory?: (env: StagingBffHttpEnv) => WarehouseApiBffReadPort | undefined;
+  catalogTransportReadPortFactory?: (env: StagingBffHttpEnv) => CatalogTransportBffReadPort | undefined;
   mutationPortsFactory?: (env: StagingBffHttpEnv) => BffMutationPorts | undefined;
   mobileReadonlyAuthVerifier?: MobileReadonlyAuthVerifier;
   cacheShadow?: BffStagingCacheShadowDeps | null;
@@ -245,6 +248,8 @@ export function createBffStagingHttpServer(
     (options.directorFinanceRpcPortFactory ?? createDirectorFinanceRpcReadonlyDbPort)(env);
   const warehouseApiReadPort =
     (options.warehouseApiReadPortFactory ?? createWarehouseApiBffReadonlyDbPort)(env);
+  const catalogTransportReadPort =
+    (options.catalogTransportReadPortFactory ?? createCatalogTransportBffReadonlyDbPort)(env);
   const mutationPorts = (options.mutationPortsFactory ?? createBffCatalogRequestMutationPortsFromEnv)(env);
   const mobileReadonlyAuthVerifier = options.mobileReadonlyAuthVerifier ?? verifySupabaseReadonlyMobileAuth;
   const defaultCacheShadowConfig = resolveCacheShadowRuntimeConfig(env);
@@ -333,6 +338,7 @@ export function createBffStagingHttpServer(
         readPorts,
         directorFinanceRpcPort,
         warehouseApiReadPort,
+        catalogTransportReadPort,
         mutationPorts,
         cacheShadow,
         cacheShadowRuntime,
@@ -378,6 +384,7 @@ export function startBffStagingHttpServer(env: StagingBffHttpEnv = process.env):
         readPortsConfigured: Boolean(createBffReadonlyDbReadPorts(env)),
         directorFinanceRpcPortConfigured: Boolean(createDirectorFinanceRpcReadonlyDbPort(env)),
         warehouseApiReadPortConfigured: Boolean(createWarehouseApiBffReadonlyDbPort(env)),
+        catalogTransportReadPortConfigured: Boolean(createCatalogTransportBffReadonlyDbPort(env)),
         mutationPortsConfigured: Boolean(createBffCatalogRequestMutationPortsFromEnv(env)),
       }),
     );

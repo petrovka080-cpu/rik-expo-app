@@ -72,7 +72,7 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(chat).toContain(".range(page.from, page.to)");
     expect(chat).not.toContain(".limit(limit)");
 
-    const catalogTransport = read("src/lib/catalog/catalog.transport.ts");
+    const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");
     expect(catalogTransport).toContain("CATALOG_RIK_ITEMS_SEARCH_PREVIEW_DEFAULTS = {");
     expect(catalogTransport).toContain("maxRows: 100");
     expect(catalogTransport.match(/normalizeRikItemsSearchPreviewPage\(limit\)/g)).toHaveLength(2);

@@ -19,6 +19,8 @@ const APPROVED_ACTIVE_BFF_IMPORTS = [
   "src/screens/director/director.finance.bff.handler.ts",
   "src/screens/warehouse/warehouse.api.bff.client.ts",
   "src/screens/warehouse/warehouse.api.bff.handler.ts",
+  "src/lib/catalog/catalog.bff.client.ts",
+  "src/lib/catalog/catalog.bff.handler.ts",
 ];
 
 describe("S-50K BFF boundary scaffold", () => {
@@ -248,6 +250,15 @@ describe("S-50K BFF boundary scaffold", () => {
     const warehouseApiHandlerSource = readProjectFile(
       "src/screens/warehouse/warehouse.api.bff.handler.ts",
     );
+    const catalogTransportContractSource = readProjectFile(
+      "src/lib/catalog/catalog.bff.contract.ts",
+    );
+    const catalogTransportClientSource = readProjectFile(
+      "src/lib/catalog/catalog.bff.client.ts",
+    );
+    const catalogTransportHandlerSource = readProjectFile(
+      "src/lib/catalog/catalog.bff.handler.ts",
+    );
 
     expect(directorFinanceContractSource).toContain("trafficEnabledByDefault: false");
     expect(directorFinanceContractSource).toContain("productionTrafficEnabled: false");
@@ -257,12 +268,18 @@ describe("S-50K BFF boundary scaffold", () => {
     expect(warehouseApiContractSource).toContain("productionTrafficEnabled: false");
     expect(warehouseApiClientSource).toContain("resolveBffReadonlyRuntimeConfig");
     expect(warehouseApiClientSource).toContain("callBffReadonlyMobile");
+    expect(catalogTransportContractSource).toContain("trafficEnabledByDefault: false");
+    expect(catalogTransportContractSource).toContain("productionTrafficEnabled: false");
+    expect(catalogTransportClientSource).toContain("resolveBffReadonlyRuntimeConfig");
+    expect(catalogTransportClientSource).toContain("callBffReadonlyMobile");
     expect(
       [
         directorFinanceClientSource,
         directorFinanceHandlerSource,
         warehouseApiClientSource,
         warehouseApiHandlerSource,
+        catalogTransportClientSource,
+        catalogTransportHandlerSource,
       ].join("\n"),
     ).not.toContain(".rpc(");
     expect(
@@ -271,6 +288,8 @@ describe("S-50K BFF boundary scaffold", () => {
         directorFinanceHandlerSource,
         warehouseApiClientSource,
         warehouseApiHandlerSource,
+        catalogTransportClientSource,
+        catalogTransportHandlerSource,
       ].join("\n"),
     ).not.toContain(".from(");
   });

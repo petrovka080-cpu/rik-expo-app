@@ -128,6 +128,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "warehouse", "warehouse.api.bff.handler.ts"),
       path.join(SRC, "screens", "warehouse", "warehouse.api.repo.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sDirectSupabaseBypassCatalogTransportBoundaryFiles = [
+      path.join(SRC, "lib", "catalog", "catalog.bff.contract.ts"),
+      path.join(SRC, "lib", "catalog", "catalog.bff.client.ts"),
+      path.join(SRC, "lib", "catalog", "catalog.bff.handler.ts"),
+      path.join(SRC, "lib", "catalog", "catalog.transport.supabase.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -182,6 +188,8 @@ describe("performance budget — bundle module count", () => {
     // disabled director finance RPC BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-WAREHOUSE-API-REPO-ROUTING-1 adds four permanent
     // disabled warehouse API read BFF/transport boundary modules.
+    // S-DIRECT-SUPABASE-BYPASS-CATALOG-TRANSPORT-READ-ROUTING-1 adds four
+    // permanent disabled catalog transport read BFF/transport boundary modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -192,6 +200,7 @@ describe("performance budget — bundle module count", () => {
     expect(sFetchAllDirectorReportsAggregationContractFiles).toBeLessThanOrEqual(1);
     expect(sDirectSupabaseBypassDirectorFinanceBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(4);
+    expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -203,7 +212,8 @@ describe("performance budget — bundle module count", () => {
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -
         sDirectSupabaseBypassDirectorFinanceBoundaryFiles -
-        sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles,
+        sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles -
+        sDirectSupabaseBypassCatalogTransportBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
