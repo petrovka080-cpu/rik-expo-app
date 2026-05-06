@@ -14,6 +14,9 @@ const mockFetchWithRequestTimeout = jest.fn();
 const mockStorageUpload = jest.fn();
 const mockStorageGetPublicUrl = jest.fn();
 const mockMetadataInsert = jest.fn();
+const mockMetadataEq = jest.fn();
+const mockMetadataOrder = jest.fn();
+const mockMetadataLimit = jest.fn();
 
 let mockMetadataQueryData: unknown[] = [];
 let mockMetadataQueryError: unknown = null;
@@ -23,7 +26,8 @@ jest.mock("./documents/attachmentOpener", () => ({
 }));
 
 jest.mock("./requestTimeoutPolicy", () => ({
-  fetchWithRequestTimeout: (...args: unknown[]) => mockFetchWithRequestTimeout(...args),
+  fetchWithRequestTimeout: (...args: unknown[]) =>
+    mockFetchWithRequestTimeout(...args),
 }));
 
 jest.mock("./catalog_api", () => ({
@@ -42,10 +46,22 @@ jest.mock("./supabaseClient", () => {
     const builder: any = {
       insert: (...args: unknown[]) => mockMetadataInsert(...args),
       select: jest.fn(() => builder),
-      eq: jest.fn(() => builder),
-      order: jest.fn(() => builder),
-      limit: jest.fn(() => builder),
-      then: (resolve: (value: unknown) => unknown, reject?: (error: unknown) => unknown) =>
+      eq: (...args: unknown[]) => {
+        mockMetadataEq(...args);
+        return builder;
+      },
+      order: (...args: unknown[]) => {
+        mockMetadataOrder(...args);
+        return builder;
+      },
+      limit: (...args: unknown[]) => {
+        mockMetadataLimit(...args);
+        return builder;
+      },
+      then: (
+        resolve: (value: unknown) => unknown,
+        reject?: (error: unknown) => unknown,
+      ) =>
         Promise.resolve({
           data: mockMetadataQueryData,
           error: mockMetadataQueryError,
@@ -59,7 +75,8 @@ jest.mock("./supabaseClient", () => {
       storage: {
         from: jest.fn(() => ({
           upload: (...args: unknown[]) => mockStorageUpload(...args),
-          getPublicUrl: (...args: unknown[]) => mockStorageGetPublicUrl(...args),
+          getPublicUrl: (...args: unknown[]) =>
+            mockStorageGetPublicUrl(...args),
         })),
       },
       from: jest.fn(() => createSupplierFilesBuilder()),
@@ -71,8 +88,12 @@ const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
 
 describe("files boundary observability", () => {
   const originalPlatformOs = Platform.OS;
-  const originalWindow = (globalThis as typeof globalThis & { window?: unknown }).window;
-  const originalDocument = (globalThis as typeof globalThis & { document?: unknown }).document;
+  const originalWindow = (
+    globalThis as typeof globalThis & { window?: unknown }
+  ).window;
+  const originalDocument = (
+    globalThis as typeof globalThis & { document?: unknown }
+  ).document;
 
   beforeEach(() => {
     runtime.__DEV__ = false;
@@ -87,6 +108,9 @@ describe("files boundary observability", () => {
     mockStorageUpload.mockReset();
     mockStorageGetPublicUrl.mockReset();
     mockMetadataInsert.mockReset();
+    mockMetadataEq.mockReset();
+    mockMetadataOrder.mockReset();
+    mockMetadataLimit.mockReset();
     resetPlatformObservabilityEvents();
   });
 
@@ -95,12 +119,17 @@ describe("files boundary observability", () => {
       configurable: true,
       value: originalPlatformOs,
     });
-    (globalThis as typeof globalThis & { window?: unknown }).window = originalWindow;
-    (globalThis as typeof globalThis & { document?: unknown }).document = originalDocument;
+    (globalThis as typeof globalThis & { window?: unknown }).window =
+      originalWindow;
+    (globalThis as typeof globalThis & { document?: unknown }).document =
+      originalDocument;
   });
 
   it("keeps the primary native file open path unchanged", async () => {
-    await openSignedUrlUniversal("https://example.com/files/native-success.pdf", "native-success.pdf");
+    await openSignedUrlUniversal(
+      "https://example.com/files/native-success.pdf",
+      "native-success.pdf",
+    );
 
     expect(mockOpenAppAttachment).toHaveBeenCalledWith({
       url: "https://example.com/files/native-success.pdf",
@@ -134,17 +163,20 @@ describe("files boundary observability", () => {
         removeChild,
       },
     } as any;
-    mockFetchWithRequestTimeout.mockRejectedValueOnce(new Error("fetch fallback blocked"));
+    mockFetchWithRequestTimeout.mockRejectedValueOnce(
+      new Error("fetch fallback blocked"),
+    );
 
     await expect(
-      openSignedUrlUniversal("https://example.com/files/web-fallback.pdf", "web-fallback.pdf"),
+      openSignedUrlUniversal(
+        "https://example.com/files/web-fallback.pdf",
+        "web-fallback.pdf",
+      ),
     ).resolves.toBeUndefined();
 
     expect(mockFetchWithRequestTimeout).toHaveBeenCalled();
     expect(click).toHaveBeenCalledTimes(1);
-    expect(
-      getPlatformObservabilityEvents(),
-    ).toContainEqual(
+    expect(getPlatformObservabilityEvents()).toContainEqual(
       expect.objectContaining({
         screen: "request",
         surface: "files_boundary",
@@ -167,7 +199,12 @@ describe("files boundary observability", () => {
     });
     mockMetadataInsert.mockResolvedValueOnce({ error: null });
 
-    const result = await uploadSupplierFile("supplier-1", { uri: "file:///tmp/test.pdf" }, "test.pdf", "file");
+    const result = await uploadSupplierFile(
+      "supplier-1",
+      { uri: "file:///tmp/test.pdf" },
+      "test.pdf",
+      "file",
+    );
 
     expect(result.url).toBe("https://cdn.example.com/supplier/test.pdf");
     expect(result.path).toContain("supplier-1/");
@@ -191,11 +228,11 @@ describe("files boundary observability", () => {
       "price",
     );
 
-    expect(result.url).toBe("https://cdn.example.com/supplier/test-metadata.pdf");
+    expect(result.url).toBe(
+      "https://cdn.example.com/supplier/test-metadata.pdf",
+    );
     expect(result.path).toContain("supplier-2/");
-    expect(
-      getPlatformObservabilityEvents(),
-    ).toContainEqual(
+    expect(getPlatformObservabilityEvents()).toContainEqual(
       expect.objectContaining({
         screen: "request",
         surface: "files_boundary",
@@ -218,9 +255,7 @@ describe("files boundary observability", () => {
       listSupplierFilesMeta("supplier-3", { group: "photo", limit: 5 }),
     ).resolves.toEqual([]);
 
-    expect(
-      getPlatformObservabilityEvents(),
-    ).toContainEqual(
+    expect(getPlatformObservabilityEvents()).toContainEqual(
       expect.objectContaining({
         screen: "request",
         surface: "files_boundary",
@@ -235,5 +270,37 @@ describe("files boundary observability", () => {
         }),
       }),
     );
+  });
+
+  it("bounds supplier metadata lists with deterministic ordering and default limit", async () => {
+    mockMetadataQueryData = [
+      {
+        id: "file-1",
+        created_at: "2026-05-06T00:00:00.000Z",
+        file_name: "invoice.pdf",
+        file_url: "https://cdn.example.com/supplier/invoice.pdf",
+        group_key: "invoice",
+      },
+    ];
+
+    await expect(listSupplierFilesMeta("supplier-4")).resolves.toHaveLength(1);
+
+    expect(mockMetadataEq).toHaveBeenCalledWith("supplier_id", "supplier-4");
+    expect(mockMetadataOrder).toHaveBeenNthCalledWith(1, "created_at", {
+      ascending: false,
+    });
+    expect(mockMetadataOrder).toHaveBeenNthCalledWith(2, "id", {
+      ascending: false,
+    });
+    expect(mockMetadataLimit).toHaveBeenCalledWith(50);
+  });
+
+  it("caps caller-supplied supplier metadata list limits at the contract max", async () => {
+    await expect(
+      listSupplierFilesMeta("supplier-5", { group: "file", limit: 50000 }),
+    ).resolves.toEqual([]);
+
+    expect(mockMetadataEq).toHaveBeenCalledWith("group_key", "file");
+    expect(mockMetadataLimit).toHaveBeenCalledWith(1000);
   });
 });

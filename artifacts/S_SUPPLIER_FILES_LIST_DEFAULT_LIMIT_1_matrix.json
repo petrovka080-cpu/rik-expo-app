@@ -1,0 +1,94 @@
+{
+  "wave": "S-SUPPLIER-FILES-LIST-DEFAULT-LIMIT-1",
+  "final_status": "GREEN_SUPPLIER_FILES_LIST_DEFAULT_LIMIT_RELEASE_INTEGRATED",
+  "target_files": [
+    "src/lib/api/suppliers.ts",
+    "src/lib/files.ts",
+    "src/lib/files.test.ts",
+    "tests/api/supplierFilesListDefaultLimit.contract.test.ts",
+    "tests/api/topListPaginationBatch5B.contract.test.ts",
+    "tests/api/topListPaginationBatch6.contract.test.ts"
+  ],
+  "inventory_source": "S-FETCHALL-UNBOUNDED-READS-INVENTORY-1",
+  "risk_closed": [
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "function": "listSupplierFiles",
+      "domain_table": "supplier_files",
+      "before": "paged range loop without total maxRows ceiling",
+      "after": "loadPagedRowsWithCeiling with maxRows=5000",
+      "response_shape_changed": false,
+      "ordering_changed": false,
+      "filtering_changed": false,
+      "silent_truncation_used": false
+    },
+    {
+      "file": "src/lib/api/suppliers.ts",
+      "function": "listSuppliers",
+      "domain_table": "suppliers",
+      "before": "paged range loop without total maxRows ceiling",
+      "after": "loadPagedRowsWithCeiling with maxRows=5000",
+      "response_shape_changed": false,
+      "ordering_changed": false,
+      "filtering_changed": false,
+      "silent_truncation_used": false
+    },
+    {
+      "file": "src/lib/files.ts",
+      "function": "listSupplierFilesMeta",
+      "domain_table": "supplier_files",
+      "before": "caller could omit limit",
+      "after": "default bounded metadata preview limit=50, caller limit capped at 1000",
+      "response_shape_changed": false,
+      "ordering_changed": "deterministic id desc tie-breaker added after created_at desc",
+      "filtering_changed": false,
+      "silent_truncation_used": false
+    }
+  ],
+  "bounded_contracts": {
+    "supplier_api_page_defaults": {
+      "pageSize": 100,
+      "maxPageSize": 100,
+      "maxRows": 5000,
+      "ceiling_behavior": "fail_closed_error_returned_to_existing error path"
+    },
+    "supplier_files_meta_default_limit": 50,
+    "supplier_files_meta_max_limit": 1000,
+    "supplier_files_meta_contract": "bounded preview unless caller requests a smaller bounded limit or the explicit all-flow passes the max"
+  },
+  "safety": {
+    "temporary_hooks_created": false,
+    "temporary_scripts_created": false,
+    "temporary_endpoints_created": false,
+    "production_db_written": false,
+    "migrations_applied": false,
+    "deploy_triggered": false,
+    "redeploy_triggered": false,
+    "render_env_written": false,
+    "bff_traffic_changed": false,
+    "business_calls_made": false,
+    "secrets_printed": false,
+    "raw_payloads_printed": false,
+    "raw_db_rows_printed": false,
+    "business_rows_printed": false
+  },
+  "tests": {
+    "targeted": "PASS",
+    "artifact_json_parse": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "git_diff_check": "PASS",
+    "release_verify_status": "gates_passed_readiness_blocked_by_dirty_worktree_before_commit"
+  },
+  "release": {
+    "head_equals_origin_main": "pending_after_commit",
+    "ahead": "pending_after_commit",
+    "behind": "pending_after_commit",
+    "worktree_clean": "pending_after_commit",
+    "render_auto_deploy": "pending_safe_window_check",
+    "deploy_in_progress": "pending_safe_window_check",
+    "health": "pending_safe_window_check",
+    "ready": "pending_safe_window_check",
+    "pushed": "pending_safe_window_check"
+  }
+}

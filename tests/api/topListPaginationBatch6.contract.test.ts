@@ -57,6 +57,9 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     );
 
     const suppliers = read("src/lib/api/suppliers.ts");
+    expect(suppliers).toContain("const SUPPLIER_LIST_PAGE_DEFAULTS = {");
+    expect(suppliers).toContain("maxRows: 5000");
+    expect(suppliers).toContain("loadPagedRowsWithCeiling<T>");
     expect(
       suppliers.match(/loadPagedSupplierRows/g)?.length ?? 0,
     ).toBeGreaterThanOrEqual(2);

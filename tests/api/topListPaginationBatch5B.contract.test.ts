@@ -77,16 +77,14 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
 
   it("paginates supplier and foreman picker list reads with stable ordering", () => {
     const suppliers = read("src/lib/api/suppliers.ts");
-    expect(suppliers).toContain(
-      "SUPPLIER_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }",
-    );
-    expect(suppliers).toContain(
-      "normalizePage({ page: pageIndex }, SUPPLIER_LIST_PAGE_DEFAULTS)",
-    );
+    expect(suppliers).toContain("const SUPPLIER_LIST_PAGE_DEFAULTS = {");
+    expect(suppliers).toContain("maxRows: 5000");
+    expect(suppliers).toContain("loadPagedRowsWithCeiling<T>");
     expect(suppliers.match(/loadPagedSupplierRows</g)).toHaveLength(2);
     expect(suppliers).toContain('.from("suppliers")');
     expect(suppliers).toContain('.order("name", { ascending: true })');
-    expect(suppliers).toContain('.order("id", { ascending: true })');
+    expect(suppliers).toContain('.order("id", {');
+    expect(suppliers).toContain("ascending: true");
     expect(suppliers).toContain('.from("supplier_files")');
     expect(suppliers).toContain('.eq("supplier_id", supplierId)');
     expect(suppliers).toContain('.order("created_at", { ascending: false })');

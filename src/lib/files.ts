@@ -33,10 +33,21 @@ type SupplierFileMetaRow = {
   group_key?: string;
 };
 
+const SUPPLIER_FILES_META_DEFAULT_LIMIT = 50;
+const SUPPLIER_FILES_META_MAX_LIMIT = 1000;
+
 export const isPdfLike = (fileName?: string | null, url?: string | null) => {
-  const name = String(fileName || "").trim().toLowerCase();
-  const href = String(url || "").trim().toLowerCase();
-  return name.endsWith(".pdf") || href.includes(".pdf") || href.includes("application/pdf");
+  const name = String(fileName || "")
+    .trim()
+    .toLowerCase();
+  const href = String(url || "")
+    .trim()
+    .toLowerCase();
+  return (
+    name.endsWith(".pdf") ||
+    href.includes(".pdf") ||
+    href.includes("application/pdf")
+  );
 };
 
 function notFoundMsg(groupKey: string) {
@@ -50,6 +61,14 @@ function notFoundMsg(groupKey: string) {
 function safeFileName(name: string | undefined) {
   const base = name || "file.bin";
   return base.replace(/[^\p{L}\p{N}_\-(). ]+/gu, "_");
+}
+
+function normalizeSupplierFilesMetaLimit(limit: unknown) {
+  const parsed = Number(limit);
+  const value = Number.isFinite(parsed)
+    ? Math.trunc(parsed)
+    : SUPPLIER_FILES_META_DEFAULT_LIMIT;
+  return Math.min(SUPPLIER_FILES_META_MAX_LIMIT, Math.max(1, value));
 }
 
 function reportFilesBoundary(params: {
@@ -80,18 +99,14 @@ async function webOpenBlobOrDirect(url: string, fileName?: string) {
   if (popup) return;
 
   try {
-    const response = await fetchWithRequestTimeout(
-      url,
-      undefined,
-      {
-        requestClass: "heavy_report_or_pdf_or_storage",
-        screen: "request",
-        surface: "attachment_open",
-        owner: "attachment_open",
-        operation: "web_open_blob_or_direct",
-        sourceKind: "fetch:attachment_open",
-      },
-    );
+    const response = await fetchWithRequestTimeout(url, undefined, {
+      requestClass: "heavy_report_or_pdf_or_storage",
+      screen: "request",
+      surface: "attachment_open",
+      owner: "attachment_open",
+      operation: "web_open_blob_or_direct",
+      sourceKind: "fetch:attachment_open",
+    });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);
@@ -172,7 +187,8 @@ export async function openAttachment(
   })) as AttRow[];
 
   if (!rows.length) {
-    if (result.state === "empty") throw new Error(notFoundMsg(String(groupKey)));
+    if (result.state === "empty")
+      throw new Error(notFoundMsg(String(groupKey)));
     throw new Error(result.errorMessage || "Attachment lookup failed");
   }
 
@@ -210,9 +226,14 @@ export async function getLatestProposalAttachmentPreview(
   const pid = String(proposalId || "").trim();
   if (!pid) throw new Error("proposalId is empty");
 
-  const latest = await getLatestCanonicalProposalAttachment(supabase, pid, groupKey, {
-    screen: "request",
-  });
+  const latest = await getLatestCanonicalProposalAttachment(
+    supabase,
+    pid,
+    groupKey,
+    {
+      screen: "request",
+    },
+  );
   const row = {
     ...toProposalAttachmentLegacyRow(latest.row),
     signed_url: latest.row.fileUrl,
@@ -241,7 +262,10 @@ export async function uploadSupplierFile(
   const path = `${id}/${Date.now()}_${cleanName}`;
   const bucket = supabase.storage.from("supplier_files");
 
-  const upload = await bucket.upload(path, file, { upsert: false, cacheControl: "3600" });
+  const upload = await bucket.upload(path, file, {
+    upsert: false,
+    cacheControl: "3600",
+  });
   if (upload.error) throw upload.error;
 
   const publicUrl = bucket.getPublicUrl(path);
@@ -287,14 +311,18 @@ export async function listSupplierFilesMeta(
       .from("supplier_files")
       .select("id,created_at,file_name,file_url,group_key")
       .eq("supplier_id", id)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false });
 
     if (opts?.group) query = query.eq("group_key", opts.group);
-    if (opts?.limit) query = query.limit(opts.limit);
+    const limit = normalizeSupplierFilesMetaLimit(opts?.limit);
+    query = query.limit(limit);
 
     const result = await query;
     if (result.error) throw result.error;
-    return Array.isArray(result.data) ? (result.data as SupplierFileMetaRow[]) : [];
+    return Array.isArray(result.data)
+      ? (result.data as SupplierFileMetaRow[])
+      : [];
   } catch (error) {
     reportFilesBoundary({
       event: "supplier_metadata_list_failed",
@@ -306,7 +334,7 @@ export async function listSupplierFilesMeta(
       extra: {
         supplierId: id,
         group: opts?.group ?? null,
-        limit: opts?.limit ?? null,
+        limit: normalizeSupplierFilesMetaLimit(opts?.limit),
       },
     });
     return [];
@@ -329,7 +357,11 @@ export async function openSupplierFile(
 
   const rows = meta
     .slice()
-    .sort((left, right) => Date.parse(String(right.created_at || 0)) - Date.parse(String(left.created_at || 0)));
+    .sort(
+      (left, right) =>
+        Date.parse(String(right.created_at || 0)) -
+        Date.parse(String(left.created_at || 0)),
+    );
 
   const openOne = async (row: SupplierFileMetaRow) => {
     const url = String(row.file_url || "").trim();
