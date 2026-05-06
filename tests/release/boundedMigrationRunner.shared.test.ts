@@ -1,4 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
+  analyzeMigrationTransactionSafety,
   buildBoundedMigrationPlan,
   formatBoundedMigrationExecutorResultForLog,
   formatBoundedMigrationPlanForLog,
@@ -25,12 +29,12 @@ const localMigrations: BoundedMigrationLocalMigration[] = [
   {
     file: BLOCKING_ONE,
     sqlSource:
-      "create or replace function public.warehouse_issue_queue_visible_truth() returns void language sql as $$ select 1 $$;",
+      "begin; create or replace function public.warehouse_issue_queue_visible_truth() returns void language sql as $$ select 1 $$; commit;",
   },
   {
     file: BLOCKING_TWO,
     sqlSource:
-      "create table if not exists public.warehouse_issue_queue_ready_rows_v1(id uuid primary key); delete from public.warehouse_issue_queue_ready_rows_v1;",
+      "begin; create table if not exists public.warehouse_issue_queue_ready_rows_v1(id uuid primary key); delete from public.warehouse_issue_queue_ready_rows_v1; commit;",
   },
   {
     file: IDEMPOTENCY_TARGET,
@@ -49,6 +53,8 @@ const remoteMigrations: BoundedMigrationRemoteMigration[] = [
 class FakeBoundedMigrationExecutorAdapter implements BoundedMigrationExecutorAdapter {
   readonly sqlAttempts: string[] = [];
   readonly historyAttempts: string[] = [];
+  readonly transactionEvents: string[] = [];
+  readonly sqlPayloadHadOuterWrapper: boolean[] = [];
   sqlExecutionOrder: string[] = [];
   historyWriteOrder: string[] = [];
 
@@ -62,10 +68,18 @@ class FakeBoundedMigrationExecutorAdapter implements BoundedMigrationExecutorAda
   ): Promise<T> {
     const sqlSnapshot = [...this.sqlExecutionOrder];
     const historySnapshot = [...this.historyWriteOrder];
+    this.transactionEvents.push("transaction:start");
     try {
-      return await operation({
+      const result = await operation({
         executeMigrationSql: async (migration) => {
           this.sqlAttempts.push(migration.file);
+          this.transactionEvents.push(`sql:${migration.file}`);
+          this.sqlPayloadHadOuterWrapper.push(
+            analyzeMigrationTransactionSafety({
+              file: migration.file,
+              sqlSource: migration.sqlSource,
+            }).wrapperStatus === "safe_outer_wrapper",
+          );
           if (migration.file === this.failSqlFor) {
             throw stageError("execute_sql", migration.file);
           }
@@ -73,21 +87,174 @@ class FakeBoundedMigrationExecutorAdapter implements BoundedMigrationExecutorAda
         },
         recordMigrationHistory: async (record) => {
           this.historyAttempts.push(record.file);
+          this.transactionEvents.push(`history:${record.file}`);
           if (record.file === this.failHistoryFor) {
             throw stageError("write_history", record.file);
           }
           this.historyWriteOrder.push(record.file);
         },
       });
+      this.transactionEvents.push("transaction:commit");
+      return result;
     } catch (error) {
       this.sqlExecutionOrder = sqlSnapshot;
       this.historyWriteOrder = historySnapshot;
+      this.transactionEvents.push("transaction:rollback");
       throw error;
     }
   }
 }
 
 describe("bounded migration runner", () => {
+  it("detects safe outer BEGIN/COMMIT wrappers", () => {
+    const result = analyzeMigrationTransactionSafety({
+      file: BLOCKING_ONE,
+      sqlSource: localMigrations[1].sqlSource,
+    });
+
+    expect(result.wrapperStatus).toBe("safe_outer_wrapper");
+    expect(result.outerWrapperStrippedInMemory).toBe(true);
+    expect(result.beginCount).toBe(1);
+    expect(result.commitCount).toBe(1);
+    expect(result.transactionSafe).toBe(true);
+  });
+
+  it("strips outer transaction wrappers in memory only before executor SQL", async () => {
+    const adapter = new FakeBoundedMigrationExecutorAdapter();
+    const result = await runBoundedMigrationExecutor({
+      executorMode: "execute",
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations,
+      remoteMigrations,
+      destructiveApproval: true,
+      adapter,
+    });
+
+    expect(result.status).toBe("PASS");
+    expect(adapter.sqlPayloadHadOuterWrapper).toEqual([false, false]);
+    expect(localMigrations[1].sqlSource?.trim().toLowerCase().startsWith("begin;")).toBe(true);
+    expect(localMigrations[2].sqlSource?.trim().toLowerCase().startsWith("begin;")).toBe(true);
+  });
+
+  it("does not mutate migration files while normalizing wrappers", async () => {
+    const migrationPaths = [
+      path.join(
+        process.cwd(),
+        "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
+      ),
+      path.join(
+        process.cwd(),
+        "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
+      ),
+      path.join(
+        process.cwd(),
+        "supabase/migrations/20260502170000_scale_idempotency_records_provider_smoke.sql",
+      ),
+    ];
+    const before = migrationPaths.map((migrationPath) => fs.readFileSync(migrationPath, "utf8"));
+    const actualLocalMigrations = migrationPaths.map((migrationPath, index) => ({
+      file: path.basename(migrationPath),
+      sqlSource: before[index],
+    }));
+
+    const result = await runBoundedMigrationExecutor({
+      executorMode: "plan",
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations: actualLocalMigrations,
+      remoteMigrations: [],
+      destructiveApproval: true,
+    });
+    const after = migrationPaths.map((migrationPath) => fs.readFileSync(migrationPath, "utf8"));
+
+    expect(result.status).toBe("PASS");
+    expect(after).toEqual(before);
+  });
+
+  it("rejects nested or ambiguous top-level transaction wrappers", () => {
+    const plan = buildBoundedMigrationPlan({
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations: [
+        localMigrations[0],
+        {
+          file: BLOCKING_ONE,
+          sqlSource: "begin; create table public.nested_wrapper(id uuid); begin; commit; commit;",
+        },
+        ...localMigrations.slice(2),
+      ],
+      remoteMigrations,
+      destructiveApproval: true,
+    });
+
+    expect(plan.status).toBe("BLOCKED");
+    expect(plan.blockers.map((blocker) => blocker.code)).toContain(
+      "TOPLEVEL_TRANSACTION_WRAPPER_UNSAFE",
+    );
+  });
+
+  it("rejects COMMIT without BEGIN", () => {
+    const plan = buildBoundedMigrationPlan({
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations: [
+        localMigrations[0],
+        {
+          file: BLOCKING_ONE,
+          sqlSource: "create table public.commit_without_begin(id uuid); commit;",
+        },
+        ...localMigrations.slice(2),
+      ],
+      remoteMigrations,
+      destructiveApproval: true,
+    });
+
+    expect(plan.status).toBe("BLOCKED");
+    expect(plan.blockers.map((blocker) => blocker.code)).toContain(
+      "TOPLEVEL_TRANSACTION_WRAPPER_UNSAFE",
+    );
+  });
+
+  it("rejects BEGIN without COMMIT", () => {
+    const plan = buildBoundedMigrationPlan({
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations: [
+        localMigrations[0],
+        {
+          file: BLOCKING_ONE,
+          sqlSource: "begin; create table public.begin_without_commit(id uuid);",
+        },
+        ...localMigrations.slice(2),
+      ],
+      remoteMigrations,
+      destructiveApproval: true,
+    });
+
+    expect(plan.status).toBe("BLOCKED");
+    expect(plan.blockers.map((blocker) => blocker.code)).toContain(
+      "TOPLEVEL_TRANSACTION_WRAPPER_UNSAFE",
+    );
+  });
+
+  it("rejects SQL that cannot run inside a transaction", () => {
+    const plan = buildBoundedMigrationPlan({
+      allowlist: [BLOCKING_ONE, BLOCKING_TWO],
+      localMigrations: [
+        localMigrations[0],
+        {
+          file: BLOCKING_ONE,
+          sqlSource:
+            "begin; create index concurrently nested_wrapper_idx on public.some_table(id); commit;",
+        },
+        ...localMigrations.slice(2),
+      ],
+      remoteMigrations,
+      destructiveApproval: true,
+    });
+
+    expect(plan.status).toBe("BLOCKED");
+    expect(plan.blockers.map((blocker) => blocker.code)).toContain(
+      "MIGRATION_SQL_NOT_TRANSACTION_SAFE",
+    );
+  });
+
   it("builds a dry-run plan for the exact two allowlisted blocking migrations", () => {
     const plan = buildBoundedMigrationPlan({
       allowlist: [BLOCKING_ONE, BLOCKING_TWO],
@@ -273,6 +440,14 @@ describe("bounded migration runner", () => {
     expect(result.sqlExecutionOrder).toEqual([BLOCKING_ONE, BLOCKING_TWO]);
     expect(result.historyWriteOrder).toEqual([BLOCKING_ONE, BLOCKING_TWO]);
     expect(adapter.historyWriteOrder).toEqual([BLOCKING_ONE, BLOCKING_TWO]);
+    expect(adapter.transactionEvents).toEqual([
+      "transaction:start",
+      `sql:${BLOCKING_ONE}`,
+      `history:${BLOCKING_ONE}`,
+      `sql:${BLOCKING_TWO}`,
+      `history:${BLOCKING_TWO}`,
+      "transaction:commit",
+    ]);
   });
 
   it("executor marks applied only when SQL and history both succeed", async () => {
@@ -308,6 +483,11 @@ describe("bounded migration runner", () => {
     expect(adapter.historyAttempts).toEqual([]);
     expect(adapter.sqlExecutionOrder).toEqual([]);
     expect(adapter.historyWriteOrder).toEqual([]);
+    expect(adapter.transactionEvents).toEqual([
+      "transaction:start",
+      `sql:${BLOCKING_ONE}`,
+      "transaction:rollback",
+    ]);
   });
 
   it("executor fails and rolls back fake adapter state when history write fails", async () => {
@@ -328,6 +508,12 @@ describe("bounded migration runner", () => {
     expect(adapter.historyAttempts).toEqual([BLOCKING_ONE]);
     expect(adapter.sqlExecutionOrder).toEqual([]);
     expect(adapter.historyWriteOrder).toEqual([]);
+    expect(adapter.transactionEvents).toEqual([
+      "transaction:start",
+      `sql:${BLOCKING_ONE}`,
+      `history:${BLOCKING_ONE}`,
+      "transaction:rollback",
+    ]);
   });
 
   it("executor rejects include-all", async () => {

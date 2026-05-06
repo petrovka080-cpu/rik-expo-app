@@ -16,7 +16,9 @@ export type BoundedMigrationBlockerCode =
   | "PENDING_BEFORE_ALLOWLIST"
   | "PENDING_HEAD_MISMATCH"
   | "IDEMPOTENCY_TARGET_INCLUDED"
-  | "DESTRUCTIVE_SQL_REQUIRES_APPROVAL";
+  | "DESTRUCTIVE_SQL_REQUIRES_APPROVAL"
+  | "TOPLEVEL_TRANSACTION_WRAPPER_UNSAFE"
+  | "MIGRATION_SQL_NOT_TRANSACTION_SAFE";
 
 export type BoundedMigrationClassification =
   | "schema"
@@ -60,6 +62,21 @@ export interface BoundedMigrationSqlClassification {
   destructiveOrUnclear: boolean;
 }
 
+export type BoundedMigrationTransactionWrapperStatus =
+  | "none"
+  | "safe_outer_wrapper"
+  | "unsafe_or_ambiguous";
+
+export interface BoundedMigrationTransactionSafety {
+  file: string;
+  wrapperStatus: BoundedMigrationTransactionWrapperStatus;
+  outerWrapperStrippedInMemory: boolean;
+  transactionSafe: boolean;
+  beginCount: number;
+  commitCount: number;
+  unsafeReasons: string[];
+}
+
 export interface BoundedMigrationPlan {
   status: BoundedMigrationStatus;
   mode: BoundedMigrationMode;
@@ -79,6 +96,7 @@ export interface BoundedMigrationPlan {
   sqlContentsPrinted: false;
   rawDbRowsPrinted: false;
   destructiveSqlClassification: BoundedMigrationSqlClassification[];
+  transactionSafety: BoundedMigrationTransactionSafety[];
 }
 
 export type BoundedMigrationExecutorMode = "plan" | "execute";
@@ -95,6 +113,7 @@ export interface BoundedMigrationExecutableMigration {
   version: string;
   name: string;
   sqlSource: string;
+  outerTransactionWrapperStripped: boolean;
 }
 
 export interface BoundedMigrationHistoryRecord {
@@ -153,6 +172,13 @@ interface ParsedMigration {
   version: string;
   name: string;
   sqlSource?: string;
+}
+
+interface SqlStatement {
+  text: string;
+  normalized: string;
+  start: number;
+  end: number;
 }
 
 const MIGRATION_FILE_PATTERN = /^(\d{14})_(.+)\.sql$/;
@@ -371,6 +397,31 @@ export function buildBoundedMigrationPlan(
       migrations: destructiveWithoutApproval.map((item) => item.file),
     });
   }
+  const transactionSafety = selectedMigrations.map((migration) =>
+    analyzeMigrationTransactionSafety({
+      file: migration.file,
+      sqlSource: migration.sqlSource ?? "",
+    }),
+  );
+  const unsafeWrappers = transactionSafety.filter(
+    (item) => item.wrapperStatus === "unsafe_or_ambiguous",
+  );
+  if (unsafeWrappers.length > 0) {
+    blockers.push({
+      code: "TOPLEVEL_TRANSACTION_WRAPPER_UNSAFE",
+      message: "Top-level transaction wrapper is missing, partial, nested, or ambiguous.",
+      migrations: unsafeWrappers.map((item) => item.file),
+    });
+  }
+
+  const transactionUnsafeSql = transactionSafety.filter((item) => !item.transactionSafe);
+  if (transactionUnsafeSql.length > 0) {
+    blockers.push({
+      code: "MIGRATION_SQL_NOT_TRANSACTION_SAFE",
+      message: "Migration contains statements that cannot run inside an executor-controlled transaction.",
+      migrations: transactionUnsafeSql.map((item) => item.file),
+    });
+  }
 
   const status: BoundedMigrationStatus = blockers.length === 0 ? "PASS" : "BLOCKED";
   const nextPendingAfterAllowlist = pendingMigrations[allowlist.length];
@@ -396,6 +447,7 @@ export function buildBoundedMigrationPlan(
     sqlContentsPrinted: false,
     rawDbRowsPrinted: false,
     destructiveSqlClassification: classification,
+    transactionSafety,
   };
 }
 
@@ -428,6 +480,15 @@ export function formatBoundedMigrationPlanForLog(
       has_delete: item.hasDelete,
       has_dml: item.hasDml,
       destructive_or_unclear: item.destructiveOrUnclear,
+    })),
+    transaction_safety: plan.transactionSafety.map((item) => ({
+      file: item.file,
+      wrapper_status: item.wrapperStatus,
+      outer_wrapper_stripped_in_memory: item.outerWrapperStrippedInMemory,
+      transaction_safe: item.transactionSafe,
+      begin_count: item.beginCount,
+      commit_count: item.commitCount,
+      unsafe_reasons: item.unsafeReasons,
     })),
   };
 }
@@ -584,8 +645,257 @@ export function createPostgresBoundedMigrationExecutorAdapter(
   };
 }
 
+export function analyzeMigrationTransactionSafety(
+  migration: BoundedMigrationLocalMigration,
+): BoundedMigrationTransactionSafety & {
+  normalizedSqlSource: string;
+} {
+  const file = normalizeMigrationFilename(migration.file);
+  const sqlSource = migration.sqlSource ?? "";
+  const statements = splitSqlStatements(sqlSource);
+  const executableStatements = statements.filter(
+    (statement) => normalizeSqlStatement(statement.text) !== "",
+  );
+  const beginStatements = executableStatements.filter((statement) =>
+    isBeginStatement(statement.normalized),
+  );
+  const commitStatements = executableStatements.filter((statement) =>
+    isCommitStatement(statement.normalized),
+  );
+  const unsafeReasons: string[] = [];
+  let wrapperStatus: BoundedMigrationTransactionWrapperStatus = "none";
+  let normalizedSqlSource = sqlSource;
+
+  if (beginStatements.length > 0 || commitStatements.length > 0) {
+    const first = executableStatements[0];
+    const last = executableStatements[executableStatements.length - 1];
+    const safeOuterWrapper =
+      beginStatements.length === 1 &&
+      commitStatements.length === 1 &&
+      first !== undefined &&
+      last !== undefined &&
+      isBeginStatement(first.normalized) &&
+      isCommitStatement(last.normalized);
+
+    if (safeOuterWrapper) {
+      wrapperStatus = "safe_outer_wrapper";
+      normalizedSqlSource = sqlSource.slice(first.end, last.start).trim();
+    } else {
+      wrapperStatus = "unsafe_or_ambiguous";
+      if (beginStatements.length === 0) {
+        unsafeReasons.push("commit_without_begin");
+      } else if (commitStatements.length === 0) {
+        unsafeReasons.push("begin_without_commit");
+      } else if (beginStatements.length > 1 || commitStatements.length > 1) {
+        unsafeReasons.push("nested_or_multiple_transaction_wrappers");
+      } else {
+        unsafeReasons.push("transaction_wrapper_not_at_outer_boundary");
+      }
+    }
+  }
+
+  const normalizedStatements = splitSqlStatements(normalizedSqlSource).map((statement) =>
+    statement.normalized,
+  );
+  const transactionUnsafeReasons = findTransactionUnsafeStatementReasons(normalizedStatements);
+  unsafeReasons.push(...transactionUnsafeReasons);
+
+  return {
+    file,
+    wrapperStatus,
+    outerWrapperStrippedInMemory: wrapperStatus === "safe_outer_wrapper",
+    transactionSafe: transactionUnsafeReasons.length === 0,
+    beginCount: beginStatements.length,
+    commitCount: commitStatements.length,
+    unsafeReasons,
+    normalizedSqlSource,
+  };
+}
+
 function stripSqlComments(sql: string): string {
   return sql.replace(/--.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+function splitSqlStatements(sql: string): SqlStatement[] {
+  const statements: SqlStatement[] = [];
+  let start = 0;
+  let index = 0;
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let dollarQuoteTag: string | null = null;
+
+  while (index < sql.length) {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (inLineComment) {
+      if (char === "\n") {
+        inLineComment = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === "*" && next === "/") {
+        inBlockComment = false;
+        index += 2;
+        continue;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (dollarQuoteTag) {
+      if (sql.startsWith(dollarQuoteTag, index)) {
+        index += dollarQuoteTag.length;
+        dollarQuoteTag = null;
+        continue;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inSingleQuote) {
+      if (char === "'" && next === "'") {
+        index += 2;
+        continue;
+      }
+      if (char === "'") {
+        inSingleQuote = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (inDoubleQuote) {
+      if (char === '"' && next === '"') {
+        index += 2;
+        continue;
+      }
+      if (char === '"') {
+        inDoubleQuote = false;
+      }
+      index += 1;
+      continue;
+    }
+
+    if (char === "-" && next === "-") {
+      inLineComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (char === "/" && next === "*") {
+      inBlockComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (char === "'") {
+      inSingleQuote = true;
+      index += 1;
+      continue;
+    }
+
+    if (char === '"') {
+      inDoubleQuote = true;
+      index += 1;
+      continue;
+    }
+
+    const dollarTag = readDollarQuoteTag(sql, index);
+    if (dollarTag) {
+      dollarQuoteTag = dollarTag;
+      index += dollarTag.length;
+      continue;
+    }
+
+    if (char === ";") {
+      pushSqlStatement(statements, sql, start, index + 1);
+      start = index + 1;
+    }
+
+    index += 1;
+  }
+
+  pushSqlStatement(statements, sql, start, sql.length);
+  return statements;
+}
+
+function pushSqlStatement(
+  statements: SqlStatement[],
+  sql: string,
+  start: number,
+  end: number,
+): void {
+  const text = sql.slice(start, end);
+  statements.push({
+    text,
+    normalized: normalizeSqlStatement(text),
+    start,
+    end,
+  });
+}
+
+function readDollarQuoteTag(sql: string, index: number): string | null {
+  if (sql[index] !== "$") {
+    return null;
+  }
+
+  const match = /^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/.exec(sql.slice(index));
+  return match ? match[0] : null;
+}
+
+function normalizeSqlStatement(statement: string): string {
+  return stripSqlComments(statement)
+    .replace(/;+\s*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function isBeginStatement(statement: string): boolean {
+  return /^begin(?:\s+(?:transaction|work))?$/.test(statement);
+}
+
+function isCommitStatement(statement: string): boolean {
+  return /^commit(?:\s+(?:transaction|work))?$/.test(statement);
+}
+
+function findTransactionUnsafeStatementReasons(statements: string[]): string[] {
+  const reasons = new Set<string>();
+
+  for (const statement of statements) {
+    if (/^create\s+(?:unique\s+)?index\s+concurrently\b/.test(statement)) {
+      reasons.add("create_index_concurrently");
+    }
+    if (/^drop\s+index\s+concurrently\b/.test(statement)) {
+      reasons.add("drop_index_concurrently");
+    }
+    if (/^vacuum\b/.test(statement)) {
+      reasons.add("vacuum");
+    }
+    if (/^reindex\b.*\bconcurrently\b/.test(statement)) {
+      reasons.add("reindex_concurrently");
+    }
+    if (/^cluster\b/.test(statement)) {
+      reasons.add("cluster");
+    }
+    if (/^create\s+database\b/.test(statement)) {
+      reasons.add("create_database");
+    }
+    if (/^drop\s+database\b/.test(statement)) {
+      reasons.add("drop_database");
+    }
+    if (/^alter\s+system\b/.test(statement)) {
+      reasons.add("alter_system");
+    }
+  }
+
+  return [...reasons];
 }
 
 function compareParsedMigrations(left: ParsedMigration, right: ParsedMigration): number {
@@ -673,12 +983,17 @@ function resolveExecutableMigrations(
     if (!migration) {
       return [];
     }
+    const transactionSafety = analyzeMigrationTransactionSafety({
+      file: migration.file,
+      sqlSource: migration.sqlSource ?? "",
+    });
     return [
       {
         file: migration.file,
         version: migration.version,
         name: migration.name,
-        sqlSource: migration.sqlSource ?? "",
+        sqlSource: transactionSafety.normalizedSqlSource,
+        outerTransactionWrapperStripped: transactionSafety.outerWrapperStrippedInMemory,
       },
     ];
   });
