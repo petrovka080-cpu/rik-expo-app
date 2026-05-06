@@ -29,9 +29,9 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
   });
 
   it("paginates supplier showcase list windows with stable ordering and preserved filters", () => {
-    const source = read("src/features/supplierShowcase/supplierShowcase.data.ts");
-    expect(source).toContain("SUPPLIER_SHOWCASE_PAGE_DEFAULTS = { pageSize: 60, maxPageSize: 100 }");
-    expect(source.match(/normalizePage\(pageInput, SUPPLIER_SHOWCASE_PAGE_DEFAULTS\)/g)).toHaveLength(2);
+    const source = read("src/features/supplierShowcase/supplierShowcase.transport.ts");
+    expect(source).toContain("ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS");
+    expect(source.match(/normalizePage\(pageInput, ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS\)/g)).toHaveLength(2);
     expect(source).toContain(".eq(\"user_id\", userId)");
     expect(source).toContain(".eq(\"company_id\", companyId)");
     expect(source).toContain("query = query.eq(\"status\", \"active\")");
@@ -63,8 +63,8 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
   });
 
   it("paginates chat and catalog fallback windows without changing filters or return shape", () => {
-    const chat = read("src/lib/chat_api.ts");
-    expect(chat).toContain("normalizePage({ pageSize: limit }, { pageSize: 100, maxPageSize: 100 })");
+    const chat = read("src/lib/assistant_store_read.low_risk.transport.ts");
+    expect(chat).toContain("normalizePage({ pageSize: limit }, ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS)");
     expect(chat).toContain(".eq(\"supplier_id\", listingId)");
     expect(chat).toContain(".eq(\"is_deleted\", false)");
     expect(chat).toContain(".order(\"created_at\", { ascending: true })");

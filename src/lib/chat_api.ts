@@ -1,5 +1,9 @@
 import { subscribeChannel } from "./realtime/realtime.client";
-import { normalizePage } from "./api/_core";
+import {
+  loadChatActorContextRows,
+  loadChatProfileRowsByUserIds,
+  loadListingChatMessageRows,
+} from "./assistant_store_read.low_risk.transport";
 import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
@@ -121,23 +125,13 @@ async function loadCurrentChatActor(): Promise<ChatActor> {
     throw new Error("User is not authenticated.");
   }
 
-  const [profileResult, ownedCompanyResult, listingCompanyResult] = await Promise.all([
-    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
-    supabase.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
-    supabase
-      .from("market_listings")
-      .select("company_id")
-      .eq("user_id", user.id)
-      .not("company_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const actorResult = await loadChatActorContextRows(user.id);
+  const actorRow = actorResult.data?.[0] ?? {};
 
   return {
     userId: user.id,
-    fullName: profileResult.data?.full_name || "User",
-    companyId: ownedCompanyResult.data?.id || listingCompanyResult.data?.company_id || null,
+    fullName: actorRow.profile_full_name || "User",
+    companyId: actorRow.owned_company_id || actorRow.listing_company_id || null,
   };
 }
 
@@ -145,15 +139,7 @@ export async function fetchListingChatMessages(
   listingId: string,
   limit = 120,
 ): Promise<ChatMessage[]> {
-  const page = normalizePage({ pageSize: limit }, { pageSize: 100, maxPageSize: 100 });
-  const { data, error } = await supabase
-    .from("chat_messages" as never)
-    .select("*")
-    .eq("supplier_id", listingId)
-    .eq("is_deleted", false)
-    .order("created_at", { ascending: true })
-    .order("id", { ascending: true })
-    .range(page.from, page.to);
+  const { data, error } = await loadListingChatMessageRows<unknown>(listingId, limit);
 
   if (error) throw toChatError(error, "Failed to load chat messages.");
 
@@ -162,16 +148,7 @@ export async function fetchListingChatMessages(
   const userMap = new Map<string, string>();
 
   if (userIds.length > 0) {
-    const profilePage = normalizePage(
-      { pageSize: userIds.length },
-      { pageSize: 100, maxPageSize: 100 },
-    );
-    const { data: profiles } = await supabase
-      .from("user_profiles")
-      .select("user_id, full_name")
-      .in("user_id", userIds)
-      .order("user_id", { ascending: true })
-      .range(profilePage.from, profilePage.to);
+    const { data: profiles } = await loadChatProfileRowsByUserIds(userIds);
 
     for (const profile of profiles ?? []) {
       if (profile?.user_id) {

@@ -1,0 +1,127 @@
+{
+  "wave": "S-DIRECT-SUPABASE-BYPASS-LOW-RISK-READS-BFF-1",
+  "final_status": "GREEN_DIRECT_SUPABASE_BYPASS_LOW_RISK_READS_SAFE_PATHS_ROUTED_RELEASE_INTEGRATED",
+  "approvals_present": {
+    "S_PRODUCTION_MAIN_PUSH_APPROVED": true
+  },
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean": true,
+  "render_auto_deploy": false,
+  "deploy_in_progress": false,
+  "health": 200,
+  "ready": 200,
+  "target_files": [
+    "src/features/ai/assistantActions.ts",
+    "src/lib/chat_api.ts",
+    "src/features/profile/currentProfileIdentity.ts",
+    "src/features/supplierShowcase/supplierShowcase.data.ts",
+    "src/lib/api/requests.read-capabilities.ts"
+  ],
+  "contracts_extended": [
+    "profile.current.full_name",
+    "chat.actor.context",
+    "chat.listing.messages.list",
+    "chat.profiles_by_user_ids",
+    "supplier_showcase.profile_by_user_id",
+    "supplier_showcase.company_by_id",
+    "supplier_showcase.company_by_owner_user_id",
+    "supplier_showcase.listings_by_user_id",
+    "supplier_showcase.listings_by_company_id",
+    "request.submitted_at.capability"
+  ],
+  "typed_bff_boundary": "assistant_store_read_scope_v1",
+  "production_traffic_enabled": false,
+  "traffic_enabled_by_default": false,
+  "safe_reads_routed": [
+    {
+      "file": "src/features/profile/currentProfileIdentity.ts",
+      "functions": ["loadCurrentProfileIdentity"],
+      "direct_read_after": false,
+      "fallback_semantics_preserved": true
+    },
+    {
+      "file": "src/lib/chat_api.ts",
+      "functions": ["loadCurrentChatActor", "fetchListingChatMessages"],
+      "direct_read_after": false,
+      "remaining_direct_calls_are_writes": true,
+      "fallback_semantics_preserved": true
+    },
+    {
+      "file": "src/features/supplierShowcase/supplierShowcase.data.ts",
+      "functions": [
+        "loadProfileByUserId",
+        "loadCompanyById",
+        "loadCompanyByOwnerUserId",
+        "loadListingsByUserId",
+        "loadListingsByCompanyId"
+      ],
+      "direct_read_after": false,
+      "filters_preserved": true,
+      "ordering_preserved": true,
+      "response_shape_preserved": true
+    },
+    {
+      "file": "src/lib/api/requests.read-capabilities.ts",
+      "functions": ["requestsSupportsSubmittedAt"],
+      "direct_submitted_at_probe_after": false,
+      "fallback_semantics_preserved": true
+    }
+  ],
+  "remaining_direct_bypass_paths": [
+    {
+      "file": "src/lib/chat_api.ts",
+      "functions": [
+        "sendListingChatMessage",
+        "markListingChatMessagesRead",
+        "deleteListingChatMessage"
+      ],
+      "operation_class": "write",
+      "reason": "Mutation/write paths require separate idempotency and route-scope proof."
+    },
+    {
+      "file": "src/lib/api/requests.read-capabilities.ts",
+      "functions": ["resolveRequestsReadableColumns"],
+      "operation_class": "schema_probe_read",
+      "reason": "Readable-column inference currently depends on select-star row/default fallback semantics; separate contract proof required."
+    }
+  ],
+  "direct_bypass_scan": {
+    "target_supabase_from_reads_after": 0,
+    "target_supabase_rpc_after": 0,
+    "remaining_chat_write_calls": 3,
+    "remaining_requests_readable_columns_probe": 1
+  },
+  "business_semantics_changed": false,
+  "response_shape_changed": false,
+  "fallback_behavior_changed": false,
+  "ordering_filtering_changed": false,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "tests_passed": {
+    "assistant_store_bff_routing_contract": true,
+    "assistant_store_bff_handler_contract": true,
+    "assistant_store_bff_readonly_db_port": true,
+    "bff_boundary": true,
+    "performance_budget": true,
+    "top_list_pagination_batch7": true,
+    "legacy_pagination_contracts_repointed_to_transport": true
+  },
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "release_verify_status": "PASS",
+  "artifact_json_parse_passed": true,
+  "pushed": true
+}

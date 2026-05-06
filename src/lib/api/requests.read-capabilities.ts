@@ -1,4 +1,5 @@
 import { client } from "./_core";
+import { loadRequestsSubmittedAtCapability } from "../assistant_store_read.low_risk.transport";
 import { recordPlatformObservability } from "../observability/platformObservability";
 
 type RequestsCapabilityCacheMode = "positive" | "negative";
@@ -161,8 +162,7 @@ export async function requestsSupportsSubmittedAt(): Promise<boolean> {
     return requestsSubmittedAtSupportedCache!.value;
   }
   try {
-    const q = await client.from("requests").select("submitted_at").limit(1);
-    if (q.error) throw q.error;
+    await loadRequestsSubmittedAtCapability();
     requestsSubmittedAtSupportedCache = {
       value: true,
       ts: Date.now(),

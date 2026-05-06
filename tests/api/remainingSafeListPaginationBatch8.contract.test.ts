@@ -77,7 +77,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     expect(buyerBuckets).toContain(".order(\"request_item_id\", { ascending: true })");
     expect(buyerBuckets).toContain(".range(page.from, page.to)");
 
-    const chatApi = read("src/lib/chat_api.ts");
+    const chatApi = read("src/lib/assistant_store_read.low_risk.transport.ts");
     expect(chatApi).toContain("const profilePage = normalizePage(");
     expect(chatApi).toContain(".order(\"user_id\", { ascending: true })");
     expect(chatApi).toContain(".range(profilePage.from, profilePage.to)");

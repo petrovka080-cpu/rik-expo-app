@@ -1,8 +1,10 @@
 import { Client, type ClientConfig } from "pg";
 
 import {
+  ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS,
+  ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS,
   type AssistantStoreReadBffOperation,
   type AssistantStoreReadBffReadErrorDto,
   type AssistantStoreReadBffReadResultDto,
@@ -44,6 +46,24 @@ const marketLimit = (value: unknown): number =>
     Math.min(
       ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS.maxRows,
       toInt(value, ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS.pageSize),
+    ),
+  );
+
+const chatLimit = (value: unknown): number =>
+  Math.max(
+    1,
+    Math.min(
+      ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows,
+      toInt(value, ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.pageSize),
+    ),
+  );
+
+const supplierShowcaseLimit = (value: unknown): number =>
+  Math.max(
+    1,
+    Math.min(
+      ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS.maxRows,
+      toInt(value, ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS.pageSize),
     ),
   );
 
@@ -148,6 +168,188 @@ export function buildAssistantStoreReadQueryPlans(
           "where user_id::text = any($1::text[])",
         ].join(" "),
         [dedupeIds(input.args.ids)],
+      ),
+    ];
+  }
+
+  if (input.operation === "profile.current.full_name") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select full_name",
+          "from public.user_profiles",
+          "where user_id::text = $1",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.userId)],
+        1,
+      ),
+    ];
+  }
+
+  if (input.operation === "chat.actor.context") {
+    const userId = safeText(input.args.userId);
+    return [
+      plan(
+        input.operation,
+        [
+          "select",
+          "(select full_name from public.user_profiles where user_id::text = $1 limit 1) as profile_full_name,",
+          "(select id::text from public.companies where owner_user_id::text = $1 limit 1) as owned_company_id,",
+          "(",
+          "select company_id::text from public.market_listings",
+          "where user_id::text = $1 and company_id is not null",
+          "order by created_at desc",
+          "limit 1",
+          ") as listing_company_id",
+        ].join(" "),
+        [userId],
+        1,
+      ),
+    ];
+  }
+
+  if (input.operation === "chat.listing.messages.list") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select *",
+          "from public.chat_messages",
+          "where supplier_id::text = $1",
+          "and is_deleted = false",
+          "order by created_at asc, id asc",
+          "limit $2",
+        ].join(" "),
+        [safeText(input.args.listingId), chatLimit(input.args.pageSize)],
+        ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows,
+      ),
+    ];
+  }
+
+  if (input.operation === "chat.profiles_by_user_ids") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select user_id, full_name",
+          "from public.user_profiles",
+          "where user_id::text = any($1::text[])",
+          "order by user_id asc",
+          "limit $2",
+        ].join(" "),
+        [dedupeIds(input.args.ids), ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows],
+        ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS.maxRows,
+      ),
+    ];
+  }
+
+  if (input.operation === "supplier_showcase.profile_by_user_id") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select *",
+          "from public.user_profiles",
+          "where user_id::text = $1",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.userId)],
+        1,
+      ),
+    ];
+  }
+
+  if (input.operation === "supplier_showcase.company_by_id") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select *",
+          "from public.companies",
+          "where id::text = $1",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.companyId)],
+        1,
+      ),
+    ];
+  }
+
+  if (input.operation === "supplier_showcase.company_by_owner_user_id") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select *",
+          "from public.companies",
+          "where owner_user_id::text = $1",
+          "order by created_at desc",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.userId)],
+        1,
+      ),
+    ];
+  }
+
+  if (input.operation === "supplier_showcase.listings_by_user_id") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select id, title, user_id, company_id, city, price, kind, side, description, contacts_phone, contacts_whatsapp, contacts_email, items_json, uom, uom_code, rik_code, status, created_at",
+          "from public.market_listings",
+          "where user_id::text = $1",
+          "and ($2::boolean is true or status = 'active')",
+          "order by created_at desc, id desc",
+          "limit $3",
+        ].join(" "),
+        [
+          safeText(input.args.userId),
+          input.args.includeInactive === true,
+          supplierShowcaseLimit(input.args.pageSize),
+        ],
+        ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS.maxRows,
+      ),
+    ];
+  }
+
+  if (input.operation === "supplier_showcase.listings_by_company_id") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select id, title, user_id, company_id, city, price, kind, side, description, contacts_phone, contacts_whatsapp, contacts_email, items_json, uom, uom_code, rik_code, status, created_at",
+          "from public.market_listings",
+          "where company_id::text = $1",
+          "and ($2::boolean is true or status = 'active')",
+          "order by created_at desc, id desc",
+          "limit $3",
+        ].join(" "),
+        [
+          safeText(input.args.companyId),
+          input.args.includeInactive === true,
+          supplierShowcaseLimit(input.args.pageSize),
+        ],
+        ASSISTANT_STORE_READ_BFF_SUPPLIER_SHOWCASE_PAGE_DEFAULTS.maxRows,
+      ),
+    ];
+  }
+
+  if (input.operation === "request.submitted_at.capability") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select true as supported",
+          "from public.requests",
+          "where submitted_at is null or submitted_at is not null",
+          "limit 1",
+        ].join(" "),
+        [],
+        1,
       ),
     ];
   }

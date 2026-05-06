@@ -32,7 +32,7 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     ).toHaveLength(5);
 
     const supplierShowcase = read(
-      "src/features/supplierShowcase/supplierShowcase.data.ts",
+      "src/features/supplierShowcase/supplierShowcase.transport.ts",
     );
     expect(
       supplierShowcase.match(/\.range\(page\.from, page\.to\)/g),

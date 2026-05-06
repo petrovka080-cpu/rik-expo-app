@@ -1,11 +1,16 @@
 import { supabase } from "../../lib/supabaseClient";
-import { normalizePage, type PageInput } from "../../lib/api/_core";
 import {
-  MARKET_HOME_SELECT,
   buildListingAssistantPrompt,
   toMarketHomeListingCard,
 } from "../market/marketHome.data";
 import type { MarketListingRow } from "../market/marketHome.types";
+import {
+  loadSupplierShowcaseCompanyById,
+  loadSupplierShowcaseCompanyByOwnerUserId,
+  loadSupplierShowcaseListingsByCompanyId,
+  loadSupplierShowcaseListingsByUserId,
+  loadSupplierShowcaseProfileByUserId,
+} from "./supplierShowcase.transport";
 import type {
   SupplierShowcaseCompany,
   SupplierShowcasePayload,
@@ -18,8 +23,6 @@ type LoadSupplierShowcaseOptions = {
   companyId?: string | null;
 };
 
-const SUPPLIER_SHOWCASE_PAGE_DEFAULTS = { pageSize: 60, maxPageSize: 100 };
-
 function asNullableParam(value: string | string[] | null | undefined): string | null {
   if (Array.isArray(value)) return asNullableParam(value[0]);
   const normalized = String(value ?? "").trim();
@@ -27,7 +30,7 @@ function asNullableParam(value: string | string[] | null | undefined): string | 
 }
 
 async function loadProfileByUserId(userId: string): Promise<SupplierShowcaseProfile | null> {
-  const result = await supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle();
+  const result = await loadSupplierShowcaseProfileByUserId(userId);
   if (result.error) {
     if ((result.error as { code?: string }).code === "PGRST116") return null;
     throw result.error;
@@ -36,7 +39,7 @@ async function loadProfileByUserId(userId: string): Promise<SupplierShowcaseProf
 }
 
 async function loadCompanyById(companyId: string): Promise<SupplierShowcaseCompany | null> {
-  const result = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
+  const result = await loadSupplierShowcaseCompanyById(companyId);
   if (result.error) {
     if ((result.error as { code?: string }).code === "PGRST116") return null;
     throw result.error;
@@ -45,47 +48,19 @@ async function loadCompanyById(companyId: string): Promise<SupplierShowcaseCompa
 }
 
 async function loadCompanyByOwnerUserId(userId: string): Promise<SupplierShowcaseCompany | null> {
-  const result = await supabase
-    .from("companies")
-    .select("*")
-    .eq("owner_user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1);
-
+  const result = await loadSupplierShowcaseCompanyByOwnerUserId(userId);
   if (result.error) throw result.error;
-  return ((result.data ?? [])[0] as SupplierShowcaseCompany | undefined) ?? null;
+  return result.data ?? null;
 }
 
-async function loadListingsByUserId(userId: string, includeInactive: boolean, pageInput?: PageInput) {
-  const page = normalizePage(pageInput, SUPPLIER_SHOWCASE_PAGE_DEFAULTS);
-  let query = supabase
-    .from("market_listings")
-    .select(MARKET_HOME_SELECT)
-    .eq("user_id", userId);
-
-  if (!includeInactive) query = query.eq("status", "active");
-
-  const result = await query
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(page.from, page.to);
+async function loadListingsByUserId(userId: string, includeInactive: boolean) {
+  const result = await loadSupplierShowcaseListingsByUserId(userId, includeInactive);
   if (result.error) throw result.error;
   return (result.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow));
 }
 
-async function loadListingsByCompanyId(companyId: string, includeInactive: boolean, pageInput?: PageInput) {
-  const page = normalizePage(pageInput, SUPPLIER_SHOWCASE_PAGE_DEFAULTS);
-  let query = supabase
-    .from("market_listings")
-    .select(MARKET_HOME_SELECT)
-    .eq("company_id", companyId);
-
-  if (!includeInactive) query = query.eq("status", "active");
-
-  const result = await query
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(page.from, page.to);
+async function loadListingsByCompanyId(companyId: string, includeInactive: boolean) {
+  const result = await loadSupplierShowcaseListingsByCompanyId(companyId, includeInactive);
   if (result.error) throw result.error;
   return (result.data ?? []).map((row) => toMarketHomeListingCard(row as MarketListingRow));
 }

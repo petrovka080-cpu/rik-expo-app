@@ -30,7 +30,7 @@ describe("S-PAG-5 remaining unbounded selects triage contract", () => {
     expect(notifications).toContain(".order(\"id\", { ascending: false })");
     expect(notifications).toContain(".range(page.from, page.to)");
 
-    const supplierShowcase = read("src/features/supplierShowcase/supplierShowcase.data.ts");
+    const supplierShowcase = read("src/features/supplierShowcase/supplierShowcase.transport.ts");
     expect(supplierShowcase.match(/\.range\(page\.from, page\.to\)/g)).toHaveLength(2);
 
     const catalogTransport = read("src/lib/catalog/catalog.transport.supabase.ts");

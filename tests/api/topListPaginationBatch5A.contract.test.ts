@@ -33,7 +33,7 @@ describe("S-PAG-5A contractor foreman buyer pagination contract", () => {
     expect(notifications).toContain(".range(page.from, page.to)");
 
     const supplierShowcase = read(
-      "src/features/supplierShowcase/supplierShowcase.data.ts",
+      "src/features/supplierShowcase/supplierShowcase.transport.ts",
     );
     expect(
       supplierShowcase.match(/\.range\(page\.from, page\.to\)/g),

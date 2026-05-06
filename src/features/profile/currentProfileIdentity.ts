@@ -1,4 +1,5 @@
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
+import { loadCurrentProfileFullNameRow } from "../../lib/assistant_store_read.low_risk.transport";
 import { supabase } from "../../lib/supabaseClient";
 
 export type CurrentProfileIdentity = {
@@ -38,11 +39,11 @@ export async function loadCurrentProfileIdentity(): Promise<CurrentProfileIdenti
       user,
       trigger: "current_profile_identity",
     }),
-    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
+    loadCurrentProfileFullNameRow(user.id),
   ]);
 
   const fullName =
-    profileResult.data?.full_name ??
+    profileResult.data?.[0]?.full_name ??
     (typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null) ??
     null;
 

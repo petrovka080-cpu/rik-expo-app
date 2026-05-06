@@ -36,10 +36,25 @@ describe("assistant/store BFF handler contract", () => {
       operation: "store.request_items.list",
       args: { requestId: "request-redacted", status: "draft" },
     });
+    const chatMessages = await handleAssistantStoreReadBffScope(port, {
+      operation: "chat.listing.messages.list",
+      args: { listingId: "listing-redacted", pageSize: 100 },
+    });
+    const supplierListings = await handleAssistantStoreReadBffScope(port, {
+      operation: "supplier_showcase.listings_by_company_id",
+      args: { companyId: "company-redacted", includeInactive: false, pageSize: 60 },
+    });
+    const submittedAtCapability = await handleAssistantStoreReadBffScope(port, {
+      operation: "request.submitted_at.capability",
+      args: {},
+    });
 
     expect(actor.ok).toBe(true);
     expect(listings.ok).toBe(true);
     expect(storeList.ok).toBe(true);
+    expect(chatMessages.ok).toBe(true);
+    expect(supplierListings.ok).toBe(true);
+    expect(submittedAtCapability.ok).toBe(true);
     if (actor.ok) {
       expect(actor.data).toEqual(
         expect.objectContaining({

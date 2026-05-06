@@ -136,6 +136,8 @@ describe("performance budget — bundle module count", () => {
     ].filter((file) => fs.existsSync(file)).length;
     const sDirectSupabaseBypassAssistantStoreBoundaryFiles = [
       path.join(SRC, "features", "ai", "assistantActions.transport.ts"),
+      path.join(SRC, "features", "supplierShowcase", "supplierShowcase.transport.ts"),
+      path.join(SRC, "lib", "assistant_store_read.low_risk.transport.ts"),
       path.join(SRC, "lib", "assistant_store_read.bff.contract.ts"),
       path.join(SRC, "lib", "assistant_store_read.bff.client.ts"),
       path.join(SRC, "lib", "assistant_store_read.bff.handler.ts"),
@@ -199,6 +201,8 @@ describe("performance budget — bundle module count", () => {
     // permanent disabled catalog transport read BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-ASSISTANT-STORE-SUPABASE-INVENTORY-AND-SAFE-ROUTING-1
     // adds five permanent disabled assistant/store read BFF/transport boundary modules.
+    // S-DIRECT-SUPABASE-BYPASS-LOW-RISK-READS-BFF-1 extends that permanent
+    // contract with two low-risk read transports, no native/package surface.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -210,7 +214,7 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassDirectorFinanceBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
-    expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(5);
+    expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(7);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -

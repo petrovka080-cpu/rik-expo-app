@@ -21,6 +21,12 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === "string");
 
+const isOptionalPageSize = (value: unknown): boolean =>
+  value === undefined || value === null || typeof value === "number";
+
+const isOptionalBoolean = (value: unknown): boolean =>
+  value === undefined || value === null || typeof value === "boolean";
+
 const operationSet = new Set<AssistantStoreReadBffOperation>(
   ASSISTANT_STORE_READ_BFF_OPERATION_CONTRACTS.map((contract) => contract.operation),
 );
@@ -37,10 +43,32 @@ export const isAssistantStoreReadBffRequestDto = (
     case "assistant.actor.context":
       return isRecord(args) && typeof args.userId === "string";
     case "assistant.market.active_listings":
-      return isRecord(args) && (args.pageSize === undefined || args.pageSize === null || typeof args.pageSize === "number");
+      return isRecord(args) && isOptionalPageSize(args.pageSize);
     case "assistant.market.companies_by_ids":
     case "assistant.market.profiles_by_user_ids":
+    case "chat.profiles_by_user_ids":
       return isRecord(args) && isStringArray(args.ids);
+    case "profile.current.full_name":
+    case "chat.actor.context":
+    case "supplier_showcase.profile_by_user_id":
+    case "supplier_showcase.company_by_owner_user_id":
+      return isRecord(args) && typeof args.userId === "string";
+    case "chat.listing.messages.list":
+      return isRecord(args) && typeof args.listingId === "string" && isOptionalPageSize(args.pageSize);
+    case "supplier_showcase.company_by_id":
+      return isRecord(args) && typeof args.companyId === "string";
+    case "supplier_showcase.listings_by_user_id":
+      return isRecord(args) &&
+        typeof args.userId === "string" &&
+        isOptionalBoolean(args.includeInactive) &&
+        isOptionalPageSize(args.pageSize);
+    case "supplier_showcase.listings_by_company_id":
+      return isRecord(args) &&
+        typeof args.companyId === "string" &&
+        isOptionalBoolean(args.includeInactive) &&
+        isOptionalPageSize(args.pageSize);
+    case "request.submitted_at.capability":
+      return isRecord(args);
     case "store.request_items.list":
       return isRecord(args) &&
         typeof args.requestId === "string" &&

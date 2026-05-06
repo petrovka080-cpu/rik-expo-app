@@ -79,9 +79,62 @@ describe("assistant/store BFF readonly DB port", () => {
     expect(approved[0].values).toEqual(["request-redacted", 5001]);
   });
 
+  it("builds bounded low-risk profile, chat, supplier showcase, and capability plans", () => {
+    const profile = buildAssistantStoreReadQueryPlans({
+      operation: "profile.current.full_name",
+      args: { userId: "user-redacted" },
+    });
+    const chatActor = buildAssistantStoreReadQueryPlans({
+      operation: "chat.actor.context",
+      args: { userId: "user-redacted" },
+    });
+    const chatMessages = buildAssistantStoreReadQueryPlans({
+      operation: "chat.listing.messages.list",
+      args: { listingId: "listing-redacted", pageSize: 250 },
+    });
+    const supplierCompany = buildAssistantStoreReadQueryPlans({
+      operation: "supplier_showcase.company_by_id",
+      args: { companyId: "company-redacted" },
+    });
+    const supplierUserListings = buildAssistantStoreReadQueryPlans({
+      operation: "supplier_showcase.listings_by_user_id",
+      args: { userId: "user-redacted", includeInactive: false, pageSize: 500 },
+    });
+    const submittedAt = buildAssistantStoreReadQueryPlans({
+      operation: "request.submitted_at.capability",
+      args: {},
+    });
+
+    expect(profile[0].sql).toContain("from public.user_profiles");
+    expect(profile[0].values).toEqual(["user-redacted"]);
+    expect(chatActor[0].sql).toContain("from public.market_listings");
+    expect(chatMessages[0]).toEqual(
+      expect.objectContaining({
+        values: ["listing-redacted", 100],
+        maxRows: 100,
+        readOnly: true,
+      }),
+    );
+    expect(chatMessages[0].sql).toContain("from public.chat_messages");
+    expect(chatMessages[0].sql).toContain("order by created_at asc, id asc");
+    expect(supplierCompany[0].sql).toContain("from public.companies");
+    expect(supplierUserListings[0]).toEqual(
+      expect.objectContaining({
+        values: ["user-redacted", false, 100],
+        maxRows: 100,
+        readOnly: true,
+      }),
+    );
+    expect(supplierUserListings[0].sql).toContain("where user_id::text = $1");
+    expect(supplierUserListings[0].sql).toContain("order by created_at desc, id desc");
+    expect(submittedAt[0].sql).toContain("submitted_at");
+    expect(submittedAt[0].maxRows).toBe(1);
+  });
+
   it("keeps generated plans SELECT-only and does not create a port without readonly DB env", () => {
     const plans = [
       ...buildAssistantStoreReadQueryPlans({ operation: "assistant.actor.context", args: { userId: "u" } }),
+      ...buildAssistantStoreReadQueryPlans({ operation: "chat.listing.messages.list", args: { listingId: "l" } }),
       ...buildAssistantStoreReadQueryPlans({ operation: "assistant.market.companies_by_ids", args: { ids: ["c"] } }),
       ...buildAssistantStoreReadQueryPlans({
         operation: "assistant.market.profiles_by_user_ids",

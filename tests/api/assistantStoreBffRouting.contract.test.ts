@@ -51,6 +51,16 @@ describe("assistant/store BFF routing contract", () => {
       "assistant.market.active_listings",
       "assistant.market.companies_by_ids",
       "assistant.market.profiles_by_user_ids",
+      "profile.current.full_name",
+      "chat.actor.context",
+      "chat.listing.messages.list",
+      "chat.profiles_by_user_ids",
+      "supplier_showcase.profile_by_user_id",
+      "supplier_showcase.company_by_id",
+      "supplier_showcase.company_by_owner_user_id",
+      "supplier_showcase.listings_by_user_id",
+      "supplier_showcase.listings_by_company_id",
+      "request.submitted_at.capability",
       "store.request_items.list",
       "store.director_inbox.list",
       "store.approved_request_items.list",
@@ -105,5 +115,33 @@ describe("assistant/store BFF routing contract", () => {
     expect(assistantStoreClientSource).toContain("resolveBffReadonlyRuntimeConfig");
     expect(`${assistantStoreClientSource}\n${assistantStoreHandlerSource}`).not.toContain(".rpc(");
     expect(`${assistantStoreClientSource}\n${assistantStoreHandlerSource}`).not.toContain(".from(");
+  });
+
+  it("routes low-risk profile, chat, supplier showcase, and capability reads through typed transports", () => {
+    const profileSource = readProjectFile("src/features/profile/currentProfileIdentity.ts");
+    const chatSource = readProjectFile("src/lib/chat_api.ts");
+    const supplierSource = readProjectFile("src/features/supplierShowcase/supplierShowcase.data.ts");
+    const capabilitySource = readProjectFile("src/lib/api/requests.read-capabilities.ts");
+    const lowRiskTransportSource = readProjectFile("src/lib/assistant_store_read.low_risk.transport.ts");
+    const supplierTransportSource = readProjectFile("src/features/supplierShowcase/supplierShowcase.transport.ts");
+
+    expect(profileSource).toContain("loadCurrentProfileFullNameRow");
+    expect(profileSource).not.toMatch(/\bsupabase\s*\.\s*from\s*\(/);
+
+    expect(chatSource).toContain("loadChatActorContextRows");
+    expect(chatSource).toContain("loadListingChatMessageRows");
+    expect(functionBody(chatSource, "fetchListingChatMessages")).not.toMatch(/\bsupabase\s*\.\s*from\s*\(/);
+    expect(functionBody(chatSource, "sendListingChatMessage")).toContain(".insert(");
+    expect(functionBody(chatSource, "markListingChatMessagesRead")).toContain(".update(");
+
+    expect(supplierSource).toContain("loadSupplierShowcaseProfileByUserId");
+    expect(supplierSource).not.toMatch(/\bsupabase\s*\.\s*from\s*\(/);
+
+    expect(capabilitySource).toContain("loadRequestsSubmittedAtCapability");
+    expect(capabilitySource).not.toContain('select("submitted_at")');
+    expect(capabilitySource).toContain('select("*").limit(1)');
+
+    expect(`${lowRiskTransportSource}\n${supplierTransportSource}`).toContain("callAssistantStoreReadBff");
+    expect(lowRiskTransportSource).toContain("return await fallback()");
   });
 });
