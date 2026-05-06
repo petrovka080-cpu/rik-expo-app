@@ -264,6 +264,29 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/scale/catalogTransportBffReadonlyDbPort.test.ts",
       "tests/strict-null/catalog.transport.phase4.test.ts",
     ]);
+    const sAssistantStoreBffReadRoutingAllowedDirtyFiles = new Set([
+      "scripts/server/stagingBffAssistantStoreReadPort.ts",
+      "scripts/server/stagingBffHttpServer.ts",
+      "scripts/server/stagingBffServerBoundary.ts",
+      "src/features/ai/assistantActions.ts",
+      "src/features/ai/assistantActions.transport.ts",
+      "src/lib/assistant_store_read.bff.client.ts",
+      "src/lib/assistant_store_read.bff.contract.ts",
+      "src/lib/assistant_store_read.bff.handler.ts",
+      "src/lib/store_supabase.ts",
+      "src/lib/store_supabase.read.transport.ts",
+      "src/shared/scale/bffClient.ts",
+      "tests/api/assistantStoreBffHandler.contract.test.ts",
+      "tests/api/assistantStoreBffRouting.contract.test.ts",
+      "tests/api/storeSupabaseAuthSession.contract.test.ts",
+      "tests/api/topListPaginationBatch3.contract.test.ts",
+      "tests/api/topListPaginationBatch7.contract.test.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/assistantStoreBffReadonlyDbPort.test.ts",
+      "tests/scale/bffBoundary.test.ts",
+      "tests/scale/bffReadonlyRuntimeConfig.test.ts",
+      "tests/scale/bffStagingServerBoundary.test.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -277,6 +300,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !s50kProviderEnvConventionsAllowedDirtyFiles.has(file) &&
         !sCatalogRequestBffMutationPortingAllowedDirtyFiles.has(file) &&
         !sCatalogTransportBffReadRoutingAllowedDirtyFiles.has(file) &&
+        !sAssistantStoreBffReadRoutingAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

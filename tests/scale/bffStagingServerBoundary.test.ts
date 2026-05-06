@@ -46,6 +46,8 @@ import type { WarehouseApiBffPayloadDto } from "../../src/screens/warehouse/ware
 import type { WarehouseApiBffReadPort } from "../../src/screens/warehouse/warehouse.api.bff.handler";
 import type { CatalogTransportBffReadResultDto } from "../../src/lib/catalog/catalog.bff.contract";
 import type { CatalogTransportBffReadPort } from "../../src/lib/catalog/catalog.bff.handler";
+import type { AssistantStoreReadBffReadResultDto } from "../../src/lib/assistant_store_read.bff.contract";
+import type { AssistantStoreReadBffPort } from "../../src/lib/assistant_store_read.bff.handler";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -134,7 +136,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
           data: expect.objectContaining({
             status: "ready",
             readRoutes: 5,
-            readRpcRoutes: 3,
+            readRpcRoutes: 4,
             mutationRoutes: 7,
             mutationRoutesEnabledByDefault: false,
             mutationRoutesEnabled: false,
@@ -176,10 +178,11 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         rateLimitShadowMonitorEndpointContract: true,
         rateLimitPrivateSmokeEndpointContract: true,
         readRoutes: 5,
-        readRpcRoutes: 3,
+        readRpcRoutes: 4,
         mutationRoutes: 7,
         warehouseApiReadRouteContract: true,
         catalogTransportReadRouteContract: true,
+        assistantStoreReadRouteContract: true,
         mutationRoutesEnabledByDefault: false,
         routeScopedMutationEnablement: true,
         catalogRequestMutationRouteScopeKeys: BFF_CATALOG_REQUEST_MUTATION_ROUTE_SCOPE_KEYS,
@@ -503,6 +506,44 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(response.body.ok).toBe(true);
     expect(catalogTransportReadPort.runCatalogTransportRead).toHaveBeenCalledWith({
       operation: "catalog.groups.list",
+      args: {},
+    });
+  });
+
+  it("invokes the assistant/store read-RPC route through its typed port only", async () => {
+    const route = routeByOperation("assistant.store.read.scope");
+    const assistantStoreReadPort: AssistantStoreReadBffPort = {
+      runAssistantStoreRead: jest.fn(async (): Promise<AssistantStoreReadBffReadResultDto> => ({
+        data: [{ row: "assistant-store-read" }],
+        error: null,
+      })),
+    };
+
+    const response = await handleBffStagingServerRequest(
+      {
+        method: "POST",
+        path: route?.path ?? "",
+        body: {
+          input: {
+            operation: "store.director_inbox.list",
+            args: {},
+          },
+        },
+      },
+      { assistantStoreReadPort },
+    );
+
+    expect(route).toEqual(
+      expect.objectContaining({
+        kind: "read_rpc",
+        method: "POST",
+        enabledByDefault: true,
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.ok).toBe(true);
+    expect(assistantStoreReadPort.runAssistantStoreRead).toHaveBeenCalledWith({
+      operation: "store.director_inbox.list",
       args: {},
     });
   });

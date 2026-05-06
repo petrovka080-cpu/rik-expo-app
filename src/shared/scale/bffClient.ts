@@ -21,7 +21,8 @@ export type BffReadonlyMobileOperation =
   | "director.pending.list"
   | "director.finance.rpc.scope"
   | "warehouse.api.read.scope"
-  | "catalog.transport.read.scope";
+  | "catalog.transport.read.scope"
+  | "assistant.store.read.scope";
 
 export type BffRequestTarget = BffFlow | BffReadonlyMobileOperation;
 
@@ -66,6 +67,7 @@ export const BFF_READONLY_MOBILE_ROUTE_PATHS = Object.freeze({
   "director.finance.rpc.scope": "/api/staging-bff/read/director-finance-rpc-scope",
   "warehouse.api.read.scope": "/api/staging-bff/read/warehouse-api-read-scope",
   "catalog.transport.read.scope": "/api/staging-bff/read/catalog-transport-read-scope",
+  "assistant.store.read.scope": "/api/staging-bff/read/assistant-store-read-scope",
 } as const satisfies Record<BffReadonlyMobileOperation, string>);
 
 type BffReadonlyRuntimeEnv = Record<string, string | undefined>;

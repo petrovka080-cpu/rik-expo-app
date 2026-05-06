@@ -12,11 +12,16 @@ import {
   updateRequestMeta,
 } from "../../lib/catalog_api";
 import { submitRequestToDirector } from "../../lib/api/request.repository";
-import { normalizePage } from "../../lib/api/_core";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
   resolveForemanQuickRequest,
 } from "../../screens/foreman/foreman.ai";
+import {
+  loadAssistantActorReadScope,
+  loadAssistantCompanyRowsByIds,
+  loadAssistantMarketListingRows,
+  loadAssistantProfileRowsByUserIds,
+} from "./assistantActions.transport";
 import {
   clearForemanAssistantSession,
   loadForemanAssistantSession,
@@ -36,7 +41,6 @@ const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
 const ASSISTANT_CATALOG_MATCH_ITEM_LIMIT = 40;
 const ASSISTANT_MARKET_SEARCH_QUERY_LIMIT = 3;
 const ASSISTANT_MARKET_SEARCH_CONCURRENCY_LIMIT = 2;
-const ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
 
 type AssistantActionResult = {
   handled: boolean;
@@ -225,19 +229,12 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
   const user = authResult.user;
   if (!user?.id) return null;
 
-  const [profileResult, membershipResult, ownedCompanyResult, listingCompanyResult] = await Promise.all([
-    supabase.from("user_profiles").select("full_name").eq("user_id", user.id).maybeSingle(),
-    supabase.from("company_members").select("company_id").eq("user_id", user.id).limit(1).maybeSingle(),
-    supabase.from("companies").select("id").eq("owner_user_id", user.id).maybeSingle(),
-    supabase
-      .from("market_listings")
-      .select("company_id")
-      .eq("user_id", user.id)
-      .not("company_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const { data } = await loadAssistantActorReadScope(user.id);
+  const scope = data?.[0] ?? null;
+  const profileResult = { data: { full_name: scope?.profile_full_name ?? null } };
+  const membershipResult = { data: { company_id: scope?.membership_company_id ?? null } };
+  const ownedCompanyResult = { data: { id: scope?.owned_company_id ?? null } };
+  const listingCompanyResult = { data: { company_id: scope?.listing_company_id ?? null } };
 
   return {
     userId: user.id,
@@ -251,15 +248,7 @@ async function loadAssistantActorContext(): Promise<AssistantActorContext | null
 }
 
 async function searchMarketListings(query: string, limit = 6): Promise<MarketSearchResult[]> {
-  const page = normalizePage(undefined, ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS);
-  const result = await supabase
-    .from("market_listings")
-    .select("id,title,price,city,company_id,user_id,description,kind,items_json,status,created_at")
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false })
-    .range(page.from, page.to);
-
+  const result = await loadAssistantMarketListingRows();
   if (result.error) throw result.error;
 
   const rows = Array.isArray(result.data) ? result.data : [];
@@ -289,12 +278,8 @@ async function searchMarketListings(query: string, limit = 6): Promise<MarketSea
   const userIds = Array.from(new Set(trimmed.map((row) => row.user_id).filter(isNonEmptyString)));
 
   const [companiesResult, profilesResult] = await Promise.all([
-    companyIds.length
-      ? supabase.from("companies").select("id,name").in("id", companyIds)
-      : Promise.resolve({ data: [] as { id: string; name: string | null }[] }),
-    userIds.length
-      ? supabase.from("user_profiles").select("user_id,full_name").in("user_id", userIds)
-      : Promise.resolve({ data: [] as { user_id: string; full_name: string | null }[] }),
+    loadAssistantCompanyRowsByIds(companyIds),
+    loadAssistantProfileRowsByUserIds(userIds),
   ]);
 
   const companyMap = new Map<string, string>();

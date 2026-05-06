@@ -82,6 +82,14 @@ import {
   CATALOG_TRANSPORT_BFF_CONTRACT,
   type CatalogTransportBffRouteOperation,
 } from "../../src/lib/catalog/catalog.bff.contract";
+import {
+  handleAssistantStoreReadBffScope,
+  type AssistantStoreReadBffPort,
+} from "../../src/lib/assistant_store_read.bff.handler";
+import {
+  ASSISTANT_STORE_READ_BFF_CONTRACT,
+  type AssistantStoreReadBffRouteOperation,
+} from "../../src/lib/assistant_store_read.bff.contract";
 import { buildBffError } from "../../src/shared/scale/bffSafety";
 import {
   BFF_SHADOW_CATALOG_REQUEST_CANCEL_PAYLOAD,
@@ -105,6 +113,7 @@ export type BffStagingRouteDefinition = {
     | DirectorFinanceBffRouteOperation
     | WarehouseApiBffRouteOperation
     | CatalogTransportBffRouteOperation
+    | AssistantStoreReadBffRouteOperation
     | BffMutationOperation
     | "health"
     | "readiness"
@@ -318,6 +327,7 @@ export type BffStagingServerDeps = {
   directorFinanceRpcPort?: DirectorFinanceBffRpcPort;
   warehouseApiReadPort?: WarehouseApiBffReadPort;
   catalogTransportReadPort?: CatalogTransportBffReadPort;
+  assistantStoreReadPort?: AssistantStoreReadBffPort;
   mutationPorts?: BffMutationPorts;
   cacheShadow?: BffStagingCacheShadowDeps | null;
   cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
@@ -446,6 +456,18 @@ export const BFF_STAGING_CATALOG_TRANSPORT_READ_ROUTE: BffStagingRouteDefinition
   kind: "read_rpc",
   method: "POST",
   path: CATALOG_TRANSPORT_BFF_CONTRACT.endpoint.replace(/^POST\s+/, ""),
+  enabledByDefault: true,
+  requiresIdempotencyMetadata: false,
+  requiresRateLimitMetadata: false,
+  observability: BFF_OBSERVABILITY_METADATA,
+  observabilityExternalExportEnabledByDefault: false,
+});
+
+export const BFF_STAGING_ASSISTANT_STORE_READ_ROUTE: BffStagingRouteDefinition = Object.freeze({
+  operation: "assistant.store.read.scope",
+  kind: "read_rpc",
+  method: "POST",
+  path: ASSISTANT_STORE_READ_BFF_CONTRACT.endpoint.replace(/^POST\s+/, ""),
   enabledByDefault: true,
   requiresIdempotencyMetadata: false,
   requiresRateLimitMetadata: false,
@@ -709,6 +731,7 @@ export const BFF_STAGING_ROUTE_REGISTRY: readonly BffStagingRouteDefinition[] = 
   BFF_STAGING_DIRECTOR_FINANCE_RPC_ROUTE,
   BFF_STAGING_WAREHOUSE_API_READ_ROUTE,
   BFF_STAGING_CATALOG_TRANSPORT_READ_ROUTE,
+  BFF_STAGING_ASSISTANT_STORE_READ_ROUTE,
   ...BFF_STAGING_READ_ROUTES,
   ...BFF_STAGING_MUTATION_ROUTES,
 ]);
@@ -1154,12 +1177,13 @@ export async function handleBffStagingServerRequest(
       data: {
         status: "ready",
         readRoutes: BFF_STAGING_READ_ROUTES.length,
-        readRpcRoutes: 3,
+        readRpcRoutes: 4,
         mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
         readPortsConfigured: Boolean(deps.readPorts),
         directorFinanceRpcPortConfigured: Boolean(deps.directorFinanceRpcPort),
         warehouseApiReadPortConfigured: Boolean(deps.warehouseApiReadPort),
         catalogTransportReadPortConfigured: Boolean(deps.catalogTransportReadPort),
+        assistantStoreReadPortConfigured: Boolean(deps.assistantStoreReadPort),
         mutationRoutesEnabledByDefault: false,
         mutationRoutesEnabled:
           config.mutationRoutesEnabled === true &&
@@ -1314,7 +1338,12 @@ export async function handleBffStagingServerRequest(
                 deps.catalogTransportReadPort,
                 payload.input,
               )
-          : null;
+            : route.operation === "assistant.store.read.scope" && deps.assistantStoreReadPort
+              ? await handleAssistantStoreReadBffScope(
+                  deps.assistantStoreReadPort,
+                  payload.input,
+                )
+              : null;
     if (!body) {
       return route.operation === "director.finance.rpc.scope"
         ? buildErrorResponse(
@@ -1334,7 +1363,13 @@ export async function handleBffStagingServerRequest(
                 "BFF_CATALOG_TRANSPORT_READ_PORT_UNAVAILABLE",
                 "Catalog transport read port is not configured",
               )
-          : buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF read RPC route");
+            : route.operation === "assistant.store.read.scope"
+              ? buildErrorResponse(
+                  503,
+                  "BFF_ASSISTANT_STORE_READ_PORT_UNAVAILABLE",
+                  "Assistant/store read port is not configured",
+                )
+              : buildErrorResponse(404, "BFF_ROUTE_NOT_FOUND", "Unknown staging BFF read RPC route");
     }
     if (!isBffStagingResponseEnvelope(body)) {
       return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
@@ -1343,7 +1378,8 @@ export async function handleBffStagingServerRequest(
       ? 200
       : body.error.code === "DIRECTOR_FINANCE_BFF_INVALID_OPERATION" ||
           body.error.code === "WAREHOUSE_API_BFF_INVALID_OPERATION" ||
-          body.error.code === "CATALOG_TRANSPORT_BFF_INVALID_OPERATION"
+          body.error.code === "CATALOG_TRANSPORT_BFF_INVALID_OPERATION" ||
+          body.error.code === "ASSISTANT_STORE_READ_BFF_INVALID_OPERATION"
         ? 400
         : 502;
     return buildResponse(status, body);
@@ -1520,10 +1556,11 @@ export const BFF_STAGING_SERVER_BOUNDARY_CONTRACT = Object.freeze({
   rateLimitShadowMonitorEndpointContract: true,
   rateLimitPrivateSmokeEndpointContract: true,
   readRoutes: BFF_STAGING_READ_ROUTES.length,
-  readRpcRoutes: 3,
+  readRpcRoutes: 4,
   directorFinanceRpcRouteContract: true,
   warehouseApiReadRouteContract: true,
   catalogTransportReadRouteContract: true,
+  assistantStoreReadRouteContract: true,
   mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
   mutationRoutesEnabledByDefault: BFF_STAGING_MUTATION_ROUTES.some((route) => route.enabledByDefault),
   routeScopedMutationEnablement: true,

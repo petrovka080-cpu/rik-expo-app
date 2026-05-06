@@ -134,6 +134,13 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalog.bff.handler.ts"),
       path.join(SRC, "lib", "catalog", "catalog.transport.supabase.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sDirectSupabaseBypassAssistantStoreBoundaryFiles = [
+      path.join(SRC, "features", "ai", "assistantActions.transport.ts"),
+      path.join(SRC, "lib", "assistant_store_read.bff.contract.ts"),
+      path.join(SRC, "lib", "assistant_store_read.bff.client.ts"),
+      path.join(SRC, "lib", "assistant_store_read.bff.handler.ts"),
+      path.join(SRC, "lib", "store_supabase.read.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -190,6 +197,8 @@ describe("performance budget — bundle module count", () => {
     // disabled warehouse API read BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-CATALOG-TRANSPORT-READ-ROUTING-1 adds four
     // permanent disabled catalog transport read BFF/transport boundary modules.
+    // S-DIRECT-SUPABASE-BYPASS-ASSISTANT-STORE-SUPABASE-INVENTORY-AND-SAFE-ROUTING-1
+    // adds five permanent disabled assistant/store read BFF/transport boundary modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -201,6 +210,7 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassDirectorFinanceBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
+    expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(5);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -213,7 +223,8 @@ describe("performance budget — bundle module count", () => {
         sFetchAllDirectorReportsAggregationContractFiles -
         sDirectSupabaseBypassDirectorFinanceBoundaryFiles -
         sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles -
-        sDirectSupabaseBypassCatalogTransportBoundaryFiles,
+        sDirectSupabaseBypassCatalogTransportBoundaryFiles -
+        sDirectSupabaseBypassAssistantStoreBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

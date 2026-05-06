@@ -52,9 +52,9 @@ describe("S-PAG-4 remaining top list pagination contract", () => {
     expect(catalogModal).toContain(".range(page.from, page.to)");
     expect(catalogModal).not.toContain(".limit(60)");
 
-    const assistant = read("src/features/ai/assistantActions.ts");
-    expect(assistant).toContain("ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
-    expect(assistant).toContain("normalizePage(undefined, ASSISTANT_MARKET_SEARCH_PAGE_DEFAULTS)");
+    const assistant = read("src/features/ai/assistantActions.transport.ts");
+    expect(assistant).toContain("ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS");
+    expect(assistant).toContain("normalizePage(undefined, ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS)");
     expect(assistant).toContain(".eq(\"status\", \"active\")");
     expect(assistant).toContain(".order(\"created_at\", { ascending: false })");
     expect(assistant).toContain(".order(\"id\", { ascending: false })");

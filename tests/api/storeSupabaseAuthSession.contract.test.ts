@@ -3,6 +3,9 @@ import { join } from "path";
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   supabase: {
+    auth: {
+      getSession: jest.fn(async () => ({ data: { session: null }, error: null })),
+    },
     from: jest.fn(),
     rpc: jest.fn(),
   },
@@ -31,11 +34,28 @@ type MockQuery = {
 };
 
 const mockSupabase = mockedSupabase as unknown as {
+  auth: { getSession: jest.Mock };
   from: jest.Mock;
   rpc: jest.Mock;
 };
 
 const sourcePath = join(__dirname, "..", "..", "src", "lib", "store_supabase.ts");
+const readTransportSourcePath = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "store_supabase.read.transport.ts",
+);
+const readContractSourcePath = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "lib",
+  "assistant_store_read.bff.contract.ts",
+);
 
 const installReadMock = (tables: Record<string, Record<string, unknown>[]>) => {
   const logs: QueryLog[] = [];
@@ -103,6 +123,7 @@ const pendingRows = (count: number) =>
 
 describe("store_supabase auth/session read boundaries", () => {
   beforeEach(() => {
+    mockSupabase.auth.getSession.mockClear();
     mockSupabase.from.mockReset();
     mockSupabase.rpc.mockReset();
   });
@@ -179,11 +200,13 @@ describe("store_supabase auth/session read boundaries", () => {
 
   it("keeps store_supabase out of auth client/session persistence setup", () => {
     const source = readFileSync(sourcePath, "utf8");
+    const readTransportSource = readFileSync(readTransportSourcePath, "utf8");
+    const readContractSource = readFileSync(readContractSourcePath, "utf8");
 
-    expect(source).toContain("loadPagedStoreSupabaseRows");
-    expect(source).toContain("STORE_SUPABASE_AUTH_SESSION_PAGE_DEFAULTS");
-    expect(source).toContain("loadPagedRowsWithCeiling");
-    expect(source).toContain("maxRows: 5000");
+    expect(readTransportSource).toContain("loadPagedStoreSupabaseRows");
+    expect(readTransportSource).toContain("ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS");
+    expect(readTransportSource).toContain("loadPagedRowsWithCeiling");
+    expect(readContractSource).toContain("maxRows: 5000");
     expect(source).not.toContain(".auth.");
     expect(source).not.toContain("persistSession");
     expect(source).not.toContain("detectSessionInUrl");
