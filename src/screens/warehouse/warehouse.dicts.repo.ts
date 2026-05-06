@@ -10,7 +10,7 @@
  * Consumer code (warehouse.dicts.ts) requires zero changes.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { normalizePage } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { queryClient } from "../../lib/query/queryClient";
 
 type QueryResult = {
@@ -19,34 +19,19 @@ type QueryResult = {
 };
 
 const WAREHOUSE_DICTS_TTL_MS = 5 * 60 * 1000;
-const WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
-type QueryFactory = () => {
-  range: (from: number, to: number) => any;
-};
+type QueryFactory = () => PagedQuery<unknown>;
 
 async function loadPagedWarehouseRows(queryFactory: QueryFactory): Promise<QueryResult> {
-  const rows: unknown[] = [];
-  let pageIndex = 0;
-
-  while (true) {
-    const page = normalizePage({ page: pageIndex }, WAREHOUSE_DICT_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-
-    if (result.error) {
-      return {
-        data: null,
-        error: { message: String((result.error as { message?: unknown })?.message ?? result.error) },
-      };
-    }
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) {
-      return { data: rows, error: null };
-    }
-    pageIndex += 1;
+  const result = await loadPagedRowsWithCeiling(queryFactory, WAREHOUSE_DICT_PAGE_DEFAULTS);
+  if (result.error) {
+    return {
+      data: null,
+      error: { message: String((result.error as { message?: unknown })?.message ?? result.error) },
+    };
   }
+  return { data: result.data ?? [], error: null };
 }
 
 const resolveWarehouseDictOrderColumn = (columns: string[]): string => {

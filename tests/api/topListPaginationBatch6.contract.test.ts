@@ -67,10 +67,10 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     expect(mapListings).not.toContain(".limit(2000)");
 
     const warehouseDicts = read("src/screens/warehouse/warehouse.dicts.repo.ts");
-    expect(warehouseDicts).toContain("WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(warehouseDicts).toContain("WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(warehouseDicts).toContain("async function loadPagedWarehouseRows");
-    expect(warehouseDicts).toContain("queryFactory().range(page.from, page.to)");
-    expect(warehouseDicts).toContain("if (pageRows.length < page.pageSize)");
+    expect(warehouseDicts).toContain("loadPagedRowsWithCeiling(queryFactory, WAREHOUSE_DICT_PAGE_DEFAULTS)");
+    expect(warehouseDicts).not.toContain("while (true)");
     expect(warehouseDicts).not.toContain(".limit(1000)");
     expect(warehouseDicts).not.toContain(".limit(2000)");
 

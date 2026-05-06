@@ -1,0 +1,53 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
+const root = join(__dirname, "..", "..");
+
+const read = (relativePath: string) =>
+  readFileSync(join(root, relativePath), "utf8");
+
+describe("S-FETCHALL-UNBOUNDED-READS-CLOSEOUT-1", () => {
+  it("keeps catalog reference list reads paged with an explicit fail-closed ceiling", () => {
+    const source = read("src/lib/catalog/catalog.transport.ts");
+
+    expect(source).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
+    expect(source).toContain("loadPagedRowsWithCeiling<T>");
+    expect(source).toContain("toCatalogQueryError");
+    expect(source).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
+  });
+
+  it("keeps catalog request reads on the shared bounded reference reader", () => {
+    const source = read("src/lib/catalog/catalog.request.transport.ts");
+
+    expect(source).toContain("CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS");
+    expect(source).toContain("maxRows: 5000");
+    expect(source).toContain("loadPagedRowsWithCeiling<Record<string, unknown>>");
+    expect(source).toContain(".order(\"row_no\", { ascending: true })");
+    expect(source).toContain(".order(\"position_order\", { ascending: true })");
+    expect(source).toContain(".order(\"id\", { ascending: true })");
+  });
+
+  it("keeps warehouse dictionary reads paged with an explicit fail-closed ceiling", () => {
+    const source = read("src/screens/warehouse/warehouse.dicts.repo.ts");
+
+    expect(source).toContain("WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
+    expect(source).toContain("loadPagedRowsWithCeiling(queryFactory, WAREHOUSE_DICT_PAGE_DEFAULTS)");
+    expect(source).not.toContain("while (true)");
+  });
+
+  it("documents director report full-table aggregation as remaining out-of-scope risk", () => {
+    const factSource = read("src/lib/api/director_reports.transport.facts.ts");
+    const disciplineSource = read("src/lib/api/director_reports.transport.discipline.ts");
+
+    expect(factSource).toContain("fetchAllFactRowsFromView");
+    expect(factSource).toContain("while (true)");
+    expect(disciplineSource).toContain("fetchAllFactRowsFromTables");
+    expect(disciplineSource).toContain("while (true)");
+  });
+
+  it("keeps catalog request direct Supabase bypass closed", () => {
+    const source = read("src/lib/catalog/catalog.request.service.ts");
+
+    expect(source).not.toMatch(/supabase\.(from|rpc)\(/);
+  });
+});

@@ -40,10 +40,12 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
   it("page-through-all bounds seven safe catalog list and reference reads", () => {
     const catalogTransport = read("src/lib/catalog/catalog.transport.ts");
 
-    expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 }");
+    expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(catalogTransport).toContain("const loadPagedCatalogRows = async <T,>");
-    expect(catalogTransport).toContain("queryFactory().range(page.from, page.to)");
-    expect(catalogTransport).toContain("if (pageRows.length < page.pageSize) return { data: rows, error: null }");
+    expect(catalogTransport).toContain("loadPagedRowsWithCeiling<T>");
+    expect(catalogTransport).toContain("CATALOG_SAFE_LIST_PAGE_DEFAULTS");
+    expect(catalogTransport).toContain("toCatalogQueryError(result.error)");
+    expect(catalogTransport).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
 
     expect(catalogTransport).toContain("return await loadPagedCatalogRows<SupplierCounterpartyRow>(buildQuery)");
     expect(catalogTransport).toContain("await loadPagedCatalogRows<SubcontractCounterpartyRow>(() =>");

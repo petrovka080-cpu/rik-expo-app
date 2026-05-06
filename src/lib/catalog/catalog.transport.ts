@@ -1,5 +1,9 @@
 import { supabase } from "../supabaseClient";
-import { normalizePage } from "../api/_core";
+import {
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  type PagedQuery,
+} from "../api/_core";
 import type {
   CatalogGroup,
   ContractorCounterpartyRow,
@@ -30,7 +34,7 @@ const CATALOG_SEARCH_FALLBACK_SELECT =
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
   "rik_code,name_human,uom_code,kind,name_human_ru";
 const CATALOG_FALLBACK_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
-const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100 };
+const CATALOG_SAFE_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
 
 type CatalogQueryResult<T> = {
   data: T[] | null;
@@ -53,20 +57,21 @@ type UomTransportRow = {
   name?: string | null;
 };
 
+const toCatalogQueryError = (error: unknown): { message?: string } =>
+  typeof error === "object" && error !== null && "message" in error
+    ? (error as { message?: string })
+    : { message: String(error) };
+
 const loadPagedCatalogRows = async <T,>(
   queryFactory: CatalogQueryFactory<T>,
 ): Promise<CatalogQueryResult<T>> => {
-  const rows: T[] = [];
-
-  for (let pageIndex = 0; ; pageIndex += 1) {
-    const page = normalizePage({ page: pageIndex }, CATALOG_SAFE_LIST_PAGE_DEFAULTS);
-    const result = await queryFactory().range(page.from, page.to);
-    if (result.error) return { data: null, error: result.error };
-
-    const pageRows = Array.isArray(result.data) ? result.data : [];
-    rows.push(...pageRows);
-    if (pageRows.length < page.pageSize) return { data: rows, error: null };
-  }
+  const result = await loadPagedRowsWithCeiling<T>(
+    () => queryFactory() as unknown as PagedQuery<T>,
+    CATALOG_SAFE_LIST_PAGE_DEFAULTS,
+  );
+  return result.error
+    ? { data: null, error: toCatalogQueryError(result.error) }
+    : { data: result.data ?? [], error: null };
 };
 
 export const RIK_QUICK_SEARCH_RPCS: CatalogSearchRpcName[] = [
