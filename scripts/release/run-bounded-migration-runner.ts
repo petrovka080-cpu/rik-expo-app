@@ -3,10 +3,14 @@ import path from "node:path";
 
 import {
   buildBoundedMigrationPlan,
+  createPostgresBoundedMigrationExecutorAdapter,
   formatBoundedMigrationPlanForLog,
+  formatBoundedMigrationExecutorResultForLog,
+  runBoundedMigrationExecutor,
   type BoundedMigrationLocalMigration,
   type BoundedMigrationMode,
   type BoundedMigrationRemoteMigration,
+  type BoundedMigrationSqlClient,
 } from "./boundedMigrationRunner.shared";
 
 interface ParsedArgs {
@@ -17,14 +21,27 @@ interface ParsedArgs {
   remoteHistoryFile?: string;
   migrationsDir: string;
   json: boolean;
+  execute: boolean;
+  databaseUrlEnv?: string;
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   const localMigrations = readLocalMigrations(args.migrationsDir);
   const remoteMigrations = args.remoteHistoryFile
     ? readRemoteHistory(args.remoteHistoryFile)
     : [];
+  if (args.execute) {
+    const output = await runExecuteMode(args, localMigrations, remoteMigrations);
+    if (args.json) {
+      process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    } else {
+      process.stdout.write(`${formatHumanPlan(output)}\n`);
+    }
+    process.exitCode = output.status === "PASS" ? 0 : 1;
+    return;
+  }
+
   const plan = buildBoundedMigrationPlan({
     allowlist: args.allowlist,
     localMigrations,
@@ -53,6 +70,8 @@ function parseArgs(argv: string[]): ParsedArgs {
   let remoteHistoryFile: string | undefined;
   let migrationsDir = path.join(process.cwd(), "supabase", "migrations");
   let json = false;
+  let execute = false;
+  let databaseUrlEnv: string | undefined;
 
   for (let index = 0; index < rest.length; index += 1) {
     const arg = rest[index];
@@ -80,6 +99,14 @@ function parseArgs(argv: string[]): ParsedArgs {
       }
     } else if (arg === "--json") {
       json = true;
+    } else if (arg === "--execute") {
+      execute = true;
+    } else if (arg === "--database-url-env") {
+      const value = rest[index + 1];
+      if (value) {
+        databaseUrlEnv = value;
+        index += 1;
+      }
     }
   }
 
@@ -91,6 +118,8 @@ function parseArgs(argv: string[]): ParsedArgs {
     remoteHistoryFile,
     migrationsDir,
     json,
+    execute,
+    databaseUrlEnv,
   };
 }
 
@@ -144,4 +173,82 @@ function formatHumanPlan(output: Record<string, unknown>): string {
   ].join("\n");
 }
 
-main();
+async function runExecuteMode(
+  args: ParsedArgs,
+  localMigrations: BoundedMigrationLocalMigration[],
+  remoteMigrations: BoundedMigrationRemoteMigration[],
+): Promise<Record<string, unknown>> {
+  if (args.mode !== "apply") {
+    return {
+      status: "BLOCKED",
+      executor_mode: "execute",
+      failure_stage: "plan",
+      blockers: [
+        {
+          code: "EXECUTE_REQUIRES_APPLY_MODE",
+          message: "Executor writes are only available from apply mode.",
+          migrations: [],
+        },
+      ],
+    };
+  }
+
+  if (!args.databaseUrlEnv) {
+    return {
+      status: "BLOCKED",
+      executor_mode: "execute",
+      failure_stage: "adapter_missing",
+      blockers: [
+        {
+          code: "DATABASE_URL_ENV_MISSING",
+          message: "A database URL environment variable name is required for execute mode.",
+          migrations: [],
+        },
+      ],
+    };
+  }
+
+  const databaseUrl = process.env[args.databaseUrlEnv];
+  if (!databaseUrl) {
+    return {
+      status: "BLOCKED",
+      executor_mode: "execute",
+      failure_stage: "adapter_missing",
+      blockers: [
+        {
+          code: "DATABASE_URL_VALUE_MISSING",
+          message: "The requested database URL environment variable is not present.",
+          migrations: [],
+        },
+      ],
+    };
+  }
+
+  const pgModule = await import("pg");
+  const client = new pgModule.Client({
+    connectionString: databaseUrl,
+  }) as BoundedMigrationSqlClient & {
+    connect(): Promise<unknown>;
+    end(): Promise<unknown>;
+  };
+  await client.connect();
+  try {
+    const result = await runBoundedMigrationExecutor({
+      executorMode: "execute",
+      allowlist: args.allowlist,
+      localMigrations,
+      remoteMigrations,
+      includeAll: args.includeAll,
+      destructiveApproval: args.destructiveApproval,
+      adapter: createPostgresBoundedMigrationExecutorAdapter(client),
+    });
+    return formatBoundedMigrationExecutorResultForLog(result);
+  } finally {
+    await client.end();
+  }
+}
+
+main().catch(() => {
+  process.stderr.write("bounded migration runner failed before producing a sanitized result\n");
+  process.exitCode = 1;
+});

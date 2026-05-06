@@ -81,6 +81,73 @@ export interface BoundedMigrationPlan {
   destructiveSqlClassification: BoundedMigrationSqlClassification[];
 }
 
+export type BoundedMigrationExecutorMode = "plan" | "execute";
+export type BoundedMigrationExecutorStatus = "PASS" | "BLOCKED" | "FAILED";
+export type BoundedMigrationExecutorFailureStage =
+  | "plan"
+  | "adapter_missing"
+  | "sql_source_missing"
+  | "execute_sql"
+  | "write_history";
+
+export interface BoundedMigrationExecutableMigration {
+  file: string;
+  version: string;
+  name: string;
+  sqlSource: string;
+}
+
+export interface BoundedMigrationHistoryRecord {
+  file: string;
+  version: string;
+  name: string;
+}
+
+export interface BoundedMigrationExecutorTransaction {
+  executeMigrationSql(migration: BoundedMigrationExecutableMigration): Promise<void>;
+  recordMigrationHistory(record: BoundedMigrationHistoryRecord): Promise<void>;
+}
+
+export interface BoundedMigrationExecutorAdapter {
+  withTransaction<T>(
+    operation: (transaction: BoundedMigrationExecutorTransaction) => Promise<T>,
+  ): Promise<T>;
+}
+
+export interface BoundedMigrationSqlClient {
+  query(sql: string, values?: readonly unknown[]): Promise<unknown>;
+}
+
+export interface BoundedMigrationExecutorInput extends BoundedMigrationPlanInput {
+  executorMode?: BoundedMigrationExecutorMode;
+  adapter?: BoundedMigrationExecutorAdapter;
+}
+
+export interface BoundedMigrationExecutorResult {
+  status: BoundedMigrationExecutorStatus;
+  executorMode: BoundedMigrationExecutorMode;
+  plan: BoundedMigrationPlan;
+  blockers: BoundedMigrationBlocker[];
+  failureStage: BoundedMigrationExecutorFailureStage | null;
+  failureMigration: string | null;
+  selectedMigrations: string[];
+  sqlExecutionOrder: string[];
+  historyWriteOrder: string[];
+  appliedMigrations: string[];
+  appliedMigrationCount: number;
+  dryRunOnly: boolean;
+  dbWriteAttempted: boolean;
+  manualSqlExecuted: false;
+  repairExecuted: false;
+  includeAllUsed: boolean;
+  idempotencyTargetExcluded: boolean;
+  idempotencyMigrationApplied: false;
+  unrelatedMigrationsApplied: false;
+  sqlContentsPrinted: false;
+  rawDbRowsPrinted: false;
+  secretsPrinted: false;
+}
+
 interface ParsedMigration {
   file: string;
   version: string;
@@ -365,6 +432,158 @@ export function formatBoundedMigrationPlanForLog(
   };
 }
 
+export async function runBoundedMigrationExecutor(
+  input: BoundedMigrationExecutorInput,
+): Promise<BoundedMigrationExecutorResult> {
+  const executorMode = input.executorMode ?? (input.mode === "apply" ? "execute" : "plan");
+  const plan = buildBoundedMigrationPlan({
+    ...input,
+    mode: executorMode === "execute" ? "apply" : "plan",
+  });
+  const baseResult = createExecutorResult(plan, executorMode);
+
+  if (plan.status === "BLOCKED") {
+    return {
+      ...baseResult,
+      status: "BLOCKED",
+      failureStage: "plan",
+      blockers: plan.blockers,
+    };
+  }
+
+  if (executorMode === "plan") {
+    return baseResult;
+  }
+
+  if (!input.adapter) {
+    return {
+      ...baseResult,
+      status: "BLOCKED",
+      failureStage: "adapter_missing",
+    };
+  }
+
+  const executableMigrations = resolveExecutableMigrations(input, plan);
+  const missingSql = executableMigrations.find((migration) => migration.sqlSource.trim() === "");
+  if (missingSql) {
+    return {
+      ...baseResult,
+      status: "BLOCKED",
+      failureStage: "sql_source_missing",
+      failureMigration: missingSql.file,
+    };
+  }
+
+  const sqlExecutionOrder: string[] = [];
+  const historyWriteOrder: string[] = [];
+  const appliedMigrations: string[] = [];
+
+  try {
+    await input.adapter.withTransaction(async (transaction) => {
+      for (const migration of executableMigrations) {
+        try {
+          await transaction.executeMigrationSql(migration);
+        } catch {
+          throw createExecutorStageError("execute_sql", migration.file);
+        }
+        sqlExecutionOrder.push(migration.file);
+        try {
+          await transaction.recordMigrationHistory({
+            file: migration.file,
+            version: migration.version,
+            name: migration.name,
+          });
+        } catch {
+          throw createExecutorStageError("write_history", migration.file);
+        }
+        historyWriteOrder.push(migration.file);
+        appliedMigrations.push(migration.file);
+      }
+    });
+  } catch (error) {
+    const failure = inferExecutorFailure(error);
+    return {
+      ...baseResult,
+      status: "FAILED",
+      failureStage: failure.stage,
+      failureMigration: failure.migration,
+      sqlExecutionOrder,
+      historyWriteOrder,
+      appliedMigrations: [],
+      appliedMigrationCount: 0,
+      dbWriteAttempted: true,
+    };
+  }
+
+  return {
+    ...baseResult,
+    sqlExecutionOrder,
+    historyWriteOrder,
+    appliedMigrations,
+    appliedMigrationCount: appliedMigrations.length,
+    dbWriteAttempted: true,
+  };
+}
+
+export function formatBoundedMigrationExecutorResultForLog(
+  result: BoundedMigrationExecutorResult,
+): Record<string, unknown> {
+  return {
+    status: result.status,
+    executor_mode: result.executorMode,
+    plan: formatBoundedMigrationPlanForLog(result.plan),
+    blockers: result.blockers,
+    failure_stage: result.failureStage,
+    failure_migration: result.failureMigration,
+    selected_migrations: result.selectedMigrations,
+    sql_execution_order: result.sqlExecutionOrder,
+    history_write_order: result.historyWriteOrder,
+    applied_migrations: result.appliedMigrations,
+    applied_migration_count: result.appliedMigrationCount,
+    dry_run_only: result.dryRunOnly,
+    db_write_attempted: result.dbWriteAttempted,
+    manual_sql_executed: result.manualSqlExecuted,
+    repair_executed: result.repairExecuted,
+    include_all_used: result.includeAllUsed,
+    idempotency_target_excluded: result.idempotencyTargetExcluded,
+    idempotency_migration_applied: result.idempotencyMigrationApplied,
+    unrelated_migrations_applied: result.unrelatedMigrationsApplied,
+    sql_contents_printed: result.sqlContentsPrinted,
+    raw_db_rows_printed: result.rawDbRowsPrinted,
+    secrets_printed: result.secretsPrinted,
+  };
+}
+
+export function createPostgresBoundedMigrationExecutorAdapter(
+  client: BoundedMigrationSqlClient,
+): BoundedMigrationExecutorAdapter {
+  return {
+    async withTransaction<T>(
+      operation: (transaction: BoundedMigrationExecutorTransaction) => Promise<T>,
+    ): Promise<T> {
+      await client.query("begin");
+      try {
+        const result = await operation({
+          executeMigrationSql: async (migration) => {
+            await client.query(migration.sqlSource);
+          },
+          recordMigrationHistory: async (record) => {
+            await client.query(
+              "insert into supabase_migrations.schema_migrations(version, name) values ($1, $2)",
+              [record.version, record.name],
+            );
+          },
+        });
+        await client.query("commit");
+        return result;
+      } catch (error) {
+        await client.query("rollback").catch(() => undefined);
+        throw error;
+      }
+    },
+  };
+}
+
 function stripSqlComments(sql: string): string {
   return sql.replace(/--.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
 }
@@ -401,4 +620,108 @@ function groupBy<T>(values: T[], keyFn: (value: T) => string): Map<string, T[]> 
     }
   }
   return grouped;
+}
+
+function createExecutorResult(
+  plan: BoundedMigrationPlan,
+  executorMode: BoundedMigrationExecutorMode,
+): BoundedMigrationExecutorResult {
+  return {
+    status: "PASS",
+    executorMode,
+    plan,
+    blockers: [],
+    failureStage: null,
+    failureMigration: null,
+    selectedMigrations: plan.selectedMigrations,
+    sqlExecutionOrder: [],
+    historyWriteOrder: [],
+    appliedMigrations: [],
+    appliedMigrationCount: 0,
+    dryRunOnly: executorMode === "plan",
+    dbWriteAttempted: false,
+    manualSqlExecuted: false,
+    repairExecuted: false,
+    includeAllUsed: plan.includeAllUsed,
+    idempotencyTargetExcluded: plan.idempotencyTargetExcluded,
+    idempotencyMigrationApplied: false,
+    unrelatedMigrationsApplied: false,
+    sqlContentsPrinted: false,
+    rawDbRowsPrinted: false,
+    secretsPrinted: false,
+  };
+}
+
+function resolveExecutableMigrations(
+  input: BoundedMigrationPlanInput,
+  plan: BoundedMigrationPlan,
+): BoundedMigrationExecutableMigration[] {
+  const localByFile = new Map<string, ParsedMigration>();
+  for (const migration of input.localMigrations) {
+    const parsed = parseMigrationFilename(migration.file);
+    if (!parsed) {
+      continue;
+    }
+    localByFile.set(parsed.file, {
+      ...parsed,
+      sqlSource: migration.sqlSource ?? "",
+    });
+  }
+
+  return plan.allowlist.flatMap((file) => {
+    const migration = localByFile.get(file);
+    if (!migration) {
+      return [];
+    }
+    return [
+      {
+        file: migration.file,
+        version: migration.version,
+        name: migration.name,
+        sqlSource: migration.sqlSource ?? "",
+      },
+    ];
+  });
+}
+
+function inferExecutorFailure(error: unknown): {
+  stage: BoundedMigrationExecutorFailureStage;
+  migration: string | null;
+} {
+  if (isExecutorStageError(error)) {
+    return {
+      stage: error.stage,
+      migration: error.migration,
+    };
+  }
+
+  return {
+    stage: "execute_sql",
+    migration: null,
+  };
+}
+
+function isExecutorStageError(error: unknown): error is {
+  stage: BoundedMigrationExecutorFailureStage;
+  migration: string | null;
+} {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "stage" in error &&
+    typeof (error as { stage: unknown }).stage === "string"
+  );
+}
+
+function createExecutorStageError(
+  stage: BoundedMigrationExecutorFailureStage,
+  migration: string,
+): Error & {
+  stage: BoundedMigrationExecutorFailureStage;
+  migration: string;
+} {
+  return Object.assign(new Error("bounded migration executor operation failed"), {
+    stage,
+    migration,
+  });
 }
