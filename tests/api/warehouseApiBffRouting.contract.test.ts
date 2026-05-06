@@ -41,6 +41,8 @@ describe("warehouse API BFF routing contract", () => {
       "warehouse.api.report.incoming_v2",
       "warehouse.api.ledger.incoming",
       "warehouse.api.ledger.incoming_lines",
+      "warehouse.api.uom.material_unit",
+      "warehouse.api.uom.code",
     ]);
     expect(
       WAREHOUSE_API_BFF_OPERATION_CONTRACTS.every(
@@ -62,6 +64,23 @@ describe("warehouse API BFF routing contract", () => {
     expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(7);
     expect(transportSource.match(/\.from\(/g) ?? []).toHaveLength(2);
     expect(WAREHOUSE_API_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");
+  });
+
+  it("routes warehouse UOM single-row reads through the warehouse API BFF-aware boundary", () => {
+    const repoSource = readProjectFile("src/screens/warehouse/warehouse.uom.repo.ts");
+    const transportSource = readProjectFile("src/screens/warehouse/warehouse.uom.repo.transport.ts");
+    const contractSource = readProjectFile("src/screens/warehouse/warehouse.api.bff.contract.ts");
+
+    expect(repoSource).toContain("callWarehouseApiBffRead");
+    expect(repoSource).toContain('operation: "warehouse.api.uom.material_unit"');
+    expect(repoSource).toContain('operation: "warehouse.api.uom.code"');
+    expect(repoSource).not.toMatch(/supabase\.(from|rpc)\(/);
+    expect(repoSource).not.toContain(".from(");
+    expect(transportSource.match(/\.from\(/g) ?? []).toHaveLength(2);
+    expect(transportSource).toContain('from("rik_materials")');
+    expect(transportSource).toContain('from("rik_uoms" as never)');
+    expect(contractSource).toContain('"warehouse.api.uom.material_unit"');
+    expect(contractSource).toContain('"warehouse.api.uom.code"');
   });
 
   it("wires the mobile BFF route without enabling production traffic", () => {

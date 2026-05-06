@@ -127,6 +127,7 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "warehouse", "warehouse.api.bff.client.ts"),
       path.join(SRC, "screens", "warehouse", "warehouse.api.bff.handler.ts"),
       path.join(SRC, "screens", "warehouse", "warehouse.api.repo.transport.ts"),
+      path.join(SRC, "screens", "warehouse", "warehouse.uom.repo.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sDirectSupabaseBypassCatalogTransportBoundaryFiles = [
       path.join(SRC, "lib", "catalog", "catalog.bff.contract.ts"),
@@ -197,6 +198,8 @@ describe("performance budget — bundle module count", () => {
     // disabled director finance RPC BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-WAREHOUSE-API-REPO-ROUTING-1 adds four permanent
     // disabled warehouse API read BFF/transport boundary modules.
+    // S-DIRECT-SUPABASE-BYPASS-WAREHOUSE-UOM-READ-ROUTING-1 extends that boundary
+    // with one permanent compatibility fallback transport for UOM single-row reads.
     // S-DIRECT-SUPABASE-BYPASS-CATALOG-TRANSPORT-READ-ROUTING-1 adds four
     // permanent disabled catalog transport read BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-ASSISTANT-STORE-SUPABASE-INVENTORY-AND-SAFE-ROUTING-1
@@ -212,7 +215,7 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassCatalogRequestBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sFetchAllDirectorReportsAggregationContractFiles).toBeLessThanOrEqual(1);
     expect(sDirectSupabaseBypassDirectorFinanceBoundaryFiles).toBeLessThanOrEqual(4);
-    expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(4);
+    expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(5);
     expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(7);
     expect(

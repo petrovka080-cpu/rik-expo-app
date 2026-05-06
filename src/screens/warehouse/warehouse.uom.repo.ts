@@ -1,6 +1,13 @@
-import { supabase } from "../../lib/supabaseClient";
-
 import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
+import { callWarehouseApiBffRead } from "./warehouse.api.bff.client";
+import type {
+  WarehouseApiBffReadErrorDto,
+  WarehouseApiBffRequestDto,
+} from "./warehouse.api.bff.contract";
+import {
+  callWarehouseUomSupabaseMaterialUnitId,
+  callWarehouseUomSupabaseUomCode,
+} from "./warehouse.uom.repo.transport";
 
 type SingleResult = {
   data: Record<string, unknown> | null;
@@ -35,6 +42,46 @@ const cloneSingle = (result: SingleResult): SingleResult => ({
   error: result.error ? { ...result.error } : null,
 });
 
+const bffErrorToSingleError = (
+  error: WarehouseApiBffReadErrorDto | { message?: string | null },
+): { message?: string | null } => ({
+  message: error.message,
+});
+
+const callWarehouseUomBffSingle = async (
+  request: WarehouseApiBffRequestDto,
+  fallback: () => Promise<SingleResult>,
+): Promise<SingleResult> => {
+  const bffResult = await callWarehouseApiBffRead(request);
+  if (bffResult.status === "ok") {
+    const payload = bffResult.response.payload;
+    if (payload.kind !== "single") {
+      return {
+        data: null,
+        error: { message: "Warehouse API read failed" },
+      };
+    }
+    if (payload.result.error) {
+      return {
+        data: null,
+        error: bffErrorToSingleError(payload.result.error),
+      };
+    }
+    const first = payload.result.data?.[0];
+    return {
+      data: first && typeof first === "object" ? { ...first } : null,
+      error: null,
+    };
+  }
+  if (bffResult.status === "error") {
+    return {
+      data: null,
+      error: bffErrorToSingleError(bffResult.error),
+    };
+  }
+  return await fallback();
+};
+
 const readCached = async (
   store: Map<string, CacheEntry>,
   key: string,
@@ -63,29 +110,25 @@ const readCached = async (
 export async function fetchWarehouseMaterialUnitId(matCode: string) {
   const key = String(matCode ?? "").trim();
   return await readCached(materialUnitCache, key, async () => {
-    const result = await supabase
-      .from("rik_materials")
-      .select("unit_id")
-      .eq("mat_code", key)
-      .maybeSingle();
-    return {
-      data: result.data && typeof result.data === "object" ? (result.data as Record<string, unknown>) : null,
-      error: result.error ? { message: result.error.message } : null,
-    };
+    return await callWarehouseUomBffSingle(
+      {
+        operation: "warehouse.api.uom.material_unit",
+        args: { matCode: key },
+      },
+      () => callWarehouseUomSupabaseMaterialUnitId(key),
+    );
   });
 }
 
 export async function fetchWarehouseUomCode(unitId: string) {
   const key = String(unitId ?? "").trim();
   return await readCached(uomCodeCache, key, async () => {
-    const result = (await supabase
-      .from("rik_uoms" as never)
-      .select("uom_code")
-      .eq("id", key)
-      .maybeSingle()) as { data: Record<string, unknown> | null; error: { message?: string | null } | null };
-    return {
-      data: result.data && typeof result.data === "object" ? (result.data as Record<string, unknown>) : null,
-      error: result.error ? { message: result.error.message } : null,
-    };
+    return await callWarehouseUomBffSingle(
+      {
+        operation: "warehouse.api.uom.code",
+        args: { unitId: key },
+      },
+      () => callWarehouseUomSupabaseUomCode(key),
+    );
   });
 }

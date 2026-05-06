@@ -269,6 +269,18 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/scale/catalogTransportBffReadonlyDbPort.test.ts",
       "tests/strict-null/catalog.transport.phase4.test.ts",
     ]);
+    const sWarehouseApiBffReadRoutingAllowedDirtyFiles = new Set([
+      "artifacts/S_DIRECT_SUPABASE_BYPASS_WAREHOUSE_UOM_READ_ROUTING_1_matrix.json",
+      "artifacts/S_DIRECT_SUPABASE_BYPASS_WAREHOUSE_UOM_READ_ROUTING_1_proof.md",
+      "scripts/server/stagingBffWarehouseApiReadPort.ts",
+      "src/screens/warehouse/warehouse.api.bff.contract.ts",
+      "src/screens/warehouse/warehouse.uom.repo.ts",
+      "src/screens/warehouse/warehouse.uom.repo.transport.ts",
+      "tests/api/topListPaginationBatch7.contract.test.ts",
+      "tests/api/warehouseApiBffRouting.contract.test.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+    ]);
     const sAssistantStoreBffReadRoutingAllowedDirtyFiles = new Set([
       "artifacts/S_DIRECT_SUPABASE_BYPASS_LOW_RISK_READS_BFF_1_matrix.json",
       "artifacts/S_DIRECT_SUPABASE_BYPASS_LOW_RISK_READS_BFF_1_proof.md",
@@ -313,6 +325,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !s50kProviderEnvConventionsAllowedDirtyFiles.has(file) &&
         !sCatalogRequestBffMutationPortingAllowedDirtyFiles.has(file) &&
         !sCatalogTransportBffReadRoutingAllowedDirtyFiles.has(file) &&
+        !sWarehouseApiBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sAssistantStoreBffReadRoutingAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );

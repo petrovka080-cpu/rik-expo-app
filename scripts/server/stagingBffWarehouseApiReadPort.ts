@@ -166,6 +166,36 @@ export function buildWarehouseApiReadQueryPlans(
     ];
   }
 
+  if (input.operation === "warehouse.api.uom.material_unit") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select unit_id",
+          "from public.rik_materials",
+          "where mat_code = $1",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.matCode)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.uom.code") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select uom_code",
+          "from public.rik_uoms",
+          "where id = nullif($1::text, '')::uuid",
+          "limit 1",
+        ].join(" "),
+        [safeText(input.args.unitId)],
+      ),
+    ];
+  }
+
   if (input.operation === "warehouse.api.ledger.incoming") {
     return [
       plan(

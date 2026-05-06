@@ -9,11 +9,14 @@ export type WarehouseApiBffOperation =
   | "warehouse.api.report.issued_by_object_fast"
   | "warehouse.api.report.incoming_v2"
   | "warehouse.api.ledger.incoming"
-  | "warehouse.api.ledger.incoming_lines";
+  | "warehouse.api.ledger.incoming_lines"
+  | "warehouse.api.uom.material_unit"
+  | "warehouse.api.uom.code";
 
 export type WarehouseApiBffOperationClass =
   | "report_read_rpc"
-  | "ledger_list_read";
+  | "ledger_list_read"
+  | "uom_single_read";
 
 export type WarehouseApiBffPeriodArgs = {
   p_from?: string | null;
@@ -30,6 +33,14 @@ export type WarehouseApiBffIssueLinesArgs = {
 
 export type WarehouseApiBffIncomingLinesArgs = {
   incomingId: string;
+};
+
+export type WarehouseApiBffMaterialUnitArgs = {
+  matCode: string;
+};
+
+export type WarehouseApiBffUomCodeArgs = {
+  unitId: string;
 };
 
 export type WarehouseApiBffPageInput = {
@@ -67,6 +78,14 @@ export type WarehouseApiBffRequestDto =
       operation: "warehouse.api.ledger.incoming_lines";
       args: WarehouseApiBffIncomingLinesArgs;
       page?: WarehouseApiBffPageInput;
+    }
+  | {
+      operation: "warehouse.api.uom.material_unit";
+      args: WarehouseApiBffMaterialUnitArgs;
+    }
+  | {
+      operation: "warehouse.api.uom.code";
+      args: WarehouseApiBffUomCodeArgs;
     };
 
 export type WarehouseApiBffRow = Record<string, unknown>;
@@ -133,6 +152,8 @@ export type WarehouseApiBffOperationContract = {
     issue: boolean;
     incoming: boolean;
     pagination: boolean;
+    material?: boolean;
+    unit?: boolean;
   };
   sourceKind:
     | "rpc:acc_report_stock+acc_report_movement+acc_report_issues_v2"
@@ -140,8 +161,10 @@ export type WarehouseApiBffOperationContract = {
     | "rpc:wh_report_issued_materials_fast"
     | "rpc:wh_report_issued_by_object_fast"
     | "rpc:acc_report_incoming_v2"
-    | "table:wh_ledger";
-  ordering: "rpc_owned" | "moved_at_code_asc" | "code_asc";
+    | "table:wh_ledger"
+    | "table:rik_materials"
+    | "table:rik_uoms";
+  ordering: "rpc_owned" | "moved_at_code_asc" | "code_asc" | "single_scope";
   readOnly: true;
   trafficEnabledByDefault: false;
   wiredToAppRuntime: true;
@@ -242,6 +265,28 @@ export const WAREHOUSE_API_BFF_OPERATION_CONTRACTS = Object.freeze([
     filterScope: { period: false, object: false, issue: false, incoming: true, pagination: true },
     sourceKind: "table:wh_ledger",
     ordering: "code_asc",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.uom.material_unit",
+    operationClass: "uom_single_read",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: false, pagination: false, material: true },
+    sourceKind: "table:rik_materials",
+    ordering: "single_scope",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.uom.code",
+    operationClass: "uom_single_read",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: false, pagination: false, unit: true },
+    sourceKind: "table:rik_uoms",
+    ordering: "single_scope",
     readOnly: true,
     trafficEnabledByDefault: false,
     wiredToAppRuntime: true,

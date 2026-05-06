@@ -1,0 +1,108 @@
+{
+  "wave": "S-DIRECT-SUPABASE-BYPASS-WAREHOUSE-UOM-READ-ROUTING-1",
+  "final_status": "GREEN_DIRECT_SUPABASE_BYPASS_WAREHOUSE_UOM_READS_ROUTED_RELEASE_INTEGRATED",
+  "approvals_present": {
+    "S_PRODUCTION_MAIN_PUSH_APPROVED": true
+  },
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean": true,
+  "render_auto_deploy": false,
+  "deploy_in_progress": false,
+  "target_files": [
+    "src/screens/warehouse/warehouse.uom.repo.ts",
+    "src/screens/warehouse/warehouse.uom.repo.transport.ts",
+    "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    "scripts/server/stagingBffWarehouseApiReadPort.ts"
+  ],
+  "direct_bypass_before": [
+    {
+      "file": "src/screens/warehouse/warehouse.uom.repo.ts",
+      "function": "fetchWarehouseMaterialUnitId",
+      "operation_class": "read",
+      "domain_table_name_only": "rik_materials",
+      "bounded": true,
+      "route": "direct Supabase repository read"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.uom.repo.ts",
+      "function": "fetchWarehouseUomCode",
+      "operation_class": "read",
+      "domain_table_name_only": "rik_uoms",
+      "bounded": true,
+      "route": "direct Supabase repository read"
+    }
+  ],
+  "direct_bypass_after": [
+    {
+      "file": "src/screens/warehouse/warehouse.uom.repo.ts",
+      "direct_supabase_in_repo": false,
+      "route": "warehouse API BFF-aware read boundary"
+    }
+  ],
+  "bff_contract_added": [
+    {
+      "contract_id": "warehouse_api_read_scope_v1",
+      "operation": "warehouse.api.uom.material_unit",
+      "operation_class": "uom_single_read",
+      "read_only": true,
+      "traffic_enabled_by_default": false,
+      "source_kind": "table:rik_materials",
+      "ordering": "single_scope"
+    },
+    {
+      "contract_id": "warehouse_api_read_scope_v1",
+      "operation": "warehouse.api.uom.code",
+      "operation_class": "uom_single_read",
+      "read_only": true,
+      "traffic_enabled_by_default": false,
+      "source_kind": "table:rik_uoms",
+      "ordering": "single_scope"
+    }
+  ],
+  "filters_preserved": true,
+  "response_shape_preserved": true,
+  "cache_behavior_preserved": true,
+  "fallback_behavior_preserved": true,
+  "silent_truncation_used": false,
+  "temporary_hooks_created": false,
+  "production_db_written": false,
+  "migrations_applied": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "redeploy_triggered": false,
+  "bff_traffic_changed": false,
+  "business_calls_made": false,
+  "secrets_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "remaining_direct_bypass_paths": [
+    {
+      "file": "src/screens/warehouse/warehouse.uom.repo.transport.ts",
+      "operation_class": "read",
+      "domain_table_name_only": "rik_materials|rik_uoms",
+      "reason": "Compatibility fallback remains inside the permanent transport boundary until readonly BFF traffic is explicitly enabled."
+    }
+  ],
+  "tests_passed": [
+    "tests/api/warehouseApiBffRouting.contract.test.ts",
+    "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+    "tests/api/topListPaginationBatch7.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "artifact_json_parse": "PASS",
+  "pre_push_release_verify_status": "PASS_GATES_READINESS_BLOCKED_ONLY_BY_LOCAL_AHEAD",
+  "pre_push_release_verify_gates": {
+    "tsc": "PASS",
+    "expo_lint": "PASS",
+    "jest_run_in_band": "PASS",
+    "jest": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "release_verify_status": "PASS_AFTER_PUSH",
+  "pushed": true
+}

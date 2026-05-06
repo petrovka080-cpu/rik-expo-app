@@ -65,12 +65,20 @@ describe("warehouse API BFF readonly DB port", () => {
         args: { incomingId: "00000000-0000-0000-0000-000000000001" },
         page: { page: 1, pageSize: 25 },
       },
+      {
+        operation: "warehouse.api.uom.material_unit",
+        args: { matCode: "MAT-001" },
+      },
+      {
+        operation: "warehouse.api.uom.code",
+        args: { unitId: "00000000-0000-0000-0000-000000000002" },
+      },
     ];
 
     const plans = requests.flatMap(buildWarehouseApiReadQueryPlans);
 
     expect(plans.map((plan) => plan.readOnly).every(Boolean)).toBe(true);
-    expect(plans).toHaveLength(9);
+    expect(plans).toHaveLength(11);
     for (const plan of plans) {
       expect(plan.sql.toLowerCase().startsWith("select ")).toBe(true);
       expect(plan.sql).not.toMatch(mutationPattern);
@@ -83,5 +91,8 @@ describe("warehouse API BFF readonly DB port", () => {
     expect(plans.some((plan) => plan.sql.includes("limit $2 offset $3"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("acc_report_stock"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("wh_report_issued_materials_fast"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("from public.rik_materials"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("from public.rik_uoms"))).toBe(true);
+    expect(plans.some((plan) => plan.values.includes("MAT-001"))).toBe(true);
   });
 });
