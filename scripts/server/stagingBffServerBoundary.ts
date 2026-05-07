@@ -860,6 +860,15 @@ const getHeaderText = (
   return trimmed ? trimmed : undefined;
 };
 
+const buildSafeRateLimitRouteClassKey = (operation: BffStagingRouteDefinition["operation"]): string => {
+  const normalized = String(operation)
+    .trim()
+    .replace(/[^A-Za-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80);
+  return normalized || "unknown_route";
+};
+
 export function buildBffStagingRateLimitKeyInput(params: {
   route: BffStagingRouteDefinition;
   payload: BffStagingRequestPayload;
@@ -870,7 +879,7 @@ export function buildBffStagingRateLimitKeyInput(params: {
   return {
     actorId: getTextRecordValue(metadata, "rateLimitActorKey"),
     companyId: getTextRecordValue(metadata, "rateLimitCompanyKey"),
-    routeKey: params.route.operation,
+    routeKey: buildSafeRateLimitRouteClassKey(params.route.operation),
     ipOrDeviceKey:
       getTextRecordValue(metadata, "rateLimitIpOrDeviceKey") ??
       getHeaderText(params.headers, "x-bff-rate-limit-device-key"),
@@ -899,6 +908,38 @@ function observeBffStagingRateLimitShadow(params: {
     .evaluate({ operation, keyInput })
     .then((decision) => shadow.monitor.observe(decision))
     .catch(() => undefined);
+}
+
+async function evaluateBffStagingReadRateLimitCanary(params: {
+  route: BffStagingRouteDefinition;
+  payload: BffStagingRequestPayload;
+  headers?: Record<string, unknown> | null;
+  rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
+}): Promise<BffStagingBoundaryResponse | null> {
+  const operation = params.route.rateLimitPolicyOperation;
+  if (!operation || !params.rateLimitShadow) return null;
+
+  const keyInput = buildBffStagingRateLimitKeyInput({
+    route: params.route,
+    payload: params.payload,
+    headers: params.headers,
+  });
+  const shadow = params.rateLimitShadow;
+  try {
+    const decision = await shadow.provider.evaluate({ operation, keyInput });
+    await shadow.monitor.observe(decision).catch(() => undefined);
+    if (decision.action === "block" && decision.blocked) {
+      return buildErrorResponse(
+        429,
+        "BFF_RATE_LIMITED",
+        "Rate limit canary threshold exceeded",
+      );
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 function observeBffStagingCacheShadow(params: {
@@ -1475,16 +1516,18 @@ export async function handleBffStagingServerRequest(
   }
 
   if (route.kind === "read") {
-    observeBffStagingCacheShadow({
-      route,
-      payload,
-      cacheShadow: deps.cacheShadow,
-    });
-    observeBffStagingRateLimitShadow({
+    const rateLimitResponse = await evaluateBffStagingReadRateLimitCanary({
       route,
       payload,
       headers: request.headers,
       rateLimitShadow: deps.rateLimitShadow,
+    });
+    if (rateLimitResponse) return rateLimitResponse;
+
+    observeBffStagingCacheShadow({
+      route,
+      payload,
+      cacheShadow: deps.cacheShadow,
     });
 
     if (!deps.readPorts) {

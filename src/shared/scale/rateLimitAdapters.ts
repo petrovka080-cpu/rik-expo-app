@@ -809,13 +809,16 @@ export type RateEnforcementMode =
   | "disabled"
   | "observe_only"
   | "enforce_staging_test_namespace_only"
-  | "enforce_production_synthetic_canary_only";
+  | "enforce_production_synthetic_canary_only"
+  | "enforce_production_real_user_route_canary_only";
 
 export type RateEnforcementAction = "disabled" | "observe" | "allow" | "block";
 
 export type RuntimeRateEnforcementEnv = RateLimitStoreEnv & {
   SCALE_RATE_ENFORCEMENT_MODE?: string;
   SCALE_RATE_LIMIT_TEST_NAMESPACE?: string;
+  SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST?: string;
+  SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT?: string;
 };
 
 export type RuntimeRateEnforcementInput = {
@@ -834,6 +837,8 @@ export type RuntimeRateEnforcementDecision = {
   providerEnabled: boolean;
   blocked: boolean;
   realUsersBlocked: false;
+  routeScopedCanary: boolean;
+  routeCanarySelected: boolean;
   enforcementNamespace: string | null;
   isolatedTestNamespace: string | null;
   safeSubjectHash: string | null;
@@ -852,6 +857,8 @@ export type RuntimeRateEnforcementHealth = {
   productionGuard: boolean;
   namespace: string | null;
   isolatedTestNamespace: string | null;
+  routeCanaryAllowlistCount: number;
+  routeCanaryPercent: number;
   blocksRealUsersGlobally: false;
 };
 
@@ -861,6 +868,8 @@ export type RuntimeRateEnforcementProviderOptions = {
   adapter?: RateLimitAdapter;
   namespace?: string | null;
   isolatedTestNamespace?: string | null;
+  routeCanaryAllowlist?: readonly RateLimitEnforcementOperation[] | null;
+  routeCanaryPercent?: number;
 };
 
 export type CreateRateEnforcementProviderFromEnvOptions = {
@@ -871,6 +880,10 @@ export type CreateRateEnforcementProviderFromEnvOptions = {
 
 export const RATE_ENFORCEMENT_MODE_ENV_NAME = "SCALE_RATE_ENFORCEMENT_MODE";
 export const RATE_LIMIT_TEST_NAMESPACE_ENV_NAME = "SCALE_RATE_LIMIT_TEST_NAMESPACE";
+export const RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST_ENV_NAME =
+  "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST";
+export const RATE_LIMIT_REAL_USER_CANARY_PERCENT_ENV_NAME =
+  "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT";
 
 export type RateLimitPrivateSmokeStatus =
   | "ready"
@@ -1136,12 +1149,52 @@ const isIsolatedStagingTestNamespace = (namespace: string, expected: string): bo
   );
 };
 
+const MAX_REAL_USER_CANARY_PERCENT = 100;
+
+const parseRouteCanaryPercent = (value: unknown): number => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.min(Math.max(Math.trunc(parsed), 0), MAX_REAL_USER_CANARY_PERCENT);
+};
+
+const parseRouteCanaryAllowlist = (value: unknown): readonly RateLimitEnforcementOperation[] => {
+  const operations = normalizeText(value)
+    .split(/[,\s]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  const safeOperations: RateLimitEnforcementOperation[] = [];
+  for (const operation of operations) {
+    const policy = getRateEnforcementPolicy(operation as RateLimitEnforcementOperation);
+    if (policy?.category === "read") safeOperations.push(policy.operation);
+  }
+  return Array.from(new Set(safeOperations));
+};
+
+const hashForRouteCanaryPercent = (value: string): number => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+};
+
+const selectedForRouteCanary = (safeSubjectHash: string | null, percent: number): boolean => {
+  if (!safeSubjectHash) return false;
+  if (percent >= 100) return true;
+  if (percent <= 0) return false;
+  return hashForRouteCanaryPercent(safeSubjectHash) % 100 < percent;
+};
+
 export function resolveRateEnforcementMode(value: unknown): RateEnforcementMode {
   const normalized = normalizeText(value).toLowerCase();
   if (normalized === "observe_only") return "observe_only";
   if (normalized === "enforce_staging_test_namespace_only") return "enforce_staging_test_namespace_only";
   if (normalized === "enforce_production_synthetic_canary_only") {
     return "enforce_production_synthetic_canary_only";
+  }
+  if (normalized === "enforce_production_real_user_route_canary_only") {
+    return "enforce_production_real_user_route_canary_only";
   }
   return "disabled";
 }
@@ -1160,6 +1213,8 @@ const disabledRuntimeRateDecision = (
   providerEnabled: false,
   blocked: false,
   realUsersBlocked: false,
+  routeScopedCanary: false,
+  routeCanarySelected: false,
   enforcementNamespace: namespace,
   isolatedTestNamespace,
   safeSubjectHash: null,
@@ -1176,6 +1231,8 @@ export class RuntimeRateEnforcementProvider {
   private readonly adapter: RateLimitAdapter;
   private readonly namespace: string | null;
   private readonly isolatedTestNamespace: string | null;
+  private readonly routeCanaryAllowlist: readonly RateLimitEnforcementOperation[];
+  private readonly routeCanaryPercent: number;
 
   constructor(options: RuntimeRateEnforcementProviderOptions = {}) {
     this.mode = options.mode ?? "disabled";
@@ -1183,6 +1240,8 @@ export class RuntimeRateEnforcementProvider {
     this.adapter = options.adapter ?? createDisabledRateLimitAdapter();
     this.namespace = normalizeText(options.namespace) || null;
     this.isolatedTestNamespace = normalizeText(options.isolatedTestNamespace) || null;
+    this.routeCanaryAllowlist = Object.freeze([...(options.routeCanaryAllowlist ?? [])]);
+    this.routeCanaryPercent = parseRouteCanaryPercent(options.routeCanaryPercent);
   }
 
   async evaluate(input: RuntimeRateEnforcementInput): Promise<RuntimeRateEnforcementDecision> {
@@ -1190,8 +1249,11 @@ export class RuntimeRateEnforcementProvider {
       this.runtimeEnvironment === "production" &&
       this.mode === "enforce_production_synthetic_canary_only" &&
       input.syntheticCanary === true;
+    const productionRouteCanary =
+      this.runtimeEnvironment === "production" &&
+      this.mode === "enforce_production_real_user_route_canary_only";
 
-    if (this.runtimeEnvironment === "production" && !productionSyntheticCanary) {
+    if (this.runtimeEnvironment === "production" && !productionSyntheticCanary && !productionRouteCanary) {
       return disabledRuntimeRateDecision(input, this.mode, "production_guard", this.namespace, this.isolatedTestNamespace);
     }
     if (this.mode === "disabled") {
@@ -1207,6 +1269,30 @@ export class RuntimeRateEnforcementProvider {
         providerState: "policy_missing",
       };
     }
+    if (productionRouteCanary && policy.category !== "read") {
+      return {
+        ...disabledRuntimeRateDecision(
+          input,
+          this.mode,
+          "production_route_canary_non_read_policy",
+          this.namespace,
+          this.isolatedTestNamespace,
+        ),
+        routeScopedCanary: true,
+      };
+    }
+    if (productionRouteCanary && !this.routeCanaryAllowlist.includes(policy.operation)) {
+      return {
+        ...disabledRuntimeRateDecision(
+          input,
+          this.mode,
+          "production_route_canary_route_not_allowlisted",
+          this.namespace,
+          this.isolatedTestNamespace,
+        ),
+        routeScopedCanary: true,
+      };
+    }
 
     const key = buildSafeRateLimitKey(policy, input.keyInput);
     if (!key.ok) {
@@ -1215,6 +1301,25 @@ export class RuntimeRateEnforcementProvider {
         action: "observe",
         mode: this.mode,
         providerState: "key_rejected",
+        routeScopedCanary: productionRouteCanary,
+      };
+    }
+    const routeCanarySelected = productionRouteCanary
+      ? selectedForRouteCanary(key.subjectHash, this.routeCanaryPercent)
+      : false;
+    if (productionRouteCanary && !routeCanarySelected) {
+      return {
+        ...disabledRuntimeRateDecision(
+          input,
+          this.mode,
+          "production_route_canary_not_selected",
+          this.namespace,
+          this.isolatedTestNamespace,
+        ),
+        action: "allow",
+        routeScopedCanary: true,
+        safeSubjectHash: key.subjectHash,
+        keyLength: key.keyLength,
       };
     }
 
@@ -1233,13 +1338,14 @@ export class RuntimeRateEnforcementProvider {
       isIsolatedStagingTestNamespace(this.namespace, this.isolatedTestNamespace);
     const providerWouldBlock =
       providerDecision.state === "hard_limited" || providerDecision.state === "blocked_abuse";
-    const blocked = (canBlockInThisNamespace || productionSyntheticCanary) && providerWouldBlock;
+    const blocked =
+      (canBlockInThisNamespace || productionSyntheticCanary || routeCanarySelected) && providerWouldBlock;
     const action: RateEnforcementAction =
       this.mode === "observe_only"
         ? "observe"
         : blocked
           ? "block"
-          : canBlockInThisNamespace || productionSyntheticCanary
+          : canBlockInThisNamespace || productionSyntheticCanary || routeCanarySelected
             ? "allow"
             : "observe";
 
@@ -1251,6 +1357,8 @@ export class RuntimeRateEnforcementProvider {
       providerEnabled,
       blocked,
       realUsersBlocked: false,
+      routeScopedCanary: productionRouteCanary,
+      routeCanarySelected,
       enforcementNamespace: this.namespace,
       isolatedTestNamespace: this.isolatedTestNamespace,
       safeSubjectHash: key.subjectHash,
@@ -1261,8 +1369,12 @@ export class RuntimeRateEnforcementProvider {
       reason: blocked
         ? productionSyntheticCanary
           ? "production_synthetic_canary_limited"
-          : "isolated_test_namespace_limited"
-        : "not_blocking_real_users",
+          : routeCanarySelected
+            ? "production_real_user_route_canary_limited"
+            : "isolated_test_namespace_limited"
+        : routeCanarySelected
+          ? "production_real_user_route_canary_allow"
+          : "not_blocking_real_users",
     };
   }
 
@@ -1276,6 +1388,8 @@ export class RuntimeRateEnforcementProvider {
       productionGuard: this.runtimeEnvironment !== "production",
       namespace: this.namespace,
       isolatedTestNamespace: this.isolatedTestNamespace,
+      routeCanaryAllowlistCount: this.routeCanaryAllowlist.length,
+      routeCanaryPercent: this.routeCanaryPercent,
       blocksRealUsersGlobally: false,
     };
   }
@@ -1301,6 +1415,12 @@ export function createRateEnforcementProviderFromEnv(
     adapter,
     namespace: normalizeText(env.SCALE_RATE_LIMIT_NAMESPACE) || null,
     isolatedTestNamespace: normalizeText(env[RATE_LIMIT_TEST_NAMESPACE_ENV_NAME]) || null,
+    routeCanaryAllowlist: parseRouteCanaryAllowlist(
+      env[RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST_ENV_NAME],
+    ),
+    routeCanaryPercent: parseRouteCanaryPercent(
+      env[RATE_LIMIT_REAL_USER_CANARY_PERCENT_ENV_NAME],
+    ),
   });
 }
 
@@ -1575,6 +1695,8 @@ const privateSmokeMonitorDecision = (
   providerEnabled: result.providerEnabled,
   blocked: false,
   realUsersBlocked: false,
+  routeScopedCanary: false,
+  routeCanarySelected: false,
   enforcementNamespace: null,
   isolatedTestNamespace: null,
   safeSubjectHash: REDACTED_CARDINALITY_MARKER,

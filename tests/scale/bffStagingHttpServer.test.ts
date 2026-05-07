@@ -513,7 +513,7 @@ describe("staging BFF HTTP server wrapper", () => {
     }
   });
 
-  it("exposes ignored-route rate-limit shadow monitor state only through server-authenticated redacted aggregate data", async () => {
+  it("exposes observe-only rate-limit shadow monitor state only through server-authenticated redacted aggregate data", async () => {
     const readPorts = createReadPorts();
     const monitor = createRateLimitShadowMonitor();
     const provider = new RuntimeRateEnforcementProvider({
@@ -546,7 +546,7 @@ describe("staging BFF HTTP server wrapper", () => {
           input: { query: "cement" },
           metadata: {
             rateLimitKeyStatus: "present_redacted",
-            rateLimitIpOrDeviceKey: "device-opaque",
+            rateLimitIpOrDeviceKey: "rl-subject-a",
           },
         },
       });
@@ -562,9 +562,9 @@ describe("staging BFF HTTP server wrapper", () => {
           ok: true,
           data: expect.objectContaining({
             status: "ready",
-            wouldAllowCount: 0,
+            wouldAllowCount: 1,
             wouldThrottleCount: 0,
-            keyCardinalityRedacted: 0,
+            keyCardinalityRedacted: 1,
             rawKeysStored: false,
             rawKeysPrinted: false,
             realUsersBlocked: false,
@@ -573,7 +573,7 @@ describe("staging BFF HTTP server wrapper", () => {
       );
 
       const output = JSON.stringify({ readResponse, monitorResponse });
-      expect(output).not.toContain("device-opaque");
+      expect(output).not.toContain("rl-subject-a");
       expect(output).not.toContain("server-secret");
       expect(output).not.toContain("postgres://");
     } finally {

@@ -9,6 +9,8 @@ import {
   InMemoryRateLimitAdapter,
   NoopRateLimitAdapter,
   RATE_ENFORCEMENT_MODE_ENV_NAME,
+  RATE_LIMIT_REAL_USER_CANARY_PERCENT_ENV_NAME,
+  RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST_ENV_NAME,
   RATE_LIMIT_TEST_NAMESPACE_ENV_NAME,
   RateLimitStoreAdapter,
   RedisUrlRateLimitAdapter,
@@ -615,6 +617,8 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       "SCALE_RATE_LIMIT_NAMESPACE",
       "SCALE_RATE_ENFORCEMENT_MODE",
       "SCALE_RATE_LIMIT_TEST_NAMESPACE",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
     ]);
     expect(rateStoreEnvNames.every((name) => !name.startsWith("EXPO_PUBLIC_"))).toBe(true);
     expect(rateStoreEnvNames).not.toContain("BFF_SERVER_AUTH_SECRET");
@@ -921,6 +925,129 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
     expect(serialized).not.toContain("company-opaque");
     expect(serialized).not.toContain("idem-opaque");
     expect(serialized).not.toContain("rate:v1:");
+  });
+
+  it("enforces production real-user canary only for allowlisted read routes", async () => {
+    const policy = getRateEnforcementPolicy("marketplace.catalog.search");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const adapter = new InMemoryRateLimitAdapter({ now: () => 76_000 });
+    const provider = createRateEnforcementProviderFromEnv(
+      {
+        [RATE_ENFORCEMENT_MODE_ENV_NAME]: "enforce_production_real_user_route_canary_only",
+        [RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST_ENV_NAME]:
+          "marketplace.catalog.search proposal.submit",
+        [RATE_LIMIT_REAL_USER_CANARY_PERCENT_ENV_NAME]: "100",
+        SCALE_RATE_LIMIT_PRODUCTION_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate-limit.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
+      },
+      {
+        runtimeEnvironment: "production",
+        adapter,
+      },
+    );
+
+    expect(provider.getHealth()).toEqual(
+      expect.objectContaining({
+        mode: "enforce_production_real_user_route_canary_only",
+        runtimeEnvironment: "production",
+        routeCanaryAllowlistCount: 1,
+        routeCanaryPercent: 100,
+        blocksRealUsersGlobally: false,
+      }),
+    );
+
+    await expect(
+      provider.evaluate({
+        operation: "proposal.submit",
+        keyInput: {
+          actorId: "actor-opaque",
+          companyId: "company-opaque",
+          idempotencyKey: "idem-opaque",
+          routeKey: "proposal-submit",
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "disabled",
+        providerState: "disabled",
+        blocked: false,
+        realUsersBlocked: false,
+        routeScopedCanary: true,
+        routeCanarySelected: false,
+        reason: "production_route_canary_non_read_policy",
+      }),
+    );
+
+    const input = {
+      operation: "marketplace.catalog.search" as const,
+      keyInput: {
+        ipOrDeviceKey: "rl-subject-a",
+        routeKey: "marketplace_catalog_search",
+      },
+    };
+    let latest = await provider.evaluate(input);
+    for (let index = 0; index < policy.maxRequests + policy.burst + 1; index += 1) {
+      latest = await provider.evaluate(input);
+    }
+
+    expect(latest).toEqual(
+      expect.objectContaining({
+        action: "block",
+        mode: "enforce_production_real_user_route_canary_only",
+        operation: "marketplace.catalog.search",
+        providerState: "hard_limited",
+        blocked: true,
+        realUsersBlocked: false,
+        routeScopedCanary: true,
+        routeCanarySelected: true,
+        reason: "production_real_user_route_canary_limited",
+      }),
+    );
+    const serialized = JSON.stringify(latest);
+    expect(serialized).not.toContain("rl-subject-a");
+    expect(serialized).not.toContain("rate:v1:");
+  });
+
+  it("skips production real-user canary when percent selection does not include the subject", async () => {
+    const adapter = new InMemoryRateLimitAdapter({ now: () => 77_000 });
+    const provider = createRateEnforcementProviderFromEnv(
+      {
+        [RATE_ENFORCEMENT_MODE_ENV_NAME]: "enforce_production_real_user_route_canary_only",
+        [RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST_ENV_NAME]: "marketplace.catalog.search",
+        [RATE_LIMIT_REAL_USER_CANARY_PERCENT_ENV_NAME]: "0",
+        SCALE_RATE_LIMIT_PRODUCTION_ENABLED: "true",
+        SCALE_RATE_LIMIT_STORE_URL: "rediss://rate-limit.example.invalid",
+        SCALE_RATE_LIMIT_NAMESPACE: "rik-production",
+      },
+      {
+        runtimeEnvironment: "production",
+        adapter,
+      },
+    );
+
+    await expect(
+      provider.evaluate({
+        operation: "marketplace.catalog.search",
+        keyInput: {
+          ipOrDeviceKey: "rl-subject-a",
+          routeKey: "marketplace_catalog_search",
+        },
+      }),
+    ).resolves.toEqual(
+      expect.objectContaining({
+        action: "allow",
+        providerState: "disabled",
+        blocked: false,
+        realUsersBlocked: false,
+        routeScopedCanary: true,
+        routeCanarySelected: false,
+        reason: "production_route_canary_not_selected",
+      }),
+    );
+    expect(adapter.getHealth().trackedKeys).toBe(0);
   });
 
   it("keeps runtime enforcement key hashing PII-safe", async () => {

@@ -42,6 +42,7 @@ import {
   RuntimeRateEnforcementProvider,
   type RateLimitPrivateSmokeResult,
 } from "../../src/shared/scale/rateLimitAdapters";
+import { getRateEnforcementPolicy } from "../../src/shared/scale/rateLimitPolicies";
 import type { WarehouseApiBffPayloadDto } from "../../src/screens/warehouse/warehouse.api.bff.contract";
 import type { WarehouseApiBffReadPort } from "../../src/screens/warehouse/warehouse.api.bff.handler";
 import type { CatalogTransportBffReadResultDto } from "../../src/lib/catalog/catalog.bff.contract";
@@ -1141,7 +1142,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     });
   });
 
-  it("keeps ignored rate-limit shadow read routes from changing counters or responses", async () => {
+  it("keeps observe-only rate-limit shadow read routes from changing responses", async () => {
     const fixturePorts = createBffShadowFixturePorts();
     const route = routeByOperation("marketplace.catalog.search");
     expect(route).toBeDefined();
@@ -1182,9 +1183,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     await waitFor(() => monitor.snapshot().observedDecisionCount === 1);
     expect(monitor.snapshot()).toEqual(
       expect.objectContaining({
-        wouldAllowCount: 0,
+        wouldAllowCount: 1,
         wouldThrottleCount: 0,
-        keyCardinalityRedacted: 0,
+        keyCardinalityRedacted: 1,
         realUsersBlocked: false,
         rawKeysStored: false,
         rawKeysPrinted: false,
@@ -1211,9 +1212,9 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
         ok: true,
         data: expect.objectContaining({
           status: "ready",
-          wouldAllowCount: 0,
+          wouldAllowCount: 1,
           wouldThrottleCount: 0,
-          keyCardinalityRedacted: 0,
+          keyCardinalityRedacted: 1,
           rawKeysStored: false,
           rawKeysPrinted: false,
           realUsersBlocked: false,
@@ -1223,6 +1224,145 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const serialized = JSON.stringify({ response, monitorResponse });
     expect(serialized).not.toContain("device-opaque");
     expect(serialized).not.toContain("server-secret");
+  });
+
+  it("blocks only route-scoped production real-user canary reads with redacted 429 output", async () => {
+    const policy = getRateEnforcementPolicy("marketplace.catalog.search");
+    expect(policy).toBeTruthy();
+    if (!policy) return;
+
+    const fixturePorts = createBffShadowFixturePorts();
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    if (!route) return;
+
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "enforce_production_real_user_route_canary_only",
+      runtimeEnvironment: "production",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 112_000 }),
+      namespace: "rik-production",
+      routeCanaryAllowlist: ["marketplace.catalog.search"],
+      routeCanaryPercent: 100,
+    });
+    const request = {
+      method: "POST" as const,
+      path: route.path,
+      headers: { authorization: "Bearer server-secret" },
+      body: {
+        input: {
+          query: "cement",
+        },
+        metadata: {
+          rateLimitKeyStatus: "present_redacted",
+          rateLimitIpOrDeviceKey: "rl-subject-a",
+        },
+      },
+    };
+    const deps = {
+      readPorts: fixturePorts.read,
+      rateLimitShadow: { provider, monitor },
+      config: { serverAuthConfigured: true },
+    };
+
+    const firstResponse = await handleBffStagingServerRequest(request, deps);
+    expect(firstResponse.status).toBe(200);
+    expect(firstResponse.body.ok).toBe(true);
+
+    let latestResponse = firstResponse;
+    for (let index = 0; index < policy.maxRequests + policy.burst + 1; index += 1) {
+      latestResponse = await handleBffStagingServerRequest(request, deps);
+    }
+
+    expect(latestResponse.status).toBe(429);
+    expect(latestResponse.body).toEqual(
+      expect.objectContaining({
+        ok: false,
+        error: expect.objectContaining({
+          code: "BFF_RATE_LIMITED",
+          message: "Rate limit canary threshold exceeded",
+        }),
+      }),
+    );
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        wouldAllowCount: expect.any(Number),
+        wouldThrottleCount: expect.any(Number),
+        blockedDecisionsObserved: expect.any(Number),
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    expect(monitor.snapshot().blockedDecisionsObserved).toBeGreaterThan(0);
+
+    const serialized = JSON.stringify({ latestResponse, monitor: monitor.snapshot() });
+    expect(serialized).not.toContain("rl-subject-a");
+    expect(serialized).not.toContain("server-secret");
+    expect(serialized).not.toContain("rate:v1:");
+  });
+
+  it("does not enforce production real-user canary on mutation routes", async () => {
+    const fixturePorts = createBffShadowFixturePorts();
+    const route = routeByOperation("proposal.submit");
+    expect(route).toBeDefined();
+    if (!route) return;
+
+    const monitor = createRateLimitShadowMonitor();
+    const provider = new RuntimeRateEnforcementProvider({
+      mode: "enforce_production_real_user_route_canary_only",
+      runtimeEnvironment: "production",
+      adapter: new InMemoryRateLimitAdapter({ now: () => 113_000 }),
+      namespace: "rik-production",
+      routeCanaryAllowlist: ["marketplace.catalog.search"],
+      routeCanaryPercent: 100,
+    });
+    const body = {
+      input: {
+        idempotencyKey: "idem-opaque",
+        payload: BFF_SHADOW_MUTATION_PAYLOAD,
+      },
+      metadata: {
+        idempotencyKeyStatus: "present_redacted",
+        rateLimitKeyStatus: "present_redacted",
+        rateLimitActorKey: "actor-opaque",
+        rateLimitCompanyKey: "company-opaque",
+      },
+    };
+
+    const response = await handleBffStagingServerRequest(
+      { method: "POST", path: route.path, body },
+      {
+        mutationPorts: fixturePorts.mutation,
+        rateLimitShadow: { provider, monitor },
+        config: {
+          mutationRoutesEnabled: true,
+          mutationRouteScope: buildBffMutationRouteScopeForOperations(["proposal.submit"]),
+          idempotencyMetadataRequired: true,
+          rateLimitMetadataRequired: true,
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.ok).toBe(true);
+    await waitFor(() => monitor.snapshot().observedDecisionCount === 1);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        blockedDecisionsObserved: 0,
+        realUsersBlocked: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    const serialized = JSON.stringify({ response, monitor: monitor.snapshot() });
+    expect(serialized).not.toContain("actor-opaque");
+    expect(serialized).not.toContain("company-opaque");
+    expect(serialized).not.toContain("idem-opaque");
   });
 
   it("counts active existing mutation policies in observe-only shadow mode without changing responses", async () => {
@@ -1559,7 +1699,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(keyInput).toEqual({
       actorId: "actor-opaque",
       companyId: "company-opaque",
-      routeKey: "proposal.submit",
+      routeKey: "proposal_submit",
       ipOrDeviceKey: undefined,
       idempotencyKey: "idem-opaque",
     });
