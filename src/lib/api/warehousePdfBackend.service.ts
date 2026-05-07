@@ -10,6 +10,7 @@ import {
   removeStoredValue,
   writeStoredJson,
 } from "../storage/classifiedStorage";
+import { isAbortError, throwIfAborted } from "../requestCancellation";
 import { invokeCanonicalPdfBackend } from "./canonicalPdfBackendInvoker";
 
 const FUNCTION_NAME = "warehouse-pdf";
@@ -43,6 +44,10 @@ type WarehousePdfStoredCacheEntry = {
   version: 1;
   sourceVersion: string;
   value: WarehousePdfBackendResult;
+};
+
+type WarehousePdfBackendOptions = {
+  signal?: AbortSignal | null;
 };
 
 const warehousePdfClientCache = new Map<string, WarehousePdfClientCacheEntry>();
@@ -183,7 +188,9 @@ async function writeWarehousePdfStoredCache(
 
 async function invokeWarehousePdfBackend(
   payload: WarehousePdfRequest,
+  options?: WarehousePdfBackendOptions,
 ): Promise<WarehousePdfBackendResult> {
+  throwIfAborted(options?.signal);
   const result = await invokeCanonicalPdfBackend({
     functionName: FUNCTION_NAME,
     payload,
@@ -191,7 +198,9 @@ async function invokeWarehousePdfBackend(
     expectedDocumentType: payload.documentType,
     expectedRenderBranch: RENDER_BRANCH,
     errorPrefix: "warehouse pdf backend failed",
+    signal: options?.signal,
   });
+  throwIfAborted(options?.signal);
 
   return {
     source: result.source,
@@ -211,8 +220,11 @@ async function invokeWarehousePdfBackend(
 
 export async function generateWarehousePdfViaBackend(
   input: WarehousePdfRequest,
+  options?: WarehousePdfBackendOptions,
 ): Promise<WarehousePdfBackendResult> {
+  throwIfAborted(options?.signal);
   const payload = normalizeWarehousePdfRequest(input);
+  throwIfAborted(options?.signal);
   const boundary = beginCanonicalPdfBoundary({
     screen: "warehouse",
     surface: "warehouse_pdf_backend",
@@ -240,11 +252,14 @@ export async function generateWarehousePdfViaBackend(
   const canUseClientHotCache = canUseWarehouseRegisterHotCache(payload);
   const alreadyInFlight = warehousePdfClientInFlight.get(cacheKey);
   if (alreadyInFlight) {
-    return await alreadyInFlight;
+    const result = await alreadyInFlight;
+    throwIfAborted(options?.signal);
+    return result;
   }
 
   let task: Promise<WarehousePdfBackendResult>;
   task = Promise.resolve().then(async (): Promise<WarehousePdfBackendResult> => {
+    throwIfAborted(options?.signal);
     let manifestSourceVersion: string | null = null;
     if (canUseClientHotCache) {
       try {
@@ -264,8 +279,10 @@ export async function generateWarehousePdfViaBackend(
                 warehouseName: payload.warehouseName,
                 clientSourceFingerprint: payload.clientSourceFingerprint,
               });
+        throwIfAborted(options?.signal);
         manifestSourceVersion = manifest.sourceVersion;
       } catch (error) {
+        if (isAbortError(error)) throw error;
         boundary.error("backend_invoke_failure", error, {
           sourceKind: "backend_invoke",
           errorStage: "manifest_source_version",
@@ -278,8 +295,10 @@ export async function generateWarehousePdfViaBackend(
     }
 
     if (canUseClientHotCache) {
+      throwIfAborted(options?.signal);
       const cached = getWarehousePdfClientCache(cacheKey);
       if (cached) {
+        throwIfAborted(options?.signal);
         const isVersionMatch =
           manifestSourceVersion !== null && cached.sourceVersion === manifestSourceVersion;
         const cacheStatus = isVersionMatch ? "manifest_version_hit" : "client_hot_hit";
@@ -310,6 +329,7 @@ export async function generateWarehousePdfViaBackend(
         payload.documentKind,
         manifestSourceVersion,
       );
+      throwIfAborted(options?.signal);
       if (stored) {
         setWarehousePdfClientCache(cacheKey, stored.value, stored.sourceVersion);
         boundary.success("backend_invoke_success", {
@@ -345,7 +365,8 @@ export async function generateWarehousePdfViaBackend(
 
     let result: WarehousePdfBackendResult;
     try {
-      result = await invokeWarehousePdfBackend(payload);
+      result = await invokeWarehousePdfBackend(payload, options);
+      throwIfAborted(options?.signal);
       if (canUseClientHotCache) {
         setWarehousePdfClientCache(cacheKey, result, manifestSourceVersion);
         await writeWarehousePdfStoredCache(
@@ -354,8 +375,10 @@ export async function generateWarehousePdfViaBackend(
           result,
           manifestSourceVersion,
         );
+        throwIfAborted(options?.signal);
       }
     } catch (error) {
+      if (isAbortError(error)) throw error;
       boundary.error("backend_invoke_failure", error, {
         sourceKind: "backend_invoke",
         errorStage: "backend_invoke",

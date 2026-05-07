@@ -110,6 +110,72 @@ describe("invokeCanonicalPdfBackend", () => {
     expect(result.sourceKind).toBe("remote-url");
   });
 
+  it("passes caller abort signal into native direct fetch", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "android",
+    });
+
+    const controller = new AbortController();
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "session-token",
+        },
+      },
+    });
+    mockFetchWithRequestTimeout.mockResolvedValue(
+      new Response(JSON.stringify(successPayload), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }),
+    );
+
+    await invokeCanonicalPdfBackend({
+      functionName: "foreman-request-pdf",
+      payload: { requestId: "req-signal" },
+      expectedRole: "foreman",
+      expectedDocumentType: "request",
+      expectedRenderBranch: "backend_foreman_request_v1",
+      errorPrefix: "foreman request pdf backend failed",
+      signal: controller.signal,
+    });
+
+    expect(mockFetchWithRequestTimeout.mock.calls[0]?.[1]).toMatchObject({
+      signal: controller.signal,
+    });
+  });
+
+  it("rejects before transport when caller signal is already aborted", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "android",
+    });
+
+    const controller = new AbortController();
+    controller.abort("screen disposed");
+
+    await expect(
+      invokeCanonicalPdfBackend({
+        functionName: "foreman-request-pdf",
+        payload: { requestId: "req-aborted" },
+        expectedRole: "foreman",
+        expectedDocumentType: "request",
+        expectedRenderBranch: "backend_foreman_request_v1",
+        errorPrefix: "foreman request pdf backend failed",
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    expect(mockGetSession).not.toHaveBeenCalled();
+    expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
+  });
+
   it("keeps web on Supabase functions.invoke", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
@@ -192,6 +258,58 @@ describe("invokeCanonicalPdfBackend", () => {
     expect(result.signedUrl).toBe(successPayload.signedUrl);
   });
 
+  it("does not retry web invoke after caller aborts during auth refresh", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "web",
+    });
+
+    const controller = new AbortController();
+    mockFunctionsInvoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: "Forbidden.",
+        context: { status: 403 },
+      },
+    });
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "session-token",
+        },
+      },
+    });
+    mockRefreshSession.mockImplementation(async () => {
+      controller.abort("screen disposed");
+      return {
+        data: {
+          session: {
+            access_token: "refreshed-session-token",
+          },
+        },
+        error: null,
+      };
+    });
+
+    await expect(
+      invokeCanonicalPdfBackend({
+        functionName: "foreman-request-pdf",
+        payload: { requestId: "req-403-web-abort" },
+        expectedRole: "foreman",
+        expectedDocumentType: "request",
+        expectedRenderBranch: "backend_foreman_request_v1",
+        errorPrefix: "foreman request pdf backend failed",
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFunctionsInvoke).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).not.toHaveBeenCalled();
+  });
+
   it("refreshes the current session once and retries native direct fetch on auth-like 403 responses", async () => {
     Object.defineProperty(Platform, "OS", {
       configurable: true,
@@ -249,5 +367,64 @@ describe("invokeCanonicalPdfBackend", () => {
     expect(mockRefreshSession).toHaveBeenCalledTimes(1);
     expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(2);
     expect(result.sourceKind).toBe("remote-url");
+  });
+
+  it("does not retry native direct fetch after caller aborts during auth refresh", async () => {
+    Object.defineProperty(Platform, "OS", {
+      configurable: true,
+      get: () => "android",
+    });
+
+    const controller = new AbortController();
+    mockGetSession.mockResolvedValue({
+      data: {
+        session: {
+          access_token: "session-token",
+        },
+      },
+    });
+    mockRefreshSession.mockImplementation(async () => {
+      controller.abort("screen disposed");
+      return {
+        data: {
+          session: {
+            access_token: "refreshed-session-token",
+          },
+        },
+        error: null,
+      };
+    });
+    mockFetchWithRequestTimeout.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          errorCode: "auth_failed",
+          error: "Forbidden.",
+        }),
+        {
+          status: 403,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      ),
+    );
+
+    await expect(
+      invokeCanonicalPdfBackend({
+        functionName: "foreman-request-pdf",
+        payload: { requestId: "req-403-native-abort" },
+        expectedRole: "foreman",
+        expectedDocumentType: "request",
+        expectedRenderBranch: "backend_foreman_request_v1",
+        errorPrefix: "foreman request pdf backend failed",
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalledTimes(1);
+    expect(mockFunctionsInvoke).not.toHaveBeenCalled();
   });
 });

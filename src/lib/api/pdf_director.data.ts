@@ -236,6 +236,30 @@ export type DirectorSubcontractReportPdfModel = {
 
 type PdfRecord = Record<string, unknown>;
 
+type PdfRowLayers = {
+  record: PdfRecord;
+  raw: PdfRecord | null;
+  row: PdfRecord | null;
+  proposals: PdfRecord | null;
+};
+
+type DirectorSupplierDateFields = {
+  approvedAt: string | null;
+  paidFirstAt: string | null;
+  paidLastAt: string | null;
+  invoiceDate: string | null;
+  dueDate: string | null;
+};
+
+type DirectorSupplierSummaryItemDraft = DirectorSupplierDateFields & {
+  title: string;
+  amount: number;
+  paid: number;
+  rest: number;
+  status: string;
+  overpay: number;
+};
+
 const asRecord = (value: unknown): PdfRecord =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as PdfRecord)
@@ -257,7 +281,7 @@ const pickString = (...values: readonly unknown[]): string => {
   return "";
 };
 
-const readPdfRowLayers = (value: unknown) => {
+const readPdfRowLayers = (value: unknown): PdfRowLayers => {
   const record = asRecord(value);
   return {
     record,
@@ -330,10 +354,10 @@ const topNWithOthers = <T extends Record<string, unknown>,>(
 /* legacy untyped pdf row readers
   String(r?.supplier ?? r?.raw?.supplier ?? r?.row?.supplier ?? "").trim() || "—";
 
-const pickInvoiceNumber = (r: any) =>
+const pickInvoiceNumber = (r: unknown) =>
   String(r?.invoiceNumber ?? r?.invoice_number ?? r?.invoiceNo ?? "").trim();
 
-const pickApprovedIso = (r: any) =>
+const pickApprovedIso = (r: unknown) =>
   pickIso10(
     r?.approvedAtIso,
     r?.director_approved_at,
@@ -343,7 +367,7 @@ const pickApprovedIso = (r: any) =>
     r?.row?.director_approved_at,
   );
 
-const pickInvoiceIso = (r: any) =>
+const pickInvoiceIso = (r: unknown) =>
   pickIso10(
     r?.invoiceDate,
     r?.invoice_date,
@@ -353,14 +377,14 @@ const pickInvoiceIso = (r: any) =>
     r?.created_at,
   );
 
-const pickDueIso = (r: any) =>
+const pickDueIso = (r: unknown) =>
   pickIso10(
     r?.dueDate,
     r?.due_date,
     r?.raw?.due_at,
   );
 
-const invoiceTitle = (r: any) => {
+const invoiceTitle = (r: unknown) => {
   const invoiceNo = pickInvoiceNumber(r);
   if (invoiceNo) return `Счёт №${invoiceNo}`;
 
@@ -428,13 +452,7 @@ const invoiceTitle = (value: unknown) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const buildSupplierDatesText = (row: {
-  approvedAt: string | null;
-  paidFirstAt: string | null;
-  paidLastAt: string | null;
-  invoiceDate: string | null;
-  dueDate: string | null;
-}) =>
+const buildSupplierDatesText = (row: DirectorSupplierDateFields) =>
   joinBulletParts([
     row.approvedAt ? `утв. ${fmtDateOnly(row.approvedAt)}` : "",
     formatPaidRangeText(row.paidFirstAt, row.paidLastAt),
@@ -444,7 +462,7 @@ const buildSupplierDatesText = (row: {
 
  
 /* legacy untyped supplier pdf mapper
-  row: any,
+  row: unknown,
   overpayByProposal: Map<string, number>,
 ) => {
   const amount = nnum(row?.amount);
@@ -502,7 +520,7 @@ const buildSupplierDatesText = (row: {
 const _mapSupplierSummaryItem = (
   row: unknown,
   overpayByProposal: Map<string, number>,
-) => {
+): DirectorSupplierSummaryItemDraft => {
   const { record, raw } = readPdfRowLayers(row);
   const amount = nnum(record.amount);
   const paid = nnum(record.paidAmount);
@@ -595,15 +613,15 @@ export function prepareDirectorSupplierSummaryPdfModel(
     .filter((row) => inPeriod(row?.director_approved_at));
 
   const kindSet = new Set<string>(
-    spendForDetect.map((row: any) => kindNorm(row?.kind_name ?? row?.kindName)).filter(Boolean),
+    spendForDetect.map((row: unknown) => kindNorm(row?.kind_name ?? row?.kindName)).filter(Boolean),
   );
   const kindFilter = kindSet.size === 1 ? Array.from(kindSet)[0] : null;
 
   const spend = spendRows
     .filter((row) => String(row?.supplier ?? "").trim() === supplier)
     .filter((row) => inPeriod(row?.director_approved_at))
-    .filter((row: any) => !kindFilter || kindNorm(row?.kind_name ?? row?.kindName) === kindFilter)
-    .filter((row: any) => !onlyOverpay || nnum(row?.overpay_alloc) > 0);
+    .filter((row: unknown) => !kindFilter || kindNorm(row?.kind_name ?? row?.kindName) === kindFilter)
+    .filter((row: unknown) => !onlyOverpay || nnum(row?.overpay_alloc) > 0);
 
   const overpayByProposal = new Map<string, number>();
   for (const row of spend) {
@@ -625,14 +643,14 @@ export function prepareDirectorSupplierSummaryPdfModel(
     const spendByKind = spendRows
       .filter((row) => String(row?.supplier ?? "").trim() === supplier)
       .filter((row) => inPeriod(row?.director_approved_at))
-      .filter((row: any) => kindNorm(row?.kind_name ?? row?.kindName) === kindFilter);
+      .filter((row: unknown) => kindNorm(row?.kind_name ?? row?.kindName) === kindFilter);
 
-    totalApproved = spendByKind.reduce((sum, row: any) => sum + nnum(row?.approved_alloc), 0);
-    totalPaid = spendByKind.reduce((sum, row: any) => sum + nnum(row?.paid_alloc_cap ?? row?.paid_alloc), 0);
+    totalApproved = spendByKind.reduce((sum, row: unknown) => sum + nnum(row?.approved_alloc), 0);
+    totalPaid = spendByKind.reduce((sum, row: unknown) => sum + nnum(row?.paid_alloc_cap ?? row?.paid_alloc), 0);
     totalRest = Math.max(totalApproved - totalPaid, 0);
 
     const proposalIds = new Set<string>(
-      spendByKind.map((row: any) => String(row?.proposal_id ?? "").trim()).filter(Boolean),
+      spendByKind.map((row: unknown) => String(row?.proposal_id ?? "").trim()).filter(Boolean),
     );
 
     const finance = financeRows
@@ -643,14 +661,14 @@ export function prepareDirectorSupplierSummaryPdfModel(
         return proposalId && proposalIds.has(proposalId);
       });
 
-    items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));
+    items = finance.map((row: unknown) => mapSupplierSummaryItem(row, overpayByProposal));
     if (onlyOverpay) items = items.filter((row) => nnum(row.overpay) > 0);
   } else {
     const finance = financeRows
       .filter((row) => String(row?.supplier ?? "").trim() === supplier)
       .filter((row) => inPeriod(row?.approvedAtIso ?? row?.approved_at ?? row?.director_approved_at));
 
-    items = finance.map((row: any) => mapSupplierSummaryItem(row, overpayByProposal));
+    items = finance.map((row: unknown) => mapSupplierSummaryItem(row, overpayByProposal));
     if (onlyOverpay) items = items.filter((row) => nnum(row.overpay) > 0);
 
     totalApproved = items.reduce((sum, row) => sum + nnum(row.amount), 0);
@@ -988,12 +1006,12 @@ export function prepareDirectorProductionReportPdfModel(
   const issuesNoObject = nnum(kpi?.issues_without_object ?? kpi?.issues_no_obj);
   const itemsNoRequest = nnum(kpi?.items_without_request ?? kpi?.items_free);
 
-  const worksSorted = [...works].sort((left: any, right: any) => nnum(right?.total_positions) - nnum(left?.total_positions));
+  const worksSorted = [...works].sort((left: unknown, right: unknown) => nnum(right?.total_positions) - nnum(left?.total_positions));
   const worksTop = worksSorted.slice(0, 50);
   const materialRows = [...rows]
-    .sort((left: any, right: any) => nnum(right?.qty_total) - nnum(left?.qty_total))
+    .sort((left: unknown, right: unknown) => nnum(right?.qty_total) - nnum(left?.qty_total))
     .slice(0, 60)
-    .map((row: any) => ({
+    .map((row: unknown) => ({
       title: String(row?.name_human_ru ?? row?.rik_code ?? "—"),
       qtyTotal: nnum(row?.qty_total),
       uom: String(row?.uom ?? ""),
@@ -1023,8 +1041,8 @@ export function prepareDirectorProductionReportPdfModel(
     .sort((left, right) => right.positions - left.positions);
 
   const withoutWork = worksSorted
-    .filter((work: any) => String(work?.work_type_name ?? "").trim().toLowerCase() === "без вида работ")
-    .reduce((sum: number, work: any) => sum + nnum(work?.total_positions), 0);
+    .filter((work: unknown) => String(work?.work_type_name ?? "").trim().toLowerCase() === "без вида работ")
+    .reduce((sum: number, work: unknown) => sum + nnum(work?.total_positions), 0);
 
   const issueCost = nnum(disciplineSummary?.issue_cost_total);
   const purchaseCost = nnum(disciplineSummary?.purchase_cost_total);
@@ -1036,7 +1054,7 @@ export function prepareDirectorProductionReportPdfModel(
     periodText: formatDashPeriodText(from, to),
     objectName,
     generatedAt,
-    worksRows: worksTop.map((work: any) => ({
+    worksRows: worksTop.map((work: unknown) => ({
       workTypeName: String(work?.work_type_name ?? "").trim() || "—",
       totalPositions: nnum(work?.total_positions),
       reqPositions: nnum(work?.req_positions),
@@ -1090,18 +1108,18 @@ export function prepareDirectorSubcontractReportPdfModelFromRows(
   const objectName = String(p.objectName ?? "").trim() || null;
   const generatedAt = new Date().toLocaleString("ru-RU");
 
-  const rows: any[] = Array.isArray(rowsInput) ? rowsInput : [];
+  const rows: unknown[] = Array.isArray(rowsInput) ? rowsInput : [];
 
-  const approvedLike = rows.filter((row: any) => ["approved", "closed"].includes(String(row?.status ?? "").trim()));
-  const approved = rows.filter((row: any) => String(row?.status ?? "").trim() === "approved");
-  const pending = rows.filter((row: any) => String(row?.status ?? "").trim() === "pending");
-  const rejected = rows.filter((row: any) => String(row?.status ?? "").trim() === "rejected");
+  const approvedLike = rows.filter((row: unknown) => ["approved", "closed"].includes(String(row?.status ?? "").trim()));
+  const approved = rows.filter((row: unknown) => String(row?.status ?? "").trim() === "approved");
+  const pending = rows.filter((row: unknown) => String(row?.status ?? "").trim() === "pending");
+  const rejected = rows.filter((row: unknown) => String(row?.status ?? "").trim() === "rejected");
 
-  const sumApproved = approvedLike.reduce((sum: number, row: any) => sum + nnum(row?.total_price), 0);
-  const noAmount = approvedLike.filter((row: any) => nnum(row?.total_price) <= 0).length;
-  const noWork = approvedLike.filter((row: any) => !String(row?.work_type ?? "").trim()).length;
-  const noObject = approvedLike.filter((row: any) => !String(row?.object_name ?? "").trim()).length;
-  const noContractor = approvedLike.filter((row: any) => !String(row?.contractor_org ?? "").trim()).length;
+  const sumApproved = approvedLike.reduce((sum: number, row: unknown) => sum + nnum(row?.total_price), 0);
+  const noAmount = approvedLike.filter((row: unknown) => nnum(row?.total_price) <= 0).length;
+  const noWork = approvedLike.filter((row: unknown) => !String(row?.work_type ?? "").trim()).length;
+  const noObject = approvedLike.filter((row: unknown) => !String(row?.object_name ?? "").trim()).length;
+  const noContractor = approvedLike.filter((row: unknown) => !String(row?.contractor_org ?? "").trim()).length;
 
   const byContractor = new Map<string, { count: number; amount: number; objects: Set<string>; works: Set<string> }>();
   const byObject = new Map<string, { count: number; amount: number; contractors: Set<string>; works: Set<string> }>();
@@ -1182,8 +1200,8 @@ export function prepareDirectorSubcontractReportPdfModelFromRows(
       }))
       .sort((left, right) => right.amount - left.amount),
     approvedRows: [...approvedLike]
-      .sort((left: any, right: any) => String(right?.approved_at ?? "").localeCompare(String(left?.approved_at ?? "")))
-      .map((row: any) => ({
+      .sort((left: unknown, right: unknown) => String(right?.approved_at ?? "").localeCompare(String(left?.approved_at ?? "")))
+      .map((row: unknown) => ({
         displayNo: String(row?.display_no ?? row?.id ?? "").slice(0, 20),
         contractor: String(row?.contractor_org ?? "").trim() || "—",
         objectName: String(row?.object_name ?? "").trim() || "—",

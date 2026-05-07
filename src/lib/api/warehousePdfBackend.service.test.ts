@@ -118,6 +118,38 @@ describe("warehousePdfBackend.service PDF-Z3 reuse", () => {
     );
   });
 
+  it("passes caller abort signal into the canonical PDF backend", async () => {
+    const fingerprint = uniqueFingerprint("signal");
+    const controller = new AbortController();
+
+    await generateWarehousePdfViaBackend(buildIncomingRegisterRequest(fingerprint), {
+      signal: controller.signal,
+    });
+
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        functionName: "warehouse-pdf",
+        signal: controller.signal,
+      }),
+    );
+  });
+
+  it("rejects before cache or transport work when caller signal is already aborted", async () => {
+    const controller = new AbortController();
+    controller.abort("screen disposed");
+
+    await expect(
+      generateWarehousePdfViaBackend(buildIncomingRegisterRequest(uniqueFingerprint("aborted")), {
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    expect(mockReadStoredJson).not.toHaveBeenCalled();
+    expect(mockInvokeCanonicalPdfBackend).not.toHaveBeenCalled();
+  });
+
   it("does not reuse the client cache after meaningful incoming data changes", async () => {
     const base = uniqueFingerprint("change");
     await generateWarehousePdfViaBackend(buildIncomingRegisterRequest(`${base}-a`));

@@ -51,6 +51,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
   updatedAt?: string | null;
   objectName?: string | null;
   title?: string | null;
+  signal?: AbortSignal | null;
 }) {
   const requestId = normalizeRequestId(args.requestId);
   if (!requestId) {
@@ -65,7 +66,7 @@ export async function buildForemanRequestPdfDescriptor(args: {
     });
   }
 
-  const backend = await generateForemanRequestPdfViaBackend({
+  const request = {
     version: "v1",
     role: "foreman",
     documentType: "request",
@@ -79,7 +80,11 @@ export async function buildForemanRequestPdfDescriptor(args: {
       updatedAt: args.updatedAt ?? null,
       objectName: args.objectName ?? null,
     }),
-  });
+  } as const;
+
+  const backend = args.signal
+    ? await generateForemanRequestPdfViaBackend(request, { signal: args.signal })
+    : await generateForemanRequestPdfViaBackend(request);
 
   const displayNo = String(args.displayNo ?? "").trim();
   const title =

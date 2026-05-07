@@ -103,6 +103,38 @@ describe("foremanRequestPdfBackend.service PDF-Z4 reuse", () => {
     );
   });
 
+  it("passes caller abort signal into the canonical PDF backend", async () => {
+    const fingerprint = uniqueFingerprint("signal");
+    const controller = new AbortController();
+
+    await generateForemanRequestPdfViaBackend(buildRequest(fingerprint), {
+      signal: controller.signal,
+    });
+
+    expect(mockInvokeCanonicalPdfBackend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        functionName: "foreman-request-pdf",
+        signal: controller.signal,
+      }),
+    );
+  });
+
+  it("rejects before cache or transport work when caller signal is already aborted", async () => {
+    const controller = new AbortController();
+    controller.abort("screen disposed");
+
+    await expect(
+      generateForemanRequestPdfViaBackend(buildRequest(uniqueFingerprint("aborted")), {
+        signal: controller.signal,
+      }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    expect(mockReadStoredJson).not.toHaveBeenCalled();
+    expect(mockInvokeCanonicalPdfBackend).not.toHaveBeenCalled();
+  });
+
   it("does not reuse the client cache after meaningful request data changes", async () => {
     const base = uniqueFingerprint("change");
     await generateForemanRequestPdfViaBackend(buildRequest(`${base}-a`));

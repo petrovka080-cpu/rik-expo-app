@@ -1,6 +1,7 @@
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import { Platform } from "react-native";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
+import { isAbortError, throwIfAborted } from "../requestCancellation";
 import { redactSensitiveText } from "../security/redaction";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
 import {
@@ -37,6 +38,7 @@ type InvokeCanonicalPdfBackendArgs = {
   expectedDocumentType: CanonicalPdfBackendDocumentType;
   expectedRenderBranch: string;
   errorPrefix: string;
+  signal?: AbortSignal | null;
 };
 
 export type CanonicalPdfInvokeSuccess = {
@@ -220,47 +222,61 @@ function summarizeFunctionResponse(value: unknown): string | null {
   }
 }
 
-async function resolveEdgeFunctionAccessToken() {
+async function resolveEdgeFunctionAccessToken(signal?: AbortSignal | null) {
+  throwIfAborted(signal);
   try {
     if (!supabase?.auth || typeof supabase.auth.getSession !== "function") {
       return SUPABASE_ANON_KEY;
     }
     const session = await supabase.auth.getSession();
+    throwIfAborted(signal);
     return trimText(session.data.session?.access_token) || SUPABASE_ANON_KEY;
   } catch (error) {
+    if (isAbortError(error)) throw error;
     logCanonicalPdfBoundaryDiagnostic("resolve_access_token_failed", error);
     return SUPABASE_ANON_KEY;
   }
 }
 
-async function refreshSessionOnce() {
+async function refreshSessionOnce(signal?: AbortSignal | null) {
+  throwIfAborted(signal);
   try {
     if (!supabase?.auth || typeof supabase.auth.getSession !== "function") return false;
     const current = await supabase.auth.getSession();
+    throwIfAborted(signal);
     if (!current.data.session || typeof supabase.auth.refreshSession !== "function") return false;
     const refreshed = await supabase.auth.refreshSession();
+    throwIfAborted(signal);
     return Boolean(refreshed.data.session && !refreshed.error);
   } catch (error) {
+    if (isAbortError(error)) throw error;
     logCanonicalPdfBoundaryDiagnostic("refresh_session_failed", error);
     return false;
   }
 }
 
 async function invokeOnce(args: InvokeCanonicalPdfBackendArgs) {
-  return await supabase.functions.invoke<unknown>(args.functionName, {
+  throwIfAborted(args.signal);
+  const result = await supabase.functions.invoke<unknown>(args.functionName, {
     body: args.payload,
     headers: {
       Accept: "application/json",
     },
   });
+  throwIfAborted(args.signal);
+  return result;
 }
 
-async function readFunctionResponseBody(response: Response) {
+async function readFunctionResponseBody(response: Response, signal?: AbortSignal | null) {
+  throwIfAborted(signal);
   const contentType = trimText(response.headers.get("Content-Type")).toLowerCase();
   if (contentType.includes("application/json")) {
     try {
-      return await response.json();
+      const data = await response.json();
+      throwIfAborted(signal);
+      return data;
     } catch (error) {
+      if (isAbortError(error)) throw error;
       logCanonicalPdfBoundaryDiagnostic(
         "read_json_response_failed",
         error,
@@ -271,8 +287,10 @@ async function readFunctionResponseBody(response: Response) {
   }
   try {
     const text = await response.text();
+    throwIfAborted(signal);
     return trimText(text) || null;
   } catch (error) {
+    if (isAbortError(error)) throw error;
     logCanonicalPdfBoundaryDiagnostic(
       "read_text_response_failed",
       error,
@@ -283,7 +301,8 @@ async function readFunctionResponseBody(response: Response) {
 }
 
 async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
-  const accessToken = await resolveEdgeFunctionAccessToken();
+  throwIfAborted(args.signal);
+  const accessToken = await resolveEdgeFunctionAccessToken(args.signal);
   const url = `${SUPABASE_URL}/functions/v1/${args.functionName}`;
 
   if (__DEV__) console.info("[canonical-pdf-backend] native_fetch_start", {
@@ -306,6 +325,7 @@ async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
           "x-client-info": "rik-expo-app",
         },
         body: JSON.stringify(args.payload),
+        signal: args.signal ?? undefined,
       },
       {
         fetchImpl: fetch,
@@ -328,7 +348,7 @@ async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
 
     let data: unknown;
     try {
-      data = await readFunctionResponseBody(response);
+      data = await readFunctionResponseBody(response, args.signal);
     } catch (parseError) {
       if (__DEV__) console.error("[canonical-pdf-backend] native_parse_failed", {
         functionName: args.functionName,
@@ -354,6 +374,7 @@ async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
       response,
     };
   } catch (error) {
+    if (isAbortError(error)) throw error;
     const detail = extractTransportErrorDetail(error);
     if (__DEV__) console.error("[canonical-pdf-backend] direct_fetch_failed", {
       functionName: args.functionName,
@@ -414,7 +435,9 @@ function normalizeCanonicalPdfResult(
 async function invokeCanonicalPdfBackendViaDirectFetch(
   args: InvokeCanonicalPdfBackendArgs,
 ): Promise<CanonicalPdfInvokeSuccess> {
+  throwIfAborted(args.signal);
   let attempt = await invokeDirectFetchOnce(args);
+  throwIfAborted(args.signal);
   let payloadError = extractCanonicalPdfErrorPayload(attempt.data);
   const detail = summarizeFunctionResponse(attempt.data);
   const authLikeDetail = (detail ?? "").toLowerCase();
@@ -427,8 +450,10 @@ async function invokeCanonicalPdfBackendViaDirectFetch(
     authLikeDetail.includes("unauthorized") ||
     authLikeDetail.includes("permission");
 
-  if (shouldRetryAuth && (await refreshSessionOnce())) {
+  if (shouldRetryAuth && (await refreshSessionOnce(args.signal))) {
+    throwIfAborted(args.signal);
     attempt = await invokeDirectFetchOnce(args);
+    throwIfAborted(args.signal);
     payloadError = extractCanonicalPdfErrorPayload(attempt.data);
   }
 
@@ -467,13 +492,17 @@ async function invokeCanonicalPdfBackendViaDirectFetch(
 async function invokeCanonicalPdfBackendViaSupabase(
   args: InvokeCanonicalPdfBackendArgs,
 ): Promise<CanonicalPdfInvokeSuccess> {
+  throwIfAborted(args.signal);
   let attempt = await invokeOnce(args);
+  throwIfAborted(args.signal);
 
   const firstPayloadError = extractCanonicalPdfErrorPayload(attempt.data);
   if (firstPayloadError?.errorCode === "auth_failed") {
-    const refreshed = await refreshSessionOnce();
+    const refreshed = await refreshSessionOnce(args.signal);
+    throwIfAborted(args.signal);
     if (refreshed) {
       attempt = await invokeOnce(args);
+      throwIfAborted(args.signal);
     }
   } else if (attempt.error) {
     const message = trimText(attempt.error.message);
@@ -487,9 +516,11 @@ async function invokeCanonicalPdfBackendViaSupabase(
       lower.includes("unauthorized") ||
       lower.includes("permission")
     ) {
-      const refreshed = await refreshSessionOnce();
+      const refreshed = await refreshSessionOnce(args.signal);
+      throwIfAborted(args.signal);
       if (refreshed) {
         attempt = await invokeOnce(args);
+        throwIfAborted(args.signal);
       }
     }
   }
@@ -537,6 +568,7 @@ export async function invokeCanonicalPdfBackend(
   args: InvokeCanonicalPdfBackendArgs,
 ): Promise<CanonicalPdfInvokeSuccess> {
   const normalizedArgs = normalizeCanonicalPdfInvokeArgs(args);
+  throwIfAborted(normalizedArgs.signal);
   if (isNativeRuntime()) {
     return await invokeCanonicalPdfBackendViaDirectFetch(normalizedArgs);
   }

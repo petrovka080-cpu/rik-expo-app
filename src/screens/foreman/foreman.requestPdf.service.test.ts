@@ -117,6 +117,31 @@ describe("foreman.requestPdf.service", () => {
     expect(descriptor.title).toBe("Request REQ-123");
   });
 
+  it("threads caller abort signal from descriptor builder into the backend request", async () => {
+    const controller = new AbortController();
+
+    await buildForemanRequestPdfDescriptor({
+      requestId: "123",
+      generatedBy: "Ivan",
+      displayNo: "REQ-123",
+      status: "pending",
+      createdAt: "2026-04-04T00:00:00.000Z",
+      updatedAt: "2026-04-04T00:00:00.000Z",
+      objectName: "Tower A",
+      title: "Request REQ-123",
+      signal: controller.signal,
+    });
+
+    expect(mockGenerateForemanRequestPdfViaBackend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestId: "123",
+        generatedBy: "Ivan",
+        clientSourceFingerprint: expect.stringMatching(/^frq_client_v1_/),
+      }),
+      { signal: controller.signal },
+    );
+  });
+
   it("builds a lazy history preview plan with dismiss-before-navigate semantics", async () => {
     const plan = createForemanHistoryPdfPreviewPlan({
       requestId: "req-77",

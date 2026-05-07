@@ -12,6 +12,7 @@ import {
   writeStoredJson,
 } from "../storage/classifiedStorage";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "../supabaseClient";
+import { isAbortError, throwIfAborted } from "../requestCancellation";
 import { invokeCanonicalPdfBackend } from "./canonicalPdfBackendInvoker";
 
 const FUNCTION_NAME = "foreman-request-pdf";
@@ -45,6 +46,10 @@ type ForemanRequestPdfStoredCacheEntry = {
   version: 1;
   sourceVersion: string;
   value: ForemanRequestPdfBackendResult;
+};
+
+type ForemanRequestPdfBackendOptions = {
+  signal?: AbortSignal | null;
 };
 
 const foremanRequestPdfClientCache = new Map<string, ForemanRequestPdfClientCacheEntry>();
@@ -162,7 +167,9 @@ async function writeForemanRequestPdfStoredCache(
 
 async function invokeForemanRequestPdfBackend(
   payload: ForemanRequestPdfRequest,
+  options?: ForemanRequestPdfBackendOptions,
 ): Promise<ForemanRequestPdfBackendResult> {
+  throwIfAborted(options?.signal);
   const result = await invokeCanonicalPdfBackend({
     functionName: FUNCTION_NAME,
     payload,
@@ -170,7 +177,9 @@ async function invokeForemanRequestPdfBackend(
     expectedDocumentType: "request",
     expectedRenderBranch: RENDER_BRANCH,
     errorPrefix: "foreman request pdf backend failed",
+    signal: options?.signal,
   });
+  throwIfAborted(options?.signal);
 
   return {
     source: result.source,
@@ -190,7 +199,9 @@ async function invokeForemanRequestPdfBackend(
 
 export async function generateForemanRequestPdfViaBackend(
   input: ForemanRequestPdfRequest,
+  options?: ForemanRequestPdfBackendOptions,
 ): Promise<ForemanRequestPdfBackendResult> {
+  throwIfAborted(options?.signal);
   const boundary = beginCanonicalPdfBoundary({
     screen: "foreman",
     surface: "foreman_pdf_backend",
@@ -201,6 +212,7 @@ export async function generateForemanRequestPdfViaBackend(
   });
 
   const payload = normalizeForemanRequestPdfRequest(input);
+  throwIfAborted(options?.signal);
   boundary.success("payload_ready", {
     sourceKind: "backend_payload",
     extra: {
@@ -223,11 +235,14 @@ export async function generateForemanRequestPdfViaBackend(
   const canUseClientHotCache = Boolean(payload.clientSourceFingerprint);
   const alreadyInFlight = foremanRequestPdfClientInFlight.get(cacheKey);
   if (alreadyInFlight) {
-    return await alreadyInFlight;
+    const result = await alreadyInFlight;
+    throwIfAborted(options?.signal);
+    return result;
   }
 
   let task: Promise<ForemanRequestPdfBackendResult>;
   task = Promise.resolve().then(async (): Promise<ForemanRequestPdfBackendResult> => {
+    throwIfAborted(options?.signal);
     let manifestSourceVersion: string | null = null;
     if (canUseClientHotCache) {
       try {
@@ -235,8 +250,10 @@ export async function generateForemanRequestPdfViaBackend(
           requestId: payload.requestId,
           clientSourceFingerprint: payload.clientSourceFingerprint,
         });
+        throwIfAborted(options?.signal);
         manifestSourceVersion = manifest.sourceVersion;
       } catch (error) {
+        if (isAbortError(error)) throw error;
         boundary.error("backend_invoke_failure", error, {
           sourceKind: "backend_invoke",
           errorStage: "manifest_source_version",
@@ -249,8 +266,10 @@ export async function generateForemanRequestPdfViaBackend(
     }
 
     if (canUseClientHotCache) {
+      throwIfAborted(options?.signal);
       const cached = getForemanRequestPdfClientCache(cacheKey);
       if (cached) {
+        throwIfAborted(options?.signal);
         const isVersionMatch =
           manifestSourceVersion !== null && cached.sourceVersion === manifestSourceVersion;
         const cacheStatus = isVersionMatch ? "manifest_version_hit" : "client_hot_hit";
@@ -276,6 +295,7 @@ export async function generateForemanRequestPdfViaBackend(
       }
 
       const stored = await readForemanRequestPdfStoredCache(cacheKey, manifestSourceVersion);
+      throwIfAborted(options?.signal);
       if (stored) {
         setForemanRequestPdfClientCache(cacheKey, stored.value, stored.sourceVersion);
         boundary.success("backend_invoke_success", {
@@ -310,12 +330,15 @@ export async function generateForemanRequestPdfViaBackend(
 
     let result: ForemanRequestPdfBackendResult;
     try {
-      result = await invokeForemanRequestPdfBackend(payload);
+      result = await invokeForemanRequestPdfBackend(payload, options);
+      throwIfAborted(options?.signal);
       if (canUseClientHotCache) {
         setForemanRequestPdfClientCache(cacheKey, result, manifestSourceVersion);
         await writeForemanRequestPdfStoredCache(cacheKey, result, manifestSourceVersion);
+        throwIfAborted(options?.signal);
       }
     } catch (error) {
+      if (isAbortError(error)) throw error;
       boundary.error("backend_invoke_failure", error, {
         sourceKind: "backend_invoke",
         errorStage: "backend_invoke",
