@@ -116,12 +116,22 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
 });
 
 export function useBuyerScreenContentProps({
+  s,
+  isWeb,
+  tab,
+  buyerFio,
+  searchQuery,
+  onChangeSearchQuery,
   onRefresh,
   fetchInboxNextPage,
+  showWebRefreshButton,
+  refreshAccessibilityLabel,
+  measuredHeaderMax,
+  scrollY,
   stickyHeader,
+  mainListHeaderPad,
   mainList,
   sheets,
-  ...rest
 }: UseBuyerScreenContentPropsParams): BuyerScreenContentProps {
   const buyerContentRefresh = useCallback(() => {
     void onRefresh();
@@ -481,12 +491,38 @@ export function useBuyerScreenContentProps({
 
   return useMemo<BuyerScreenContentProps>(
     () => ({
-      ...rest,
+      s,
+      isWeb,
+      tab,
+      buyerFio,
+      searchQuery,
+      onChangeSearchQuery,
       onRefresh: buyerContentRefresh,
+      showWebRefreshButton,
+      refreshAccessibilityLabel,
+      measuredHeaderMax,
+      scrollY,
       stickyHeader: stableStickyHeader,
+      mainListHeaderPad,
       mainList: stableMainList,
       sheets: stableSheets,
     }),
-    [buyerContentRefresh, rest, stableMainList, stableSheets, stableStickyHeader],
+    [
+      s,
+      isWeb,
+      tab,
+      buyerFio,
+      searchQuery,
+      onChangeSearchQuery,
+      buyerContentRefresh,
+      showWebRefreshButton,
+      refreshAccessibilityLabel,
+      measuredHeaderMax,
+      scrollY,
+      stableStickyHeader,
+      mainListHeaderPad,
+      stableMainList,
+      stableSheets,
+    ],
   );
 }
