@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Platform, Pressable, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 function startOfDay(d: Date) {
@@ -184,14 +184,7 @@ export default function PeriodPickerSheet({
                   if (it.key === "week") return applyPreset("week");
                   return applyPreset("month");
                 }}
-                style={{
-                  paddingVertical: 16,
-                  paddingHorizontal: 16,
-                  borderTopWidth: idx === 0 ? 0 : 1,
-                  borderColor: "rgba(255,255,255,0.10)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                style={[styles.menuOption, idx === 0 ? styles.noBorderTop : null]}
               >
                 <Text style={{ color: UI.accentBlue, fontWeight: "900", fontSize: 18 }}>{it.label}</Text>
               </Pressable>
@@ -203,14 +196,7 @@ export default function PeriodPickerSheet({
                   onClear();
                   closeAll();
                 }}
-                style={{
-                  paddingVertical: 14,
-                  paddingHorizontal: 16,
-                  borderTopWidth: 1,
-                  borderColor: "rgba(255,255,255,0.10)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+                style={styles.clearOption}
               >
                 <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16 }}>Сбросить период</Text>
               </Pressable>
@@ -218,32 +204,23 @@ export default function PeriodPickerSheet({
 
             <Pressable
               onPress={closeAll}
-              style={{
-                marginTop: 8,
-                paddingVertical: 16,
-                paddingHorizontal: 16,
-                borderTopWidth: 1,
-                borderColor: "rgba(255,255,255,0.10)",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(255,255,255,0.04)",
-              }}
+              style={styles.cancelOption}
             >
               <Text style={{ color: UI.accentBlue, fontWeight: "900", fontSize: 18 }}>Отмена</Text>
             </Pressable>
           </>
         ) : (
-          <View style={{ paddingBottom: 12 }}>
-            <View style={{ alignItems: "center", paddingVertical: 10 }}>
-              <View style={{ width: 48, height: 5, borderRadius: 999, backgroundColor: "rgba(255,255,255,0.18)" }} />
+          <View style={styles.pickerBody}>
+            <View style={styles.handleWrap}>
+              <View style={styles.handle} />
             </View>
 
             {Platform.OS === "web" ? (
               <>
-                <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+                <View style={styles.labelWrap}>
                   <Text style={{ color: UI.sub, fontWeight: "900" }}>Начало (YYYY-MM-DD)</Text>
                 </View>
-                <View style={{ paddingHorizontal: 16 }}>
+                <View style={styles.inputWrap}>
                   <TextInput
                     value={webFrom}
                     onChangeText={setWebFrom}
@@ -261,12 +238,12 @@ export default function PeriodPickerSheet({
                   />
                 </View>
 
-                <View style={{ height: 10 }} />
+                <View style={styles.spacer10} />
 
-                <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+                <View style={styles.labelWrap}>
                   <Text style={{ color: UI.sub, fontWeight: "900" }}>Конец (YYYY-MM-DD)</Text>
                 </View>
-                <View style={{ paddingHorizontal: 16 }}>
+                <View style={styles.inputWrap}>
                   <TextInput
                     value={webTo}
                     onChangeText={setWebTo}
@@ -327,7 +304,7 @@ export default function PeriodPickerSheet({
               </>
             ) : (
               <>
-                <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+                <View style={styles.labelWrap}>
                   <Text style={{ color: UI.sub, fontWeight: "900" }}>Начало:</Text>
                 </View>
 
@@ -342,14 +319,14 @@ export default function PeriodPickerSheet({
                     style={{ backgroundColor: UI.cardBg }}
                   />
                 ) : (
-                  <Pressable onPress={() => setAndroidPick("from")} style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                  <Pressable onPress={() => setAndroidPick("from")} style={styles.androidDateButton}>
                     <Text style={{ color: UI.text, fontWeight: "900" }}>{ymd(tmpFrom)}</Text>
                   </Pressable>
                 )}
 
-                <View style={{ height: 10 }} />
+                <View style={styles.spacer10} />
 
-                <View style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+                <View style={styles.labelWrap}>
                   <Text style={{ color: UI.sub, fontWeight: "900" }}>Конец:</Text>
                 </View>
 
@@ -364,7 +341,7 @@ export default function PeriodPickerSheet({
                     style={{ backgroundColor: UI.cardBg }}
                   />
                 ) : (
-                  <Pressable onPress={() => setAndroidPick("to")} style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
+                  <Pressable onPress={() => setAndroidPick("to")} style={styles.androidDateButton}>
                     <Text style={{ color: UI.text, fontWeight: "900" }}>{ymd(tmpTo)}</Text>
                   </Pressable>
                 )}
@@ -427,3 +404,62 @@ export default function PeriodPickerSheet({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  androidDateButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  cancelOption: {
+    marginTop: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.04)",
+  },
+  clearOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  handle: {
+    width: 48,
+    height: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  handleWrap: {
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  inputWrap: {
+    paddingHorizontal: 16,
+  },
+  labelWrap: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+  },
+  menuOption: {
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.10)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  noBorderTop: {
+    borderTopWidth: 0,
+  },
+  pickerBody: {
+    paddingBottom: 12,
+  },
+  spacer10: {
+    height: 10,
+  },
+});

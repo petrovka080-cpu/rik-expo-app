@@ -7,6 +7,7 @@ import {
   TextInput,
   Platform,
   StatusBar,
+  StyleSheet,
 } from "react-native";
 import type { Filters, Kind } from "./types";
 
@@ -78,31 +79,25 @@ export default function FiltersModal({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: UI.bg, paddingTop: topInset }}>
+      <View style={[styles.root, { paddingTop: topInset }]}>
         <View
-          style={{
-            paddingHorizontal: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            zIndex: 10,
-          }}
+          style={styles.header}
         >
-          <Pressable onPress={onClose} style={{ paddingVertical: 8, paddingHorizontal: 10 }}>
-            <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>←</Text>
+          <Pressable onPress={onClose} style={styles.headerButton}>
+            <Text style={styles.headerButtonText}>←</Text>
           </Pressable>
 
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>Фильтры</Text>
+          <Text style={styles.headerTitle}>Фильтры</Text>
 
-          <Pressable onPress={onReset} style={{ paddingVertical: 8, paddingHorizontal: 10 }}>
-            <Text style={{ color: UI.accent, fontWeight: "900", fontSize: 16 }}>Reset</Text>
+          <Pressable onPress={onReset} style={styles.headerButton}>
+            <Text style={styles.resetText}>Reset</Text>
           </Pressable>
         </View>
 
-        <View style={{ paddingHorizontal: 16, marginTop: 14 }}>
+        <View style={styles.body}>
           {/* Side */}
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>Режим</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+          <Text style={styles.sectionTitle}>Режим</Text>
+          <View style={styles.chipsRow}>
             {sides.map((c) => {
               const active = side === c.k;
               return (
@@ -125,8 +120,8 @@ export default function FiltersModal({
           </View>
 
           {/* Kind */}
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16, marginTop: 18 }}>Тип</Text>
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+          <Text style={styles.sectionTitleSpaced}>Тип</Text>
+          <View style={styles.chipsRow}>
             {kinds.map((c) => {
               const active = kind === c.k;
               return (
@@ -149,10 +144,10 @@ export default function FiltersModal({
           </View>
 
           {/* Price */}
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16, marginTop: 18 }}>Цена</Text>
-          <View style={{ flexDirection: "row", gap: 10, marginTop: 10 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>Min</Text>
+          <Text style={styles.sectionTitleSpaced}>Цена</Text>
+          <View style={styles.priceRow}>
+            <View style={styles.flexOne}>
+              <Text style={styles.inputLabel}>Min</Text>
               <TextInput
                 value={min}
                 onChangeText={setMin}
@@ -171,8 +166,8 @@ export default function FiltersModal({
               />
             </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: UI.sub, fontWeight: "800", marginBottom: 6 }}>Max</Text>
+            <View style={styles.flexOne}>
+              <Text style={styles.inputLabel}>Max</Text>
               <TextInput
                 value={max}
                 onChangeText={setMax}
@@ -193,7 +188,7 @@ export default function FiltersModal({
           </View>
 
           {/* City */}
-          <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16, marginTop: 18 }}>Город</Text>
+          <Text style={styles.sectionTitleSpaced}>Город</Text>
           <TextInput
             value={city}
             onChangeText={setCity}
@@ -212,12 +207,12 @@ export default function FiltersModal({
           />
         </View>
 
-        <View style={{ marginTop: "auto", padding: 16, borderTopWidth: 1, borderTopColor: UI.border }}>
+        <View style={styles.footer}>
           <Pressable
             onPress={apply}
-            style={{ backgroundColor: UI.accent, borderRadius: 14, paddingVertical: 14, alignItems: "center" }}
+            style={styles.applyButton}
           >
-            <Text style={{ color: "#0B1120", fontWeight: "900", fontSize: 16 }}>
+            <Text style={styles.applyText}>
               Показать {resultsCount} результатов
             </Text>
           </Pressable>
@@ -226,4 +221,88 @@ export default function FiltersModal({
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  applyButton: {
+    backgroundColor: UI.accent,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  applyText: {
+    color: "#0B1120",
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  body: {
+    paddingHorizontal: 16,
+    marginTop: 14,
+  },
+  chipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 10,
+  },
+  flexOne: {
+    flex: 1,
+  },
+  footer: {
+    marginTop: "auto",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: UI.border,
+  },
+  header: {
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    zIndex: 10,
+  },
+  headerButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  headerButtonText: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  headerTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  inputLabel: {
+    color: UI.sub,
+    fontWeight: "800",
+    marginBottom: 6,
+  },
+  priceRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  resetText: {
+    color: UI.accent,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  root: {
+    flex: 1,
+    backgroundColor: UI.bg,
+  },
+  sectionTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  sectionTitleSpaced: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+    marginTop: 18,
+  },
+});
 

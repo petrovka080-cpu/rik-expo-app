@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, Modal, Pressable, Text, View } from "react-native";
+import { Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PeriodPickerSheet from "../../components/PeriodPickerSheet";
@@ -137,7 +137,7 @@ export default function DirectorReportsModal({
     const docs = Number(item.docs_cnt || 0);
     const docsNoReq = Number(item.docs_free || 0);
     return (
-      <View style={[s.mobCard, { marginBottom: 10 }]}>
+      <View style={[s.mobCard, styles.cardMb10]}>
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
           <Text style={s.mobMeta} numberOfLines={2}>
@@ -146,17 +146,17 @@ export default function DirectorReportsModal({
           </Text>
         </View>
         {noWorkNameCount > 0 ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
             {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
           </Text>
         ) : null}
         {unresolvedNamesCount > 0 ? (
-          <Text style={[s.mobMeta, { marginTop: 4, color: "#FBBF24" }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4WarningText]} numberOfLines={3}>
             {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
           </Text>
         ) : null}
         {reportDiagnostics ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
             {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
           </Text>
         ) : null}
@@ -171,9 +171,9 @@ export default function DirectorReportsModal({
         onCloseRepObj();
         await applyObjectFilter(item);
       }}
-      style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}
+      style={[s.mobCard, styles.cardMx12Mb10]}
     >
-      <Text style={{ color: UI.text, fontWeight: "900" }} numberOfLines={2}>{item}</Text>
+      <Text style={styles.objectOptionText} numberOfLines={2}>{item}</Text>
     </Pressable>
   ), [applyObjectFilter, onCloseRepObj]);
 
@@ -194,14 +194,14 @@ export default function DirectorReportsModal({
       .join(" | ");
 
     return (
-      <Pressable onPress={() => openWorkDetail(item)} style={[s.mobCard, { marginBottom: 10 }]}>
+      <Pressable onPress={() => openWorkDetail(item)} style={[s.mobCard, styles.cardMb10]}>
         <View style={s.mobMain}>
           <Text style={[s.mobTitle, isMissingWork ? { color: "#EF4444" } : null]} numberOfLines={1}>{item.work_type_name}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{`Позиции: ${item.total_positions} · Локации: ${Number(item.location_count ?? locations.length)}`}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{`По заявке: ${item.req_positions} · Свободно: ${item.free_positions}`}</Text>
           {preview ? <Text style={s.mobMeta} numberOfLines={2}>{preview}</Text> : null}
           {isMissingWork ? (
-            <Text style={[s.mobMeta, { color: "#FCA5A5" }]} numberOfLines={2}>
+            <Text style={[s.mobMeta, styles.errorSoftText]} numberOfLines={2}>
               Позиции без заполненного work_name в подтверждённых выдачах. Это пробел данных, а не ошибка интерфейса.
             </Text>
           ) : null}
@@ -211,7 +211,7 @@ export default function DirectorReportsModal({
   }, [WITHOUT_WORK_PREFIX, compactParts, normKey, openWorkDetail]);
 
   const renderLevelRow = React.useCallback(({ item }: { item: RepDisciplineLevel }) => (
-    <Pressable onPress={() => openLevelDetail(item)} style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+    <Pressable onPress={() => openLevelDetail(item)} style={[s.mobCard, styles.cardMx12Mb10]}>
       <View style={s.mobMain}>
         <Text style={s.mobTitle} numberOfLines={2}>{item.location_label || item.level_name}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{compactParts([item.object_name, item.level_name]).join(" / ")}</Text>
@@ -225,7 +225,7 @@ export default function DirectorReportsModal({
   ), [compactParts, openLevelDetail]);
 
   const renderLevelMaterialRow = React.useCallback(({ item }: { item: RepDisciplineLevel["materials"][number] }) => (
-    <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+    <View style={[s.mobCard, styles.cardMx12Mb10]}>
       <View style={s.mobMain}>
         <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
@@ -235,7 +235,7 @@ export default function DirectorReportsModal({
   ), []);
 
   const renderWorkTopMaterialRow = React.useCallback(({ item }: { item: typeof topWorkMaterials[number] }) => (
-    <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+    <View style={[s.mobCard, styles.cardMx12Mb10]}>
       <View style={s.mobMain}>
         <Text style={s.mobTitle} numberOfLines={2}>{item.material_name}</Text>
         <Text style={s.mobMeta} numberOfLines={1}>{`${item.qty_sum} ${item.uom || ""}`}</Text>
@@ -263,7 +263,7 @@ export default function DirectorReportsModal({
   );
 
   const disciplineListHeader = React.useMemo(() => (
-    <View style={[s.mobCard, { marginBottom: 10, borderColor: ratioTint }]}>
+    <View style={[s.mobCard, styles.cardMb10, { borderColor: ratioTint }]}>
       <View style={s.mobMain}>
         <Text style={s.mobTitle}>Расход / Закупки (%)</Text>
         <Text style={[s.mobTitle, { color: ratioTint }]}>{`Расход / Закупки: ${repDisciplinePriceLoading ? "…" : ratioText}`}</Text>
@@ -284,7 +284,7 @@ export default function DirectorReportsModal({
   const levelModalHeader = React.useMemo(() => {
     if (!levelModal) return null;
     return (
-      <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+      <View style={[s.mobCard, styles.cardMx12Mb10]}>
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={2}>{levelModal.level.location_label || levelModal.level.level_name}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{compactParts([levelModal.level.object_name, levelModal.level.level_name]).join(" / ")}</Text>
@@ -300,7 +300,7 @@ export default function DirectorReportsModal({
   const workModalHeader = React.useMemo(() => {
     if (!workModal) return null;
     return (
-      <View style={[s.mobCard, { marginHorizontal: 12, marginBottom: 10 }]}>
+      <View style={[s.mobCard, styles.cardMx12Mb10]}>
         <View style={s.mobMain}>
           <Text style={s.mobTitle} numberOfLines={1}>{workModal.work_type_name}</Text>
           <Text style={s.mobMeta} numberOfLines={1}>{`Локации: ${sortedWorkLevels.length}`}</Text>
@@ -367,20 +367,20 @@ export default function DirectorReportsModal({
           >
             <Pressable
               onPress={onCloseRepObj}
-              style={{ flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.55)" }}
+              style={styles.objectOverlayBackdrop}
             >
               <Pressable onPress={() => {}} style={s.sheet}>
                 <View style={s.sheetHandle} />
-                <View style={{ flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 14, paddingBottom: 10 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }}>{`${objectCountLabel} (${objectCount})`}</Text>
+                <View style={styles.objectSheetHeader}>
+                  <Text style={styles.objectSheetTitle}>{`${objectCountLabel} (${objectCount})`}</Text>
                   <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
                 </View>
                 <FlashList
-                  style={{ maxHeight: 420 }}
+                  style={styles.objectOptionsList}
                   data={objectOptions}
                   renderItem={renderObjectOptionRow}
                   keyExtractor={objectOptionKeyExtractor}
-                  contentContainerStyle={{ paddingBottom: 4 }}
+                  contentContainerStyle={styles.listBottomPad4}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
                 />
@@ -438,9 +438,9 @@ export default function DirectorReportsModal({
         ) : null
       }
     >
-      <View style={{ marginBottom: 10 }}>
+      <View style={styles.mb10}>
         <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>Склад</Text>
-        <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        <View style={styles.filterWrap}>
           <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
             <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
           </Pressable>
@@ -454,28 +454,28 @@ export default function DirectorReportsModal({
           ) : null}
           {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
         </View>
-        <Text style={[s.mobMeta, { marginTop: 6 }]} numberOfLines={2}>{objectCountLabel}</Text>
-        <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>{objectCountExplanation}</Text>
+        <Text style={[s.mobMeta, styles.mt6]} numberOfLines={2}>{objectCountLabel}</Text>
+        <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>{objectCountExplanation}</Text>
         {noWorkNameCount > 0 ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
             {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
           </Text>
         ) : null}
         {unresolvedNamesCount > 0 ? (
-          <Text style={[s.mobMeta, { marginTop: 4, color: "#FBBF24" }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4WarningText]} numberOfLines={3}>
             {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
           </Text>
         ) : null}
         {reportDiagnostics ? (
-          <Text style={[s.mobMeta, { marginTop: 4 }]} numberOfLines={3}>
+          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
             {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
           </Text>
         ) : null}
       </View>
 
       {repTab === "materials" ? (
-        <View style={{ marginBottom: 10 }}>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={styles.mb10}>
+          <View style={styles.rowGap8}>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
               <Text style={s.kpiLabel}>Документов</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
@@ -485,8 +485,8 @@ export default function DirectorReportsModal({
               <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
             </View>
           </View>
-          <View style={{ height: 8 }} />
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={styles.spacer8} />
+          <View style={styles.rowGap8}>
             <View style={[s.kpiPillHalf, { flex: 1 }]}>
               <Text style={s.kpiLabel}>Без объекта</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : `${issuesNoObj} · ${pct(issuesNoObj, issuesTotal)}%`}</Text>
@@ -499,7 +499,7 @@ export default function DirectorReportsModal({
         </View>
       ) : null}
 
-      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+      <View style={styles.tabsRow}>
         {(["materials", "discipline"] as RepTab[]).map((tab) => {
           const active = repTab === tab;
           return (
@@ -517,30 +517,30 @@ export default function DirectorReportsModal({
         })}
       </View>
 
-      <View style={{ flex: 1, minHeight: 0 }}>
+      <View style={styles.contentFlex}>
         {repTab === "materials" ? (
           <FlashList
-            style={{ flex: 1 }}
+            style={styles.flexOne}
             data={rows}
             renderItem={renderMaterialRow}
             keyExtractor={materialRowKeyExtractor}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 4 }}
+            contentContainerStyle={styles.listBottomPad4}
             ListEmptyComponent={!repLoading && !rows.length ? (
               <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text>
             ) : null}
           />
         ) : (
           <FlashList
-            style={{ flex: 1 }}
+            style={styles.flexOne}
             data={sortedWorks}
             renderItem={renderWorkRow}
             keyExtractor={disciplineWorkKeyExtractor}
             ListHeaderComponent={disciplineListHeader}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 4 }}
+            contentContainerStyle={styles.listBottomPad4}
             ListEmptyComponent={!repLoading && !sortedWorks.length ? (
               <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
             ) : null}
@@ -548,7 +548,7 @@ export default function DirectorReportsModal({
         )}
       </View>
 
-      <View style={{ marginTop: 10, flexDirection: "row", gap: 8 }}>
+      <View style={styles.footerActions}>
         <Pressable
           onPress={() => Alert.alert("Excel", "Позже добавим выгрузку Excel.")}
           style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
@@ -566,3 +566,82 @@ export default function DirectorReportsModal({
     </DirectorFinanceCardModal>
   );
 }
+
+const styles = StyleSheet.create({
+  cardMb10: {
+    marginBottom: 10,
+  },
+  cardMx12Mb10: {
+    marginHorizontal: 12,
+    marginBottom: 10,
+  },
+  contentFlex: {
+    flex: 1,
+    minHeight: 0,
+  },
+  errorSoftText: {
+    color: "#FCA5A5",
+  },
+  filterWrap: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  flexOne: {
+    flex: 1,
+  },
+  footerActions: {
+    marginTop: 10,
+    flexDirection: "row",
+    gap: 8,
+  },
+  listBottomPad4: {
+    paddingBottom: 4,
+  },
+  mb10: {
+    marginBottom: 10,
+  },
+  mt4: {
+    marginTop: 4,
+  },
+  mt4WarningText: {
+    marginTop: 4,
+    color: "#FBBF24",
+  },
+  mt6: {
+    marginTop: 6,
+  },
+  objectOptionText: {
+    color: UI.text,
+    fontWeight: "900",
+  },
+  objectOptionsList: {
+    maxHeight: 420,
+  },
+  objectOverlayBackdrop: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  objectSheetHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+  objectSheetTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  rowGap8: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  spacer8: {
+    height: 8,
+  },
+  tabsRow: {
+    flexDirection: "row",
+    marginBottom: 10,
+  },
+});
