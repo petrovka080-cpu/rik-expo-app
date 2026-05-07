@@ -6,9 +6,11 @@ import { config as loadDotenv } from "dotenv";
 
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildStagingLoadTargetExecutionPlan,
   buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
   buildStagingLoadMatrix,
+  countStagingLoadTargetExecutionPlanRequests,
   countRowsFromRpcData,
   createEnvMissingResult,
   createNotRunResult,
@@ -25,6 +27,7 @@ import {
   type StagingLoadTargetResult,
 } from "./stagingLoadCore";
 
+loadDotenv({ path: ".env.agent.staging.local", override: false });
 loadDotenv({ path: ".env.staging.local", override: false });
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -57,6 +60,44 @@ type CliOptions = {
   profile: StagingLoadRunProfile;
   planOnly: boolean;
   allowLive: boolean;
+  maxConcurrency: number | null;
+};
+
+type StagingBffProbeStatus = {
+  statusCode: number | null;
+  ok: boolean;
+  errorCategory: string | null;
+  readPortsConfigured?: boolean | null;
+  mutationRoutesEnabled?: boolean | null;
+};
+
+type StagingBffProbeSummary = {
+  stagingBffBaseUrlPresent: boolean;
+  productionTargetUsed: boolean;
+  health: StagingBffProbeStatus;
+  ready: StagingBffProbeStatus;
+};
+
+type LiveLoadMetrics = {
+  targetCount: number;
+  totalRequestsPlanned: number;
+  totalRequestsAttempted: number;
+  totalRequestsCompleted: number;
+  totalRequestsAborted: number;
+  maxConcurrencyConfigured: number;
+  maxConcurrencyObserved: number;
+  requestTimeoutMs: number;
+  maxErrorRate: number;
+  observedErrorRate: number;
+  latencyP50: number | null;
+  latencyP95: number | null;
+  latencyP99: number | null;
+  timeoutCount: number;
+  abortTriggered: boolean;
+  abortReason: string | null;
+  statusClassCounts: Record<string, number>;
+  errorCategoryCounts: Record<string, number>;
+  healthReadyDuring: Array<{ health: number | null; ready: number | null }>;
 };
 
 const readFlagValue = (flag: string): string | null => {
@@ -70,18 +111,39 @@ const readFlagValue = (flag: string): string | null => {
 
 const hasFlag = (flag: string): boolean => process.argv.includes(flag);
 
+const parsePositiveIntegerValue = (value: string | null): number | null => {
+  if (value == null) return null;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  return Math.trunc(parsed);
+};
+
 const parseCliOptions = (): CliOptions => {
   const profileValue = readFlagValue("--profile");
   const profile: StagingLoadRunProfile =
     profileValue === "bounded-5k" ? "bounded-5k" : profileValue === "bounded-1k" ? "bounded-1k" : "smoke";
+  const maxConcurrency = parsePositiveIntegerValue(readFlagValue("--max-concurrency"));
   return {
     profile,
     planOnly: hasFlag("--plan-only") || profile !== "smoke",
     allowLive: hasFlag("--allow-live"),
+    maxConcurrency,
   };
 };
 
 const isTruthyEnv = (key: string): boolean => /^(?:1|true|yes)$/i.test(String(process.env[key] ?? "").trim());
+
+const LOAD_PROOF_APPROVAL_KEYS = [
+  "S_5K_STAGING_READONLY_LOAD_PROOF_APPROVED",
+  "S_5K_STAGING_READONLY_LOAD_PROOF_ROLLBACK_ABORT_APPROVED",
+  "S_LOAD_PROOF_STAGING_READONLY_ONLY_APPROVED",
+  "S_LOAD_PROOF_NO_BUSINESS_MUTATIONS_APPROVED",
+  "S_LOAD_PROOF_ABORT_ON_HEALTH_READY_FAILURE_APPROVED",
+  "S_LOAD_PROOF_ABORT_ON_ERROR_RATE_APPROVED",
+  "S_LOAD_PROOF_REDACTED_METRICS_ONLY_APPROVED",
+] as const;
+
+const allLoadProofApprovalsPresent = (): boolean => LOAD_PROOF_APPROVAL_KEYS.every(isTruthyEnv);
 
 const writeText = (relativePath: string, content: string) => {
   const fullPath = path.join(projectRoot, relativePath);
@@ -138,6 +200,82 @@ const createAbortController = (timeoutMs: number) => {
   };
 };
 
+const percentile = (values: number[], fraction: number): number | null => {
+  const sorted = values.filter(Number.isFinite).sort((left, right) => left - right);
+  if (sorted.length === 0) return null;
+  const index = Math.min(sorted.length - 1, Math.ceil(sorted.length * fraction) - 1);
+  return sorted[index] ?? null;
+};
+
+const increment = (record: Record<string, number>, key: string) => {
+  record[key] = (record[key] ?? 0) + 1;
+};
+
+const probeStagingBff = async (pathName: "/health" | "/ready"): Promise<StagingBffProbeStatus> => {
+  const baseUrl = String(process.env.STAGING_BFF_BASE_URL ?? "").trim();
+  if (!baseUrl) {
+    return { statusCode: null, ok: false, errorCategory: "missing_staging_bff_base_url" };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const response = await fetch(new URL(pathName, baseUrl).toString(), {
+      method: "GET",
+      headers: { accept: "application/json" },
+      signal: controller.signal,
+    });
+    const status: StagingBffProbeStatus = {
+      statusCode: response.status,
+      ok: response.status === 200,
+      errorCategory: null,
+    };
+    if (pathName === "/ready") {
+      const text = await response.text();
+      let body: unknown = null;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = null;
+      }
+      const data =
+        body && typeof body === "object" && "data" in body && typeof (body as { data?: unknown }).data === "object"
+          ? ((body as { data: Record<string, unknown> }).data)
+          : {};
+      status.readPortsConfigured = data.readPortsConfigured === true;
+      status.mutationRoutesEnabled = data.mutationRoutesEnabled === true;
+    }
+    return status;
+  } catch (error) {
+    return {
+      statusCode: null,
+      ok: false,
+      errorCategory: error instanceof Error && error.name === "AbortError" ? "timeout" : "request_failed",
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const probeStagingBffReadiness = async (): Promise<StagingBffProbeSummary> => {
+  const stagingBffBaseUrl = String(process.env.STAGING_BFF_BASE_URL ?? "").trim();
+  const productionTargets = [
+    "PRODUCTION_BFF_BASE_URL",
+    "PROD_BFF_BASE_URL",
+    "PRODUCTION_API_BASE_URL",
+    "PROD_API_BASE_URL",
+  ]
+    .map((key) => String(process.env[key] ?? "").trim())
+    .filter(Boolean);
+  const [health, ready] = await Promise.all([probeStagingBff("/health"), probeStagingBff("/ready")]);
+  return {
+    stagingBffBaseUrlPresent: stagingBffBaseUrl.length > 0,
+    productionTargetUsed: stagingBffBaseUrl.length > 0 && productionTargets.includes(stagingBffBaseUrl),
+    health,
+    ready,
+  };
+};
+
 const collectTarget = async (
   client: RpcClient,
   target: StagingLoadTarget,
@@ -188,23 +326,188 @@ const collectTarget = async (
   }
 };
 
+const collectBoundedLiveLoadTargets = async (
+  client: RpcClient,
+  targets: StagingLoadTarget[],
+  harnessPlan: StagingLoadHarnessPlan,
+): Promise<{ results: StagingLoadTargetResult[]; metrics: LiveLoadMetrics }> => {
+  const executionPlan = buildStagingLoadTargetExecutionPlan(targets, harnessPlan.stopConditions.maxTotalRequests);
+  const queue = executionPlan.flatMap((item) => Array.from({ length: item.runs }, () => item.target));
+  const targetSamples = new Map<string, StagingLoadSample[]>();
+  const targetErrors = new Map<string, string[]>();
+  const allLatencies: number[] = [];
+  const statusClassCounts: Record<string, number> = {};
+  const errorCategoryCounts: Record<string, number> = {};
+  const healthReadyDuring: Array<{ health: number | null; ready: number | null }> = [];
+
+  let active = 0;
+  let maxConcurrencyObserved = 0;
+  let totalRequestsAttempted = 0;
+  let totalRequestsCompleted = 0;
+  let errorCount = 0;
+  let timeoutCount = 0;
+  let abortTriggered = false;
+  let abortReason: string | null = null;
+  let nextReadinessProbeAt = 250;
+  let readinessProbeInFlight: Promise<void> | null = null;
+
+  const configuredConcurrency = Math.max(1, Math.min(harnessPlan.targetConcurrency, queue.length || 1));
+
+  const triggerAbort = (reason: string) => {
+    if (!abortTriggered) {
+      abortTriggered = true;
+      abortReason = reason;
+    }
+  };
+
+  const maybeProbeReadiness = async () => {
+    if (totalRequestsAttempted < nextReadinessProbeAt || readinessProbeInFlight) return;
+    nextReadinessProbeAt += 250;
+    readinessProbeInFlight = (async () => {
+      const probe = await probeStagingBffReadiness();
+      healthReadyDuring.push({
+        health: probe.health.statusCode,
+        ready: probe.ready.statusCode,
+      });
+      if (!probe.health.ok || !probe.ready.ok || probe.ready.readPortsConfigured !== true) {
+        triggerAbort("health_ready_failed_during_load");
+      }
+      if (probe.productionTargetUsed) {
+        triggerAbort("production_target_selected_during_load");
+      }
+    })().finally(() => {
+      readinessProbeInFlight = null;
+    });
+    await readinessProbeInFlight;
+  };
+
+  const runTarget = async (target: StagingLoadTarget) => {
+    if (abortTriggered) return;
+    active += 1;
+    maxConcurrencyObserved = Math.max(maxConcurrencyObserved, active);
+    totalRequestsAttempted += 1;
+    const abortController = createAbortController(harnessPlan.stopConditions.requestTimeoutMs);
+    const startedAt = Date.now();
+    try {
+      const result = await client.rpc(target.rpcName, target.args, { signal: abortController.signal }).finally(() => {
+        abortController.clear();
+      });
+      const latencyMs = Date.now() - startedAt;
+      if (abortController.signal.aborted || latencyMs > harnessPlan.stopConditions.requestTimeoutMs) {
+        timeoutCount += 1;
+        errorCount += 1;
+        increment(statusClassCounts, "timeout");
+        increment(errorCategoryCounts, "timeout");
+        targetErrors.set(target.id, [...(targetErrors.get(target.id) ?? []), "timeout"]);
+      } else if (result.error) {
+        const message = result.error.message ?? "staging_readonly_rpc_failed";
+        errorCount += 1;
+        increment(statusClassCounts, "error");
+        if (harnessPlan.stopConditions.stopOnSqlstate57014 && isTimeout57014(message)) {
+          increment(errorCategoryCounts, "sqlstate_57014");
+          targetErrors.set(target.id, [...(targetErrors.get(target.id) ?? []), "sqlstate_57014"]);
+          triggerAbort("sqlstate_57014");
+        } else if (harnessPlan.stopConditions.stopOnHttp429Or5xx && isHttp429Or5xx(message)) {
+          increment(errorCategoryCounts, "http_429_or_5xx");
+          targetErrors.set(target.id, [...(targetErrors.get(target.id) ?? []), "http_429_or_5xx"]);
+          triggerAbort("http_429_or_5xx");
+        } else {
+          increment(errorCategoryCounts, "staging_read_error");
+          targetErrors.set(target.id, [...(targetErrors.get(target.id) ?? []), "staging_read_error"]);
+        }
+      } else {
+        totalRequestsCompleted += 1;
+        increment(statusClassCounts, "ok");
+        allLatencies.push(latencyMs);
+        const samples = targetSamples.get(target.id) ?? [];
+        samples.push({
+          latencyMs,
+          payloadBytes: payloadBytes(result.data),
+          rowCount: countRowsFromRpcData(result.data),
+        });
+        targetSamples.set(target.id, samples);
+      }
+
+      const observedErrorRate = totalRequestsAttempted > 0 ? errorCount / totalRequestsAttempted : 0;
+      if (observedErrorRate > harnessPlan.stopConditions.maxErrorRate) {
+        triggerAbort("error_rate_exceeded");
+      }
+      await maybeProbeReadiness();
+    } finally {
+      active -= 1;
+    }
+  };
+
+  const worker = async () => {
+    while (queue.length > 0 && !abortTriggered) {
+      const target = queue.shift();
+      if (target) await runTarget(target);
+    }
+  };
+
+  await Promise.all(Array.from({ length: configuredConcurrency }, () => worker()));
+  if (readinessProbeInFlight) await readinessProbeInFlight;
+
+  const results = targets.map((target) => {
+    const samples = targetSamples.get(target.id) ?? [];
+    const summary = summarizeTargetResult(target, samples);
+    return {
+      ...summary,
+      samples: [],
+      status: samples.length > 0 ? "collected" : "runtime_error",
+      errors: targetErrors.get(target.id) ?? [],
+    } satisfies StagingLoadTargetResult;
+  });
+  const abortedUnstarted = abortTriggered ? queue.length : 0;
+  const observedErrorRate = totalRequestsAttempted > 0 ? errorCount / totalRequestsAttempted : 0;
+
+  return {
+    results,
+    metrics: {
+      targetCount: targets.length,
+      totalRequestsPlanned: countStagingLoadTargetExecutionPlanRequests(executionPlan),
+      totalRequestsAttempted,
+      totalRequestsCompleted,
+      totalRequestsAborted: abortedUnstarted,
+      maxConcurrencyConfigured: configuredConcurrency,
+      maxConcurrencyObserved,
+      requestTimeoutMs: harnessPlan.stopConditions.requestTimeoutMs,
+      maxErrorRate: harnessPlan.stopConditions.maxErrorRate,
+      observedErrorRate,
+      latencyP50: percentile(allLatencies, 0.5),
+      latencyP95: percentile(allLatencies, 0.95),
+      latencyP99: percentile(allLatencies, 0.99),
+      timeoutCount,
+      abortTriggered,
+      abortReason,
+      statusClassCounts,
+      errorCategoryCounts,
+      healthReadyDuring,
+    },
+  };
+};
+
 async function main() {
   const generatedAt = new Date().toISOString();
   const cliOptions = parseCliOptions();
   const envStatus = resolveStagingLoadEnvStatus(process.env);
+  const loadProofApprovalsPresent = allLoadProofApprovalsPresent();
+  const targetConcurrency =
+    cliOptions.maxConcurrency ??
+    (cliOptions.profile === "bounded-5k"
+      ? 5_000
+      : cliOptions.profile === "bounded-1k"
+        ? 1_000
+        : DEFAULT_STAGING_LOAD_TARGETS.length);
   const harnessPlan = buildStagingLoadHarnessPlan({
     envStatus,
     profile: cliOptions.profile,
     planOnly: cliOptions.planOnly && !cliOptions.allowLive,
-    operatorApproved: cliOptions.allowLive || isTruthyEnv("STAGING_LOAD_OPERATOR_APPROVED"),
-    supabaseLimitsConfirmed: isTruthyEnv("STAGING_SUPABASE_LIMITS_CONFIRMED"),
-    enterpriseLoadApproved: isTruthyEnv("S_LOAD_STAGING_5K_READONLY_APPROVED"),
-    targetConcurrency:
-      cliOptions.profile === "bounded-5k"
-        ? 5_000
-        : cliOptions.profile === "bounded-1k"
-          ? 1_000
-          : DEFAULT_STAGING_LOAD_TARGETS.length,
+    operatorApproved:
+      cliOptions.allowLive || isTruthyEnv("STAGING_LOAD_OPERATOR_APPROVED") || loadProofApprovalsPresent,
+    supabaseLimitsConfirmed: isTruthyEnv("STAGING_SUPABASE_LIMITS_CONFIRMED") || loadProofApprovalsPresent,
+    enterpriseLoadApproved: isTruthyEnv("S_LOAD_STAGING_5K_READONLY_APPROVED") || loadProofApprovalsPresent,
+    targetConcurrency,
   });
   const loadRunnerSafetyConfig = buildLoadRunnerReadonlySafetyConfig({
     rails: {
@@ -215,27 +518,64 @@ async function main() {
     },
   });
   const loadRunnerSafetyDryRun = await runLoadRunnerEmulatorDryRun(loadRunnerSafetyConfig);
+  const liveTargetProbe =
+    cliOptions.allowLive && cliOptions.profile === "bounded-5k"
+      ? await probeStagingBffReadiness()
+      : null;
+  const liveTargetBlockers =
+    liveTargetProbe == null
+      ? []
+      : [
+          ...(liveTargetProbe.stagingBffBaseUrlPresent ? [] : ["staging_bff_base_url_missing"]),
+          ...(liveTargetProbe.productionTargetUsed ? ["production_target_selected"] : []),
+          ...(liveTargetProbe.health.ok ? [] : ["health_failed_before_load"]),
+          ...(liveTargetProbe.ready.ok ? [] : ["ready_failed_before_load"]),
+          ...(liveTargetProbe.ready.readPortsConfigured === true ? [] : ["read_ports_not_configured"]),
+          ...(liveTargetProbe.ready.mutationRoutesEnabled === true ? ["mutation_routes_enabled"] : []),
+        ];
   const safeHarnessPlan = {
     ...harnessPlan,
-    safeToRunLive: harnessPlan.safeToRunLive && loadRunnerSafetyDryRun.status === "passed",
+    safeToRunLive:
+      harnessPlan.safeToRunLive &&
+      loadRunnerSafetyDryRun.status === "passed" &&
+      liveTargetBlockers.length === 0,
     blockers: [
       ...harnessPlan.blockers,
       ...loadRunnerSafetyDryRun.errors.map((error) => `load_runner_safety:${error}`),
+      ...liveTargetBlockers,
     ],
   };
   const targets = DEFAULT_STAGING_LOAD_TARGETS;
+  let liveLoadMetrics: LiveLoadMetrics | null = null;
 
-  const results = safeHarnessPlan.safeToRunLive
-    ? await Promise.all(targets.map((target) => collectTarget(createReadOnlyClient(), target, safeHarnessPlan)))
-    : !envStatus.canRunLive
-      ? targets.map((target) => createEnvMissingResult(target, envStatus.missingKeys))
-      : targets.map((target) =>
-          createNotRunResult(
-            target,
-            safeHarnessPlan.planOnly ? "not_run_plan_only" : "not_run_blocked",
-            safeHarnessPlan.blockers.length ? safeHarnessPlan.blockers : ["plan_only"],
-          ),
-        );
+  let results: StagingLoadTargetResult[];
+  if (safeHarnessPlan.safeToRunLive) {
+    if (safeHarnessPlan.profile === "bounded-5k") {
+      const live = await collectBoundedLiveLoadTargets(createReadOnlyClient(), targets, safeHarnessPlan);
+      results = live.results;
+      liveLoadMetrics = live.metrics;
+      if (
+        live.metrics.abortTriggered ||
+        live.metrics.totalRequestsCompleted < safeHarnessPlan.stopConditions.maxTotalRequests ||
+        live.metrics.observedErrorRate > safeHarnessPlan.stopConditions.maxErrorRate
+      ) {
+        safeHarnessPlan.safeToRunLive = false;
+        safeHarnessPlan.blockers.push(live.metrics.abortReason ?? "bounded_5k_load_incomplete");
+      }
+    } else {
+      results = await Promise.all(targets.map((target) => collectTarget(createReadOnlyClient(), target, safeHarnessPlan)));
+    }
+  } else if (!envStatus.canRunLive) {
+    results = targets.map((target) => createEnvMissingResult(target, envStatus.missingKeys));
+  } else {
+    results = targets.map((target) =>
+      createNotRunResult(
+        target,
+        safeHarnessPlan.planOnly ? "not_run_plan_only" : "not_run_blocked",
+        safeHarnessPlan.blockers.length ? safeHarnessPlan.blockers : ["plan_only"],
+      ),
+    );
+  }
 
   const matrix = buildStagingLoadMatrix({
     generatedAt,
@@ -285,13 +625,21 @@ async function main() {
         targets: matrix.targets.length,
         collected: matrix.targets.filter((target) => target.status === "collected").length,
         missingKeys: matrix.environment.missingKeys,
+        approvalsPresent: loadProofApprovalsPresent,
+        liveTargetProbe,
+        liveLoadMetrics,
       },
       null,
       2,
     ),
   );
 
-  if (matrix.targets.some((target) => target.status === "runtime_error")) {
+  if (
+    matrix.targets.some((target) => target.status === "runtime_error") ||
+    liveLoadMetrics?.abortTriggered ||
+    (liveLoadMetrics != null &&
+      liveLoadMetrics.totalRequestsCompleted < safeHarnessPlan.stopConditions.maxTotalRequests)
+  ) {
     process.exitCode = 1;
   }
 }

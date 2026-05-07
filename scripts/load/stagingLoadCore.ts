@@ -47,6 +47,11 @@ export type StagingLoadTarget = {
   reason: string;
 };
 
+export type StagingLoadTargetExecutionPlanItem = {
+  target: StagingLoadTarget;
+  runs: number;
+};
+
 export type LoadRunnerScenarioCategory =
   | "catalog_readonly"
   | "director_reports_readonly"
@@ -326,6 +331,32 @@ export const DEFAULT_STAGING_LOAD_TARGETS: StagingLoadTarget[] = [
     reason: "buyer dashboard fixed summary scope repeated-run stability",
   },
 ];
+
+export function buildStagingLoadTargetExecutionPlan(
+  targets: StagingLoadTarget[],
+  maxTotalRequests: number,
+): StagingLoadTargetExecutionPlanItem[] {
+  if (!Number.isInteger(maxTotalRequests) || maxTotalRequests <= 0 || targets.length === 0) return [];
+  const boundedTargets = targets.filter((target) => target.readOnly === true);
+  if (boundedTargets.length === 0) return [];
+
+  const baseRuns = Math.floor(maxTotalRequests / boundedTargets.length);
+  let remainder = maxTotalRequests % boundedTargets.length;
+
+  return boundedTargets
+    .map((target) => {
+      const runs = baseRuns + (remainder > 0 ? 1 : 0);
+      remainder = Math.max(0, remainder - 1);
+      return { target, runs };
+    })
+    .filter((item) => item.runs > 0);
+}
+
+export function countStagingLoadTargetExecutionPlanRequests(
+  plan: StagingLoadTargetExecutionPlanItem[],
+): number {
+  return plan.reduce((sum, item) => sum + item.runs, 0);
+}
 
 export const DEFAULT_LOAD_RUNNER_READONLY_SCENARIOS: LoadRunnerScenario[] = [
   {

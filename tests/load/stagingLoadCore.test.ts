@@ -1,8 +1,10 @@
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildStagingLoadTargetExecutionPlan,
   buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
   buildStagingLoadMatrix,
+  countStagingLoadTargetExecutionPlanRequests,
   countRowsFromRpcData,
   createLoadRunnerEmulatorAdapter,
   createEnvMissingResult,
@@ -151,6 +153,15 @@ describe("S-LOAD-1 staging load core", () => {
         "enterprise_5k_load_approval_missing",
       ]),
     );
+  });
+
+  it("expands bounded 5K live proof into exactly 5000 read-only target executions", () => {
+    const plan = buildStagingLoadTargetExecutionPlan(DEFAULT_STAGING_LOAD_TARGETS, 5000);
+
+    expect(plan).toHaveLength(DEFAULT_STAGING_LOAD_TARGETS.length);
+    expect(countStagingLoadTargetExecutionPlanRequests(plan)).toBe(5000);
+    expect(plan.every((item) => item.target.readOnly)).toBe(true);
+    expect(plan.map((item) => item.runs)).toEqual([1000, 1000, 1000, 1000, 1000]);
   });
 
   it("summarizes latency, payload, row count, and recommendation", () => {
