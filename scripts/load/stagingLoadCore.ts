@@ -12,6 +12,10 @@ export type StagingLoadStopConditions = {
   maxTotalRequests: number;
   maxP95LatencyMs: number;
   maxErrorRate: number;
+  abortOnHealthFailure: true;
+  abortOnReadyFailure: true;
+  abortOnErrorRateExceeded: true;
+  abortOnUnexpectedWriteRoute: true;
   stopOnSqlstate57014: true;
   stopOnHttp429Or5xx: true;
   cooldownMs: number;
@@ -41,6 +45,109 @@ export type StagingLoadTarget = {
   expectedMaxRows: number | null;
   readOnly: true;
   reason: string;
+};
+
+export type LoadRunnerScenarioCategory =
+  | "catalog_readonly"
+  | "director_reports_readonly"
+  | "warehouse_readonly"
+  | "bff_health_ready_probe"
+  | "bff_readonly_probe";
+
+export type LoadRunnerScenarioTransport = "supabase_rpc" | "bff_read" | "bff_probe";
+
+export type LoadRunnerScenario = {
+  id: string;
+  category: LoadRunnerScenarioCategory;
+  endpointCategoryName: string;
+  transport: LoadRunnerScenarioTransport;
+  method: "GET" | "POST";
+  operation: string;
+  readOnly: boolean;
+  businessMutation: boolean;
+  maxRows: number | null;
+  args?: Record<string, unknown>;
+};
+
+export type LoadRunnerSafetyRails = {
+  readOnlyOnly: true;
+  maxRequests: number;
+  maxConcurrency: number;
+  requestTimeoutMs: number;
+  maxErrorRate: number;
+  abortOnHealthFailure: true;
+  abortOnReadyFailure: true;
+  abortOnErrorRateExceeded: true;
+  abortOnUnexpectedWriteRoute: true;
+};
+
+export type LoadRunnerReadonlySafetyConfig = {
+  scenarios: LoadRunnerScenario[];
+  rails: LoadRunnerSafetyRails;
+};
+
+export type LoadRunnerValidationResult = {
+  passed: boolean;
+  errors: string[];
+};
+
+export type LoadRunnerAbortSnapshot = {
+  healthStatus: number | null;
+  readyStatus: number | null;
+  totalRequests: number;
+  errorCount: number;
+  unexpectedWriteRouteDetected: boolean;
+};
+
+export type LoadRunnerAbortDecision = {
+  abort: boolean;
+  reasons: string[];
+};
+
+export type LoadRunnerSanitizedLogEvent = {
+  statusClass: string;
+  count: number;
+  latencyPercentiles: {
+    p50: number | null;
+    p95: number | null;
+    p99: number | null;
+  };
+  endpointCategoryName: string;
+  errorCategory: string | null;
+};
+
+export type LoadRunnerEmulatorScenarioResult = {
+  scenarioId: string;
+  statusClass: "ok" | "timeout" | "error";
+  latencyMs: number;
+  rowCount: number;
+  payloadBytes: number;
+  errorCategory: string | null;
+};
+
+export type LoadRunnerEmulatorAdapter = {
+  kind: "emulator";
+  realNetworkCallsMade: false;
+  stagingCallsMade: false;
+  productionCallsMade: false;
+  request: (scenario: LoadRunnerScenario) => Promise<LoadRunnerEmulatorScenarioResult>;
+};
+
+export type LoadRunnerEmulatorDryRunResult = {
+  status: "passed" | "failed";
+  realNetworkCallsMade: false;
+  stagingCallsMade: false;
+  productionCallsMade: false;
+  scenariosValidated: number;
+  readOnlyScenariosDefined: boolean;
+  mutationScenariosRejected: boolean;
+  maxObservedConcurrency: number;
+  maxConcurrencyRespected: boolean;
+  abortCriteriaValidated: boolean;
+  timeoutHandlingPassed: boolean;
+  redactionPassed: boolean;
+  logs: LoadRunnerSanitizedLogEvent[];
+  errors: string[];
 };
 
 export type StagingLoadSample = {
@@ -85,6 +192,22 @@ export type StagingLoadMatrix = {
     gitDiffCheck?: "pass" | "fail" | "not_run";
     releaseVerify?: "pass" | "fail" | "not_run";
   };
+  loadRunnerSafety?: {
+    readOnlyScenariosDefined: boolean;
+    mutationScenariosRejected: boolean;
+    maxRequestsDefined: boolean;
+    maxConcurrencyDefined: boolean;
+    requestTimeoutDefined: boolean;
+    maxErrorRateDefined: boolean;
+    abortCriteriaDefined: boolean;
+    emulatorDryRunSupported: boolean;
+    emulatorDryRunPassed: boolean;
+    redactionTestsPassed: boolean;
+    realNetworkCallsMade: false;
+    stagingCallsMade: false;
+    productionCallsMade: false;
+    errors: string[];
+  };
   safety: {
     readOnly: true;
     productionTouched: false;
@@ -105,6 +228,10 @@ export const DEFAULT_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
   maxTotalRequests: 15,
   maxP95LatencyMs: 1_500,
   maxErrorRate: 0.02,
+  abortOnHealthFailure: true,
+  abortOnReadyFailure: true,
+  abortOnErrorRateExceeded: true,
+  abortOnUnexpectedWriteRoute: true,
   stopOnSqlstate57014: true,
   stopOnHttp429Or5xx: true,
   cooldownMs: 250,
@@ -199,6 +326,89 @@ export const DEFAULT_STAGING_LOAD_TARGETS: StagingLoadTarget[] = [
     reason: "buyer dashboard fixed summary scope repeated-run stability",
   },
 ];
+
+export const DEFAULT_LOAD_RUNNER_READONLY_SCENARIOS: LoadRunnerScenario[] = [
+  {
+    id: "catalog_items_search_preview_readonly",
+    category: "catalog_readonly",
+    endpointCategoryName: "catalog.readonly",
+    transport: "bff_read",
+    method: "POST",
+    operation: "catalog.items.search.preview",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: 100,
+    args: { pageSize: 60 },
+  },
+  {
+    id: "director_reports_scope_readonly",
+    category: "director_reports_readonly",
+    endpointCategoryName: "director.reports.readonly",
+    transport: "bff_read",
+    method: "POST",
+    operation: "director.report.transport.scope",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: null,
+  },
+  {
+    id: "warehouse_api_scope_readonly",
+    category: "warehouse_readonly",
+    endpointCategoryName: "warehouse.readonly",
+    transport: "bff_read",
+    method: "POST",
+    operation: "warehouse.api.read.scope",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: 60,
+    args: { pageSize: 60 },
+  },
+  {
+    id: "bff_health_probe",
+    category: "bff_health_ready_probe",
+    endpointCategoryName: "bff.health",
+    transport: "bff_probe",
+    method: "GET",
+    operation: "bff.health",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: 0,
+  },
+  {
+    id: "bff_ready_probe",
+    category: "bff_health_ready_probe",
+    endpointCategoryName: "bff.ready",
+    transport: "bff_probe",
+    method: "GET",
+    operation: "bff.ready",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: 0,
+  },
+  {
+    id: "bff_read_ports_probe",
+    category: "bff_readonly_probe",
+    endpointCategoryName: "bff.read_ports",
+    transport: "bff_probe",
+    method: "GET",
+    operation: "bff.read_ports.status",
+    readOnly: true,
+    businessMutation: false,
+    maxRows: 0,
+  },
+];
+
+export const DEFAULT_LOAD_RUNNER_SAFETY_RAILS: LoadRunnerSafetyRails = {
+  readOnlyOnly: true,
+  maxRequests: BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS.maxTotalRequests,
+  maxConcurrency: 5_000,
+  requestTimeoutMs: BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS.requestTimeoutMs,
+  maxErrorRate: BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS.maxErrorRate,
+  abortOnHealthFailure: true,
+  abortOnReadyFailure: true,
+  abortOnErrorRateExceeded: true,
+  abortOnUnexpectedWriteRoute: true,
+};
 
 const sortedFinite = (values: number[]): number[] =>
   values.filter(Number.isFinite).sort((left, right) => left - right);
@@ -311,6 +521,343 @@ export function countRowsFromRpcData(data: unknown): number {
 
 export function payloadBytes(data: unknown): number {
   return Buffer.byteLength(JSON.stringify(data ?? null), "utf8");
+}
+
+const WRITE_ROUTE_PATTERN =
+  /\b(write|mutation|mutate|insert|update|delete|upsert|truncate|submit|approve|decline|reject|payment|pay|issue_free|issue_request|create_po|apply)\b/i;
+
+const FORBIDDEN_LOG_KEY_PATTERN =
+  /(url|uri|token|secret|authorization|cookie|env|payload|body|response|request|row|rows|db|redis|supabase|email|phone|user|company|identifier|id)$/i;
+
+const FORBIDDEN_LOG_VALUE_PATTERN =
+  /(https?:\/\/|postgres(?:ql)?:\/\/|redis:\/\/|bearer\s+|eyJ[A-Za-z0-9_-]{10,}|anon[_-]?key|service[_-]?role)/i;
+
+const allowedLogKeys = new Set([
+  "statusClass",
+  "count",
+  "latencyPercentiles",
+  "p50",
+  "p95",
+  "p99",
+  "endpointCategoryName",
+  "errorCategory",
+]);
+
+const collectForbiddenLogEntries = (
+  value: unknown,
+  path = "event",
+  errors: string[] = [],
+): string[] => {
+  if (value == null) return errors;
+  if (typeof value === "string") {
+    if (FORBIDDEN_LOG_VALUE_PATTERN.test(value)) {
+      errors.push(`${path}:forbidden_value`);
+    }
+    return errors;
+  }
+  if (Array.isArray(value)) {
+    errors.push(`${path}:arrays_not_allowed_in_load_runner_logs`);
+    return errors;
+  }
+  if (typeof value === "object") {
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      const childPath = `${path}.${key}`;
+      if (!allowedLogKeys.has(key) || FORBIDDEN_LOG_KEY_PATTERN.test(key)) {
+        errors.push(`${childPath}:forbidden_key`);
+      }
+      collectForbiddenLogEntries(child, childPath, errors);
+    }
+  }
+  return errors;
+};
+
+export function isLoadRunnerScenarioReadOnlySafe(scenario: LoadRunnerScenario): boolean {
+  if (scenario.readOnly !== true || scenario.businessMutation !== false) return false;
+  if (scenario.method !== "GET" && scenario.method !== "POST") return false;
+  return !WRITE_ROUTE_PATTERN.test(`${scenario.id} ${scenario.operation} ${scenario.endpointCategoryName}`);
+}
+
+export function validateLoadRunnerReadOnlyScenarios(
+  scenarios: LoadRunnerScenario[],
+): LoadRunnerValidationResult & {
+  readOnlyScenarioCount: number;
+  mutationScenarioCount: number;
+  categories: LoadRunnerScenarioCategory[];
+} {
+  const errors: string[] = [];
+  const categories = Array.from(new Set(scenarios.map((scenario) => scenario.category)));
+  const requiredCategories: LoadRunnerScenarioCategory[] = [
+    "catalog_readonly",
+    "director_reports_readonly",
+    "warehouse_readonly",
+    "bff_health_ready_probe",
+    "bff_readonly_probe",
+  ];
+
+  for (const category of requiredCategories) {
+    if (!categories.includes(category)) {
+      errors.push(`missing_required_readonly_category:${category}`);
+    }
+  }
+
+  for (const scenario of scenarios) {
+    if (!isLoadRunnerScenarioReadOnlySafe(scenario)) {
+      errors.push(`mutation_or_write_scenario_rejected:${scenario.id}`);
+    }
+  }
+
+  return {
+    passed: errors.length === 0,
+    errors,
+    readOnlyScenarioCount: scenarios.filter(isLoadRunnerScenarioReadOnlySafe).length,
+    mutationScenarioCount: scenarios.filter((scenario) => !isLoadRunnerScenarioReadOnlySafe(scenario)).length,
+    categories,
+  };
+}
+
+export function validateLoadRunnerSafetyRails(rails: LoadRunnerSafetyRails): LoadRunnerValidationResult {
+  const errors: string[] = [];
+  if (rails.readOnlyOnly !== true) errors.push("readOnlyOnly_must_be_true");
+  if (!Number.isInteger(rails.maxRequests) || rails.maxRequests <= 0) errors.push("maxRequests_missing");
+  if (!Number.isInteger(rails.maxConcurrency) || rails.maxConcurrency <= 0) errors.push("maxConcurrency_missing");
+  if (!Number.isInteger(rails.requestTimeoutMs) || rails.requestTimeoutMs <= 0) {
+    errors.push("requestTimeoutMs_missing");
+  }
+  if (!Number.isFinite(rails.maxErrorRate) || rails.maxErrorRate < 0 || rails.maxErrorRate > 1) {
+    errors.push("maxErrorRate_missing");
+  }
+  if (rails.abortOnHealthFailure !== true) errors.push("abortOnHealthFailure_missing");
+  if (rails.abortOnReadyFailure !== true) errors.push("abortOnReadyFailure_missing");
+  if (rails.abortOnErrorRateExceeded !== true) errors.push("abortOnErrorRateExceeded_missing");
+  if (rails.abortOnUnexpectedWriteRoute !== true) errors.push("abortOnUnexpectedWriteRoute_missing");
+  return { passed: errors.length === 0, errors };
+}
+
+export function buildLoadRunnerReadonlySafetyConfig(params?: {
+  scenarios?: LoadRunnerScenario[];
+  rails?: Partial<LoadRunnerSafetyRails>;
+}): LoadRunnerReadonlySafetyConfig {
+  return {
+    scenarios: params?.scenarios ?? DEFAULT_LOAD_RUNNER_READONLY_SCENARIOS,
+    rails: {
+      ...DEFAULT_LOAD_RUNNER_SAFETY_RAILS,
+      ...params?.rails,
+      readOnlyOnly: true,
+      abortOnHealthFailure: true,
+      abortOnReadyFailure: true,
+      abortOnErrorRateExceeded: true,
+      abortOnUnexpectedWriteRoute: true,
+    },
+  };
+}
+
+export function evaluateLoadRunnerAbortCriteria(
+  snapshot: LoadRunnerAbortSnapshot,
+  rails: LoadRunnerSafetyRails,
+): LoadRunnerAbortDecision {
+  const reasons: string[] = [];
+  if (rails.abortOnHealthFailure && snapshot.healthStatus !== 200) {
+    reasons.push("health_failure");
+  }
+  if (rails.abortOnReadyFailure && snapshot.readyStatus !== 200) {
+    reasons.push("ready_failure");
+  }
+  const errorRate = snapshot.totalRequests > 0 ? snapshot.errorCount / snapshot.totalRequests : 0;
+  if (rails.abortOnErrorRateExceeded && errorRate > rails.maxErrorRate) {
+    reasons.push("error_rate_exceeded");
+  }
+  if (rails.abortOnUnexpectedWriteRoute && snapshot.unexpectedWriteRouteDetected) {
+    reasons.push("unexpected_write_route");
+  }
+  return {
+    abort: reasons.length > 0,
+    reasons,
+  };
+}
+
+export function sanitizeLoadRunnerLogEvent(input: {
+  statusClass?: string;
+  count?: number;
+  latencyMs?: number[];
+  endpointCategoryName?: string;
+  errorCategory?: string | null;
+}): LoadRunnerSanitizedLogEvent {
+  const latencies = sortedFinite(input.latencyMs ?? []);
+  const percentile = (fraction: number): number | null => {
+    if (latencies.length === 0) return null;
+    const index = Math.min(latencies.length - 1, Math.ceil(latencies.length * fraction) - 1);
+    return latencies[index];
+  };
+  return {
+    statusClass: input.statusClass ?? "unknown",
+    count: Number.isFinite(input.count) ? Number(input.count) : 0,
+    latencyPercentiles: {
+      p50: percentile(0.5),
+      p95: percentile(0.95),
+      p99: percentile(0.99),
+    },
+    endpointCategoryName: input.endpointCategoryName ?? "unknown",
+    errorCategory: input.errorCategory ?? null,
+  };
+}
+
+export function validateLoadRunnerLogEvent(event: unknown): LoadRunnerValidationResult {
+  const errors = collectForbiddenLogEntries(event);
+  return { passed: errors.length === 0, errors };
+}
+
+export function createLoadRunnerEmulatorAdapter(
+  overrides: Record<string, Partial<LoadRunnerEmulatorScenarioResult>> = {},
+): LoadRunnerEmulatorAdapter {
+  return {
+    kind: "emulator",
+    realNetworkCallsMade: false,
+    stagingCallsMade: false,
+    productionCallsMade: false,
+    request: async (scenario) => ({
+      scenarioId: scenario.id,
+      statusClass: "ok",
+      latencyMs: 25,
+      rowCount: scenario.maxRows == null ? 1 : Math.min(scenario.maxRows, 1),
+      payloadBytes: 128,
+      errorCategory: null,
+      ...overrides[scenario.id],
+    }),
+  };
+}
+
+export async function runLoadRunnerEmulatorDryRun(
+  config: LoadRunnerReadonlySafetyConfig,
+  adapter: LoadRunnerEmulatorAdapter = createLoadRunnerEmulatorAdapter(),
+): Promise<LoadRunnerEmulatorDryRunResult> {
+  const scenarioValidation = validateLoadRunnerReadOnlyScenarios(config.scenarios);
+  const railsValidation = validateLoadRunnerSafetyRails(config.rails);
+  const errors = [...scenarioValidation.errors, ...railsValidation.errors];
+  const abortCriteriaValidated =
+    !evaluateLoadRunnerAbortCriteria(
+      {
+        healthStatus: 200,
+        readyStatus: 200,
+        totalRequests: 100,
+        errorCount: 0,
+        unexpectedWriteRouteDetected: false,
+      },
+      config.rails,
+    ).abort &&
+    evaluateLoadRunnerAbortCriteria(
+      {
+        healthStatus: 503,
+        readyStatus: 200,
+        totalRequests: 100,
+        errorCount: 0,
+        unexpectedWriteRouteDetected: false,
+      },
+      config.rails,
+    ).reasons.includes("health_failure") &&
+    evaluateLoadRunnerAbortCriteria(
+      {
+        healthStatus: 200,
+        readyStatus: 200,
+        totalRequests: 100,
+        errorCount: 3,
+        unexpectedWriteRouteDetected: true,
+      },
+      config.rails,
+    ).reasons.includes("unexpected_write_route") &&
+    evaluateLoadRunnerAbortCriteria(
+      {
+        healthStatus: 200,
+        readyStatus: 200,
+        totalRequests: 100,
+        errorCount: 3,
+        unexpectedWriteRouteDetected: true,
+      },
+      config.rails,
+    ).reasons.includes("error_rate_exceeded");
+
+  if (!abortCriteriaValidated) {
+    errors.push("abort_criteria_validation_failed");
+  }
+
+  const logs: LoadRunnerSanitizedLogEvent[] = [];
+  let timeoutHandlingPassed = false;
+  let active = 0;
+  let maxObservedConcurrency = 0;
+  const concurrency = Math.max(1, Math.min(config.rails.maxConcurrency, config.scenarios.length));
+  const queue = [...config.scenarios];
+
+  const runNext = async (): Promise<void> => {
+    const scenario = queue.shift();
+    if (!scenario) return;
+    active += 1;
+    maxObservedConcurrency = Math.max(maxObservedConcurrency, active);
+    try {
+      const result = await adapter.request(scenario);
+      if (result.latencyMs > config.rails.requestTimeoutMs || result.statusClass === "timeout") {
+        timeoutHandlingPassed = true;
+      }
+      const log = sanitizeLoadRunnerLogEvent({
+        statusClass: result.statusClass,
+        count: result.rowCount,
+        latencyMs: [result.latencyMs],
+        endpointCategoryName: scenario.endpointCategoryName,
+        errorCategory: result.errorCategory,
+      });
+      const logValidation = validateLoadRunnerLogEvent(log);
+      if (!logValidation.passed) {
+        errors.push(...logValidation.errors);
+      }
+      logs.push(log);
+    } finally {
+      active -= 1;
+      await runNext();
+    }
+  };
+
+  await Promise.all(Array.from({ length: concurrency }, () => runNext()));
+
+  const maxConcurrencyRespected = maxObservedConcurrency <= config.rails.maxConcurrency;
+  if (!maxConcurrencyRespected) {
+    errors.push("max_concurrency_exceeded");
+  }
+  if (adapter.realNetworkCallsMade || adapter.stagingCallsMade || adapter.productionCallsMade) {
+    errors.push("dry_run_adapter_made_real_network_call");
+  }
+
+  const redactionPassed = logs.every((log) => validateLoadRunnerLogEvent(log).passed);
+  if (!redactionPassed) {
+    errors.push("redaction_validation_failed");
+  }
+
+  return {
+    status: errors.length === 0 ? "passed" : "failed",
+    realNetworkCallsMade: false,
+    stagingCallsMade: false,
+    productionCallsMade: false,
+    scenariosValidated: config.scenarios.length,
+    readOnlyScenariosDefined: scenarioValidation.readOnlyScenarioCount === config.scenarios.length,
+    mutationScenariosRejected: validateLoadRunnerReadOnlyScenarios([
+      ...config.scenarios,
+      {
+        id: "rejected_submit_mutation",
+        category: "bff_readonly_probe",
+        endpointCategoryName: "mutation.rejected",
+        transport: "bff_read",
+        method: "POST",
+        operation: "proposal.submit.mutation",
+        readOnly: false,
+        businessMutation: true,
+        maxRows: null,
+      },
+    ]).passed === false,
+    maxObservedConcurrency,
+    maxConcurrencyRespected,
+    abortCriteriaValidated,
+    timeoutHandlingPassed,
+    redactionPassed,
+    logs,
+    errors,
+  };
 }
 
 export function summarizeTargetResult(
@@ -485,6 +1032,23 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
           `- Enterprise load approval required: ${matrix.harnessPlan.enterpriseLoadApprovalRequired ? "YES" : "NO"}`,
           `- Enterprise load approved: ${matrix.harnessPlan.enterpriseLoadApproved ? "YES" : "NO"}`,
           `- live blockers: ${matrix.harnessPlan.blockers.length ? matrix.harnessPlan.blockers.join(", ") : "none"}`,
+        ]
+      : []),
+    ...(matrix.loadRunnerSafety
+      ? [
+          "",
+          "## Load Runner Safety",
+          `- read-only scenarios defined: ${matrix.loadRunnerSafety.readOnlyScenariosDefined ? "YES" : "NO"}`,
+          `- mutation scenarios rejected: ${matrix.loadRunnerSafety.mutationScenariosRejected ? "YES" : "NO"}`,
+          `- max requests defined: ${matrix.loadRunnerSafety.maxRequestsDefined ? "YES" : "NO"}`,
+          `- max concurrency defined: ${matrix.loadRunnerSafety.maxConcurrencyDefined ? "YES" : "NO"}`,
+          `- request timeout defined: ${matrix.loadRunnerSafety.requestTimeoutDefined ? "YES" : "NO"}`,
+          `- max error rate defined: ${matrix.loadRunnerSafety.maxErrorRateDefined ? "YES" : "NO"}`,
+          `- abort criteria defined: ${matrix.loadRunnerSafety.abortCriteriaDefined ? "YES" : "NO"}`,
+          `- emulator dry-run supported: ${matrix.loadRunnerSafety.emulatorDryRunSupported ? "YES" : "NO"}`,
+          `- emulator dry-run passed: ${matrix.loadRunnerSafety.emulatorDryRunPassed ? "YES" : "NO"}`,
+          `- redaction tests passed: ${matrix.loadRunnerSafety.redactionTestsPassed ? "YES" : "NO"}`,
+          "- real network calls in dry-run: NO",
         ]
       : []),
     "",

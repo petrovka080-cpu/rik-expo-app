@@ -6,6 +6,7 @@ import { config as loadDotenv } from "dotenv";
 
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
   buildStagingLoadMatrix,
   countRowsFromRpcData,
@@ -13,6 +14,7 @@ import {
   createNotRunResult,
   payloadBytes,
   renderStagingLoadProof,
+  runLoadRunnerEmulatorDryRun,
   resolveStagingLoadEnvStatus,
   resolveStagingLoadProofStatus,
   summarizeTargetResult,
@@ -204,26 +206,59 @@ async function main() {
           ? 1_000
           : DEFAULT_STAGING_LOAD_TARGETS.length,
   });
+  const loadRunnerSafetyConfig = buildLoadRunnerReadonlySafetyConfig({
+    rails: {
+      maxRequests: harnessPlan.stopConditions.maxTotalRequests,
+      maxConcurrency: harnessPlan.targetConcurrency,
+      requestTimeoutMs: harnessPlan.stopConditions.requestTimeoutMs,
+      maxErrorRate: harnessPlan.stopConditions.maxErrorRate,
+    },
+  });
+  const loadRunnerSafetyDryRun = await runLoadRunnerEmulatorDryRun(loadRunnerSafetyConfig);
+  const safeHarnessPlan = {
+    ...harnessPlan,
+    safeToRunLive: harnessPlan.safeToRunLive && loadRunnerSafetyDryRun.status === "passed",
+    blockers: [
+      ...harnessPlan.blockers,
+      ...loadRunnerSafetyDryRun.errors.map((error) => `load_runner_safety:${error}`),
+    ],
+  };
   const targets = DEFAULT_STAGING_LOAD_TARGETS;
 
-  const results = harnessPlan.safeToRunLive
-    ? await Promise.all(targets.map((target) => collectTarget(createReadOnlyClient(), target, harnessPlan)))
+  const results = safeHarnessPlan.safeToRunLive
+    ? await Promise.all(targets.map((target) => collectTarget(createReadOnlyClient(), target, safeHarnessPlan)))
     : !envStatus.canRunLive
       ? targets.map((target) => createEnvMissingResult(target, envStatus.missingKeys))
       : targets.map((target) =>
           createNotRunResult(
             target,
-            harnessPlan.planOnly ? "not_run_plan_only" : "not_run_blocked",
-            harnessPlan.blockers.length ? harnessPlan.blockers : ["plan_only"],
+            safeHarnessPlan.planOnly ? "not_run_plan_only" : "not_run_blocked",
+            safeHarnessPlan.blockers.length ? safeHarnessPlan.blockers : ["plan_only"],
           ),
         );
 
   const matrix = buildStagingLoadMatrix({
     generatedAt,
     envStatus,
-    harnessPlan,
+    harnessPlan: safeHarnessPlan,
     targets: results,
   });
+  matrix.loadRunnerSafety = {
+    readOnlyScenariosDefined: loadRunnerSafetyDryRun.readOnlyScenariosDefined,
+    mutationScenariosRejected: loadRunnerSafetyDryRun.mutationScenariosRejected,
+    maxRequestsDefined: loadRunnerSafetyConfig.rails.maxRequests > 0,
+    maxConcurrencyDefined: loadRunnerSafetyConfig.rails.maxConcurrency > 0,
+    requestTimeoutDefined: loadRunnerSafetyConfig.rails.requestTimeoutMs > 0,
+    maxErrorRateDefined: loadRunnerSafetyConfig.rails.maxErrorRate >= 0,
+    abortCriteriaDefined: loadRunnerSafetyDryRun.abortCriteriaValidated,
+    emulatorDryRunSupported: true,
+    emulatorDryRunPassed: loadRunnerSafetyDryRun.status === "passed",
+    redactionTestsPassed: loadRunnerSafetyDryRun.redactionPassed,
+    realNetworkCallsMade: false,
+    stagingCallsMade: false,
+    productionCallsMade: false,
+    errors: loadRunnerSafetyDryRun.errors,
+  };
   matrix.gates = {
     targetedTests: "pass",
     tsc: "pass",

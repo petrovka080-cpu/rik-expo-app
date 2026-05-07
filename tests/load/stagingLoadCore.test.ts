@@ -1,14 +1,21 @@
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
   buildStagingLoadMatrix,
   countRowsFromRpcData,
+  createLoadRunnerEmulatorAdapter,
   createEnvMissingResult,
   createNotRunResult,
+  evaluateLoadRunnerAbortCriteria,
   payloadBytes,
   renderStagingLoadProof,
+  runLoadRunnerEmulatorDryRun,
   resolveStagingLoadEnvStatus,
   resolveStagingLoadProofStatus,
+  sanitizeLoadRunnerLogEvent,
+  validateLoadRunnerLogEvent,
+  validateLoadRunnerReadOnlyScenarios,
   summarizeTargetResult,
 } from "../../scripts/load/stagingLoadCore";
 
@@ -277,5 +284,164 @@ describe("S-LOAD-1 staging load core", () => {
     expect(proof).toContain("target concurrency: 5000");
     expect(proof).toContain("Enterprise load approval required: YES");
     expect(proof).toContain("Enterprise load approved: NO");
+  });
+
+  it("defines only permanent read-only load runner scenarios for safety hardening", () => {
+    const config = buildLoadRunnerReadonlySafetyConfig();
+    const validation = validateLoadRunnerReadOnlyScenarios(config.scenarios);
+
+    expect(validation.passed).toBe(true);
+    expect(validation.readOnlyScenarioCount).toBe(config.scenarios.length);
+    expect(validation.mutationScenarioCount).toBe(0);
+    expect(validation.categories).toEqual(
+      expect.arrayContaining([
+        "catalog_readonly",
+        "director_reports_readonly",
+        "warehouse_readonly",
+        "bff_health_ready_probe",
+        "bff_readonly_probe",
+      ]),
+    );
+  });
+
+  it("rejects mutation or business-write load scenarios before execution", () => {
+    const config = buildLoadRunnerReadonlySafetyConfig();
+    const validation = validateLoadRunnerReadOnlyScenarios([
+      ...config.scenarios,
+      {
+        id: "proposal_submit_mutation",
+        category: "bff_readonly_probe",
+        endpointCategoryName: "proposal.submit",
+        transport: "bff_read",
+        method: "POST",
+        operation: "proposal.submit.mutation",
+        readOnly: false,
+        businessMutation: true,
+        maxRows: null,
+      },
+    ]);
+
+    expect(validation.passed).toBe(false);
+    expect(validation.errors).toContain("mutation_or_write_scenario_rejected:proposal_submit_mutation");
+  });
+
+  it("keeps load runner logs status-only and rejects URLs, tokens, payloads, and business rows", () => {
+    const sanitized = sanitizeLoadRunnerLogEvent({
+      statusClass: "ok",
+      count: 3,
+      latencyMs: [10, 20, 30],
+      endpointCategoryName: "warehouse.readonly",
+      errorCategory: null,
+    });
+
+    expect(validateLoadRunnerLogEvent(sanitized).passed).toBe(true);
+    expect(sanitized).toEqual({
+      statusClass: "ok",
+      count: 3,
+      latencyPercentiles: { p50: 20, p95: 30, p99: 30 },
+      endpointCategoryName: "warehouse.readonly",
+      errorCategory: null,
+    });
+
+    const unsafe = validateLoadRunnerLogEvent({
+      statusClass: "error",
+      endpointCategoryName: "warehouse.readonly",
+      url: "https://staging.example.invalid/rest/v1/business_rows",
+      token: "secret-token-value",
+      rawPayload: { companyId: "company-1" },
+      rawRows: [{ id: "row-1" }],
+    });
+
+    expect(unsafe.passed).toBe(false);
+    expect(unsafe.errors).toEqual(
+      expect.arrayContaining([
+        "event.url:forbidden_key",
+        "event.url:forbidden_value",
+        "event.token:forbidden_key",
+        "event.rawPayload:forbidden_key",
+        "event.rawRows:forbidden_key",
+      ]),
+    );
+  });
+
+  it("triggers abort criteria for health, ready, error-rate, and unexpected write route failures", () => {
+    const { rails } = buildLoadRunnerReadonlySafetyConfig();
+
+    expect(
+      evaluateLoadRunnerAbortCriteria(
+        {
+          healthStatus: 503,
+          readyStatus: 200,
+          totalRequests: 100,
+          errorCount: 0,
+          unexpectedWriteRouteDetected: false,
+        },
+        rails,
+      ),
+    ).toEqual({ abort: true, reasons: ["health_failure"] });
+
+    expect(
+      evaluateLoadRunnerAbortCriteria(
+        {
+          healthStatus: 200,
+          readyStatus: 503,
+          totalRequests: 100,
+          errorCount: 0,
+          unexpectedWriteRouteDetected: false,
+        },
+        rails,
+      ).reasons,
+    ).toContain("ready_failure");
+
+    expect(
+      evaluateLoadRunnerAbortCriteria(
+        {
+          healthStatus: 200,
+          readyStatus: 200,
+          totalRequests: 100,
+          errorCount: 3,
+          unexpectedWriteRouteDetected: true,
+        },
+        rails,
+      ).reasons,
+    ).toEqual(expect.arrayContaining(["error_rate_exceeded", "unexpected_write_route"]));
+  });
+
+  it("runs emulator dry-run without staging or production calls and respects maxConcurrency", async () => {
+    const config = buildLoadRunnerReadonlySafetyConfig({ rails: { maxConcurrency: 2 } });
+    const result = await runLoadRunnerEmulatorDryRun(config);
+
+    expect(result.status).toBe("passed");
+    expect(result.realNetworkCallsMade).toBe(false);
+    expect(result.stagingCallsMade).toBe(false);
+    expect(result.productionCallsMade).toBe(false);
+    expect(result.maxObservedConcurrency).toBeLessThanOrEqual(2);
+    expect(result.maxConcurrencyRespected).toBe(true);
+    expect(result.readOnlyScenariosDefined).toBe(true);
+    expect(result.mutationScenariosRejected).toBe(true);
+    expect(result.abortCriteriaValidated).toBe(true);
+    expect(result.redactionPassed).toBe(true);
+  });
+
+  it("handles emulator timeout results as categorized status without raw payload logging", async () => {
+    const config = buildLoadRunnerReadonlySafetyConfig({ rails: { maxConcurrency: 1, requestTimeoutMs: 10 } });
+    const adapter = createLoadRunnerEmulatorAdapter({
+      catalog_items_search_preview_readonly: {
+        statusClass: "timeout",
+        latencyMs: 11,
+        errorCategory: "timeout",
+      },
+    });
+    const result = await runLoadRunnerEmulatorDryRun(config, adapter);
+
+    expect(result.status).toBe("passed");
+    expect(result.timeoutHandlingPassed).toBe(true);
+    expect(result.logs.find((log) => log.errorCategory === "timeout")).toEqual(
+      expect.objectContaining({
+        statusClass: "timeout",
+        endpointCategoryName: "catalog.readonly",
+      }),
+    );
+    expect(result.logs.every((log) => validateLoadRunnerLogEvent(log).passed)).toBe(true);
   });
 });
