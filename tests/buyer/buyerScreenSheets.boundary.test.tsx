@@ -283,6 +283,11 @@ function buildProps(overrides: Partial<BuyerScreenSheetsProps> = {}): BuyerScree
 }
 
 describe("BuyerScreenSheets boundary", () => {
+  it("exports the sheets as a memoized render boundary", () => {
+    const sheetsBoundary = BuyerScreenSheets as unknown as { $$typeof?: symbol };
+    expect(sheetsBoundary.$$typeof).toBe(Symbol.for("react.memo"));
+  });
+
   it("keeps proposal details as the only active sheet body for prop_details", () => {
     let renderer!: TestRenderer.ReactTestRenderer;
     act(() => {

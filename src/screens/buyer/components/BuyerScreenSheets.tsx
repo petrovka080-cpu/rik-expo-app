@@ -83,7 +83,7 @@ export type BuyerScreenSheetsProps = {
   toast: string | null;
 };
 
-export function BuyerScreenSheets({
+function BuyerScreenSheetsInner({
   s,
   isWeb,
   sheetKind,
@@ -250,3 +250,5 @@ export function BuyerScreenSheets({
     </>
   );
 }
+
+export const BuyerScreenSheets = React.memo(BuyerScreenSheetsInner);
