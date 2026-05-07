@@ -39,8 +39,14 @@ describe("production business read-only canary registry", () => {
     const { whitelist, classifications } = buildProductionBusinessReadonlyCanaryWhitelist({
       postReadRpcApproved: true,
     });
+    const routeClasses = whitelist.map((route) => route.routeClass);
 
-    expect(whitelist.map((route) => route.routeClass)).toContain("catalog_readonly_search_preview");
+    expect(routeClasses).toEqual([
+      "catalog_readonly_search_preview",
+      "director_finance_readonly_rpc",
+      "warehouse_readonly_rpc",
+      "assistant_store_readonly",
+    ]);
     expect(classifications.find((item) => item.routeClass === "catalog_readonly_search_preview")).toEqual(
       expect.objectContaining({
         method: "POST",
@@ -91,19 +97,40 @@ describe("production business read-only canary registry", () => {
   });
 
   it("keeps non-identifying synthetic input as a canary requirement", () => {
-    const { classifications } = buildProductionBusinessReadonlyCanaryWhitelist({
+    const identifyingInputCandidate: ProductionBusinessReadonlyCanaryCandidate = {
+      ...PRODUCTION_BUSINESS_READONLY_CANARY_CANDIDATES[0]!,
+      id: "assistant_actor_context_identifying_input",
+      routeClass: "assistant_store_readonly",
+      syntheticInputApproved: false,
+      requiresUserCompanyIdentifiersInInput: true,
+      canaryRequestEnvelope: null,
+    };
+
+    const classification = classifyProductionBusinessReadonlyCanaryRoute(identifyingInputCandidate, {
       postReadRpcApproved: true,
     });
 
-    expect(classifications.find((item) => item.routeClass === "director_finance_readonly_rpc")).toEqual(
-      expect.objectContaining({
-        safeForCanary: false,
-        reasonsIfFalse: expect.arrayContaining([
-          "synthetic_non_identifying_input_missing",
-          "requires_user_or_company_identifier",
-        ]),
-      }),
+    expect(classification.safeForCanary).toBe(false);
+    expect(classification.reasonsIfFalse).toEqual(
+      expect.arrayContaining([
+        "synthetic_non_identifying_input_missing",
+        "requires_user_or_company_identifier",
+        "canary_request_not_defined",
+      ]),
     );
+  });
+
+  it("defines expanded canary envelopes without user, company, request, token, or prompt keys", () => {
+    const { whitelist } = buildProductionBusinessReadonlyCanaryWhitelist({
+      postReadRpcApproved: true,
+    });
+
+    expect(whitelist).toHaveLength(4);
+    for (const route of whitelist) {
+      expect(JSON.stringify(route.canaryRequestEnvelope)).not.toMatch(
+        /"[^"]*(user|company|request|token|secret|prompt|body|row|url)[^"]*"\s*:/i,
+      );
+    }
   });
 
   it("validates registry mutation rejection and redacted metric-only output", () => {
@@ -132,7 +159,7 @@ describe("production business read-only canary registry", () => {
     expect(
       validateProductionBusinessReadonlyCanaryMetricLog({
         routeClass: "catalog_readonly_search_preview",
-        rawUrl: "https://example.invalid/api/staging-bff/read/catalog-transport-read-scope",
+        rawUrl: "redacted",
         responseBody: { rows: [{ id: "row-1" }] },
       }).passed,
     ).toBe(false);

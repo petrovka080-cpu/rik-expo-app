@@ -16,14 +16,17 @@ import {
 import {
   DIRECTOR_FINANCE_BFF_CONTRACT,
   DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS,
+  type DirectorFinanceBffRequestDto,
 } from "../../src/screens/director/director.finance.bff.contract";
 import {
   WAREHOUSE_API_BFF_CONTRACT,
   WAREHOUSE_API_BFF_OPERATION_CONTRACTS,
+  type WarehouseApiBffRequestDto,
 } from "../../src/screens/warehouse/warehouse.api.bff.contract";
 import {
   ASSISTANT_STORE_READ_BFF_CONTRACT,
   ASSISTANT_STORE_READ_BFF_OPERATION_CONTRACTS,
+  type AssistantStoreReadBffRequestDto,
 } from "../../src/lib/assistant_store_read.bff.contract";
 
 export type ProductionBusinessReadonlyCanaryRouteClass =
@@ -159,6 +162,31 @@ const catalogPreviewRequest: CatalogTransportBffRequestDto = {
   },
 };
 
+const directorFinanceCanaryRequest: DirectorFinanceBffRequestDto = {
+  operation: "director.finance.panel_scope.v1",
+  args: {
+    p_from: "2026-01-01",
+    p_to: "2026-01-02",
+    p_due_days: 30,
+    p_critical_days: 7,
+  },
+};
+
+const warehouseIncomingCanaryRequest: WarehouseApiBffRequestDto = {
+  operation: "warehouse.api.report.incoming_v2",
+  args: {
+    p_from: "2026-01-01",
+    p_to: "2026-01-02",
+  },
+};
+
+const assistantStoreCanaryRequest: AssistantStoreReadBffRequestDto = {
+  operation: "assistant.market.active_listings",
+  args: {
+    pageSize: 1,
+  },
+};
+
 const hasReadonlyOperation = (
   contracts: readonly { operation: string; readOnly: true }[],
   operation: string,
@@ -225,13 +253,16 @@ export const PRODUCTION_BUSINESS_READONLY_CANARY_CANDIDATES: readonly Production
       contractReadOnly: DIRECTOR_FINANCE_BFF_CONTRACT.readOnly,
       operationContractProven: hasReadonlyOperation(
         DIRECTOR_FINANCE_BFF_OPERATION_CONTRACTS,
-        "director.finance.panel_scope.v4",
+        directorFinanceCanaryRequest.operation,
       ),
       clientContractExists: DIRECTOR_FINANCE_BFF_CONTRACT.callsSupabaseDirectlyFromClient === false,
       readonlyDbPortUsed: true,
-      syntheticInputApproved: false,
-      requiresUserCompanyIdentifiersInInput: true,
-      canaryRequestEnvelope: null,
+      syntheticInputApproved: true,
+      requiresUserCompanyIdentifiersInInput: false,
+      canaryRequestEnvelope: {
+        input: directorFinanceCanaryRequest,
+        metadata: { canary: "present_redacted" },
+      },
     }),
     buildReadRpcCandidate({
       id: "warehouse_api_post_read_rpc_candidate",
@@ -240,13 +271,16 @@ export const PRODUCTION_BUSINESS_READONLY_CANARY_CANDIDATES: readonly Production
       contractReadOnly: WAREHOUSE_API_BFF_CONTRACT.readOnly,
       operationContractProven: hasReadonlyOperation(
         WAREHOUSE_API_BFF_OPERATION_CONTRACTS,
-        "warehouse.api.report.incoming_v2",
+        warehouseIncomingCanaryRequest.operation,
       ),
       clientContractExists: WAREHOUSE_API_BFF_CONTRACT.callsSupabaseDirectlyFromClient === false,
       readonlyDbPortUsed: true,
-      syntheticInputApproved: false,
+      syntheticInputApproved: true,
       requiresUserCompanyIdentifiersInInput: false,
-      canaryRequestEnvelope: null,
+      canaryRequestEnvelope: {
+        input: warehouseIncomingCanaryRequest,
+        metadata: { canary: "present_redacted" },
+      },
     }),
     buildReadRpcCandidate({
       id: "assistant_store_post_read_rpc_candidate",
@@ -255,13 +289,16 @@ export const PRODUCTION_BUSINESS_READONLY_CANARY_CANDIDATES: readonly Production
       contractReadOnly: ASSISTANT_STORE_READ_BFF_CONTRACT.readOnly,
       operationContractProven: hasReadonlyOperation(
         ASSISTANT_STORE_READ_BFF_OPERATION_CONTRACTS,
-        "assistant.market.active_listings",
+        assistantStoreCanaryRequest.operation,
       ),
       clientContractExists: ASSISTANT_STORE_READ_BFF_CONTRACT.callsSupabaseDirectlyFromClient === false,
       readonlyDbPortUsed: true,
-      syntheticInputApproved: false,
+      syntheticInputApproved: true,
       requiresUserCompanyIdentifiersInInput: false,
-      canaryRequestEnvelope: null,
+      canaryRequestEnvelope: {
+        input: assistantStoreCanaryRequest,
+        metadata: { canary: "present_redacted" },
+      },
     }),
   ]);
 
