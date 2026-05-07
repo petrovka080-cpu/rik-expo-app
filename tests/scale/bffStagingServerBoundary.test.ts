@@ -343,6 +343,134 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(output).not.toContain("cache-shadow-canary");
   });
 
+  it("serves route-scoped public catalog cache read-through without raw cache output", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          query: "cement",
+          category: "materials",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        serverTiming: expect.objectContaining({ cacheHit: false }),
+      }),
+    );
+    expect(second.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        serverTiming: expect.objectContaining({ cacheHit: true }),
+      }),
+    );
+    expect(fixture.calls.filter((call) => call.port === "marketplaceCatalog")).toHaveLength(1);
+
+    await waitFor(() => monitor.snapshot().missCount === 1 && monitor.snapshot().hitCount === 1);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        observedDecisionCount: 2,
+        shadowReadAttemptedCount: 2,
+        hitCount: 1,
+        missCount: 1,
+        responseChanged: false,
+        rawKeysStored: false,
+        rawKeysPrinted: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+    const output = JSON.stringify({ first, second, monitor: monitor.snapshot() });
+    expect(output).not.toContain("cache:v1:");
+    expect(output).not.toContain("company-cache-canary-opaque");
+    expect(output).not.toContain('"query":"cement"');
+  });
+
+  it("keeps read-through serving route scoped and rejects non-public payload classes", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "request.proposal.list",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const route = routeByOperation("request.proposal.list");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.body).toEqual(expect.objectContaining({ ok: true }));
+    expect(second.body).toEqual(expect.objectContaining({ ok: true }));
+    expect(fixture.calls.filter((call) => call.port === "requestProposal")).toHaveLength(2);
+
+    await waitFor(() => monitor.snapshot().skippedCount === 2);
+    expect(monitor.snapshot()).toEqual(
+      expect.objectContaining({
+        observedDecisionCount: 2,
+        shadowReadAttemptedCount: 0,
+        hitCount: 0,
+        missCount: 0,
+        skippedCount: 2,
+        responseChanged: false,
+        rawKeysStored: false,
+        rawPayloadLogged: false,
+        piiLogged: false,
+      }),
+    );
+  });
+
   it("rejects unknown routes and invalid request envelopes with redacted errors", async () => {
     await expect(
       handleBffStagingServerRequest({

@@ -4,12 +4,15 @@ import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInv
 import {
   evaluateCacheShadowRead,
   runCacheSyntheticShadowCanary,
+  type CacheShadowDecision,
   type CacheShadowMonitor,
   type CacheShadowMonitorSnapshot,
   type CacheShadowRuntimeConfig,
   type CacheSyntheticShadowCanaryResult,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import type { CacheAdapter } from "../../src/shared/scale/cacheAdapters";
+import { buildSafeCacheKey } from "../../src/shared/scale/cacheKeySafety";
+import { getCachePolicy } from "../../src/shared/scale/cachePolicies";
 import type { IdempotencyPolicyOperation } from "../../src/shared/scale/idempotencyPolicies";
 import { getIdempotencyPolicyForBffMutationOperation } from "../../src/shared/scale/idempotencyPolicies";
 import type { JobType } from "../../src/shared/scale/jobPolicies";
@@ -906,6 +909,7 @@ function observeBffStagingCacheShadow(params: {
   const route = params.route.cachePolicyRoute;
   if (!route || !params.cacheShadow) return;
   const cacheShadow = params.cacheShadow;
+  if (cacheShadow.config.mode === "read_through") return;
   void evaluateCacheShadowRead({
     adapter: cacheShadow.adapter,
     config: cacheShadow.config,
@@ -914,6 +918,181 @@ function observeBffStagingCacheShadow(params: {
   })
     .then((decision) => cacheShadow.monitor.observe(decision))
     .catch(() => undefined);
+}
+
+const hashForCacheReadThroughPercent = (value: string): number => {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+};
+
+const selectedForCacheReadThrough = (key: string, percent: number): boolean => {
+  if (percent >= 100) return true;
+  if (percent <= 0) return false;
+  return hashForCacheReadThroughPercent(key) % 100 < percent;
+};
+
+const buildCacheReadThroughDecision = (params: {
+  status: CacheShadowDecision["status"];
+  route: CachePolicyRoute;
+  cacheHit: boolean;
+  shadowReadAttempted: boolean;
+  reason: string;
+}): CacheShadowDecision => ({
+  status: params.status,
+  route: params.route,
+  mode: "read_through",
+  shadowReadAttempted: params.shadowReadAttempted,
+  cacheHit: params.cacheHit,
+  responseChanged: false,
+  syntheticIdentityUsed: false,
+  realUserPayloadUsed: false,
+  rawKeyReturned: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason: params.reason,
+});
+
+const withCacheHitTiming = (
+  body: BffResponseEnvelope<unknown>,
+  cacheHit: boolean,
+): BffResponseEnvelope<unknown> => {
+  if (body.ok !== true) return body;
+  return {
+    ...body,
+    serverTiming: {
+      ...(isRecord((body as { serverTiming?: unknown }).serverTiming)
+        ? ((body as { serverTiming?: Record<string, unknown> }).serverTiming ?? {})
+        : {}),
+      cacheHit,
+    },
+  };
+};
+
+async function invokeReadRouteWithCacheReadThrough(params: {
+  route: BffStagingRouteDefinition;
+  payload: BffStagingRequestPayload;
+  cacheShadow?: BffStagingCacheShadowDeps | null;
+  invoke: () => Promise<BffResponseEnvelope<unknown>>;
+}): Promise<BffResponseEnvelope<unknown>> {
+  const route = params.route.cachePolicyRoute;
+  const cacheShadow = params.cacheShadow;
+  const config = cacheShadow?.config;
+  const policy = route ? getCachePolicy(route) : null;
+  if (!route || !cacheShadow || !config || config.mode !== "read_through" || !policy) {
+    return params.invoke();
+  }
+
+  const observe = (decision: CacheShadowDecision): void => {
+    void cacheShadow.monitor.observe(decision).catch(() => undefined);
+  };
+
+  if (!config.enabled) {
+    observe(buildCacheReadThroughDecision({
+      status: "disabled",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "cache_read_through_disabled",
+    }));
+    return params.invoke();
+  }
+  if (policy.payloadClass !== "public_catalog") {
+    observe(buildCacheReadThroughDecision({
+      status: "skipped",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "payload_class_not_allowlisted_for_read_through",
+    }));
+    return params.invoke();
+  }
+  if (config.routeAllowlist.length === 0 || !config.routeAllowlist.includes(route)) {
+    observe(buildCacheReadThroughDecision({
+      status: "skipped",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "route_not_allowlisted",
+    }));
+    return params.invoke();
+  }
+
+  const keyResult = buildSafeCacheKey(policy, params.payload.input);
+  if (!keyResult.ok) {
+    observe(buildCacheReadThroughDecision({
+      status: "unsafe_key",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: keyResult.reason,
+    }));
+    return params.invoke();
+  }
+  if (!selectedForCacheReadThrough(keyResult.key, config.percent)) {
+    observe(buildCacheReadThroughDecision({
+      status: "skipped",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "not_selected_by_percent",
+    }));
+    return params.invoke();
+  }
+
+  const provider = cacheShadow.adapter.getStatus();
+  if (!provider.enabled || !provider.externalNetworkEnabled) {
+    observe(buildCacheReadThroughDecision({
+      status: "adapter_unavailable",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "adapter_unavailable",
+    }));
+    return params.invoke();
+  }
+
+  try {
+    const cached = await cacheShadow.adapter.get<unknown>(keyResult.key);
+    if (isBffStagingResponseEnvelope(cached) && cached.ok === true) {
+      observe(buildCacheReadThroughDecision({
+        status: "hit",
+        route,
+        cacheHit: true,
+        shadowReadAttempted: true,
+        reason: "cache_read_through_hit",
+      }));
+      return withCacheHitTiming(cached, true);
+    }
+
+    const body = await params.invoke();
+    observe(buildCacheReadThroughDecision({
+      status: "miss",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: true,
+      reason: "cache_read_through_miss",
+    }));
+    if (body.ok === true) {
+      await cacheShadow.adapter.set(keyResult.key, withCacheHitTiming(body, false), {
+        ttlMs: policy.ttlMs,
+        tags: policy.tags,
+      });
+    }
+    return withCacheHitTiming(body, false);
+  } catch {
+    observe(buildCacheReadThroughDecision({
+      status: "error",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "cache_read_through_error",
+    }));
+    return params.invoke();
+  }
 }
 
 const buildRateLimitShadowMonitorEnvelope = (
@@ -1312,7 +1491,12 @@ export async function handleBffStagingServerRequest(
       return buildErrorResponse(503, "BFF_READ_PORTS_UNAVAILABLE", "Read ports are not configured");
     }
 
-    const body = await invokeReadRoute(route.operation as BffReadOperation, deps.readPorts, payload.input);
+    const body = await invokeReadRouteWithCacheReadThrough({
+      route,
+      payload,
+      cacheShadow: deps.cacheShadow,
+      invoke: () => invokeReadRoute(route.operation as BffReadOperation, deps.readPorts!, payload.input),
+    });
     if (!isBffStagingResponseEnvelope(body)) {
       return buildErrorResponse(502, "BFF_INVALID_RESPONSE_ENVELOPE", "Invalid response envelope");
     }

@@ -3,7 +3,7 @@ import { buildSafeCacheKey } from "./cacheKeySafety";
 import type { CachePolicyRoute } from "./cachePolicies";
 import { getCachePolicy } from "./cachePolicies";
 
-export type CacheShadowMode = "disabled" | "shadow_readonly" | "synthetic_canary_only";
+export type CacheShadowMode = "disabled" | "shadow_readonly" | "synthetic_canary_only" | "read_through";
 
 export type CacheShadowRuntimeEnv = Record<string, string | undefined>;
 
@@ -106,6 +106,7 @@ const CACHE_SHADOW_ALLOWED_MODES = new Set<CacheShadowMode>([
   "disabled",
   "shadow_readonly",
   "synthetic_canary_only",
+  "read_through",
 ]);
 
 const DEFAULT_CACHE_SHADOW_ROUTE: CachePolicyRoute = "marketplace.catalog.search";
