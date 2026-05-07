@@ -1,7 +1,7 @@
 {
   "wave": "S-LOAD-1",
   "mode": "production-safe-staging-load-test",
-  "generatedAt": "2026-04-30T10:15:11.328Z",
+  "generatedAt": "2026-05-07T21:32:44.252Z",
   "environment": {
     "canRunLive": true,
     "missingKeys": [],
@@ -11,6 +11,35 @@
     ],
     "productionFallbackUsed": false,
     "secretsPrinted": false
+  },
+  "harnessPlan": {
+    "profile": "smoke",
+    "planOnly": false,
+    "targetConcurrency": 5,
+    "rampSteps": [
+      5
+    ],
+    "stopConditions": {
+      "requestTimeoutMs": 10000,
+      "maxDurationMs": 600000,
+      "maxTotalRequests": 15,
+      "maxP95LatencyMs": 1500,
+      "maxErrorRate": 0.02,
+      "abortOnHealthFailure": true,
+      "abortOnReadyFailure": true,
+      "abortOnErrorRateExceeded": true,
+      "abortOnUnexpectedWriteRoute": true,
+      "stopOnSqlstate57014": true,
+      "stopOnHttp429Or5xx": true,
+      "cooldownMs": 250
+    },
+    "operatorApprovalRequired": false,
+    "operatorApproved": true,
+    "supabaseLimitsConfirmed": true,
+    "enterpriseLoadApprovalRequired": false,
+    "enterpriseLoadApproved": true,
+    "safeToRunLive": true,
+    "blockers": []
   },
   "liveRun": "completed",
   "targets": [
@@ -30,27 +59,27 @@
       },
       "samples": [
         {
-          "latencyMs": 2950,
-          "payloadBytes": 18777,
+          "latencyMs": 762,
+          "payloadBytes": 18776,
           "rowCount": 25
         },
         {
-          "latencyMs": 2588,
-          "payloadBytes": 18777,
+          "latencyMs": 369,
+          "payloadBytes": 18776,
           "rowCount": 25
         },
         {
-          "latencyMs": 2630,
+          "latencyMs": 366,
           "payloadBytes": 18776,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 2630,
-      "maxLatencyMs": 2950,
-      "medianPayloadBytes": 18777,
-      "maxPayloadBytes": 18777,
+      "medianLatencyMs": 369,
+      "maxLatencyMs": 762,
+      "medianPayloadBytes": 18776,
+      "maxPayloadBytes": 18776,
       "maxRowCount": 25,
-      "recommendation": "optimize_next",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     },
@@ -70,23 +99,23 @@
       },
       "samples": [
         {
-          "latencyMs": 752,
+          "latencyMs": 770,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 417,
+          "latencyMs": 386,
           "payloadBytes": 6366,
           "rowCount": 14
         },
         {
-          "latencyMs": 417,
+          "latencyMs": 386,
           "payloadBytes": 6366,
           "rowCount": 14
         }
       ],
-      "medianLatencyMs": 417,
-      "maxLatencyMs": 752,
+      "medianLatencyMs": 386,
+      "maxLatencyMs": 770,
       "medianPayloadBytes": 6366,
       "maxPayloadBytes": 6366,
       "maxRowCount": 14,
@@ -110,7 +139,12 @@
       },
       "samples": [
         {
-          "latencyMs": 720,
+          "latencyMs": 779,
+          "payloadBytes": 16791,
+          "rowCount": 60
+        },
+        {
+          "latencyMs": 384,
           "payloadBytes": 16791,
           "rowCount": 60
         },
@@ -118,15 +152,10 @@
           "latencyMs": 395,
           "payloadBytes": 16791,
           "rowCount": 60
-        },
-        {
-          "latencyMs": 397,
-          "payloadBytes": 16791,
-          "rowCount": 60
         }
       ],
-      "medianLatencyMs": 397,
-      "maxLatencyMs": 720,
+      "medianLatencyMs": 395,
+      "maxLatencyMs": 779,
       "medianPayloadBytes": 16791,
       "maxPayloadBytes": 16791,
       "maxRowCount": 60,
@@ -152,27 +181,27 @@
       },
       "samples": [
         {
-          "latencyMs": 794,
-          "payloadBytes": 14170,
+          "latencyMs": 814,
+          "payloadBytes": 14204,
           "rowCount": 25
         },
         {
-          "latencyMs": 465,
-          "payloadBytes": 14170,
+          "latencyMs": 432,
+          "payloadBytes": 14204,
           "rowCount": 25
         },
         {
-          "latencyMs": 492,
-          "payloadBytes": 14170,
+          "latencyMs": 427,
+          "payloadBytes": 14204,
           "rowCount": 25
         }
       ],
-      "medianLatencyMs": 492,
-      "maxLatencyMs": 794,
-      "medianPayloadBytes": 14170,
-      "maxPayloadBytes": 14170,
+      "medianLatencyMs": 432,
+      "maxLatencyMs": 814,
+      "medianPayloadBytes": 14204,
+      "maxPayloadBytes": 14204,
       "maxRowCount": 25,
-      "recommendation": "safe_now",
+      "recommendation": "watch",
       "status": "collected",
       "errors": []
     },
@@ -188,27 +217,27 @@
       },
       "samples": [
         {
-          "latencyMs": 1282,
+          "latencyMs": 772,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 455,
+          "latencyMs": 390,
           "payloadBytes": 28333,
           "rowCount": 132
         },
         {
-          "latencyMs": 407,
+          "latencyMs": 392,
           "payloadBytes": 28333,
           "rowCount": 132
         }
       ],
-      "medianLatencyMs": 455,
-      "maxLatencyMs": 1282,
+      "medianLatencyMs": 392,
+      "maxLatencyMs": 772,
       "medianPayloadBytes": 28333,
       "maxPayloadBytes": 28333,
       "maxRowCount": 132,
-      "recommendation": "watch",
+      "recommendation": "safe_now",
       "status": "collected",
       "errors": []
     }
@@ -224,6 +253,22 @@
     "otaPublished": false,
     "easBuildTriggered": false,
     "easSubmitTriggered": false
+  },
+  "loadRunnerSafety": {
+    "readOnlyScenariosDefined": true,
+    "mutationScenariosRejected": true,
+    "maxRequestsDefined": true,
+    "maxConcurrencyDefined": true,
+    "requestTimeoutDefined": true,
+    "maxErrorRateDefined": true,
+    "abortCriteriaDefined": true,
+    "emulatorDryRunSupported": true,
+    "emulatorDryRunPassed": true,
+    "redactionTestsPassed": true,
+    "realNetworkCallsMade": false,
+    "stagingCallsMade": false,
+    "productionCallsMade": false,
+    "errors": []
   },
   "gates": {
     "targetedTests": "pass",
