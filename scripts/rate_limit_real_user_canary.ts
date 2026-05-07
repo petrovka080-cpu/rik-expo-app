@@ -318,7 +318,7 @@ async function main(): Promise<void> {
     });
   }
 
-  const envResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars`);
+  const envResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars?limit=100`);
   const envItems = renderEnvItems(envResult.body);
   const previous = {
     mode: envItemValue(envItems, "SCALE_RATE_ENFORCEMENT_MODE"),

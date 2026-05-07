@@ -241,6 +241,10 @@ describe("production business read-only canary registry", () => {
       secretPrinted: false,
       secretWritten: false,
     });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.stringContaining("/env-vars?limit=100"),
+      expect.any(Object),
+    );
   });
 
   it("falls back to local server auth when Render env cannot be read", async () => {

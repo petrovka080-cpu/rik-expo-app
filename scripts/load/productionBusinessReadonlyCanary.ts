@@ -587,7 +587,7 @@ export async function resolveProductionBusinessReadonlyCanaryServerAuthSecret(pa
     if (preferRenderApi && renderToken && renderServiceId) {
       try {
         const response = await fetchImpl(
-          `https://api.render.com/v1/services/${encodeURIComponent(renderServiceId)}/env-vars`,
+          `https://api.render.com/v1/services/${encodeURIComponent(renderServiceId)}/env-vars?limit=100`,
           {
             method: "GET",
             headers: {
