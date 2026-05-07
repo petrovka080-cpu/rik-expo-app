@@ -21,7 +21,7 @@ import {
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { useBuyerDocuments } from "./useBuyerDocuments";
 
-import { BuyerScreenContent } from "./components/BuyerScreenContent";
+import { BuyerScreenContent, useBuyerScreenContentProps } from "./components/BuyerScreenContent";
 import { useBuyerProposalAttachments } from "./useBuyerProposalAttachments";
 import {
   isReqContextNote,
@@ -159,15 +159,15 @@ export function BuyerScreen() {
     onHeaderMeasure,
   } = useBuyerHeaderCollapse();
 
-  const fmtLocal = (iso: string) => fmtLocalHelper(iso);
+  const fmtLocal = useCallback((iso: string) => fmtLocalHelper(iso), []);
 
-  const setDeadlineHours = (hours: number) => {
+  const setDeadlineHours = useCallback((hours: number) => {
     setDeadlineHoursHelper(hours, setRfqDeadlineIso);
-  };
+  }, [setRfqDeadlineIso]);
 
-  const isDeadlineHoursActive = (hours: number) => {
+  const isDeadlineHoursActive = useCallback((hours: number) => {
     return isDeadlineHoursActiveHelper(hours, rfqDeadlineIso);
-  };
+  }, [rfqDeadlineIso]);
 
   useBuyerRfqPrefill({
     sheetKind,
@@ -582,45 +582,49 @@ export function BuyerScreen() {
     proposalNoByPid,
     prettyLabel,
   });
+
+  const openFioModal = useCallback(() => setIsFioConfirmVisible(true), [setIsFioConfirmVisible]);
+  const headerCounts = useMemo(
+    () => ({
+      ...tabCounts,
+      subcontractCount,
+    }),
+    [subcontractCount, tabCounts],
+  );
   const header = useBuyerScreenHeader({
     s,
     tab,
     setTab,
     buyerFio,
-    onOpenFioModal: () => setIsFioConfirmVisible(true),
+    onOpenFioModal: openFioModal,
     titleSize,
     subOpacity,
-    counts: {
-      ...tabCounts,
-      subcontractCount,
-    },
+    counts: headerCounts,
     tabsScrollRef,
     scrollTabsToStart,
   });
 
-  return (
-    <BuyerScreenContent
-      s={s}
-      isWeb={isWeb}
-      tab={tab}
-      buyerFio={buyerFio}
-      searchQuery={searchQuery}
-      onChangeSearchQuery={setSearchQuery}
-      onRefresh={() => {
-        void onRefresh();
-      }}
-      showWebRefreshButton={viewModel.showWebRefreshButton}
-      refreshAccessibilityLabel="Refresh buyer"
-      measuredHeaderMax={measuredHeaderMax}
-      scrollY={scrollY}
-      stickyHeader={{
+  const contentProps = useBuyerScreenContentProps({
+    s,
+    isWeb,
+    tab,
+    buyerFio,
+    searchQuery,
+    onChangeSearchQuery: setSearchQuery,
+    onRefresh,
+    fetchInboxNextPage,
+    showWebRefreshButton: viewModel.showWebRefreshButton,
+    refreshAccessibilityLabel: "Refresh buyer",
+    measuredHeaderMax,
+    scrollY,
+    stickyHeader: {
         header,
         onHeaderMeasure,
         headerHeight,
         headerShadow,
-      }}
-      mainListHeaderPad={viewModel.mainListHeaderPad}
-      mainList={{
+    },
+    mainListHeaderPad: viewModel.mainListHeaderPad,
+    mainList: {
         data: listData,
         publicationState: tab === "inbox" ? inboxPublicationState : bucketsPublicationState,
         publicationMessage: tab === "inbox" ? inboxPublicationMessage : bucketsPublicationMessage,
@@ -630,13 +634,10 @@ export function BuyerScreen() {
         loadingBuckets,
         loadingInboxMore,
         inboxHasMore,
-        onLoadMoreInbox: () => {
-          void fetchInboxNextPage();
-        },
         renderGroupBlock,
         renderProposalCard,
-      }}
-      sheets={{
+    },
+    sheets: {
         sheetKind,
         sheetTitle,
         isSheetOpen,
@@ -709,9 +710,10 @@ export function BuyerScreen() {
           publishRfq,
         },
         toast,
-      }}
-    />
-  );
+    },
+  });
+
+  return <BuyerScreenContent {...contentProps} />;
 }
 
 const s = buyerStyles;

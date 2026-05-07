@@ -22,9 +22,12 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
 
   it("keeps BuyerScreen as orchestration while moving view/config noise out", () => {
     const source = readRepoFile("src/screens/buyer/BuyerScreen.tsx");
+    const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
 
     expect(source).toContain("buildBuyerScreenViewModel");
     expect(source).toContain("buildBuyerScreenLoadingState");
+    expect(source).toContain("useBuyerScreenContentProps");
+    expect(contentSource).toContain("export function useBuyerScreenContentProps");
     expect(source).toContain("<BuyerScreenContent");
     expect(source).not.toContain("TextInput");
     expect(source).not.toContain("RoleScreenLayout");
