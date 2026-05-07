@@ -1,7 +1,7 @@
 // app/(tabs)/buyer.tsx
 import { formatRequestDisplay } from "../../lib/format";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   type ScrollView
@@ -74,9 +74,13 @@ import { useBuyerAccountingSheetState } from "./hooks/useBuyerAccountingSheetSta
 import { useBuyerProposalDetailsState } from "./hooks/useBuyerProposalDetailsState";
 import { useBuyerStore } from "./buyer.store";
 import {
-  buildBuyerScreenLoadingState,
   buildBuyerScreenViewModel,
 } from "./buyer.screen.model";
+import {
+  useBuyerAttachmentBlockAutoClose,
+  useBuyerPreloadProposalRequestNumbers,
+  useBuyerScreenLoadingPublisher,
+} from "./hooks/useBuyerScreenSideEffects";
 
 const isWeb = Platform.OS === 'web';
 
@@ -307,12 +311,7 @@ export function BuyerScreen() {
     setFilters({ searchQuery: value });
   }, [setFilters]);
 
-  useEffect(() => {
-    const ids = Array.from(
-      new Set((groups || []).map(g => String(g.request_id || "").trim()).filter(Boolean))
-    );
-    if (ids.length) void preloadPrNosByRequests(ids);
-  }, [groups, preloadPrNosByRequests]);
+  useBuyerPreloadProposalRequestNumbers({ groups, preloadPrNosByRequests });
   const { publishRfq } = useBuyerRfqPublish({
     pickedIds,
     rfqDeadlineIso,
@@ -368,13 +367,7 @@ export function BuyerScreen() {
   });
   const { kbOpen } = useBuyerKeyboard({ enabled: !isMobileEditorVisible });
 
-  useEffect(() => {
-    if (sheetKind === "inbox") setShowAttachBlock(false);
-  }, [sheetKind]);
-
-  useEffect(() => {
-    if (isWeb && kbOpen) setShowAttachBlock(false);
-  }, [kbOpen]);
+  useBuyerAttachmentBlockAutoClose({ sheetKind, isWeb, kbOpen, setShowAttachBlock });
 
   const { validatePicked, removeFromInboxLocally, confirmSendWithoutAttachments } = useBuyerCreateGuards({
     groups,
@@ -542,36 +535,20 @@ export function BuyerScreen() {
     [creating, isMobileEditorVisible, kbOpen, measuredHeaderMax, pickedIds.length, tab],
   );
 
-  useEffect(() => {
-    setLoading(
-      buildBuyerScreenLoadingState({
-        tab,
-        loadingInbox,
-        loadingBuckets,
-        refreshing,
-        creating,
-        accountingBusy: accountingSheet.acctBusy,
-        proposalDetailsBusy: proposalDetailsSheet.propViewBusy,
-        proposalDocumentBusy: accountingSheet.propDocBusy,
-        proposalAttachmentsBusy: propAttBusy,
-        reworkBusy: reworkFlow.rwBusy,
-        rfqBusy,
-      }),
-    );
-  }, [
-    accountingSheet.acctBusy,
-    creating,
-    loadingBuckets,
-    loadingInbox,
-    propAttBusy,
-    accountingSheet.propDocBusy,
-    proposalDetailsSheet.propViewBusy,
-    refreshing,
-    rfqBusy,
-    reworkFlow.rwBusy,
-    setLoading,
+  useBuyerScreenLoadingPublisher({
     tab,
-  ]);
+    loadingInbox,
+    loadingBuckets,
+    refreshing,
+    creating,
+    accountingBusy: accountingSheet.acctBusy,
+    proposalDetailsBusy: proposalDetailsSheet.propViewBusy,
+    proposalDocumentBusy: accountingSheet.propDocBusy,
+    proposalAttachmentsBusy: propAttBusy,
+    reworkBusy: reworkFlow.rwBusy,
+    rfqBusy,
+    setLoading,
+  });
 
   const sheetTitle = useBuyerSheetTitle({
     sheetKind,

@@ -144,6 +144,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "assistant_store_read.bff.handler.ts"),
       path.join(SRC, "lib", "store_supabase.read.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sBuyerScreenSideEffectBoundaryFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenSideEffects.ts"),
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenSideEffects.test.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -206,6 +210,8 @@ describe("performance budget — bundle module count", () => {
     // adds five permanent disabled assistant/store read BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-LOW-RISK-READS-BFF-1 extends that permanent
     // contract with two low-risk read transports, no native/package surface.
+    // S-BUYER_SCREEN_SIDE_EFFECT_ISOLATION_1 adds a permanent BuyerScreen side-effect
+    // hook boundary plus focused src-owned regression tests.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -218,6 +224,7 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(5);
     expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(7);
+    expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -231,7 +238,8 @@ describe("performance budget — bundle module count", () => {
         sDirectSupabaseBypassDirectorFinanceBoundaryFiles -
         sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles -
         sDirectSupabaseBypassCatalogTransportBoundaryFiles -
-        sDirectSupabaseBypassAssistantStoreBoundaryFiles,
+        sDirectSupabaseBypassAssistantStoreBoundaryFiles -
+        sBuyerScreenSideEffectBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
