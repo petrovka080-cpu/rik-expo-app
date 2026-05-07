@@ -87,6 +87,34 @@ export type ProductionBusinessReadonlyCanaryMetric = {
   errorCategory: string | null;
 };
 
+export type ProductionBusinessReadonlyCanaryErrorCategory =
+  | "auth_category"
+  | "dto_validation_category"
+  | "route_not_live_category"
+  | "readonly_route_disabled_category"
+  | "readonly_upstream_category"
+  | "other_safe_error_category"
+  | "error_code_unavailable";
+
+export type ProductionBusinessReadonlyCanaryAuthSource =
+  | "render_api_in_memory"
+  | "local_env"
+  | "missing";
+
+export type ProductionBusinessReadonlyCanaryAuthResolution = {
+  source: ProductionBusinessReadonlyCanaryAuthSource;
+  status:
+    | "present"
+    | "render_api_not_configured"
+    | "render_api_unreadable"
+    | "render_secret_missing"
+    | "local_secret_present"
+    | "missing";
+  secret: string;
+  secretPrinted: false;
+  secretWritten: false;
+};
+
 export type ProductionBusinessReadonlyCanaryMetricsSummary = {
   totalRequestsAttempted: number;
   totalRequestsCompleted: number;
@@ -108,6 +136,8 @@ export type ProductionBusinessReadonlyCanaryRunResult = {
   productionBusinessReadonlyCallsMade: boolean;
   whitelistRouteCount: number;
   whitelistRouteClasses: ProductionBusinessReadonlyCanaryRouteClass[];
+  serverAuthSource: ProductionBusinessReadonlyCanaryAuthSource;
+  serverAuthResolutionStatus: ProductionBusinessReadonlyCanaryAuthResolution["status"];
   totalRequestsAttempted: number;
   totalRequestsCompleted: number;
   statusClassCounts: Record<string, number>;
@@ -433,6 +463,185 @@ const loadCanaryDotenv = (): void => {
 const readEnv = (...keys: string[]): string =>
   keys.map((key) => String(process.env[key] ?? "").trim()).find(Boolean) ?? "";
 
+export function classifyProductionBusinessReadonlyCanaryErrorCode(
+  code: unknown,
+): ProductionBusinessReadonlyCanaryErrorCategory {
+  if (typeof code !== "string" || code.length === 0) return "error_code_unavailable";
+  if (code.includes("AUTH")) return "auth_category";
+  if (code.includes("INVALID_REQUEST") || code.includes("INVALID_OPERATION")) {
+    return "dto_validation_category";
+  }
+  if (code.includes("ROUTE_NOT_FOUND")) return "route_not_live_category";
+  if (code.includes("PORT_UNAVAILABLE")) return "readonly_route_disabled_category";
+  if (code.includes("UPSTREAM")) return "readonly_upstream_category";
+  return "other_safe_error_category";
+}
+
+const readBffErrorCode = async (response: Response): Promise<string | null> => {
+  if (response.ok) {
+    await response.text().catch(() => undefined);
+    return null;
+  }
+  const text = await response.text().catch(() => "");
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      "ok" in parsed &&
+      parsed.ok === false &&
+      "error" in parsed &&
+      parsed.error &&
+      typeof parsed.error === "object" &&
+      "code" in parsed.error &&
+      typeof parsed.error.code === "string"
+    ) {
+      return parsed.error.code;
+    }
+  } catch {
+    // Keep diagnostics category-only; never surface the raw response body.
+  }
+  return null;
+};
+
+const getRenderServiceId = (): string => readEnv("RENDER_PRODUCTION_BFF_SERVICE_ID", "RENDER_SERVICE_ID");
+
+const extractRenderEnvVarValue = (body: unknown, key: string): string => {
+  const bodyRecord = body && typeof body === "object" ? (body as { envVars?: unknown }) : null;
+  const items = Array.isArray(body)
+    ? body
+    : bodyRecord && Array.isArray(bodyRecord.envVars)
+      ? bodyRecord.envVars
+      : [];
+  for (const item of items) {
+    const envVar =
+      item && typeof item === "object" && "envVar" in item && item.envVar && typeof item.envVar === "object"
+        ? item.envVar
+        : item;
+    if (
+      envVar &&
+      typeof envVar === "object" &&
+      "key" in envVar &&
+      envVar.key === key &&
+      "value" in envVar &&
+      typeof envVar.value === "string" &&
+      envVar.value.length > 0
+    ) {
+      return envVar.value;
+    }
+  }
+  return "";
+};
+
+export async function resolveProductionBusinessReadonlyCanaryServerAuthSecret(params: {
+  env?: Partial<NodeJS.ProcessEnv>;
+  fetchImpl?: typeof fetch;
+  preferRenderApi?: boolean;
+} = {}): Promise<ProductionBusinessReadonlyCanaryAuthResolution> {
+  const originalEnv = process.env;
+  if (params.env) process.env = { ...process.env, ...params.env };
+  try {
+    const localSecret = readEnv("BFF_SERVER_AUTH_SECRET");
+    const renderToken = readEnv("RENDER_API_TOKEN");
+    const renderServiceId = getRenderServiceId();
+    const fetchImpl = params.fetchImpl ?? fetch;
+    const preferRenderApi = params.preferRenderApi ?? true;
+
+    if (preferRenderApi && renderToken && renderServiceId) {
+      try {
+        const response = await fetchImpl(
+          `https://api.render.com/v1/services/${encodeURIComponent(renderServiceId)}/env-vars`,
+          {
+            method: "GET",
+            headers: {
+              accept: "application/json",
+              authorization: `Bearer ${renderToken}`,
+            },
+          },
+        );
+        if (response.ok) {
+          const body = await response.json().catch(() => null);
+          const renderSecret = extractRenderEnvVarValue(body, "BFF_SERVER_AUTH_SECRET");
+          if (renderSecret) {
+            return {
+              source: "render_api_in_memory",
+              status: "present",
+              secret: renderSecret,
+              secretPrinted: false,
+              secretWritten: false,
+            };
+          }
+          return localSecret
+            ? {
+                source: "local_env",
+                status: "render_secret_missing",
+                secret: localSecret,
+                secretPrinted: false,
+                secretWritten: false,
+              }
+            : {
+                source: "missing",
+                status: "render_secret_missing",
+                secret: "",
+                secretPrinted: false,
+                secretWritten: false,
+              };
+        }
+        return localSecret
+          ? {
+              source: "local_env",
+              status: "render_api_unreadable",
+              secret: localSecret,
+              secretPrinted: false,
+              secretWritten: false,
+            }
+          : {
+              source: "missing",
+              status: "render_api_unreadable",
+              secret: "",
+              secretPrinted: false,
+              secretWritten: false,
+            };
+      } catch {
+        return localSecret
+          ? {
+              source: "local_env",
+              status: "render_api_unreadable",
+              secret: localSecret,
+              secretPrinted: false,
+              secretWritten: false,
+            }
+          : {
+              source: "missing",
+              status: "render_api_unreadable",
+              secret: "",
+              secretPrinted: false,
+              secretWritten: false,
+            };
+      }
+    }
+
+    if (localSecret) {
+      return {
+        source: "local_env",
+        status: preferRenderApi ? "render_api_not_configured" : "local_secret_present",
+        secret: localSecret,
+        secretPrinted: false,
+        secretWritten: false,
+      };
+    }
+    return {
+      source: "missing",
+      status: "missing",
+      secret: "",
+      secretPrinted: false,
+      secretWritten: false,
+    };
+  } finally {
+    process.env = originalEnv;
+  }
+}
+
 const statusClass = (status: number | null): string =>
   status == null ? "error" : `${Math.floor(status / 100)}xx`;
 
@@ -502,7 +711,7 @@ export async function runProductionBusinessReadonlyCanary(params: {
     "PRODUCTION_BFF_BASE_URL",
     "PROD_BFF_BASE_URL",
   );
-  const authSecret = readEnv("BFF_SERVER_AUTH_SECRET");
+  const auth = await resolveProductionBusinessReadonlyCanaryServerAuthSecret();
   const requestTimeoutMs = params.requestTimeoutMs ?? 8_000;
   const maxErrorRate = params.maxErrorRate ?? 0;
   const { whitelist } =
@@ -530,7 +739,7 @@ export async function runProductionBusinessReadonlyCanary(params: {
   let abortTriggered = preAbort.abort;
   let abortReason = preAbort.reasons[0] ?? null;
 
-  if (!abortTriggered && baseUrl && authSecret) {
+  if (!abortTriggered && baseUrl && auth.secret) {
     for (const route of routes) {
       const startedAt = Date.now();
       try {
@@ -541,18 +750,19 @@ export async function runProductionBusinessReadonlyCanary(params: {
             headers: {
               accept: "application/json",
               "content-type": "application/json",
-              authorization: `Bearer ${authSecret}`,
+              authorization: `Bearer ${auth.secret}`,
             },
             body: route.method === "POST" ? JSON.stringify(route.canaryRequestEnvelope) : undefined,
           },
           requestTimeoutMs,
         );
-        await response.text().catch(() => undefined);
+        const errorCode = await readBffErrorCode(response);
+        const safeErrorCategory = classifyProductionBusinessReadonlyCanaryErrorCode(errorCode);
         metrics.push({
           routeClass: route.routeClass,
           statusClass: statusClass(response.status),
           latencyMs: Date.now() - startedAt,
-          errorCategory: response.ok ? null : `http_${statusClass(response.status)}`,
+          errorCategory: response.ok ? null : safeErrorCategory,
         });
       } catch (error) {
         metrics.push({
@@ -590,10 +800,12 @@ export async function runProductionBusinessReadonlyCanary(params: {
     : { status: null, readPortsConfigured: null, mutationRoutesEnabled: null };
   const summary = summarizeProductionBusinessReadonlyCanaryMetrics(metrics);
   return {
-    canaryStarted: routes.length > 0 && !preAbort.abort && Boolean(baseUrl) && Boolean(authSecret),
+    canaryStarted: routes.length > 0 && !preAbort.abort && Boolean(baseUrl) && Boolean(auth.secret),
     productionBusinessReadonlyCallsMade: summary.totalRequestsAttempted > 0,
     whitelistRouteCount: whitelist.length,
     whitelistRouteClasses: whitelist.map((route) => route.routeClass),
+    serverAuthSource: auth.source,
+    serverAuthResolutionStatus: auth.status,
     totalRequestsAttempted: summary.totalRequestsAttempted,
     totalRequestsCompleted: summary.totalRequestsCompleted,
     statusClassCounts: summary.statusClassCounts,

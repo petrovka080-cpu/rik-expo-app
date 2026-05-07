@@ -1,8 +1,10 @@
 import {
   PRODUCTION_BUSINESS_READONLY_CANARY_CANDIDATES,
   buildProductionBusinessReadonlyCanaryWhitelist,
+  classifyProductionBusinessReadonlyCanaryErrorCode,
   classifyProductionBusinessReadonlyCanaryRoute,
   evaluateProductionBusinessReadonlyCanaryAbortCriteria,
+  resolveProductionBusinessReadonlyCanaryServerAuthSecret,
   summarizeProductionBusinessReadonlyCanaryMetrics,
   validateProductionBusinessReadonlyCanaryMetricLog,
   validateProductionBusinessReadonlyCanaryRegistry,
@@ -167,5 +169,74 @@ describe("production business read-only canary registry", () => {
         redactionUnsafe: false,
       }),
     ).toEqual({ abort: true, reasons: ["ready_failure"] });
+  });
+
+  it("classifies redacted 4xx root-cause categories without raw payloads", () => {
+    expect(classifyProductionBusinessReadonlyCanaryErrorCode("BFF_AUTH_REQUIRED")).toBe("auth_category");
+    expect(classifyProductionBusinessReadonlyCanaryErrorCode("BFF_ROUTE_NOT_FOUND")).toBe(
+      "route_not_live_category",
+    );
+    expect(classifyProductionBusinessReadonlyCanaryErrorCode("CATALOG_TRANSPORT_BFF_INVALID_OPERATION")).toBe(
+      "dto_validation_category",
+    );
+    expect(classifyProductionBusinessReadonlyCanaryErrorCode("BFF_CATALOG_TRANSPORT_READ_PORT_UNAVAILABLE")).toBe(
+      "readonly_route_disabled_category",
+    );
+    expect(classifyProductionBusinessReadonlyCanaryErrorCode(null)).toBe("error_code_unavailable");
+  });
+
+  it("prefers the live Render server auth secret in memory without printing or writing it", async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: true,
+      json: async () => [
+        {
+          envVar: {
+            key: "BFF_SERVER_AUTH_SECRET",
+            value: "live-render-secret",
+          },
+        },
+      ],
+    })) as unknown as typeof fetch;
+
+    await expect(
+      resolveProductionBusinessReadonlyCanaryServerAuthSecret({
+        env: {
+          BFF_SERVER_AUTH_SECRET: "stale-local-secret",
+          RENDER_API_TOKEN: "render-token",
+          RENDER_PRODUCTION_BFF_SERVICE_ID: "srv-production",
+        },
+        fetchImpl,
+      }),
+    ).resolves.toEqual({
+      source: "render_api_in_memory",
+      status: "present",
+      secret: "live-render-secret",
+      secretPrinted: false,
+      secretWritten: false,
+    });
+  });
+
+  it("falls back to local server auth when Render env cannot be read", async () => {
+    const fetchImpl = jest.fn(async () => ({
+      ok: false,
+      status: 403,
+    })) as unknown as typeof fetch;
+
+    await expect(
+      resolveProductionBusinessReadonlyCanaryServerAuthSecret({
+        env: {
+          BFF_SERVER_AUTH_SECRET: "local-secret",
+          RENDER_API_TOKEN: "render-token",
+          RENDER_PRODUCTION_BFF_SERVICE_ID: "srv-production",
+        },
+        fetchImpl,
+      }),
+    ).resolves.toEqual({
+      source: "local_env",
+      status: "render_api_unreadable",
+      secret: "local-secret",
+      secretPrinted: false,
+      secretWritten: false,
+    });
   });
 });
