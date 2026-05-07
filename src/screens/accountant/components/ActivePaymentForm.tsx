@@ -1,5 +1,5 @@
 import React from "react";
-import { Platform, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Platform, Pressable, Text, TextInput, View } from "react-native";
 
 import {
   fmt2,
@@ -13,6 +13,7 @@ import {
 import { useAccountantPaymentForm } from "../useAccountantPaymentForm";
 import { runNextTick } from "../helpers";
 import { S, UI } from "../ui";
+import { ps } from "./ActivePaymentForm.styles";
 
 type Props = {
   busyKey: string | null;
@@ -629,164 +630,3 @@ export default function ActivePaymentForm({
     </>
   );
 }
-
-const ps = StyleSheet.create({
-  gap6: { height: 6 },
-  gap8: { height: 8 },
-  gap10: { height: 10 },
-  gap12: { height: 12 },
-  flex1: { flex: 1 },
-  segRow: { flexDirection: "row", gap: 8 },
-  opacity60: { opacity: 0.6 },
-  opacity55: { opacity: 0.55 },
-  opacity90: { opacity: 0.9 },
-  minHeight56: { minHeight: 56 },
-  boldText: { color: UI.text, fontWeight: "900" },
-  subBold: { color: UI.sub, fontWeight: "800" },
-  subBoldMt6: { color: UI.sub, fontWeight: "800", marginTop: 6 },
-  supplierLabel: { color: UI.sub, fontWeight: "800", marginBottom: 8 },
-  supplierValue: { color: UI.text, fontWeight: "900" },
-  segBtnBase: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  segBtnActive: {
-    backgroundColor: "rgba(34,197,94,0.18)",
-    borderColor: "rgba(34,197,94,0.55)",
-  },
-  segBtnInactive: {
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderColor: "rgba(255,255,255,0.14)",
-  },
-  smallBtnBase: {
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: 999,
-    borderWidth: 1,
-  },
-  smallBtnNeutral: {
-    borderColor: "rgba(255,255,255,0.14)",
-    backgroundColor: "rgba(255,255,255,0.06)",
-  },
-  miniBtnBase: {
-    width: 54,
-    height: 42,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.55)",
-    backgroundColor: "rgba(34,197,94,0.16)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  pillBox: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  pillBoxText: { color: UI.sub, fontWeight: "800" },
-  dateChipRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
-  dateChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.14)",
-  },
-  dateInputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.55)",
-    backgroundColor: "rgba(34,197,94,0.06)",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-  },
-  dateInputField: {
-    width: 42,
-    marginLeft: 10,
-    color: UI.text,
-    fontWeight: "900",
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    textAlign: "center",
-  },
-  dateSep: { color: UI.text, fontWeight: "900", marginHorizontal: 8 },
-  dateInputFieldNoML: {
-    width: 42,
-    color: UI.text,
-    fontWeight: "900",
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    textAlign: "center",
-  },
-  restBox: {
-    marginBottom: 10,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-  },
-  restAmount: { color: UI.text, fontWeight: "900", fontSize: 22, marginTop: 6 },
-  errorBox: {
-    marginBottom: 10,
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,99,99,0.45)",
-    backgroundColor: "rgba(255,99,99,0.08)",
-  },
-  allocBox: {
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    backgroundColor: "rgba(255,255,255,0.03)",
-  },
-  allocBoxOk: { borderColor: "rgba(34,197,94,0.35)" },
-  allocBoxWarn: { borderColor: "rgba(255,99,99,0.45)" },
-  allocHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-  lineItemsGap: { gap: 10 },
-  lineCard: {
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.12)",
-    backgroundColor: "rgba(0,0,0,0.10)",
-    borderRadius: 14,
-    padding: 10,
-  },
-  lineSubMt4: { color: UI.sub, fontWeight: "800", marginTop: 4 },
-  lineSubMb6: { color: UI.sub, fontWeight: "800", marginBottom: 6 },
-  lineInputRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  lineAllocInput: {
-    flex: 1,
-    height: 42,
-    paddingVertical: 8,
-    borderColor: "rgba(34,197,94,0.35)",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  maxBtnText: { color: UI.text, fontWeight: "900", fontSize: 12 },
-  lineRestAfter: { color: UI.sub, fontWeight: "800", marginTop: 8 },
-  allocWarnBox: {
-    marginTop: 10,
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,99,99,0.35)",
-    backgroundColor: "rgba(255,99,99,0.07)",
-  },
-  allocAutoHint: { color: UI.sub, fontWeight: "800", marginTop: 10 },
-  noteAccent: { borderColor: "rgba(34,197,94,0.55)" },
-});

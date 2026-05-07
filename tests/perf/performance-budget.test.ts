@@ -185,6 +185,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle48OfficeInviteHandoffBoundaryFiles = [
       path.join(SRC, "screens", "office", "officeHub.inviteHandoffSection.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle49ActivePaymentFormStyleBoundaryFiles = [
+      path.join(SRC, "screens", "accountant", "components", "ActivePaymentForm.styles.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -264,6 +267,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_46 adds one permanent Contractor work-modal read probe transport boundary.
     // S-AUDIT_BATTLE_47 adds one permanent BuyerSubcontractTab static style boundary.
     // S-AUDIT_BATTLE_48 adds one permanent Office invite handoff render boundary.
+    // S-AUDIT_BATTLE_49 adds one permanent ActivePaymentForm static style boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -288,6 +292,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle48OfficeInviteHandoffBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle49ActivePaymentFormStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -313,7 +318,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle45MapScreenStyleBoundaryFiles -
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
-        sAuditBattle48OfficeInviteHandoffBoundaryFiles,
+        sAuditBattle48OfficeInviteHandoffBoundaryFiles -
+        sAuditBattle49ActivePaymentFormStyleBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

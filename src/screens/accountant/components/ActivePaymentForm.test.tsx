@@ -5,6 +5,7 @@ import { Text, TextInput } from "react-native";
 import TestRenderer, { act, type ReactTestRenderer } from "react-test-renderer";
 
 import ActivePaymentForm from "./ActivePaymentForm";
+import { ps } from "./ActivePaymentForm.styles";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -433,20 +434,31 @@ describe("ActivePaymentForm", () => {
     expect(copy).not.toMatch(/Рџ|РЎ|Рќ|вЂ|Г—|вќ|СЃ|С‡|СЏ/);
   });
 
-  it("keeps hot action styles in the local StyleSheet instead of render-time builders", () => {
+  it("keeps hot action styles in the static style boundary instead of render-time builders", () => {
     const source = readFileSync(join(__dirname, "ActivePaymentForm.tsx"), "utf8");
+    const stylesSource = readFileSync(
+      join(__dirname, "ActivePaymentForm.styles.ts"),
+      "utf8",
+    );
 
     expect(source).not.toContain("const segBtn =");
     expect(source).not.toContain("const smallBtn =");
     expect(source).not.toContain("const miniBtn =");
     expect(source).not.toContain("function pillBox()");
     expect(source).not.toContain("function pillBoxTxt()");
-    expect(source).toContain("segBtnBase");
-    expect(source).toContain("smallBtnBase");
-    expect(source).toContain("miniBtnBase");
-    expect(source).toContain("pillBox");
-    expect(source).toContain("allocBoxOk");
-    expect(source).toContain("opacity90");
+    expect(source).not.toContain("StyleSheet.create");
+    expect(source).toContain("import { ps } from \"./ActivePaymentForm.styles\"");
+    expect(stylesSource).toContain("segBtnBase");
+    expect(stylesSource).toContain("smallBtnBase");
+    expect(stylesSource).toContain("miniBtnBase");
+    expect(stylesSource).toContain("pillBox");
+    expect(stylesSource).toContain("allocBoxOk");
+    expect(stylesSource).toContain("opacity90");
+    expect(ps.segBtnBase).toBeTruthy();
+    expect(ps.smallBtnBase).toBeTruthy();
+    expect(ps.miniBtnBase).toBeTruthy();
+    expect(ps.pillBox).toBeTruthy();
+    expect(ps.allocBoxOk).toBeTruthy();
   });
 
   it("cancels in-flight loads on immediate close without stale state updates", async () => {
