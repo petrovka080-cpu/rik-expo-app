@@ -25,6 +25,7 @@ import {
   type PostReturnSectionKey,
   type SectionKey,
 } from "./officeHub.constants";
+import { OfficeInviteHandoffSection } from "./officeHub.inviteHandoffSection";
 import { styles } from "./officeHub.styles";
 import type { OfficeInviteHandoff } from "./officeInviteShare";
 import type { OfficeHubRoleAccessState } from "./useOfficeHubRoleAccess";
@@ -451,118 +452,13 @@ export function OfficeInvitesSection({
       {inviteHandoff
         ? renderSubtreeBoundary(
             "invites_handoff",
-            <View
-              testID="office-invite-handoff"
-              style={styles.handoff}
+            <OfficeInviteHandoffSection
+              handoff={inviteHandoff}
+              feedback={invite.inviteHandoffFeedback}
+              onCopyInvite={invite.handleCopyInvite}
+              onOpenInviteChannel={invite.handleOpenInviteChannel}
               onLayout={onSubtreeLayout("invites_handoff")}
-            >
-              <Text style={styles.eyebrow}>{COPY.inviteHandoffTitle}</Text>
-              <Text testID="office-invite-handoff-role" style={styles.handoffTitle}>
-                {inviteHandoff.roleLabel}
-              </Text>
-              <Text style={styles.helper}>{COPY.inviteHandoffLead}</Text>
-              <View style={styles.panel}>
-                <View style={styles.row}>
-                  <Text style={styles.label}>{COPY.summaryTitle}</Text>
-                  <Text testID="office-invite-handoff-company" style={styles.value}>
-                    {inviteHandoff.companyName}
-                  </Text>
-                </View>
-                <View style={styles.row}>
-                  <Text style={styles.label}>{COPY.summaryRole}</Text>
-                  <Text style={styles.value}>{inviteHandoff.roleLabel}</Text>
-                </View>
-                <View style={styles.handoffCodeBlock}>
-                  <Text style={styles.label}>Код</Text>
-                  <Text testID="office-invite-handoff-code" style={styles.handoffCode}>
-                    {inviteHandoff.inviteCode}
-                  </Text>
-                </View>
-                <View style={styles.rowLast}>
-                  <Text style={styles.label}>{COPY.inviteHandoffInstruction}</Text>
-                  <Text style={styles.value}>
-                    {inviteHandoff.instruction}
-                  </Text>
-                </View>
-              </View>
-              {invite.inviteHandoffFeedback ? (
-                <View style={styles.noticeSoft}>
-                  <Text
-                    testID="office-invite-handoff-feedback"
-                    style={styles.noticeSoftText}
-                  >
-                    {invite.inviteHandoffFeedback}
-                  </Text>
-                </View>
-              ) : null}
-              <View style={styles.actionGrid}>
-                <Pressable
-                  testID="office-invite-copy-code"
-                  onPress={() =>
-                    void invite.handleCopyInvite(
-                      inviteHandoff.inviteCode,
-                      COPY.inviteCodeCopied,
-                    )
-                  }
-                  style={[styles.secondary, styles.actionButton]}
-                >
-                  <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                    {COPY.inviteCopyCode}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  testID="office-invite-copy-message"
-                  onPress={() =>
-                    void invite.handleCopyInvite(
-                      inviteHandoff.message,
-                      COPY.inviteMessageCopied,
-                    )
-                  }
-                  style={[styles.secondary, styles.actionButton]}
-                >
-                  <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                    {COPY.inviteCopyMessage}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  testID="office-invite-open-whatsapp"
-                  onPress={() =>
-                    void invite.handleOpenInviteChannel(
-                      inviteHandoff.whatsappUrl,
-                    )
-                  }
-                  style={[styles.secondary, styles.actionButton]}
-                >
-                  <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                    {COPY.inviteOpenWhatsapp}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  testID="office-invite-open-telegram"
-                  onPress={() =>
-                    void invite.handleOpenInviteChannel(
-                      inviteHandoff.telegramUrl,
-                    )
-                  }
-                  style={[styles.secondary, styles.actionButton]}
-                >
-                  <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                    {COPY.inviteOpenTelegram}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  testID="office-invite-open-email"
-                  onPress={() =>
-                    void invite.handleOpenInviteChannel(inviteHandoff.emailUrl)
-                  }
-                  style={[styles.secondary, styles.actionButton]}
-                >
-                  <Text style={[styles.secondaryText, styles.actionButtonText]}>
-                    {COPY.inviteOpenEmail}
-                  </Text>
-                </Pressable>
-              </View>
-            </View>,
+            />,
           )
         : null}
       {!access.canManageCompany ? (
