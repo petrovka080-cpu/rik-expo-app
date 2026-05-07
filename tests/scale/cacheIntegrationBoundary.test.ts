@@ -8,6 +8,7 @@ import {
   RedisRestCacheAdapter,
   RedisUrlCacheAdapter,
   createRedisCacheAdapterFromEnv,
+  parseRedisRespValue,
   type RedisCommandExecutor,
   type RedisRestFetch,
 } from "../../src/shared/scale/cacheAdapters";
@@ -493,6 +494,38 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(redis.commands.some((command) => command[0] === "SET")).toBe(true);
     expect(redis.commands.some((command) => command[0] === "GET")).toBe(true);
     expect(redis.commands.some((command) => command[0] === "DEL")).toBe(true);
+  });
+
+  it("parses Redis URL RESP bulk strings by byte length for UTF-8 cache payloads", () => {
+    const serialized = JSON.stringify({
+      value: {
+        ok: true,
+        data: [{ title: "цемент", category: "материалы" }],
+      },
+    });
+    const response = Buffer.from(`$${Buffer.byteLength(serialized, "utf8")}\r\n${serialized}\r\n`, "utf8");
+
+    expect(parseRedisRespValue(response)).toEqual({
+      value: serialized,
+      nextOffset: response.length,
+    });
+  });
+
+  it("keeps cache key hashing stable for repeated readonly canary input", () => {
+    const policy = getCachePolicy("marketplace.catalog.search");
+    const input = {
+      companyId: "public-cache-canary-opaque",
+      query: "cement",
+      category: "materials",
+      page: 1,
+      pageSize: 5,
+    };
+
+    const first = buildSafeCacheKey(policy, input);
+    const second = buildSafeCacheKey(policy, { ...input });
+
+    expect(first).toEqual(second);
+    expect(first).toEqual(expect.objectContaining({ ok: true }));
   });
 
   it("keeps Redis/Upstash provider secrets out of public mobile env names", () => {

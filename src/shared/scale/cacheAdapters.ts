@@ -1,4 +1,5 @@
 import { safeJsonParseValue, safeJsonStringify } from "../../lib/format";
+import { Buffer } from "node:buffer";
 import { assertCacheKeyIsBounded } from "./cacheKeySafety";
 import {
   resolveScaleProviderRuntimeConfig,
@@ -379,12 +380,15 @@ const encodeRespCommand = (command: RedisCommand): string => {
     .join("")}`;
 };
 
-const parseRespValue = (input: string, offset = 0): { value: RedisParsedValue; nextOffset: number } | null => {
+export const parseRedisRespValue = (
+  input: Buffer,
+  offset = 0,
+): { value: RedisParsedValue; nextOffset: number } | null => {
   if (offset >= input.length) return null;
-  const type = input[offset];
-  const lineEnd = input.indexOf("\r\n", offset + 1);
+  const type = String.fromCharCode(input[offset]);
+  const lineEnd = input.indexOf("\r\n", offset + 1, "utf8");
   if (lineEnd < 0) return null;
-  const header = input.slice(offset + 1, lineEnd);
+  const header = input.toString("utf8", offset + 1, lineEnd);
   const bodyOffset = lineEnd + 2;
 
   if (type === "+") return { value: header, nextOffset: bodyOffset };
@@ -398,7 +402,7 @@ const parseRespValue = (input: string, offset = 0): { value: RedisParsedValue; n
     const valueEnd = bodyOffset + length;
     if (input.length < valueEnd + 2) return null;
     return {
-      value: input.slice(bodyOffset, valueEnd),
+      value: input.toString("utf8", bodyOffset, valueEnd),
       nextOffset: valueEnd + 2,
     };
   }
@@ -410,7 +414,7 @@ const parseRespValue = (input: string, offset = 0): { value: RedisParsedValue; n
     const values: RedisParsedValue[] = [];
     let cursor = bodyOffset;
     for (let index = 0; index < length; index += 1) {
-      const parsed = parseRespValue(input, cursor);
+      const parsed = parseRedisRespValue(input, cursor);
       if (!parsed) return null;
       values.push(parsed.value);
       cursor = parsed.nextOffset;
@@ -462,7 +466,7 @@ export const createNodeRedisUrlCommandExecutor = (
     }
 
     return new Promise((resolve) => {
-      let response = "";
+      let response = Buffer.alloc(0);
       let settled = false;
       const socket = socketModule.connect(
         {
@@ -492,11 +496,12 @@ export const createNodeRedisUrlCommandExecutor = (
       socket.setTimeout(socketTimeoutMs, () => finish(null));
       socket.once("error", () => finish(null));
       socket.on("data", (chunk: unknown) => {
-        response += String(chunk);
-        let parsedResponse = parseRespValue(response);
+        const chunkBuffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk), "utf8");
+        response = Buffer.concat([response, chunkBuffer]);
+        let parsedResponse = parseRedisRespValue(response);
         if (password) {
           if (!parsedResponse) return;
-          parsedResponse = parseRespValue(response, parsedResponse.nextOffset);
+          parsedResponse = parseRedisRespValue(response, parsedResponse.nextOffset);
         }
         if (!parsedResponse) return;
         finish(parsedResponse.value);

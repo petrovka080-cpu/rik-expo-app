@@ -80,7 +80,7 @@ const waitFor = async (predicate: () => boolean): Promise<void> => {
   expect(predicate()).toBe(true);
 };
 
-const createRedisCacheAdapterFixture = () => {
+const createRedisCacheAdapterFixture = (options: { maxValueBytes?: number } = {}) => {
   const values = new Map<string, string>();
   const commandMock = jest.fn(async (command: RedisCommand) => {
     const operation = String(command[0] ?? "").toUpperCase();
@@ -105,6 +105,7 @@ const createRedisCacheAdapterFixture = () => {
     redisUrl: "rediss://red-render-kv.example.invalid:6379",
     namespace: "rik-production-cache-shadow",
     commandImpl: commandMock,
+    maxValueBytes: options.maxValueBytes,
   });
 };
 
@@ -413,6 +414,221 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     expect(output).not.toContain("cache:v1:");
     expect(output).not.toContain("company-cache-canary-opaque");
     expect(output).not.toContain('"query":"cement"');
+  });
+
+  it("serves UTF-8 public catalog read-through on the second identical request", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const searchCatalog = jest.fn(async () => [
+      { title: "цемент", category: "материалы" },
+    ]);
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          query: "cement",
+          category: "materials",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+    const readPorts = {
+      ...fixture.read,
+      marketplaceCatalog: { searchCatalog },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        serverTiming: expect.objectContaining({ cacheHit: false }),
+      }),
+    );
+    expect(second.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        serverTiming: expect.objectContaining({ cacheHit: true }),
+      }),
+    );
+    expect(searchCatalog).toHaveBeenCalledTimes(1);
+
+    await waitFor(() => monitor.snapshot().missCount === 1 && monitor.snapshot().hitCount === 1);
+    const output = JSON.stringify({ first, second, monitor: monitor.snapshot() });
+    expect(output).not.toContain("cache:v1:");
+    expect(output).not.toContain("company-cache-canary-opaque");
+    expect(output).not.toContain('"query":"cement"');
+  });
+
+  it("serves cacheable empty public catalog results on the second identical request", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const searchCatalog = jest.fn(async () => []);
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          query: "no-results",
+          category: "materials",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+    const readPorts = {
+      ...fixture.read,
+      marketplaceCatalog: { searchCatalog },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect((first.body as { data?: unknown }).data).toEqual([]);
+    expect((second.body as { data?: unknown }).data).toEqual([]);
+    expect((first.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(false);
+    expect((second.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(true);
+    expect(searchCatalog).toHaveBeenCalledTimes(1);
+  });
+
+  it("fail-closes oversized read-through values without raw cache output", async () => {
+    const adapter = createRedisCacheAdapterFixture({ maxValueBytes: 128 });
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const searchCatalog = jest.fn(async () => [
+      { title: "oversized-public-catalog", blob: "x".repeat(512) },
+    ]);
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          query: "oversized",
+          category: "materials",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+    const readPorts = {
+      ...fixture.read,
+      marketplaceCatalog: { searchCatalog },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect((first.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(false);
+    expect((second.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(false);
+    expect(searchCatalog).toHaveBeenCalledTimes(2);
+
+    await waitFor(() => monitor.snapshot().missCount === 2);
+    const output = JSON.stringify({ first, second, monitor: monitor.snapshot() });
+    expect(output).not.toContain("cache:v1:");
+    expect(output).not.toContain("company-cache-canary-opaque");
+    expect(output).not.toContain('"query":"oversized"');
+  });
+
+  it("keeps shadow_readonly mode from serving cached read-through responses", async () => {
+    const adapter = createRedisCacheAdapterFixture();
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "shadow_readonly",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    const route = routeByOperation("marketplace.catalog.search");
+    expect(route).toBeDefined();
+    const request = {
+      method: "POST" as const,
+      path: route!.path,
+      body: {
+        input: {
+          companyId: "company-cache-canary-opaque",
+          query: "cement",
+          category: "materials",
+          page: 1,
+          pageSize: 5,
+        },
+        metadata: {},
+      },
+    };
+
+    const first = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+    const second = await handleBffStagingServerRequest(request, {
+      readPorts: fixture.read,
+      cacheShadow: { adapter, config, monitor },
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect((first.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(false);
+    expect((second.body as { serverTiming?: { cacheHit?: boolean } }).serverTiming?.cacheHit).toBe(false);
+    expect(fixture.calls.filter((call) => call.port === "marketplaceCatalog")).toHaveLength(2);
   });
 
   it("keeps read-through serving route scoped and rejects non-public payload classes", async () => {
