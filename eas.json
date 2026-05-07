@@ -26,6 +26,13 @@
         "buildType": "app-bundle"
       },
       "channel": "production"
+    },
+    "production-emulator": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "channel": "production"
     }
   },
   "submit": {
