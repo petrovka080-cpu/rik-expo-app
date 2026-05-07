@@ -112,6 +112,8 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
 
     expect(contentSource).toContain("const styles = StyleSheet.create");
+    expect(contentSource).toContain("const rootStyle = useMemo");
+    expect(contentSource).toContain("<RoleScreenLayout style={rootStyle}>");
     expect(contentSource).toContain("const searchBarHostStyle = useMemo");
     expect(contentSource).toContain("style={searchBarHostStyle}");
     expect(contentSource).toContain("top: stickyHeader.headerHeight");

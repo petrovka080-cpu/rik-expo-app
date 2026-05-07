@@ -70,9 +70,10 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
     () => [styles.searchBarHost, { top: stickyHeader.headerHeight }],
     [stickyHeader.headerHeight],
   );
+  const rootStyle = useMemo(() => [s.screen, styles.root], [s.screen]);
 
   return (
-    <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
+    <RoleScreenLayout style={rootStyle}>
       <BuyerStickyHeader {...stickyHeader} />
 
       <Animated.View style={searchBarHostStyle}>
@@ -520,6 +521,9 @@ export function useBuyerScreenContentProps({
 }
 
 const styles = StyleSheet.create({
+  root: {
+    backgroundColor: UI.bg,
+  },
   searchBarHost: {
     position: "absolute",
     left: 0,
