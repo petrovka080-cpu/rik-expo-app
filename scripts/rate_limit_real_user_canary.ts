@@ -5,6 +5,10 @@ import {
   InMemoryRateLimitAdapter,
   createRateEnforcementProviderFromEnv,
 } from "../src/shared/scale/rateLimitAdapters";
+import {
+  classifyProductionBusinessReadonlyCanaryErrorCode,
+  resolveProductionBusinessReadonlyCanaryServerAuthSecret,
+} from "./load/productionBusinessReadonlyCanary";
 
 type EnvMap = Record<string, string>;
 
@@ -23,6 +27,12 @@ type DeployRecord = {
 
 type Matrix = Record<string, unknown> & {
   final_status: string;
+};
+
+type SafeBffCallResult = {
+  ok: boolean;
+  statusClass: string;
+  errorCategory: string;
 };
 
 const MATRIX_PATH = "artifacts/S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_1_matrix.json";
@@ -128,9 +138,36 @@ function renderEnvItems(body: unknown): RenderEnvItem[] {
   if (body && typeof body === "object") {
     const record = body as { envVars?: unknown };
     if (Array.isArray(record.envVars)) return record.envVars as RenderEnvItem[];
+    const dataRecord = body as { data?: unknown };
+    if (Array.isArray(dataRecord.data)) return dataRecord.data as RenderEnvItem[];
   }
   return [];
 }
+
+async function readBffErrorCategory(response: Response): Promise<string> {
+  if (response.ok) {
+    await response.arrayBuffer().catch(() => undefined);
+    return "none";
+  }
+  const text = await response.text().catch(() => "");
+  try {
+    const parsed: unknown = text ? JSON.parse(text) : null;
+    const error =
+      parsed && typeof parsed === "object" && "error" in parsed
+        ? (parsed as { error?: unknown }).error
+        : null;
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code?: unknown }).code
+        : null;
+    return classifyProductionBusinessReadonlyCanaryErrorCode(code);
+  } catch {
+    return "error_code_unavailable";
+  }
+}
+
+const statusClass = (status: number | null): string =>
+  status == null ? "error" : `${Math.trunc(status / 100)}xx`;
 
 async function findCanarySubject(selected: boolean): Promise<string> {
   for (let index = 0; index < 5_000; index += 1) {
@@ -357,16 +394,15 @@ async function main(): Promise<void> {
     });
   }
 
-  const freshEnvResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars`);
-  const freshEnvItems = renderEnvItems(freshEnvResult.body);
-  const renderAuth = envItemValue(freshEnvItems, "BFF_SERVER_AUTH_SECRET").value;
-  const serverAuth = renderAuth || env.BFF_SERVER_AUTH_SECRET || "";
+  const auth = await resolveProductionBusinessReadonlyCanaryServerAuthSecret({ env });
+  const serverAuth = auth.secret;
   if (!serverAuth) {
     await restoreEnv();
     fail({
       final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_SCOPE_UNSAFE",
       approvals_present: true,
-      auth_category: "missing",
+      auth_category: auth.status,
+      auth_source: auth.source,
       rollback_triggered: true,
     });
   }
@@ -386,7 +422,7 @@ async function main(): Promise<void> {
     });
   }
 
-  const callRead = async (subject: string) => {
+  const callRead = async (subject: string): Promise<SafeBffCallResult> => {
     const response = await fetch(`${cleanBase}/api/staging-bff/read/marketplace-catalog-search`, {
       method: "POST",
       headers: {
@@ -401,17 +437,10 @@ async function main(): Promise<void> {
         },
       }),
     });
-    let errorCode: string | null = null;
-    if (!response.ok) {
-      const body = await response.json().catch(() => null) as { error?: { code?: string } } | null;
-      errorCode = typeof body?.error?.code === "string" ? body.error.code : null;
-    } else {
-      await response.arrayBuffer().catch(() => undefined);
-    }
     return {
       ok: response.ok,
-      statusClass: `${Math.trunc(response.status / 100)}xx`,
-      errorCategory: errorCode ? "redacted_error_code_present" : "none",
+      statusClass: statusClass(response.status),
+      errorCategory: await readBffErrorCategory(response),
     };
   };
 
@@ -421,7 +450,27 @@ async function main(): Promise<void> {
     method: "POST",
     headers: { authorization: `Bearer ${serverAuth}` },
   });
-  const privateSmokeBody = await privateSmoke.json().catch(() => null) as { data?: Record<string, unknown> } | null;
+  const privateSmokeText = await privateSmoke.text().catch(() => "");
+  let privateSmokeBody: { data?: Record<string, unknown> } | null = null;
+  let privateSmokeErrorCategory = "none";
+  try {
+    const parsed = privateSmokeText ? JSON.parse(privateSmokeText) : null;
+    if (privateSmoke.ok) {
+      privateSmokeBody = parsed as { data?: Record<string, unknown> } | null;
+    } else {
+      const error =
+        parsed && typeof parsed === "object" && "error" in parsed
+          ? (parsed as { error?: unknown }).error
+          : null;
+      const code =
+        error && typeof error === "object" && "code" in error
+          ? (error as { code?: unknown }).code
+          : null;
+      privateSmokeErrorCategory = classifyProductionBusinessReadonlyCanaryErrorCode(code);
+    }
+  } catch {
+    privateSmokeErrorCategory = privateSmoke.ok ? "none" : "error_code_unavailable";
+  }
   const syntheticThrottleOk =
     privateSmoke.status === 200 &&
     privateSmokeBody?.data?.wouldAllowVerified === true &&
@@ -443,7 +492,11 @@ async function main(): Promise<void> {
       selected_canary_request_status_class: selectedRead.statusClass,
       non_selected_allow_request_status_class: nonSelectedRead.statusClass,
       selected_error_category: selectedRead.errorCategory,
-      synthetic_private_smoke_status_class: `${Math.trunc(privateSmoke.status / 100)}xx`,
+      non_selected_error_category: nonSelectedRead.errorCategory,
+      synthetic_private_smoke_status_class: statusClass(privateSmoke.status),
+      synthetic_private_smoke_error_category: privateSmokeErrorCategory,
+      auth_source: auth.source,
+      auth_resolution_status: auth.status,
       production_health_after_canary: healthAfterCanary.status,
       production_ready_after_canary: readyAfterCanary.status,
     });
@@ -487,6 +540,12 @@ async function main(): Promise<void> {
     bff_traffic_changed: false,
     selected_canary_request_status_class: selectedRead.statusClass,
     non_selected_allow_request_status_class: nonSelectedRead.statusClass,
+    selected_error_category: selectedRead.errorCategory,
+    non_selected_error_category: nonSelectedRead.errorCategory,
+    synthetic_private_smoke_status_class: statusClass(privateSmoke.status),
+    synthetic_private_smoke_error_category: privateSmokeErrorCategory,
+    auth_source: auth.source,
+    auth_resolution_status: auth.status,
     synthetic_throttle_still_works: syntheticThrottleOk,
     total_production_read_route_requests: 2,
     total_synthetic_diagnostic_requests: 1,
