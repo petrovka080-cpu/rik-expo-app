@@ -123,6 +123,15 @@ function envItemValue(items: RenderEnvItem[], key: string): { present: boolean; 
   return { present: false, value: "" };
 }
 
+function renderEnvItems(body: unknown): RenderEnvItem[] {
+  if (Array.isArray(body)) return body as RenderEnvItem[];
+  if (body && typeof body === "object") {
+    const record = body as { envVars?: unknown };
+    if (Array.isArray(record.envVars)) return record.envVars as RenderEnvItem[];
+  }
+  return [];
+}
+
 async function findCanarySubject(selected: boolean): Promise<string> {
   for (let index = 0; index < 5_000; index += 1) {
     const candidate = `rlc${selected ? "s" : "n"}${index.toString(36)}`;
@@ -273,7 +282,7 @@ async function main(): Promise<void> {
   }
 
   const envResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars`);
-  const envItems = Array.isArray(envResult.body) ? (envResult.body as RenderEnvItem[]) : [];
+  const envItems = renderEnvItems(envResult.body);
   const previous = {
     mode: envItemValue(envItems, "SCALE_RATE_ENFORCEMENT_MODE"),
     allowlist: envItemValue(envItems, "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST"),
@@ -349,8 +358,9 @@ async function main(): Promise<void> {
   }
 
   const freshEnvResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars`);
-  const freshEnvItems = Array.isArray(freshEnvResult.body) ? (freshEnvResult.body as RenderEnvItem[]) : [];
-  const serverAuth = envItemValue(freshEnvItems, "BFF_SERVER_AUTH_SECRET").value;
+  const freshEnvItems = renderEnvItems(freshEnvResult.body);
+  const renderAuth = envItemValue(freshEnvItems, "BFF_SERVER_AUTH_SECRET").value;
+  const serverAuth = renderAuth || env.BFF_SERVER_AUTH_SECRET || "";
   if (!serverAuth) {
     await restoreEnv();
     fail({
