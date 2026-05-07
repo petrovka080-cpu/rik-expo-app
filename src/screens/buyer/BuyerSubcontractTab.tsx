@@ -23,6 +23,16 @@ import { s as foremanStyles } from "../foreman/foreman.styles";
 import { useForemanDicts } from "../foreman/useForemanDicts";
 import { UI as B_UI } from "./buyerUi";
 import {
+  BUYER_SUBCONTRACT_EMPTY_FORM as EMPTY_FORM,
+  BUYER_SUBCONTRACT_UOM_OPTIONS as UOM_OPTIONS,
+  buyerSubcontractToNum as toNum,
+  getBuyerSubcontractErrorText as errText,
+  normalizeBuyerSubcontractInn as normalizeInn,
+  normalizeBuyerSubcontractPhone996 as normalizePhone996,
+  type BuyerSubcontractContractorRow as ContractorRow,
+  type BuyerSubcontractFormState as FormState,
+} from "./buyerSubcontractForm.model";
+import {
   SUBCONTRACT_DEFAULT_PAGE_SIZE,
   PRICE_TYPE_OPTIONS,
   STATUS_CONFIG,
@@ -52,85 +62,6 @@ type Props = {
   contentTopPad: number;
   onScroll?: (event: NativeSyntheticEvent<NativeScrollEvent>) => void;
   buyerFio: string;
-};
-
-type FormState = {
-  contractorOrg: string;
-  contractorInn: string;
-  contractorRep: string;
-  contractorPhone: string;
-  foremanName: string;
-  contractNumber: string;
-  contractDate: string;
-  objectName: string;
-  workZone: string;
-  workType: string;
-  qtyPlanned: string;
-  uom: string;
-  dateStart: string;
-  dateEnd: string;
-  workMode: SubcontractWorkMode | "";
-  pricePerUnit: string;
-  totalPrice: string;
-  priceType: SubcontractPriceType | "";
-  foremanComment: string;
-};
-type ContractorRow = { id?: string | null; phone?: string | null };
-
-const EMPTY_FORM: FormState = {
-  contractorOrg: "",
-  contractorInn: "",
-  contractorRep: "",
-  contractorPhone: "",
-  foremanName: "",
-  contractNumber: "",
-  contractDate: "",
-  objectName: "",
-  workZone: "",
-  workType: "",
-  qtyPlanned: "",
-  uom: "",
-  dateStart: "",
-  dateEnd: "",
-  workMode: "",
-  pricePerUnit: "",
-  totalPrice: "",
-  priceType: "",
-  foremanComment: "",
-};
-
-const UOM_OPTIONS = [
-  { code: "шт", name: "шт" },
-  { code: "м", name: "м" },
-  { code: "м2", name: "м2" },
-  { code: "м3", name: "м3" },
-  { code: "кг", name: "кг" },
-  { code: "т", name: "т" },
-  { code: "компл", name: "компл" },
-  { code: "смена", name: "смена" },
-  { code: "час", name: "час" },
-];
-
-const toNum = (v: string): number | null => {
-  const n = Number(String(v || "").replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-};
-
-const normalizePhone996 = (value: string): string => {
-  const digits = String(value || "").replace(/\D+/g, "");
-  if (!digits) return "";
-  if (digits.startsWith("996") && digits.length >= 12) return digits.slice(0, 12);
-  if (digits.startsWith("0") && digits.length >= 10) return `996${digits.slice(-9)}`;
-  if (digits.length === 9) return `996${digits}`;
-  if (digits.length > 9) return `996${digits.slice(-9)}`;
-  return digits;
-};
-
-const normalizeInn = (value: string): string => String(value || "").replace(/\D+/g, "");
-
-const errText = (e: unknown, fallback: string) => {
-  if (e instanceof Error && e.message.trim()) return e.message.trim();
-  return fallback;
 };
 
 export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio }: Props) {

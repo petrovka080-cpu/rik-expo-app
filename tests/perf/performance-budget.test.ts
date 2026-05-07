@@ -167,6 +167,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "profile", "components", "ProfileContentLoadState.tsx"),
       path.join(SRC, "screens", "profile", "ProfileContent.decomposition.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle41BuyerSubcontractFormModelFiles = [
+      path.join(SRC, "screens", "buyer", "buyerSubcontractForm.model.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -240,6 +243,7 @@ describe("performance budget — bundle module count", () => {
     // plus focused src-owned regression tests.
     // S-AUDIT_BATTLE_14 adds one permanent ProfileContent load-state render boundary
     // plus focused src-owned regression tests.
+    // S-AUDIT_BATTLE_41 adds one permanent BuyerSubcontractTab form model boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -258,6 +262,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -277,7 +282,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle11AccountantScreenViewModelFiles -
         sAuditBattle12BuyerScreenStoreViewModelFiles -
         sAuditBattle13AiAssistantStyleBoundaryFiles -
-        sAuditBattle14ProfileContentLoadStateBoundaryFiles,
+        sAuditBattle14ProfileContentLoadStateBoundaryFiles -
+        sAuditBattle41BuyerSubcontractFormModelFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
