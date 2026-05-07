@@ -7,7 +7,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -22,28 +21,12 @@ import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import type { Field, BasisKey } from "./useCalcFields";
 import type { CalcModalFieldErrors, CalcModalInputs, CalcModalRow } from "./calcModal.model";
 import { qtyIssue, rowKeyOf } from "./calcModal.model";
-
-const SHADOW_CARD =
-  Platform.OS === "web"
-    ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.14)" } as const)
-    : {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.14,
-        shadowRadius: 18,
-        elevation: 8,
-      };
-
-const SHADOW_STICKY =
-  Platform.OS === "web"
-    ? ({ boxShadow: "0px 6px 12px rgba(0,0,0,0.06)" } as const)
-    : {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.06,
-        shadowRadius: 12,
-        elevation: 2,
-      };
+import {
+  BOTTOM_BAR_HEIGHT,
+  SHADOW_CARD,
+  SHADOW_STICKY,
+  cs,
+} from "./CalcModalContent.styles";
 
 const Hint = ({ text }: { text?: string | null }) => {
   if (!text) return null;
@@ -101,8 +84,6 @@ type Props = {
   onSetRowQty: (rowKey: string, value: string) => void;
   onRemoveRow: (rowKey: string) => void;
 };
-
-const BOTTOM_BAR_HEIGHT = 72;
 
 const FieldInput = ({
   field,
@@ -557,213 +538,3 @@ export default function CalcModalContent(props: Props) {
     </View>
   );
 }
-
-const cs = StyleSheet.create({
-  outerWrap: { flex: 1, backgroundColor: "#F8FAFC" },
-  innerWrap: { flex: 1, backgroundColor: "#fff" },
-  headerBar: {
-    paddingBottom: 10,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E2E8F0",
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    zIndex: 50,
-  },
-  backBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: "#111827",
-  },
-  backBtnText: { color: "#fff", fontWeight: "900" },
-  backBtnPlaceholder: { width: 88 },
-  headerTitleWrap: { flex: 1, minWidth: 0, alignItems: "center" },
-  headerTitleText: { fontSize: 16, fontWeight: "900", color: "#0F172A" },
-  toastWrap: {
-    position: "absolute",
-    left: 12,
-    right: 12,
-    zIndex: 999,
-  },
-  toastBubble: {
-    alignSelf: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 999,
-    backgroundColor: "rgba(17,24,39,0.92)",
-    ...(Platform.OS === "web"
-      ? ({ boxShadow: "0px 10px 18px rgba(0,0,0,0.18)" } as object)
-      : {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 10 },
-          shadowOpacity: 0.18,
-          shadowRadius: 18,
-          elevation: 8,
-        }),
-  },
-  toastText: { color: "#fff", fontWeight: "800" },
-  bodyFlex: { flex: 1 },
-  stickyHeader: {
-    backgroundColor: "#fff",
-    paddingTop: 2,
-    paddingBottom: 12,
-    marginTop: -2,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-    zIndex: 20,
-  },
-  stickyHeaderPad: { paddingHorizontal: 16 },
-  stickyHeaderTitle: {
-    fontSize: 17,
-    fontWeight: "900",
-    color: "#0F172A",
-    lineHeight: 22,
-  },
-  loadingWrap: { paddingVertical: 24, alignItems: "center" },
-  mutedText: { color: "#6b7280" },
-  fieldInputWrap: { marginBottom: 12 },
-  fieldLabelRow: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
-  fieldLabel: { fontWeight: "600", color: "#0F172A" },
-  fieldRequired: { marginLeft: 4, color: "#EF4444", fontWeight: "700" },
-  fieldInputEditable: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "web" ? 10 : 12,
-    fontSize: 16,
-    backgroundColor: "#fff",
-  },
-  fieldInputReadonly: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "web" ? 10 : 12,
-    backgroundColor: "#f8fafc",
-  },
-  fieldInputReadonlyText: { fontSize: 16, color: "#0F172A", fontWeight: "600" },
-  fieldError: { color: "#ef4444", marginTop: 4 },
-  fieldHint: { color: "#6b7280", marginTop: 4 },
-  hint: {
-    marginLeft: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 999,
-    backgroundColor: "#f3f4f6",
-    color: "#374151",
-    fontWeight: "700",
-  },
-  toggleSecondaryBtn: {
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: "#f8fafc",
-  },
-  toggleSecondaryText: { color: "#0F172A", fontWeight: "700" },
-  derivedWrap: { marginBottom: 8 },
-  derivedTitle: { fontWeight: "700", marginBottom: 6, color: "#0F172A" },
-  lossWrap: { marginTop: 4 },
-  lossErrorText: { color: "#ef4444", marginTop: 6 },
-  lossHintText: { color: "#6b7280", marginTop: 6 },
-  resultsSection: { marginTop: 16, borderTopWidth: 1, borderTopColor: "#e5e7eb", paddingTop: 12 },
-  resultsTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-  resultsSectionTitle: { fontSize: 18, fontWeight: "900", color: "#0F172A" },
-  toggleFieldsBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: "#F3F4F6",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  toggleFieldsBtnText: { fontWeight: "900", color: "#111827" },
-  resultsListWrap: { borderRadius: 16, backgroundColor: "#fff" },
-  resultRow: { paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#f3f4f6" },
-  resultRowTitle: { fontWeight: "800", fontSize: 15, color: "#111827" },
-  resultRowSection: { color: "#6b7280" },
-  resultRowBody: { flexDirection: "row", alignItems: "center", gap: 8, marginTop: 8 },
-  resultRowFlex: { flex: 1 },
-  resultRowQtyLabel: { color: "#6b7280", fontSize: 12 },
-  resultRowQtyRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  resultRowQtyInput: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: "#111827",
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    borderRadius: 12,
-    minWidth: 96,
-    textAlign: "center",
-    backgroundColor: "#fff",
-  },
-  resultRowUom: { fontSize: 14, fontWeight: "800", color: "#374151" },
-  resultRowSuggested: { color: "#374151", marginTop: 4 },
-  resultRowSuggestedBold: { fontWeight: "900" },
-  resultRowPmBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
-  },
-  resultRowPmText: { fontWeight: "900" },
-  resultRowRemoveBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#DC2626",
-  },
-  resultRowRemoveText: { color: "#fff", fontSize: 22, fontWeight: "900", lineHeight: 22 },
-  footerOuter: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.06)",
-    backgroundColor: "rgba(255,255,255,0.96)",
-  },
-  footerInner: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 10,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.96)",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-  },
-  footerSpacer: { width: 10 },
-  calcRunBtn: {
-    flex: 1,
-    height: 52,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#1B7F55",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
-  },
-  calcRunBtnText: { color: "#fff", fontWeight: "900", fontSize: 16 },
-  calcOverlay: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    top: 16,
-    backgroundColor: "rgba(255,255,255,0.60)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-  },
-  calcOverlayText: { marginTop: 10, fontWeight: "900", color: "#111827" },
-});
