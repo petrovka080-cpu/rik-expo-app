@@ -4,7 +4,7 @@ export type StagingLoadEnvStatus = {
   presentKeys: string[];
 };
 
-export type StagingLoadRunProfile = "smoke" | "bounded-1k" | "bounded-5k";
+export type StagingLoadRunProfile = "smoke" | "bounded-1k" | "bounded-5k" | "bounded-10k";
 
 export type StagingLoadStopConditions = {
   requestTimeoutMs: number;
@@ -34,6 +34,13 @@ export type StagingLoadHarnessPlan = {
   enterpriseLoadApproved: boolean;
   safeToRunLive: boolean;
   blockers: string[];
+};
+
+export type StagingLoadLiveThresholdDecision = {
+  passed: boolean;
+  hardFailure: boolean;
+  reasons: string[];
+  completionPolicy: "error_budget" | "require_full_completion";
 };
 
 export type StagingLoadTarget = {
@@ -175,11 +182,16 @@ export type StagingLoadTargetResult = {
 };
 
 export type StagingLoadMatrix = {
-  wave: "S-LOAD-1" | "S-LOAD-10" | "S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1";
+  wave:
+    | "S-LOAD-1"
+    | "S-LOAD-10"
+    | "S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1"
+    | "S-LOAD-STAGING-10K-READONLY-HARNESS-PREFLIGHT-1";
   mode:
     | "production-safe-staging-load-test"
     | "production-safe-1k-load-preflight"
-    | "production-safe-5k-load-preflight";
+    | "production-safe-5k-load-preflight"
+    | "production-safe-10k-load-preflight";
   generatedAt: string;
   environment: StagingLoadEnvStatus & {
     productionFallbackUsed: false;
@@ -257,6 +269,12 @@ export const BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions 
   cooldownMs: 1_000,
 };
 
+export const BOUNDED_10K_STAGING_LOAD_STOP_CONDITIONS: StagingLoadStopConditions = {
+  ...BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS,
+  maxDurationMs: 45 * 60 * 1000,
+  maxTotalRequests: 10_000,
+};
+
 const BOUNDED_1K_RAMP_STEPS = [5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1_000] as const;
 
 const BOUNDED_5K_RAMP_STEPS = [
@@ -276,6 +294,13 @@ const BOUNDED_5K_RAMP_STEPS = [
   3_000,
   4_000,
   5_000,
+] as const;
+
+const BOUNDED_10K_RAMP_STEPS = [
+  ...BOUNDED_5K_RAMP_STEPS,
+  6_000,
+  7_500,
+  10_000,
 ] as const;
 
 const REQUIRED_ENV_KEYS = ["STAGING_SUPABASE_URL", "STAGING_SUPABASE_READONLY_KEY"] as const;
@@ -356,6 +381,39 @@ export function countStagingLoadTargetExecutionPlanRequests(
   plan: StagingLoadTargetExecutionPlanItem[],
 ): number {
   return plan.reduce((sum, item) => sum + item.runs, 0);
+}
+
+export function evaluateStagingLoadLiveThresholds(params: {
+  totalRequestsPlanned: number;
+  totalRequestsAttempted: number;
+  totalRequestsCompleted: number;
+  observedErrorRate: number;
+  maxErrorRate: number;
+  abortTriggered: boolean;
+  abortReason?: string | null;
+  requireFullCompletion?: boolean;
+}): StagingLoadLiveThresholdDecision {
+  const reasons: string[] = [];
+
+  if (params.abortTriggered) {
+    reasons.push(params.abortReason ? `abort:${params.abortReason}` : "abort_triggered");
+  }
+  if (params.totalRequestsAttempted < params.totalRequestsPlanned) {
+    reasons.push("attempted_below_planned");
+  }
+  if (params.observedErrorRate > params.maxErrorRate) {
+    reasons.push("error_rate_exceeded");
+  }
+  if (params.requireFullCompletion === true && params.totalRequestsCompleted < params.totalRequestsAttempted) {
+    reasons.push("completed_below_attempted");
+  }
+
+  return {
+    passed: reasons.length === 0,
+    hardFailure: reasons.length > 0,
+    reasons,
+    completionPolicy: params.requireFullCompletion === true ? "require_full_completion" : "error_budget",
+  };
 }
 
 export const DEFAULT_LOAD_RUNNER_READONLY_SCENARIOS: LoadRunnerScenario[] = [
@@ -483,23 +541,29 @@ export function buildStagingLoadHarnessPlan(params: {
   const operatorApprovalRequired = profile !== "smoke";
   const operatorApproved = params.operatorApproved === true;
   const supabaseLimitsConfirmed = params.supabaseLimitsConfirmed === true;
-  const enterpriseLoadApprovalRequired = profile === "bounded-5k";
+  const enterpriseLoadApprovalRequired = profile === "bounded-5k" || profile === "bounded-10k";
   const enterpriseLoadApproved = params.enterpriseLoadApproved === true;
   const targetConcurrency =
     params.targetConcurrency ??
-    (profile === "bounded-5k"
+    (profile === "bounded-10k"
+      ? 10_000
+      : profile === "bounded-5k"
       ? 5_000
       : profile === "bounded-1k"
         ? 1_000
         : DEFAULT_STAGING_LOAD_TARGETS.length);
   const rampSteps =
-    profile === "bounded-5k"
+    profile === "bounded-10k"
+      ? BOUNDED_10K_RAMP_STEPS.filter((step) => step <= targetConcurrency)
+      : profile === "bounded-5k"
       ? BOUNDED_5K_RAMP_STEPS.filter((step) => step <= targetConcurrency)
       : profile === "bounded-1k"
         ? BOUNDED_1K_RAMP_STEPS.filter((step) => step <= targetConcurrency)
         : [Math.max(1, targetConcurrency)];
   const stopConditions =
-    profile === "bounded-5k"
+    profile === "bounded-10k"
+      ? BOUNDED_10K_STAGING_LOAD_STOP_CONDITIONS
+      : profile === "bounded-5k"
       ? BOUNDED_5K_STAGING_LOAD_STOP_CONDITIONS
       : profile === "bounded-1k"
         ? BOUNDED_1K_STAGING_LOAD_STOP_CONDITIONS
@@ -516,7 +580,11 @@ export function buildStagingLoadHarnessPlan(params: {
     blockers.push("supabase_limits_unconfirmed");
   }
   if (enterpriseLoadApprovalRequired && !enterpriseLoadApproved) {
-    blockers.push("enterprise_5k_load_approval_missing");
+    blockers.push(
+      profile === "bounded-10k"
+        ? "enterprise_10k_load_approval_missing"
+        : "enterprise_5k_load_approval_missing",
+    );
   }
 
   const planOnly = params.planOnly === true;
@@ -956,13 +1024,17 @@ export function buildStagingLoadMatrix(params: {
 }): StagingLoadMatrix {
   return {
     wave:
-      params.harnessPlan?.profile === "bounded-5k"
+      params.harnessPlan?.profile === "bounded-10k"
+        ? "S-LOAD-STAGING-10K-READONLY-HARNESS-PREFLIGHT-1"
+        : params.harnessPlan?.profile === "bounded-5k"
         ? "S-LOAD-STAGING-5K-READONLY-HARNESS-PREFLIGHT-1"
         : params.harnessPlan?.profile === "bounded-1k"
           ? "S-LOAD-10"
           : "S-LOAD-1",
     mode:
-      params.harnessPlan?.profile === "bounded-5k"
+      params.harnessPlan?.profile === "bounded-10k"
+        ? "production-safe-10k-load-preflight"
+        : params.harnessPlan?.profile === "bounded-5k"
         ? "production-safe-5k-load-preflight"
         : params.harnessPlan?.profile === "bounded-1k"
           ? "production-safe-1k-load-preflight"
@@ -998,6 +1070,11 @@ export function buildStagingLoadMatrix(params: {
 }
 
 export function resolveStagingLoadProofStatus(matrix: StagingLoadMatrix): string {
+  if (matrix.harnessPlan?.profile === "bounded-10k") {
+    return matrix.harnessPlan.safeToRunLive && matrix.liveRun === "completed"
+      ? "GREEN_10K_LOAD_PREFLIGHT_READY"
+      : "GREEN_10K_HARNESS_READY_LIVE_BLOCKED_BY_APPROVALS_OR_ENV";
+  }
   if (matrix.harnessPlan?.profile === "bounded-5k") {
     return matrix.harnessPlan.safeToRunLive && matrix.liveRun === "completed"
       ? "GREEN_5K_LOAD_PREFLIGHT_READY"
@@ -1022,7 +1099,9 @@ export function renderStagingLoadProof(matrix: StagingLoadMatrix): string {
   const blocked = matrix.targets.filter((target) => target.status !== "collected");
   const status = resolveStagingLoadProofStatus(matrix);
   const title =
-    matrix.harnessPlan?.profile === "bounded-5k"
+    matrix.harnessPlan?.profile === "bounded-10k"
+      ? "S-LOAD-STAGING-10K Readonly Harness Preflight Proof"
+      : matrix.harnessPlan?.profile === "bounded-5k"
       ? "S-LOAD-STAGING-5K Readonly Harness Preflight Proof"
       : matrix.harnessPlan?.profile === "bounded-1k"
         ? "S-LOAD-10 1K Concurrency Preflight Proof"

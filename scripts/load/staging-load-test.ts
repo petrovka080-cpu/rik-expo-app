@@ -14,6 +14,7 @@ import {
   countRowsFromRpcData,
   createEnvMissingResult,
   createNotRunResult,
+  evaluateStagingLoadLiveThresholds,
   payloadBytes,
   renderStagingLoadProof,
   runLoadRunnerEmulatorDryRun,
@@ -45,6 +46,10 @@ const ARTIFACT_PATHS_BY_PROFILE: Record<StagingLoadRunProfile, { matrix: string;
   "bounded-5k": {
     matrix: "artifacts/S_LOAD_STAGING_5K_READONLY_HARNESS_PREFLIGHT_1_matrix.json",
     proof: "artifacts/S_LOAD_STAGING_5K_READONLY_HARNESS_PREFLIGHT_1_proof.md",
+  },
+  "bounded-10k": {
+    matrix: "artifacts/S_LOAD_STAGING_10K_READONLY_HARNESS_PREFLIGHT_1_matrix.json",
+    proof: "artifacts/S_LOAD_STAGING_10K_READONLY_HARNESS_PREFLIGHT_1_proof.md",
   },
 };
 
@@ -121,7 +126,13 @@ const parsePositiveIntegerValue = (value: string | null): number | null => {
 const parseCliOptions = (): CliOptions => {
   const profileValue = readFlagValue("--profile");
   const profile: StagingLoadRunProfile =
-    profileValue === "bounded-5k" ? "bounded-5k" : profileValue === "bounded-1k" ? "bounded-1k" : "smoke";
+    profileValue === "bounded-10k"
+      ? "bounded-10k"
+      : profileValue === "bounded-5k"
+        ? "bounded-5k"
+        : profileValue === "bounded-1k"
+          ? "bounded-1k"
+          : "smoke";
   const maxConcurrency = parsePositiveIntegerValue(readFlagValue("--max-concurrency"));
   return {
     profile,
@@ -133,9 +144,7 @@ const parseCliOptions = (): CliOptions => {
 
 const isTruthyEnv = (key: string): boolean => /^(?:1|true|yes)$/i.test(String(process.env[key] ?? "").trim());
 
-const LOAD_PROOF_APPROVAL_KEYS = [
-  "S_5K_STAGING_READONLY_LOAD_PROOF_APPROVED",
-  "S_5K_STAGING_READONLY_LOAD_PROOF_ROLLBACK_ABORT_APPROVED",
+const COMMON_LOAD_PROOF_APPROVAL_KEYS = [
   "S_LOAD_PROOF_STAGING_READONLY_ONLY_APPROVED",
   "S_LOAD_PROOF_NO_BUSINESS_MUTATIONS_APPROVED",
   "S_LOAD_PROOF_ABORT_ON_HEALTH_READY_FAILURE_APPROVED",
@@ -143,7 +152,21 @@ const LOAD_PROOF_APPROVAL_KEYS = [
   "S_LOAD_PROOF_REDACTED_METRICS_ONLY_APPROVED",
 ] as const;
 
-const allLoadProofApprovalsPresent = (): boolean => LOAD_PROOF_APPROVAL_KEYS.every(isTruthyEnv);
+const LOAD_PROOF_APPROVAL_KEYS_BY_PROFILE: Partial<Record<StagingLoadRunProfile, readonly string[]>> = {
+  "bounded-5k": [
+  "S_5K_STAGING_READONLY_LOAD_PROOF_APPROVED",
+  "S_5K_STAGING_READONLY_LOAD_PROOF_ROLLBACK_ABORT_APPROVED",
+    ...COMMON_LOAD_PROOF_APPROVAL_KEYS,
+  ],
+  "bounded-10k": [
+    "S_10K_STAGING_READONLY_LOAD_PROOF_APPROVED",
+    "S_10K_STAGING_READONLY_LOAD_PROOF_ROLLBACK_ABORT_APPROVED",
+    ...COMMON_LOAD_PROOF_APPROVAL_KEYS,
+  ],
+};
+
+const allLoadProofApprovalsPresent = (profile: StagingLoadRunProfile): boolean =>
+  (LOAD_PROOF_APPROVAL_KEYS_BY_PROFILE[profile] ?? COMMON_LOAD_PROOF_APPROVAL_KEYS).every(isTruthyEnv);
 
 const writeText = (relativePath: string, content: string) => {
   const fullPath = path.join(projectRoot, relativePath);
@@ -491,10 +514,12 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const cliOptions = parseCliOptions();
   const envStatus = resolveStagingLoadEnvStatus(process.env);
-  const loadProofApprovalsPresent = allLoadProofApprovalsPresent();
+  const loadProofApprovalsPresent = allLoadProofApprovalsPresent(cliOptions.profile);
   const targetConcurrency =
     cliOptions.maxConcurrency ??
-    (cliOptions.profile === "bounded-5k"
+    (cliOptions.profile === "bounded-10k"
+      ? 10_000
+      : cliOptions.profile === "bounded-5k"
       ? 5_000
       : cliOptions.profile === "bounded-1k"
         ? 1_000
@@ -519,7 +544,7 @@ async function main() {
   });
   const loadRunnerSafetyDryRun = await runLoadRunnerEmulatorDryRun(loadRunnerSafetyConfig);
   const liveTargetProbe =
-    cliOptions.allowLive && cliOptions.profile === "bounded-5k"
+    cliOptions.allowLive && (cliOptions.profile === "bounded-5k" || cliOptions.profile === "bounded-10k")
       ? await probeStagingBffReadiness()
       : null;
   const liveTargetBlockers =
@@ -550,17 +575,22 @@ async function main() {
 
   let results: StagingLoadTargetResult[];
   if (safeHarnessPlan.safeToRunLive) {
-    if (safeHarnessPlan.profile === "bounded-5k") {
+    if (safeHarnessPlan.profile === "bounded-5k" || safeHarnessPlan.profile === "bounded-10k") {
       const live = await collectBoundedLiveLoadTargets(createReadOnlyClient(), targets, safeHarnessPlan);
       results = live.results;
       liveLoadMetrics = live.metrics;
-      if (
-        live.metrics.abortTriggered ||
-        live.metrics.totalRequestsCompleted < safeHarnessPlan.stopConditions.maxTotalRequests ||
-        live.metrics.observedErrorRate > safeHarnessPlan.stopConditions.maxErrorRate
-      ) {
+      const thresholdDecision = evaluateStagingLoadLiveThresholds({
+        totalRequestsPlanned: live.metrics.totalRequestsPlanned,
+        totalRequestsAttempted: live.metrics.totalRequestsAttempted,
+        totalRequestsCompleted: live.metrics.totalRequestsCompleted,
+        observedErrorRate: live.metrics.observedErrorRate,
+        maxErrorRate: live.metrics.maxErrorRate,
+        abortTriggered: live.metrics.abortTriggered,
+        abortReason: live.metrics.abortReason,
+      });
+      if (!thresholdDecision.passed) {
         safeHarnessPlan.safeToRunLive = false;
-        safeHarnessPlan.blockers.push(live.metrics.abortReason ?? "bounded_5k_load_incomplete");
+        safeHarnessPlan.blockers.push(...thresholdDecision.reasons);
       }
     } else {
       results = await Promise.all(targets.map((target) => collectTarget(createReadOnlyClient(), target, safeHarnessPlan)));
@@ -636,9 +666,16 @@ async function main() {
 
   if (
     matrix.targets.some((target) => target.status === "runtime_error") ||
-    liveLoadMetrics?.abortTriggered ||
     (liveLoadMetrics != null &&
-      liveLoadMetrics.totalRequestsCompleted < safeHarnessPlan.stopConditions.maxTotalRequests)
+      !evaluateStagingLoadLiveThresholds({
+        totalRequestsPlanned: liveLoadMetrics.totalRequestsPlanned,
+        totalRequestsAttempted: liveLoadMetrics.totalRequestsAttempted,
+        totalRequestsCompleted: liveLoadMetrics.totalRequestsCompleted,
+        observedErrorRate: liveLoadMetrics.observedErrorRate,
+        maxErrorRate: liveLoadMetrics.maxErrorRate,
+        abortTriggered: liveLoadMetrics.abortTriggered,
+        abortReason: liveLoadMetrics.abortReason,
+      }).passed)
   ) {
     process.exitCode = 1;
   }

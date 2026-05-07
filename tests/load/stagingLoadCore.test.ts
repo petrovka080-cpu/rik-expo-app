@@ -9,6 +9,7 @@ import {
   createLoadRunnerEmulatorAdapter,
   createEnvMissingResult,
   createNotRunResult,
+  evaluateStagingLoadLiveThresholds,
   evaluateLoadRunnerAbortCriteria,
   payloadBytes,
   renderStagingLoadProof,
@@ -155,6 +156,60 @@ describe("S-LOAD-1 staging load core", () => {
     );
   });
 
+  it("builds a bounded 10K plan as plan-only by default and requires enterprise approval", () => {
+    const envStatus = resolveStagingLoadEnvStatus({
+      STAGING_SUPABASE_URL: "https://staging.example.supabase.co",
+      STAGING_SUPABASE_READONLY_KEY: "readonly",
+    });
+    const plan = buildStagingLoadHarnessPlan({
+      envStatus,
+      profile: "bounded-10k",
+      planOnly: true,
+      operatorApproved: false,
+      supabaseLimitsConfirmed: false,
+      enterpriseLoadApproved: false,
+    });
+
+    expect(plan.profile).toBe("bounded-10k");
+    expect(plan.targetConcurrency).toBe(10000);
+    expect(plan.rampSteps).toEqual([
+      5,
+      10,
+      15,
+      20,
+      25,
+      50,
+      100,
+      250,
+      500,
+      750,
+      1000,
+      1500,
+      2000,
+      3000,
+      4000,
+      5000,
+      6000,
+      7500,
+      10000,
+    ]);
+    expect(plan.stopConditions).toMatchObject({
+      maxTotalRequests: 10000,
+      maxP95LatencyMs: 1500,
+      stopOnSqlstate57014: true,
+      stopOnHttp429Or5xx: true,
+    });
+    expect(plan.enterpriseLoadApprovalRequired).toBe(true);
+    expect(plan.safeToRunLive).toBe(false);
+    expect(plan.blockers).toEqual(
+      expect.arrayContaining([
+        "operator_approval_missing",
+        "supabase_limits_unconfirmed",
+        "enterprise_10k_load_approval_missing",
+      ]),
+    );
+  });
+
   it("expands bounded 5K live proof into exactly 5000 read-only target executions", () => {
     const plan = buildStagingLoadTargetExecutionPlan(DEFAULT_STAGING_LOAD_TARGETS, 5000);
 
@@ -162,6 +217,56 @@ describe("S-LOAD-1 staging load core", () => {
     expect(countStagingLoadTargetExecutionPlanRequests(plan)).toBe(5000);
     expect(plan.every((item) => item.target.readOnly)).toBe(true);
     expect(plan.map((item) => item.runs)).toEqual([1000, 1000, 1000, 1000, 1000]);
+  });
+
+  it("expands bounded 10K preflight into exactly 10000 read-only target executions", () => {
+    const plan = buildStagingLoadTargetExecutionPlan(DEFAULT_STAGING_LOAD_TARGETS, 10000);
+
+    expect(plan).toHaveLength(DEFAULT_STAGING_LOAD_TARGETS.length);
+    expect(countStagingLoadTargetExecutionPlanRequests(plan)).toBe(10000);
+    expect(plan.every((item) => item.target.readOnly)).toBe(true);
+    expect(plan.map((item) => item.runs)).toEqual([2000, 2000, 2000, 2000, 2000]);
+  });
+
+  it("uses error-budget exit semantics unless full completion is explicitly required", () => {
+    expect(
+      evaluateStagingLoadLiveThresholds({
+        totalRequestsPlanned: 5000,
+        totalRequestsAttempted: 5000,
+        totalRequestsCompleted: 4976,
+        observedErrorRate: 0.0048,
+        maxErrorRate: 0.02,
+        abortTriggered: false,
+      }),
+    ).toEqual({
+      passed: true,
+      hardFailure: false,
+      reasons: [],
+      completionPolicy: "error_budget",
+    });
+
+    expect(
+      evaluateStagingLoadLiveThresholds({
+        totalRequestsPlanned: 5000,
+        totalRequestsAttempted: 5000,
+        totalRequestsCompleted: 4976,
+        observedErrorRate: 0.0048,
+        maxErrorRate: 0.02,
+        abortTriggered: false,
+        requireFullCompletion: true,
+      }).reasons,
+    ).toContain("completed_below_attempted");
+
+    expect(
+      evaluateStagingLoadLiveThresholds({
+        totalRequestsPlanned: 5000,
+        totalRequestsAttempted: 5000,
+        totalRequestsCompleted: 4800,
+        observedErrorRate: 0.04,
+        maxErrorRate: 0.02,
+        abortTriggered: false,
+      }).reasons,
+    ).toContain("error_rate_exceeded");
   });
 
   it("summarizes latency, payload, row count, and recommendation", () => {
