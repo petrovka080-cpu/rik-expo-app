@@ -37,6 +37,8 @@ type BuyerItemEditorProps = {
   onFocusField?: () => void;
 };
 
+const supplierKeyExtractor = (item: string, idx: number) => `${item}:${idx}`;
+
 export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerItemEditorProps) {
   const {
     m,
@@ -107,6 +109,78 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
   const editorCardStyle = isMobileRuntime
     ? styles.editorCardMobile
     : styles.editorCardDesktop;
+  const fieldInputStyle = React.useMemo(
+    () => [s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }],
+    [P.inputBg, P.inputBorder, P.text, s.fieldInput],
+  );
+  const mobileSupplierTriggerStyle = React.useMemo(
+    () => [
+      s.fieldInput,
+      styles.mobileSupplierTrigger,
+      hasAnyCounterpartyOptions
+        ? styles.mobileSupplierTriggerEnabled
+        : styles.mobileSupplierTriggerDisabled,
+      { backgroundColor: P.inputBg, borderColor: P.inputBorder },
+    ],
+    [P.inputBg, P.inputBorder, hasAnyCounterpartyOptions, s.fieldInput],
+  );
+  const mobileSupplierLabelStyle = React.useMemo(
+    () => [styles.mobileSupplierLabel, { color: selectedSupplierLabel ? P.text : P.sub }],
+    [P.sub, P.text, selectedSupplierLabel],
+  );
+  const noteInputStyle = React.useMemo(
+    () => [
+      s.fieldInput,
+      {
+        minHeight: isMobileRuntime ? 42 : 44,
+        backgroundColor: P.inputBg,
+        borderColor: P.inputBorder,
+        color: P.text,
+        textAlignVertical: "top" as const,
+      },
+    ],
+    [P.inputBg, P.inputBorder, P.text, isMobileRuntime, s.fieldInput],
+  );
+  const noteAutoCardStyle = React.useMemo(
+    () => [styles.noteAutoCard, { borderColor: P.inputBorder }],
+    [P.inputBorder],
+  );
+  const noteAutoLabelStyle = React.useMemo(
+    () => [styles.noteAutoLabel, { color: P.sub }],
+    [P.sub],
+  );
+  const noteAutoValueStyle = React.useMemo(
+    () => [styles.noteAutoValue, { color: P.text }],
+    [P.text],
+  );
+  const modalSearchInputStyle = React.useMemo(
+    () => [
+      s.fieldInput,
+      styles.modalSearchInput,
+      { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
+    ],
+    [P.inputBg, P.inputBorder, P.text, s.fieldInput],
+  );
+  const modalEmptyTextStyle = React.useMemo(
+    () => [styles.modalEmptyText, { color: P.sub }],
+    [P.sub],
+  );
+  const inlineSuggestBoxStyle = React.useMemo(
+    () => [
+      s.suggestBoxInline,
+      styles.inlineSuggestBox,
+      { borderColor: P.inputBorder, top: supplierInputHeight + 6 },
+    ],
+    [P.inputBorder, s.suggestBoxInline, supplierInputHeight],
+  );
+  const inlineSuggestItemTextStyle = React.useMemo(
+    () => [styles.inlineSuggestItemText, { color: P.text }],
+    [P.text],
+  );
+  const modalSupplierRowTextStyle = React.useMemo(
+    () => [styles.modalSupplierRowText, { color: P.text }],
+    [P.text],
+  );
 
   const commitSelectedSupplier = React.useCallback(
     (rawName: string) => {
@@ -155,6 +229,103 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
     setIsDropdownOpen(true);
   }, [hasAnyCounterpartyOptions, isMobileRuntime, onFocusField, selectedSupplierLabel]);
 
+  const handlePriceFocus = React.useCallback(() => {
+    setPriceFocused(true);
+    onFocusField?.();
+  }, [onFocusField]);
+
+  const commitPriceDraft = React.useCallback(() => {
+    onSetPrice(String(priceDraft ?? ""));
+  }, [onSetPrice, priceDraft]);
+
+  const handlePriceBlur = React.useCallback(() => {
+    setPriceFocused(false);
+    commitPriceDraft();
+  }, [commitPriceDraft]);
+
+  const handleSupplierLayout = React.useCallback((e: { nativeEvent?: { layout?: { height?: number } } }) => {
+    const h = Number(e?.nativeEvent?.layout?.height ?? 0);
+    if (Number.isFinite(h) && h > 0) setSupplierInputHeight(h);
+  }, []);
+
+  const handleSupplierTextChange = React.useCallback((v: string) => {
+    setSupplierQueryDraft(v);
+    if (!isDropdownOpen) setIsDropdownOpen(true);
+  }, [isDropdownOpen]);
+
+  const handleSupplierBlur = React.useCallback(() => {
+    if (selectingOptionRef.current) return;
+    blurCloseFrameRef.current = requestAnimationFrame(() => {
+      blurCloseFrameRef.current = requestAnimationFrame(() => {
+        if (selectingOptionRef.current) return;
+        setIsDropdownOpen(false);
+        setSupplierQueryDraft("");
+        blurCloseFrameRef.current = null;
+      });
+    });
+  }, []);
+
+  const handleNoteFocus = React.useCallback(() => {
+    setNoteFocused(true);
+    onFocusField?.();
+  }, [onFocusField]);
+
+  const handleNoteBlur = React.useCallback(() => {
+    setNoteFocused(false);
+    onSetNote(mergeNote(String(noteDraft ?? ""), noteAuto));
+  }, [noteAuto, noteDraft, onSetNote]);
+
+  const closeSupplierModal = React.useCallback(() => {
+    setIsSupplierModalOpen(false);
+  }, []);
+
+  const renderInlineSupplierItem = React.useCallback(
+    ({ item }: { item: string }) => (
+      <Pressable
+        onPressIn={() => {
+          selectingOptionRef.current = true;
+          if (blurCloseFrameRef.current != null) {
+            cancelAnimationFrame(blurCloseFrameRef.current);
+            blurCloseFrameRef.current = null;
+          }
+        }}
+        style={({ pressed }) => [
+          s.suggestItem,
+          styles.inlineSuggestItem,
+          {
+            borderColor: P.inputBorder,
+            backgroundColor: pressed ? "rgba(255,255,255,0.08)" : "#1E2A38",
+          },
+        ]}
+        onPress={() => commitSelectedSupplier(item)}
+      >
+        <Text style={inlineSuggestItemTextStyle} numberOfLines={1}>
+          {item}
+        </Text>
+      </Pressable>
+    ),
+    [P.inputBorder, commitSelectedSupplier, inlineSuggestItemTextStyle, s.suggestItem],
+  );
+
+  const renderModalSupplierItem = React.useCallback(
+    ({ item }: { item: string }) => (
+      <Pressable
+        onPress={() => commitSelectedSupplier(item)}
+        style={[
+          styles.modalSupplierRow,
+          makeSupplierId(item) === selectedSupplierId
+            ? styles.modalSupplierRowSelected
+            : styles.modalSupplierRowDefault,
+        ]}
+      >
+        <Text style={modalSupplierRowTextStyle} numberOfLines={1}>
+          {item}
+        </Text>
+      </Pressable>
+    ),
+    [commitSelectedSupplier, makeSupplierId, modalSupplierRowTextStyle, selectedSupplierId],
+  );
+
   return (
     <View
       style={[styles.editorCardBase, editorCardStyle]}
@@ -181,16 +352,10 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
             placeholderTextColor={P.sub}
             autoCorrect={false}
             autoCapitalize="none"
-            onFocus={() => {
-              setPriceFocused(true);
-              onFocusField?.();
-            }}
-            onBlur={() => {
-              setPriceFocused(false);
-              onSetPrice(String(priceDraft ?? ""));
-            }}
-            onEndEditing={() => onSetPrice(String(priceDraft ?? ""))}
-            style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
+            onFocus={handlePriceFocus}
+            onBlur={handlePriceBlur}
+            onEndEditing={commitPriceDraft}
+            style={fieldInputStyle}
           />
         </View>
 
@@ -204,20 +369,10 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
             <Pressable
               onPress={openPicker}
               disabled={!hasAnyCounterpartyOptions}
-              style={[
-                s.fieldInput,
-                styles.mobileSupplierTrigger,
-                hasAnyCounterpartyOptions
-                  ? styles.mobileSupplierTriggerEnabled
-                  : styles.mobileSupplierTriggerDisabled,
-                { backgroundColor: P.inputBg, borderColor: P.inputBorder },
-              ]}
+              style={mobileSupplierTriggerStyle}
             >
               <Text
-                style={[
-                  styles.mobileSupplierLabel,
-                  { color: selectedSupplierLabel ? P.text : P.sub },
-                ]}
+                style={mobileSupplierLabelStyle}
                 numberOfLines={1}
               >
                 {selectedSupplierLabel || `${counterpartyLabel} *`}
@@ -226,77 +381,34 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
             </Pressable>
           ) : (
             <View
-              onLayout={(e) => {
-                const h = Number(e?.nativeEvent?.layout?.height ?? 0);
-                if (Number.isFinite(h) && h > 0) setSupplierInputHeight(h);
-              }}
+              onLayout={handleSupplierLayout}
             >
               <TextInput
                 value={isDropdownOpen ? supplierQueryDraft : selectedSupplierLabel}
-                onChangeText={(v) => {
-                  setSupplierQueryDraft(v);
-                  if (!isDropdownOpen) setIsDropdownOpen(true);
-                }}
+                onChangeText={handleSupplierTextChange}
                 returnKeyType="done"
                 blurOnSubmit={false}
                 placeholder={`${counterpartyLabel} *`}
                 placeholderTextColor={P.sub}
                 editable={hasAnyCounterpartyOptions}
                 onFocus={openPicker}
-                onBlur={() => {
-                  if (selectingOptionRef.current) return;
-                  blurCloseFrameRef.current = requestAnimationFrame(() => {
-                    blurCloseFrameRef.current = requestAnimationFrame(() => {
-                      if (selectingOptionRef.current) return;
-                      setIsDropdownOpen(false);
-                      setSupplierQueryDraft("");
-                      blurCloseFrameRef.current = null;
-                    });
-                  });
-                }}
-                style={[s.fieldInput, { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text }]}
+                onBlur={handleSupplierBlur}
+                style={fieldInputStyle}
               />
             </View>
           )}
 
           {isDropdownOpen && filteredSuppliers.length > 0 ? (
             <View
-              style={[
-                s.suggestBoxInline,
-                styles.inlineSuggestBox,
-                { borderColor: P.inputBorder, top: supplierInputHeight + 6 },
-              ]}
+              style={inlineSuggestBoxStyle}
               pointerEvents="auto"
             >
               <FlatList
                 data={filteredSuppliers}
-                keyExtractor={(item, idx) => `${item}:${idx}`}
+                keyExtractor={supplierKeyExtractor}
                 keyboardShouldPersistTaps="always"
                 style={styles.inlineSupplierList}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPressIn={() => {
-                      selectingOptionRef.current = true;
-                      if (blurCloseFrameRef.current != null) {
-                        cancelAnimationFrame(blurCloseFrameRef.current);
-                        blurCloseFrameRef.current = null;
-                      }
-                    }}
-                    style={({ pressed }) => [
-                      s.suggestItem,
-                      styles.inlineSuggestItem,
-                      {
-                        borderColor: P.inputBorder,
-                        backgroundColor: pressed ? "rgba(255,255,255,0.08)" : "#1E2A38",
-                      },
-                    ]}
-                    onPress={() => commitSelectedSupplier(item)}
-                  >
-                    <Text style={[styles.inlineSuggestItemText, { color: P.text }]} numberOfLines={1}>
-                      {item}
-                    </Text>
-                  </Pressable>
-                )}
+                renderItem={renderInlineSupplierItem}
               />
             </View>
           ) : null}
@@ -315,34 +427,19 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
         placeholderTextColor={P.sub}
         multiline
         blurOnSubmit={false}
-        onFocus={() => {
-          setNoteFocused(true);
-          onFocusField?.();
-        }}
-        onBlur={() => {
-          setNoteFocused(false);
-          onSetNote(mergeNote(String(noteDraft ?? ""), noteAuto));
-        }}
-        style={[
-          s.fieldInput,
-          {
-            minHeight: isMobileRuntime ? 42 : 44,
-            backgroundColor: P.inputBg,
-            borderColor: P.inputBorder,
-            color: P.text,
-            textAlignVertical: "top",
-          },
-        ]}
+        onFocus={handleNoteFocus}
+        onBlur={handleNoteBlur}
+        style={noteInputStyle}
       />
 
       {noteAuto ? (
         <View
-          style={[styles.noteAutoCard, { borderColor: P.inputBorder }]}
+          style={noteAutoCardStyle}
         >
-          <Text style={[styles.noteAutoLabel, { color: P.sub }]}>
+          <Text style={noteAutoLabelStyle}>
             Реквизиты поставщика
           </Text>
-          <Text style={[styles.noteAutoValue, { color: P.text }]} numberOfLines={3}>
+          <Text style={noteAutoValueStyle} numberOfLines={3}>
             {noteAuto.replace(/\n+/g, " • ")}
           </Text>
         </View>
@@ -354,7 +451,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
           transparent={false}
           animationType="slide"
           presentationStyle="fullScreen"
-          onRequestClose={() => setIsSupplierModalOpen(false)}
+          onRequestClose={closeSupplierModal}
         >
           <SafeAreaView style={styles.supplierModalSafeArea}>
             <View style={styles.supplierModalContent}>
@@ -363,7 +460,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                   Выберите {counterpartyLabel.toLowerCase()}
                 </Text>
                 <Pressable
-                  onPress={() => setIsSupplierModalOpen(false)}
+                  onPress={closeSupplierModal}
                   style={styles.supplierModalCloseButton}
                 >
                   <Ionicons name="close" size={20} color={P.text} />
@@ -378,35 +475,17 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 blurOnSubmit={false}
                 placeholder={`Поиск ${counterpartyLabel.toLowerCase()}`}
                 placeholderTextColor={P.sub}
-                style={[
-                  s.fieldInput,
-                  styles.modalSearchInput,
-                  { backgroundColor: P.inputBg, borderColor: P.inputBorder, color: P.text },
-                ]}
+                style={modalSearchInputStyle}
               />
 
               <FlatList
                 data={filteredSuppliers}
-                keyExtractor={(item, idx) => `${item}:${idx}`}
+                keyExtractor={supplierKeyExtractor}
                 keyboardShouldPersistTaps="always"
                 contentContainerStyle={styles.modalSupplierListContent}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => commitSelectedSupplier(item)}
-                    style={[
-                      styles.modalSupplierRow,
-                      makeSupplierId(item) === selectedSupplierId
-                        ? styles.modalSupplierRowSelected
-                        : styles.modalSupplierRowDefault,
-                    ]}
-                  >
-                    <Text style={[styles.modalSupplierRowText, { color: P.text }]} numberOfLines={1}>
-                      {item}
-                    </Text>
-                  </Pressable>
-                )}
+                renderItem={renderModalSupplierItem}
                 ListEmptyComponent={
-                  <Text style={[styles.modalEmptyText, { color: P.sub }]}>
+                  <Text style={modalEmptyTextStyle}>
                     Ничего не найдено
                   </Text>
                 }
