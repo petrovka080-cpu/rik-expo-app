@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { Animated } from "react-native";
+import { Animated, StyleSheet } from "react-native";
 
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import { UI } from "../buyerUi";
@@ -66,24 +66,16 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
       }),
     [scrollY],
   );
+  const searchBarHostStyle = useMemo(
+    () => [styles.searchBarHost, { top: stickyHeader.headerHeight }],
+    [stickyHeader.headerHeight],
+  );
 
   return (
     <RoleScreenLayout style={[s.screen, { backgroundColor: UI.bg }]}>
       <BuyerStickyHeader {...stickyHeader} />
 
-      <Animated.View
-        style={{
-          position: "absolute",
-          top: stickyHeader.headerHeight,
-          left: 0,
-          right: 0,
-          zIndex: 40,
-          backgroundColor: UI.bg,
-          paddingHorizontal: 16,
-          paddingBottom: 10,
-          paddingTop: 4,
-        }}
-      >
+      <Animated.View style={searchBarHostStyle}>
         <BuyerSearchBar
           s={s}
           searchQuery={searchQuery}
@@ -526,3 +518,16 @@ export function useBuyerScreenContentProps({
     ],
   );
 }
+
+const styles = StyleSheet.create({
+  searchBarHost: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 40,
+    backgroundColor: UI.bg,
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    paddingTop: 4,
+  },
+});

@@ -108,6 +108,15 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     expect(source.split("\n").length).toBeLessThan(727);
   });
 
+  it("keeps the search host static style in BuyerScreenContent", () => {
+    const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
+
+    expect(contentSource).toContain("const styles = StyleSheet.create");
+    expect(contentSource).toContain("const searchBarHostStyle = useMemo");
+    expect(contentSource).toContain("style={searchBarHostStyle}");
+    expect(contentSource).toContain("top: stickyHeader.headerHeight");
+  });
+
   it("keeps BuyerScreenContent props stable when parent recreates the params object", () => {
     const captured: BuyerScreenContentProps[] = [];
     const params = buildContentParams();
