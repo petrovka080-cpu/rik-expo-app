@@ -632,14 +632,16 @@ const runFlush = async (
 
     const snapshot =
       deps.getSnapshot() ?? getForemanDurableDraftState().snapshot;
-    const queueSummaryBefore = await getForemanMutationQueueSummary([
-      entry.payload.draftKey,
+    const [queueSummaryBefore, pendingBefore] = await Promise.all([
+      getForemanMutationQueueSummary([
+        entry.payload.draftKey,
+      ]),
+      getPendingCountForSnapshot(snapshot),
     ]);
     trackForemanMutationBacklog(queueSummaryBefore, "foreman_mutation_backlog_before_flush", {
       draftKey: entry.payload.draftKey,
       triggerSource: triggerSourceOverride ?? entry.payload.triggerSource,
     });
-    const pendingBefore = await getPendingCountForSnapshot(snapshot);
     const attemptNumber = inflight.attemptCount;
     const offlineState = toOfflineState(deps.getNetworkOnline?.());
     const effectiveTriggerSource =
@@ -1157,9 +1159,13 @@ const runFlush = async (
         }
       }
 
-      const remainingCount = await getPendingCountForSnapshot(
-        result.snapshot ?? null,
-      );
+      const queueSummaryKeys = result.snapshot
+        ? getDraftQueueKeysFromSnapshot(result.snapshot)
+        : [requestKeyForCleanup];
+      const [remainingCount, queueSummaryAfter] = await Promise.all([
+        getPendingCountForSnapshot(result.snapshot ?? null),
+        getForemanMutationQueueSummary(queueSummaryKeys),
+      ]);
       await markForemanDurableDraftSyncSucceeded(
         result.snapshot ?? null,
         remainingCount,
@@ -1172,11 +1178,6 @@ const runFlush = async (
         },
       );
 
-      const queueSummaryAfter = await getForemanMutationQueueSummary(
-        result.snapshot
-          ? getDraftQueueKeysFromSnapshot(result.snapshot)
-          : [requestKeyForCleanup],
-      );
       trackForemanMutationBacklog(queueSummaryAfter, "foreman_mutation_backlog_after_flush", {
         draftKey: latestRequestId ?? entry.payload.draftKey,
         triggerSource: effectiveTriggerSource,
