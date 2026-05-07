@@ -172,4 +172,22 @@ describe("director observability hardening", () => {
       expect(source).not.toContain("catch {}");
     }
   });
+
+  it("keeps director dashboard metric Supabase reads inside the transport boundary", () => {
+    const serviceSource = fs.readFileSync(
+      path.join(process.cwd(), "src/screens/director/director.metrics.ts"),
+      "utf8",
+    );
+    const transportSource = fs.readFileSync(
+      path.join(process.cwd(), "src/screens/director/director.metrics.transport.ts"),
+      "utf8",
+    );
+
+    expect(serviceSource).toContain("fetchDirectorMetricsProposalRows");
+    expect(serviceSource).toContain("fetchDirectorMetricsIncomingRows");
+    expect(serviceSource).not.toContain('from("proposals")');
+    expect(serviceSource).not.toContain('from("v_wh_incoming_heads_ui"');
+    expect(transportSource).toContain('from("proposals")');
+    expect(transportSource).toContain('from("v_wh_incoming_heads_ui" as never)');
+  });
 });

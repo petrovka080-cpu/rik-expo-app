@@ -1,6 +1,12 @@
 // src/screens/director/director.metrics.ts
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { reportDirectorBoundary } from "./director.observability";
+import {
+  fetchDirectorMetricsIncomingRows,
+  fetchDirectorMetricsProposalRows,
+  type DirectorMetricsIncomingRow,
+  type DirectorMetricsProposalRow,
+} from "./director.metrics.transport";
 
 export type DirectorDashMetrics = {
   // approvals
@@ -21,28 +27,14 @@ export type DirectorDashMetrics = {
   wh_pending: number;
 };
 
-type ProposalMetricRowLike = {
-  payment_status?: unknown;
-};
-
-type IncomingMetricRowLike = {
-  qty_expected_sum?: unknown;
-  qty_received_sum?: unknown;
-  pending_cnt?: unknown;
-  partial_cnt?: unknown;
-};
-
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" ? (value as Record<string, unknown>) : null;
 
-const asProposalMetricRow = (value: unknown): ProposalMetricRowLike =>
+const asProposalMetricRow = (value: unknown): DirectorMetricsProposalRow =>
   asRecord(value) ?? {};
 
-const asIncomingMetricRow = (value: unknown): IncomingMetricRowLike =>
+const asIncomingMetricRow = (value: unknown): DirectorMetricsIncomingRow =>
   asRecord(value) ?? {};
-
-const fromIncomingHeadsUi = (supabase: SupabaseClient) =>
-  supabase.from("v_wh_incoming_heads_ui" as never);
 
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();
 const toNumber = (value: unknown) => Number(value ?? 0) || 0;
@@ -88,11 +80,7 @@ export async function loadDirectorDashMetrics(
 
   // ---- FINANCE COUNTS (быстро, по proposals) ----
   try {
-    const q = await supabase
-      .from("proposals")
-      .select("id,payment_status,sent_to_accountant_at")
-      .not("sent_to_accountant_at", "is", null)
-      .limit(5000);
+    const q = await fetchDirectorMetricsProposalRows(supabase);
 
     if (!q.error && Array.isArray(q.data)) {
       for (const rawRow of q.data) {
@@ -119,9 +107,7 @@ export async function loadDirectorDashMetrics(
   // ---- WAREHOUSE COUNTS (очередь прихода) ----
   // Берем то, что ты уже используешь в warehouse.tsx: v_wh_incoming_heads_ui
   try {
-    const q = await fromIncomingHeadsUi(supabase)
-      .select("incoming_id,qty_expected_sum,qty_received_sum,pending_cnt,partial_cnt")
-      .limit(5000);
+    const q = await fetchDirectorMetricsIncomingRows(supabase);
 
     if (!q.error && Array.isArray(q.data)) {
       let total = 0;
