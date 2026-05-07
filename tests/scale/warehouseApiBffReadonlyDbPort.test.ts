@@ -66,6 +66,26 @@ describe("warehouse API BFF readonly DB port", () => {
         page: { page: 1, pageSize: 25 },
       },
       {
+        operation: "warehouse.api.incoming.queue",
+        args: { p_offset: 100, p_limit: 50 },
+      },
+      {
+        operation: "warehouse.api.incoming.items",
+        args: { p_incoming_id: "00000000-0000-0000-0000-000000000003" },
+      },
+      {
+        operation: "warehouse.api.issue.queue",
+        args: { p_offset: 150, p_limit: 75 },
+      },
+      {
+        operation: "warehouse.api.issue.items",
+        args: { p_request_id: "00000000-0000-0000-0000-000000000004" },
+      },
+      {
+        operation: "warehouse.api.stock.scope",
+        args: { p_offset: 40, p_limit: 20 },
+      },
+      {
         operation: "warehouse.api.uom.material_unit",
         args: { matCode: "MAT-001" },
       },
@@ -78,7 +98,7 @@ describe("warehouse API BFF readonly DB port", () => {
     const plans = requests.flatMap(buildWarehouseApiReadQueryPlans);
 
     expect(plans.map((plan) => plan.readOnly).every(Boolean)).toBe(true);
-    expect(plans).toHaveLength(11);
+    expect(plans).toHaveLength(16);
     for (const plan of plans) {
       expect(plan.sql.toLowerCase().startsWith("select ")).toBe(true);
       expect(plan.sql).not.toMatch(mutationPattern);
@@ -91,8 +111,14 @@ describe("warehouse API BFF readonly DB port", () => {
     expect(plans.some((plan) => plan.sql.includes("limit $2 offset $3"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("acc_report_stock"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("wh_report_issued_materials_fast"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("warehouse_incoming_queue_scope_v1"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("warehouse_incoming_items_scope_v1"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("warehouse_issue_queue_scope_v4"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("warehouse_issue_items_scope_v1"))).toBe(true);
+    expect(plans.some((plan) => plan.sql.includes("warehouse_stock_scope_v2"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("from public.rik_materials"))).toBe(true);
     expect(plans.some((plan) => plan.sql.includes("from public.rik_uoms"))).toBe(true);
     expect(plans.some((plan) => plan.values.includes("MAT-001"))).toBe(true);
+    expect(plans.some((plan) => plan.values.includes(150))).toBe(true);
   });
 });

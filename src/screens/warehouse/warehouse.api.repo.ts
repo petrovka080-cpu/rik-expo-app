@@ -10,11 +10,17 @@ import {
 import {
   callWarehouseApiSupabaseIncomingLedgerRows,
   callWarehouseApiSupabaseIncomingLineRows,
+  callWarehouseApiSupabaseIncomingHeadsScope,
+  callWarehouseApiSupabaseIncomingItemsScope,
   callWarehouseApiSupabaseIncomingReportRows,
+  callWarehouseApiSupabaseIssueItemsScope,
   callWarehouseApiSupabaseIssueLineRows,
+  callWarehouseApiSupabaseIssueQueueScope,
   callWarehouseApiSupabaseIssuedByObjectFastRows,
   callWarehouseApiSupabaseIssuedMaterialsFastRows,
   callWarehouseApiSupabaseReportsBundle,
+  callWarehouseApiSupabaseStockScope,
+  type WarehouseApiEnvelopeResult,
   type WarehouseApiRepoResult,
   type WarehouseApiReportsBundleResult,
   type WarehouseApiUnknownRow,
@@ -38,8 +44,26 @@ const bffErrorToRepoResult = (error: { code: string; message: string }): Warehou
   error,
 });
 
+const bffErrorToEnvelopeResult = (error: { code: string; message: string }): WarehouseApiEnvelopeResult => ({
+  data: null,
+  error,
+});
+
 const getSingleBffResult = (payload: WarehouseApiBffPayloadDto): WarehouseApiRepoResult | null =>
   payload.kind === "single" ? bffReadResultToRepoResult(payload.result) : null;
+
+const getEnvelopeBffResult = (payload: WarehouseApiBffPayloadDto): WarehouseApiEnvelopeResult | null => {
+  if (payload.kind !== "single") return null;
+  if (payload.result.error) return { data: null, error: payload.result.error };
+  const first = Array.isArray(payload.result.data) ? payload.result.data[0] : null;
+  if (!first || typeof first !== "object" || Array.isArray(first)) {
+    return { data: null, error: null };
+  }
+  return {
+    data: Object.prototype.hasOwnProperty.call(first, "payload") ? first.payload : first,
+    error: null,
+  };
+};
 
 const fetchWarehouseApiBffSingleRead = async (
   request: WarehouseApiBffRequestDto,
@@ -48,6 +72,18 @@ const fetchWarehouseApiBffSingleRead = async (
   if (bffResult.status === "unavailable") return "unavailable";
   if (bffResult.status === "error") return bffErrorToRepoResult(bffResult.error);
   return getSingleBffResult(bffResult.response.payload) ?? bffErrorToRepoResult({
+    code: "WAREHOUSE_API_BFF_INVALID_RESPONSE",
+    message: "Invalid warehouse API read response",
+  });
+};
+
+const fetchWarehouseApiBffEnvelopeRead = async (
+  request: WarehouseApiBffRequestDto,
+): Promise<WarehouseApiEnvelopeResult | "unavailable"> => {
+  const bffResult = await callWarehouseApiBffRead(request);
+  if (bffResult.status === "unavailable") return "unavailable";
+  if (bffResult.status === "error") return bffErrorToEnvelopeResult(bffResult.error);
+  return getEnvelopeBffResult(bffResult.response.payload) ?? bffErrorToEnvelopeResult({
     code: "WAREHOUSE_API_BFF_INVALID_RESPONSE",
     message: "Invalid warehouse API read response",
   });
@@ -231,6 +267,75 @@ export async function fetchWarehouseIncomingLineRows(
   });
   if (bffResult !== "unavailable") return bffResult;
   return await callWarehouseApiSupabaseIncomingLineRows(supabase, incomingId);
+}
+
+export async function fetchWarehouseIncomingHeadsScope(
+  supabase: SupabaseClient,
+  pageOffset: number,
+  pageSize: number,
+): Promise<WarehouseApiEnvelopeResult> {
+  const bffResult = await fetchWarehouseApiBffEnvelopeRead({
+    operation: "warehouse.api.incoming.queue",
+    args: { p_offset: pageOffset, p_limit: pageSize },
+  });
+  if (bffResult !== "unavailable") return bffResult;
+  return await callWarehouseApiSupabaseIncomingHeadsScope(supabase, pageOffset, pageSize);
+}
+
+export async function fetchWarehouseIncomingItemsScope(
+  supabase: SupabaseClient,
+  incomingId: string,
+  options?: { signal?: AbortSignal | null },
+): Promise<WarehouseApiEnvelopeResult> {
+  throwIfAborted(options?.signal);
+  const bffResult = await fetchWarehouseApiBffEnvelopeRead({
+    operation: "warehouse.api.incoming.items",
+    args: { p_incoming_id: incomingId },
+  });
+  throwIfAborted(options?.signal);
+  if (bffResult !== "unavailable") return bffResult;
+  return await callWarehouseApiSupabaseIncomingItemsScope(supabase, incomingId, options);
+}
+
+export async function fetchWarehouseIssueQueueScope(
+  supabase: SupabaseClient,
+  offset: number,
+  pageSize: number,
+  options?: { signal?: AbortSignal | null },
+): Promise<WarehouseApiEnvelopeResult> {
+  throwIfAborted(options?.signal);
+  const bffResult = await fetchWarehouseApiBffEnvelopeRead({
+    operation: "warehouse.api.issue.queue",
+    args: { p_offset: offset, p_limit: pageSize },
+  });
+  throwIfAborted(options?.signal);
+  if (bffResult !== "unavailable") return bffResult;
+  return await callWarehouseApiSupabaseIssueQueueScope(supabase, offset, pageSize, options);
+}
+
+export async function fetchWarehouseIssueItemsScope(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<WarehouseApiEnvelopeResult> {
+  const bffResult = await fetchWarehouseApiBffEnvelopeRead({
+    operation: "warehouse.api.issue.items",
+    args: { p_request_id: requestId },
+  });
+  if (bffResult !== "unavailable") return bffResult;
+  return await callWarehouseApiSupabaseIssueItemsScope(supabase, requestId);
+}
+
+export async function fetchWarehouseStockScope(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<WarehouseApiEnvelopeResult> {
+  const bffResult = await fetchWarehouseApiBffEnvelopeRead({
+    operation: "warehouse.api.stock.scope",
+    args: { p_offset: offset, p_limit: limit },
+  });
+  if (bffResult !== "unavailable") return bffResult;
+  return await callWarehouseApiSupabaseStockScope(supabase, offset, limit);
 }
 
 export function asUnknownRows(data: unknown): UnknownRow[] {

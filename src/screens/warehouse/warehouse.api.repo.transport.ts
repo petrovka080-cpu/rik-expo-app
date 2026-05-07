@@ -13,6 +13,11 @@ export type WarehouseApiRepoResult = {
   error: unknown | null;
 };
 
+export type WarehouseApiEnvelopeResult = {
+  data: unknown | null;
+  error: unknown | null;
+};
+
 export type WarehouseApiReportsBundleResult = {
   stock: WarehouseApiRepoResult;
   movement: WarehouseApiRepoResult;
@@ -137,4 +142,69 @@ export async function callWarehouseApiSupabaseIncomingLineRows(
         .order("code", { ascending: true }) as unknown as PagedQuery<WarehouseApiUnknownRow>,
     WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS,
   );
+}
+
+export async function callWarehouseApiSupabaseIncomingHeadsScope(
+  supabase: SupabaseClient,
+  pageOffset: number,
+  pageSize: number,
+): Promise<WarehouseApiEnvelopeResult> {
+  return await supabase.rpc("warehouse_incoming_queue_scope_v1" as never, {
+    p_offset: pageOffset,
+    p_limit: pageSize,
+  } as never);
+}
+
+export async function callWarehouseApiSupabaseIncomingItemsScope(
+  supabase: SupabaseClient,
+  incomingId: string,
+  options?: { signal?: AbortSignal | null },
+): Promise<WarehouseApiEnvelopeResult> {
+  throwIfAborted(options?.signal);
+  const result = await applySupabaseAbortSignal(
+    supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
+      p_incoming_id: incomingId,
+    } as never),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
+  return result;
+}
+
+export async function callWarehouseApiSupabaseIssueQueueScope(
+  supabase: SupabaseClient,
+  offset: number,
+  pageSize: number,
+  options?: { signal?: AbortSignal | null },
+): Promise<WarehouseApiEnvelopeResult> {
+  throwIfAborted(options?.signal);
+  const result = await applySupabaseAbortSignal(
+    supabase.rpc("warehouse_issue_queue_scope_v4", {
+      p_offset: offset,
+      p_limit: pageSize,
+    }),
+    options?.signal,
+  );
+  throwIfAborted(options?.signal);
+  return result;
+}
+
+export async function callWarehouseApiSupabaseIssueItemsScope(
+  supabase: SupabaseClient,
+  requestId: string,
+): Promise<WarehouseApiEnvelopeResult> {
+  return await supabase.rpc("warehouse_issue_items_scope_v1", {
+    p_request_id: requestId,
+  });
+}
+
+export async function callWarehouseApiSupabaseStockScope(
+  supabase: SupabaseClient,
+  offset: number,
+  limit: number,
+): Promise<WarehouseApiEnvelopeResult> {
+  return await supabase.rpc("warehouse_stock_scope_v2", {
+    p_limit: limit,
+    p_offset: offset,
+  });
 }

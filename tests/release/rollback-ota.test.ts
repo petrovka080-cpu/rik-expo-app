@@ -45,7 +45,29 @@ describe("rollback-ota dry-run helper", () => {
     expect(report.easUpdateTriggered).toBe(false);
     expect(report.productionTouched).toBe(false);
     expect(report.commandsExecuted).toEqual([]);
-    expect(report.commandsPlanned).toEqual([]);
+    expect(report.commandsPlanned).toEqual([
+      expect.objectContaining({
+        name: "identify_previous_release_candidate",
+        dryRunOnly: true,
+        executesInThisHelper: false,
+        command: expect.stringContaining("npx eas update:list"),
+      }),
+      expect.objectContaining({
+        name: "render_owner_rollback_republish_command",
+        dryRunOnly: true,
+        executesInThisHelper: false,
+        command: expect.stringContaining("npx eas update:republish"),
+      }),
+    ]);
+    expect(report.previousReleaseCandidate).toMatchObject({
+      source: "owner_supplied_rollback_to",
+      channel: "staging",
+      runtimeVersion: "test-runtime",
+      updateGroupOrReleaseRef: "test-update-id",
+    });
+    expect(report.deployTriggered).toBe(false);
+    expect(report.networkCalls).toBe(false);
+    expect(report.productionEndpointsCalled).toBe(false);
   });
 
   it.each([
@@ -63,6 +85,7 @@ describe("rollback-ota dry-run helper", () => {
     expect(report.errors).toEqual(expect.arrayContaining([expect.stringContaining(errorText)]));
     expect(report.easUpdateTriggered).toBe(false);
     expect(report.otaPublished).toBe(false);
+    expect(report.commandsPlanned).toEqual([]);
   });
 
   it("allows production dry-run but rejects production execute without owner approval", () => {
@@ -103,6 +126,7 @@ describe("rollback-ota dry-run helper", () => {
     expect(executeReport.easUpdateTriggered).toBe(false);
     expect(executeReport.otaPublished).toBe(false);
     expect(executeReport.productionTouched).toBe(false);
+    expect(executeReport.commandsExecuted).toEqual([]);
   });
 
   it("redacts token-like rollback targets and never prints process secrets", () => {
@@ -124,10 +148,58 @@ describe("rollback-ota dry-run helper", () => {
 
     expect(result.status).toBe(0);
     expect(report.rollbackTo).toContain("[REDACTED]");
+    expect(JSON.stringify(report.commandsPlanned)).toContain("[REDACTED]");
     expect(output).not.toContain(jwt);
     expect(output).not.toContain("super-secret-signature");
     expect(output).not.toContain("expo_secret_should_not_print");
     expect(output).not.toContain("sntrys_secret_should_not_print");
     expect(output).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+  });
+
+  it("renders owner rollback commands without executing EAS or touching production", () => {
+    const result = runRollback([
+      "--target",
+      "production",
+      "--channel",
+      "production",
+      "--runtime-version",
+      "runtime-prod-1",
+      "--rollback-to",
+      "prod-update-group-1",
+      "--dry-run",
+    ]);
+    const report = parseStdout(result);
+
+    expect(result.status).toBe(0);
+    expect(report.status).toBe("dry_run");
+    expect(report.previousReleaseCandidate).toMatchObject({
+      source: "owner_supplied_rollback_to",
+      channel: "production",
+      runtimeVersion: "runtime-prod-1",
+      updateGroupOrReleaseRef: "prod-update-group-1",
+    });
+    expect(report.commandsPlanned).toEqual([
+      expect.objectContaining({
+        command: 'npx eas update:list --branch "production" --json',
+        executesInThisHelper: false,
+      }),
+      expect.objectContaining({
+        command: expect.stringContaining(
+          'npx eas update:republish --branch "production" --group "prod-update-group-1"',
+        ),
+        executesInThisHelper: false,
+      }),
+    ]);
+    expect(report.commandsExecuted).toEqual([]);
+    expect(report.otaPublished).toBe(false);
+    expect(report.easUpdateTriggered).toBe(false);
+    expect(report.deployTriggered).toBe(false);
+    expect(report.renderTouched).toBe(false);
+    expect(report.dbTouched).toBe(false);
+    expect(report.envWritten).toBe(false);
+    expect(report.productionBusinessCalls).toBe(false);
+    expect(report.productionEndpointsCalled).toBe(false);
+    expect(report.networkCalls).toBe(false);
+    expect(report.productionTouched).toBe(false);
   });
 });

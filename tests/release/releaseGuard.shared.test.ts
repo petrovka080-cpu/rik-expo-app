@@ -42,6 +42,12 @@ function createPassedGates(): ReleaseGateResult[] {
   return [
     { name: "tsc", command: "npx tsc --noEmit --pretty false", status: "passed", exitCode: 0 },
     { name: "expo-lint", command: "npx expo lint", status: "passed", exitCode: 0 },
+    {
+      name: "architecture-anti-regression",
+      command: "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      status: "passed",
+      exitCode: 0,
+    },
     { name: "jest-run-in-band", command: "npm test -- --runInBand", status: "passed", exitCode: 0 },
     { name: "jest", command: "npm test", status: "passed", exitCode: 0 },
     { name: "git-diff-check", command: "git diff --check", status: "passed", exitCode: 0 },

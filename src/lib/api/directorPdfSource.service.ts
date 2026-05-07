@@ -11,10 +11,14 @@ import {
 } from "../documents/pdfRpcRollout";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
-import { supabase } from "../supabaseClient";
 import type { DirectorReportFetchMeta } from "./director_reports";
 import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "./director_reports.adapters";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
+import {
+  callDirectorFinancePdfSourceRpc,
+  callDirectorProductionPdfSourceRpc,
+  callDirectorSubcontractPdfSourceRpc,
+} from "./directorPdfSource.transport";
 import type { DirectorDisciplinePayload, DirectorReportPayload } from "./director_reports.shared";
 import {
   mapToFinanceRow,
@@ -140,9 +144,6 @@ const asArrayOfRecords = (value: unknown): DirectorPdfRecord[] =>
           : {},
       )
     : [];
-
-const toOptionalRpcArg = <T>(value: T | null | undefined): T | undefined =>
-  value == null ? undefined : value;
 
 const toText = (value: unknown) => String(value ?? "").trim();
 
@@ -380,12 +381,7 @@ async function fetchDirectorFinancePdfSourceViaRpc(args: {
   dueDaysDefault?: number;
   criticalDays?: number;
 }): Promise<DirectorFinancePdfSource> {
-  const { data, error } = await supabase.rpc("pdf_director_finance_source_v1", {
-    p_from: toOptionalRpcArg(args.periodFrom),
-    p_to: toOptionalRpcArg(args.periodTo),
-    p_due_days: args.dueDaysDefault ?? 7,
-    p_critical_days: args.criticalDays ?? 14,
-  });
+  const { data, error } = await callDirectorFinancePdfSourceRpc(args);
 
   if (error) {
     throw new DirectorPdfSourceRpcError(
@@ -519,11 +515,11 @@ async function fetchDirectorProductionPdfSourceViaRpc(args: {
   objectName?: string | null;
   priceStage: DirectorPdfPriceStage;
 }): Promise<DirectorProductionPdfSource> {
-  const { data, error } = await supabase.rpc("pdf_director_production_source_v1", {
-    p_from: toOptionalRpcArg(args.periodFrom),
-    p_to: toOptionalRpcArg(args.periodTo),
-    p_object_name: toOptionalRpcArg(args.objectName),
-    p_include_costs: args.priceStage !== "base",
+  const { data, error } = await callDirectorProductionPdfSourceRpc({
+    periodFrom: args.periodFrom,
+    periodTo: args.periodTo,
+    objectName: args.objectName,
+    includeCosts: args.priceStage !== "base",
   });
 
   if (error) {
@@ -687,11 +683,7 @@ async function fetchDirectorSubcontractPdfSourceViaRpc(args: {
   periodTo?: string | null;
   objectName?: string | null;
 }): Promise<DirectorSubcontractPdfSource> {
-  const { data, error } = await supabase.rpc("pdf_director_subcontract_source_v1", {
-    p_from: toOptionalRpcArg(args.periodFrom),
-    p_to: toOptionalRpcArg(args.periodTo),
-    p_object_name: toOptionalRpcArg(args.objectName),
-  });
+  const { data, error } = await callDirectorSubcontractPdfSourceRpc(args);
 
   if (error) {
     throw new DirectorPdfSourceRpcError(

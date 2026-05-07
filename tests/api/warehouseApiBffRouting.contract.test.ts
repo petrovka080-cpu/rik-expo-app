@@ -41,6 +41,11 @@ describe("warehouse API BFF routing contract", () => {
       "warehouse.api.report.incoming_v2",
       "warehouse.api.ledger.incoming",
       "warehouse.api.ledger.incoming_lines",
+      "warehouse.api.incoming.queue",
+      "warehouse.api.incoming.items",
+      "warehouse.api.issue.queue",
+      "warehouse.api.issue.items",
+      "warehouse.api.stock.scope",
       "warehouse.api.uom.material_unit",
       "warehouse.api.uom.code",
     ]);
@@ -54,16 +59,47 @@ describe("warehouse API BFF routing contract", () => {
   it("removes direct Supabase rpc/from calls from the target repository file only", () => {
     const repoSource = readProjectFile("src/screens/warehouse/warehouse.api.repo.ts");
     const transportSource = readProjectFile("src/screens/warehouse/warehouse.api.repo.transport.ts");
+    const reportsRepoSource = readProjectFile("src/screens/warehouse/warehouse.reports.repo.ts");
+    const incomingRepoSource = readProjectFile("src/screens/warehouse/warehouse.incoming.repo.ts");
+    const issueCanonicalSource = readProjectFile("src/screens/warehouse/warehouse.requests.read.canonical.ts");
 
     expect(repoSource).toContain("callWarehouseApiBffRead");
+    expect(repoSource).toContain("fetchWarehouseIncomingHeadsScope");
+    expect(repoSource).toContain("fetchWarehouseIssueQueueScope");
     expect(repoSource).not.toContain("supabase.rpc(");
     expect(repoSource).not.toContain("supabase.from(");
     expect(repoSource).not.toContain(".rpc(");
     expect(repoSource).not.toContain(".from(");
 
-    expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(7);
+    expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(12);
     expect(transportSource.match(/\.from\(/g) ?? []).toHaveLength(2);
+    expect(reportsRepoSource).toContain("fetchWarehouseIssueLineRows");
+    expect(reportsRepoSource).not.toContain("supabase.rpc(");
+    expect(reportsRepoSource).not.toContain("supabase.from(");
+    expect(incomingRepoSource).toContain("fetchWarehouseIncomingHeadsScope");
+    expect(incomingRepoSource).toContain("fetchWarehouseIncomingItemsScope");
+    expect(incomingRepoSource).not.toContain("supabase.rpc(");
+    expect(incomingRepoSource).not.toContain("supabase.from(");
+    expect(issueCanonicalSource).toContain("fetchWarehouseIssueQueueScope");
+    expect(issueCanonicalSource).toContain("fetchWarehouseIssueItemsScope");
+    expect(issueCanonicalSource).not.toContain("supabase.rpc(");
+    expect(issueCanonicalSource).not.toContain("supabase.from(");
     expect(WAREHOUSE_API_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");
+  });
+
+  it("routes warehouse stock scope through the BFF-aware warehouse API boundary", () => {
+    const serviceSource = readProjectFile("src/screens/warehouse/warehouse.stockReports.service.ts");
+    const repoSource = readProjectFile("src/screens/warehouse/warehouse.api.repo.ts");
+    const transportSource = readProjectFile("src/screens/warehouse/warehouse.api.repo.transport.ts");
+    const contractSource = readProjectFile("src/screens/warehouse/warehouse.api.bff.contract.ts");
+
+    expect(serviceSource).toContain("fetchWarehouseStockScope");
+    expect(serviceSource).not.toContain('supabase.rpc("warehouse_stock_scope_v2"');
+    expect(repoSource).toContain("fetchWarehouseStockScope");
+    expect(repoSource).toContain('operation: "warehouse.api.stock.scope"');
+    expect(transportSource).toContain("callWarehouseApiSupabaseStockScope");
+    expect(transportSource).toContain('supabase.rpc("warehouse_stock_scope_v2"');
+    expect(contractSource).toContain('"warehouse.api.stock.scope"');
   });
 
   it("routes warehouse UOM single-row reads through the warehouse API BFF-aware boundary", () => {

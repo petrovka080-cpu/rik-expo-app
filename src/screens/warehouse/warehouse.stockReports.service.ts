@@ -22,6 +22,7 @@ import {
   fetchWarehouseIssuedByObjectFastRows,
   fetchWarehouseIssuedMaterialsFastRows,
   fetchWarehouseReportsBundle,
+  fetchWarehouseStockScope,
 } from "./warehouse.api.repo";
 import type { StockRow } from "./warehouse.types";
 import { nz } from "./warehouse.utils";
@@ -365,10 +366,7 @@ export async function apiFetchStockRpcV2(
 
   try {
     const startedAt = Date.now();
-    const { data, error } = await supabase.rpc("warehouse_stock_scope_v2", {
-      p_limit: limit,
-      p_offset: offset,
-    });
+    const { data, error } = await fetchWarehouseStockScope(supabase, offset, limit);
     if (error) {
       trackRpcLatency({
         name: "warehouse_stock_scope_v2",

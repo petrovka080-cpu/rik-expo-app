@@ -64,6 +64,22 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/load/sLoadFix1Hotspots.contract.test.ts",
   ].includes(file);
 
+const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
+  [
+    "src/lib/api/directorPdfSource.service.test.ts",
+    "src/lib/api/directorPdfSource.service.ts",
+    "src/lib/api/directorPdfSource.transport.ts",
+    "scripts/server/stagingBffWarehouseApiReadPort.ts",
+    "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.api.repo.transport.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "src/screens/warehouse/warehouse.reports.repo.ts",
+    "tests/api/warehouseApiBffRouting.contract.test.ts",
+    "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -108,10 +124,8 @@ describe("S-PAG-7 hotspot list read pagination", () => {
       "WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }",
     );
     expect(warehouseCanonical).toContain("normalizeWarehouseIssueQueuePage");
-    expect(warehouseCanonical).toContain("p_limit: normalizedPage.pageSize");
-    expect(warehouseCanonical).toContain(
-      'supabase.rpc("warehouse_issue_queue_scope_v4"',
-    );
+    expect(warehouseCanonical).toContain("normalizedPage.pageSize");
+    expect(warehouseCanonical).toContain("fetchWarehouseIssueQueueScope(");
   });
 
   it("keeps skipped surfaces and hard exclusions untouched", () => {
@@ -127,6 +141,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isLaterApprovedRpcValidationPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
+        !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

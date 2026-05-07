@@ -65,7 +65,7 @@ import { useAccountantInvoiceForm } from "./useAccountantInvoiceForm";
 import { useAccountantHistoryFlow } from "./useAccountantHistoryFlow";
 import { AccountantHeader } from "./components/AccountantHeader";
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
-import { useAccountantUiStore } from "./accountantUi.store";
+import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";
 
 const TAB_PAY: Tab = TABS[0];
 const TAB_PART: Tab = TABS[1];
@@ -86,24 +86,26 @@ export function AccountantScreen() {
     onError: (e) => safeAlert("Ошибка", String(e?.message ?? e)),
   });
 
-  const tab = useAccountantUiStore((state) => state.tab);
-  const setTab = useAccountantUiStore((state) => state.setTab);
-  const histSearchUi = useAccountantUiStore((state) => state.histSearchUi);
-  const setHistSearchUi = useAccountantUiStore((state) => state.setHistSearchUi);
-  const dateFrom = useAccountantUiStore((state) => state.dateFrom);
-  const setDateFrom = useAccountantUiStore((state) => state.setDateFrom);
-  const dateTo = useAccountantUiStore((state) => state.dateTo);
-  const setDateTo = useAccountantUiStore((state) => state.setDateTo);
-  const periodOpen = useAccountantUiStore((state) => state.periodOpen);
-  const setPeriodOpen = useAccountantUiStore((state) => state.setPeriodOpen);
-  const cardOpen = useAccountantUiStore((state) => state.cardOpen);
-  const setCardOpen = useAccountantUiStore((state) => state.setCardOpen);
-  const currentPaymentId = useAccountantUiStore((state) => state.currentPaymentId);
-  const setCurrentPaymentId = useAccountantUiStore((state) => state.setCurrentPaymentId);
-  const accountantFio = useAccountantUiStore((state) => state.accountantFio);
-  const setAccountantFio = useAccountantUiStore((state) => state.setAccountantFio);
-  const freezeWhileOpen = useAccountantUiStore((state) => state.freezeWhileOpen);
-  const setFreezeWhileOpen = useAccountantUiStore((state) => state.setFreezeWhileOpen);
+  const {
+    tab,
+    setTab,
+    histSearchUi,
+    setHistSearchUi,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    periodOpen,
+    setPeriodOpen,
+    cardOpen,
+    setCardOpen,
+    currentPaymentId,
+    setCurrentPaymentId,
+    accountantFio,
+    setAccountantFio,
+    freezeWhileOpen,
+    setFreezeWhileOpen,
+  } = useAccountantScreenViewModel();
   const cardScrollY = useRef(new Animated.Value(0)).current;
   const payFormReveal = useRevealSection(24);
   const cardScrollRef = useRef<ScrollView | null>(null);

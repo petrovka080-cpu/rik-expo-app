@@ -52,6 +52,22 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/pdf/pdfViewer.readiness.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
+  [
+    "src/lib/api/directorPdfSource.service.test.ts",
+    "src/lib/api/directorPdfSource.service.ts",
+    "src/lib/api/directorPdfSource.transport.ts",
+    "scripts/server/stagingBffWarehouseApiReadPort.ts",
+    "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.api.repo.transport.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "src/screens/warehouse/warehouse.reports.repo.ts",
+    "tests/api/warehouseApiBffRouting.contract.test.ts",
+    "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -105,6 +121,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
       !isApprovedLaterRpcValidationPatch(file) &&
       !isApprovedPdfInstantFirstOpenPatch(file) &&
+      !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

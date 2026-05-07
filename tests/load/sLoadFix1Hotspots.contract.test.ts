@@ -69,6 +69,22 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/load/sLoadFix1Hotspots.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
+  [
+    "src/lib/api/directorPdfSource.service.test.ts",
+    "src/lib/api/directorPdfSource.service.ts",
+    "src/lib/api/directorPdfSource.transport.ts",
+    "scripts/server/stagingBffWarehouseApiReadPort.ts",
+    "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.api.repo.transport.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "src/screens/warehouse/warehouse.reports.repo.ts",
+    "tests/api/warehouseApiBffRouting.contract.test.ts",
+    "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -97,9 +113,9 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
       "src/screens/warehouse/warehouse.requests.read.canonical.ts",
     );
 
-    expect(source).toContain('supabase.rpc("warehouse_issue_queue_scope_v4"');
-    expect(source).toContain("p_offset: offset");
-    expect(source).toContain("p_limit: normalizedPage.pageSize");
+    expect(source).toContain("fetchWarehouseIssueQueueScope(");
+    expect(source).toContain("offset,");
+    expect(source).toContain("normalizedPage.pageSize");
     expect(source).toContain(
       "WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 }",
     );
@@ -135,6 +151,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
       (file) =>
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
+        !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

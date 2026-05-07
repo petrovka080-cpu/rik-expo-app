@@ -49,6 +49,10 @@ function readGitSha() {
   return result.status === 0 ? result.stdout.trim() : "unknown";
 }
 
+function quotePlanArg(value) {
+  return `"${redactReleaseText(value).replace(/"/g, '""')}"`;
+}
+
 export function redactReleaseText(value) {
   let text = String(value ?? "");
   text = text.replace(
@@ -90,9 +94,37 @@ function validateArgs(args) {
   return errors;
 }
 
+function buildPlannedCommands(args, validationErrors = []) {
+  if (validationErrors.length > 0) return [];
+
+  const rollbackMessage = `Rollback ${args.target} ${args.channel} to ${args.rollbackTo}`;
+  return [
+    {
+      name: "identify_previous_release_candidate",
+      dryRunOnly: true,
+      command: `npx eas update:list --branch ${quotePlanArg(args.channel)} --json`,
+      purpose:
+        "List update groups for the target branch so the owner can confirm the rollback target belongs to the same channel and runtime lineage.",
+      executesInThisHelper: false,
+    },
+    {
+      name: "render_owner_rollback_republish_command",
+      dryRunOnly: true,
+      command:
+        `npx eas update:republish --branch ${quotePlanArg(args.channel)}` +
+        ` --group ${quotePlanArg(args.rollbackTo)}` +
+        ` --message ${quotePlanArg(rollbackMessage)}`,
+      purpose:
+        "Owner-executed rollback command after confirming the rollback target and release lineage. This helper renders the command only.",
+      executesInThisHelper: false,
+    },
+  ];
+}
+
 function buildReport(args, validationErrors = []) {
   const status = validationErrors.length > 0 ? "rejected" : args.dryRun ? "dry_run" : "owner_action_required";
   const productionTouched = false;
+  const commandsPlanned = buildPlannedCommands(args, validationErrors);
 
   return {
     wave: WAVE,
@@ -102,17 +134,34 @@ function buildReport(args, validationErrors = []) {
     channel: redactReleaseText(args.channel),
     runtimeVersion: redactReleaseText(args.runtimeVersion),
     rollbackTo: redactReleaseText(args.rollbackTo),
+    previousReleaseCandidate: validationErrors.length > 0
+      ? null
+      : {
+          source: "owner_supplied_rollback_to",
+          channel: redactReleaseText(args.channel),
+          runtimeVersion: redactReleaseText(args.runtimeVersion),
+          updateGroupOrReleaseRef: redactReleaseText(args.rollbackTo),
+          verificationRequired:
+            "Confirm this target appears in EAS update history for the same channel and runtimeVersion before any owner execution.",
+        },
     gitSha: readGitSha(),
-    commandsPlanned: [],
+    commandsPlanned,
     commandsExecuted: [],
     otaPublished: false,
     easUpdateTriggered: false,
+    deployTriggered: false,
+    renderTouched: false,
+    dbTouched: false,
+    envWritten: false,
+    productionBusinessCalls: false,
+    productionEndpointsCalled: false,
+    networkCalls: false,
     productionTouched,
     secretsPrinted: false,
     errors: validationErrors,
     note:
       status === "owner_action_required"
-        ? "Owner-approved execution is intentionally not performed by this helper; use the runbook to perform and record the manual release action."
+        ? "Owner-approved execution is intentionally not performed by this helper; use the rendered command and runbook to perform and record the manual release action."
         : "No EAS command was executed.",
   };
 }

@@ -11,6 +11,7 @@ export type ReleaseGuardMode = "preflight" | "verify" | "ota";
 export type ReleaseGateName =
   | "tsc"
   | "expo-lint"
+  | "architecture-anti-regression"
   | "jest-run-in-band"
   | "jest"
   | "git-diff-check";
@@ -191,6 +192,7 @@ type PackageJsonShape = {
 export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "tsc", command: "npx tsc --noEmit --pretty false" },
   { name: "expo-lint", command: "npx expo lint" },
+  { name: "architecture-anti-regression", command: "npx tsx scripts/architecture_anti_regression_suite.ts --json" },
   { name: "jest-run-in-band", command: "npm test -- --runInBand" },
   { name: "jest", command: "npm test" },
   { name: "git-diff-check", command: "git diff --check" },

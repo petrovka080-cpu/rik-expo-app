@@ -5,7 +5,7 @@ import { TABS, type Tab } from "./types";
 const resolveUpdate = <T,>(value: SetStateAction<T>, prev: T): T =>
   typeof value === "function" ? (value as (current: T) => T)(prev) : value;
 
-type AccountantUiStore = {
+export type AccountantUiStore = {
   tab: Tab;
   histSearchUi: string;
   dateFrom: string;

@@ -1,5 +1,6 @@
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildStagingLoadRampBatches,
   buildStagingLoadTargetExecutionPlan,
   buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
@@ -217,6 +218,29 @@ describe("S-LOAD-1 staging load core", () => {
     expect(countStagingLoadTargetExecutionPlanRequests(plan)).toBe(5000);
     expect(plan.every((item) => item.target.readOnly)).toBe(true);
     expect(plan.map((item) => item.runs)).toEqual([1000, 1000, 1000, 1000, 1000]);
+  });
+
+  it("splits bounded live requests into ramp batches before reaching the full queue", () => {
+    const requests = Array.from({ length: 5000 }, (_, index) => index);
+    const batches = buildStagingLoadRampBatches(
+      requests,
+      [5, 10, 15, 20, 25, 50, 100, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 5000],
+      5000,
+    );
+
+    expect(batches[0]).toMatchObject({ rampStep: 5, concurrency: 5 });
+    expect(batches.flatMap((batch) => batch.items)).toEqual(requests);
+    expect(batches.reduce((sum, batch) => sum + batch.items.length, 0)).toBe(5000);
+    expect(Math.max(...batches.map((batch) => batch.concurrency))).toBeLessThan(5000);
+  });
+
+  it("keeps ramp batches bounded when custom ramp input is sparse or out of order", () => {
+    const requests = Array.from({ length: 7 }, (_, index) => index);
+    const batches = buildStagingLoadRampBatches(requests, [5, 1, 50, 5], 5);
+
+    expect(batches.map((batch) => batch.rampStep)).toEqual([1, 5, 5]);
+    expect(batches.map((batch) => batch.concurrency)).toEqual([1, 5, 1]);
+    expect(batches.flatMap((batch) => batch.items)).toEqual(requests);
   });
 
   it("expands bounded 10K preflight into exactly 10000 read-only target executions", () => {

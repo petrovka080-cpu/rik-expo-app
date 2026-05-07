@@ -10,12 +10,19 @@ export type WarehouseApiBffOperation =
   | "warehouse.api.report.incoming_v2"
   | "warehouse.api.ledger.incoming"
   | "warehouse.api.ledger.incoming_lines"
+  | "warehouse.api.incoming.queue"
+  | "warehouse.api.incoming.items"
+  | "warehouse.api.issue.queue"
+  | "warehouse.api.issue.items"
+  | "warehouse.api.stock.scope"
   | "warehouse.api.uom.material_unit"
   | "warehouse.api.uom.code";
 
 export type WarehouseApiBffOperationClass =
   | "report_read_rpc"
   | "ledger_list_read"
+  | "scope_read_rpc"
+  | "stock_scope_read_rpc"
   | "uom_single_read";
 
 export type WarehouseApiBffPeriodArgs = {
@@ -33,6 +40,29 @@ export type WarehouseApiBffIssueLinesArgs = {
 
 export type WarehouseApiBffIncomingLinesArgs = {
   incomingId: string;
+};
+
+export type WarehouseApiBffIncomingQueueArgs = {
+  p_offset: number;
+  p_limit: number;
+};
+
+export type WarehouseApiBffIncomingItemsArgs = {
+  p_incoming_id: string;
+};
+
+export type WarehouseApiBffIssueQueueArgs = {
+  p_offset: number;
+  p_limit: number;
+};
+
+export type WarehouseApiBffIssueItemsArgs = {
+  p_request_id: string;
+};
+
+export type WarehouseApiBffStockScopeArgs = {
+  p_offset: number;
+  p_limit: number;
 };
 
 export type WarehouseApiBffMaterialUnitArgs = {
@@ -78,6 +108,26 @@ export type WarehouseApiBffRequestDto =
       operation: "warehouse.api.ledger.incoming_lines";
       args: WarehouseApiBffIncomingLinesArgs;
       page?: WarehouseApiBffPageInput;
+    }
+  | {
+      operation: "warehouse.api.incoming.queue";
+      args: WarehouseApiBffIncomingQueueArgs;
+    }
+  | {
+      operation: "warehouse.api.incoming.items";
+      args: WarehouseApiBffIncomingItemsArgs;
+    }
+  | {
+      operation: "warehouse.api.issue.queue";
+      args: WarehouseApiBffIssueQueueArgs;
+    }
+  | {
+      operation: "warehouse.api.issue.items";
+      args: WarehouseApiBffIssueItemsArgs;
+    }
+  | {
+      operation: "warehouse.api.stock.scope";
+      args: WarehouseApiBffStockScopeArgs;
     }
   | {
       operation: "warehouse.api.uom.material_unit";
@@ -162,6 +212,11 @@ export type WarehouseApiBffOperationContract = {
     | "rpc:wh_report_issued_by_object_fast"
     | "rpc:acc_report_incoming_v2"
     | "table:wh_ledger"
+    | "rpc:warehouse_incoming_queue_scope_v1"
+    | "rpc:warehouse_incoming_items_scope_v1"
+    | "rpc:warehouse_issue_queue_scope_v4"
+    | "rpc:warehouse_issue_items_scope_v1"
+    | "rpc:warehouse_stock_scope_v2"
     | "table:rik_materials"
     | "table:rik_uoms";
   ordering: "rpc_owned" | "moved_at_code_asc" | "code_asc" | "single_scope";
@@ -265,6 +320,61 @@ export const WAREHOUSE_API_BFF_OPERATION_CONTRACTS = Object.freeze([
     filterScope: { period: false, object: false, issue: false, incoming: true, pagination: true },
     sourceKind: "table:wh_ledger",
     ordering: "code_asc",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.incoming.queue",
+    operationClass: "scope_read_rpc",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: false, pagination: true },
+    sourceKind: "rpc:warehouse_incoming_queue_scope_v1",
+    ordering: "rpc_owned",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.incoming.items",
+    operationClass: "scope_read_rpc",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: true, pagination: false },
+    sourceKind: "rpc:warehouse_incoming_items_scope_v1",
+    ordering: "rpc_owned",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.issue.queue",
+    operationClass: "scope_read_rpc",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: false, pagination: true },
+    sourceKind: "rpc:warehouse_issue_queue_scope_v4",
+    ordering: "rpc_owned",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.issue.items",
+    operationClass: "scope_read_rpc",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: true, incoming: false, pagination: false },
+    sourceKind: "rpc:warehouse_issue_items_scope_v1",
+    ordering: "rpc_owned",
+    readOnly: true,
+    trafficEnabledByDefault: false,
+    wiredToAppRuntime: true,
+  },
+  {
+    operation: "warehouse.api.stock.scope",
+    operationClass: "stock_scope_read_rpc",
+    responseEnvelope: "WarehouseApiBffEnvelope",
+    filterScope: { period: false, object: false, issue: false, incoming: false, pagination: true },
+    sourceKind: "rpc:warehouse_stock_scope_v2",
+    ordering: "rpc_owned",
     readOnly: true,
     trafficEnabledByDefault: false,
     wiredToAppRuntime: true,

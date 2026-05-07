@@ -11,11 +11,17 @@ import {
   configureMutationQueue,
   enqueueForemanMutation,
   loadForemanMutationQueue,
+  peekNextForemanMutation,
+  removeForemanMutationById,
 } from "../../src/lib/offline/mutationQueue";
-import { getOfflineMutationRetryPolicy } from "../../src/lib/offline/mutation.retryPolicy";
+import {
+  computeOfflineMutationBackoffMs,
+  getOfflineMutationRetryPolicy,
+} from "../../src/lib/offline/mutation.retryPolicy";
 import {
   getOfflineMutationTelemetryEvents,
   resetOfflineMutationTelemetryEvents,
+  summarizeOfflineMutationTelemetryEvents,
 } from "../../src/lib/offline/mutation.telemetry";
 import {
   resetOfflineReplayCoordinatorForTests,
@@ -24,6 +30,10 @@ import {
   FOREMAN_MUTATION_REPLAY_POLICY,
   flushForemanMutationQueue,
 } from "../../src/lib/offline/mutationWorker";
+import {
+  classifyForemanConflict,
+  resolveConflictPolicy,
+} from "../../src/lib/offline/offlineConflictClassifier";
 import {
   clearForemanDurableDraftState,
   configureForemanDurableDraftStore,
@@ -34,6 +44,20 @@ import type {
   ForemanLocalDraftSnapshot,
   ForemanLocalDraftSyncResult,
 } from "../../src/screens/foreman/foreman.localDraft";
+
+const MUTATION_QUEUE_STORAGE_KEY = "offline_mutation_queue_v2";
+
+type QueueSeedEntryParams = {
+  id: string;
+  draftKey: string;
+  createdAt: number;
+  lifecycleStatus?: "queued" | "processing" | "retry_scheduled" | "conflicted" | "failed_non_retryable";
+  status?: "pending" | "inflight" | "failed";
+  lastErrorKind?: "none" | "network_unreachable" | "transient_server";
+  nextRetryAt?: number | null;
+  attemptCount?: number;
+  retryCount?: number;
+};
 
 const createSnapshot = (
   requestId: string,
@@ -82,6 +106,41 @@ const createSyncResult = (
   snapshot,
   rows: [],
   submitted: null,
+});
+
+const createQueueSeedEntry = (params: QueueSeedEntryParams) => ({
+  id: params.id,
+  owner: "foreman",
+  entityType: "foreman_draft",
+  entityId: params.draftKey,
+  scope: "foreman_draft",
+  type: "background_sync",
+  dedupeKey: `stress:${params.draftKey}:${params.id}`,
+  baseVersion: "snap-seed",
+  serverVersionHint: null,
+  coalescedCount: 0,
+  payload: {
+    draftKey: params.draftKey,
+    requestId: params.draftKey,
+    snapshotUpdatedAt: "snap-seed",
+    mutationKind: "background_sync",
+    localBeforeCount: 1,
+    localAfterCount: 1,
+    submitRequested: false,
+    triggerSource: "manual_retry",
+  },
+  createdAt: params.createdAt,
+  updatedAt: params.createdAt,
+  attemptCount: params.attemptCount ?? 0,
+  retryCount: params.retryCount ?? 0,
+  status: params.status ?? "pending",
+  lifecycleStatus: params.lifecycleStatus ?? "queued",
+  lastAttemptAt: null,
+  lastError: null,
+  lastErrorCode: null,
+  lastErrorKind: params.lastErrorKind ?? "none",
+  nextRetryAt: params.nextRetryAt ?? null,
+  maxAttempts: 5,
 });
 
 const configureStores = () => {
@@ -286,5 +345,192 @@ describe("S-OFFLINE-2 offline replay stress proof", () => {
       conflictType: "retryable_sync_failure",
     });
     expect(telemetryActions).toEqual(expect.arrayContaining(["retry_scheduled", "retry_exhausted"]));
+  });
+
+  it("keeps created_at FIFO ordering when retry-scheduled work becomes eligible", async () => {
+    configureMutationQueue({
+      storage: createMemoryOfflineStorage({
+        [MUTATION_QUEUE_STORAGE_KEY]: JSON.stringify([
+          createQueueSeedEntry({
+            id: "retry-oldest",
+            draftKey: "req-stress-order-oldest",
+            createdAt: 10,
+            lifecycleStatus: "retry_scheduled",
+            status: "failed",
+            lastErrorKind: "transient_server",
+            nextRetryAt: 1_500,
+            attemptCount: 1,
+            retryCount: 1,
+          }),
+          createQueueSeedEntry({
+            id: "queued-middle",
+            draftKey: "req-stress-order-middle",
+            createdAt: 20,
+          }),
+          createQueueSeedEntry({
+            id: "queued-latest",
+            draftKey: "req-stress-order-latest",
+            createdAt: 30,
+          }),
+        ]),
+      }),
+    });
+
+    const beforeRetryWindow = await peekNextForemanMutation({
+      triggerSource: "unknown",
+      now: 1_000,
+    });
+    const afterRetryWindow = await peekNextForemanMutation({
+      triggerSource: "unknown",
+      now: 1_600,
+    });
+    await removeForemanMutationById("retry-oldest");
+    const afterRetryRemoved = await peekNextForemanMutation({
+      triggerSource: "unknown",
+      now: 1_600,
+    });
+
+    expect((await loadForemanMutationQueue()).map((entry) => entry.id)).toEqual([
+      "queued-middle",
+      "queued-latest",
+    ]);
+    expect(beforeRetryWindow?.id).toBe("queued-middle");
+    expect(afterRetryWindow?.id).toBe("retry-oldest");
+    expect(afterRetryRemoved?.id).toBe("queued-middle");
+  });
+
+  it("suppresses a duplicate replay burst into one recoverable queue intent", async () => {
+    const mutationCount = 30;
+
+    await Promise.all(
+      Array.from({ length: mutationCount }, () =>
+        enqueueForemanMutation({
+          draftKey: "req-stress-duplicate",
+          requestId: "req-stress-duplicate",
+          snapshotUpdatedAt: "2026-05-08T01:00:00.000Z",
+          mutationKind: "qty_update",
+          localBeforeCount: 1,
+          localAfterCount: 2,
+          triggerSource: "manual_retry",
+        }),
+      ),
+    );
+
+    const queue = await loadForemanMutationQueue();
+    const telemetrySummary = summarizeOfflineMutationTelemetryEvents();
+
+    expect(queue).toHaveLength(1);
+    expect(queue[0]).toMatchObject({
+      lifecycleStatus: "queued",
+      status: "pending",
+      coalescedCount: mutationCount - 1,
+      payload: {
+        draftKey: "req-stress-duplicate",
+        mutationKind: "qty_update",
+        localBeforeCount: 1,
+        localAfterCount: 2,
+      },
+    });
+    expect(telemetrySummary.dedupeSuppressedCount).toBe(mutationCount - 1);
+  });
+
+  it("keeps retry failures recoverable with bounded backoff until manual retry succeeds", async () => {
+    const snapshot = createSnapshot("req-stress-recoverable");
+    const policy = getOfflineMutationRetryPolicy("foreman_default");
+    const expectedBackoffMs = computeOfflineMutationBackoffMs(1, policy);
+
+    await replaceForemanDurableDraftSnapshot(snapshot);
+    await enqueueForemanMutation({
+      draftKey: snapshot.requestId,
+      requestId: snapshot.requestId,
+      snapshotUpdatedAt: snapshot.updatedAt,
+      mutationKind: "background_sync",
+      triggerSource: "network_back",
+    });
+
+    const syncSnapshot = jest
+      .fn<Promise<ForemanLocalDraftSyncResult>, [unknown]>()
+      .mockRejectedValueOnce(new Error("Network request failed"))
+      .mockResolvedValueOnce(createSyncResult(snapshot));
+    const { deps } = createWorkerDeps({
+      snapshot,
+      syncSnapshot,
+    });
+
+    const beforeFailure = Date.now();
+    const failed = await flushForemanMutationQueue(deps, "network_back");
+    const afterFailure = Date.now();
+    const retryQueue = await loadForemanMutationQueue();
+    const scheduledRetryAt = retryQueue[0]?.nextRetryAt ?? 0;
+
+    const deferred = await flushForemanMutationQueue(deps, "unknown");
+    const recovered = await flushForemanMutationQueue(deps, "manual_retry");
+
+    expect(failed).toMatchObject({
+      failed: true,
+      processedCount: 0,
+      remainingCount: 1,
+    });
+    expect(retryQueue[0]).toMatchObject({
+      lifecycleStatus: "retry_scheduled",
+      status: "failed",
+      lastErrorKind: "network_unreachable",
+    });
+    expect(scheduledRetryAt).toBeGreaterThanOrEqual(beforeFailure + expectedBackoffMs);
+    expect(scheduledRetryAt).toBeLessThanOrEqual(afterFailure + expectedBackoffMs);
+    expect(deferred).toMatchObject({
+      failed: false,
+      processedCount: 0,
+      remainingCount: 1,
+    });
+    expect(recovered).toMatchObject({
+      failed: false,
+      processedCount: 1,
+      remainingCount: 0,
+    });
+    expect(await loadForemanMutationQueue()).toEqual([]);
+    expect(syncSnapshot).toHaveBeenCalledTimes(2);
+  });
+
+  it("classifies conflict winner rules before queued replay can overwrite server truth", () => {
+    const localSnapshot = createSnapshot("req-stress-conflict", {
+      baseServerRevision: "2026-05-08T01:00:00.000Z",
+    });
+    const newerRemoteSnapshot = createSnapshot("req-stress-conflict", {
+      baseServerRevision: "2026-05-08T01:10:00.000Z",
+    });
+
+    const pendingAgainstNewerRemote = classifyForemanConflict({
+      localSnapshot,
+      remoteSnapshot: newerRemoteSnapshot,
+      remoteStatus: "draft",
+      remoteIsTerminal: false,
+      remoteMissing: false,
+      pendingCount: 2,
+      requestIdKnown: true,
+    });
+    const terminalRemote = classifyForemanConflict({
+      localSnapshot,
+      remoteSnapshot: null,
+      remoteStatus: "submitted",
+      remoteIsTerminal: true,
+      remoteMissing: false,
+      pendingCount: 1,
+      requestIdKnown: true,
+    });
+
+    expect(pendingAgainstNewerRemote).toMatchObject({
+      conflictClass: "local_queue_pending_against_new_remote",
+      deterministic: true,
+      revisionAdvanced: true,
+      pendingCount: 2,
+    });
+    expect(resolveConflictPolicy(pendingAgainstNewerRemote.conflictClass)).toBe("hold_for_attention");
+    expect(terminalRemote).toMatchObject({
+      conflictClass: "remote_missing_but_local_pending",
+      deterministic: true,
+      remoteMissing: true,
+    });
+    expect(resolveConflictPolicy(terminalRemote.conflictClass)).toBe("server_wins");
   });
 });

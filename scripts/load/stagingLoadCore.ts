@@ -59,6 +59,12 @@ export type StagingLoadTargetExecutionPlanItem = {
   runs: number;
 };
 
+export type StagingLoadRampBatch<T> = {
+  rampStep: number;
+  concurrency: number;
+  items: T[];
+};
+
 export type LoadRunnerScenarioCategory =
   | "catalog_readonly"
   | "director_reports_readonly"
@@ -381,6 +387,57 @@ export function countStagingLoadTargetExecutionPlanRequests(
   plan: StagingLoadTargetExecutionPlanItem[],
 ): number {
   return plan.reduce((sum, item) => sum + item.runs, 0);
+}
+
+const normalizeRampSteps = (rampSteps: readonly number[], maxConcurrency: number): number[] => {
+  const normalized = Array.from(
+    new Set(
+      rampSteps
+        .map((step) => Math.trunc(step))
+        .filter((step) => Number.isInteger(step) && step > 0 && step <= maxConcurrency),
+    ),
+  ).sort((left, right) => left - right);
+
+  if (normalized.length === 0 || normalized[normalized.length - 1] !== maxConcurrency) {
+    normalized.push(maxConcurrency);
+  }
+
+  return normalized;
+};
+
+export function buildStagingLoadRampBatches<T>(
+  items: readonly T[],
+  rampSteps: readonly number[],
+  maxConcurrency: number,
+): StagingLoadRampBatch<T>[] {
+  if (!Number.isInteger(maxConcurrency) || maxConcurrency <= 0 || items.length === 0) return [];
+
+  const normalizedRampSteps = normalizeRampSteps(rampSteps, maxConcurrency);
+  const batches: StagingLoadRampBatch<T>[] = [];
+  let offset = 0;
+
+  for (const rampStep of normalizedRampSteps) {
+    if (offset >= items.length) break;
+    const batchSize = Math.min(rampStep, items.length - offset);
+    batches.push({
+      rampStep,
+      concurrency: Math.max(1, Math.min(rampStep, batchSize)),
+      items: items.slice(offset, offset + batchSize),
+    });
+    offset += batchSize;
+  }
+
+  while (offset < items.length) {
+    const batchSize = Math.min(maxConcurrency, items.length - offset);
+    batches.push({
+      rampStep: maxConcurrency,
+      concurrency: Math.max(1, Math.min(maxConcurrency, batchSize)),
+      items: items.slice(offset, offset + batchSize),
+    });
+    offset += batchSize;
+  }
+
+  return batches;
 }
 
 export function evaluateStagingLoadLiveThresholds(params: {

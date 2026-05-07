@@ -61,6 +61,17 @@ const safeNumber = (value: unknown): number | null => {
   return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
 };
 
+const safeOffset = (value: unknown): number => Math.max(0, safeNumber(value) ?? 0);
+
+const safeLimit = (value: unknown): number =>
+  Math.max(
+    1,
+    Math.min(
+      WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS.maxPageSize,
+      safeNumber(value) ?? WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS.pageSize,
+    ),
+  );
+
 const assertReadonlySql = (sql: string): string => {
   const normalized = sql.trim();
   const lower = normalized.toLowerCase();
@@ -177,6 +188,79 @@ export function buildWarehouseApiReadQueryPlans(
           "limit 1",
         ].join(" "),
         [safeText(input.args.matCode)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.incoming.queue") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select public.warehouse_incoming_queue_scope_v1(",
+          "p_offset => $1,",
+          "p_limit => $2",
+          ") as payload",
+        ].join(" "),
+        [safeOffset(input.args.p_offset), safeLimit(input.args.p_limit)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.incoming.items") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select public.warehouse_incoming_items_scope_v1(",
+          "p_incoming_id => nullif($1::text, '')::uuid",
+          ") as payload",
+        ].join(" "),
+        [safeText(input.args.p_incoming_id)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.issue.queue") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select public.warehouse_issue_queue_scope_v4(",
+          "p_offset => $1,",
+          "p_limit => $2",
+          ") as payload",
+        ].join(" "),
+        [safeOffset(input.args.p_offset), safeLimit(input.args.p_limit)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.issue.items") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select public.warehouse_issue_items_scope_v1(",
+          "p_request_id => nullif($1::text, '')::uuid",
+          ") as payload",
+        ].join(" "),
+        [safeText(input.args.p_request_id)],
+      ),
+    ];
+  }
+
+  if (input.operation === "warehouse.api.stock.scope") {
+    return [
+      plan(
+        input.operation,
+        [
+          "select public.warehouse_stock_scope_v2(",
+          "p_limit => $1,",
+          "p_offset => $2",
+          ") as payload",
+        ].join(" "),
+        [safeLimit(input.args.p_limit), safeOffset(input.args.p_offset)],
       ),
     ];
   }

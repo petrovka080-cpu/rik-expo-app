@@ -6,6 +6,7 @@ import { config as loadDotenv } from "dotenv";
 
 import {
   DEFAULT_STAGING_LOAD_TARGETS,
+  buildStagingLoadRampBatches,
   buildStagingLoadTargetExecutionPlan,
   buildLoadRunnerReadonlySafetyConfig,
   buildStagingLoadHarnessPlan,
@@ -355,7 +356,12 @@ const collectBoundedLiveLoadTargets = async (
   harnessPlan: StagingLoadHarnessPlan,
 ): Promise<{ results: StagingLoadTargetResult[]; metrics: LiveLoadMetrics }> => {
   const executionPlan = buildStagingLoadTargetExecutionPlan(targets, harnessPlan.stopConditions.maxTotalRequests);
-  const queue = executionPlan.flatMap((item) => Array.from({ length: item.runs }, () => item.target));
+  const executionQueue = executionPlan.flatMap((item) => Array.from({ length: item.runs }, () => item.target));
+  const rampBatches = buildStagingLoadRampBatches(
+    executionQueue,
+    harnessPlan.rampSteps,
+    harnessPlan.targetConcurrency,
+  );
   const targetSamples = new Map<string, StagingLoadSample[]>();
   const targetErrors = new Map<string, string[]>();
   const allLatencies: number[] = [];
@@ -371,10 +377,14 @@ const collectBoundedLiveLoadTargets = async (
   let timeoutCount = 0;
   let abortTriggered = false;
   let abortReason: string | null = null;
+  let totalRequestsUnstarted = executionQueue.length;
   let nextReadinessProbeAt = 250;
   let readinessProbeInFlight: Promise<void> | null = null;
 
-  const configuredConcurrency = Math.max(1, Math.min(harnessPlan.targetConcurrency, queue.length || 1));
+  const configuredConcurrency = Math.max(
+    1,
+    rampBatches.reduce((highest, batch) => Math.max(highest, batch.concurrency), 0),
+  );
 
   const triggerAbort = (reason: string) => {
     if (!abortTriggered) {
@@ -461,14 +471,29 @@ const collectBoundedLiveLoadTargets = async (
     }
   };
 
-  const worker = async () => {
-    while (queue.length > 0 && !abortTriggered) {
-      const target = queue.shift();
-      if (target) await runTarget(target);
-    }
+  const runRampBatch = async (batch: { concurrency: number; items: StagingLoadTarget[] }) => {
+    const batchQueue = [...batch.items];
+    const batchConcurrency = Math.max(1, Math.min(batch.concurrency, batchQueue.length || 1));
+    const worker = async () => {
+      while (batchQueue.length > 0 && !abortTriggered) {
+        const target = batchQueue.shift();
+        if (target) {
+          totalRequestsUnstarted = Math.max(0, totalRequestsUnstarted - 1);
+          await runTarget(target);
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: batchConcurrency }, () => worker()));
   };
 
-  await Promise.all(Array.from({ length: configuredConcurrency }, () => worker()));
+  for (const batch of rampBatches) {
+    if (abortTriggered) break;
+    await runRampBatch(batch);
+    if (readinessProbeInFlight) {
+      await readinessProbeInFlight;
+    }
+  }
   if (readinessProbeInFlight) await readinessProbeInFlight;
 
   const results = targets.map((target) => {
@@ -481,7 +506,7 @@ const collectBoundedLiveLoadTargets = async (
       errors: targetErrors.get(target.id) ?? [],
     } satisfies StagingLoadTargetResult;
   });
-  const abortedUnstarted = abortTriggered ? queue.length : 0;
+  const abortedUnstarted = abortTriggered ? totalRequestsUnstarted : 0;
   const observedErrorRate = totalRequestsAttempted > 0 ? errorCount / totalRequestsAttempted : 0;
 
   return {

@@ -163,12 +163,14 @@ const catalogPreviewRequest: CatalogTransportBffRequestDto = {
 };
 
 const directorFinanceCanaryRequest: DirectorFinanceBffRequestDto = {
-  operation: "director.finance.panel_scope.v1",
+  operation: "director.finance.panel_scope.v4",
   args: {
-    p_from: "2026-01-01",
-    p_to: "2026-01-02",
+    p_date_from: "2026-01-01",
+    p_date_to: "2026-01-02",
     p_due_days: 30,
     p_critical_days: 7,
+    p_limit: 1,
+    p_offset: 0,
   },
 };
 

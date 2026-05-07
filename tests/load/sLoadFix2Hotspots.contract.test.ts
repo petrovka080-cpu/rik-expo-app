@@ -76,8 +76,8 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
       "src/screens/warehouse/warehouse.requests.read.canonical.ts",
     );
 
-    expect(source).toContain('supabase.rpc("warehouse_issue_queue_scope_v4"');
-    expect(source).toContain("p_limit: normalizedPage.pageSize");
+    expect(source).toContain("fetchWarehouseIssueQueueScope(");
+    expect(source).toContain("normalizedPage.pageSize");
     expect(source).toContain("requireBoundedRpcRows(");
     expect(source).toContain("dedupeReqHeadRawRows(rows)");
     expect(source).toContain("seen.has(requestId)");

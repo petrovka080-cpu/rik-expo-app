@@ -19,6 +19,7 @@ import {
   getCachePolicy,
   getHotspotCachePolicies,
   getReadRouteCachePolicies,
+  type CachePolicyRoute,
 } from "../../src/shared/scale/cachePolicies";
 import {
   assertCacheKeyIsBounded,
@@ -35,6 +36,8 @@ import {
   evaluateCacheShadowRead,
   resolveCacheShadowRuntimeConfig,
   runCacheSyntheticShadowCanary,
+  validateCacheShadowRouteMetricsOutput,
+  type CacheShadowDecision,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import {
   BFF_STAGING_MUTATION_ROUTES,
@@ -59,6 +62,28 @@ const changedFiles = () =>
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
+
+const buildCacheDecision = (params: {
+  status: CacheShadowDecision["status"];
+  route: CachePolicyRoute;
+  mode?: CacheShadowDecision["mode"];
+  shadowReadAttempted?: boolean;
+  cacheHit?: boolean;
+  reason?: string;
+}): CacheShadowDecision => ({
+  status: params.status,
+  route: params.route,
+  mode: params.mode ?? "read_through",
+  shadowReadAttempted: params.shadowReadAttempted ?? false,
+  cacheHit: params.cacheHit ?? false,
+  responseChanged: false,
+  syntheticIdentityUsed: false,
+  realUserPayloadUsed: false,
+  rawKeyReturned: false,
+  rawPayloadLogged: false,
+  piiLogged: false,
+  reason: params.reason ?? "redacted_reason",
+});
 
 const createRedisRestMock = () => {
   let now = 0;
@@ -848,6 +873,92 @@ describe("S-50K-CACHE-INTEGRATION-1 disabled cache boundary", () => {
     expect(serialized).not.toContain("rik-production-cache-shadow:cache:v1:");
     expect(serialized).not.toContain("company-cache-canary-opaque");
     expect(serialized).not.toContain("cement");
+  });
+
+  it("exports route-scoped cache hit, miss, read-through, and error counters with safe metric keys", async () => {
+    const monitor = createCacheShadowMonitor();
+
+    await monitor.observe(buildCacheDecision({
+      status: "miss",
+      route: "marketplace.catalog.search",
+      shadowReadAttempted: true,
+      cacheHit: false,
+      reason: "cache_read_through_miss_with_internal_detail",
+    }));
+    await monitor.observe(buildCacheDecision({
+      status: "hit",
+      route: "marketplace.catalog.search",
+      shadowReadAttempted: true,
+      cacheHit: true,
+    }));
+    await monitor.observe(buildCacheDecision({
+      status: "error",
+      route: "warehouse.ledger.list",
+      shadowReadAttempted: false,
+      cacheHit: false,
+      reason: "redis://internal-cache.example.invalid",
+    }));
+
+    const snapshot = monitor.snapshot();
+
+    expect(snapshot).toEqual(
+      expect.objectContaining({
+        observedDecisionCount: 3,
+        shadowReadAttemptedCount: 2,
+        hitCount: 1,
+        missCount: 1,
+        readThroughCount: 1,
+        errorCount: 1,
+      }),
+    );
+    expect(snapshot.routeMetrics).toEqual([
+      expect.objectContaining({
+        route: "marketplace.catalog.search",
+        observedDecisionCount: 2,
+        shadowReadAttemptedCount: 2,
+        hitCount: 1,
+        missCount: 1,
+        readThroughCount: 1,
+        errorCount: 0,
+        redacted: true,
+      }),
+      expect.objectContaining({
+        route: "warehouse.ledger.list",
+        observedDecisionCount: 1,
+        hitCount: 0,
+        missCount: 0,
+        readThroughCount: 0,
+        errorCount: 1,
+        redacted: true,
+      }),
+    ]);
+    expect(validateCacheShadowRouteMetricsOutput(snapshot.routeMetrics)).toEqual({
+      passed: true,
+      errors: [],
+    });
+
+    const serialized = JSON.stringify(snapshot.routeMetrics);
+    expect(serialized).not.toContain("redis://internal-cache.example.invalid");
+    expect(serialized).not.toContain("cache_read_through_miss_with_internal_detail");
+    expect(serialized).not.toContain("token");
+    expect(serialized).not.toContain("secret");
+    expect(serialized).not.toContain("body");
+    expect(serialized).not.toContain("payload");
+    expect(serialized).not.toContain("company-cache-canary-opaque");
+
+    const firstRouteMetric = snapshot.routeMetrics[0];
+    if (!firstRouteMetric) throw new Error("route metric missing");
+    expect(validateCacheShadowRouteMetricsOutput({
+      ...firstRouteMetric,
+      body: { raw: true },
+      token: "Bearer live-token",
+    }).errors).toEqual(
+      expect.arrayContaining([
+        "route_metric_0:forbidden_metric_key:body",
+        "route_metric_0:forbidden_metric_key:token",
+        "route_metric_0:forbidden_metric_value:token",
+      ]),
+    );
   });
 
   it("bounds Redis URL cache commands so shadow canary cannot hang the request path", async () => {

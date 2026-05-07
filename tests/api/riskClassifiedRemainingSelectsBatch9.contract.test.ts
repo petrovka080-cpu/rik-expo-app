@@ -66,6 +66,22 @@ const isApprovedDirectorReportsSafeBounds1Patch = (file: string) =>
     "src/lib/api/director_reports.naming.fanout.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
+  [
+    "src/lib/api/directorPdfSource.service.test.ts",
+    "src/lib/api/directorPdfSource.service.ts",
+    "src/lib/api/directorPdfSource.transport.ts",
+    "scripts/server/stagingBffWarehouseApiReadPort.ts",
+    "src/screens/warehouse/warehouse.api.bff.contract.ts",
+    "src/screens/warehouse/warehouse.api.repo.ts",
+    "src/screens/warehouse/warehouse.api.repo.transport.ts",
+    "src/screens/warehouse/warehouse.incoming.repo.ts",
+    "src/screens/warehouse/warehouse.requests.read.canonical.ts",
+    "src/screens/warehouse/warehouse.reports.repo.ts",
+    "tests/api/warehouseApiBffRouting.contract.test.ts",
+    "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -115,6 +131,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectorReportsSafeRouting2Artifact(file) &&
         !isApprovedDirectorReportsSafeBounds1Patch(file) &&
+        !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

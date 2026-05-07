@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 const mockRpc = jest.fn();
 const mockGetAvailability = jest.fn();
 const mockRecordBranch = jest.fn();
@@ -45,6 +48,9 @@ jest.mock("./director_reports.adapters", () => ({
 const loadSubject = () =>
   require("./directorPdfSource.service") as typeof import("./directorPdfSource.service");
 
+const readSource = (fileName: string): string =>
+  fs.readFileSync(path.join(__dirname, fileName), "utf8");
+
 describe("directorPdfSource.service", () => {
   beforeEach(() => {
     jest.resetModules();
@@ -85,6 +91,20 @@ describe("directorPdfSource.service", () => {
     });
     expect(mockSetAvailability).toHaveBeenCalledWith("director_finance_source_v1", "available");
     expect(mockRecordCatchDiscipline).not.toHaveBeenCalled();
+  });
+
+  it("keeps direct Supabase PDF source RPC calls isolated in the typed transport boundary", () => {
+    const serviceSource = readSource("directorPdfSource.service.ts");
+    const transportSource = readSource("directorPdfSource.transport.ts");
+
+    expect(serviceSource).toContain('from "./directorPdfSource.transport"');
+    expect(serviceSource).not.toContain("supabase.rpc(");
+    expect(serviceSource).not.toContain('from "../supabaseClient"');
+    expect(transportSource).toContain("type DirectorPdfSourceRpcResult");
+    expect(transportSource.match(/supabase\.rpc\(/g) ?? []).toHaveLength(3);
+    expect(transportSource).toContain("callDirectorFinancePdfSourceRpc");
+    expect(transportSource).toContain("callDirectorProductionPdfSourceRpc");
+    expect(transportSource).toContain("callDirectorSubcontractPdfSourceRpc");
   });
 
   it("surfaces source load failure for Director production PDF", async () => {

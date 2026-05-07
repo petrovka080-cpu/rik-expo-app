@@ -1,8 +1,4 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  applySupabaseAbortSignal,
-  throwIfAborted,
-} from "../../lib/requestCancellation";
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
 import {
   isRpcRowsEnvelope,
@@ -23,6 +19,10 @@ import {
   type WarehouseReqItemsFetchResult,
 } from "./warehouse.requests.read.shared";
 import { toWarehouseTextOrNull } from "./warehouse.adapters";
+import {
+  fetchWarehouseIssueItemsScope,
+  fetchWarehouseIssueQueueScope,
+} from "./warehouse.api.repo";
 
 export const WAREHOUSE_ISSUE_QUEUE_PAGE_DEFAULTS = { pageSize: 50, maxPageSize: 100 };
 
@@ -160,16 +160,13 @@ export async function apiFetchReqHeadsCanonicalRaw(
 ): Promise<WarehouseReqHeadsFetchResult> {
   const normalizedPage = normalizeWarehouseIssueQueuePage(page, pageSize);
   const offset = normalizedPage.offset;
-  throwIfAborted(options?.signal);
   const startedAt = Date.now();
-  const { data, error } = await applySupabaseAbortSignal(
-    supabase.rpc("warehouse_issue_queue_scope_v4", {
-      p_offset: offset,
-      p_limit: normalizedPage.pageSize,
-    }),
-    options?.signal,
+  const { data, error } = await fetchWarehouseIssueQueueScope(
+    supabase,
+    offset,
+    normalizedPage.pageSize,
+    options,
   );
-  throwIfAborted(options?.signal);
   if (error) {
     trackRpcLatency({
       name: "warehouse_issue_queue_scope_v4",
@@ -245,9 +242,7 @@ export async function apiFetchReqItemsCanonicalRaw(
   supabase: SupabaseClient,
   requestId: string,
 ): Promise<WarehouseReqItemsFetchResult> {
-  const { data, error } = await supabase.rpc("warehouse_issue_items_scope_v1", {
-    p_request_id: requestId,
-  });
+  const { data, error } = await fetchWarehouseIssueItemsScope(supabase, requestId);
   if (error) throw error;
 
   const validated = validateRpcResponse(data, isRpcRowsEnvelope, {

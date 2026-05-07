@@ -1,10 +1,13 @@
 import { supabase } from "../../lib/supabaseClient";
-import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
 import {
   isRpcRowsEnvelope,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
 import type { IncomingRow, ItemRow } from "./warehouse.types";
+import {
+  fetchWarehouseIncomingHeadsScope,
+  fetchWarehouseIncomingItemsScope,
+} from "./warehouse.api.repo";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -189,10 +192,7 @@ export async function fetchWarehouseIncomingHeadsWindow(
   pageSize: number,
 ): Promise<WarehouseIncomingHeadsFetchResult> {
   const pageOffset = Math.max(0, pageIndex * pageSize);
-  const { data, error } = await supabase.rpc("warehouse_incoming_queue_scope_v1" as never, {
-    p_offset: pageOffset,
-    p_limit: pageSize,
-  } as never);
+  const { data, error } = await fetchWarehouseIncomingHeadsScope(supabase, pageOffset, pageSize);
 
   if (error) throw error;
 
@@ -224,14 +224,11 @@ export async function fetchWarehouseIncomingItemsWindow(
   options?: { signal?: AbortSignal | null },
 ): Promise<WarehouseIncomingItemsFetchResult> {
   const normalizedIncomingId = toText(incomingId);
-  throwIfAborted(options?.signal);
-  const { data, error } = await applySupabaseAbortSignal(
-    supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
-      p_incoming_id: normalizedIncomingId,
-    } as never),
-    options?.signal,
+  const { data, error } = await fetchWarehouseIncomingItemsScope(
+    supabase,
+    normalizedIncomingId,
+    options,
   );
-  throwIfAborted(options?.signal);
 
   if (error) throw error;
 

@@ -72,7 +72,6 @@ import { useBuyerAlerts } from "./hooks/useBuyerAlerts";
 import { useBuyerScreenHeader } from "./hooks/useBuyerScreenHeader";
 import { useBuyerAccountingSheetState } from "./hooks/useBuyerAccountingSheetState";
 import { useBuyerProposalDetailsState } from "./hooks/useBuyerProposalDetailsState";
-import { useBuyerStore } from "./buyer.store";
 import {
   buildBuyerScreenViewModel,
 } from "./buyer.screen.model";
@@ -81,6 +80,7 @@ import {
   useBuyerPreloadProposalRequestNumbers,
   useBuyerScreenLoadingPublisher,
 } from "./hooks/useBuyerScreenSideEffects";
+import { useBuyerScreenStoreViewModel } from "./hooks/useBuyerScreenStoreViewModel";
 
 const isWeb = Platform.OS === 'web';
 
@@ -88,12 +88,14 @@ const isWeb = Platform.OS === 'web';
 export function BuyerScreen() {
   const busy = useGlobalBusy();
   const { alertUser: screenAlertUser } = useBuyerAlerts();
-  const tab = useBuyerStore((state) => state.activeTab);
-  const setTab = useBuyerStore((state) => state.setTab);
-  const searchQuery = useBuyerStore((state) => state.filters.searchQuery ?? "");
-  const setFilters = useBuyerStore((state) => state.setFilters);
-  const setLoading = useBuyerStore((state) => state.setLoading);
-  const setRefreshReason = useBuyerStore((state) => state.setRefreshReason);
+  const {
+    tab,
+    setTab,
+    searchQuery,
+    setFilters,
+    setLoading,
+    setRefreshReason,
+  } = useBuyerScreenStoreViewModel();
   const [buyerFio, setBuyerFio] = useState<string>("");
   const {
     buyerHistory,

@@ -129,6 +129,8 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "src/shared/scale/cacheInvalidation.ts",
       "src/shared/scale/cacheKeySafety.ts",
       "src/shared/scale/cachePolicies.ts",
+      "src/shared/scale/cacheShadowRuntime.ts",
+      "tests/scale/cacheIntegrationBoundary.test.ts",
     ]);
     const s50kJobsIntegrationAllowedDirtyFiles = new Set([
       "artifacts/S_50K_JOBS_INTEGRATION_1_matrix.json",
@@ -274,6 +276,10 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "artifacts/S_DIRECT_SUPABASE_BYPASS_WAREHOUSE_UOM_READ_ROUTING_1_proof.md",
       "scripts/server/stagingBffWarehouseApiReadPort.ts",
       "src/screens/warehouse/warehouse.api.bff.contract.ts",
+      "src/screens/warehouse/warehouse.api.repo.ts",
+      "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "src/screens/warehouse/warehouse.incoming.repo.ts",
+      "src/screens/warehouse/warehouse.requests.read.canonical.ts",
       "src/screens/warehouse/warehouse.uom.repo.ts",
       "src/screens/warehouse/warehouse.uom.repo.transport.ts",
       "tests/api/topListPaginationBatch7.contract.test.ts",

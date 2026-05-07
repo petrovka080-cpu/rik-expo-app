@@ -53,15 +53,30 @@ export type CacheShadowMonitorSnapshot = {
   shadowReadAttemptedCount: number;
   hitCount: number;
   missCount: number;
+  readThroughCount: number;
   skippedCount: number;
   unsafeKeyCount: number;
   errorCount: number;
+  routeMetrics: readonly CacheShadowRouteMetricSnapshot[];
   responseChanged: false;
   realUserPayloadStored: false;
   rawKeysStored: false;
   rawKeysPrinted: false;
   rawPayloadLogged: false;
   piiLogged: false;
+};
+
+export type CacheShadowRouteMetricSnapshot = {
+  route: CachePolicyRoute;
+  observedDecisionCount: number;
+  shadowReadAttemptedCount: number;
+  hitCount: number;
+  missCount: number;
+  readThroughCount: number;
+  skippedCount: number;
+  unsafeKeyCount: number;
+  errorCount: number;
+  redacted: true;
 };
 
 export type CacheShadowMonitor = {
@@ -183,6 +198,80 @@ const disabledDecision = (
   reason,
 });
 
+const createEmptyRouteMetric = (route: CachePolicyRoute): CacheShadowRouteMetricSnapshot => ({
+  route,
+  observedDecisionCount: 0,
+  shadowReadAttemptedCount: 0,
+  hitCount: 0,
+  missCount: 0,
+  readThroughCount: 0,
+  skippedCount: 0,
+  unsafeKeyCount: 0,
+  errorCount: 0,
+  redacted: true,
+});
+
+const observeCacheDecisionCounts = (
+  snapshot: Omit<CacheShadowMonitorSnapshot, "routeMetrics"> | CacheShadowRouteMetricSnapshot,
+  decision: CacheShadowDecision,
+): void => {
+  snapshot.observedDecisionCount += 1;
+  if (decision.shadowReadAttempted) snapshot.shadowReadAttemptedCount += 1;
+  if (decision.status === "hit") snapshot.hitCount += 1;
+  if (decision.status === "miss") snapshot.missCount += 1;
+  if (decision.mode === "read_through" && decision.status === "miss") snapshot.readThroughCount += 1;
+  if (decision.status === "skipped" || decision.status === "disabled") snapshot.skippedCount += 1;
+  if (decision.status === "unsafe_key") snapshot.unsafeKeyCount += 1;
+  if (decision.status === "error" || decision.status === "adapter_unavailable") snapshot.errorCount += 1;
+};
+
+const CACHE_SHADOW_ROUTE_METRIC_ALLOWED_KEYS = new Set([
+  "route",
+  "observedDecisionCount",
+  "shadowReadAttemptedCount",
+  "hitCount",
+  "missCount",
+  "readThroughCount",
+  "skippedCount",
+  "unsafeKeyCount",
+  "errorCount",
+  "redacted",
+]);
+
+const CACHE_SHADOW_FORBIDDEN_METRIC_KEY_PATTERN =
+  /(url|uri|token|secret|authorization|cookie|body|payload|user|company)/i;
+const CACHE_SHADOW_FORBIDDEN_METRIC_VALUE_PATTERN =
+  /(https?:\/\/|bearer\s+|postgres(?:ql)?:\/\/|redis:\/\/|rediss:\/\/|token=|secret=)/i;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+export function validateCacheShadowRouteMetricsOutput(value: unknown): {
+  passed: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+  const metrics = Array.isArray(value) ? value : [value];
+  for (const [index, metric] of metrics.entries()) {
+    if (!isRecord(metric)) {
+      errors.push(`route_metric_${index}:not_object`);
+      continue;
+    }
+    for (const [key, item] of Object.entries(metric)) {
+      if (!CACHE_SHADOW_ROUTE_METRIC_ALLOWED_KEYS.has(key)) {
+        errors.push(`route_metric_${index}:forbidden_metric_key:${key}`);
+      }
+      if (CACHE_SHADOW_FORBIDDEN_METRIC_KEY_PATTERN.test(key)) {
+        errors.push(`route_metric_${index}:forbidden_metric_key:${key}`);
+      }
+      if (typeof item === "string" && CACHE_SHADOW_FORBIDDEN_METRIC_VALUE_PATTERN.test(item)) {
+        errors.push(`route_metric_${index}:forbidden_metric_value:${key}`);
+      }
+    }
+  }
+  return { passed: errors.length === 0, errors };
+}
+
 export function resolveCacheShadowRuntimeConfig(
   env: CacheShadowRuntimeEnv = typeof process !== "undefined" ? process.env : {},
 ): CacheShadowRuntimeConfig {
@@ -212,9 +301,11 @@ export function createCacheShadowMonitor(): CacheShadowMonitor {
     shadowReadAttemptedCount: 0,
     hitCount: 0,
     missCount: 0,
+    readThroughCount: 0,
     skippedCount: 0,
     unsafeKeyCount: 0,
     errorCount: 0,
+    routeMetrics: [],
     responseChanged: false,
     realUserPayloadStored: false,
     rawKeysStored: false,
@@ -222,19 +313,22 @@ export function createCacheShadowMonitor(): CacheShadowMonitor {
     rawPayloadLogged: false,
     piiLogged: false,
   };
+  const routeMetrics = new Map<CachePolicyRoute, CacheShadowRouteMetricSnapshot>();
 
   return {
     async observe(decision) {
-      snapshot.observedDecisionCount += 1;
-      if (decision.shadowReadAttempted) snapshot.shadowReadAttemptedCount += 1;
-      if (decision.status === "hit") snapshot.hitCount += 1;
-      if (decision.status === "miss") snapshot.missCount += 1;
-      if (decision.status === "skipped" || decision.status === "disabled") snapshot.skippedCount += 1;
-      if (decision.status === "unsafe_key") snapshot.unsafeKeyCount += 1;
-      if (decision.status === "error" || decision.status === "adapter_unavailable") snapshot.errorCount += 1;
+      observeCacheDecisionCounts(snapshot, decision);
+      const routeMetric = routeMetrics.get(decision.route) ?? createEmptyRouteMetric(decision.route);
+      observeCacheDecisionCounts(routeMetric, decision);
+      routeMetrics.set(decision.route, routeMetric);
     },
     snapshot() {
-      return { ...snapshot };
+      return {
+        ...snapshot,
+        routeMetrics: Array.from(routeMetrics.values())
+          .sort((left, right) => left.route.localeCompare(right.route))
+          .map((metric) => ({ ...metric })),
+      };
     },
   };
 }

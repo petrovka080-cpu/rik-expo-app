@@ -144,9 +144,28 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "assistant_store_read.bff.handler.ts"),
       path.join(SRC, "lib", "store_supabase.read.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sDirectSupabaseBypassDirectorPdfSourceTransportFiles = [
+      path.join(SRC, "lib", "api", "directorPdfSource.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sBuyerScreenSideEffectBoundaryFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenSideEffects.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenSideEffects.test.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle11AccountantScreenViewModelFiles = [
+      path.join(SRC, "screens", "accountant", "useAccountantScreenViewModel.ts"),
+      path.join(SRC, "screens", "accountant", "useAccountantScreenViewModel.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle12BuyerScreenStoreViewModelFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.ts"),
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle13AiAssistantStyleBoundaryFiles = [
+      path.join(SRC, "features", "ai", "AIAssistantScreen.styles.ts"),
+      path.join(SRC, "features", "ai", "AIAssistantScreen.decomposition.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle14ProfileContentLoadStateBoundaryFiles = [
+      path.join(SRC, "screens", "profile", "components", "ProfileContentLoadState.tsx"),
+      path.join(SRC, "screens", "profile", "ProfileContent.decomposition.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
@@ -210,8 +229,17 @@ describe("performance budget — bundle module count", () => {
     // adds five permanent disabled assistant/store read BFF/transport boundary modules.
     // S-DIRECT-SUPABASE-BYPASS-LOW-RISK-READS-BFF-1 extends that permanent
     // contract with two low-risk read transports, no native/package surface.
+    // S-AUDIT_BATTLE_09 adds one permanent Director PDF source transport boundary.
     // S-BUYER_SCREEN_SIDE_EFFECT_ISOLATION_1 adds a permanent BuyerScreen side-effect
     // hook boundary plus focused src-owned regression tests.
+    // S-AUDIT_BATTLE_11 adds one permanent AccountantScreen view-model selector boundary
+    // plus focused src-owned regression tests.
+    // S-AUDIT_BATTLE_12 adds one permanent BuyerScreen store view-model selector boundary
+    // plus focused src-owned regression tests.
+    // S-AUDIT_BATTLE_13 adds one permanent AIAssistant static style boundary
+    // plus focused src-owned regression tests.
+    // S-AUDIT_BATTLE_14 adds one permanent ProfileContent load-state render boundary
+    // plus focused src-owned regression tests.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -224,7 +252,12 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles).toBeLessThanOrEqual(5);
     expect(sDirectSupabaseBypassCatalogTransportBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sDirectSupabaseBypassAssistantStoreBoundaryFiles).toBeLessThanOrEqual(7);
+    expect(sDirectSupabaseBypassDirectorPdfSourceTransportFiles).toBeLessThanOrEqual(1);
     expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle11AccountantScreenViewModelFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -239,7 +272,12 @@ describe("performance budget — bundle module count", () => {
         sDirectSupabaseBypassWarehouseApiRepoBoundaryFiles -
         sDirectSupabaseBypassCatalogTransportBoundaryFiles -
         sDirectSupabaseBypassAssistantStoreBoundaryFiles -
-        sBuyerScreenSideEffectBoundaryFiles,
+        sDirectSupabaseBypassDirectorPdfSourceTransportFiles -
+        sBuyerScreenSideEffectBoundaryFiles -
+        sAuditBattle11AccountantScreenViewModelFiles -
+        sAuditBattle12BuyerScreenStoreViewModelFiles -
+        sAuditBattle13AiAssistantStyleBoundaryFiles -
+        sAuditBattle14ProfileContentLoadStateBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
