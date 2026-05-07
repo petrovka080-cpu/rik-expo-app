@@ -16,6 +16,8 @@ jest.mock("../../lib/observability/platformObservability", () => ({
 const REQUEST_UUID = "11111111-1111-4111-8111-111111111111";
 const JOB_UUID = "22222222-2222-4222-8222-222222222222";
 const PROGRESS_UUID = "33333333-3333-4333-8333-333333333333";
+const SERVICE_SOURCE_PATH = require.resolve("./contractor.workModalService");
+const TRANSPORT_SOURCE_PATH = require.resolve("./contractor.workModalService.transport");
 
 const normText = (value: unknown) => String(value ?? "").trim();
 
@@ -309,6 +311,16 @@ describe("contractor.workModalService", () => {
         fallbackUsed: true,
       }),
     );
+  });
+
+  it("keeps the request_no schema probe behind the transport boundary", () => {
+    const { readFileSync } = require("fs") as typeof import("fs");
+    const serviceSource = readFileSync(SERVICE_SOURCE_PATH, "utf8");
+    const transportSource = readFileSync(TRANSPORT_SOURCE_PATH, "utf8");
+
+    expect(serviceSource).toContain("fetchContractorWorkModalRequestNoProbe");
+    expect(serviceSource).not.toContain('.select("id, request_no").limit(1)');
+    expect(transportSource).toContain('.from("requests").select("id, request_no").limit(1)');
   });
 
   it("keeps empty state honest when there are no approved request ids in scope", async () => {

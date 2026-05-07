@@ -176,6 +176,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle45MapScreenStyleBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle46ContractorWorkModalTransportFiles = [
+      path.join(SRC, "screens", "contractor", "contractor.workModalService.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -252,6 +255,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_41 adds one permanent BuyerSubcontractTab form model boundary.
     // S-AUDIT_BATTLE_42 adds one permanent Director metrics transport boundary.
     // S-AUDIT_BATTLE_45 adds one permanent MapScreen static style boundary.
+    // S-AUDIT_BATTLE_46 adds one permanent Contractor work-modal read probe transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -273,6 +277,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -295,7 +300,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -
         sAuditBattle41BuyerSubcontractFormModelFiles -
         sAuditBattle42DirectorMetricsTransportFiles -
-        sAuditBattle45MapScreenStyleBoundaryFiles,
+        sAuditBattle45MapScreenStyleBoundaryFiles -
+        sAuditBattle46ContractorWorkModalTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

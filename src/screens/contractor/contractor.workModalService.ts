@@ -9,6 +9,7 @@ import type { IssuedItemRow, LinkedReqCard } from "./types";
 import type { Database } from "../../lib/database.types";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import { fetchContractorWorkModalRequestNoProbe } from "./contractor.workModalService.transport";
 
 type WorkRowLike = {
   progress_id: string;
@@ -110,11 +111,6 @@ type WorkDefaultMaterialRow = {
 type WorkStageRow = {
   code?: string | null;
   name?: string | null;
-};
-
-type RequestNoProbeRow = {
-  id?: string | null;
-  request_no?: string | null;
 };
 
 type CatalogMeta = {
@@ -440,9 +436,7 @@ export async function loadIssuedTodayData(
 
   if (requestsHasRequestNoInWorkModalCache == null) {
     try {
-      const probe = await supabaseClient.from("requests").select("id, request_no").limit(1);
-      if (probe.error) throw probe.error;
-      const first = asArray(probe.data as RequestNoProbeRow[])[0];
+      const first = await fetchContractorWorkModalRequestNoProbe(supabaseClient);
       requestsHasRequestNoInWorkModalCache = !!first && "request_no" in first;
     } catch (error) {
       recordContractorWorkModalFallback("request_no_probe_failed", error, {
