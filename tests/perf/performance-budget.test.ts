@@ -173,6 +173,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle42DirectorMetricsTransportFiles = [
       path.join(SRC, "screens", "director", "director.metrics.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle45MapScreenStyleBoundaryFiles = [
+      path.join(SRC, "components", "map", "MapScreen.styles.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -248,6 +251,7 @@ describe("performance budget — bundle module count", () => {
     // plus focused src-owned regression tests.
     // S-AUDIT_BATTLE_41 adds one permanent BuyerSubcontractTab form model boundary.
     // S-AUDIT_BATTLE_42 adds one permanent Director metrics transport boundary.
+    // S-AUDIT_BATTLE_45 adds one permanent MapScreen static style boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -268,6 +272,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -289,7 +294,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle13AiAssistantStyleBoundaryFiles -
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -
         sAuditBattle41BuyerSubcontractFormModelFiles -
-        sAuditBattle42DirectorMetricsTransportFiles,
+        sAuditBattle42DirectorMetricsTransportFiles -
+        sAuditBattle45MapScreenStyleBoundaryFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
