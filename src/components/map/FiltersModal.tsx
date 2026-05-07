@@ -104,16 +104,9 @@ export default function FiltersModal({
                 <Pressable
                   key={c.k}
                   onPress={() => setSide(c.k)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: active ? UI.ok : UI.border,
-                    backgroundColor: active ? UI.ok : UI.card,
-                  }}
+                  style={[styles.chip, active ? styles.sideChipActive : styles.chipInactive]}
                 >
-                  <Text style={{ color: active ? "#0B1120" : UI.text, fontWeight: "900" }}>{c.t}</Text>
+                  <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>{c.t}</Text>
                 </Pressable>
               );
             })}
@@ -128,16 +121,9 @@ export default function FiltersModal({
                 <Pressable
                   key={c.k}
                   onPress={() => setKind(c.k)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 8,
-                    borderRadius: 999,
-                    borderWidth: 1,
-                    borderColor: active ? UI.accent : UI.border,
-                    backgroundColor: active ? UI.accent : UI.card,
-                  }}
+                  style={[styles.chip, active ? styles.kindChipActive : styles.chipInactive]}
                 >
-                  <Text style={{ color: active ? "#0B1120" : UI.text, fontWeight: "900" }}>{c.t}</Text>
+                  <Text style={[styles.chipText, active ? styles.chipTextActive : styles.chipTextInactive]}>{c.t}</Text>
                 </Pressable>
               );
             })}
@@ -154,15 +140,7 @@ export default function FiltersModal({
                 placeholder="0"
                 placeholderTextColor={UI.sub}
                 keyboardType="numeric"
-                style={{
-                  backgroundColor: UI.card,
-                  borderWidth: 1,
-                  borderColor: UI.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  color: UI.text,
-                }}
+                style={styles.input}
               />
             </View>
 
@@ -174,15 +152,7 @@ export default function FiltersModal({
                 placeholder="∞"
                 placeholderTextColor={UI.sub}
                 keyboardType="numeric"
-                style={{
-                  backgroundColor: UI.card,
-                  borderWidth: 1,
-                  borderColor: UI.border,
-                  borderRadius: 12,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  color: UI.text,
-                }}
+                style={styles.input}
               />
             </View>
           </View>
@@ -194,16 +164,7 @@ export default function FiltersModal({
             onChangeText={setCity}
             placeholder="Бишкек…"
             placeholderTextColor={UI.sub}
-            style={{
-              marginTop: 10,
-              backgroundColor: UI.card,
-              borderWidth: 1,
-              borderColor: UI.border,
-              borderRadius: 12,
-              paddingHorizontal: 12,
-              paddingVertical: 10,
-              color: UI.text,
-            }}
+            style={styles.cityInput}
           />
         </View>
 
@@ -244,6 +205,35 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 10,
   },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  chipInactive: {
+    borderColor: UI.border,
+    backgroundColor: UI.card,
+  },
+  chipText: {
+    fontWeight: "900",
+  },
+  chipTextActive: {
+    color: "#0B1120",
+  },
+  chipTextInactive: {
+    color: UI.text,
+  },
+  cityInput: {
+    marginTop: 10,
+    backgroundColor: UI.card,
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: UI.text,
+  },
   flexOne: {
     flex: 1,
   },
@@ -279,6 +269,19 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginBottom: 6,
   },
+  input: {
+    backgroundColor: UI.card,
+    borderWidth: 1,
+    borderColor: UI.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: UI.text,
+  },
+  kindChipActive: {
+    borderColor: UI.accent,
+    backgroundColor: UI.accent,
+  },
   priceRow: {
     flexDirection: "row",
     gap: 10,
@@ -303,6 +306,10 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     fontSize: 16,
     marginTop: 18,
+  },
+  sideChipActive: {
+    borderColor: UI.ok,
+    backgroundColor: UI.ok,
   },
 });
 

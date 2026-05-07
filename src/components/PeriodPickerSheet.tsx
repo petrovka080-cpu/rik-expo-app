@@ -126,6 +126,96 @@ export default function PeriodPickerSheet({
   const webToOk = !webTo.trim() || !!parseYmd(webTo);
   const webCanApply = webFromOk && webToOk;
 
+  const themedStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        backdrop: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          backgroundColor: "rgba(0,0,0,0.45)",
+        },
+        clearText: {
+          color: UI.sub,
+          fontWeight: "900",
+          fontSize: 16,
+        },
+        dateValueText: {
+          color: UI.text,
+          fontWeight: "900",
+        },
+        iosDatePicker: {
+          backgroundColor: UI.cardBg,
+        },
+        labelText: {
+          color: UI.sub,
+          fontWeight: "900",
+        },
+        menuOptionText: {
+          color: UI.accentBlue,
+          fontWeight: "900",
+          fontSize: 18,
+        },
+        primaryButton: {
+          marginTop: 14,
+          marginHorizontal: 16,
+          paddingVertical: 14,
+          borderRadius: 14,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: UI.approve,
+        },
+        primaryButtonText: {
+          color: "#fff",
+          fontWeight: "900",
+          fontSize: 16,
+        },
+        secondaryButton: {
+          marginTop: 10,
+          marginHorizontal: 16,
+          paddingVertical: 12,
+          borderRadius: 14,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(255,255,255,0.06)",
+          borderWidth: 1,
+          borderColor: UI.border,
+        },
+        secondaryButtonText: {
+          color: UI.text,
+          fontWeight: "900",
+        },
+        sheet: {
+          backgroundColor: UI.cardBg,
+          borderTopLeftRadius: 18,
+          borderTopRightRadius: 18,
+          borderWidth: 1,
+          borderColor: UI.border,
+          overflow: "hidden",
+          paddingBottom: 10,
+          width: "100%",
+        },
+        webInput: {
+          borderWidth: 1,
+          borderColor: UI.border,
+          borderRadius: 12,
+          padding: 10,
+          backgroundColor: "rgba(255,255,255,0.06)",
+          color: UI.text,
+          fontWeight: "700",
+        },
+        webInputInvalid: {
+          borderColor: "#EF4444",
+        },
+        webPrimaryButtonDisabled: {
+          opacity: 0.45,
+        },
+      }),
+    [UI]
+  );
+
   const closeAll = () => {
     setMode("menu");
     onClose();
@@ -136,42 +226,16 @@ export default function PeriodPickerSheet({
   return (
     <View
       pointerEvents="auto"
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        justifyContent: "flex-end",
-        // реально поверх
-        zIndex: 99999999,
-        elevation: 99999999,
-      }}
+      style={styles.root}
     >
       <Pressable
         onPress={closeAll}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0,0,0,0.45)",
-        }}
+        style={themedStyles.backdrop}
       />
 
       <Pressable
         onPress={() => {}}
-        style={{
-          backgroundColor: UI.cardBg,
-          borderTopLeftRadius: 18,
-          borderTopRightRadius: 18,
-          borderWidth: 1,
-          borderColor: UI.border,
-          overflow: "hidden",
-          paddingBottom: 10,
-          width: "100%",
-        }}
+        style={themedStyles.sheet}
       >
         {mode === "menu" ? (
           <>
@@ -186,7 +250,7 @@ export default function PeriodPickerSheet({
                 }}
                 style={[styles.menuOption, idx === 0 ? styles.noBorderTop : null]}
               >
-                <Text style={{ color: UI.accentBlue, fontWeight: "900", fontSize: 18 }}>{it.label}</Text>
+                <Text style={themedStyles.menuOptionText}>{it.label}</Text>
               </Pressable>
             ))}
 
@@ -198,7 +262,7 @@ export default function PeriodPickerSheet({
                 }}
                 style={styles.clearOption}
               >
-                <Text style={{ color: UI.sub, fontWeight: "900", fontSize: 16 }}>Сбросить период</Text>
+                <Text style={themedStyles.clearText}>Сбросить период</Text>
               </Pressable>
             ) : null}
 
@@ -206,7 +270,7 @@ export default function PeriodPickerSheet({
               onPress={closeAll}
               style={styles.cancelOption}
             >
-              <Text style={{ color: UI.accentBlue, fontWeight: "900", fontSize: 18 }}>Отмена</Text>
+              <Text style={themedStyles.menuOptionText}>Отмена</Text>
             </Pressable>
           </>
         ) : (
@@ -218,7 +282,7 @@ export default function PeriodPickerSheet({
             {Platform.OS === "web" ? (
               <>
                 <View style={styles.labelWrap}>
-                  <Text style={{ color: UI.sub, fontWeight: "900" }}>Начало (YYYY-MM-DD)</Text>
+                  <Text style={themedStyles.labelText}>Начало (YYYY-MM-DD)</Text>
                 </View>
                 <View style={styles.inputWrap}>
                   <TextInput
@@ -226,22 +290,14 @@ export default function PeriodPickerSheet({
                     onChangeText={setWebFrom}
                     placeholder={`${new Date().getFullYear()}-MM-DD`}
                     placeholderTextColor={UI.sub}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: webFromOk ? UI.border : "#EF4444",
-                      borderRadius: 12,
-                      padding: 10,
-                      backgroundColor: "rgba(255,255,255,0.06)",
-                      color: UI.text,
-                      fontWeight: "700",
-                    }}
+                    style={[themedStyles.webInput, webFromOk ? null : themedStyles.webInputInvalid]}
                   />
                 </View>
 
                 <View style={styles.spacer10} />
 
                 <View style={styles.labelWrap}>
-                  <Text style={{ color: UI.sub, fontWeight: "900" }}>Конец (YYYY-MM-DD)</Text>
+                  <Text style={themedStyles.labelText}>Конец (YYYY-MM-DD)</Text>
                 </View>
                 <View style={styles.inputWrap}>
                   <TextInput
@@ -249,15 +305,7 @@ export default function PeriodPickerSheet({
                     onChangeText={setWebTo}
                     placeholder={`${new Date().getFullYear()}-MM-DD`}
                     placeholderTextColor={UI.sub}
-                    style={{
-                      borderWidth: 1,
-                      borderColor: webToOk ? UI.border : "#EF4444",
-                      borderRadius: 12,
-                      padding: 10,
-                      backgroundColor: "rgba(255,255,255,0.06)",
-                      color: UI.text,
-                      fontWeight: "700",
-                    }}
+                    style={[themedStyles.webInput, webToOk ? null : themedStyles.webInputInvalid]}
                   />
                 </View>
 
@@ -271,41 +319,22 @@ export default function PeriodPickerSheet({
                     onApply(ymd(rr.from), ymd(rr.to));
                     closeAll();
                   }}
-                  style={{
-                    marginTop: 14,
-                    marginHorizontal: 16,
-                    paddingVertical: 14,
-                    borderRadius: 14,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: UI.approve,
-                    opacity: webCanApply ? 1 : 0.45,
-                  }}
+                  style={[themedStyles.primaryButton, webCanApply ? null : themedStyles.webPrimaryButtonDisabled]}
                 >
-                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Готово</Text>
+                  <Text style={themedStyles.primaryButtonText}>Готово</Text>
                 </Pressable>
 
                 <Pressable
                   onPress={() => setMode("menu")}
-                  style={{
-                    marginTop: 10,
-                    marginHorizontal: 16,
-                    paddingVertical: 12,
-                    borderRadius: 14,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: UI.border,
-                  }}
+                  style={themedStyles.secondaryButton}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Назад</Text>
+                  <Text style={themedStyles.secondaryButtonText}>Назад</Text>
                 </Pressable>
               </>
             ) : (
               <>
                 <View style={styles.labelWrap}>
-                  <Text style={{ color: UI.sub, fontWeight: "900" }}>Начало:</Text>
+                  <Text style={themedStyles.labelText}>Начало:</Text>
                 </View>
 
                 {Platform.OS === "ios" ? (
@@ -316,18 +345,18 @@ export default function PeriodPickerSheet({
                     onChange={(_, d) => {
                       if (d) setTmpFrom(startOfDay(d));
                     }}
-                    style={{ backgroundColor: UI.cardBg }}
+                    style={themedStyles.iosDatePicker}
                   />
                 ) : (
                   <Pressable onPress={() => setAndroidPick("from")} style={styles.androidDateButton}>
-                    <Text style={{ color: UI.text, fontWeight: "900" }}>{ymd(tmpFrom)}</Text>
+                    <Text style={themedStyles.dateValueText}>{ymd(tmpFrom)}</Text>
                   </Pressable>
                 )}
 
                 <View style={styles.spacer10} />
 
                 <View style={styles.labelWrap}>
-                  <Text style={{ color: UI.sub, fontWeight: "900" }}>Конец:</Text>
+                  <Text style={themedStyles.labelText}>Конец:</Text>
                 </View>
 
                 {Platform.OS === "ios" ? (
@@ -338,11 +367,11 @@ export default function PeriodPickerSheet({
                     onChange={(_, d) => {
                       if (d) setTmpTo(startOfDay(d));
                     }}
-                    style={{ backgroundColor: UI.cardBg }}
+                    style={themedStyles.iosDatePicker}
                   />
                 ) : (
                   <Pressable onPress={() => setAndroidPick("to")} style={styles.androidDateButton}>
-                    <Text style={{ color: UI.text, fontWeight: "900" }}>{ymd(tmpTo)}</Text>
+                    <Text style={themedStyles.dateValueText}>{ymd(tmpTo)}</Text>
                   </Pressable>
                 )}
 
@@ -367,34 +396,16 @@ export default function PeriodPickerSheet({
                     onApply(ymd(rr.from), ymd(rr.to));
                     closeAll();
                   }}
-                  style={{
-                    marginTop: 14,
-                    marginHorizontal: 16,
-                    paddingVertical: 14,
-                    borderRadius: 14,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: UI.approve,
-                  }}
+                  style={themedStyles.primaryButton}
                 >
-                  <Text style={{ color: "#fff", fontWeight: "900", fontSize: 16 }}>Готово</Text>
+                  <Text style={themedStyles.primaryButtonText}>Готово</Text>
                 </Pressable>
 
                 <Pressable
                   onPress={() => setMode("menu")}
-                  style={{
-                    marginTop: 10,
-                    marginHorizontal: 16,
-                    paddingVertical: 12,
-                    borderRadius: 14,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "rgba(255,255,255,0.06)",
-                    borderWidth: 1,
-                    borderColor: UI.border,
-                  }}
+                  style={themedStyles.secondaryButton}
                 >
-                  <Text style={{ color: UI.text, fontWeight: "900" }}>Назад</Text>
+                  <Text style={themedStyles.secondaryButtonText}>Назад</Text>
                 </Pressable>
               </>
             )}
@@ -458,6 +469,16 @@ const styles = StyleSheet.create({
   },
   pickerBody: {
     paddingBottom: 12,
+  },
+  root: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: "flex-end",
+    zIndex: 99999999,
+    elevation: 99999999,
   },
   spacer10: {
     height: 10,

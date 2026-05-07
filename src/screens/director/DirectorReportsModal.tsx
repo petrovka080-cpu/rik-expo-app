@@ -373,7 +373,7 @@ export default function DirectorReportsModal({
                 <View style={s.sheetHandle} />
                 <View style={styles.objectSheetHeader}>
                   <Text style={styles.objectSheetTitle}>{`${objectCountLabel} (${objectCount})`}</Text>
-                  <Pressable onPress={onCloseRepObj}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+                  <Pressable onPress={onCloseRepObj}><Text style={styles.objectCloseText}>Закрыть</Text></Pressable>
                 </View>
                 <FlashList
                   style={styles.objectOptionsList}
@@ -388,49 +388,49 @@ export default function DirectorReportsModal({
             </Pressable>
           </Modal>
         ) : levelModal ? (
-          <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: UI.bg }}>
-            <View style={{ paddingTop: detailTopInset, paddingHorizontal: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: UI.border, backgroundColor: UI.bg }}>
-              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={2}>{levelModalTitle}</Text>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                    <Pressable onPress={backToWorkDetail}><Text style={{ color: UI.sub, fontWeight: "900" }}>Назад</Text></Pressable>
-                    <Pressable onPress={() => setLevelModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+          <View style={styles.detailOverlay}>
+            <View style={[styles.detailHeader, { paddingTop: detailTopInset }]}>
+              <View style={styles.detailHeaderRow}>
+                <View style={styles.detailTitleWrap}>
+                  <Text style={styles.detailTitle} numberOfLines={2}>{levelModalTitle}</Text>
+                  <View style={styles.detailActionsRow}>
+                    <Pressable onPress={backToWorkDetail}><Text style={styles.detailActionText}>Назад</Text></Pressable>
+                    <Pressable onPress={() => setLevelModal(null)}><Text style={styles.detailActionText}>Закрыть</Text></Pressable>
                   </View>
                 </View>
               </View>
             </View>
             <FlashList
               key={`level:${levelModal.work.id}:${levelModal.level.id}`}
-              style={{ flex: 1 }}
+              style={styles.flexOne}
               data={sortedLevelMaterials}
               renderItem={renderLevelMaterialRow}
               keyExtractor={levelMaterialKeyExtractor}
               ListHeaderComponent={levelModalHeader}
-              contentContainerStyle={{ paddingTop: 12, paddingBottom: detailBottomInset }}
+              contentContainerStyle={[styles.detailListContent, { paddingBottom: detailBottomInset }]}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             />
           </View>
         ) : workModal ? (
-          <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: UI.bg }}>
-            <View style={{ paddingTop: detailTopInset, paddingHorizontal: 14, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: UI.border, backgroundColor: UI.bg }}>
-              <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ color: UI.text, fontWeight: "900", fontSize: 16 }} numberOfLines={1}>{`Работа: ${workModal.work_type_name}`}</Text>
-                  <Pressable onPress={() => setWorkModal(null)}><Text style={{ color: UI.sub, fontWeight: "900" }}>Закрыть</Text></Pressable>
+          <View style={styles.detailOverlay}>
+            <View style={[styles.detailHeader, { paddingTop: detailTopInset }]}>
+              <View style={styles.detailHeaderRow}>
+                <View style={styles.detailTitleWrap}>
+                  <Text style={styles.detailTitle} numberOfLines={1}>{`Работа: ${workModal.work_type_name}`}</Text>
+                  <Pressable onPress={() => setWorkModal(null)}><Text style={styles.detailActionText}>Закрыть</Text></Pressable>
                 </View>
               </View>
             </View>
             <FlashList
               key={`work:${workModal.id}`}
-              style={{ flex: 1 }}
+              style={styles.flexOne}
               data={sortedWorkLevels}
               renderItem={renderLevelRow}
               keyExtractor={levelKeyExtractor}
               ListHeaderComponent={workModalHeader}
               ListFooterComponent={workModalFooter}
-              contentContainerStyle={{ paddingTop: 12, paddingBottom: detailBottomInset }}
+              contentContainerStyle={[styles.detailListContent, { paddingBottom: detailBottomInset }]}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             />
@@ -439,20 +439,20 @@ export default function DirectorReportsModal({
       }
     >
       <View style={styles.mb10}>
-        <Text style={{ color: UI.sub, fontWeight: "900", marginBottom: 6 }}>Склад</Text>
+        <Text style={styles.filterLabel}>Склад</Text>
         <View style={styles.filterWrap}>
-          <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: !repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>Все</Text>
+          <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, styles.filterTabSpacing]}>
+            <Text style={[styles.filterTabText, !repObjectName ? styles.filterTabTextActive : styles.filterTabTextInactive]}>Все</Text>
           </Pressable>
-          <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-            <Text style={{ color: repObjectName ? UI.text : UI.sub, fontWeight: "900" }}>{`${objectCountLabel} · ${objectCount}`}</Text>
+          <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, styles.filterTabSpacing]}>
+            <Text style={[styles.filterTabText, repObjectName ? styles.filterTabTextActive : styles.filterTabTextInactive]}>{`${objectCountLabel} · ${objectCount}`}</Text>
           </Pressable>
           {repObjectName ? (
-            <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, { marginRight: 8, marginBottom: 8 }]}>
-              <Text numberOfLines={1} style={{ color: UI.text, fontWeight: "900", maxWidth: 220 }}>{repObjectName}</Text>
+            <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, styles.filterTabSpacing]}>
+              <Text numberOfLines={1} style={styles.selectedObjectNameText}>{repObjectName}</Text>
             </Pressable>
           ) : null}
-          {repOptLoading ? <Text style={{ color: UI.sub, fontWeight: "800", marginLeft: 4, marginTop: 8 }}>…</Text> : null}
+          {repOptLoading ? <Text style={styles.repOptLoadingText}>…</Text> : null}
         </View>
         <Text style={[s.mobMeta, styles.mt6]} numberOfLines={2}>{objectCountLabel}</Text>
         <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>{objectCountExplanation}</Text>
@@ -476,22 +476,22 @@ export default function DirectorReportsModal({
       {repTab === "materials" ? (
         <View style={styles.mb10}>
           <View style={styles.rowGap8}>
-            <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <View style={[s.kpiPillHalf, styles.flexOne]}>
               <Text style={s.kpiLabel}>Документов</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : String(issuesTotal)}</Text>
             </View>
-            <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <View style={[s.kpiPillHalf, styles.flexOne]}>
               <Text style={s.kpiLabel}>Позиций</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : String(itemsTotal)}</Text>
             </View>
           </View>
           <View style={styles.spacer8} />
           <View style={styles.rowGap8}>
-            <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <View style={[s.kpiPillHalf, styles.flexOne]}>
               <Text style={s.kpiLabel}>Без объекта</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : `${issuesNoObj} · ${pct(issuesNoObj, issuesTotal)}%`}</Text>
             </View>
-            <View style={[s.kpiPillHalf, { flex: 1 }]}>
+            <View style={[s.kpiPillHalf, styles.flexOne]}>
               <Text style={s.kpiLabel}>Без заявки</Text>
               <Text style={s.kpiValue}>{repLoading ? "…" : `${itemsNoReq} · ${pct(itemsNoReq, itemsTotal)}%`}</Text>
             </View>
@@ -507,9 +507,9 @@ export default function DirectorReportsModal({
               key={tab}
               testID={`director-reports-tab-${tab}`}
               onPress={() => onTabPress(tab)}
-              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
+              style={[s.tab, active && s.tabActive, styles.tabSpacing]}
             >
-              <Text style={{ color: active ? UI.text : UI.sub, fontWeight: "900" }}>
+              <Text style={[styles.tabText, active ? styles.tabTextActive : styles.tabTextInactive]}>
                 {tab === "materials" ? "Материалы" : "Работы"}
               </Text>
             </Pressable>
@@ -528,7 +528,7 @@ export default function DirectorReportsModal({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listBottomPad4}
             ListEmptyComponent={!repLoading && !rows.length ? (
-              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет выдач за выбранный период.</Text>
+              <Text style={styles.emptyListText}>Нет выдач за выбранный период.</Text>
             ) : null}
           />
         ) : (
@@ -542,7 +542,7 @@ export default function DirectorReportsModal({
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listBottomPad4}
             ListEmptyComponent={!repLoading && !sortedWorks.length ? (
-              <Text style={{ opacity: 0.7, color: UI.sub, paddingVertical: 8 }}>Нет данных по работам за период.</Text>
+              <Text style={styles.emptyListText}>Нет данных по работам за период.</Text>
             ) : null}
           />
         )}
@@ -551,16 +551,16 @@ export default function DirectorReportsModal({
       <View style={styles.footerActions}>
         <Pressable
           onPress={() => Alert.alert("Excel", "Позже добавим выгрузку Excel.")}
-          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: UI.btnNeutral }]}
+          style={[s.openBtn, styles.footerOpenButton, styles.excelOpenButton]}
         >
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>Excel</Text>
+          <Text style={[s.openBtnText, styles.footerOpenText]}>Excel</Text>
         </Pressable>
 
         <Pressable
           onPress={() => void applyObjectFilter(null)}
-          style={[s.openBtn, { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: "rgba(255,255,255,0.06)" }]}
+          style={[s.openBtn, styles.footerOpenButton, styles.clearObjectButton]}
         >
-          <Text style={[s.openBtnText, { fontSize: 12 }]}>{`Все ${objectCountLabel.toLowerCase()}`}</Text>
+          <Text style={[s.openBtnText, styles.footerOpenText]}>{`Все ${objectCountLabel.toLowerCase()}`}</Text>
         </Pressable>
       </View>
     </DirectorFinanceCardModal>
@@ -579,12 +579,83 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 0,
   },
+  clearObjectButton: {
+    backgroundColor: "rgba(255,255,255,0.06)",
+  },
+  detailActionText: {
+    color: UI.sub,
+    fontWeight: "900",
+  },
+  detailActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  detailHeader: {
+    paddingHorizontal: 14,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: UI.border,
+    backgroundColor: UI.bg,
+  },
+  detailHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  detailListContent: {
+    paddingTop: 12,
+  },
+  detailOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: UI.bg,
+  },
+  detailTitle: {
+    color: UI.text,
+    fontWeight: "900",
+    fontSize: 16,
+  },
+  detailTitleWrap: {
+    flex: 1,
+    minWidth: 0,
+  },
   errorSoftText: {
     color: "#FCA5A5",
+  },
+  emptyListText: {
+    opacity: 0.7,
+    color: UI.sub,
+    paddingVertical: 8,
+  },
+  excelOpenButton: {
+    backgroundColor: UI.btnNeutral,
   },
   filterWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
+  },
+  filterLabel: {
+    color: UI.sub,
+    fontWeight: "900",
+    marginBottom: 6,
+  },
+  filterTabSpacing: {
+    marginRight: 8,
+    marginBottom: 8,
+  },
+  filterTabText: {
+    fontWeight: "900",
+  },
+  filterTabTextActive: {
+    color: UI.text,
+  },
+  filterTabTextInactive: {
+    color: UI.sub,
   },
   flexOne: {
     flex: 1,
@@ -593,6 +664,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: "row",
     gap: 8,
+  },
+  footerOpenButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  footerOpenText: {
+    fontSize: 12,
   },
   listBottomPad4: {
     paddingBottom: 4,
@@ -617,6 +695,10 @@ const styles = StyleSheet.create({
   objectOptionsList: {
     maxHeight: 420,
   },
+  objectCloseText: {
+    color: UI.sub,
+    fontWeight: "900",
+  },
   objectOverlayBackdrop: {
     flex: 1,
     justifyContent: "flex-end",
@@ -633,12 +715,35 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     fontSize: 16,
   },
+  repOptLoadingText: {
+    color: UI.sub,
+    fontWeight: "800",
+    marginLeft: 4,
+    marginTop: 8,
+  },
   rowGap8: {
     flexDirection: "row",
     gap: 8,
   },
+  selectedObjectNameText: {
+    color: UI.text,
+    fontWeight: "900",
+    maxWidth: 220,
+  },
   spacer8: {
     height: 8,
+  },
+  tabSpacing: {
+    marginRight: 8,
+  },
+  tabText: {
+    fontWeight: "900",
+  },
+  tabTextActive: {
+    color: UI.text,
+  },
+  tabTextInactive: {
+    color: UI.sub,
   },
   tabsRow: {
     flexDirection: "row",
