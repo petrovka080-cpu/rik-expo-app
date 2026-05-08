@@ -8,6 +8,7 @@ import {
 } from "./buyer.fetchers";
 import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { resolveBuyerSummaryAuthUserId } from "./buyer.summary.auth.transport";
 
 type LogFn = (msg: unknown, ...rest: unknown[]) => void;
 
@@ -207,8 +208,7 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
     if (cachedUserId) return cachedUserId;
 
     try {
-      const { data } = await supabase.auth.getUser();
-      const nextUserId = String(data?.user?.id ?? "").trim();
+      const nextUserId = await resolveBuyerSummaryAuthUserId({ supabase });
       if (nextUserId) {
         cachedUserId = nextUserId;
         return nextUserId;

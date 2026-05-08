@@ -236,6 +236,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle64AccountantCardFlowAuthTransportFiles = [
       path.join(SRC, "screens", "accountant", "useAccountantCardFlow.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle65BuyerSummaryAuthTransportFiles = [
+      path.join(SRC, "screens", "buyer", "buyer.summary.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -329,6 +332,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_62 adds one permanent Buyer RFQ prefill auth transport boundary.
     // S-AUDIT_BATTLE_63 adds one permanent supplier showcase auth transport boundary.
     // S-AUDIT_BATTLE_64 adds one permanent accountant card flow auth transport boundary.
+    // S-AUDIT_BATTLE_65 adds one permanent buyer summary auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -370,6 +374,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle62BuyerRfqPrefillAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle63SupplierShowcaseAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle64AccountantCardFlowAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle65BuyerSummaryAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -412,7 +417,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle61ContractorScreenDataAuthTransportFiles -
         sAuditBattle62BuyerRfqPrefillAuthTransportFiles -
         sAuditBattle63SupplierShowcaseAuthTransportFiles -
-        sAuditBattle64AccountantCardFlowAuthTransportFiles,
+        sAuditBattle64AccountantCardFlowAuthTransportFiles -
+        sAuditBattle65BuyerSummaryAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
