@@ -1,4 +1,7 @@
 import { openAppAttachment } from "./attachmentOpener";
+import { createAttachmentSignedUrl } from "./attachmentOpener.storage.transport";
+import * as fs from "fs";
+import * as path from "path";
 
 const mockOpenUrl = jest.fn();
 const mockGetInfoAsync = jest.fn();
@@ -42,18 +45,16 @@ jest.mock("../fileSystemPaths", () => ({
   })),
 }));
 
-jest.mock("../supabaseClient", () => ({
-  supabase: {
-    storage: {
-      from: jest.fn(() => ({
-        createSignedUrl: jest.fn(async () => ({
-          data: { signedUrl: "https://example.com/signed-attachment.pdf" },
-          error: null,
-        })),
-      })),
-    },
-  },
+jest.mock("./attachmentOpener.storage.transport", () => ({
+  createAttachmentSignedUrl: jest.fn(async () => ({
+    data: { signedUrl: "https://example.com/signed-attachment.pdf" },
+    error: null,
+  })),
 }));
+
+const mockCreateAttachmentSignedUrl = createAttachmentSignedUrl as jest.MockedFunction<
+  typeof createAttachmentSignedUrl
+>;
 
 const getMockPlatform = () =>
   (jest.requireMock("react-native") as { Platform: { OS: string } }).Platform;
@@ -74,7 +75,12 @@ describe("attachmentOpener", () => {
     mockShareAsync.mockReset();
     mockIsAvailableAsync.mockReset();
     mockStartActivityAsync.mockReset();
+    mockCreateAttachmentSignedUrl.mockReset();
 
+    mockCreateAttachmentSignedUrl.mockResolvedValue({
+      data: { signedUrl: "https://example.com/signed-attachment.pdf" },
+      error: null,
+    });
     mockIsAvailableAsync.mockResolvedValue(true);
     mockGetInfoAsync.mockResolvedValue({ exists: true, size: 128 });
     mockDownloadAsync.mockImplementation(async (_url: string, target: string) => ({ uri: target }));
@@ -125,6 +131,29 @@ describe("attachmentOpener", () => {
     expect(mockOpenUrl).not.toHaveBeenCalled();
   });
 
+  it("resolves storage attachments through the storage transport boundary", async () => {
+    mockGetInfoAsync.mockResolvedValueOnce({ exists: false, size: 0 });
+
+    await openAppAttachment({
+      bucketId: "proposal_files",
+      storagePath: "proposal-1/invoice.pdf",
+      fileName: "invoice.pdf",
+      mimeType: "application/pdf",
+    });
+
+    expect(mockCreateAttachmentSignedUrl).toHaveBeenCalledWith(
+      "proposal_files",
+      "proposal-1/invoice.pdf",
+      60 * 60,
+    );
+    expect(mockStartActivityAsync).toHaveBeenCalledWith("android.intent.action.VIEW", {
+      data: "https://example.com/signed-attachment.pdf",
+      flags: 1,
+      type: "application/pdf",
+    });
+    expect(mockDownloadAsync).not.toHaveBeenCalled();
+  });
+
   it("fails in a controlled way for blob/data attachment sources on native", async () => {
     await expect(
       openAppAttachment({
@@ -172,5 +201,25 @@ describe("attachmentOpener", () => {
     expect(mockGetContentUriAsync).not.toHaveBeenCalled();
     expect(mockStartActivityAsync).not.toHaveBeenCalled();
     expect(mockShareAsync).not.toHaveBeenCalled();
+  });
+});
+
+describe("attachment opener storage transport source contract", () => {
+  const root = path.resolve(__dirname, "../../..");
+  const read = (relativePath: string) =>
+    fs.readFileSync(path.join(root, relativePath), "utf8");
+
+  it("keeps storage provider ownership in the transport only", () => {
+    const serviceSource = read("src/lib/documents/attachmentOpener.ts");
+    const transportSource = read("src/lib/documents/attachmentOpener.storage.transport.ts");
+    const storageToken = "supabase" + ".storage";
+
+    expect(serviceSource).toContain("createAttachmentSignedUrl(bucketId, storagePath, 60 * 60)");
+    expect(serviceSource).not.toContain(storageToken);
+    expect(transportSource).toContain(storageToken);
+    expect(transportSource).toContain(".createSignedUrl(storagePath, expiresInSeconds)");
+    expect(transportSource).not.toContain(".insert(");
+    expect(transportSource).not.toContain(".update(");
+    expect(transportSource).not.toContain(".rpc(");
   });
 });
