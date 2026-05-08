@@ -45,3 +45,20 @@ describe("buyer action auth transport boundary", () => {
     );
   });
 });
+
+describe("buyer action write transport boundary", () => {
+  it("keeps buyer action writes behind the transport boundary", () => {
+    const repoSource = read("src/screens/buyer/buyer.actions.repo.ts");
+    const transportSource = read("src/screens/buyer/buyer.actions.write.transport.ts");
+
+    expect(repoSource).toContain("buyer.actions.write.transport");
+    expect(repoSource).not.toContain("supabase.rpc(");
+    expect(repoSource).not.toContain("supabase.from(");
+    expect(repoSource).not.toContain('.from("request_items")');
+    expect(transportSource).toContain("supabase.rpc(");
+    expect(transportSource).toContain('"request_items_set_status"');
+    expect(transportSource).toContain('"buyer_rfq_create_and_publish_v1"');
+    expect(transportSource).toContain('"proposal_send_to_accountant_min"');
+    expect(transportSource).toContain('.from("request_items")');
+  });
+});
