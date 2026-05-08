@@ -72,16 +72,20 @@ describe("assistant/store BFF routing contract", () => {
     ).toBe(true);
   });
 
-  it("routes assistant read paths out of the target actions file while keeping auth/session local", () => {
+  it("routes assistant read and auth paths out of the target actions file", () => {
     const actionsSource = readProjectFile("src/features/ai/assistantActions.ts");
     const transportSource = readProjectFile("src/features/ai/assistantActions.transport.ts");
 
     expect(actionsSource).toContain("loadAssistantActorReadScope");
     expect(actionsSource).toContain("loadAssistantMarketListingRows");
-    expect(actionsSource).toContain("supabase.auth.getUser");
+    expect(actionsSource).toContain("loadAssistantCurrentAuthUser");
+    expect(actionsSource).not.toContain("../../lib/supabaseClient");
+    expect(actionsSource).not.toContain("supabase.auth.getUser");
     expect(actionsSource).not.toMatch(/\bsupabase\s*\.\s*from\s*\(/);
     expect(actionsSource).not.toMatch(/\bsupabase\s*\.\s*rpc\s*\(/);
 
+    expect(transportSource).toContain("loadAssistantCurrentAuthUser");
+    expect(transportSource).toContain("supabase.auth.getUser");
     expect(transportSource).toContain("callAssistantStoreReadBff");
     expect(transportSource.match(/\.from\(/g)?.length ?? 0).toBeGreaterThanOrEqual(6);
     expect(ASSISTANT_STORE_READ_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");

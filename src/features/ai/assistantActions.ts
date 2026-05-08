@@ -2,7 +2,6 @@ import { asListingItems } from "../market/marketHome.data";
 import { planFanoutBatch } from "../../lib/async/fanoutBatchPlan";
 import { mapWithConcurrencyLimit } from "../../lib/async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { supabase } from "../../lib/supabaseClient";
 import {
   clearLocalDraftId,
   fetchRequestDetails,
@@ -17,6 +16,7 @@ import {
   resolveForemanQuickRequest,
 } from "../../screens/foreman/foreman.ai";
 import {
+  loadAssistantCurrentAuthUser,
   loadAssistantActorReadScope,
   loadAssistantCompanyRowsByIds,
   loadAssistantMarketListingRows,
@@ -224,7 +224,7 @@ export function supportsAssistantActionMode(role: AssistantRole, context: Assist
 }
 
 async function loadAssistantActorContext(): Promise<AssistantActorContext | null> {
-  const { data: authResult, error } = await supabase.auth.getUser();
+  const { data: authResult, error } = await loadAssistantCurrentAuthUser();
   if (error) throw error;
   const user = authResult.user;
   if (!user?.id) return null;

@@ -40,6 +40,10 @@ export type AssistantProfileReadRow = {
   full_name?: string | null;
 };
 
+export async function loadAssistantCurrentAuthUser() {
+  return await supabase.auth.getUser();
+}
+
 type AssistantReadResult<T> = {
   data: T[] | null;
   error: { message?: string } | null;
