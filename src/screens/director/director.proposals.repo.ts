@@ -9,6 +9,7 @@ import type {
   DirectorSupabaseClient,
 } from "../../types/contracts/director";
 import type { ProposalHead } from "./director.types";
+import { callDirectorPendingProposalsScopeRpc } from "./director.proposals.transport";
 
 type DirectorProposalScopeEnvelope = {
   document_type: "director_pending_proposals_scope";
@@ -195,7 +196,7 @@ export async function fetchDirectorPendingProposalWindow(
       p_offset_heads: offsetHeads,
       p_limit_heads: limitHeads,
     };
-    const { data, error } = await args.supabase.rpc("director_pending_proposals_scope_v1", rpcArgs);
+    const { data, error } = await callDirectorPendingProposalsScopeRpc(args.supabase, rpcArgs);
     if (error) throw error;
 
     const validated = validateRpcResponse(data, isDirectorPendingProposalsScopeResponse, {
