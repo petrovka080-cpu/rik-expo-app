@@ -145,6 +145,9 @@ const isApprovedAuditBattle107IntegrityGuardsTransportBoundaryPatch = (file: str
     "tests/api/integrityGuardsTransportBoundary.contract.test.ts",
   ].includes(file);
 
+const isApprovedAuditBattle108ProfileStorageTransportBoundaryPatch = (file: string) =>
+  ["src/screens/profile/profile.storage.transport.ts"].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -216,6 +219,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle105PaymentPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle106ProposalsTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle107IntegrityGuardsTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle108ProfileStorageTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

@@ -141,6 +141,10 @@ describe("profile membership transport boundary", () => {
     path.join(__dirname, "profile.membership.transport.ts"),
     "utf8",
   );
+  const storageTransportSource = fs.readFileSync(
+    path.join(__dirname, "profile.storage.transport.ts"),
+    "utf8",
+  );
 
   it("keeps the auth/session calls outside profile.services", () => {
     expect(serviceSource).toContain("./profile.auth.transport");
@@ -164,6 +168,24 @@ describe("profile membership transport boundary", () => {
     expect(transportSource).not.toContain(".upsert(");
     expect(transportSource).not.toContain(".update(");
     expect(transportSource).not.toContain(".delete(");
+  });
+
+  it("keeps avatar storage provider calls inside the profile storage transport", () => {
+    const directStorageToken = "supabase" + ".storage";
+
+    expect(serviceSource).toContain("./profile.storage.transport");
+    expect(serviceSource).toContain("uploadProfileAvatarObject");
+    expect(serviceSource).toContain("getProfileAvatarPublicUrl");
+    expect(serviceSource).not.toContain(directStorageToken);
+    expect(storageTransportSource).toContain('PROFILE_AVATAR_BUCKET = "avatars"');
+    expect(storageTransportSource).toContain(directStorageToken);
+    expect(storageTransportSource).toContain(".upload(filePath, body, options)");
+    expect(storageTransportSource).toContain(".getPublicUrl(filePath)");
+    expect(storageTransportSource).not.toContain('.from("user_profiles")');
+    expect(storageTransportSource).not.toContain(".insert(");
+    expect(storageTransportSource).not.toContain(".upsert(");
+    expect(storageTransportSource).not.toContain(".update(");
+    expect(storageTransportSource).not.toContain(".delete(");
   });
 });
 

@@ -11,6 +11,10 @@ import {
   updateProfileAuthAvatar,
 } from "./profile.auth.transport";
 import { loadCompanyMembershipRows } from "./profile.membership.transport";
+import {
+  getProfileAvatarPublicUrl,
+  uploadProfileAvatarObject,
+} from "./profile.storage.transport";
 import type {
   AddListingOwnerLoadResult,
   CatalogSearchItem,
@@ -269,12 +273,10 @@ export const uploadProfileAvatar = async (
     }
 
     filePath = `${userId}/${timestamp}.${extension}`;
-    const upload = await supabase.storage
-      .from("avatars")
-      .upload(filePath, blob, {
-        contentType,
-        upsert: true,
-      });
+    const upload = await uploadProfileAvatarObject(filePath, blob, {
+      contentType,
+      upsert: true,
+    });
     if (upload.error) throw upload.error;
   } else {
     const fileSystemModule =
@@ -296,16 +298,14 @@ export const uploadProfileAvatar = async (
     const base64 = await fileSystemModule.readAsStringAsync(assetUri, {
       encoding: "base64",
     });
-    const upload = await supabase.storage
-      .from("avatars")
-      .upload(filePath, decode(base64), {
-        contentType,
-        upsert: true,
-      });
+    const upload = await uploadProfileAvatarObject(filePath, decode(base64), {
+      contentType,
+      upsert: true,
+    });
     if (upload.error) throw upload.error;
   }
 
-  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  const { data } = getProfileAvatarPublicUrl(filePath);
   return data.publicUrl;
 };
 

@@ -345,6 +345,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle107IntegrityGuardsTransportFiles = [
       path.join(SRC, "lib", "api", "integrity.guards.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle108ProfileStorageTransportFiles = [
+      path.join(SRC, "screens", "profile", "profile.storage.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -475,6 +478,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_105 adds one permanent payment PDF source RPC transport boundary.
     // S-AUDIT_BATTLE_106 adds one permanent proposal items RPC transport boundary.
     // S-AUDIT_BATTLE_107 adds one permanent proposal integrity guard RPC transport boundary.
+    // S-AUDIT_BATTLE_108 adds one permanent profile avatar storage transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -552,6 +556,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle105PaymentPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle106ProposalsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle107IntegrityGuardsTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle108ProfileStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -630,7 +635,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle104DirectorReportsTransportFiles -
         sAuditBattle105PaymentPdfTransportFiles -
         sAuditBattle106ProposalsTransportFiles -
-        sAuditBattle107IntegrityGuardsTransportFiles,
+        sAuditBattle107IntegrityGuardsTransportFiles -
+        sAuditBattle108ProfileStorageTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
