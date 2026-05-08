@@ -1,4 +1,3 @@
-import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import {
   client,
@@ -17,6 +16,7 @@ import {
 } from "./queryBoundary";
 import type { DirectorPendingRow, DirectorInboxRow } from "./types";
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { callDirectorReturnMinAutoRpc } from "./director.return.transport";
 
 const logDirectorApiDebug = (...args: unknown[]) => {
   if (__DEV__) {
@@ -346,7 +346,7 @@ export async function directorReturnToBuyer(
     p_proposal_id: pid,
     p_comment: c,
   };
-  const { data, error } = await supabase.rpc("director_return_min_auto", args);
+  const { data, error } = await callDirectorReturnMinAutoRpc(args);
 
   if (error) throw error;
   validateRpcResponse(data, isRpcVoidResponse, {
