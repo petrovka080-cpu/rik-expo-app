@@ -1,6 +1,4 @@
 import type {
-  WarehouseIssueFreeLine,
-  WarehouseIssueRequestLine,
   WarehouseSupabaseClient,
 } from "../../types/contracts/warehouse";
 import {
@@ -9,6 +7,12 @@ import {
   validateRpcResponse,
   type NullableRpcErrorLike,
 } from "../../lib/api/queryBoundary";
+import {
+  issueWarehouseFreeAtomicTransport,
+  issueWarehouseRequestAtomicTransport,
+  type WarehouseIssueFreeAtomicPayload,
+  type WarehouseIssueRequestAtomicPayload,
+} from "./warehouse.issue.transport";
 
 const validateWarehouseIssueAtomicResult = (
   result: { data: unknown; error: NullableRpcErrorLike },
@@ -39,16 +43,9 @@ const validateWarehouseIssueAtomicResult = (
 
 export async function issueWarehouseFreeAtomic(
   supabase: WarehouseSupabaseClient,
-  payload: {
-    p_who: string;
-    p_object_name: string | null;
-    p_work_name: string | null;
-    p_note: string | null;
-    p_lines: WarehouseIssueFreeLine[];
-    p_client_mutation_id: string;
-  },
+  payload: WarehouseIssueFreeAtomicPayload,
 ) {
-  const result = await supabase.rpc("wh_issue_free_atomic_v5", payload);
+  const result = await issueWarehouseFreeAtomicTransport(supabase, payload);
   return validateWarehouseIssueAtomicResult(
     result,
     "wh_issue_free_atomic_v5",
@@ -58,17 +55,9 @@ export async function issueWarehouseFreeAtomic(
 
 export async function issueWarehouseRequestAtomic(
   supabase: WarehouseSupabaseClient,
-  payload: {
-    p_who: string;
-    p_note: string;
-    p_request_id: string;
-    p_object_name: string | null;
-    p_work_name: string | null;
-    p_lines: WarehouseIssueRequestLine[];
-    p_client_mutation_id: string;
-  },
+  payload: WarehouseIssueRequestAtomicPayload,
 ) {
-  const result = await supabase.rpc("wh_issue_request_atomic_v1", payload);
+  const result = await issueWarehouseRequestAtomicTransport(supabase, payload);
   return validateWarehouseIssueAtomicResult(
     result,
     "wh_issue_request_atomic_v1",
