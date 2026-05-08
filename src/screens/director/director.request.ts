@@ -13,6 +13,11 @@ import {
 } from "../../lib/api/queryBoundary";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
+import {
+  approveDirectorRequestRpc,
+  rejectDirectorRequestAllRpc,
+  rejectDirectorRequestItemRpc,
+} from "./director.request.transport";
 import type { Group, PendingRow } from "./director.types";
 
 type BusyLike = {
@@ -152,10 +157,10 @@ export function useDirectorRequestActions({
     if (!it.request_item_id) return;
     setActingId(it.request_item_id);
     try {
-      const { data, error } = await supabase.rpc("reject_request_item", {
-        request_item_id: it.request_item_id,
-        reason: null,
-      });
+      const { data, error } = await rejectDirectorRequestItemRpc(
+        supabase,
+        it.request_item_id,
+      );
       if (error) throw error;
       validateRpcResponse(data, isRpcVoidResponse, {
         rpcName: "reject_request_item",
@@ -177,10 +182,10 @@ export function useDirectorRequestActions({
       const reqId = toFilterId(g.request_id);
       if (reqId == null) throw new Error("request_id пустой");
 
-      const { data, error } = await supabase.rpc("reject_request_all", {
-        p_request_id: String(reqId),
-        p_reason: null,
-      });
+      const { data, error } = await rejectDirectorRequestAllRpc(
+        supabase,
+        String(reqId),
+      );
       if (error) throw error;
       validateRpcResponse(data, isRpcVoidResponse, {
         rpcName: "reject_request_all",
@@ -213,9 +218,9 @@ export function useDirectorRequestActions({
       const reqIdStr = String(reqId);
       const clientMutationId = `dar_${reqIdStr}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      const { data, error } = await supabase.rpc("director_approve_request_v1", {
-        p_request_id: reqIdStr,
-        p_client_mutation_id: clientMutationId,
+      const { data, error } = await approveDirectorRequestRpc(supabase, {
+        requestId: reqIdStr,
+        clientMutationId,
       });
 
       if (error) throw error;
