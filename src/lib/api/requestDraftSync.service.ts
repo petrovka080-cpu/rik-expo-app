@@ -13,6 +13,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "./queryBoundary";
+import { resolveRequestDraftSyncAccessToken } from "./requestDraftSync.auth.transport";
 
 type RequestDraftSyncArgsV2 = Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
 type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
@@ -62,8 +63,7 @@ const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
   asTrimmedString(value) ? "present_redacted" : "missing";
 
 const ensureRealtimeAuth = async () => {
-  const session = await supabase.auth.getSession();
-  const accessToken = session.data.session?.access_token ?? null;
+  const accessToken = await resolveRequestDraftSyncAccessToken();
   if (!accessToken) return false;
   await supabase.realtime.setAuth(accessToken);
   return true;

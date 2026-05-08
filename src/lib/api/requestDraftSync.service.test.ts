@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { supabase } from "../supabaseClient";
 import { RpcValidationError } from "./queryBoundary";
 import { syncRequestDraftViaRpc } from "./requestDraftSync.service";
@@ -35,6 +37,8 @@ const mockSupabase = supabase as unknown as {
   rpc: jest.Mock;
 };
 const mockMapRequestRow = mapRequestRow as jest.Mock;
+const readLocalSource = (fileName: string) =>
+  fs.readFileSync(path.join(__dirname, fileName), "utf8");
 
 type MockHandoffChannel = {
   subscribe: jest.Mock<MockHandoffChannel, [(status: string) => void]>;
@@ -145,5 +149,15 @@ describe("request draft sync lifecycle boundary", () => {
     });
 
     expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
+  });
+
+  it("keeps request draft auth lookup behind the transport boundary", () => {
+    const serviceSource = readLocalSource("requestDraftSync.service.ts");
+    const transportSource = readLocalSource("requestDraftSync.auth.transport.ts");
+
+    expect(serviceSource).toContain('from "./requestDraftSync.auth.transport"');
+    expect(serviceSource).not.toContain("supabase.auth.getSession");
+    expect(transportSource).toContain("supabase.auth.getSession");
+    expect(transportSource).toContain("Promise<string | null>");
   });
 });
