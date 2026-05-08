@@ -12,6 +12,7 @@ import {
 import { Link, router } from "expo-router";
 
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
+import { signUpWithEmailPassword } from "../../src/lib/auth/signUp.transport";
 import { supabase } from "../../src/lib/supabaseClient";
 
 const UI_COPY = {
@@ -45,7 +46,7 @@ export default function RegisterScreen() {
         throw new Error(UI_COPY.configError);
       }
 
-      const { data, error: signError } = await supabase.auth.signUp({
+      const { data, error: signError } = await signUpWithEmailPassword({
         email,
         password,
       });
