@@ -97,6 +97,13 @@ const isApprovedAuditBattle86StorageTransportBoundaryPatch = (file: string) =>
     "src/lib/api/storage.transport.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle101AiReportsTransportBoundaryPatch = (file: string) =>
+  [
+    "src/lib/ai_reports.ts",
+    "src/lib/ai_reports.transport.ts",
+    "tests/api/aiReportsTransportBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -157,6 +164,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
       !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
       !isApprovedAuditBattle86StorageTransportBoundaryPatch(file) &&
+      !isApprovedAuditBattle101AiReportsTransportBoundaryPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

@@ -1,4 +1,8 @@
-import { supabase } from "./supabaseClient";
+import {
+  loadAiConfigRow,
+  loadProposalHistoryRowsTransport,
+  upsertAiReport,
+} from "./ai_reports.transport";
 
 type PriceHistoryItem = {
   date: string;
@@ -79,11 +83,7 @@ const normalizeProposalHistoryRows = (rows: unknown): ProposalHistoryRow[] => {
 };
 
 export async function loadAiConfig(id = "procurement_system_prompt"): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("ai_configs" as never)
-    .select("content")
-    .eq("id", id)
-    .maybeSingle();
+  const { data, error } = await loadAiConfigRow(id);
 
   if (error) {
     if (__DEV__) console.warn("[loadAiConfig]", error.message || error);
@@ -95,17 +95,7 @@ export async function loadAiConfig(id = "procurement_system_prompt"): Promise<st
 }
 
 export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
-  const { error } = await supabase.from("ai_reports" as never).upsert({
-    id: input.id,
-    company_id: input.companyId || null,
-    user_id: input.userId || null,
-    role: input.role || null,
-    context: input.context || null,
-    title: input.title || null,
-    content: input.content,
-    metadata: input.metadata || {},
-    updated_at: new Date().toISOString(),
-  } as never);
+  const { error } = await upsertAiReport(input);
 
   if (error) {
     if (__DEV__) console.warn("[saveAiReport]", error.message || error);
@@ -123,15 +113,7 @@ async function loadProposalHistoryRows(
     console.warn("[loadProposalHistoryRows] companyId filter is ignored: proposals.company_id is absent in current schema");
   }
 
-  const query = supabase
-    .from("proposal_items")
-    .select("price, supplier, created_at")
-    .eq("rik_code", rikCode)
-    .not("price", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  const { data, error } = await query;
+  const { data, error } = await loadProposalHistoryRowsTransport(rikCode);
   if (error) {
     if (__DEV__) console.warn("[loadProposalHistoryRows]", error.message || error);
     return [];

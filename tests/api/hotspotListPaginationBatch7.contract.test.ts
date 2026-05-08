@@ -109,6 +109,13 @@ const isApprovedAuditBattle86StorageTransportBoundaryPatch = (file: string) =>
     "src/lib/api/storage.transport.ts",
   ].includes(file);
 
+const isApprovedAuditBattle101AiReportsTransportBoundaryPatch = (file: string) =>
+  [
+    "src/lib/ai_reports.ts",
+    "src/lib/ai_reports.transport.ts",
+    "tests/api/aiReportsTransportBoundary.contract.test.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -175,6 +182,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle86StorageTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle101AiReportsTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

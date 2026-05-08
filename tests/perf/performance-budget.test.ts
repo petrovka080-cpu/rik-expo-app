@@ -324,6 +324,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle99MapScreenMarketTransportFiles = [
       path.join(SRC, "components", "map", "MapScreen.market.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle101AiReportsTransportFiles = [
+      path.join(SRC, "lib", "ai_reports.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -447,6 +450,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_97 adds one permanent warehouse issue RPC transport boundary.
     // S-AUDIT_BATTLE_98 adds one permanent CalcModal RPC transport boundary.
     // S-AUDIT_BATTLE_99 adds one permanent MapScreen market read/write transport boundary.
+    // S-AUDIT_BATTLE_101 adds one permanent AI reports transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -517,6 +521,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle97WarehouseIssueTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle98CalcModalRpcTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle99MapScreenMarketTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle101AiReportsTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -588,7 +593,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle96CoreRpcCompatTransportFiles -
         sAuditBattle97WarehouseIssueTransportFiles -
         sAuditBattle98CalcModalRpcTransportFiles -
-        sAuditBattle99MapScreenMarketTransportFiles,
+        sAuditBattle99MapScreenMarketTransportFiles -
+        sAuditBattle101AiReportsTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
