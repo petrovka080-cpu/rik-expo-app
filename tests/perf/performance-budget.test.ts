@@ -266,6 +266,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle78WarehouseNameMapTransportFiles = [
       path.join(SRC, "screens", "warehouse", "warehouse.nameMap.ui.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle79PdfRunnerAuthTransportFiles = [
+      path.join(SRC, "lib", "pdfRunner.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -369,6 +372,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_76 adds one permanent foreman requests schema-probe transport boundary.
     // S-AUDIT_BATTLE_77 adds one permanent Director data schema-probe transport boundary.
     // S-AUDIT_BATTLE_78 adds one permanent Warehouse name-map read transport boundary.
+    // S-AUDIT_BATTLE_79 adds one permanent PDF runner auth-session transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -420,6 +424,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle76ForemanRequestsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle77DirectorDataTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle78WarehouseNameMapTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle79PdfRunnerAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -472,7 +477,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle74MapScreenAuthTransportFiles -
         sAuditBattle76ForemanRequestsTransportFiles -
         sAuditBattle77DirectorDataTransportFiles -
-        sAuditBattle78WarehouseNameMapTransportFiles,
+        sAuditBattle78WarehouseNameMapTransportFiles -
+        sAuditBattle79PdfRunnerAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

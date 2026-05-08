@@ -74,6 +74,15 @@ const isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch = (file: string) =>
     "src/lib/api/canonicalPdfBackendInvoker.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch = (file: string) =>
+  [
+    "src/lib/pdfRunner.ts",
+    "src/lib/pdfRunner.auth.transport.ts",
+    "src/lib/lifecycle/lifecycle.s3.test.ts",
+    "tests/api/pdfRunnerAuthTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -131,6 +140,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedPdfInstantFirstOpenPatch(file) &&
       !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
       !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
+      !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

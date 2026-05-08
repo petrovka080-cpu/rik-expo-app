@@ -86,6 +86,15 @@ const isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch = (file: string) =>
     "src/lib/api/canonicalPdfBackendInvoker.ts",
   ].includes(file);
 
+const isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch = (file: string) =>
+  [
+    "src/lib/pdfRunner.ts",
+    "src/lib/pdfRunner.auth.transport.ts",
+    "src/lib/lifecycle/lifecycle.s3.test.ts",
+    "tests/api/pdfRunnerAuthTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -149,6 +158,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
+        !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

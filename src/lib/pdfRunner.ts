@@ -25,12 +25,14 @@ import {
 import { assertValidLocalPdfFile } from "./pdf/pdfSourceValidation";
 import { SUPABASE_ANON_KEY } from "./supabaseClient";
 import { redactSensitiveText } from "./security/redaction";
-import type { Database } from "./database.types";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  readPdfRunnerAuthSession,
+  type PdfRunnerAuthSessionClient,
+} from "./pdfRunner.auth.transport";
 
 const FileSystemCompat = FileSystemModule;
 export const IOS_PDF_SHARE_MAX_BYTES = 50 * 1024 * 1024;
-type PdfSupabaseLike = Pick<SupabaseClient<Database>, "auth">;
+type PdfSupabaseLike = PdfRunnerAuthSessionClient;
 export type BusyLike = {
   run?: <T>(
     fn: () => Promise<T>,
@@ -368,7 +370,7 @@ async function fileExists(uri: string) {
 
 async function getAuthHeader(supabase: PdfSupabaseLike) {
   try {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await readPdfRunnerAuthSession(supabase);
     const token = data?.session?.access_token;
     const headers: Record<string, string> = {};
     if (SUPABASE_ANON_KEY) headers.apikey = SUPABASE_ANON_KEY;

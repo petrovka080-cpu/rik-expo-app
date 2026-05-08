@@ -88,6 +88,15 @@ const isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch = (file: string) =>
     "src/lib/api/canonicalPdfBackendInvoker.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch = (file: string) =>
+  [
+    "src/lib/pdfRunner.ts",
+    "src/lib/pdfRunner.auth.transport.ts",
+    "src/lib/lifecycle/lifecycle.s3.test.ts",
+    "tests/api/pdfRunnerAuthTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -139,6 +148,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedDirectorReportsSafeBounds1Patch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
+        !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

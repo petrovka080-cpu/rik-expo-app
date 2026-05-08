@@ -51,6 +51,10 @@ const OFFICE_RETURN_TRACING_SRC = join(
   "../../screens/office/useOfficePostReturnTracing.ts",
 );
 const PDF_RUNNER_SRC = join(__dirname, "../pdfRunner.ts");
+const PDF_RUNNER_AUTH_TRANSPORT_SRC = join(
+  __dirname,
+  "../pdfRunner.auth.transport.ts",
+);
 const PLATFORM_GUARD_SRC = join(
   __dirname,
   "../observability/platformGuardDiscipline.ts",
@@ -268,6 +272,7 @@ describe("S3-F: Earlier request cannot overwrite newer truth (stale suppression)
 
 describe("S3-G: PDF entry after resume (lifecycle isolation)", () => {
   const pdfSrc = readFileSync(PDF_RUNNER_SRC, "utf8");
+  const pdfAuthTransportSrc = readFileSync(PDF_RUNNER_AUTH_TRANSPORT_SRC, "utf8");
 
   it("G1: pdfRunner has a dedup mechanism (activeRuns set prevents re-entry)", () => {
     // activeRuns.has(key) prevents the same PDF key from being opened twice.
@@ -277,11 +282,13 @@ describe("S3-G: PDF entry after resume (lifecycle isolation)", () => {
     expect(pdfSrc).toContain("activeRuns.delete(key)");
   });
 
-  it("G2: pdfRunner validates auth via supabase.auth.getSession before fetching", () => {
-    // PDF download uses auth headers obtained from supabase.auth.getSession.
+  it("G2: pdfRunner validates auth via the auth transport boundary before fetching", () => {
+    // PDF download uses auth headers obtained through the typed auth transport.
     // This ensures stale/unauthenticated sessions cannot silently fetch PDF data.
-    expect(pdfSrc).toContain("supabase.auth.getSession");
+    expect(pdfSrc).toContain("readPdfRunnerAuthSession");
+    expect(pdfSrc).not.toContain("supabase.auth.getSession");
     expect(pdfSrc).toContain("getAuthHeader");
+    expect(pdfAuthTransportSrc).toContain("supabase.auth.getSession");
   });
 });
 
