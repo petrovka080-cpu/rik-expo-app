@@ -80,6 +80,12 @@ const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
     "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
   ].includes(file);
 
+const isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch = (file: string) =>
+  [
+    "src/lib/api/canonicalPdfAuth.transport.ts",
+    "src/lib/api/canonicalPdfBackendInvoker.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -142,6 +148,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isLaterApprovedRpcValidationPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
+        !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

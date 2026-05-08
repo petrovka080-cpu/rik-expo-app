@@ -5,6 +5,10 @@ import { isAbortError, throwIfAborted } from "../requestCancellation";
 import { redactSensitiveText } from "../security/redaction";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
 import {
+  refreshCanonicalPdfSessionOnce,
+  resolveEdgeFunctionAccessToken,
+} from "./canonicalPdfAuth.transport";
+import {
   extractCanonicalPdfErrorPayload,
   normalizeCanonicalPdfSuccessPayload,
   type CanonicalPdfBackendDocumentType,
@@ -222,39 +226,6 @@ function summarizeFunctionResponse(value: unknown): string | null {
   }
 }
 
-async function resolveEdgeFunctionAccessToken(signal?: AbortSignal | null) {
-  throwIfAborted(signal);
-  try {
-    if (!supabase?.auth || typeof supabase.auth.getSession !== "function") {
-      return SUPABASE_ANON_KEY;
-    }
-    const session = await supabase.auth.getSession();
-    throwIfAborted(signal);
-    return trimText(session.data.session?.access_token) || SUPABASE_ANON_KEY;
-  } catch (error) {
-    if (isAbortError(error)) throw error;
-    logCanonicalPdfBoundaryDiagnostic("resolve_access_token_failed", error);
-    return SUPABASE_ANON_KEY;
-  }
-}
-
-async function refreshSessionOnce(signal?: AbortSignal | null) {
-  throwIfAborted(signal);
-  try {
-    if (!supabase?.auth || typeof supabase.auth.getSession !== "function") return false;
-    const current = await supabase.auth.getSession();
-    throwIfAborted(signal);
-    if (!current.data.session || typeof supabase.auth.refreshSession !== "function") return false;
-    const refreshed = await supabase.auth.refreshSession();
-    throwIfAborted(signal);
-    return Boolean(refreshed.data.session && !refreshed.error);
-  } catch (error) {
-    if (isAbortError(error)) throw error;
-    logCanonicalPdfBoundaryDiagnostic("refresh_session_failed", error);
-    return false;
-  }
-}
-
 async function invokeOnce(args: InvokeCanonicalPdfBackendArgs) {
   throwIfAborted(args.signal);
   const result = await supabase.functions.invoke<unknown>(args.functionName, {
@@ -302,7 +273,10 @@ async function readFunctionResponseBody(response: Response, signal?: AbortSignal
 
 async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
   throwIfAborted(args.signal);
-  const accessToken = await resolveEdgeFunctionAccessToken(args.signal);
+  const accessToken = await resolveEdgeFunctionAccessToken({
+    signal: args.signal,
+    onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+  });
   const url = `${SUPABASE_URL}/functions/v1/${args.functionName}`;
 
   if (__DEV__) console.info("[canonical-pdf-backend] native_fetch_start", {
@@ -450,7 +424,13 @@ async function invokeCanonicalPdfBackendViaDirectFetch(
     authLikeDetail.includes("unauthorized") ||
     authLikeDetail.includes("permission");
 
-  if (shouldRetryAuth && (await refreshSessionOnce(args.signal))) {
+  if (
+    shouldRetryAuth &&
+    (await refreshCanonicalPdfSessionOnce({
+      signal: args.signal,
+      onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+    }))
+  ) {
     throwIfAborted(args.signal);
     attempt = await invokeDirectFetchOnce(args);
     throwIfAborted(args.signal);
@@ -498,7 +478,10 @@ async function invokeCanonicalPdfBackendViaSupabase(
 
   const firstPayloadError = extractCanonicalPdfErrorPayload(attempt.data);
   if (firstPayloadError?.errorCode === "auth_failed") {
-    const refreshed = await refreshSessionOnce(args.signal);
+    const refreshed = await refreshCanonicalPdfSessionOnce({
+      signal: args.signal,
+      onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+    });
     throwIfAborted(args.signal);
     if (refreshed) {
       attempt = await invokeOnce(args);
@@ -516,7 +499,10 @@ async function invokeCanonicalPdfBackendViaSupabase(
       lower.includes("unauthorized") ||
       lower.includes("permission")
     ) {
-      const refreshed = await refreshSessionOnce(args.signal);
+      const refreshed = await refreshCanonicalPdfSessionOnce({
+        signal: args.signal,
+        onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+      });
       throwIfAborted(args.signal);
       if (refreshed) {
         attempt = await invokeOnce(args);

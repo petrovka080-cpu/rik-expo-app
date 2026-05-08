@@ -68,6 +68,12 @@ const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
     "tests/scale/warehouseApiBffReadonlyDbPort.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch = (file: string) =>
+  [
+    "src/lib/api/canonicalPdfAuth.transport.ts",
+    "src/lib/api/canonicalPdfBackendInvoker.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -122,6 +128,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedLaterRpcValidationPatch(file) &&
       !isApprovedPdfInstantFirstOpenPatch(file) &&
       !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
+      !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );
