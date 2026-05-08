@@ -15,6 +15,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
+import { callDirectorApprovePipelineRpc } from "./director.approve.transport";
 
 export type DirectorApprovePipelineResult = {
   proposalId: string;
@@ -94,7 +95,7 @@ export async function runDirectorApprovePipelineAction(params: {
 
   try {
     recordApproveEvent("director_approve_rpc_invoked", "success", eventBase);
-    const { data, error } = await params.supabase.rpc("director_approve_pipeline_v1", {
+    const { data, error } = await callDirectorApprovePipelineRpc(params.supabase, {
       p_proposal_id: proposalId,
       p_comment: null,
       p_invoice_currency: "KGS",

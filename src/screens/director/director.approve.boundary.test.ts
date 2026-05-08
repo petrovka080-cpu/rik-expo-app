@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import {
   getPlatformObservabilityEvents,
   resetPlatformObservabilityEvents,
@@ -12,6 +14,9 @@ import {
   DirectorApproveBoundaryError,
   runDirectorApprovePipelineAction,
 } from "./director.approve.boundary";
+
+const readSource = (relativePath: string): string =>
+  fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 
 const buildApproveSupabase = (params: {
   rpc?: { data?: unknown; error?: unknown };
@@ -59,6 +64,20 @@ const buildApproveSupabase = (params: {
 describe("director approve boundary", () => {
   beforeEach(() => {
     resetPlatformObservabilityEvents();
+  });
+
+  it("keeps the approve RPC provider call behind the typed transport boundary", () => {
+    const boundarySource = readSource("src/screens/director/director.approve.boundary.ts");
+    const transportSource = readSource("src/screens/director/director.approve.transport.ts");
+
+    expect(boundarySource).toContain('from "./director.approve.transport"');
+    expect(boundarySource).toContain("callDirectorApprovePipelineRpc");
+    expect(boundarySource).not.toContain('supabase.rpc("director_approve_pipeline_v1"');
+    expect(boundarySource).not.toContain('params.supabase.rpc("director_approve_pipeline_v1"');
+    expect(transportSource).toContain('supabase.rpc("director_approve_pipeline_v1"');
+    expect(transportSource).toContain("export function callDirectorApprovePipelineRpc");
+    expect(transportSource).not.toContain("validateRpcResponse");
+    expect(transportSource).not.toContain("DirectorApproveBoundaryError");
   });
 
   it("publishes terminal success only after authoritative readback confirms accountant handoff", async () => {
