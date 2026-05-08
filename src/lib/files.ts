@@ -9,6 +9,7 @@ import {
 import { openAppAttachment } from "./documents/attachmentOpener";
 import {
   getSupplierFilePublicUrl,
+  insertSupplierFileMetadata,
   uploadSupplierFileObject,
 } from "./files.storage.transport";
 import { reportAndSwallow } from "./observability/catchDiscipline";
@@ -275,7 +276,7 @@ export async function uploadSupplierFile(
   const url = publicUrl?.data?.publicUrl || "";
 
   try {
-    await supabase.from("supplier_files").insert({
+    await insertSupplierFileMetadata({
       supplier_id: id,
       file_name: cleanName,
       file_url: url,
