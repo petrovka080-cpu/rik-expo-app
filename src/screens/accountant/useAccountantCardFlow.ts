@@ -2,8 +2,8 @@ import { Keyboard } from "react-native";
 import { useCallback } from "react";
 import type { Dispatch, SetStateAction } from "react";
 
-import { supabase } from "../../lib/supabaseClient";
 import { runNextTick } from "./helpers";
+import { loadAccountantCardFlowAuthFio } from "./useAccountantCardFlow.auth.transport";
 import type { AccountantInboxUiRow, AttachmentRow, AttachmentState } from "./types";
 
 type AttachmentCacheEntry = {
@@ -107,8 +107,7 @@ export function useAccountantCardFlow(params: Params) {
 
       (async () => {
         try {
-          const { data } = await supabase.auth.getUser();
-          const fio = String(data?.user?.user_metadata?.full_name ?? data?.user?.user_metadata?.name ?? "").trim();
+          const fio = await loadAccountantCardFlowAuthFio();
           if (fio) setAccountantFio((prev) => (prev?.trim() ? prev : fio));
         } catch (e) {
           if (__DEV__) console.warn("[useAccountantCardFlow] auth.getUser failed", e);
