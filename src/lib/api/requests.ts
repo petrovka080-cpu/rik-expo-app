@@ -13,6 +13,11 @@ import {
   buildRequestSelectSchemaSafe,
 } from "./requests.read-capabilities";
 import {
+  selectRequestIdByFilterFromTransport,
+  selectRequestRecordByIdFromTransport,
+  type RequestIdLookupRow,
+} from "./requests.read.transport";
+import {
   REQUEST_DRAFT_EN,
   REQUEST_DRAFT_STATUS,
   normalizeStatus,
@@ -90,7 +95,6 @@ type RequestFindReusableEmptyDraftArgs =
   Database["public"]["Functions"]["request_find_reusable_empty_draft_v1"]["Args"];
 type RequestSubmitAtomicArgs =
   Database["public"]["Functions"]["request_submit_atomic_v1"]["Args"];
-type RequestIdLookupRow = Pick<RequestsTable["Row"], "id">;
 type RequestDraftCacheProbeRow = Pick<RequestsTable["Row"], "id" | "status" | "created_by" | "submitted_at">;
 export type RequestSubmitPath =
   | "rpc_submit"
@@ -475,12 +479,7 @@ async function insertDraftRequest(meta?: RequestMeta): Promise<RequestRecord | n
 
 // ============================== Low-level request helpers ==============================
 async function selectRequestIdByFilter(requestFilterId: string): Promise<RequestIdLookupRow | null> {
-  const found = await client
-    .from("requests")
-    .select("id")
-    .eq("id", requestFilterId)
-    .limit(1)
-    .maybeSingle();
+  const found = await selectRequestIdByFilterFromTransport(requestFilterId);
 
   if (found.error) throw found.error;
   return found.data ?? null;
@@ -501,11 +500,7 @@ async function selectRequestRecordById(
   requestFilterId: string,
   requestReadSelect: string,
 ): Promise<RequestRecord | null> {
-  const existing = await client
-    .from("requests")
-    .select(requestReadSelect)
-    .eq("id", requestFilterId)
-    .maybeSingle();
+  const existing = await selectRequestRecordByIdFromTransport(requestFilterId, requestReadSelect);
 
   if (existing.error) throw existing.error;
   return existing.data ? mapRequestRow(existing.data) : null;
