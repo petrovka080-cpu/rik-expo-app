@@ -10,10 +10,13 @@ const read = (relativePath: string) =>
 describe("contractor screen data auth transport boundary", () => {
   it("keeps contractor screen session checks behind the transport boundary", () => {
     const hookSource = read("src/screens/contractor/hooks/useContractorScreenData.ts");
+    const refreshLifecycleSource = read("src/screens/contractor/hooks/useContractorRefreshLifecycle.ts");
     const transportSource = read("src/screens/contractor/contractor.screenData.auth.transport.ts");
 
     expect(hookSource).toContain('from "../contractor.screenData.auth.transport"');
     expect(hookSource).not.toContain("auth.getSession");
+    expect(refreshLifecycleSource).toContain('from "../contractor.screenData.auth.transport"');
+    expect(refreshLifecycleSource).not.toContain("auth.getSession");
     expect(transportSource).toContain("auth.getSession");
     expect(transportSource).toContain("hasCurrentContractorSessionUser");
   });
