@@ -15,6 +15,7 @@ import { validateRpcResponse } from "../../lib/api/queryBoundary";
 import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from "../../lib/api/_core";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
+import { createBuyerProposalAttachmentSignedUrl } from "./buyer.repo.storage.transport";
 
 export type PropAttachmentRow = {
   id: string;
@@ -150,7 +151,12 @@ export async function repoListProposalAttachments(supabase: SupabaseClient, prop
 
       if (bucket && path) {
         try {
-          const s = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60); // 1h
+          const s = await createBuyerProposalAttachmentSignedUrl({
+            supabase,
+            bucketId: bucket,
+            storagePath: path,
+            expiresInSeconds: 60 * 60,
+          });
           url = String(s?.data?.signedUrl || "").trim();
         } catch (error) {
           recordCatchDiscipline({
