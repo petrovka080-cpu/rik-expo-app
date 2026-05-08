@@ -1,4 +1,3 @@
-import { supabase } from "../supabaseClient";
 import {
   proposalSubmit as rpcProposalSubmit,
   isProposalDirectorVisibleRow,
@@ -18,17 +17,17 @@ import {
   validateRpcResponse,
 } from "../api/queryBoundary";
 import { traceAsync } from "../observability/sentry";
+import {
+  callProposalAtomicSubmitRpc,
+  loadExistingProposalItemRecoveryRows,
+  loadExistingProposalRecoveryRows,
+  type ExistingProposalItemRecoveryRow,
+  type ExistingProposalRecoveryRow,
+  type ProposalAtomicSubmitRpcArgs,
+  type ProposalAtomicSubmitRpcBucket,
+} from "./catalog.proposalCreation.transport";
 
-export type ProposalBucketInput = {
-  supplier?: string | null;
-  request_item_ids: string[];
-  meta?: {
-    request_item_id: string;
-    price?: string | null;
-    supplier?: string | null;
-    note?: string | null;
-  }[];
-};
+export type ProposalBucketInput = ProposalAtomicSubmitRpcBucket;
 
 export type CreateProposalsOptions = {
   buyerFio?: string | null;
@@ -62,15 +61,6 @@ export type CreateProposalsResult = {
     created_item_count: number;
     attachment_continuation_ready: boolean;
   };
-};
-
-type ProposalAtomicSubmitRpcArgs = {
-  p_client_mutation_id: string;
-  p_buckets: ProposalBucketInput[];
-  p_buyer_fio?: string | null;
-  p_submit?: boolean;
-  p_request_item_status?: string | null;
-  p_request_id?: string | null;
 };
 
 type ProposalAtomicSubmitRpcProposalRow = {
@@ -129,20 +119,6 @@ const isAtomicSubmitRpcResult = (value: unknown): value is ProposalAtomicSubmitR
   Array.isArray(value.proposals) &&
   value.proposals.every(isAtomicSubmitProposalRow) &&
   isAtomicSubmitMeta(value.meta);
-
-type ExistingProposalRecoveryRow = {
-  id?: string | null;
-  proposal_no?: string | null;
-  display_no?: string | null;
-  status?: string | null;
-  submitted_at?: string | null;
-  sent_to_accountant_at?: string | null;
-  supplier?: string | null;
-};
-
-type ExistingProposalItemRecoveryRow = {
-  request_item_id?: string | null;
-};
 
 const parseStringArray = (value: unknown): string[] =>
   Array.isArray(value)
@@ -230,11 +206,7 @@ const uniqueBucketRequestItemIds = (bucket: ProposalBucketInput | undefined): st
 async function loadExistingProposalItems(proposalId: string, requestItemIds: string[]): Promise<Set<string>> {
   if (!requestItemIds.length) return new Set();
 
-  const { data, error } = await supabase
-    .from("proposal_items")
-    .select("request_item_id")
-    .eq("proposal_id", proposalId)
-    .in("request_item_id", requestItemIds);
+  const { data, error } = await loadExistingProposalItemRecoveryRows(proposalId, requestItemIds);
 
   if (error) throw error;
   return new Set(
@@ -251,13 +223,7 @@ async function findExistingProposalForBucket(
   const requestItemIds = uniqueBucketRequestItemIds(bucket);
   const supplier = norm(bucket?.supplier ?? null);
 
-  let query = supabase
-    .from("proposals")
-    .select("id,proposal_no,display_no,status,submitted_at,sent_to_accountant_at,supplier")
-    .eq("request_id", requestId);
-
-  query = supplier ? query.eq("supplier", supplier) : query.is("supplier", null);
-  const { data, error } = await query.order("updated_at", { ascending: false }).limit(10);
+  const { data, error } = await loadExistingProposalRecoveryRows({ requestId, supplier });
   if (error) throw error;
 
   const rows = Array.isArray(data) ? (data as ExistingProposalRecoveryRow[]) : [];
@@ -420,7 +386,7 @@ async function runAtomicProposalSubmitRpc(
     p_request_id: norm(opts.requestId ?? null) || null,
   };
 
-  const { data, error } = await supabase.rpc("rpc_proposal_submit_v3" as never, args as never);
+  const { data, error } = await callProposalAtomicSubmitRpc(args);
   if (error) {
     if (isProposalRequestSupplierConflict(error)) {
       return await recoverExistingProposalSubmitResult(buckets, opts, args.p_client_mutation_id);

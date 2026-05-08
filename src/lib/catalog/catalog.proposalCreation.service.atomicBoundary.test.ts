@@ -21,6 +21,10 @@ const serviceSource = fs.readFileSync(
   path.join(process.cwd(), "src/lib/catalog/catalog.proposalCreation.service.ts"),
   "utf8",
 );
+const transportSource = fs.readFileSync(
+  path.join(process.cwd(), "src/lib/catalog/catalog.proposalCreation.transport.ts"),
+  "utf8",
+);
 
 describe("catalog proposal atomic boundary", () => {
   beforeEach(() => {
@@ -152,6 +156,9 @@ describe("catalog proposal atomic boundary", () => {
   it("keeps legacy client write orchestration out of the proposal creation service", () => {
     expect(serviceSource).toContain("rpc_proposal_submit_v3");
     expect(serviceSource).toContain("runAtomicProposalSubmitRpc");
+    expect(serviceSource).toContain('from "./catalog.proposalCreation.transport"');
+    expect(serviceSource).not.toContain("../supabaseClient");
+    expect(serviceSource).not.toContain("supabase.");
     expect(serviceSource).not.toContain("createProposalHeadStage");
     expect(serviceSource).not.toContain("linkProposalItemsStage");
     expect(serviceSource).not.toContain("completeProposalCreationStage");
@@ -162,6 +169,27 @@ describe("catalog proposal atomic boundary", () => {
     expect(serviceSource).not.toContain("request_items_set_status");
     expect(serviceSource).not.toContain("mutation:proposal_items_fallback");
     expect(serviceSource).not.toContain("@typescript-eslint/no-unused-vars");
+  });
+
+  it("keeps proposal submit provider calls behind the typed transport", () => {
+    expect(serviceSource).toContain("callProposalAtomicSubmitRpc(args)");
+    expect(serviceSource).toContain("loadExistingProposalItemRecoveryRows(proposalId, requestItemIds)");
+    expect(serviceSource).toContain("loadExistingProposalRecoveryRows({ requestId, supplier })");
+    expect(serviceSource).toContain("validateRpcResponse(data, isAtomicSubmitRpcResult");
+    expect(serviceSource).toContain("mapAtomicProposalSubmitResult(validated, buckets)");
+    expect(serviceSource).toContain("isProposalRequestSupplierConflict(error)");
+
+    expect(transportSource).toContain("export type ProposalAtomicSubmitRpcArgs");
+    expect(transportSource).toContain("export type ProposalAtomicSubmitRpcBucket");
+    expect(transportSource).toContain("loadExistingProposalItemRecoveryRows");
+    expect(transportSource).toContain('.from("proposal_items")');
+    expect(transportSource).toContain("loadExistingProposalRecoveryRows");
+    expect(transportSource).toContain('.from("proposals")');
+    expect(transportSource).toContain("callProposalAtomicSubmitRpc");
+    expect(transportSource).toContain('supabase.rpc("rpc_proposal_submit_v3"');
+    expect(transportSource).not.toContain("validateRpcResponse");
+    expect(transportSource).not.toContain("mapAtomicProposalSubmitResult");
+    expect(transportSource).not.toContain("isProposalRequestSupplierConflict");
   });
 
   it("rejects inconsistent atomic rpc success payloads instead of accepting partial commits", async () => {
