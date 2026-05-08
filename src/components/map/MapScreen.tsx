@@ -33,6 +33,7 @@ import type {
 } from "./mapContracts";
 import { useMapListingsQuery } from "./useMapListingsQuery";
 import { MAP_SCREEN_UI as UI, styles } from "./MapScreen.styles";
+import { loadMapScreenCurrentAuthUser } from "./MapScreen.auth.transport";
 
 import {
   buildIndex,
@@ -505,7 +506,7 @@ export default function MapScreen() {
 
     setSendingOffer(true);
     try {
-      const user = (await supabase.auth.getUser()).data.user;
+      const user = await loadMapScreenCurrentAuthUser({ supabase });
       if (!user) {
         Alert.alert("Вход", "Нужно войти в аккаунт");
         return;
