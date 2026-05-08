@@ -10,7 +10,10 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { trackRpcLatency } from "../../lib/observability/rpcLatencyMetrics";
-import type { Database } from "../../lib/database.types";
+import {
+  callAccountantInboxScopeRpc,
+  type AccountantInboxScopeRpcArgs,
+} from "./accountant.inbox.transport";
 import type { AccountantInboxUiRow, Tab } from "./types";
 
 type AccountantInboxScopeRow = {
@@ -37,9 +40,6 @@ type AccountantInboxScopeEnvelope = {
   rows: AccountantInboxUiRow[];
   meta: Record<string, unknown>;
 };
-
-type AccountantInboxScopeRpcArgs =
-  Database["public"]["Functions"]["accountant_inbox_scope_v1"]["Args"];
 
 export type AccountantInboxRpcTabContract =
   | { status: "ready"; rpcTab: string }
@@ -174,7 +174,7 @@ export async function loadAccountantInboxWindowData(params: {
 
   try {
     const startedAt = Date.now();
-    const { data, error } = await supabase.rpc("accountant_inbox_scope_v1", rpcArgs);
+    const { data, error } = await callAccountantInboxScopeRpc(rpcArgs);
     if (error) {
       trackRpcLatency({
         name: "accountant_inbox_scope_v1",
