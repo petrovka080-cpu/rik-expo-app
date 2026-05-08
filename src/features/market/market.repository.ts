@@ -15,18 +15,19 @@ import {
   proposalSnapshotItems,
   proposalSubmit,
 } from "../../lib/api/proposals";
-import type { Database } from "../../lib/database.types";
 import { ensurePlatformNetworkService, getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
 import {
   beginPlatformObservability,
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
-import { supabase } from "../../lib/supabaseClient";
 import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
 import {
   callMarketplaceItemsScopePageRpc,
   callMarketplaceItemScopeDetailRpc,
+  insertMarketplaceSupplierMessage,
+  updateMarketplaceProposalHead,
+  type MarketProposalHeadPatch,
 } from "./market.repository.transport";
 import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
 import {
@@ -569,12 +570,12 @@ export async function createMarketplaceProposal(
     if (!proposalId) throw new Error("Не удалось создать предложение.");
 
     const buyerFio = await resolveCurrentMarketBuyerName();
-    const headPatch: Database["public"]["Tables"]["proposals"]["Update"] = {
+    const headPatch: MarketProposalHeadPatch = {
       request_id: requestId,
       supplier: resolveProposalSupplier(listing),
     };
     if (buyerFio) headPatch.buyer_fio = buyerFio;
-    const patchResult = await supabase.from("proposals").update(headPatch).eq("id", proposalId);
+    const patchResult = await updateMarketplaceProposalHead(proposalId, headPatch);
     if (patchResult.error) throw patchResult.error;
 
     await proposalAddItems(proposalId, requestItemIds);
@@ -659,16 +660,12 @@ export async function contactMarketplaceSupplier(params: {
 
   try {
     await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_contact_supplier");
-    const result = await supabase
-      .from("supplier_messages" as never)
-      .insert({
-        supplier_id: supplierId,
-        supplier_user_id: supplierUserId,
-        marketplace_item_id: listing.id,
-        message,
-      } as never)
-      .select("id")
-      .single();
+    const result = await insertMarketplaceSupplierMessage({
+      supplier_id: supplierId,
+      supplier_user_id: supplierUserId,
+      marketplace_item_id: listing.id,
+      message,
+    });
 
     if (result.error) throw result.error;
     const messageId = trim((result.data as { id?: string | null } | null)?.id);
