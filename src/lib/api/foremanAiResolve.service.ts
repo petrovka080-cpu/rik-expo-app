@@ -1,4 +1,8 @@
-import { supabase } from "../supabaseClient";
+import {
+  callResolveCatalogPackagingRpc,
+  callResolveCatalogSynonymRpc,
+  invokeForemanAiResolveFunction,
+} from "./foremanAiResolve.transport";
 
 export type ForemanCatalogKind = "material" | "work" | "service";
 
@@ -258,10 +262,10 @@ export async function resolveCatalogSynonymMatchViaRpc(params: {
   );
   if (terms.length === 0) return null;
 
-  const { data, error } = await supabase.rpc("resolve_catalog_synonym_v1" as never, {
-    p_terms: terms,
-    p_kind: params.kind ?? null,
-  } as never);
+  const { data, error } = await callResolveCatalogSynonymRpc({
+    terms,
+    kind: params.kind ?? null,
+  });
   if (error) throw error;
 
   const root = asRecord(data);
@@ -279,11 +283,11 @@ export async function resolveCatalogPackagingViaRpc(params: {
   const qty = Math.max(0, toNumber(params.qty, 0));
   if (!rikCode || !packageName || qty <= 0) return null;
 
-  const { data, error } = await supabase.rpc("resolve_packaging_v1" as never, {
-    p_rik_code: rikCode,
-    p_package_name: packageName,
-    p_qty: qty,
-  } as never);
+  const { data, error } = await callResolveCatalogPackagingRpc({
+    rikCode,
+    packageName,
+    qty,
+  });
   if (error) throw error;
 
   const root = asRecord(data);
@@ -324,15 +328,10 @@ export async function resolveForemanAiCatalogViaServer(params: {
     };
   }
 
-  const { data, error } = await supabase.functions.invoke("foreman-ai-resolve", {
-    body: {
-      prompt,
-      items,
-      maxItems: Math.max(1, Math.floor(toNumber(params.maxItems, 40))),
-    },
-    headers: {
-      Accept: "application/json",
-    },
+  const { data, error } = await invokeForemanAiResolveFunction({
+    prompt,
+    items,
+    maxItems: Math.max(1, Math.floor(toNumber(params.maxItems, 40))),
   });
   if (error) throw error;
 
