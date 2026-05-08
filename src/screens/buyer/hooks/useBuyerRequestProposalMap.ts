@@ -1,8 +1,8 @@
-import { supabase } from "../../../lib/supabaseClient";
 import {
   isRpcRecordArray,
   validateRpcResponse,
 } from "../../../lib/api/queryBoundary";
+import { callBuyerRequestProposalMapRpc } from "./useBuyerRequestProposalMap.transport";
 
 type RequestProposalMapRow = {
   request_id?: string | number | null;
@@ -12,7 +12,7 @@ type RequestProposalMapRow = {
 export const isBuyerRequestProposalMapRpcResponse = isRpcRecordArray;
 
 export async function fetchBuyerRequestProposalMap(requestIds: string[]) {
-  const { data, error } = await supabase.rpc("resolve_req_pr_map", {
+  const { data, error } = await callBuyerRequestProposalMapRpc({
     p_request_ids: requestIds,
   });
 
