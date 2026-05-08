@@ -2,8 +2,8 @@ import { useEffect } from "react";
 
 import { recordPlatformObservability } from "../../../lib/observability/platformObservability";
 import { recordCatchDiscipline } from "../../../lib/observability/catchDiscipline";
-import { supabase } from "../../../lib/supabaseClient";
 import { inferCountryCode as inferCountryCodeHelper, stripToLocal as stripToLocalHelper } from "../buyer.helpers";
+import { loadBuyerRfqPrefillAuthMetadata } from "./useBuyerRfqPrefill.auth.transport";
 
 type StringRef = { current: string };
 type BoolRef = { current: boolean };
@@ -169,10 +169,10 @@ export function useBuyerRfqPrefill({
 
     (async () => {
       try {
-        const { data } = await supabase.auth.getUser();
+        const metadata = await loadBuyerRfqPrefillAuthMetadata();
         const boundary = resolveBuyerRfqPrefillBoundary({
           status: "loaded",
-          metadata: data?.user?.user_metadata,
+          metadata,
         });
 
         if (boundary.status === "invalid") {

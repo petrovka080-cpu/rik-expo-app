@@ -227,6 +227,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle61ContractorScreenDataAuthTransportFiles = [
       path.join(SRC, "screens", "contractor", "contractor.screenData.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle62BuyerRfqPrefillAuthTransportFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerRfqPrefill.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -317,6 +320,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_59 adds one permanent BuyerSubcontractTab auth transport boundary.
     // S-AUDIT_BATTLE_60 adds one permanent contractor profile auth transport boundary.
     // S-AUDIT_BATTLE_61 adds one permanent contractor screen data auth transport boundary.
+    // S-AUDIT_BATTLE_62 adds one permanent Buyer RFQ prefill auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -355,6 +359,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle59BuyerSubcontractAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle60ContractorProfileAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle61ContractorScreenDataAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle62BuyerRfqPrefillAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -394,7 +399,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle58ChatAuthTransportFiles -
         sAuditBattle59BuyerSubcontractAuthTransportFiles -
         sAuditBattle60ContractorProfileAuthTransportFiles -
-        sAuditBattle61ContractorScreenDataAuthTransportFiles,
+        sAuditBattle61ContractorScreenDataAuthTransportFiles -
+        sAuditBattle62BuyerRfqPrefillAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
