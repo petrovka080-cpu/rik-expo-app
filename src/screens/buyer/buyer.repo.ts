@@ -16,6 +16,15 @@ import { callProposalRequestItemIntegrityRpc } from "../../lib/api/integrity.gua
 import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from "../../lib/api/_core";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
+import {
+  createBuyerProposalItemLinksQuery,
+  createBuyerProposalItemsForAccountingQuery,
+  createBuyerProposalItemsForViewQuery,
+  createBuyerRequestItemsByIdsQuery,
+  createBuyerRequestItemToRequestMapQuery,
+  selectBuyerSupplierCardByName,
+  type BuyerProposalAccountingItemRow,
+} from "./buyer.repo.read.transport";
 import { createBuyerProposalAttachmentSignedUrl } from "./buyer.repo.storage.transport";
 
 export type PropAttachmentRow = {
@@ -24,11 +33,6 @@ export type PropAttachmentRow = {
   url?: string | null;
   group_key?: string | null;
   created_at?: string | null;
-};
-type ProposalAccountingItemRow = {
-  supplier?: string | null;
-  qty?: number | null;
-  price?: number | null;
 };
 type RawAttachmentRow = {
   id?: string | number | null;
@@ -87,18 +91,14 @@ export async function repoGetProposalItemsForAccounting(
   throwIfAborted(options?.signal);
   const pi = await loadPagedBuyerRepoRows(() =>
     applySupabaseAbortSignal(
-      supabase
-        .from("proposal_items")
-        .select("supplier, qty, price")
-        .eq("proposal_id", pidStr)
-        .order("id", { ascending: true }),
+      createBuyerProposalItemsForAccountingQuery(supabase, pidStr),
       options?.signal,
     ),
   );
   throwIfAborted(options?.signal);
 
   if (pi.error) throw pi.error;
-  return Array.isArray(pi.data) ? (pi.data as ProposalAccountingItemRow[]) : [];
+  return Array.isArray(pi.data) ? (pi.data as BuyerProposalAccountingItemRow[]) : [];
 }
 
 export async function repoGetSupplierCardByName(
@@ -111,11 +111,7 @@ export async function repoGetSupplierCardByName(
 
   throwIfAborted(options?.signal);
   const cardQ = await applySupabaseAbortSignal(
-    supabase
-      .from("suppliers")
-      .select("name, inn, bank_account, phone, email")
-      .ilike("name", name)
-      .maybeSingle(),
+    selectBuyerSupplierCardByName(supabase, name),
     options?.signal,
   );
   throwIfAborted(options?.signal);
@@ -198,11 +194,7 @@ export async function repoGetProposalItemsForView(
   pageInput?: PageInput,
 ) {
   const q = await loadPagedBuyerRepoRows(() =>
-    supabase
-      .from("proposal_items")
-      .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
-      .eq("proposal_id", pidStr)
-      .order("request_item_id", { ascending: true }),
+    createBuyerProposalItemsForViewQuery(supabase, pidStr),
     pageInput,
   );
 
@@ -215,11 +207,7 @@ export async function repoGetRequestItemsByIds(supabase: SupabaseClient, ids: st
   if (!clean.length) return [];
 
   const ri = await loadPagedBuyerRepoRows(() =>
-    supabase
-      .from("request_items")
-      .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
-      .in("id", clean)
-      .order("id", { ascending: true }),
+    createBuyerRequestItemsByIdsQuery(supabase, clean),
   );
 
   if (ri.error) throw ri.error;
@@ -275,12 +263,7 @@ export async function repoGetProposalItemLinks(
   if (!ids.length) return [];
 
   const q = await loadPagedBuyerRepoRows(() =>
-    supabase
-      .from("proposal_items")
-      .select("proposal_id, request_item_id")
-      .in("proposal_id", ids)
-      .order("proposal_id", { ascending: true })
-      .order("request_item_id", { ascending: true }),
+    createBuyerProposalItemLinksQuery(supabase, ids),
     pageInput,
   );
 
@@ -297,11 +280,7 @@ export async function repoGetRequestItemToRequestMap(
   if (!ids.length) return [];
 
   const q = await loadPagedBuyerRepoRows(() =>
-    supabase
-      .from("request_items")
-      .select("id, request_id")
-      .in("id", ids)
-      .order("id", { ascending: true }),
+    createBuyerRequestItemToRequestMapQuery(supabase, ids),
     pageInput,
   );
 

@@ -145,6 +145,7 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
     expect(contractorData).toContain('.eq("progress_id", progressId)');
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
+    const buyerRepoReadTransport = read("src/screens/buyer/buyer.repo.read.transport.ts");
     expect(buyerRepo).toContain(
       "BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }",
     );
@@ -152,6 +153,7 @@ describe("S-PAG-5B director warehouse job queue pagination contract", () => {
     expect(buyerRepo).toContain(
       "loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS",
     );
-    expect(buyerRepo).toContain('.eq("proposal_id", pidStr)');
+    expect(buyerRepo).toContain("createBuyerProposalItemsForViewQuery(supabase, pidStr)");
+    expect(buyerRepoReadTransport).toContain('.eq("proposal_id", proposalId)');
   });
 });

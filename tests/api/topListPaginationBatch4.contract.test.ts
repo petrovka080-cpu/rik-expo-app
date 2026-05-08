@@ -46,10 +46,12 @@ describe("S-PAG-5 remaining unbounded selects triage contract", () => {
     expect(contractorData).toContain(".in(\"log_id\", logIds)");
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
+    const buyerRepoReadTransport = read("src/screens/buyer/buyer.repo.read.transport.ts");
     expect(buyerRepo).toContain("BUYER_REPO_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 }");
     expect(buyerRepo).toContain("loadPagedBuyerRepoRows");
     expect(buyerRepo).toContain("loadPagedRowsWithCeiling(queryFactory, BUYER_REPO_LIST_PAGE_DEFAULTS");
-    expect(buyerRepo).toContain(".eq(\"proposal_id\", pidStr)");
+    expect(buyerRepo).toContain("createBuyerProposalItemsForViewQuery(supabase, pidStr)");
+    expect(buyerRepoReadTransport).toContain(".eq(\"proposal_id\", proposalId)");
 
     const warehouseRepo = read("src/screens/warehouse/warehouse.api.repo.ts");
     expect(warehouseRepo).not.toContain("normalizePage(");

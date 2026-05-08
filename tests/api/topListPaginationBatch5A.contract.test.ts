@@ -85,9 +85,11 @@ describe("S-PAG-5A contractor foreman buyer pagination contract", () => {
     expect(contractorData).toContain('.in("log_id", logIds)');
 
     const buyerRepo = read("src/screens/buyer/buyer.repo.ts");
+    const buyerRepoReadTransport = read("src/screens/buyer/buyer.repo.read.transport.ts");
     expect(buyerRepo).not.toContain("FOREMAN_DICT_LIST_PAGE_DEFAULTS");
     expect(buyerRepo).not.toContain("loadPagedForemanRows");
-    expect(buyerRepo).toContain('.eq("proposal_id", pidStr)');
+    expect(buyerRepo).toContain("createBuyerProposalItemsForViewQuery(supabase, pidStr)");
+    expect(buyerRepoReadTransport).toContain('.eq("proposal_id", proposalId)');
 
     const warehouseRepo = read("src/screens/warehouse/warehouse.api.repo.ts");
     expect(warehouseRepo).not.toContain("FOREMAN_DICT_LIST_PAGE_DEFAULTS");
