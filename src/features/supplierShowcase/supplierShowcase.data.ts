@@ -1,4 +1,3 @@
-import { supabase } from "../../lib/supabaseClient";
 import {
   buildListingAssistantPrompt,
   toMarketHomeListingCard,
@@ -11,6 +10,7 @@ import {
   loadSupplierShowcaseListingsByUserId,
   loadSupplierShowcaseProfileByUserId,
 } from "./supplierShowcase.transport";
+import { loadSupplierShowcaseCurrentUserId } from "./supplierShowcase.auth.transport";
 import type {
   SupplierShowcaseCompany,
   SupplierShowcasePayload,
@@ -93,8 +93,7 @@ export async function loadSupplierShowcasePayload(
 ): Promise<SupplierShowcasePayload> {
   const requestedUserId = asNullableParam(options.userId);
   const requestedCompanyId = asNullableParam(options.companyId);
-  const auth = await supabase.auth.getUser();
-  const currentUserId = auth.data.user?.id ?? null;
+  const currentUserId = await loadSupplierShowcaseCurrentUserId();
 
   let targetUserId = requestedUserId ?? currentUserId;
   let company = requestedCompanyId ? await loadCompanyById(requestedCompanyId) : null;
