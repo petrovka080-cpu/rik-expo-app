@@ -15,6 +15,7 @@ describe("foreman auth transport boundary", () => {
     const requestHistorySource = read("src/screens/foreman/hooks/useForemanHistory.ts");
     const subcontractHistorySource = read("src/screens/foreman/hooks/useForemanSubcontractHistory.ts");
     const subcontractControllerSource = read("src/screens/foreman/hooks/useForemanSubcontractController.tsx");
+    const fioBootstrapSource = read("src/screens/foreman/hooks/useForemanFioBootstrapFlow.ts");
     const transportSource = read("src/screens/foreman/foreman.auth.transport.ts");
 
     expect(requestHistorySource).toContain("foreman.auth.transport");
@@ -25,6 +26,9 @@ describe("foreman auth transport boundary", () => {
     expect(subcontractHistorySource).not.toContain("../../../lib/supabaseClient");
     expect(subcontractControllerSource).toContain("foreman.auth.transport");
     expect(subcontractControllerSource).not.toContain("supabase.auth.getUser");
+    expect(fioBootstrapSource).toContain("foreman.auth.transport");
+    expect(fioBootstrapSource).not.toContain("supabase.auth.getUser");
+    expect(fioBootstrapSource).not.toContain("../../../lib/supabaseClient");
     expect(transportSource).toContain("supabase.auth.getUser");
     expect(transportSource).toContain("loadCurrentForemanAuthUserId");
     expect(transportSource).toContain("loadCurrentForemanAuthIdentity");
@@ -51,7 +55,9 @@ describe("foreman auth transport boundary", () => {
           data: {
             user: {
               id: " foreman-1 ",
-              user_metadata: { full_name: " Foreman One " },
+              email: " foreman@example.test ",
+              phone: " +996555000111 ",
+              user_metadata: { full_name: " Foreman One ", phone: " ignored-fallback " },
             },
           },
         }),
@@ -59,6 +65,28 @@ describe("foreman auth transport boundary", () => {
     ).resolves.toEqual({
       id: "foreman-1",
       fullName: "Foreman One",
+      email: "foreman@example.test",
+      phone: "+996555000111",
+    });
+  });
+
+  it("uses metadata phone when top-level phone is absent", async () => {
+    await expect(
+      loadCurrentForemanAuthIdentity({
+        readUser: async () => ({
+          data: {
+            user: {
+              id: "foreman-2",
+              user_metadata: { phone: " +996555000222 " },
+            },
+          },
+        }),
+      }),
+    ).resolves.toEqual({
+      id: "foreman-2",
+      fullName: "",
+      email: "",
+      phone: "+996555000222",
     });
   });
 });

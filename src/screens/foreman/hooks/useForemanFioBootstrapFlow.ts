@@ -5,7 +5,6 @@ import {
   type SetStateAction,
 } from "react";
 
-import { supabase } from "../../../lib/supabaseClient";
 import {
   loadStoredFioState,
   saveStoredFioState,
@@ -14,6 +13,7 @@ import {
   loadForemanHistory,
   saveForemanToHistory,
 } from "../foreman.helpers";
+import { loadCurrentForemanAuthIdentity } from "../foreman.auth.transport";
 
 export type ForemanAuthIdentity = {
   fullName: string;
@@ -60,17 +60,16 @@ export function useForemanFioBootstrapFlow(args: UseForemanFioBootstrapFlowArgs)
   }, [setForemanHistory]);
 
   const runFioBootstrap = useCallback<ForemanFioBootstrapRunner>(async (isActive) => {
-    const authUserResult = await supabase.auth.getUser();
-    const authUser = authUserResult.data.user ?? null;
+    const authUser = await loadCurrentForemanAuthIdentity();
     const nextIdentity = {
-      fullName: String(authUser?.user_metadata?.full_name ?? "").trim(),
-      email: String(authUser?.email ?? "").trim(),
-      phone: String(authUser?.phone ?? authUser?.user_metadata?.phone ?? "").trim(),
+      fullName: authUser.fullName,
+      email: authUser.email,
+      phone: authUser.phone,
     };
     if (isActive()) {
       setAuthIdentity(nextIdentity);
     }
-    const scopeKey = buildFioBootstrapScopeKey(authUserResult.data.user?.id);
+    const scopeKey = buildFioBootstrapScopeKey(authUser.id);
     if (!isActive() || fioBootstrapScopeKey === scopeKey) return;
     const sixAM = new Date();
     sixAM.setHours(6, 0, 0, 0);
@@ -120,8 +119,8 @@ export function useForemanFioBootstrapFlow(args: UseForemanFioBootstrapFlowArgs)
         history: await loadForemanHistory(),
       });
       setForemanHistory(nextHistory);
-      const authUserResult = await supabase.auth.getUser();
-      setFioBootstrapScopeKey(buildFioBootstrapScopeKey(authUserResult.data.user?.id));
+      const authUser = await loadCurrentForemanAuthIdentity();
+      setFioBootstrapScopeKey(buildFioBootstrapScopeKey(authUser.id));
       setIsFioConfirmVisible(false);
     } finally {
       setIsFioLoading(false);
