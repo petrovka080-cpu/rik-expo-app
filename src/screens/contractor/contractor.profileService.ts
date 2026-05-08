@@ -1,4 +1,5 @@
 import { beginPlatformObservability } from "../../lib/observability/platformObservability";
+import { resolveCurrentContractorUserId } from "./contractor.profileService.auth.transport";
 
 export type ContractorUserProfile = {
   id: string;
@@ -29,8 +30,8 @@ export async function loadCurrentContractorUserProfile(params: {
     event: "load_user_profile",
     sourceKind: "auth+table:user_profiles",
   });
-  const { data: auth } = await supabaseClient.auth.getUser();
-  const user = auth?.user;
+  const userId = await resolveCurrentContractorUserId({ supabaseClient });
+  const user = userId ? { id: userId } : null;
   if (!user) {
     observation.success({ rowCount: 0 });
     return null;
@@ -71,8 +72,8 @@ export async function loadCurrentContractorProfile(params: {
     event: "load_contractor_profile",
     sourceKind: "auth+table:contractors",
   });
-  const { data: auth } = await supabaseClient.auth.getUser();
-  const user = auth?.user;
+  const userId = await resolveCurrentContractorUserId({ supabaseClient });
+  const user = userId ? { id: userId } : null;
   if (!user) {
     observation.success({ rowCount: 0 });
     return null;
@@ -113,8 +114,8 @@ export async function activateCurrentUserAsContractor(params: {
   supabaseClient: any;
 }): Promise<void> {
   const { supabaseClient } = params;
-  const { data: auth } = await supabaseClient.auth.getUser();
-  const user = auth?.user;
+  const userId = await resolveCurrentContractorUserId({ supabaseClient });
+  const user = userId ? { id: userId } : null;
   if (!user) throw new Error("Пользователь не авторизован");
 
   const { error } = await supabaseClient
