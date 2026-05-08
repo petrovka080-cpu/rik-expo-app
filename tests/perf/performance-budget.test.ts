@@ -390,6 +390,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle125MarketRepositoryTransportFiles = [
       path.join(SRC, "features", "market", "market.repository.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle126FilesStorageTransportFiles = [
+      path.join(SRC, "lib", "files.storage.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -535,6 +538,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_120 adds one permanent contractor work PDF source RPC transport boundary.
     // S-AUDIT_BATTLE_123 adds one permanent buyer proposal attachment signed-url transport boundary.
     // S-AUDIT_BATTLE_125 adds one permanent market repository read RPC transport boundary.
+    // S-AUDIT_BATTLE_126 adds one permanent supplier files storage transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -627,6 +631,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle120ContractorPdfSourceTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle123BuyerRepoStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle125MarketRepositoryTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle126FilesStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -720,7 +725,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle119WarehouseObjectWorkPdfTransportFiles -
         sAuditBattle120ContractorPdfSourceTransportFiles -
         sAuditBattle123BuyerRepoStorageTransportFiles -
-        sAuditBattle125MarketRepositoryTransportFiles,
+        sAuditBattle125MarketRepositoryTransportFiles -
+        sAuditBattle126FilesStorageTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

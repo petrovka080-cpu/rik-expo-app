@@ -7,6 +7,10 @@ import {
   toProposalAttachmentLegacyRow,
 } from "./api/proposalAttachments.service";
 import { openAppAttachment } from "./documents/attachmentOpener";
+import {
+  getSupplierFilePublicUrl,
+  uploadSupplierFileObject,
+} from "./files.storage.transport";
 import { reportAndSwallow } from "./observability/catchDiscipline";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 import { supabase } from "./supabaseClient";
@@ -260,15 +264,14 @@ export async function uploadSupplierFile(
 
   const cleanName = safeFileName(fileName);
   const path = `${id}/${Date.now()}_${cleanName}`;
-  const bucket = supabase.storage.from("supplier_files");
 
-  const upload = await bucket.upload(path, file, {
-    upsert: false,
-    cacheControl: "3600",
+  const upload = await uploadSupplierFileObject({
+    storagePath: path,
+    uploadBody: file,
   });
   if (upload.error) throw upload.error;
 
-  const publicUrl = bucket.getPublicUrl(path);
+  const publicUrl = getSupplierFilePublicUrl(path);
   const url = publicUrl?.data?.publicUrl || "";
 
   try {
