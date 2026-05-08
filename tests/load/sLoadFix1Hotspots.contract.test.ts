@@ -114,6 +114,14 @@ const isApprovedAuditBattle101AiReportsTransportBoundaryPatch = (file: string) =
     "tests/api/aiReportsTransportBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle104DirectorReportsTransportBoundaryPatch = (file: string) =>
+  [
+    "src/lib/api/directorReportsTransport.service.ts",
+    "src/lib/api/directorReportsTransport.transport.ts",
+    "tests/api/directorReportsAggregationContracts.contract.test.ts",
+    "tests/api/directorReportsTransportBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -185,6 +193,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle101AiReportsTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle104DirectorReportsTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

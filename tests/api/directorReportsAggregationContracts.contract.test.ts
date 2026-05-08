@@ -151,10 +151,12 @@ describe("S-FETCHALL director reports server-side aggregation contracts", () => 
 
   it("keeps active transport scope on typed RPC params and validation envelope", () => {
     const transportService = read("src", "lib", "api", "directorReportsTransport.service.ts");
+    const transport = read("src", "lib", "api", "directorReportsTransport.transport.ts");
 
     expect(transportService).toContain("buildDirectorReportsAggregationRequest");
-    expect(transportService).toContain("toDirectorReportsAggregationRpcParams");
     expect(transportService).toContain("DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.documentType");
     expect(transportService).toContain("DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.sourceKind");
+    expect(transport).toContain("toDirectorReportsAggregationRpcParams");
+    expect(transport).toContain("DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.rpcName");
   });
 });

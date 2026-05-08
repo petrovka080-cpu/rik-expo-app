@@ -1,6 +1,4 @@
-import { supabase } from "../supabaseClient";
 import {
-  applySupabaseAbortSignal,
   isAbortError,
   throwIfAborted,
 } from "../requestCancellation";
@@ -24,9 +22,9 @@ import {
 import {
   DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT,
   buildDirectorReportsAggregationRequest,
-  toDirectorReportsAggregationRpcParams,
   type DirectorReportsAggregationRpcEnvelopeV1,
 } from "./director_reports.aggregation.contracts";
+import { callDirectorReportTransportScopeRpc } from "./directorReportsTransport.transport";
 
 const DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1_MODE_RAW = String(
   process.env.EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 ?? "",
@@ -238,13 +236,7 @@ async function fetchDirectorReportTransportScopeViaRpc(args: {
 
   try {
     const request = buildDirectorReportsAggregationRequest(args);
-    const { data, error } = await applySupabaseAbortSignal(
-      supabase.rpc(
-        DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT.rpcName,
-        toDirectorReportsAggregationRpcParams(request),
-      ),
-      args.signal,
-    );
+    const { data, error } = await callDirectorReportTransportScopeRpc(request, args.signal);
     throwIfAborted(args.signal);
 
     if (error) {
