@@ -6,6 +6,7 @@ import {
 } from "../../lib/api/queryBoundary";
 import { isUuid } from "./warehouse.utils";
 import {
+  callWarehouseRefreshNameMapUiRpc,
   createWarehouseNameMapUiQuery,
   type WarehouseNameMapUiRow,
 } from "./warehouse.nameMap.ui.transport";
@@ -28,14 +29,6 @@ const normalizeCode = (value: unknown): string =>
   String(value ?? "").trim().toUpperCase();
 
 const WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
-
-const rpcWarehouseRefreshNameMapUi = (
-  supabase: SupabaseClient,
-  payload: {
-    p_code_list: string[] | null;
-    p_refresh_mode: WarehouseNameMapRefreshMode;
-  },
-) => supabase.rpc("warehouse_refresh_name_map_ui" as never, payload as never);
 
 const loadWarehouseNameMapQueueBoundary = async () => {
   try {
@@ -97,7 +90,7 @@ export async function refreshWarehouseNameMapUiProjection(
   const codeList =
     refreshMode === "full" ? null : normalizeWarehouseCodeList(input.codeList ?? []);
 
-  const q = await rpcWarehouseRefreshNameMapUi(supabase, {
+  const q = await callWarehouseRefreshNameMapUiRpc(supabase, {
     p_code_list: codeList,
     p_refresh_mode: refreshMode,
   });
