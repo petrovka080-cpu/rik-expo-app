@@ -266,7 +266,10 @@ describe("director realtime channel lifecycle", () => {
     expect(realtimeSource).not.toContain("catch {}");
     expect(lifecycleSource).not.toContain("eslint-disable");
     expect(realtimeSource).toContain('from "./director.lifecycle.auth.transport"');
+    expect(realtimeSource).toContain('from "./director.lifecycle.realtime.transport"');
     expect(realtimeSource).not.toContain("supabase.auth.getSession");
+    expect(realtimeSource).not.toContain("supabase.removeChannel");
+    expect(realtimeSource).not.toContain("supabase.channel");
     expect(authTransportSource).toContain("supabase.auth.getSession");
     expect(authTransportSource).toContain("Promise<string | null>");
     expect(lifecycleSource).toContain("app_state_listener_remove_failed");

@@ -2,7 +2,7 @@ import type { MutableRefObject } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 import { reportAndSwallow } from "../../lib/observability/catchDiscipline";
-import { ensureSignedIn, supabase } from "../../lib/supabaseClient";
+import { ensureSignedIn } from "../../lib/supabaseClient";
 import {
   DIRECTOR_HANDOFF_BROADCAST_EVENT,
   DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME,
@@ -21,6 +21,11 @@ import {
   shouldRefreshDirectorRowsForItemChange,
   shouldRefreshDirectorRowsForRequestChange,
 } from "./director.lifecycle.scope";
+import {
+  createDirectorScreenRealtimeChannel,
+  removeDirectorRealtimeChannel,
+  setDirectorRealtimeAuth,
+} from "./director.lifecycle.realtime.transport";
 
 const logDirectorLive = (payload: Record<string, unknown>) => {
   if (!__DEV__) return;
@@ -61,7 +66,7 @@ const cleanupRealtimeChannel = (params: {
   }
 
   try {
-    supabase.removeChannel(params.channel);
+    removeDirectorRealtimeChannel(params.channel);
   } catch (error) {
     reportAndSwallow({
       screen: "director",
@@ -82,11 +87,11 @@ const cleanupRealtimeChannel = (params: {
 const clearPreviousRealtimeChannels = (refs: Pick<DirectorRealtimeRefs, "rtChannelRef" | "handoffChannelRef">) => {
   try {
     if (refs.rtChannelRef.current) {
-      supabase.removeChannel(refs.rtChannelRef.current);
+      removeDirectorRealtimeChannel(refs.rtChannelRef.current);
       refs.rtChannelRef.current = null;
     }
     if (refs.handoffChannelRef.current) {
-      supabase.removeChannel(refs.handoffChannelRef.current);
+      removeDirectorRealtimeChannel(refs.handoffChannelRef.current);
       refs.handoffChannelRef.current = null;
     }
   } catch (error) {
@@ -106,7 +111,7 @@ const authorizeRealtime = async () => {
   try {
     const accessToken = await resolveDirectorRealtimeAccessToken();
     if (accessToken) {
-      await supabase.realtime.setAuth(accessToken);
+      await setDirectorRealtimeAuth(accessToken);
       logDirectorLive({
         sourcePath: "director.lifecycle.realtime_auth",
         hasAccessToken: true,
@@ -121,15 +126,7 @@ const authorizeRealtime = async () => {
 };
 
 const createDirectorScreenChannel = (refs: DirectorRealtimeRefs) =>
-  supabase
-    .channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME, {
-      config: {
-        broadcast: {
-          ack: false,
-          self: false,
-        },
-      },
-    })
+  createDirectorScreenRealtimeChannel()
     .on(
       "postgres_changes",
       {

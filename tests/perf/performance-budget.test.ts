@@ -300,6 +300,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle91DirectorRequestTransportFiles = [
       path.join(SRC, "screens", "director", "director.request.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle92DirectorLifecycleRealtimeTransportFiles = [
+      path.join(SRC, "screens", "director", "director.lifecycle.realtime.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -415,6 +418,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_88 adds one permanent store Supabase write transport boundary.
     // S-AUDIT_BATTLE_90 adds one permanent buyer actions write transport boundary.
     // S-AUDIT_BATTLE_91 adds one permanent Director request mutation transport boundary.
+    // S-AUDIT_BATTLE_92 adds one permanent Director lifecycle realtime transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -477,6 +481,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle88StoreSupabaseWriteTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle90BuyerActionsWriteTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle91DirectorRequestTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle92DirectorLifecycleRealtimeTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -540,7 +545,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle87SecurityScreenAuthTransportFiles -
         sAuditBattle88StoreSupabaseWriteTransportFiles -
         sAuditBattle90BuyerActionsWriteTransportFiles -
-        sAuditBattle91DirectorRequestTransportFiles,
+        sAuditBattle91DirectorRequestTransportFiles -
+        sAuditBattle92DirectorLifecycleRealtimeTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

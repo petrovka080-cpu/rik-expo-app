@@ -78,13 +78,20 @@ describe("S-RT-6 realtime fanout budget proof", () => {
   it("keeps direct mounted channel growth bounded to documented owners only", () => {
     const clientSource = read("src/lib/realtime/realtime.client.ts");
     const directorSource = read("src/screens/director/director.lifecycle.realtime.ts");
+    const directorTransportSource = read(
+      "src/screens/director/director.lifecycle.realtime.transport.ts",
+    );
     const draftSyncSource = read("src/lib/api/requestDraftSync.service.ts");
     const draftSyncTransportSource = read("src/lib/api/requestDraftSync.transport.ts");
     const requestRepositorySource = read("src/lib/api/request.repository.ts");
     const chatSource = read("src/lib/chat_api.ts");
 
     expect(clientSource).toContain("client.channel(params.name)");
-    expect(directorSource).toContain(".channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME");
+    expect(directorSource).toContain("createDirectorScreenRealtimeChannel");
+    expect(directorTransportSource).toContain(
+      ".channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME",
+    );
+    expect(directorTransportSource).toContain("removeDirectorRealtimeChannel");
     expect(directorSource).toContain("claimRealtimeChannel");
     expect(directorSource).toContain("maxChannelsForSource: 1");
     expect(directorSource).toContain("screenBudget?.release()");
