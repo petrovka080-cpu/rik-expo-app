@@ -366,6 +366,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle114ContractorWorkSearchTransportFiles = [
       path.join(SRC, "screens", "contractor", "contractor.workSearch.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle115DirectorRepositoryTransportFiles = [
+      path.join(SRC, "screens", "director", "director.repository.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -503,6 +506,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_112 adds one permanent director pending proposals RPC transport boundary.
     // S-AUDIT_BATTLE_113 adds one permanent buyer request proposal-map RPC transport boundary.
     // S-AUDIT_BATTLE_114 adds one permanent contractor work search RPC transport boundary.
+    // S-AUDIT_BATTLE_115 adds one permanent director repository primary-list RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -587,6 +591,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle112DirectorProposalsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle113BuyerRequestProposalMapTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle114ContractorWorkSearchTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle115DirectorRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -672,7 +677,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle111AccountantInboxTransportFiles -
         sAuditBattle112DirectorProposalsTransportFiles -
         sAuditBattle113BuyerRequestProposalMapTransportFiles -
-        sAuditBattle114ContractorWorkSearchTransportFiles,
+        sAuditBattle114ContractorWorkSearchTransportFiles -
+        sAuditBattle115DirectorRepositoryTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

@@ -2,6 +2,7 @@ import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/reques
 import { normalizePage } from "../../lib/api/_core";
 import type { DirectorSupabaseClient } from "../../types/contracts/director";
 import type { PendingRow } from "./director.types";
+import { callListDirectorItemsStableRpc } from "./director.repository.transport";
 
 type DirectorRepositoryDeps = {
   supabase: DirectorSupabaseClient;
@@ -170,7 +171,7 @@ export async function fetchDirectorPendingRows(
   let primaryRows: PendingRow[] = [];
 
   try {
-    const { data, error } = await deps.supabase.rpc("list_director_items_stable");
+    const { data, error } = await callListDirectorItemsStableRpc(deps.supabase);
     if (error) throw error;
     primaryRows = normalizeDirectorPendingRows((data ?? []) as Record<string, unknown>[]);
     logDirectorRepository({
