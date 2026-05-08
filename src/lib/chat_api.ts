@@ -4,6 +4,7 @@ import {
   loadChatProfileRowsByUserIds,
   loadListingChatMessageRows,
 } from "./assistant_store_read.low_risk.transport";
+import { getCurrentChatAuthUser } from "./chat.auth.transport";
 import { supabase } from "./supabaseClient";
 
 export type ChatMessageType = "text" | "photo" | "voice" | "file" | "system";
@@ -117,7 +118,7 @@ export function isChatBackendMissingError(error: unknown): boolean {
 }
 
 async function loadCurrentChatActor(): Promise<ChatActor> {
-  const { data: authResult, error: authError } = await supabase.auth.getUser();
+  const { data: authResult, error: authError } = await getCurrentChatAuthUser();
   if (authError) throw authError;
 
   const user = authResult.user;
@@ -199,7 +200,7 @@ export async function sendListingChatMessage(
 }
 
 export async function markListingChatMessagesRead(messages: ChatMessage[]): Promise<void> {
-  const { data: authResult } = await supabase.auth.getUser();
+  const { data: authResult } = await getCurrentChatAuthUser();
   const currentUserId = authResult.user?.id;
   if (!currentUserId) return;
 
@@ -223,7 +224,7 @@ export async function markListingChatMessagesRead(messages: ChatMessage[]): Prom
 }
 
 export async function deleteListingChatMessage(messageId: string): Promise<void> {
-  const { data: authResult } = await supabase.auth.getUser();
+  const { data: authResult } = await getCurrentChatAuthUser();
   const currentUserId = authResult.user?.id;
   if (!currentUserId) {
     throw new Error("User is not authenticated.");
