@@ -102,6 +102,13 @@ const isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch = (file: string
     "tests/api/directorPdfBackendAuthTransport.contract.test.ts",
   ].includes(file);
 
+const isApprovedAuditBattle86StorageTransportBoundaryPatch = (file: string) =>
+  [
+    "src/lib/api/storage.ts",
+    "src/lib/api/storage.service.test.ts",
+    "src/lib/api/storage.transport.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -167,6 +174,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
+        !isApprovedAuditBattle86StorageTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

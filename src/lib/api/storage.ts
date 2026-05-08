@@ -1,15 +1,18 @@
 import { Platform } from "react-native";
 import * as FileSystemModule from "expo-file-system/legacy";
 import { getFileSystemPaths } from "../fileSystemPaths";
-import { supabase } from "../supabaseClient";
 import type { QueuedProposalAttachment } from "./queuedProposalAttachments";
-import { attachProposalAttachmentEvidence } from "./proposalAttachmentEvidence.api";
+import {
+  PROPOSAL_FILES_BUCKET,
+  attachProposalAttachmentEvidenceWithDefaultClient,
+  removeProposalFileObject,
+  uploadProposalFileObject,
+  type StorageUploadBody,
+} from "./storage.transport";
 const FileSystemCompat = FileSystemModule;
 
-const FILES_BUCKET = "proposal_files";
+const FILES_BUCKET = PROPOSAL_FILES_BUCKET;
 const TECHNICAL_ATTACHMENT_GROUPS = new Set(["proposal_html"]);
-type StorageBucketApi = ReturnType<typeof supabase.storage.from>;
-type StorageUploadBody = Parameters<StorageBucketApi["upload"]>[1];
 type NativeFileLike = {
   name?: string | null;
   uri?: string | null;
@@ -143,8 +146,7 @@ function sanitizeFilename(name: string) {
 }
 
 async function removeUploadedObject(bucketId: string, storagePath: string) {
-  const removal = await supabase.storage.from(bucketId).remove([storagePath]);
-  if (removal.error) throw removal.error;
+  await removeProposalFileObject(bucketId, storagePath);
 }
 
 async function ensureReadableFileUri(rawUri: string, safeName: string): Promise<string> {
@@ -257,12 +259,11 @@ export async function uploadProposalAttachment(
 
   const storagePath = `proposals/${pid}/${groupKey}/${Date.now()}-${sanitizeFilename(fileName)}`;
 
-  const { error: upErr } = await supabase.storage
-    .from(FILES_BUCKET)
-    .upload(storagePath, uploadBody, {
-      contentType,
-      upsert: false,
-    });
+  const { error: upErr } = await uploadProposalFileObject({
+    storagePath,
+    uploadBody,
+    contentType,
+  });
 
   if (upErr) {
     throw new Error(
@@ -280,7 +281,7 @@ export async function uploadProposalAttachment(
   };
 
   try {
-    await attachProposalAttachmentEvidence(supabase, row);
+    await attachProposalAttachmentEvidenceWithDefaultClient(row);
   } catch (error) {
     try {
       await removeUploadedObject(FILES_BUCKET, storagePath);
@@ -337,12 +338,11 @@ export async function stageProposalAttachmentForQueue(
   const storagePath =
     `queued/${groupKey}/${supplierSegment}/${Date.now()}-${sanitizeFilename(fileName)}`;
 
-  const { error: upErr } = await supabase.storage
-    .from(FILES_BUCKET)
-    .upload(storagePath, uploadBody, {
-      contentType,
-      upsert: false,
-    });
+  const { error: upErr } = await uploadProposalFileObject({
+    storagePath,
+    uploadBody,
+    contentType,
+  });
 
   if (upErr) {
     throw new Error(
@@ -377,7 +377,7 @@ export async function bindQueuedProposalAttachmentToProposal(
   if (!fileName) throw new Error("bindQueuedProposalAttachmentToProposal: file_name пустой");
   if (!groupKey) throw new Error("bindQueuedProposalAttachmentToProposal: group_key пустой");
 
-  await attachProposalAttachmentEvidence(supabase, {
+  await attachProposalAttachmentEvidenceWithDefaultClient({
     proposalId: pid,
     bucketId,
     storagePath,
