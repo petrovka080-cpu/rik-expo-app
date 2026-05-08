@@ -1,6 +1,6 @@
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
 import { loadCurrentProfileFullNameRow } from "../../lib/assistant_store_read.low_risk.transport";
-import { supabase } from "../../lib/supabaseClient";
+import { loadCurrentProfileIdentityAuthUser } from "./currentProfileIdentity.auth.transport";
 
 export type CurrentProfileIdentity = {
   userId: string | null;
@@ -30,8 +30,7 @@ export function toProfileAvatarText(
 }
 
 export async function loadCurrentProfileIdentity(): Promise<CurrentProfileIdentity> {
-  const sessionResult = await supabase.auth.getSession();
-  const user = sessionResult.data.session?.user ?? null;
+  const user = await loadCurrentProfileIdentityAuthUser();
   if (!user) return EMPTY_CURRENT_PROFILE_IDENTITY;
 
   const [roleResolution, profileResult] = await Promise.all([
