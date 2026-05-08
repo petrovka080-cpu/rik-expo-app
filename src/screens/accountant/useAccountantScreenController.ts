@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { useFocusEffect } from "expo-router";
 
-import { supabase } from "../../lib/supabaseClient";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   isPlatformGuardCoolingDown,
@@ -11,7 +10,10 @@ import {
   ACCOUNTANT_FOCUS_REFRESH_MIN_INTERVAL_MS,
 } from "./accountant.repository";
 import { createAccountantRefreshHandlers, createAccountantTabPreviewHandler } from "./accountant.actions";
-import { hasCurrentAccountantSessionUser } from "./accountant.screen.auth.transport";
+import {
+  hasCurrentAccountantSessionUser,
+  subscribeAccountantAuthStateChange,
+} from "./accountant.screen.auth.transport";
 import { useAccountantHistoryController } from "./useAccountantHistoryController";
 import { useAccountantInboxController } from "./useAccountantInboxController";
 import type { Tab } from "./types";
@@ -72,9 +74,11 @@ export function useAccountantScreenController(params: {
 
     void syncAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!alive) return;
-      setAuthReady(Boolean(session?.user));
+    const { data: listener } = subscribeAccountantAuthStateChange({
+      onChange: (_event, session) => {
+        if (!alive) return;
+        setAuthReady(Boolean(session?.user));
+      },
     });
 
     return () => {
