@@ -5,6 +5,7 @@ import { REQUEST_PENDING_EN, REQUEST_PENDING_STATUS } from "../../lib/api/reques
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { shortId } from "./director.helpers";
 import { reportDirectorBoundary } from "./director.observability";
+import { fetchDirectorRequestDisplayProbeRows } from "./director.data.transport";
 import { fetchDirectorPendingProposalWindow } from "./director.proposals.repo";
 import { fetchDirectorPendingRows } from "./director.repository";
 import { useDirectorUiStore } from "./directorUi.store";
@@ -139,10 +140,9 @@ export function useDirectorData({ supabase }: Deps) {
 
     requestNoCapabilityInFlightRef.current = (async () => {
       try {
-        const q = await supabase.from("requests").select("*").limit(1);
+        const q = await fetchDirectorRequestDisplayProbeRows(supabase);
         if (q.error) throw q.error;
-        const first =
-          Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, unknown>) : null;
+        const first = Array.isArray(q.data) && q.data.length ? q.data[0] : null;
         const hasRequestNo = !!first && Object.prototype.hasOwnProperty.call(first, "request_no");
         requestDisplaySelectModeRef.current = hasRequestNo ? "request_no+display_no" : "display_no_only";
       } catch (error) {

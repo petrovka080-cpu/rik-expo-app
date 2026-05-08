@@ -260,6 +260,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle76ForemanRequestsTransportFiles = [
       path.join(SRC, "screens", "foreman", "foreman.requests.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle77DirectorDataTransportFiles = [
+      path.join(SRC, "screens", "director", "director.data.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -361,6 +364,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_73 adds one permanent buyer actions auth transport boundary.
     // S-AUDIT_BATTLE_74 adds one permanent MapScreen auth transport boundary.
     // S-AUDIT_BATTLE_76 adds one permanent foreman requests schema-probe transport boundary.
+    // S-AUDIT_BATTLE_77 adds one permanent Director data schema-probe transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -410,6 +414,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle73BuyerActionsAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle74MapScreenAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle76ForemanRequestsTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle77DirectorDataTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -460,7 +465,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle72BuyerAutoFioAuthTransportFiles -
         sAuditBattle73BuyerActionsAuthTransportFiles -
         sAuditBattle74MapScreenAuthTransportFiles -
-        sAuditBattle76ForemanRequestsTransportFiles,
+        sAuditBattle76ForemanRequestsTransportFiles -
+        sAuditBattle77DirectorDataTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
