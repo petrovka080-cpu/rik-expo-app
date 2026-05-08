@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { hasCurrentContractorSessionUser } from "../../src/screens/contractor/contractor.screenData.auth.transport";
+import {
+  hasCurrentContractorSessionUser,
+  listenForContractorAuthStateChanges,
+  type ContractorAuthStateChangeCallback,
+} from "../../src/screens/contractor/contractor.screenData.auth.transport";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
 
@@ -17,8 +21,12 @@ describe("contractor screen data auth transport boundary", () => {
     expect(hookSource).not.toContain("auth.getSession");
     expect(refreshLifecycleSource).toContain('from "../contractor.screenData.auth.transport"');
     expect(refreshLifecycleSource).not.toContain("auth.getSession");
+    expect(refreshLifecycleSource).toContain("listenForContractorAuthStateChanges({");
+    expect(refreshLifecycleSource).not.toContain("auth.onAuthStateChange");
     expect(transportSource).toContain("auth.getSession");
+    expect(transportSource).toContain("auth.onAuthStateChange");
     expect(transportSource).toContain("hasCurrentContractorSessionUser");
+    expect(transportSource).toContain("listenForContractorAuthStateChanges");
   });
 
   it("preserves session user presence semantics", async () => {
@@ -41,5 +49,37 @@ describe("contractor screen data auth transport boundary", () => {
         },
       }),
     ).resolves.toBe(false);
+  });
+
+  it("preserves auth state listener subscription semantics", () => {
+    const callbacks: ContractorAuthStateChangeCallback[] = [];
+    const unsubscribe = jest.fn();
+    const observed: string[] = [];
+
+    const result = listenForContractorAuthStateChanges({
+      supabaseClient: {
+        auth: {
+          onAuthStateChange: (callback) => {
+            callbacks.push(callback);
+            return {
+              data: {
+                subscription: {
+                  unsubscribe,
+                },
+              },
+            };
+          },
+        },
+      },
+      onChange: (event, session) => {
+        observed.push(`${event}:${Boolean(session?.user)}`);
+      },
+    });
+
+    expect(callbacks).toHaveLength(1);
+    callbacks[0]?.("SIGNED_IN", { user: { id: "user-1" } });
+    callbacks[0]?.("SIGNED_OUT", null);
+    expect(observed).toEqual(["SIGNED_IN:true", "SIGNED_OUT:false"]);
+    expect(result.data.subscription.unsubscribe).toBe(unsubscribe);
   });
 });

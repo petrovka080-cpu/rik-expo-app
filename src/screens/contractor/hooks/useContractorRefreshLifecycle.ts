@@ -6,7 +6,10 @@ import {
   recordPlatformGuardSkip,
 } from "../../../lib/observability/platformGuardDiscipline";
 import type { ContractorReloadTrigger } from "./useContractorScreenData";
-import { hasCurrentContractorSessionUser } from "../contractor.screenData.auth.transport";
+import {
+  hasCurrentContractorSessionUser,
+  listenForContractorAuthStateChanges,
+} from "../contractor.screenData.auth.transport";
 
 const CONTRACTOR_FOCUS_REFRESH_MIN_INTERVAL_MS = 1200;
 
@@ -44,9 +47,12 @@ export function useContractorRefreshLifecycle(params: {
 
     void syncAuth();
 
-    const { data: listener } = supabaseClient.auth.onAuthStateChange((_event: string, session: { user?: unknown } | null) => {
-      if (!alive) return;
-      setAuthReady(Boolean(session?.user));
+    const { data: listener } = listenForContractorAuthStateChanges({
+      supabaseClient,
+      onChange: (_event, session) => {
+        if (!alive) return;
+        setAuthReady(Boolean(session?.user));
+      },
     });
 
     return () => {
