@@ -5,7 +5,12 @@ import React, { useCallback, useState } from 'react';
 import {
   View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
 } from 'react-native';
-import { supabase } from '../../lib/supabaseClient';
+import {
+  challengeSecurityTotpFactor,
+  enrollSecurityTotpFactor,
+  unenrollSecurityTotpFactor,
+  verifySecurityTotpFactor,
+} from './SecurityScreen.auth.transport';
 
 export function SecurityScreen() {
   const [enrolling, setEnrolling] = useState(false);
@@ -24,10 +29,7 @@ export function SecurityScreen() {
     try {
       setEnrolling(true);
       // 1) Регистрируем TOTP-фактор
-      const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: 'totp',
-        friendlyName: 'Основное устройство',
-      });
+      const { data, error } = await enrollSecurityTotpFactor();
       if (error) throw error;
 
       // Ожидаем структуру: { id, type, friendlyName?, totp: { qr_code, uri, secret } }
@@ -53,11 +55,11 @@ export function SecurityScreen() {
     try {
       setVerifying(true);
       // 2) Запрашиваем challenge
-      const ch = await supabase.auth.mfa.challenge({ factorId });
+      const ch = await challengeSecurityTotpFactor(factorId);
       if (ch.error) throw ch.error;
 
       // 3) Проверяем код
-      const vr = await supabase.auth.mfa.verify({
+      const vr = await verifySecurityTotpFactor({
         factorId,
         challengeId: ch.data.id,
         code: clean,
@@ -77,7 +79,7 @@ export function SecurityScreen() {
     if (!factorId) { Alert.alert('Нет активного фактора', 'Сначала включите TOTP.'); return; }
     try {
       setUnenrolling(true);
-      const { error } = await supabase.auth.mfa.unenroll({ factorId });
+      const { error } = await unenrollSecurityTotpFactor(factorId);
       if (error) throw error;
       setEnabled(false);
       setFactorId(null);

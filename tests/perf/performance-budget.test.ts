@@ -288,6 +288,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "api", "storage.transport.ts"),
       path.join(SRC, "lib", "api", "storage.service.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle87SecurityScreenAuthTransportFiles = [
+      path.join(SRC, "screens", "security", "SecurityScreen.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -399,6 +402,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_85 adds one permanent request draft sync transport boundary.
     // S-AUDIT_BATTLE_86 adds one permanent proposal storage transport boundary
     // plus a focused src-owned regression test.
+    // S-AUDIT_BATTLE_87 adds one permanent SecurityScreen MFA auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -457,6 +461,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle84JobQueueTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle85RequestDraftSyncTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle86StorageTransportFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle87SecurityScreenAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -516,7 +521,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle82SignInAuthTransportFiles -
         sAuditBattle84JobQueueTransportFiles -
         sAuditBattle85RequestDraftSyncTransportFiles -
-        sAuditBattle86StorageTransportFiles,
+        sAuditBattle86StorageTransportFiles -
+        sAuditBattle87SecurityScreenAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
