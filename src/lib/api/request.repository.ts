@@ -10,8 +10,14 @@ import {
   DIRECTOR_HANDOFF_BROADCAST_EVENT,
 } from "../realtime/realtime.channels";
 import type { RequestRecord } from "./types";
-import { supabase } from "../supabaseClient";
 import { resolveRequestRepositoryAccessToken } from "./request.repository.auth.transport";
+import {
+  createDirectorHandoffBroadcastChannel,
+  insertDirectorRequestSubmittedNotification,
+  removeDirectorHandoffBroadcastChannel,
+  sendDirectorHandoffBroadcast,
+  setRequestDraftSyncRealtimeAuth,
+} from "./requestDraftSync.transport";
 
 export type SubmitRequestCommand = {
   requestId: number | string;
@@ -53,7 +59,7 @@ const logRequestRepository = (payload: Record<string, unknown>) => {
 const ensureRealtimeAuth = async () => {
   const accessToken = await resolveRequestRepositoryAccessToken();
   if (!accessToken) return false;
-  await supabase.realtime.setAuth(accessToken);
+  await setRequestDraftSyncRealtimeAuth(accessToken);
   return true;
 };
 
@@ -67,22 +73,11 @@ const broadcastDirectorRequestSubmitted = async (
   try {
     await ensureRealtimeAuth();
     const displayNo = trim(record?.display_no) || requestId;
-    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
-      config: {
-        broadcast: {
-          ack: false,
-          self: false,
-        },
-      },
-    });
-    const result = await channel.send({
-      type: "broadcast",
-      event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
-      payload: {
-        request_id: requestId,
-        display_no: displayNo,
-        source_path: trim(command.sourcePath) || null,
-      },
+    const channel = createDirectorHandoffBroadcastChannel();
+    const result = await sendDirectorHandoffBroadcast(channel, {
+      requestId,
+      displayNo,
+      sourcePath: trim(command.sourcePath) || null,
     });
     logRequestRepository({
       phase: "broadcast",
@@ -93,7 +88,7 @@ const broadcastDirectorRequestSubmitted = async (
       broadcastEvent: DIRECTOR_HANDOFF_BROADCAST_EVENT,
       broadcastResult: result,
     });
-    void supabase.removeChannel(channel);
+    void removeDirectorHandoffBroadcastChannel(channel);
   } catch (error) {
     logRequestRepository({
       phase: "warn",
@@ -115,18 +110,11 @@ const notifyDirectorRequestSubmitted = async (
   if (!requestId) return;
 
   const displayNo = trim(record?.display_no) || requestId;
-  const payload = {
-    role: "director",
-    title: `Новая заявка ${displayNo}`,
-    body: `Прораб отправил ${displayNo} на утверждение.`,
-    payload: {
-      request_id: requestId,
-      display_no: displayNo,
-      source_path: trim(command.sourcePath) || null,
-    },
-  } as const;
-
-  const result = await supabase.from("notifications").insert(payload);
+  const result = await insertDirectorRequestSubmittedNotification({
+    requestId,
+    displayNo,
+    sourcePath: trim(command.sourcePath) || null,
+  });
   if (!result.error) return;
 
   logRequestRepository({

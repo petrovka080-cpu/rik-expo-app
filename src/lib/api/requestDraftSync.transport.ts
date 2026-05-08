@@ -36,7 +36,7 @@ export const sendDirectorHandoffBroadcast = (
   params: {
     requestId: string;
     displayNo: string;
-    sourcePath: string;
+    sourcePath: string | null;
   },
 ): Promise<"ok" | "timed out" | "error"> =>
   channel.send({
@@ -56,7 +56,7 @@ export const removeDirectorHandoffBroadcastChannel = (
 export const insertDirectorRequestSubmittedNotification = (params: {
   requestId: string;
   displayNo: string;
-  sourcePath: string;
+  sourcePath: string | null;
 }) =>
   supabase.from("notifications").insert({
     role: "director",

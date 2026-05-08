@@ -17,11 +17,20 @@ describe("request repository auth transport boundary", () => {
     expect(transportSource).toContain("Promise<string | null>");
   });
 
-  it("keeps realtime broadcast and cleanup behavior in the existing repository path", () => {
+  it("routes realtime broadcast cleanup and notification writes through transport", () => {
     const serviceSource = read("src/lib/api/request.repository.ts");
+    const handoffTransportSource = read("src/lib/api/requestDraftSync.transport.ts");
 
     expect(serviceSource).toContain("DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME");
-    expect(serviceSource).toContain("supabase.removeChannel(channel)");
-    expect(serviceSource).toContain('supabase.from("notifications").insert(payload)');
+    expect(serviceSource).toContain('from "./requestDraftSync.transport"');
+    expect(serviceSource).toContain("createDirectorHandoffBroadcastChannel");
+    expect(serviceSource).toContain("sendDirectorHandoffBroadcast");
+    expect(serviceSource).toContain("removeDirectorHandoffBroadcastChannel(channel)");
+    expect(serviceSource).toContain("insertDirectorRequestSubmittedNotification");
+    expect(serviceSource).not.toMatch(/\bsupabase\s*\.\s*(from|channel|removeChannel)\b/);
+
+    expect(handoffTransportSource).toContain('supabase.from("notifications").insert');
+    expect(handoffTransportSource).toContain("supabase.channel");
+    expect(handoffTransportSource).toContain("supabase.removeChannel(channel)");
   });
 });

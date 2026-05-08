@@ -101,7 +101,9 @@ describe("S-RT-6 realtime fanout budget proof", () => {
       `${directClientCall("removeChannel")}(channel)`,
     );
     expect(requestRepositorySource).toContain("DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME");
-    expect(requestRepositorySource).toContain("supabase.removeChannel(channel)");
+    expect(requestRepositorySource).toContain("createDirectorHandoffBroadcastChannel");
+    expect(requestRepositorySource).toContain("removeDirectorHandoffBroadcastChannel(channel)");
+    expect(requestRepositorySource).not.toContain("supabase.removeChannel(channel)");
 
     expect(chatSource).toContain("const buildListingChatChannelName");
     expect(chatSource).toContain("subscribeChannel({");
