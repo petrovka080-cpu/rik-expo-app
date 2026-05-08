@@ -1,7 +1,10 @@
-import { supabase } from "../../lib/supabaseClient";
 import { accountantReturnToBuyer } from "../../lib/api/accountant";
 import { isRpcVoidResponse, validateRpcResponse } from "../../lib/api/queryBoundary";
 import { logger } from "../../lib/logger";
+import {
+  callAccReturnMinAutoRpc,
+  callProposalReturnToBuyerMinRpc,
+} from "./accountant.return.transport";
 
 export async function runAccountantReturnToBuyerChain(params: {
   proposalId: string;
@@ -20,7 +23,7 @@ export async function runAccountantReturnToBuyerChain(params: {
   }
 
   try {
-    const { data, error } = await supabase.rpc("acc_return_min_auto", {
+    const { data, error } = await callAccReturnMinAutoRpc({
       p_proposal_id: pid,
       p_comment: trimmedComment,
     });
@@ -35,7 +38,7 @@ export async function runAccountantReturnToBuyerChain(params: {
     if (__DEV__) logger.info("log", "[AccountantReturn] Method 2 (acc_return_min_auto) failed:", e);
   }
 
-  const { data, error } = await supabase.rpc("proposal_return_to_buyer_min", {
+  const { data, error } = await callProposalReturnToBuyerMinRpc({
     p_proposal_id: pid,
     p_comment: trimmedComment,
   });
