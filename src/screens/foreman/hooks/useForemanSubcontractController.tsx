@@ -67,6 +67,10 @@ import {
   getForemanSubcontractAlertCopy,
   getForemanSubcontractErrorMessage,
 } from "./foreman.subcontractController.telemetry";
+import {
+  loadCurrentForemanAuthIdentity,
+  loadCurrentForemanAuthUserId,
+} from "../foreman.auth.transport";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -199,8 +203,7 @@ export function useForemanSubcontractController({
   const loadHistory = useCallback(async (uid = userId) => {
     let nextUserId = String(uid || "").trim();
     if (!nextUserId) {
-      const auth = await supabase.auth.getUser();
-      nextUserId = String(auth.data?.user?.id || "").trim();
+      nextUserId = await loadCurrentForemanAuthUserId() ?? "";
     }
     if (!nextUserId) return;
     setHistoryLoading(true);
@@ -248,12 +251,12 @@ export function useForemanSubcontractController({
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.auth.getUser();
-      const uid = String(data?.user?.id || "").trim();
+      const identity = await loadCurrentForemanAuthIdentity();
+      const uid = identity.id ?? "";
       if (!uid) return;
       setUserId(uid);
 
-      const nm = String(data?.user?.user_metadata?.full_name || "").trim();
+      const nm = identity.fullName;
       if (nm) setForemanName(nm);
 
       if (!nm) {
