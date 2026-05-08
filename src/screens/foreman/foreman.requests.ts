@@ -1,14 +1,14 @@
 import { supabase } from "../../lib/supabaseClient";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { probeForemanRequestsHasRequestNo } from "./foreman.requests.transport";
-import type {
-  ForemanRequestRow,
-  ForemanRequestUpdate,
-} from "../../types/contracts/foreman";
+import {
+  patchForemanRequestLinkRow,
+  probeForemanRequestsHasRequestNo,
+  type ForemanRequestLinkPatch,
+} from "./foreman.requests.transport";
+import type { ForemanRequestRow } from "../../types/contracts/foreman";
 
 type RequestRow = ForemanRequestRow;
-type RequestUpdate = ForemanRequestUpdate;
 
 type RequestDisplayRow = Pick<RequestRow, "display_no" | "request_no">;
 type RequestLinkRow = Pick<RequestRow, "id" | "subcontract_id" | "contractor_job_id">;
@@ -27,10 +27,7 @@ type RequestPatchError = {
   hint: string | null;
 };
 
-export type ForemanRequestDirectPatch = Pick<
-  RequestUpdate,
-  "subcontract_id" | "contractor_job_id" | "object_name"
->;
+export type ForemanRequestDirectPatch = ForemanRequestLinkPatch;
 
 const errText = (value: unknown): string => {
   if (value instanceof Error && value.message.trim()) return value.message.trim();
@@ -175,7 +172,7 @@ export async function patchForemanRequestLink(
   requestId: string,
   patch: ForemanRequestDirectPatch,
 ): Promise<RequestPatchError | null> {
-  const result = await supabase.from("requests").update(patch).eq("id", requestId);
+  const result = await patchForemanRequestLinkRow({ requestId, patch });
   if (!result.error) return null;
 
   return {
