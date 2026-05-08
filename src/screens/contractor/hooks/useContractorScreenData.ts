@@ -23,6 +23,7 @@ import {
   resolveContractorScreenContract,
   type ContractorScreenContract,
 } from "../contractor.visibilityRecovery";
+import { hasCurrentContractorSessionUser } from "../contractor.screenData.auth.transport";
 import { logger } from "../../../lib/logger";
 
 type Params = {
@@ -288,8 +289,7 @@ export function useContractorScreenData(params: Params) {
       return;
     }
 
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if (!sessionData.session?.user) {
+    if (!(await hasCurrentContractorSessionUser({ supabaseClient }))) {
       recordPlatformGuardSkip("auth_not_ready", {
         screen: "contractor",
         surface: "screen_reload",
@@ -313,7 +313,7 @@ export function useContractorScreenData(params: Params) {
 
     screenReloadInFlightRef.current = currentPromise;
     return currentPromise;
-  }, [focusedRef, loadProfile, loadContractor, loadWorks, supabaseClient.auth]);
+  }, [focusedRef, loadProfile, loadContractor, loadWorks, supabaseClient]);
 
   const refreshVisibleContractorScopes = useCallback(
     async (params: {
@@ -390,8 +390,7 @@ export function useContractorScreenData(params: Params) {
         return;
       }
 
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      if (!sessionData.session?.user) {
+      if (!(await hasCurrentContractorSessionUser({ supabaseClient }))) {
         recordPlatformGuardSkip("auth_not_ready", {
           screen: "contractor",
           surface: "visible_scope_reload",
@@ -423,7 +422,7 @@ export function useContractorScreenData(params: Params) {
       visibleScopeReloadInFlightRef.current = currentPromise;
       return currentPromise;
     },
-    [focusedRef, loadWorks, profileRef, contractorRef, reloadContractorScreenData, supabaseClient.auth],
+    [focusedRef, loadWorks, profileRef, contractorRef, reloadContractorScreenData, supabaseClient],
   );
 
   const isContractorRefreshInFlight = useCallback(
