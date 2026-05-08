@@ -15,7 +15,7 @@ import {
   isRpcVoidResponse,
   validateRpcResponse,
 } from "../api/queryBoundary";
-import { supabase } from "../supabaseClient";
+import { jobQueueSupabaseClient } from "./jobQueue.transport";
 
 export type SubmitJobStatus = "pending" | "processing" | "completed" | "failed";
 
@@ -114,10 +114,13 @@ type SubmitJobsRpcCompatBoundary = {
     error: QueueRpcError | null;
   }>;
 };
-type JobQueueSupabaseClient = Pick<SupabaseClient<Database>, "from" | "rpc">;
+export type JobQueueSupabaseClient = Pick<
+  SupabaseClient<Database>,
+  "from" | "rpc"
+>;
 
-const toQueueRpcCompat = (supabaseClient: JobQueueSupabaseClient) =>
-  supabaseClient as unknown as SubmitJobsRpcCompatBoundary;
+const toQueueRpcCompat = (queueClient: JobQueueSupabaseClient) =>
+  queueClient as unknown as SubmitJobsRpcCompatBoundary;
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -399,7 +402,7 @@ const buildSubmitJobsClaimLegacyArgs = (
 });
 
 async function enqueueSubmitJobWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
   input: EnqueueSubmitJobInput,
 ): Promise<SubmitJobRow> {
   const payload = buildSubmitJobInsert(input);
@@ -408,7 +411,7 @@ async function enqueueSubmitJobWithClient(
     throw new Error("enqueueSubmitJob: jobType is required");
   }
 
-  const { data, error } = await supabaseClient
+  const { data, error } = await queueClient
     .from("submit_jobs")
     .insert(payload)
     .select(JOB_SELECT)
@@ -419,14 +422,14 @@ async function enqueueSubmitJobWithClient(
 }
 
 async function claimSubmitJobsWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
   workerId: string,
   limit = WORKER_BATCH_SIZE,
   jobType?: string,
 ): Promise<SubmitJobRow[]> {
   const normalizedLimit = resolveSubmitJobClaimLimit(limit, WORKER_BATCH_SIZE);
-  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
-  const primary = await supabaseClient.rpc(
+  const queueRpcCompat = toQueueRpcCompat(queueClient);
+  const primary = await queueClient.rpc(
     "submit_jobs_claim",
     buildSubmitJobsClaimArgs(workerId, normalizedLimit),
   );
@@ -481,9 +484,9 @@ async function claimSubmitJobsWithClient(
 }
 
 async function recoverStuckSubmitJobsWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
 ): Promise<number> {
-  const { data, error } = await supabaseClient.rpc("submit_jobs_recover_stuck");
+  const { data, error } = await queueClient.rpc("submit_jobs_recover_stuck");
   if (error) throw queueInfraError("recoverStuckSubmitJobs", error);
   return getNumberOrDefault(validateRpcResponse(data, isSubmitJobsRecoverStuckRpcResponse, {
     rpcName: "submit_jobs_recover_stuck",
@@ -493,11 +496,11 @@ async function recoverStuckSubmitJobsWithClient(
 }
 
 async function markSubmitJobCompletedWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
   jobId: string,
 ): Promise<void> {
-  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
-  const first = await supabaseClient.rpc("submit_jobs_mark_completed", {
+  const queueRpcCompat = toQueueRpcCompat(queueClient);
+  const first = await queueClient.rpc("submit_jobs_mark_completed", {
     p_id: jobId,
   });
   if (!first.error) {
@@ -541,12 +544,12 @@ async function markSubmitJobCompletedWithClient(
 }
 
 async function markSubmitJobFailedWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
   jobId: string,
   message: string,
 ): Promise<{ retryCount: number; status: string }> {
-  const queueRpcCompat = toQueueRpcCompat(supabaseClient);
-  const first = await supabaseClient.rpc("submit_jobs_mark_failed", {
+  const queueRpcCompat = toQueueRpcCompat(queueClient);
+  const first = await queueClient.rpc("submit_jobs_mark_failed", {
     p_id: jobId,
     p_error: message,
   });
@@ -592,9 +595,9 @@ async function markSubmitJobFailedWithClient(
 }
 
 async function fetchSubmitJobMetricsWithClient(
-  supabaseClient: JobQueueSupabaseClient,
+  queueClient: JobQueueSupabaseClient,
 ): Promise<SubmitJobMetrics> {
-  const { data, error } = await supabaseClient.rpc("submit_jobs_metrics");
+  const { data, error } = await queueClient.rpc("submit_jobs_metrics");
   if (error) throw error;
   return parseSubmitJobMetricsRow(validateRpcResponse(data, isSubmitJobsMetricsRpcResponse, {
     rpcName: "submit_jobs_metrics",
@@ -603,30 +606,30 @@ async function fetchSubmitJobMetricsWithClient(
   }));
 }
 
-export function createJobQueueApi(supabaseClient: JobQueueSupabaseClient) {
+export function createJobQueueApi(queueClient: JobQueueSupabaseClient) {
   return {
     enqueueSubmitJob: (input: EnqueueSubmitJobInput) =>
-      enqueueSubmitJobWithClient(supabaseClient, input),
+      enqueueSubmitJobWithClient(queueClient, input),
     claimSubmitJobs: (
       workerId: string,
       limit = WORKER_BATCH_SIZE,
       jobType?: string,
-    ) => claimSubmitJobsWithClient(supabaseClient, workerId, limit, jobType),
+    ) => claimSubmitJobsWithClient(queueClient, workerId, limit, jobType),
     recoverStuckSubmitJobs: () =>
-      recoverStuckSubmitJobsWithClient(supabaseClient),
+      recoverStuckSubmitJobsWithClient(queueClient),
     markSubmitJobCompleted: (jobId: string) =>
-      markSubmitJobCompletedWithClient(supabaseClient, jobId),
+      markSubmitJobCompletedWithClient(queueClient, jobId),
     markSubmitJobFailed: (jobId: string, message: string) =>
-      markSubmitJobFailedWithClient(supabaseClient, jobId, message),
+      markSubmitJobFailedWithClient(queueClient, jobId, message),
     fetchSubmitJobMetrics: () =>
-      fetchSubmitJobMetricsWithClient(supabaseClient),
+      fetchSubmitJobMetricsWithClient(queueClient),
   };
 }
 
 export async function enqueueSubmitJob(
   input: EnqueueSubmitJobInput,
 ): Promise<SubmitJobRow> {
-  return enqueueSubmitJobWithClient(supabase, input);
+  return enqueueSubmitJobWithClient(jobQueueSupabaseClient, input);
 }
 
 export async function claimSubmitJobs(
@@ -634,24 +637,29 @@ export async function claimSubmitJobs(
   limit = WORKER_BATCH_SIZE,
   jobType?: string,
 ): Promise<SubmitJobRow[]> {
-  return claimSubmitJobsWithClient(supabase, workerId, limit, jobType);
+  return claimSubmitJobsWithClient(
+    jobQueueSupabaseClient,
+    workerId,
+    limit,
+    jobType,
+  );
 }
 
 export async function recoverStuckSubmitJobs(): Promise<number> {
-  return recoverStuckSubmitJobsWithClient(supabase);
+  return recoverStuckSubmitJobsWithClient(jobQueueSupabaseClient);
 }
 
 export async function markSubmitJobCompleted(jobId: string): Promise<void> {
-  return markSubmitJobCompletedWithClient(supabase, jobId);
+  return markSubmitJobCompletedWithClient(jobQueueSupabaseClient, jobId);
 }
 
 export async function markSubmitJobFailed(
   jobId: string,
   message: string,
 ): Promise<{ retryCount: number; status: string }> {
-  return markSubmitJobFailedWithClient(supabase, jobId, message);
+  return markSubmitJobFailedWithClient(jobQueueSupabaseClient, jobId, message);
 }
 
 export async function fetchSubmitJobMetrics(): Promise<SubmitJobMetrics> {
-  return fetchSubmitJobMetricsWithClient(supabase);
+  return fetchSubmitJobMetricsWithClient(jobQueueSupabaseClient);
 }
