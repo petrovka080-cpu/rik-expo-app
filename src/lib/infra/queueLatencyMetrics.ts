@@ -1,7 +1,9 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-import type { Database } from "../database.types";
-import { supabase } from "../supabaseClient";
+import {
+  fetchSubmitJobsMetricsRows,
+  fetchSubmitJobsMetricsRowsWithClient,
+  type QueueLatencySupabaseClient,
+  type SubmitJobsMetricsRpcRow,
+} from "./queueLatencyMetrics.transport";
 
 export type QueueLatencyMetrics = {
   queueWaitMs: number;
@@ -9,16 +11,9 @@ export type QueueLatencyMetrics = {
   oldestPendingAt: string | null;
 };
 
-type QueueLatencySupabaseClient = Pick<SupabaseClient<Database>, "rpc">;
-type SubmitJobsMetricsRpcRow =
-  Database["public"]["Functions"]["submit_jobs_metrics"]["Returns"][number];
-
-export async function fetchQueueLatencyMetricsWithClient(
-  supabaseClient: QueueLatencySupabaseClient,
-): Promise<QueueLatencyMetrics> {
-  const { data, error } = await supabaseClient.rpc("submit_jobs_metrics");
-  if (error) throw error;
-
+function mapSubmitJobsMetricsRows(
+  data: SubmitJobsMetricsRpcRow[] | null,
+): QueueLatencyMetrics {
   const metricsRow =
     Array.isArray(data) && data.length > 0
       ? (data[0] as Partial<SubmitJobsMetricsRpcRow>)
@@ -39,6 +34,18 @@ export async function fetchQueueLatencyMetricsWithClient(
   };
 }
 
+export async function fetchQueueLatencyMetricsWithClient(
+  supabaseClient: QueueLatencySupabaseClient,
+): Promise<QueueLatencyMetrics> {
+  const { data, error } = await fetchSubmitJobsMetricsRowsWithClient(supabaseClient);
+  if (error) throw error;
+
+  return mapSubmitJobsMetricsRows(data);
+}
+
 export async function fetchQueueLatencyMetrics(): Promise<QueueLatencyMetrics> {
-  return fetchQueueLatencyMetricsWithClient(supabase);
+  const { data, error } = await fetchSubmitJobsMetricsRows();
+  if (error) throw error;
+
+  return mapSubmitJobsMetricsRows(data);
 }

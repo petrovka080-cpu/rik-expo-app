@@ -1,4 +1,6 @@
 import { fetchQueueLatencyMetricsWithClient } from "../../src/lib/infra/queueLatencyMetrics";
+import * as fs from "fs";
+import * as path from "path";
 
 describe("queue latency metrics boundary", () => {
   it("derives latency metrics from the submit_jobs_metrics rpc without table reads", async () => {
@@ -51,5 +53,24 @@ describe("queue latency metrics boundary", () => {
       oldestPendingAt: null,
       queueWaitMs: 0,
     });
+  });
+});
+
+describe("queue latency metrics transport source contract", () => {
+  const root = path.resolve(__dirname, "../..");
+  const read = (relativePath: string) =>
+    fs.readFileSync(path.join(root, relativePath), "utf8");
+
+  it("keeps submit_jobs_metrics provider ownership in the transport", () => {
+    const serviceSource = read("src/lib/infra/queueLatencyMetrics.ts");
+    const transportSource = read("src/lib/infra/queueLatencyMetrics.transport.ts");
+
+    expect(serviceSource).toContain("fetchSubmitJobsMetricsRowsWithClient(supabaseClient)");
+    expect(serviceSource).not.toContain(".rpc(");
+    expect(serviceSource).not.toContain("../supabaseClient");
+    expect(transportSource).toContain('.rpc("submit_jobs_metrics")');
+    expect(transportSource).not.toContain(".from(");
+    expect(transportSource).not.toContain(".insert(");
+    expect(transportSource).not.toContain(".update(");
   });
 });
