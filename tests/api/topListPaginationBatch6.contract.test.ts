@@ -77,15 +77,18 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     expect(profileServices).toContain(
       ".range(listingsPage.from, listingsPage.to)",
     );
-    expect(profileServices).toContain(
+    const profileMembershipTransport = read(
+      "src/screens/profile/profile.membership.transport.ts",
+    );
+    expect(profileMembershipTransport).toContain(
       "const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {",
     );
-    expect(profileServices).toContain("maxRows: 5000");
-    expect(profileServices).toContain(
-      "async function loadCompanyMembershipRows",
+    expect(profileMembershipTransport).toContain("maxRows: 5000");
+    expect(profileMembershipTransport).toContain(
+      "function loadCompanyMembershipRows",
     );
-    expect(profileServices).toContain('.order("company_id",');
-    expect(profileServices).toContain(
+    expect(profileMembershipTransport).toContain('.order("company_id",');
+    expect(profileMembershipTransport).toContain(
       "loadPagedRowsWithCeiling<CompanyMembershipRow>",
     );
     expect(profileServices).toContain(

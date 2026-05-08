@@ -3,14 +3,14 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import type { Database } from "../../lib/database.types";
-import {
-  loadPagedRowsWithCeiling,
-  normalizePage,
-  type PagedQuery,
-} from "../../lib/api/_core";
+import { normalizePage } from "../../lib/api/_core";
 import { getMyRole } from "../../lib/api/profile";
-import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import { supabase } from "../../lib/supabaseClient";
+import {
+  loadCurrentAuthUser,
+  updateProfileAuthAvatar,
+} from "./profile.auth.transport";
+import { loadCompanyMembershipRows } from "./profile.membership.transport";
 import type {
   AddListingOwnerLoadResult,
   CatalogSearchItem,
@@ -65,17 +65,7 @@ const isListingKind = (value: unknown): value is ListingKind =>
   value === "material" || value === "service" || value === "rent";
 
 const PROFILE_LISTINGS_PAGE_DEFAULTS = { pageSize: 20, maxPageSize: 20 };
-const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {
-  pageSize: 100,
-  maxPageSize: 100,
-  maxRows: 5000,
-};
 const PROFILE_CATALOG_SEARCH_PAGE_DEFAULTS = { pageSize: 15, maxPageSize: 15 };
-
-type CompanyMembershipRow = {
-  company_id: string | null;
-  role: string | null;
-};
 
 export const normalizeListingCartItemKind = (
   value: unknown,
@@ -141,26 +131,7 @@ const getMetadataRole = (user: User): string | null => {
   return null;
 };
 
-export const loadCurrentAuthUser = async (): Promise<User> => {
-  try {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user) {
-      throw error || new Error("Не найден текущий пользователь");
-    }
-    return data.user;
-  } catch (error) {
-    if (!(error instanceof RequestTimeoutError)) {
-      throw error;
-    }
-
-    const { data, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !data.session?.user) {
-      throw error;
-    }
-
-    return data.session.user;
-  }
-};
+export { loadCurrentAuthUser, signOutProfileSession } from "./profile.auth.transport";
 
 export const loadProfileScreenData =
   async (): Promise<ProfileScreenLoadResult> => {
@@ -259,25 +230,6 @@ export const loadProfileScreenData =
       },
     };
   };
-
-async function loadCompanyMembershipRows(
-  userId: string,
-): Promise<CompanyMembershipRow[]> {
-  const result = await loadPagedRowsWithCeiling<CompanyMembershipRow>(
-    () =>
-      supabase
-        .from("company_members")
-        .select("company_id,role")
-        .eq("user_id", userId)
-        .order("company_id", {
-          ascending: true,
-        }) as unknown as PagedQuery<CompanyMembershipRow>,
-    PROFILE_MEMBERSHIP_PAGE_DEFAULTS,
-  );
-
-  if (result.error) throw result.error;
-  return result.data ?? [];
-}
 
 export const loadAddListingOwnerData =
   async (): Promise<AddListingOwnerLoadResult> => {
@@ -400,12 +352,7 @@ export const saveProfileDetails = async (params: {
   if (error) throw error;
 
   if (nextAvatarUrl !== params.profileAvatarUrl) {
-    const authUpdate = await supabase.auth.updateUser({
-      data: {
-        avatar_url: nextAvatarUrl,
-      },
-    });
-    if (authUpdate.error) throw authUpdate.error;
+    await updateProfileAuthAvatar(nextAvatarUrl);
   }
 
   return { profile: data as UserProfile, profileAvatarUrl: nextAvatarUrl };
@@ -499,9 +446,4 @@ export const searchCatalogItems = async (
     .range(page.from, page.to);
   if (error) throw error;
   return (data ?? []) as CatalogSearchItem[];
-};
-
-export const signOutProfileSession = async (): Promise<void> => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
 };

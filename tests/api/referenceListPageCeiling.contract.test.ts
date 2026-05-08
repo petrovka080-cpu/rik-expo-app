@@ -24,11 +24,17 @@ describe("S-REFERENCE-LISTS-PAGE-CEILING-1 contract", () => {
     expect(foremanDicts).toContain(".order(\"app_code\",");
     expect(foremanDicts).not.toContain("while (true)");
 
-    const profileServices = read("src/screens/profile/profile.services.ts");
-    expect(profileServices).toContain("const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {");
-    expect(profileServices).toContain("maxRows: 5000");
-    expect(profileServices).toContain("loadPagedRowsWithCeiling<CompanyMembershipRow>");
-    expect(profileServices).toContain(".eq(\"user_id\", userId)");
-    expect(profileServices).toContain(".order(\"company_id\",");
+    const profileMembershipTransport = read(
+      "src/screens/profile/profile.membership.transport.ts",
+    );
+    expect(profileMembershipTransport).toContain(
+      "const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {",
+    );
+    expect(profileMembershipTransport).toContain("maxRows: 5000");
+    expect(profileMembershipTransport).toContain(
+      "loadPagedRowsWithCeiling<CompanyMembershipRow>",
+    );
+    expect(profileMembershipTransport).toContain(".eq(\"user_id\", userId)");
+    expect(profileMembershipTransport).toContain(".order(\"company_id\",");
   });
 });

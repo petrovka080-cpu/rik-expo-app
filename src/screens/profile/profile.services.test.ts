@@ -1,3 +1,6 @@
+import * as fs from "fs";
+import * as path from "path";
+
 import { RequestTimeoutError } from "../../lib/requestTimeoutPolicy";
 import type { Database } from "../../lib/database.types";
 import {
@@ -124,6 +127,45 @@ const mockMarketListingsInsert = (result: MarketListingsInsertResult) => {
 
   return { mockInsert };
 };
+
+describe("profile membership transport boundary", () => {
+  const serviceSource = fs.readFileSync(
+    path.join(__dirname, "profile.services.ts"),
+    "utf8",
+  );
+  const authTransportSource = fs.readFileSync(
+    path.join(__dirname, "profile.auth.transport.ts"),
+    "utf8",
+  );
+  const transportSource = fs.readFileSync(
+    path.join(__dirname, "profile.membership.transport.ts"),
+    "utf8",
+  );
+
+  it("keeps the auth/session calls outside profile.services", () => {
+    expect(serviceSource).toContain("./profile.auth.transport");
+    expect(serviceSource).not.toContain("supabase.auth.");
+    expect(authTransportSource).toContain("supabase.auth.getUser");
+    expect(authTransportSource).toContain("supabase.auth.getSession");
+    expect(authTransportSource).toContain("supabase.auth.updateUser");
+    expect(authTransportSource).toContain("supabase.auth.signOut");
+  });
+
+  it("keeps the company membership read outside profile.services", () => {
+    expect(serviceSource).toContain("./profile.membership.transport");
+    expect(serviceSource).not.toContain('.from("company_members")');
+  });
+
+  it("keeps the membership transport bounded and read-only", () => {
+    expect(transportSource).toContain("loadPagedRowsWithCeiling");
+    expect(transportSource).toContain("maxRows: 5000");
+    expect(transportSource).toContain('.select("company_id,role")');
+    expect(transportSource).not.toContain(".insert(");
+    expect(transportSource).not.toContain(".upsert(");
+    expect(transportSource).not.toContain(".update(");
+    expect(transportSource).not.toContain(".delete(");
+  });
+});
 
 describe("profile.services loadCurrentAuthUser", () => {
   beforeEach(() => {

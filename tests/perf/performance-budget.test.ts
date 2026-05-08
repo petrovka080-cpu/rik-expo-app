@@ -191,6 +191,12 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle50CalcModalContentStyleBoundaryFiles = [
       path.join(SRC, "components", "foreman", "CalcModalContent.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle51ProfileMembershipTransportFiles = [
+      path.join(SRC, "screens", "profile", "profile.membership.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle51ProfileAuthTransportFiles = [
+      path.join(SRC, "screens", "profile", "profile.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -298,6 +304,8 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle48OfficeInviteHandoffBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle49ActivePaymentFormStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle50CalcModalContentStyleBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle51ProfileMembershipTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle51ProfileAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -325,7 +333,9 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
         sAuditBattle48OfficeInviteHandoffBoundaryFiles -
         sAuditBattle49ActivePaymentFormStyleBoundaryFiles -
-        sAuditBattle50CalcModalContentStyleBoundaryFiles,
+        sAuditBattle50CalcModalContentStyleBoundaryFiles -
+        sAuditBattle51ProfileMembershipTransportFiles -
+        sAuditBattle51ProfileAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

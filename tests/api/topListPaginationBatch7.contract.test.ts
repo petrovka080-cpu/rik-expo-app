@@ -38,9 +38,13 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "queryFactory().range(page.from, page.to)",
     );
 
-    const profileServices = read("src/screens/profile/profile.services.ts");
-    expect(profileServices).toContain("const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {");
-    expect(profileServices).toContain("maxRows: 5000");
+    const profileMembershipTransport = read(
+      "src/screens/profile/profile.membership.transport.ts",
+    );
+    expect(profileMembershipTransport).toContain(
+      "const PROFILE_MEMBERSHIP_PAGE_DEFAULTS = {",
+    );
+    expect(profileMembershipTransport).toContain("maxRows: 5000");
 
     const warehouseDicts = read(
       "src/screens/warehouse/warehouse.dicts.repo.ts",
