@@ -14,6 +14,10 @@ import {
   buildOfficeMembersPagination,
   normalizeOfficeMembersPageParams,
 } from "./officeAccess.types";
+import {
+  insertOfficeCompanyMember,
+  insertOfficeCompanyProfile,
+} from "./officeAccess.transport";
 import type {
   CreateCompanyDraft,
   CreateInviteDraft,
@@ -317,14 +321,14 @@ export async function createOfficeCompany(params: {
 
   const company = companyData as Company;
 
-  const membershipResult = await supabase.from("company_members").insert({
+  const membershipResult = await insertOfficeCompanyMember({
     company_id: company.id,
     user_id: user.id,
     role: OFFICE_BOOTSTRAP_ROLE,
   });
   if (membershipResult.error) throw membershipResult.error;
 
-  const companyProfileResult = await supabase.from("company_profiles").insert(
+  const companyProfileResult = await insertOfficeCompanyProfile(
     buildCompanyProfileInsertPayload({
       companyId: company.id,
       userId: user.id,

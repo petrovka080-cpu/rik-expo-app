@@ -393,6 +393,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditNightBattle113BuyerRepoReadTransportFiles = [
       path.join(SRC, "screens", "buyer", "buyer.repo.read.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditNightBattle114OfficeAccessTransportFiles = [
+      path.join(SRC, "screens", "office", "officeAccess.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle125MarketRepositoryTransportFiles = [
       path.join(SRC, "features", "market", "market.repository.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -654,6 +657,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle120ContractorPdfSourceTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle123BuyerRepoStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle113BuyerRepoReadTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditNightBattle114OfficeAccessTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle125MarketRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle126FilesStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle130DirectorApproveTransportFiles).toBeLessThanOrEqual(1);
@@ -755,6 +759,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle120ContractorPdfSourceTransportFiles -
         sAuditBattle123BuyerRepoStorageTransportFiles -
         sAuditNightBattle113BuyerRepoReadTransportFiles -
+        sAuditNightBattle114OfficeAccessTransportFiles -
         sAuditBattle125MarketRepositoryTransportFiles -
         sAuditBattle126FilesStorageTransportFiles -
         sAuditBattle130DirectorApproveTransportFiles -
