@@ -1,6 +1,7 @@
 const mockInvoke = jest.fn();
 const mockGetSession = jest.fn();
 const mockRefreshSession = jest.fn();
+const mockRefreshCanonicalPdfSessionOnce = jest.fn();
 
 jest.mock("../supabaseClient", () => ({
   supabase: {
@@ -14,6 +15,11 @@ jest.mock("../supabaseClient", () => ({
   },
 }));
 
+jest.mock("./canonicalPdfAuth.transport", () => ({
+  refreshCanonicalPdfSessionOnce: (...args: unknown[]) =>
+    mockRefreshCanonicalPdfSessionOnce(...args),
+}));
+
 const loadSubject = () =>
   require("./directorPdfBackendInvoker") as typeof import("./directorPdfBackendInvoker");
 
@@ -23,6 +29,8 @@ describe("directorPdfBackendInvoker", () => {
     mockInvoke.mockReset();
     mockGetSession.mockReset();
     mockRefreshSession.mockReset();
+    mockRefreshCanonicalPdfSessionOnce.mockReset();
+    mockRefreshCanonicalPdfSessionOnce.mockResolvedValue(false);
     mockGetSession.mockResolvedValue({
       data: { session: null },
       error: null,
@@ -165,24 +173,7 @@ describe("directorPdfBackendInvoker", () => {
         },
         error: null,
       });
-    mockGetSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: "old-token",
-          refresh_token: "refresh-token",
-        },
-      },
-      error: null,
-    });
-    mockRefreshSession.mockResolvedValue({
-      data: {
-        session: {
-          access_token: "new-token",
-          refresh_token: "refresh-token",
-        },
-      },
-      error: null,
-    });
+    mockRefreshCanonicalPdfSessionOnce.mockResolvedValue(true);
 
     const { invokeDirectorPdfBackend } = loadSubject();
     const result = await invokeDirectorPdfBackend({
@@ -194,7 +185,7 @@ describe("directorPdfBackendInvoker", () => {
       errorPrefix: "director finance supplier pdf backend failed",
     });
 
-    expect(mockRefreshSession).toHaveBeenCalledTimes(1);
+    expect(mockRefreshCanonicalPdfSessionOnce).toHaveBeenCalledTimes(1);
     expect(mockInvoke).toHaveBeenCalledTimes(2);
     expect(result.signedUrl).toBe("https://example.com/supplier.pdf");
   });

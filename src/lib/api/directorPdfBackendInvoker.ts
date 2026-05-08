@@ -1,5 +1,6 @@
 import { createPdfSource, type PdfSource } from "../pdfFileContract";
 import { supabase } from "../supabaseClient";
+import { refreshCanonicalPdfSessionOnce } from "./canonicalPdfAuth.transport";
 import {
   classifyDirectorPdfTransportError,
   extractDirectorPdfErrorPayload,
@@ -69,22 +70,9 @@ export class DirectorPdfTransportError extends Error {
 // attempt instead of each triggering their own refreshSession().
 let pendingDirectorPdfSessionRefresh: Promise<boolean> | null = null;
 
-async function doDirectorPdfSessionRefresh(): Promise<boolean> {
-  try {
-    if (!supabase?.auth || typeof supabase.auth.getSession !== "function") return false;
-    const sessionResult = await supabase.auth.getSession();
-    if (!sessionResult.data.session) return false;
-    if (typeof supabase.auth.refreshSession !== "function") return false;
-    const refreshResult = await supabase.auth.refreshSession();
-    return Boolean(refreshResult.data.session && !refreshResult.error);
-  } catch {
-    return false;
-  }
-}
-
 async function refreshDirectorPdfSessionOnce(): Promise<boolean> {
   if (pendingDirectorPdfSessionRefresh) return await pendingDirectorPdfSessionRefresh;
-  pendingDirectorPdfSessionRefresh = doDirectorPdfSessionRefresh().finally(() => {
+  pendingDirectorPdfSessionRefresh = refreshCanonicalPdfSessionOnce().finally(() => {
     pendingDirectorPdfSessionRefresh = null;
   });
   return await pendingDirectorPdfSessionRefresh;
