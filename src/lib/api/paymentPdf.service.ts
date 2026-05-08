@@ -12,7 +12,7 @@ import {
 } from "../documents/pdfRpcRollout";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
-import { supabase } from "../supabaseClient";
+import { callPaymentPdfSourceRpc } from "./paymentPdf.transport";
 import type { PaymentPdfDraft } from "./types";
 
 type PaymentOrderPdfRecord = Record<string, unknown>;
@@ -506,7 +506,7 @@ export async function fetchPaymentPdfSourceViaRpc(paymentId: number): Promise<Pa
   const pid = Number(paymentId);
   if (!Number.isFinite(pid) || pid <= 0) throw new Error("payment_id invalid");
 
-  const { data, error } = await supabase.rpc("pdf_payment_source_v1", { p_payment_id: pid });
+  const { data, error } = await callPaymentPdfSourceRpc(pid);
   if (error) {
     throw new PaymentPdfSourceRpcError(`pdf_payment_source_v1 failed: ${error.message}`, {
       code: "code" in error ? String((error as { code?: unknown }).code ?? "") : undefined,

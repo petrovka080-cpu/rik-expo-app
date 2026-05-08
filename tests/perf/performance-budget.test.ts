@@ -336,6 +336,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle104DirectorReportsTransportFiles = [
       path.join(SRC, "lib", "api", "directorReportsTransport.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle105PaymentPdfTransportFiles = [
+      path.join(SRC, "lib", "api", "paymentPdf.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -463,6 +466,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_102 adds one permanent Foreman AI resolve transport boundary.
     // S-AUDIT_BATTLE_103 adds one permanent director return transport boundary.
     // S-AUDIT_BATTLE_104 adds one permanent director reports scope RPC transport boundary.
+    // S-AUDIT_BATTLE_105 adds one permanent payment PDF source RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -537,6 +541,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle102ForemanAiResolveTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle103DirectorReturnTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle104DirectorReportsTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle105PaymentPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -612,7 +617,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle101AiReportsTransportFiles -
         sAuditBattle102ForemanAiResolveTransportFiles -
         sAuditBattle103DirectorReturnTransportFiles -
-        sAuditBattle104DirectorReportsTransportFiles,
+        sAuditBattle104DirectorReportsTransportFiles -
+        sAuditBattle105PaymentPdfTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

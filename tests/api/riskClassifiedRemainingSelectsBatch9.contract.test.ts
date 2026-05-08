@@ -119,6 +119,13 @@ const isApprovedAuditBattle104DirectorReportsTransportBoundaryPatch = (file: str
     "tests/api/directorReportsTransportBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle105PaymentPdfTransportBoundaryPatch = (file: string) =>
+  [
+    "src/lib/api/paymentPdf.service.ts",
+    "src/lib/api/paymentPdf.transport.ts",
+    "tests/api/paymentPdfTransportBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -174,6 +181,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle101AiReportsTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle104DirectorReportsTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle105PaymentPdfTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||
