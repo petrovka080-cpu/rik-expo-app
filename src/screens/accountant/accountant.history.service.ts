@@ -5,6 +5,10 @@ import {
   isRpcRowsEnvelope,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
+import {
+  callAccountantHistoryScopeRpc,
+  callListAccountantPaymentsHistoryRpc,
+} from "./accountant.history.transport";
 import type { AccountantInboxUiRow, HistoryRow } from "./types";
 
 type AccountantHistoryScopeRow = {
@@ -122,7 +126,7 @@ export async function loadAccountantHistoryRows(params: {
   toRpcDateOrNull: (v: string) => string | null;
 }): Promise<HistoryRow[]> {
   const { dateFrom, dateTo, histSearch, toRpcDateOrNull } = params;
-  const { data, error } = await supabase.rpc("list_accountant_payments_history_v2", {
+  const { data, error } = await callListAccountantPaymentsHistoryRpc({
     p_date_from: toRpcOptionalDate(dateFrom, toRpcDateOrNull),
     p_date_to: toRpcOptionalDate(dateTo, toRpcDateOrNull),
     p_search: toRpcOptionalSearch(histSearch),
@@ -154,7 +158,7 @@ export async function loadAccountantHistoryWindowData(params: {
   const { dateFrom, dateTo, histSearch, offsetRows, limitRows, toRpcDateOrNull } = params;
 
   try {
-    const { data, error } = await supabase.rpc("accountant_history_scope_v1", {
+    const { data, error } = await callAccountantHistoryScopeRpc({
       p_date_from: toRpcOptionalDate(dateFrom, toRpcDateOrNull),
       p_date_to: toRpcOptionalDate(dateTo, toRpcDateOrNull),
       p_search: toRpcOptionalSearch(histSearch),
