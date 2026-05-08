@@ -12,6 +12,7 @@ import {
   type ProposalRequestItemIntegrityRow,
 } from "../../lib/api/proposalIntegrity";
 import { validateRpcResponse } from "../../lib/api/queryBoundary";
+import { callProposalRequestItemIntegrityRpc } from "../../lib/api/integrity.guards.transport";
 import { loadPagedRowsWithCeiling, type PageInput, type PagedQuery } from "../../lib/api/_core";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import { applySupabaseAbortSignal, throwIfAborted } from "../../lib/requestCancellation";
@@ -232,9 +233,7 @@ export async function repoGetProposalRequestItemIntegrity(
   const pid = String(proposalId || "").trim();
   if (!pid) return [] as ProposalRequestItemIntegrityRow[];
 
-  const rpc = await supabase.rpc("proposal_request_item_integrity_v1", {
-    p_proposal_id: pid,
-  });
+  const rpc = await callProposalRequestItemIntegrityRpc(supabase, pid);
   if (rpc.error) throw rpc.error;
 
   const validated = validateRpcResponse(rpc.data, isProposalRequestItemIntegrityRpcResponse, {
