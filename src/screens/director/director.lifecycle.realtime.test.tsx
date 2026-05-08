@@ -257,10 +257,18 @@ describe("director realtime channel lifecycle", () => {
   it("removes anonymous silent catches from director lifecycle Tier-1 cleanup paths", () => {
     const lifecycleSource = readFileSync(join(__dirname, "director.lifecycle.ts"), "utf8");
     const realtimeSource = readFileSync(join(__dirname, "director.lifecycle.realtime.ts"), "utf8");
+    const authTransportSource = readFileSync(
+      join(__dirname, "director.lifecycle.auth.transport.ts"),
+      "utf8",
+    );
 
     expect(lifecycleSource).not.toContain("catch {}");
     expect(realtimeSource).not.toContain("catch {}");
     expect(lifecycleSource).not.toContain("eslint-disable");
+    expect(realtimeSource).toContain('from "./director.lifecycle.auth.transport"');
+    expect(realtimeSource).not.toContain("supabase.auth.getSession");
+    expect(authTransportSource).toContain("supabase.auth.getSession");
+    expect(authTransportSource).toContain("Promise<string | null>");
     expect(lifecycleSource).toContain("app_state_listener_remove_failed");
     expect(realtimeSource).toContain("teardown_previous_channels_failed");
     expect(realtimeSource).toContain("screen_channel_unsubscribe_failed");

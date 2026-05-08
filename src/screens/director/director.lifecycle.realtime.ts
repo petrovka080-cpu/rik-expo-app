@@ -11,6 +11,7 @@ import {
 } from "../../lib/realtime/realtime.channels";
 
 import type { DirectorLifecycleRefreshHandler } from "./director.lifecycle.contract";
+import { resolveDirectorRealtimeAccessToken } from "./director.lifecycle.auth.transport";
 import {
   DIRECTOR_REQUEST_TAB_BUYER,
   DIRECTOR_TAB_REQUESTS,
@@ -103,8 +104,7 @@ const clearPreviousRealtimeChannels = (refs: Pick<DirectorRealtimeRefs, "rtChann
 
 const authorizeRealtime = async () => {
   try {
-    const session = await supabase.auth.getSession();
-    const accessToken = session.data.session?.access_token ?? null;
+    const accessToken = await resolveDirectorRealtimeAccessToken();
     if (accessToken) {
       await supabase.realtime.setAuth(accessToken);
       logDirectorLive({

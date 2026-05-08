@@ -206,6 +206,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle54RequestRepositoryAuthTransportFiles = [
       path.join(SRC, "lib", "api", "request.repository.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle55DirectorLifecycleAuthTransportFiles = [
+      path.join(SRC, "screens", "director", "director.lifecycle.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -289,6 +292,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_50 adds one permanent CalcModalContent static style boundary.
     // S-AUDIT_BATTLE_53 adds one permanent request draft sync auth transport boundary.
     // S-AUDIT_BATTLE_54 adds one permanent request repository auth transport boundary.
+    // S-AUDIT_BATTLE_55 adds one permanent Director realtime auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -320,6 +324,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle52CanonicalPdfAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle53RequestDraftSyncAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle54RequestRepositoryAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle55DirectorLifecycleAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -352,7 +357,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle51ProfileAuthTransportFiles -
         sAuditBattle52CanonicalPdfAuthTransportFiles -
         sAuditBattle53RequestDraftSyncAuthTransportFiles -
-        sAuditBattle54RequestRepositoryAuthTransportFiles,
+        sAuditBattle54RequestRepositoryAuthTransportFiles -
+        sAuditBattle55DirectorLifecycleAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
