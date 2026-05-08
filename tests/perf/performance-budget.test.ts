@@ -209,6 +209,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle55DirectorLifecycleAuthTransportFiles = [
       path.join(SRC, "screens", "director", "director.lifecycle.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle56MarketAuthTransportFiles = [
+      path.join(SRC, "features", "market", "market.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -293,6 +296,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_53 adds one permanent request draft sync auth transport boundary.
     // S-AUDIT_BATTLE_54 adds one permanent request repository auth transport boundary.
     // S-AUDIT_BATTLE_55 adds one permanent Director realtime auth transport boundary.
+    // S-AUDIT_BATTLE_56 adds one permanent marketplace auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -325,6 +329,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle53RequestDraftSyncAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle54RequestRepositoryAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle55DirectorLifecycleAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle56MarketAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -358,7 +363,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle52CanonicalPdfAuthTransportFiles -
         sAuditBattle53RequestDraftSyncAuthTransportFiles -
         sAuditBattle54RequestRepositoryAuthTransportFiles -
-        sAuditBattle55DirectorLifecycleAuthTransportFiles,
+        sAuditBattle55DirectorLifecycleAuthTransportFiles -
+        sAuditBattle56MarketAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

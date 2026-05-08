@@ -23,6 +23,7 @@ import {
 } from "../../lib/observability/platformObservability";
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
 import { supabase } from "../../lib/supabaseClient";
+import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
 import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
 import {
   buildMarketplaceNoteTag,
@@ -262,15 +263,6 @@ const toMarketHomeListingCardFromScope = (row: MarketMarketplaceScopeRow): Marke
 const toScopeFilterValue = (value?: string | null) => {
   const next = trim(value);
   return next && next !== "all" ? next : null;
-};
-
-const getCurrentBuyerName = async (): Promise<string | null> => {
-  const { data } = await supabase.auth.getUser();
-  const user = data?.user;
-  const fullName =
-    trim(user?.user_metadata?.full_name)
-    || trim(user?.user_metadata?.name);
-  return fullName || null;
 };
 
 const resolveProposalSupplier = (listing: MarketHomeListingCard) => {
@@ -577,7 +569,7 @@ export async function createMarketplaceProposal(
     const proposalId = trim(createdProposal.id);
     if (!proposalId) throw new Error("Не удалось создать предложение.");
 
-    const buyerFio = await getCurrentBuyerName();
+    const buyerFio = await resolveCurrentMarketBuyerName();
     const headPatch: Database["public"]["Tables"]["proposals"]["Update"] = {
       request_id: requestId,
       supplier: resolveProposalSupplier(listing),
