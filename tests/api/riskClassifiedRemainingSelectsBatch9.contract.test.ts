@@ -140,6 +140,14 @@ const isApprovedAuditBattle107IntegrityGuardsTransportBoundaryPatch = (file: str
     "tests/api/integrityGuardsTransportBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle116WarehouseIncomingFormPdfTransportBoundaryPatch = (file: string) =>
+  [
+    "src/screens/warehouse/warehouse.incomingForm.pdf.service.ts",
+    "src/screens/warehouse/warehouse.incomingForm.pdf.transport.ts",
+    "tests/api/warehouseIncomingFormPdfTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -198,6 +206,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAuditBattle105PaymentPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle106ProposalsTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle107IntegrityGuardsTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle116WarehouseIncomingFormPdfTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

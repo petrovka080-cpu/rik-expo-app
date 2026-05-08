@@ -1,13 +1,14 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   buildWarehouseIncomingFormHtml,
   exportWarehouseHtmlPdf,
 } from "../../lib/pdf/pdf.warehouse";
+import type { AppSupabaseClient } from "../../types/contracts/shared";
 import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
 import {
   createWarehousePdfFileName,
   type WarehousePdfOffloadContract,
 } from "./warehouse.pdf.boundary";
+import { callWarehouseIncomingFormPdfSourceRpc } from "./warehouse.incomingForm.pdf.transport";
 import {
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
@@ -92,7 +93,7 @@ export type WarehouseIncomingFormPdfSourceBranchMeta = PdfRpcRolloutBranchMeta;
 
 type PrepareWarehouseIncomingFormPdfParams = {
   incomingId: string;
-  supabase: SupabaseClient;
+  supabase: AppSupabaseClient;
   repIncoming: WarehouseIncomingHeadLike[];
   warehousemanFio: string;
   matNameByCode: Record<string, string>;
@@ -293,10 +294,10 @@ function validateWarehouseIncomingFormPdfSourceV1(
 
 export async function fetchWarehouseIncomingFormPdfSourceViaRpc(params: {
   incomingId: string;
-  supabase: SupabaseClient;
+  supabase: AppSupabaseClient;
 }): Promise<WarehouseIncomingFormSourceResult> {
   const incomingId = ensureIncomingId(params.incomingId);
-  const { data, error } = await params.supabase.rpc("pdf_warehouse_incoming_source_v1", {
+  const { data, error } = await callWarehouseIncomingFormPdfSourceRpc(params.supabase, {
     p_incoming_id: incomingId,
   });
 
