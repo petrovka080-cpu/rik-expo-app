@@ -303,6 +303,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle92DirectorLifecycleRealtimeTransportFiles = [
       path.join(SRC, "screens", "director", "director.lifecycle.realtime.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle93ProfileRpcTransportFiles = [
+      path.join(SRC, "lib", "api", "profile.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -419,6 +422,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_90 adds one permanent buyer actions write transport boundary.
     // S-AUDIT_BATTLE_91 adds one permanent Director request mutation transport boundary.
     // S-AUDIT_BATTLE_92 adds one permanent Director lifecycle realtime transport boundary.
+    // S-AUDIT_BATTLE_93 adds one permanent profile RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -482,6 +486,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle90BuyerActionsWriteTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle91DirectorRequestTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle92DirectorLifecycleRealtimeTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle93ProfileRpcTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -546,7 +551,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle88StoreSupabaseWriteTransportFiles -
         sAuditBattle90BuyerActionsWriteTransportFiles -
         sAuditBattle91DirectorRequestTransportFiles -
-        sAuditBattle92DirectorLifecycleRealtimeTransportFiles,
+        sAuditBattle92DirectorLifecycleRealtimeTransportFiles -
+        sAuditBattle93ProfileRpcTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

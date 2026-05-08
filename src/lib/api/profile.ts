@@ -1,15 +1,15 @@
-import { supabase } from "../supabaseClient";
 import {
   isRpcIgnoredMutationResponse,
   isRpcNonEmptyStringResponse,
   validateRpcResponse,
 } from "./queryBoundary";
+import { callEnsureMyProfileRpc, callGetMyRoleRpc } from "./profile.transport";
 
 export const isEnsureMyProfileRpcResponse = isRpcIgnoredMutationResponse;
 export const isGetMyRoleRpcResponse = isRpcNonEmptyStringResponse;
 
 export async function ensureMyProfile(): Promise<boolean> {
-  const { data, error } = await supabase.rpc("ensure_my_profile");
+  const { data, error } = await callEnsureMyProfileRpc();
   if (error) {
     if (__DEV__) {
       console.warn("[ensureMyProfile]", error.message);
@@ -35,7 +35,7 @@ export async function ensureMyProfile(): Promise<boolean> {
 }
 
 export async function getMyRole(): Promise<string | null> {
-  const { data, error } = await supabase.rpc("get_my_role");
+  const { data, error } = await callGetMyRoleRpc();
   if (error) {
     if (__DEV__) {
       console.warn("[getMyRole]", error.message);
