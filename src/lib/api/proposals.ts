@@ -1,4 +1,3 @@
-import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { beginPlatformObservability } from "../observability/platformObservability";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
@@ -16,6 +15,7 @@ import {
   ensureProposalRequestItemsIntegrity,
 } from "./integrity.guards";
 import { toProposalRequestItemIntegrityDegradedError } from "./proposalIntegrity";
+import { callProposalItemsForWebRpc } from "./proposals.transport";
 import {
   isRpcIgnoredMutationResponse,
   isRpcNonEmptyString,
@@ -430,7 +430,7 @@ async function loadProposalItemsFromSource(
       : null;
   }
 
-  const result = await supabase.rpc("proposal_items_for_web", { p_id: proposalId });
+  const result = await callProposalItemsForWebRpc(proposalId);
   if (result.error) throw result.error;
   const validated = validateRpcResponse(result.data, isProposalItemsForWebRpcResponse, {
     rpcName: "proposal_items_for_web",
