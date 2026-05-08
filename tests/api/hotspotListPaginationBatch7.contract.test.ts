@@ -183,6 +183,14 @@ const isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch = (fi
     "tests/perf/performance-budget.test.ts",
   ].includes(file);
 
+const isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch = (file: string) =>
+  [
+    "src/screens/contractor/contractorPdfSource.service.ts",
+    "src/screens/contractor/contractorPdfSource.transport.ts",
+    "tests/api/contractorPdfSourceTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file);
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -260,6 +268,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle117WarehouseDayMaterialsPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

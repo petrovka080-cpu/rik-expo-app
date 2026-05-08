@@ -381,6 +381,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle119WarehouseObjectWorkPdfTransportFiles = [
       path.join(SRC, "screens", "warehouse", "warehouse.objectWorkReport.pdf.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle120ContractorPdfSourceTransportFiles = [
+      path.join(SRC, "screens", "contractor", "contractorPdfSource.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -523,6 +526,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_117 adds one permanent warehouse day-materials PDF source RPC transport boundary.
     // S-AUDIT_BATTLE_118 adds one permanent warehouse incoming-materials PDF source RPC transport boundary.
     // S-AUDIT_BATTLE_119 adds one permanent warehouse object-work PDF source RPC transport boundary.
+    // S-AUDIT_BATTLE_120 adds one permanent contractor work PDF source RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -612,6 +616,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle117WarehouseDayMaterialsPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle118WarehouseIncomingMaterialsPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle119WarehouseObjectWorkPdfTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle120ContractorPdfSourceTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -702,7 +707,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle116WarehouseIncomingFormPdfTransportFiles -
         sAuditBattle117WarehouseDayMaterialsPdfTransportFiles -
         sAuditBattle118WarehouseIncomingMaterialsPdfTransportFiles -
-        sAuditBattle119WarehouseObjectWorkPdfTransportFiles,
+        sAuditBattle119WarehouseObjectWorkPdfTransportFiles -
+        sAuditBattle120ContractorPdfSourceTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

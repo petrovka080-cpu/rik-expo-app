@@ -1,5 +1,5 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "../../lib/database.types";
+import type { AppSupabaseClient } from "../../types/contracts/shared";
+import { callContractorWorkPdfSourceRpc } from "./contractorPdfSource.transport";
 
 export type ContractorWorkPdfSourceWork = {
   progress_id: string;
@@ -82,12 +82,12 @@ export class ContractorWorkPdfSourceError extends Error {
 }
 
 export async function loadContractorWorkPdfSourceViaRpc(args: {
-  supabaseClient: SupabaseClient<Database>;
+  supabaseClient: AppSupabaseClient;
   progressId: string;
   logId?: string | null;
 }): Promise<ContractorWorkPdfSourceEnvelope> {
   const { supabaseClient, progressId, logId } = args;
-  const { data, error } = await supabaseClient.rpc("pdf_contractor_work_source_v1", {
+  const { data, error } = await callContractorWorkPdfSourceRpc(supabaseClient, {
     p_progress_id: progressId,
     p_log_id: logId ?? null,
   });
