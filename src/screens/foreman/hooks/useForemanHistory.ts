@@ -2,8 +2,8 @@ import { useCallback, useState } from 'react';
 import { listForemanRequests, type ForemanRequestSummary } from '../../../lib/catalog_api';
 import { FOREMAN_TEXT } from '../foreman.ui';
 import { Alert } from 'react-native';
-import { supabase } from '../../../lib/supabaseClient';
 import { useForemanHistoryStore } from '../foremanHistory.store';
+import { loadCurrentForemanAuthUserId } from '../foreman.auth.transport';
 
 const warnForemanHistory = (error: unknown) => {
     if (__DEV__) {
@@ -22,8 +22,7 @@ export function useForemanHistory() {
 
     const fetchHistory = useCallback(async (foremanName: string) => {
         const name = String(foremanName || "").trim();
-        const auth = await supabase.auth.getUser();
-        const userId = String(auth.data?.user?.id || "").trim();
+        const userId = await loadCurrentForemanAuthUserId();
 
         if (!name && !userId) {
             Alert.alert(

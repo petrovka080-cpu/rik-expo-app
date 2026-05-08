@@ -1,8 +1,8 @@
 import { Alert } from "react-native";
 import { useCallback, useState } from "react";
-import { supabase } from "../../../lib/supabaseClient";
 import { listForemanSubcontracts, type Subcontract } from "../../subcontracts/subcontracts.shared";
 import { useForemanHistoryStore } from "../foremanHistory.store";
+import { loadCurrentForemanAuthUserId } from "../foreman.auth.transport";
 
 const warnForemanSubcontractHistory = (error: unknown) => {
   if (__DEV__) {
@@ -22,8 +22,7 @@ export function useForemanSubcontractHistory() {
   const fetchHistory = useCallback(async (userId?: string | null) => {
     let uid = String(userId || "").trim();
     if (!uid) {
-      const auth = await supabase.auth.getUser();
-      uid = String(auth.data?.user?.id || "").trim();
+      uid = await loadCurrentForemanAuthUserId() ?? "";
     }
 
     if (!uid) {
