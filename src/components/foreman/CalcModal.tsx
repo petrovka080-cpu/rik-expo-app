@@ -10,11 +10,11 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { supabase } from "../../../src/lib/supabaseClient";
 import { redactSensitiveValue } from "../../../src/lib/security/redaction";
 import CalcModalContent from "./CalcModalContent";
 import type { BasisKey, Field } from "./useCalcFields";
 import { useCalcFields } from "./useCalcFields";
+import { runCalcWorkKitRpc } from "./calcModal.rpc.transport";
 import {
   buildCalcPayload,
   EMPTY_CALC_MODAL_FORM_STATE,
@@ -386,7 +386,7 @@ export default function CalcModal({ visible, onClose, onBack, workType, onAddToR
       setRows(null);
 
       const payload = buildCalcPayload(fields, parseResult.measures, lossState.lossValue);
-      const { data, error } = await supabase.rpc("rpc_calc_work_kit", {
+      const { data, error } = await runCalcWorkKitRpc({
         p_work_type_code: workType.code,
         p_inputs: payload,
       });
