@@ -1,3 +1,5 @@
+import { supabase } from "../../lib/supabaseClient";
+
 type MapScreenAuthUser = {
   id: string;
 };
@@ -15,8 +17,9 @@ type MapScreenAuthClient = {
 };
 
 export async function loadMapScreenCurrentAuthUser(params: {
-  supabase: MapScreenAuthClient;
-}): Promise<MapScreenAuthUser | null> {
-  const result = await params.supabase.auth.getUser();
+  supabase?: MapScreenAuthClient;
+} = {}): Promise<MapScreenAuthUser | null> {
+  const client = params.supabase ?? supabase;
+  const result = await client.auth.getUser();
   return result.data?.user ?? null;
 }

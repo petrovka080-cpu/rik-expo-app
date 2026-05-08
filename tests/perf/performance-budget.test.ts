@@ -321,6 +321,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle98CalcModalRpcTransportFiles = [
       path.join(SRC, "components", "foreman", "calcModal.rpc.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle99MapScreenMarketTransportFiles = [
+      path.join(SRC, "components", "map", "MapScreen.market.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -443,6 +446,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_96 adds one permanent core RPC compat transport boundary.
     // S-AUDIT_BATTLE_97 adds one permanent warehouse issue RPC transport boundary.
     // S-AUDIT_BATTLE_98 adds one permanent CalcModal RPC transport boundary.
+    // S-AUDIT_BATTLE_99 adds one permanent MapScreen market read/write transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -512,6 +516,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle96CoreRpcCompatTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle97WarehouseIssueTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle98CalcModalRpcTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle99MapScreenMarketTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -582,7 +587,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle95AccountantHistoryTransportFiles -
         sAuditBattle96CoreRpcCompatTransportFiles -
         sAuditBattle97WarehouseIssueTransportFiles -
-        sAuditBattle98CalcModalRpcTransportFiles,
+        sAuditBattle98CalcModalRpcTransportFiles -
+        sAuditBattle99MapScreenMarketTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

@@ -11,7 +11,6 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { router, useLocalSearchParams, type Href } from "expo-router";
-import { supabase } from "../../lib/supabaseClient";
 import * as Location from "expo-location";
 import DemandDetailsModal from "./DemandDetailsModal";
 
@@ -34,6 +33,10 @@ import type {
 import { useMapListingsQuery } from "./useMapListingsQuery";
 import { MAP_SCREEN_UI as UI, styles } from "./MapScreen.styles";
 import { loadMapScreenCurrentAuthUser } from "./MapScreen.auth.transport";
+import {
+  loadMapScreenListingRouteMeta,
+  submitMapScreenDemandOffer,
+} from "./MapScreen.market.transport";
 
 import {
   buildIndex,
@@ -506,13 +509,13 @@ export default function MapScreen() {
 
     setSendingOffer(true);
     try {
-      const user = await loadMapScreenCurrentAuthUser({ supabase });
+      const user = await loadMapScreenCurrentAuthUser();
       if (!user) {
         Alert.alert("Вход", "Нужно войти в аккаунт");
         return;
       }
 
-      const { error } = await supabase.from("demand_offers").insert({
+      const { error } = await submitMapScreenDemandOffer({
         demand_id: offerDemand.id,
         supplier_id: user.id,
         price: priceNum,
@@ -539,11 +542,7 @@ export default function MapScreen() {
     const cached = routeMetaCacheRef.current.get(row.id);
     if (cached) return cached;
 
-    const result = await supabase
-      .from("market_listings")
-      .select("id,title,user_id,company_id")
-      .eq("id", row.id)
-      .maybeSingle();
+    const result = await loadMapScreenListingRouteMeta(row.id);
 
     if (result.error) throw result.error;
     const nextMeta = normalizeListingRouteMeta(result.data);
