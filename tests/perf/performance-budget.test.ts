@@ -212,6 +212,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle56MarketAuthTransportFiles = [
       path.join(SRC, "features", "market", "market.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle57RequestsAuthTransportFiles = [
+      path.join(SRC, "lib", "api", "requests.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -297,6 +300,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_54 adds one permanent request repository auth transport boundary.
     // S-AUDIT_BATTLE_55 adds one permanent Director realtime auth transport boundary.
     // S-AUDIT_BATTLE_56 adds one permanent marketplace auth transport boundary.
+    // S-AUDIT_BATTLE_57 adds one permanent requests draft-owner auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -330,6 +334,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle54RequestRepositoryAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle55DirectorLifecycleAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle56MarketAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle57RequestsAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -364,7 +369,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle53RequestDraftSyncAuthTransportFiles -
         sAuditBattle54RequestRepositoryAuthTransportFiles -
         sAuditBattle55DirectorLifecycleAuthTransportFiles -
-        sAuditBattle56MarketAuthTransportFiles,
+        sAuditBattle56MarketAuthTransportFiles -
+        sAuditBattle57RequestsAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

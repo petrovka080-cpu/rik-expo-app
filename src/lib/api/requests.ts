@@ -3,6 +3,7 @@ import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { client, normalizeUuid, parseErr, toFilterId } from "./_core";
 import { ensureRequestExists } from "./integrity.guards";
+import { resolveCurrentRequestUserId } from "./requests.auth.transport";
 import {
   mapRequestRow,
   parseRequestItemsByRequestRows,
@@ -330,9 +331,7 @@ const isDraftRequestStatusValue = (raw: unknown): boolean => {
 
 async function resolveDraftOwnerUserId(): Promise<string | null> {
   try {
-    const session = await supabase.auth.getSession();
-    const userId = String(session.data.session?.user?.id ?? "").trim();
-    return userId || null;
+    return await resolveCurrentRequestUserId();
   } catch (error) {
     recordPlatformObservability({
       screen: "request",
