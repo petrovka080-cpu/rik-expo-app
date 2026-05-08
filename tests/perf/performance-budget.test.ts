@@ -402,6 +402,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle133CatalogProposalCreationTransportFiles = [
       path.join(SRC, "lib", "catalog", "catalog.proposalCreation.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle135SubcontractsSharedTransportFiles = [
+      path.join(SRC, "screens", "subcontracts", "subcontracts.shared.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -647,6 +650,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle130DirectorApproveTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle131BuyerAccountingFlagsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle133CatalogProposalCreationTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle135SubcontractsSharedTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -744,7 +748,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle126FilesStorageTransportFiles -
         sAuditBattle130DirectorApproveTransportFiles -
         sAuditBattle131BuyerAccountingFlagsTransportFiles -
-        sAuditBattle133CatalogProposalCreationTransportFiles,
+        sAuditBattle133CatalogProposalCreationTransportFiles -
+        sAuditBattle135SubcontractsSharedTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

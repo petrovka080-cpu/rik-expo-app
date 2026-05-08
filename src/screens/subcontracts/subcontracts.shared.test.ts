@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { supabase } from "../../lib/supabaseClient";
 import { RpcValidationError } from "../../lib/api/queryBoundary";
 import {
@@ -26,6 +28,9 @@ const mockSupabase = supabase as unknown as {
   from: jest.Mock;
   rpc: jest.Mock;
 };
+
+const readSource = (relativePath: string) =>
+  fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 
 const makeSubcontractRow = (id: string, status: string = "pending") => ({
   id,
@@ -117,6 +122,22 @@ describe("subcontracts shared boundary", () => {
 
   afterEach(() => {
     warnSpy.mockRestore();
+  });
+
+  it("keeps subcontract RPC provider calls behind the typed transport boundary", () => {
+    const serviceSource = readSource("src/screens/subcontracts/subcontracts.shared.ts");
+    const transportSource = readSource("src/screens/subcontracts/subcontracts.shared.transport.ts");
+
+    expect(serviceSource).toContain('from "./subcontracts.shared.transport"');
+    expect(serviceSource).toContain("callSubcontractCreateRpc");
+    expect(serviceSource).toContain("callSubcontractCreateDraftRpc");
+    expect(serviceSource).toContain("callSubcontractStatusMutationRpc");
+    expect(serviceSource).not.toContain("supabase.rpc(");
+    expect(transportSource).toContain('supabase.rpc("subcontract_create_v1"');
+    expect(transportSource).toContain('supabase.rpc("subcontract_create_draft"');
+    expect(transportSource).toContain("supabase.rpc(rpcName, args)");
+    expect(transportSource).not.toContain("validateRpcResponse");
+    expect(transportSource).not.toContain("SubcontractMutationError");
   });
 
   it("creates subcontract draft through canonical rpc path", async () => {

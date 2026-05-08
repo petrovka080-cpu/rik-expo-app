@@ -3,14 +3,20 @@ import type { Database } from "../../lib/database.types";
 import { classifyRpcCompatError, parseErr } from "../../lib/api/_core";
 import { validateRpcResponse } from "../../lib/api/queryBoundary";
 import { normalizeRuText } from "../../lib/text/encoding";
+import {
+  callSubcontractCreateDraftRpc,
+  callSubcontractCreateRpc,
+  callSubcontractStatusMutationRpc,
+  type SubcontractApproveArgs,
+  type SubcontractCreateArgs,
+  type SubcontractCreateDraftArgs,
+  type SubcontractRejectArgs,
+  type SubcontractStatusRpcName,
+} from "./subcontracts.shared.transport";
 
 type SubcontractsTable = Database["public"]["Tables"]["subcontracts"];
 type SubcontractRow = SubcontractsTable["Row"];
 type SubcontractUpdate = SubcontractsTable["Update"];
-type SubcontractCreateArgs = Database["public"]["Functions"]["subcontract_create_v1"]["Args"];
-type SubcontractCreateDraftArgs = Database["public"]["Functions"]["subcontract_create_draft"]["Args"];
-type SubcontractApproveArgs = Database["public"]["Functions"]["subcontract_approve_v1"]["Args"];
-type SubcontractRejectArgs = Database["public"]["Functions"]["subcontract_reject_v1"]["Args"];
 type SubcontractItemsTable = Database["public"]["Tables"]["subcontract_items"];
 type SubcontractItemRow = SubcontractItemsTable["Row"];
 type SubcontractItemInsert = SubcontractItemsTable["Insert"];
@@ -575,7 +581,7 @@ const ensureSubcontractStatusMutationSucceeded = (
 const runCanonicalSubcontractCreate = async (
   payload: SubcontractCreateArgs,
 ): Promise<Pick<Subcontract, "id" | "display_no">> => {
-  const { data, error } = await supabase.rpc("subcontract_create_v1", payload);
+  const { data, error } = await callSubcontractCreateRpc(payload);
   if (error) throw error;
   const validated = validateRpcResponse(data, isSubcontractCreateRpcResponse, {
     rpcName: "subcontract_create_v1",
@@ -588,7 +594,7 @@ const runCanonicalSubcontractCreate = async (
 const runLegacySubcontractCreateCompat = async (
   payload: SubcontractCreateDraftArgs,
 ): Promise<Pick<Subcontract, "id" | "display_no">> => {
-  const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
+  const { data, error } = await callSubcontractCreateDraftRpc(payload);
   if (error) throw error;
   const validated = validateRpcResponse(data, isSubcontractCreateRpcResponse, {
     rpcName: "subcontract_create_draft",
@@ -600,10 +606,10 @@ const runLegacySubcontractCreateCompat = async (
 
 const runSubcontractStatusMutation = async (
   operation: Extract<SubcontractMutationOperation, "approve" | "reject">,
-  rpcName: "subcontract_approve_v1" | "subcontract_reject_v1",
+  rpcName: SubcontractStatusRpcName,
   args: SubcontractApproveArgs | SubcontractRejectArgs,
 ): Promise<void> => {
-  const { data, error } = await supabase.rpc(rpcName, args);
+  const { data, error } = await callSubcontractStatusMutationRpc(rpcName, args);
   if (error) {
     logSubcontractsDebug(`${operation}.rpc_failed`, {
       operation,
