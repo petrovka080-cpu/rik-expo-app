@@ -1,4 +1,3 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
@@ -9,6 +8,8 @@ import {
   type PdfRpcRolloutMode,
 } from "../../lib/documents/pdfRpcRollout";
 import { beginPdfLifecycleObservation } from "../../lib/pdf/pdfLifecycle";
+import type { AppSupabaseClient } from "../../types/contracts/shared";
+import { callWarehouseObjectWorkReportPdfSourceRpc } from "./warehouse.objectWorkReport.pdf.transport";
 import {
   assertWarehousePdfRpcPrimary,
   logWarehousePdfSourceBranch,
@@ -77,7 +78,7 @@ type WarehouseObjectWorkReportSource = {
 };
 
 type GetWarehouseObjectWorkReportPdfSourceParams = {
-  supabase: SupabaseClient;
+  supabase: AppSupabaseClient;
   range: WarehouseObjectWorkReportPdfRange;
   legacyDocsTotal: number;
   objectId?: string | null;
@@ -244,8 +245,8 @@ function validateWarehouseObjectWorkPdfSourceV1(
 export async function fetchWarehouseObjectWorkReportPdfSourceViaRpc(
   params: Pick<GetWarehouseObjectWorkReportPdfSourceParams, "supabase" | "range" | "objectId">,
 ): Promise<WarehouseObjectWorkReportSource> {
-  const { data, error } = await params.supabase.rpc(
-    "pdf_warehouse_object_work_source_v1",
+  const { data, error } = await callWarehouseObjectWorkReportPdfSourceRpc(
+    params.supabase,
     {
       p_from: params.range.rpcFrom,
       p_to: params.range.rpcTo,

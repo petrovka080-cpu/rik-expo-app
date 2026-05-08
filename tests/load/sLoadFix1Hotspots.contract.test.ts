@@ -153,6 +153,14 @@ const isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatc
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch = (file: string) =>
+  [
+    "src/screens/warehouse/warehouse.objectWorkReport.pdf.service.ts",
+    "src/screens/warehouse/warehouse.objectWorkReport.pdf.transport.ts",
+    "tests/api/warehouseObjectWorkPdfTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -229,6 +237,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditBattle116WarehouseIncomingFormPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle117WarehouseDayMaterialsPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatch(file) &&
+        !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||
