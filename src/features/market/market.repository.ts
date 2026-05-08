@@ -24,6 +24,10 @@ import {
 import { resolveCurrentSessionRole } from "../../lib/sessionRole";
 import { supabase } from "../../lib/supabaseClient";
 import { resolveCurrentMarketBuyerName } from "./market.auth.transport";
+import {
+  callMarketplaceItemsScopePageRpc,
+  callMarketplaceItemScopeDetailRpc,
+} from "./market.repository.transport";
 import { asListingItems, toMarketHomeListingCard } from "./marketHome.data";
 import {
   buildMarketplaceNoteTag,
@@ -342,15 +346,12 @@ export async function loadMarketHomePage(
   try {
     await ensureMarketNetworkAvailable(MARKET_HOME_SURFACE, "market_fetch_page");
 
-    const rowsResult = await supabase.rpc(
-      "marketplace_items_scope_page_v1" as never,
-      {
-        p_offset: offset,
-        p_limit: limit,
-        p_side: toScopeFilterValue(params.filters?.side),
-        p_kind: toScopeFilterValue(params.filters?.kind),
-      } as never,
-    );
+    const rowsResult = await callMarketplaceItemsScopePageRpc({
+      p_offset: offset,
+      p_limit: limit,
+      p_side: toScopeFilterValue(params.filters?.side),
+      p_kind: toScopeFilterValue(params.filters?.kind),
+    });
 
     if (rowsResult.error) throw rowsResult.error;
 
@@ -411,9 +412,7 @@ export async function loadMarketListingById(id: string): Promise<MarketHomeListi
 
   try {
     await ensureMarketNetworkAvailable(MARKET_PRODUCT_SURFACE, "market_fetch_item");
-    const result = await supabase
-      .rpc("marketplace_item_scope_detail_v1" as never, { p_listing_id: listingId } as never)
-      .maybeSingle();
+    const result = await callMarketplaceItemScopeDetailRpc({ p_listing_id: listingId });
 
     const rawData = result.data as unknown;
     if (result.error) throw result.error;
