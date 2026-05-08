@@ -5,11 +5,12 @@ import type { PropsWithChildren } from "react";
 import type { ViewProps } from "react-native";
 
 import { openAppAttachment } from "../../lib/documents/attachmentOpener";
-import { supabase, SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
+import { SUPABASE_ANON_KEY } from "../../lib/supabaseClient";
 import type { AccountantInboxRow } from "../../lib/rik_api";
 import type { StatusKey } from "./types";
 import { normalizePaymentStatusKind } from "./accountant.status";
 import { logger } from "../../lib/logger";
+import { readCurrentAccountantAuthSession } from "./accountant.screen.auth.transport";
 
 export function toRpcDateOrNull(v: string) {
   const s = String(v || "").trim();
@@ -57,15 +58,16 @@ export function safeFileNameLite(name: string) {
 
 export async function getAuthHeadersAcc(): Promise<Record<string, string> | undefined> {
   try {
-    const { data } = await supabase.auth.getSession();
-    const token = data?.session?.access_token;
+    const session = await readCurrentAccountantAuthSession();
+    const token = session?.access_token;
 
     const h: Record<string, string> = {};
     if (SUPABASE_ANON_KEY) h.apikey = SUPABASE_ANON_KEY;
     if (token) h.Authorization = `Bearer ${token}`;
 
     return Object.keys(h).length ? h : undefined;
-  } catch {
+  } catch (error) {
+    void error;
     return SUPABASE_ANON_KEY ? { apikey: SUPABASE_ANON_KEY } : undefined;
   }
 }
