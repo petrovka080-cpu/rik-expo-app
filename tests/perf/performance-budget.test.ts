@@ -203,6 +203,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle53RequestDraftSyncAuthTransportFiles = [
       path.join(SRC, "lib", "api", "requestDraftSync.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle54RequestRepositoryAuthTransportFiles = [
+      path.join(SRC, "lib", "api", "request.repository.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -285,6 +288,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_49 adds one permanent ActivePaymentForm static style boundary.
     // S-AUDIT_BATTLE_50 adds one permanent CalcModalContent static style boundary.
     // S-AUDIT_BATTLE_53 adds one permanent request draft sync auth transport boundary.
+    // S-AUDIT_BATTLE_54 adds one permanent request repository auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -315,6 +319,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle51ProfileAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle52CanonicalPdfAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle53RequestDraftSyncAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle54RequestRepositoryAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -346,7 +351,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle51ProfileMembershipTransportFiles -
         sAuditBattle51ProfileAuthTransportFiles -
         sAuditBattle52CanonicalPdfAuthTransportFiles -
-        sAuditBattle53RequestDraftSyncAuthTransportFiles,
+        sAuditBattle53RequestDraftSyncAuthTransportFiles -
+        sAuditBattle54RequestRepositoryAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

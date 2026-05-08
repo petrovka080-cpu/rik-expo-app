@@ -11,6 +11,7 @@ import {
 } from "../realtime/realtime.channels";
 import type { RequestRecord } from "./types";
 import { supabase } from "../supabaseClient";
+import { resolveRequestRepositoryAccessToken } from "./request.repository.auth.transport";
 
 export type SubmitRequestCommand = {
   requestId: number | string;
@@ -50,8 +51,7 @@ const logRequestRepository = (payload: Record<string, unknown>) => {
 };
 
 const ensureRealtimeAuth = async () => {
-  const session = await supabase.auth.getSession();
-  const accessToken = session.data.session?.access_token ?? null;
+  const accessToken = await resolveRequestRepositoryAccessToken();
   if (!accessToken) return false;
   await supabase.realtime.setAuth(accessToken);
   return true;
