@@ -400,6 +400,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "warehouse", "warehouse.seed.transport.ts"),
       path.join(SRC, "screens", "warehouse", "warehouse.seed.transport.contract.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle116WarehouseReceiveApplyTransportFiles = [
+      path.join(SRC, "screens", "warehouse", "hooks", "useWarehouseReceiveApply.transport.ts"),
+      path.join(SRC, "screens", "warehouse", "hooks", "useWarehouseReceiveApply.transport.contract.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle125MarketRepositoryTransportFiles = [
       path.join(SRC, "features", "market", "market.repository.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -570,6 +574,8 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_133 adds one permanent catalog proposal-creation transport boundary.
     // S_AUDIT_BATTLE_115_WAREHOUSE_SEED_DEV_ONLY_CONTAINMENT adds one permanent
     // warehouse seed transport boundary plus a focused src-owned contract test.
+    // S_AUDIT_BATTLE_116_SINGLE_CALL_LOW_RISK_BYPASS_SWEEP_A adds one permanent
+    // warehouse receive apply RPC transport boundary plus a focused src-owned contract test.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -665,6 +671,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditNightBattle113BuyerRepoReadTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle114OfficeAccessTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle115WarehouseSeedTransportFiles).toBeLessThanOrEqual(2);
+    expect(sAuditBattle116WarehouseReceiveApplyTransportFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle125MarketRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle126FilesStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle130DirectorApproveTransportFiles).toBeLessThanOrEqual(1);
@@ -768,6 +775,7 @@ describe("performance budget — bundle module count", () => {
         sAuditNightBattle113BuyerRepoReadTransportFiles -
         sAuditNightBattle114OfficeAccessTransportFiles -
         sAuditNightBattle115WarehouseSeedTransportFiles -
+        sAuditBattle116WarehouseReceiveApplyTransportFiles -
         sAuditBattle125MarketRepositoryTransportFiles -
         sAuditBattle126FilesStorageTransportFiles -
         sAuditBattle130DirectorApproveTransportFiles -

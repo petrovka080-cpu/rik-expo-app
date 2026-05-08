@@ -10,6 +10,10 @@ import {
 } from "../../../lib/api/queryBoundary";
 import { traceAsync } from "../../../lib/observability/sentry";
 import type { RpcReceiveApplyResult } from "../warehouse.types";
+import {
+  callWarehouseReceiveApplyRpc,
+  type WarehouseReceiveApplyItem,
+} from "./useWarehouseReceiveApply.transport";
 
 const isWarehouseReceiveApplyResult = (value: unknown): value is RpcReceiveApplyResult =>
   isRpcRecord(value) &&
@@ -22,7 +26,7 @@ const isWarehouseReceiveApplyResult = (value: unknown): value is RpcReceiveApply
 export async function applyWarehouseReceive(params: {
   supabase: SupabaseClient;
   incomingId: string;
-  items: { purchase_item_id: string; qty: number }[];
+  items: WarehouseReceiveApplyItem[];
   warehousemanFio: string;
   clientMutationId: string;
 }) {
@@ -36,7 +40,7 @@ export async function applyWarehouseReceive(params: {
     async () => {
       const { supabase, incomingId, items, warehousemanFio, clientMutationId } = params;
 
-      const { data, error } = await supabase.rpc("wh_receive_apply_ui", {
+      const { data, error } = await callWarehouseReceiveApplyRpc(supabase, {
         p_incoming_id: incomingId,
         p_items: items,
         p_client_mutation_id: clientMutationId,
