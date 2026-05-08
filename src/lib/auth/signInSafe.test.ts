@@ -6,12 +6,8 @@ import {
 const mockSignInWithPassword = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
 
-jest.mock("../supabaseClient", () => ({
-  supabase: {
-    auth: {
-      signInWithPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
-    },
-  },
+jest.mock("./signIn.transport", () => ({
+  signInWithEmailPassword: (...args: unknown[]) => mockSignInWithPassword(...args),
 }));
 
 jest.mock("../observability/platformObservability", () => ({

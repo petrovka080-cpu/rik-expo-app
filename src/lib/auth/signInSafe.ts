@@ -1,14 +1,17 @@
 import type { AuthError } from "@supabase/supabase-js";
 
 import { recordPlatformObservability } from "../observability/platformObservability";
-import { supabase } from "../supabaseClient";
+import {
+  signInWithEmailPassword,
+  type SignInWithEmailPasswordResult,
+} from "./signIn.transport";
 
 export const LOGIN_NETWORK_DEGRADED_MESSAGE =
   "Плохое соединение. Попробуйте ещё раз.";
 export const LOGIN_FALLBACK_ERROR_MESSAGE = "Не удалось войти.";
 
 type SafeSignInData = Awaited<
-  ReturnType<typeof supabase.auth.signInWithPassword>
+  SignInWithEmailPasswordResult
 >["data"];
 
 export type SafeSignInResult = {
@@ -63,7 +66,7 @@ export async function signInSafe(params: {
   });
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await signInWithEmailPassword({
       email: normalizedEmail,
       password: params.password,
     });
