@@ -1,6 +1,7 @@
 import { supabase } from "../../lib/supabaseClient";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { probeForemanRequestsHasRequestNo } from "./foreman.requests.transport";
 import type {
   ForemanRequestRow,
   ForemanRequestUpdate,
@@ -100,8 +101,7 @@ export async function resolveRequestsHasRequestNo(): Promise<boolean> {
     return requestsHasRequestNoCacheEntry!.value;
   }
   try {
-    const q = await supabase.from("requests").select("request_no").limit(1);
-    if (q.error) throw q.error;
+    await probeForemanRequestsHasRequestNo();
     setRequestNoCapabilityCache(true, "positive");
     recordPlatformObservability({
       screen: "foreman",

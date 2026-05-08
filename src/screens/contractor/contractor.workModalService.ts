@@ -9,7 +9,11 @@ import type { IssuedItemRow, LinkedReqCard } from "./types";
 import type { Database } from "../../lib/database.types";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
-import { fetchContractorWorkModalRequestNoProbe } from "./contractor.workModalService.transport";
+import {
+  createContractorWorkModalRequestDisplayQuery,
+  fetchContractorWorkModalRequestNoProbe,
+  type ContractorWorkModalRequestDisplayRow as RequestDisplayRow,
+} from "./contractor.workModalService.transport";
 
 type WorkRowLike = {
   progress_id: string;
@@ -51,12 +55,6 @@ type SubcontractHeaderRow = {
   date_end?: string | null;
 };
 
-type RequestDisplayRow = {
-  id?: string | null;
-  display_no?: string | null;
-  request_no?: string | null;
-  status?: string | null;
-};
 let requestsHasRequestNoInWorkModalCache: boolean | null = null;
 
 type WarehouseIssueHeadRow = {
@@ -453,11 +451,10 @@ export async function loadIssuedTodayData(
     : "id, display_no, status";
   const reqDisplayQ = await loadPagedRowsWithCeiling<RequestDisplayRow>(
     () =>
-      supabaseClient
-        .from("requests")
-        .select(reqDisplaySelect)
-        .in("id", requestIds)
-        .order("id", { ascending: true }) as unknown as PagedQuery<RequestDisplayRow>,
+      createContractorWorkModalRequestDisplayQuery(supabaseClient, {
+        select: reqDisplaySelect,
+        requestIds,
+      }) as PagedQuery<RequestDisplayRow>,
     WORK_MODAL_REFERENCE_PAGE_DEFAULTS,
   );
   const reqDisplayById = new Map<string, { req_no: string; status: string | null }>();

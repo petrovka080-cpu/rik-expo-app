@@ -1,9 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PagedQuery } from "../../lib/api/_core";
 import type { Database } from "../../lib/database.types";
 
 export type ContractorWorkModalRequestNoProbeRow = {
   id?: string | null;
   request_no?: string | null;
+};
+
+export type ContractorWorkModalRequestDisplayRow = {
+  id?: string | null;
+  display_no?: string | null;
+  request_no?: string | null;
+  status?: string | null;
 };
 
 const normalizeRequestNoProbeRow = (
@@ -25,4 +33,18 @@ export async function fetchContractorWorkModalRequestNoProbe(
     ? (probe.data as ContractorWorkModalRequestNoProbeRow[])
     : [];
   return normalizeRequestNoProbeRow(rows[0]);
+}
+
+export function createContractorWorkModalRequestDisplayQuery(
+  supabaseClient: SupabaseClient<Database>,
+  params: {
+    select: string;
+    requestIds: string[];
+  },
+): PagedQuery<ContractorWorkModalRequestDisplayRow> {
+  return supabaseClient
+    .from("requests")
+    .select(params.select)
+    .in("id", params.requestIds)
+    .order("id", { ascending: true }) as unknown as PagedQuery<ContractorWorkModalRequestDisplayRow>;
 }

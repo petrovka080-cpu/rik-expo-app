@@ -323,6 +323,18 @@ describe("contractor.workModalService", () => {
     expect(transportSource).toContain('.from("requests").select("id, request_no").limit(1)');
   });
 
+  it("keeps request display reads behind the transport boundary", () => {
+    const { readFileSync } = require("fs") as typeof import("fs");
+    const serviceSource = readFileSync(SERVICE_SOURCE_PATH, "utf8");
+    const transportSource = readFileSync(TRANSPORT_SOURCE_PATH, "utf8");
+
+    expect(serviceSource).toContain("createContractorWorkModalRequestDisplayQuery");
+    expect(serviceSource).not.toContain('.from("requests")\n        .select(reqDisplaySelect)');
+    expect(transportSource).toContain("createContractorWorkModalRequestDisplayQuery");
+    expect(transportSource).toContain('.from("requests")');
+    expect(transportSource).toContain(".select(params.select)");
+  });
+
   it("keeps empty state honest when there are no approved request ids in scope", async () => {
     mockFetchRequestScopeRows.mockResolvedValue([
       { id: REQUEST_UUID, status: "cancelled" },

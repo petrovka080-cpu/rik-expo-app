@@ -257,6 +257,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle74MapScreenAuthTransportFiles = [
       path.join(SRC, "components", "map", "MapScreen.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle76ForemanRequestsTransportFiles = [
+      path.join(SRC, "screens", "foreman", "foreman.requests.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -357,6 +360,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_72 adds one permanent buyer auto-FIO auth transport boundary.
     // S-AUDIT_BATTLE_73 adds one permanent buyer actions auth transport boundary.
     // S-AUDIT_BATTLE_74 adds one permanent MapScreen auth transport boundary.
+    // S-AUDIT_BATTLE_76 adds one permanent foreman requests schema-probe transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -405,6 +409,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle72BuyerAutoFioAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle73BuyerActionsAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle74MapScreenAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle76ForemanRequestsTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -454,7 +459,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle69ForemanAuthTransportFiles -
         sAuditBattle72BuyerAutoFioAuthTransportFiles -
         sAuditBattle73BuyerActionsAuthTransportFiles -
-        sAuditBattle74MapScreenAuthTransportFiles,
+        sAuditBattle74MapScreenAuthTransportFiles -
+        sAuditBattle76ForemanRequestsTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
