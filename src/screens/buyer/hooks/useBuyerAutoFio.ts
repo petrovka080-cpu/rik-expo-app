@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { loadBuyerAutoFioCandidate } from "./useBuyerAutoFio.auth.transport";
 
 export function useBuyerAutoFio(params: {
   supabase: SupabaseClient;
@@ -12,16 +13,12 @@ export function useBuyerAutoFio(params: {
     (async () => {
       try {
         if (buyerFio) return;
-        const { data } = await supabase.auth.getUser();
-        const fio =
-          data?.user?.user_metadata?.full_name?.trim() ||
-          data?.user?.user_metadata?.name?.trim() ||
-          "";
+        const fio = await loadBuyerAutoFioCandidate({ supabase });
         if (fio) setBuyerFio(fio);
-      } catch {
+      } catch (error) {
+        void error;
         // no-op
       }
     })();
   }, [buyerFio, supabase, setBuyerFio]);
 }
-
