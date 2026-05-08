@@ -1,17 +1,11 @@
 import { supabase } from "../supabaseClient";
+import {
+  runRpcCompatTransportVariant,
+  type RpcCompatTransportVariant,
+} from "./_core.transport";
 import type {
   AppSupabaseClient,
-  PublicFunctionArgs,
-  PublicFunctionName,
 } from "../../types/contracts/shared";
-
-type RpcName = PublicFunctionName;
-type RpcArgs<TName extends RpcName> = PublicFunctionArgs<TName>;
-type RpcVariantMap = {
-  [TName in RpcName]: undefined extends RpcArgs<TName>
-    ? { fn: TName; args?: RpcArgs<TName> }
-    : { fn: TName; args: RpcArgs<TName> };
-};
 
 export const client: AppSupabaseClient = supabase;
 
@@ -21,7 +15,7 @@ type ErrorLike = {
   code?: unknown;
 };
 
-type RpcVariant<TName extends RpcName = RpcName> = RpcVariantMap[TName];
+type RpcVariant = RpcCompatTransportVariant;
 
 export type RpcCompatErrorKind =
   | "missing_function"
@@ -278,18 +272,10 @@ export function classifyRpcCompatError(error: unknown): RpcCompatErrorDecision {
 export async function rpcCompat<T = unknown>(
   variants: readonly RpcVariant[],
 ): Promise<T> {
-  const runRpc = async <TName extends RpcName>(variant: RpcVariant<TName>) => {
-    if ("args" in variant && variant.args !== undefined) {
-      const args = variant.args ?? undefined;
-      return (await supabase.rpc(variant.fn, args)) as { data: unknown; error: unknown };
-    }
-    return (await supabase.rpc(variant.fn)) as { data: unknown; error: unknown };
-  };
-
   let lastErr: unknown = null;
   for (const v of variants) {
     try {
-      const { data, error } = await runRpc(v);
+      const { data, error } = await runRpcCompatTransportVariant(v);
       if (!error) return data as T;
       lastErr = error;
       const decision = classifyRpcCompatError(error);
