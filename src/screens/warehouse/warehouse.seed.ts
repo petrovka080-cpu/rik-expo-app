@@ -1,5 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling } from "../../lib/api/_core";
+import {
+  callWarehouseSeedEnsureRpc,
+  createWarehouseSeedProposalSnapshotItemsQuery,
+  createWarehouseSeedPurchaseItemsQuery,
+  createWarehouseSeedRequestItemsQuery,
+  insertWarehouseSeedPurchaseItems,
+  selectWarehouseSeedIncomingItemProbe,
+  selectWarehouseSeedIncomingPurchaseId,
+  selectWarehouseSeedPurchaseProposalId,
+  upsertWarehouseSeedIncomingItems,
+  type WarehouseSeedEnsureRpcName,
+  type WarehouseSeedProposalSnapshotRow,
+  type WarehouseSeedPurchaseItemRow,
+  type WarehouseSeedRequestItemMini,
+} from "./warehouse.seed.transport";
 
 export type IncomingSeedRow = {
   incoming_id: string;
@@ -33,29 +48,6 @@ export function mergeIncomingSeedRows(rows: IncomingSeedRow[]): IncomingSeedRow[
 type Supa = SupabaseClient;
 const WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
 
-type RequestItemMini = {
-  id?: string | null;
-  name_human?: string | null;
-  rik_code?: string | null;
-  uom?: string | null;
-};
-
-type PurchaseItemSeedRow = {
-  id?: string | null;
-  request_item_id?: string | null;
-  qty?: number | string | null;
-  uom?: string | null;
-  name_human?: string | null;
-  rik_code?: string | null;
-  request_items?: RequestItemMini | RequestItemMini[] | null;
-};
-
-type ProposalSnapshotRow = {
-  request_item_id?: string | null;
-  uom?: string | null;
-  total_qty?: number | string | null;
-};
-
 const toNum = (v: unknown): number => {
   if (v == null) return 0;
   const s = String(v).trim();
@@ -72,11 +64,7 @@ const warnWarehouseSeed = (scope: string, error: unknown) => {
 
 async function getPurchaseIdByIncoming(supabase: Supa, incomingId: string): Promise<string | null> {
   try {
-    const head = await supabase
-      .from("wh_incoming")
-      .select("purchase_id")
-      .eq("id", incomingId)
-      .maybeSingle();
+    const head = await selectWarehouseSeedIncomingPurchaseId(supabase, incomingId);
 
     const pId = !head.error && head.data?.purchase_id ? String(head.data.purchase_id) : null;
     return pId ? pId : null;
@@ -92,27 +80,8 @@ async function reseedIncomingItems(
   purchaseId: string,
 ): Promise<boolean> {
   // 1) читаем purchase_items (если пусто - пытаемся seed из proposal_snapshot_items)
-  let pi = await loadPagedRowsWithCeiling<PurchaseItemSeedRow>(
-    () =>
-      supabase
-        .from("purchase_items")
-        .select(
-          `
-          id,
-          request_item_id,
-          qty,
-          uom,
-          name_human,
-          rik_code,
-          request_items:request_items (
-            rik_code,
-            name_human,
-            uom
-          )
-        `,
-        )
-        .eq("purchase_id", purchaseId)
-        .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemSeedRow>,
+  let pi = await loadPagedRowsWithCeiling<WarehouseSeedPurchaseItemRow>(
+    () => createWarehouseSeedPurchaseItemsQuery(supabase, purchaseId),
     WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
   );
 
@@ -124,11 +93,7 @@ async function reseedIncomingItems(
   if (Array.isArray(pi.data) && pi.data.length === 0) {
     if (__DEV__) console.warn("[seed] purchase_items empty в†’ seed from proposal_snapshot_items");
 
-    const link = await supabase
-      .from("purchases")
-      .select("proposal_id")
-      .eq("id", purchaseId)
-      .maybeSingle();
+    const link = await selectWarehouseSeedPurchaseProposalId(supabase, purchaseId);
 
     const propId = !link.error && link.data?.proposal_id ? String(link.data.proposal_id) : null;
     if (!propId) {
@@ -136,13 +101,8 @@ async function reseedIncomingItems(
       return false;
     }
 
-    const snap = await loadPagedRowsWithCeiling<ProposalSnapshotRow>(
-      () =>
-        supabase
-          .from("proposal_snapshot_items")
-          .select("request_item_id, uom, total_qty")
-          .eq("proposal_id", propId)
-          .order("request_item_id", { ascending: true }) as unknown as PagedQuery<ProposalSnapshotRow>,
+    const snap = await loadPagedRowsWithCeiling<WarehouseSeedProposalSnapshotRow>(
+      () => createWarehouseSeedProposalSnapshotItemsQuery(supabase, propId),
       WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
     );
 
@@ -151,7 +111,7 @@ async function reseedIncomingItems(
       return false;
     }
 
-    const snapshotRows = (snap.data as ProposalSnapshotRow[]) || [];
+    const snapshotRows = (snap.data as WarehouseSeedProposalSnapshotRow[]) || [];
     const reqIds = snapshotRows
       .map((x) => x.request_item_id)
       .filter(Boolean)
@@ -160,18 +120,13 @@ async function reseedIncomingItems(
     const riMap: Record<string, { name_human: string; rik_code: string | null; uom: string | null }> = {};
 
     if (reqIds.length) {
-      const ri = await loadPagedRowsWithCeiling<RequestItemMini>(
-        () =>
-          supabase
-            .from("request_items")
-            .select("id, name_human, rik_code, uom")
-            .in("id", reqIds)
-            .order("id", { ascending: true }) as unknown as PagedQuery<RequestItemMini>,
+      const ri = await loadPagedRowsWithCeiling<WarehouseSeedRequestItemMini>(
+        () => createWarehouseSeedRequestItemsQuery(supabase, reqIds),
         WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
       );
 
       if (!ri.error && Array.isArray(ri.data)) {
-        for (const r of ri.data as RequestItemMini[]) {
+        for (const r of ri.data as WarehouseSeedRequestItemMini[]) {
           const id = String(r.id);
           riMap[id] = {
             name_human: String(r.name_human ?? ""),
@@ -207,34 +162,15 @@ async function reseedIncomingItems(
       return false;
     }
 
-    const insPI = await supabase.from("purchase_items").insert(piToInsert);
+    const insPI = await insertWarehouseSeedPurchaseItems(supabase, piToInsert);
     if (insPI.error) {
       if (__DEV__) console.warn("[seed] purchase_items insert error:", insPI.error.message);
       return false;
     }
 
     // РїРµСЂРµС‡РёС‚С‹РІР°РµРј purchase_items
-    pi = await loadPagedRowsWithCeiling<PurchaseItemSeedRow>(
-      () =>
-        supabase
-          .from("purchase_items")
-          .select(
-            `
-            id,
-            request_item_id,
-            qty,
-            uom,
-            name_human,
-            rik_code,
-            request_items:request_items (
-              rik_code,
-              name_human,
-              uom
-            )
-          `,
-          )
-          .eq("purchase_id", purchaseId)
-          .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemSeedRow>,
+    pi = await loadPagedRowsWithCeiling<WarehouseSeedPurchaseItemRow>(
+      () => createWarehouseSeedPurchaseItemsQuery(supabase, purchaseId),
       WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS,
     );
 
@@ -245,7 +181,7 @@ async function reseedIncomingItems(
   }
 
   // 2) СЃС‚СЂРѕРёРј wh_incoming_items rows
-  let rows = (((pi.data as PurchaseItemSeedRow[]) || []))
+  let rows = (((pi.data as WarehouseSeedPurchaseItemRow[]) || []))
     .map((x) => {
       const piId = String(x.id ?? "");
       const qty_expected = toNum(x.qty ?? 0);
@@ -302,10 +238,7 @@ async function reseedIncomingItems(
 
   rows = mergeIncomingSeedRows(rows);
 
-  const ins = await supabase.from("wh_incoming_items").upsert(rows, {
-    onConflict: "incoming_id,purchase_item_id",
-    ignoreDuplicates: false,
-  });
+  const ins = await upsertWarehouseSeedIncomingItems(supabase, rows);
 
   if (ins.error) {
     if (__DEV__) console.warn("[seed] wh_incoming_items upsert error:", ins.error.message);
@@ -330,16 +263,12 @@ export async function seedEnsureIncomingItems(params: {
   if (!incomingId) return false;
 
   // 1) already exists?
-  const pre = await supabase
-    .from("wh_incoming_items")
-    .select("id")
-    .eq("incoming_id", incomingId)
-    .limit(1);
+  const pre = await selectWarehouseSeedIncomingItemProbe(supabase, incomingId);
 
   if (!pre.error && Array.isArray(pre.data) && pre.data.length > 0) return true;
 
   // 2) try RPC ensure
-  const tryFns = [
+  const tryFns: WarehouseSeedEnsureRpcName[] = [
     "wh_incoming_ensure_items",
     "ensure_incoming_items",
     "wh_incoming_seed_from_purchase",
@@ -347,7 +276,7 @@ export async function seedEnsureIncomingItems(params: {
 
   for (const fn of tryFns) {
     try {
-      const r = await supabase.rpc(fn, { p_incoming_id: incomingId });
+      const r = await callWarehouseSeedEnsureRpc(supabase, fn, incomingId);
       if (!r.error) break;
       if (r.error) warnWarehouseSeed(`rpc ${fn}`, r.error.message);
     } catch (error) {
@@ -356,11 +285,7 @@ export async function seedEnsureIncomingItems(params: {
   }
 
   // 3) recheck
-  const fb = await supabase
-    .from("wh_incoming_items")
-    .select("id")
-    .eq("incoming_id", incomingId)
-    .limit(1);
+  const fb = await selectWarehouseSeedIncomingItemProbe(supabase, incomingId);
 
   if (!fb.error && Array.isArray(fb.data) && fb.data.length > 0) return true;
 

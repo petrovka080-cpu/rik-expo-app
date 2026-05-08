@@ -18,7 +18,13 @@ describe("S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1", () =
   });
 
   it("uses maxRows and maxPages ceilings for warehouse dictionary/reference readers", () => {
-    const expectations = [
+    const expectations: {
+      path: string;
+      defaults: string;
+      helper: string;
+      order: string;
+      orderPath?: string;
+    }[] = [
       {
         path: "src/screens/warehouse/warehouse.dicts.repo.ts",
         defaults: "WAREHOUSE_DICT_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }",
@@ -34,8 +40,9 @@ describe("S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1", () =
       {
         path: "src/screens/warehouse/warehouse.seed.ts",
         defaults: "WAREHOUSE_SEED_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }",
-        helper: "loadPagedRowsWithCeiling<PurchaseItemSeedRow>",
+        helper: "loadPagedRowsWithCeiling<WarehouseSeedPurchaseItemRow>",
         order: ".order(\"id\", { ascending: true })",
+        orderPath: "src/screens/warehouse/warehouse.seed.transport.ts",
       },
       {
         path: "src/screens/warehouse/warehouse.stockReports.service.ts",
@@ -47,9 +54,10 @@ describe("S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1", () =
 
     for (const expectation of expectations) {
       const source = read(expectation.path);
+      const orderSource = read(expectation.orderPath ?? expectation.path);
       expect(source).toContain(expectation.defaults);
       expect(source).toContain(expectation.helper);
-      expect(source).toContain(expectation.order);
+      expect(orderSource).toContain(expectation.order);
       expect(source).not.toContain("while (true)");
       expect(source).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
     }
