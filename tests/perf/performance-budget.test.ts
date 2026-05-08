@@ -396,6 +396,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle130DirectorApproveTransportFiles = [
       path.join(SRC, "screens", "director", "director.approve.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle131BuyerAccountingFlagsTransportFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerAccountingFlags.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -543,6 +546,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_125 adds one permanent market repository read RPC transport boundary.
     // S-AUDIT_BATTLE_126 adds one permanent supplier files storage transport boundary.
     // S-AUDIT_BATTLE_130 adds one permanent director approve RPC transport boundary.
+    // S-AUDIT_BATTLE_131 adds one permanent buyer accounting flags transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -637,6 +641,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle125MarketRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle126FilesStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle130DirectorApproveTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle131BuyerAccountingFlagsTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -732,7 +737,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle123BuyerRepoStorageTransportFiles -
         sAuditBattle125MarketRepositoryTransportFiles -
         sAuditBattle126FilesStorageTransportFiles -
-        sAuditBattle130DirectorApproveTransportFiles,
+        sAuditBattle130DirectorApproveTransportFiles -
+        sAuditBattle131BuyerAccountingFlagsTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
