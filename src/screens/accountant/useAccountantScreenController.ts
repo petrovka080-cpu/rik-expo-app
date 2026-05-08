@@ -11,6 +11,7 @@ import {
   ACCOUNTANT_FOCUS_REFRESH_MIN_INTERVAL_MS,
 } from "./accountant.repository";
 import { createAccountantRefreshHandlers, createAccountantTabPreviewHandler } from "./accountant.actions";
+import { hasCurrentAccountantSessionUser } from "./accountant.screen.auth.transport";
 import { useAccountantHistoryController } from "./useAccountantHistoryController";
 import { useAccountantInboxController } from "./useAccountantInboxController";
 import type { Tab } from "./types";
@@ -50,9 +51,9 @@ export function useAccountantScreenController(params: {
 
     const syncAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
+        const hasSessionUser = await hasCurrentAccountantSessionUser();
         if (!alive) return;
-        setAuthReady(Boolean(data?.session?.user));
+        setAuthReady(hasSessionUser);
       } catch (error) {
         recordPlatformObservability({
           screen: "accountant",
