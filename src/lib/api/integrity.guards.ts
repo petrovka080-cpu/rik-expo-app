@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { applySupabaseAbortSignal, throwIfAborted } from "../requestCancellation";
+import { callProposalRequestItemIntegrityRpc } from "./integrity.guards.transport";
 import { validateRpcResponse } from "./queryBoundary";
 import {
   ACTIVE_PROPOSAL_REQUEST_ITEM_INTEGRITY_STATE,
@@ -260,9 +261,10 @@ async function loadProposalRequestItemIntegrity(
   const integrity = new Map<string, ProposalRequestItemIntegrityRow>();
   if (!normalizedProposalId) return integrity;
 
-  const result = await supabaseClient.rpc("proposal_request_item_integrity_v1", {
-    p_proposal_id: normalizedProposalId,
-  });
+  const result = await callProposalRequestItemIntegrityRpc(
+    supabaseClient,
+    normalizedProposalId,
+  );
   if (result.error) throw result.error;
 
   const validated = validateRpcResponse(result.data, isProposalRequestItemIntegrityRpcResponse, {
