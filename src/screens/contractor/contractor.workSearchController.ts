@@ -1,8 +1,10 @@
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { WorkMaterialRow } from "../../components/WorkMaterialsEditor";
+import type { AppSupabaseClient } from "../../types/contracts/shared";
+import { callContractorCatalogSearchRpc } from "./contractor.workSearch.transport";
 
 type Params = {
-  supabaseClient: any;
+  supabaseClient: AppSupabaseClient;
   mapCatalogSearchToWorkMaterials: (data: Record<string, unknown>[]) => WorkMaterialRow[];
   delayMs?: number;
 };
@@ -24,7 +26,7 @@ export function useContractorWorkSearchController(params: Params) {
   const runSearch = useCallback(
     async (q: string, seq: number) => {
       try {
-        const { data, error } = await supabaseClient.rpc("catalog_search", {
+        const { data, error } = await callContractorCatalogSearchRpc(supabaseClient, {
           p_query: q,
           p_kind: "material",
         });

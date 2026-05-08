@@ -363,6 +363,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle113BuyerRequestProposalMapTransportFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerRequestProposalMap.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle114ContractorWorkSearchTransportFiles = [
+      path.join(SRC, "screens", "contractor", "contractor.workSearch.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -499,6 +502,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_111 adds one permanent accountant inbox RPC transport boundary.
     // S-AUDIT_BATTLE_112 adds one permanent director pending proposals RPC transport boundary.
     // S-AUDIT_BATTLE_113 adds one permanent buyer request proposal-map RPC transport boundary.
+    // S-AUDIT_BATTLE_114 adds one permanent contractor work search RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -582,6 +586,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle111AccountantInboxTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle112DirectorProposalsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle113BuyerRequestProposalMapTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle114ContractorWorkSearchTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -666,7 +671,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle110QueueLatencyMetricsTransportFiles -
         sAuditBattle111AccountantInboxTransportFiles -
         sAuditBattle112DirectorProposalsTransportFiles -
-        sAuditBattle113BuyerRequestProposalMapTransportFiles,
+        sAuditBattle113BuyerRequestProposalMapTransportFiles -
+        sAuditBattle114ContractorWorkSearchTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
