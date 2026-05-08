@@ -21,13 +21,17 @@ describe("supplier file metadata list default limit contract", () => {
 
   it("gives supplier_files metadata a default bounded preview and deterministic tie-breaker", () => {
     const source = read("src/lib/files.ts");
+    const transportSource = read("src/lib/files.storage.transport.ts");
 
     expect(source).toContain("SUPPLIER_FILES_META_DEFAULT_LIMIT = 50");
     expect(source).toContain("SUPPLIER_FILES_META_MAX_LIMIT = 1000");
     expect(source).toContain("normalizeSupplierFilesMetaLimit");
-    expect(source).toContain('.from("supplier_files")');
-    expect(source).toContain('.order("created_at", { ascending: false })');
-    expect(source).toContain('.order("id", { ascending: false })');
-    expect(source).toContain("query = query.limit(limit)");
+    expect(source).toContain("listSupplierFileMetadataRows({");
+    expect(source).not.toContain('.from("supplier_files")');
+    expect(transportSource).toContain('SUPPLIER_FILES_TABLE = "supplier_files"');
+    expect(transportSource).toContain(".from(SUPPLIER_FILES_TABLE)");
+    expect(transportSource).toContain('.order("created_at", { ascending: false })');
+    expect(transportSource).toContain('.order("id", { ascending: false })');
+    expect(transportSource).toContain(".limit(params.limit)");
   });
 });

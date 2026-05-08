@@ -10,7 +10,9 @@ import { openAppAttachment } from "./documents/attachmentOpener";
 import {
   getSupplierFilePublicUrl,
   insertSupplierFileMetadata,
+  listSupplierFileMetadataRows,
   uploadSupplierFileObject,
+  type SupplierFileMetadataRow,
 } from "./files.storage.transport";
 import { reportAndSwallow } from "./observability/catchDiscipline";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
@@ -30,13 +32,7 @@ type AttRow = {
   signed_url?: string | null;
 };
 
-type SupplierFileMetaRow = {
-  id?: string;
-  created_at?: string;
-  file_name: string;
-  file_url: string;
-  group_key?: string;
-};
+type SupplierFileMetaRow = SupplierFileMetadataRow;
 
 const SUPPLIER_FILES_META_DEFAULT_LIMIT = 50;
 const SUPPLIER_FILES_META_MAX_LIMIT = 1000;
@@ -311,18 +307,12 @@ export async function listSupplierFilesMeta(
   if (!id) return [];
 
   try {
-    let query = supabase
-      .from("supplier_files")
-      .select("id,created_at,file_name,file_url,group_key")
-      .eq("supplier_id", id)
-      .order("created_at", { ascending: false })
-      .order("id", { ascending: false });
-
-    if (opts?.group) query = query.eq("group_key", opts.group);
     const limit = normalizeSupplierFilesMetaLimit(opts?.limit);
-    query = query.limit(limit);
-
-    const result = await query;
+    const result = await listSupplierFileMetadataRows({
+      supplierId: id,
+      groupKey: opts?.group,
+      limit,
+    });
     if (result.error) throw result.error;
     return Array.isArray(result.data)
       ? (result.data as SupplierFileMetaRow[])
