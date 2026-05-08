@@ -218,6 +218,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle58ChatAuthTransportFiles = [
       path.join(SRC, "lib", "chat.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle59BuyerSubcontractAuthTransportFiles = [
+      path.join(SRC, "screens", "buyer", "BuyerSubcontractTab.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -305,6 +308,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_56 adds one permanent marketplace auth transport boundary.
     // S-AUDIT_BATTLE_57 adds one permanent requests draft-owner auth transport boundary.
     // S-AUDIT_BATTLE_58 adds one permanent chat auth transport boundary.
+    // S-AUDIT_BATTLE_59 adds one permanent BuyerSubcontractTab auth transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -340,6 +344,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle56MarketAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle57RequestsAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle58ChatAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle59BuyerSubcontractAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -376,7 +381,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle55DirectorLifecycleAuthTransportFiles -
         sAuditBattle56MarketAuthTransportFiles -
         sAuditBattle57RequestsAuthTransportFiles -
-        sAuditBattle58ChatAuthTransportFiles,
+        sAuditBattle58ChatAuthTransportFiles -
+        sAuditBattle59BuyerSubcontractAuthTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

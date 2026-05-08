@@ -31,6 +31,7 @@ import {
   type BuyerSubcontractContractorRow as ContractorRow,
   type BuyerSubcontractFormState as FormState,
 } from "./buyerSubcontractForm.model";
+import { resolveCurrentBuyerSubcontractUserId } from "./BuyerSubcontractTab.auth.transport";
 import { styles } from "./BuyerSubcontractTab.styles";
 import {
   SUBCONTRACT_DEFAULT_PAGE_SIZE,
@@ -97,8 +98,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       setLoadingMore(true);
     }
     try {
-      const { data } = await supabase.auth.getUser();
-      const uid = data?.user?.id;
+      const uid = await resolveCurrentBuyerSubcontractUserId();
       if (!uid) return;
       const page = await listForemanSubcontractsPage(uid, {
         offset,
@@ -231,8 +231,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
   const handleSave = useCallback(async () => {
     setSaving(true);
     try {
-      const { data } = await supabase.auth.getUser();
-      const uid = data?.user?.id;
+      const uid = await resolveCurrentBuyerSubcontractUserId();
       if (!uid) throw new Error("Пользователь не авторизован");
       const contractorId = await resolveContractorIdByPhone(String(patch.contractor_phone || ""));
 
@@ -261,8 +260,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
   const handleSubmit = useCallback(async () => {
     setSending(true);
     try {
-      const { data } = await supabase.auth.getUser();
-      const uid = data?.user?.id;
+      const uid = await resolveCurrentBuyerSubcontractUserId();
       if (!uid) throw new Error("Пользователь не авторизован");
       const contractorId = await resolveContractorIdByPhone(String(patch.contractor_phone || ""));
 
