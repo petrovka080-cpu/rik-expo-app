@@ -23,6 +23,7 @@ import {
   reportBuyerWriteFailure,
 } from "./buyer.mutation.shared";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
+import { loadBuyerActionFioCandidate } from "./buyer.actions.auth.transport";
 
 export { handleCreateProposalsBySupplierAction } from "./buyer.submit.mutation";
 export { sendToAccountingAction } from "./buyer.status.mutation";
@@ -259,10 +260,12 @@ export async function setProposalBuyerFioAction(opts: {
     let fio = String(typedFio ?? "").trim();
 
     if (!fio) {
-      const { data } = await supabase.auth.getUser();
+      const transportFio = await loadBuyerActionFioCandidate({
+        supabase,
+        fallback: "",
+      });
       fio =
-        data?.user?.user_metadata?.full_name?.trim() ||
-        data?.user?.user_metadata?.name?.trim() ||
+        transportFio ||
         "Снабженец";
     }
 

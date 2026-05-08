@@ -1,8 +1,12 @@
-import { openProposalViewAction } from "./buyer.actions";
+import {
+  openProposalViewAction,
+  setProposalBuyerFioAction,
+} from "./buyer.actions";
 import {
   repoGetProposalItemsForView,
   repoGetProposalRequestItemIntegrity,
   repoGetRequestItemsByIds,
+  repoSetProposalBuyerFio,
 } from "./buyer.repo";
 
 jest.mock("./buyer.repo", () => ({
@@ -21,12 +25,15 @@ const mockRepoGetProposalRequestItemIntegrity =
   repoGetProposalRequestItemIntegrity as unknown as jest.Mock;
 const mockRepoGetRequestItemsByIds =
   repoGetRequestItemsByIds as unknown as jest.Mock;
+const mockRepoSetProposalBuyerFio =
+  repoSetProposalBuyerFio as unknown as jest.Mock;
 
 describe("buyer proposal recovery view", () => {
   beforeEach(() => {
     mockRepoGetProposalItemsForView.mockReset();
     mockRepoGetProposalRequestItemIntegrity.mockReset();
     mockRepoGetRequestItemsByIds.mockReset();
+    mockRepoSetProposalBuyerFio.mockReset();
   });
 
   it("preserves degraded proposal line when source request item is missing", async () => {
@@ -81,5 +88,34 @@ describe("buyer proposal recovery view", () => {
       }),
     ]);
     expect(setPropViewBusy).toHaveBeenLastCalledWith(false);
+  });
+
+  it("resolves buyer FIO from auth metadata before saving", async () => {
+    const supabase = {
+      auth: {
+        getUser: jest.fn().mockResolvedValue({
+          data: {
+            user: {
+              user_metadata: {
+                full_name: " Buyer One ",
+                name: "Ignored Name",
+              },
+            },
+          },
+        }),
+      },
+    } as never;
+
+    await setProposalBuyerFioAction({
+      supabase,
+      propId: "proposal-1",
+      log: jest.fn(),
+    });
+
+    expect(mockRepoSetProposalBuyerFio).toHaveBeenCalledWith(
+      supabase,
+      "proposal-1",
+      "Buyer One",
+    );
   });
 });
