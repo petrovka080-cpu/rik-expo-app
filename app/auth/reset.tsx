@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { Link } from 'expo-router';
 import { supabase } from '../../src/lib/supabaseClient';
+import { requestPasswordResetEmail } from '../../src/lib/auth/passwordReset.transport';
 
 export default function ResetScreen() {
   const [email, setEmail] = useState('');
@@ -39,13 +40,14 @@ export default function ResetScreen() {
     setLoading(true);
     try {
       if (!supabase) throw new Error(missingSupabaseMessage);
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error: resetError } = await requestPasswordResetEmail({
+        email,
         redirectTo: process.env.EXPO_PUBLIC_SUPABASE_URL || undefined,
       });
       if (resetError) throw resetError;
       setMessage(successMessage);
-    } catch (e: any) {
-      setError(e?.message ?? fallbackErrorMessage);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : fallbackErrorMessage);
     } finally {
       setLoading(false);
     }
