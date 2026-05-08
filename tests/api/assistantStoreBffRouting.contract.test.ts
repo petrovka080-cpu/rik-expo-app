@@ -87,21 +87,31 @@ describe("assistant/store BFF routing contract", () => {
     expect(ASSISTANT_STORE_READ_BFF_DIRECT_FALLBACK_REASON).toContain("compatibility fallback");
   });
 
-  it("routes store list reads out of store_supabase while leaving write and RPC paths documented", () => {
+  it("routes store list reads out of store_supabase while routing write and RPC ownership to transport", () => {
     const storeSource = readProjectFile("src/lib/store_supabase.ts");
     const readTransportSource = readProjectFile("src/lib/store_supabase.read.transport.ts");
+    const writeTransportSource = readProjectFile("src/lib/store_supabase.write.transport.ts");
 
     expect(storeSource).toContain("loadRequestItemRows");
     expect(storeSource).toContain("loadDirectorInboxRows");
     expect(storeSource).toContain("loadApprovedRequestItemRows");
+    expect(storeSource).toContain("sendStoreRequestToDirectorRpc");
+    expect(storeSource).toContain("approveOrDeclineRequestPendingRpc");
+    expect(storeSource).toContain("insertStorePurchase");
     expect(functionBody(storeSource, "listRequestItems")).not.toContain(".from(");
     expect(functionBody(storeSource, "listDirectorInbox")).not.toContain(".from(");
     expect(functionBody(storeSource, "listApprovedByRequest")).not.toContain(".from(");
+    expect(functionBody(storeSource, "sendRequestToDirector")).not.toContain(".rpc(");
+    expect(functionBody(storeSource, "approvePending")).not.toContain(".rpc(");
+    expect(functionBody(storeSource, "createPoFromRequest")).not.toContain(".from(");
+    expect(functionBody(storeSource, "createPoFromRequest")).not.toContain(".insert(");
 
-    expect(storeSource.match(/\.rpc\(/g) ?? []).toHaveLength(2);
-    expect(storeSource.match(/\.insert\(/g) ?? []).toHaveLength(3);
+    expect(storeSource.match(/\bsupabase\s*\./g) ?? []).toHaveLength(0);
     expect(readTransportSource).toContain("callAssistantStoreReadBff");
     expect(readTransportSource.match(/\.from\(/g) ?? []).toHaveLength(3);
+    expect(writeTransportSource).toContain("STORE_SUPABASE_WRITE_RPC_NAMES");
+    expect(writeTransportSource.match(/\.rpc\(/g) ?? []).toHaveLength(2);
+    expect(writeTransportSource.match(/\.insert\(/g) ?? []).toHaveLength(3);
   });
 
   it("wires the mobile BFF route without enabling production traffic", () => {

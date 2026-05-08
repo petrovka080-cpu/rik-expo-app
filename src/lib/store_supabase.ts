@@ -1,5 +1,4 @@
 // src/lib/store_supabase.ts
-import { supabase } from './supabaseClient';
 import type { Database } from './database.types';
 import {
   isRpcNonEmptyString,
@@ -15,6 +14,13 @@ import {
   type PendingRequestItemDb,
   type RequestItemRowDb,
 } from './store_supabase.read.transport';
+import {
+  approveOrDeclineRequestPendingRpc,
+  insertStorePurchase,
+  insertStorePurchaseItems,
+  insertStorePurchasePending,
+  sendStoreRequestToDirectorRpc,
+} from './store_supabase.write.transport';
 
 type PurchaseInsert = Database["public"]["Tables"]["purchases"]["Insert"];
 type PurchaseItemInsert = Database["public"]["Tables"]["purchase_items"]["Insert"];
@@ -102,7 +108,7 @@ export async function listRequestItems(requestId: number, status?: string): Prom
 }
 
 export async function sendRequestToDirector(requestId: number): Promise<number> {
-  const { data, error } = await supabase.rpc('send_request_to_director', { p_request_id: requestId });
+  const { data, error } = await sendStoreRequestToDirectorRpc(requestId);
 
   if (error) throw error;
   const validated = validateRpcResponse(data, isSendRequestToDirectorRpcResponse, {
@@ -125,10 +131,7 @@ export async function listDirectorInbox(): Promise<PendingRequestItem[]> {
 }
 
 export async function approvePending(pendingId: string, verdict: 'Утверждено' | 'Отклонено') {
-  const { data, error } = await supabase.rpc('approve_or_decline_request_pending', {
-    p_pending_id: pendingId,
-    p_verdict: verdict,
-  });
+  const { data, error } = await approveOrDeclineRequestPendingRpc(pendingId, verdict);
 
   if (error) throw error;
   return validateRpcResponse(data, isApproveOrDeclinePendingRpcResponse, {
@@ -153,11 +156,7 @@ export async function createPoFromRequest(requestId: number, poNo: string) {
     currency: 'KGS',
   };
 
-  let { data: poRow, error: poErr } = await supabase
-    .from('purchases')
-    .insert(purchasePayload)
-    .select('*')
-    .single();
+  const { data: poRow, error: poErr } = await insertStorePurchase(purchasePayload);
 
   if (poErr && !poRow) throw poErr;
 
@@ -172,12 +171,12 @@ export async function createPoFromRequest(requestId: number, poNo: string) {
       qty: Number(it.qty ?? 0),
       price: null,
     }));
-    const { error: piErr } = await supabase.from('purchase_items').insert(toInsert);
+    const { error: piErr } = await insertStorePurchaseItems(toInsert);
     if (piErr) throw piErr;
   }
 
   if (poRow) {
-    const { error: pendErr } = await supabase.from('purchases_pending').insert([{ purchase_id: poRow.id }]);
+    const { error: pendErr } = await insertStorePurchasePending([{ purchase_id: poRow.id }]);
     if (pendErr && pendErr.code !== '23505') throw pendErr;
   }
 

@@ -291,6 +291,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle87SecurityScreenAuthTransportFiles = [
       path.join(SRC, "screens", "security", "SecurityScreen.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle88StoreSupabaseWriteTransportFiles = [
+      path.join(SRC, "lib", "store_supabase.write.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -403,6 +406,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_86 adds one permanent proposal storage transport boundary
     // plus a focused src-owned regression test.
     // S-AUDIT_BATTLE_87 adds one permanent SecurityScreen MFA auth transport boundary.
+    // S-AUDIT_BATTLE_88 adds one permanent store Supabase write transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -462,6 +466,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle85RequestDraftSyncTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle86StorageTransportFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle87SecurityScreenAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle88StoreSupabaseWriteTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -522,7 +527,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle84JobQueueTransportFiles -
         sAuditBattle85RequestDraftSyncTransportFiles -
         sAuditBattle86StorageTransportFiles -
-        sAuditBattle87SecurityScreenAuthTransportFiles,
+        sAuditBattle87SecurityScreenAuthTransportFiles -
+        sAuditBattle88StoreSupabaseWriteTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
