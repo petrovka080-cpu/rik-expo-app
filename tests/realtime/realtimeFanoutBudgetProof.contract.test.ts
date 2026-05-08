@@ -12,6 +12,7 @@ const extractRealtimeChannelNames = (source: string) => {
   );
   return Array.from(matches, (match) => match[1]);
 };
+const directClientCall = (method: string) => `supabase.${method}`;
 
 describe("S-RT-6 realtime fanout budget proof", () => {
   it("recomputes the persistent mounted channel budget without regressing S-RT-5", () => {
@@ -78,6 +79,7 @@ describe("S-RT-6 realtime fanout budget proof", () => {
     const clientSource = read("src/lib/realtime/realtime.client.ts");
     const directorSource = read("src/screens/director/director.lifecycle.realtime.ts");
     const draftSyncSource = read("src/lib/api/requestDraftSync.service.ts");
+    const draftSyncTransportSource = read("src/lib/api/requestDraftSync.transport.ts");
     const requestRepositorySource = read("src/lib/api/request.repository.ts");
     const chatSource = read("src/lib/chat_api.ts");
 
@@ -88,8 +90,16 @@ describe("S-RT-6 realtime fanout budget proof", () => {
     expect(directorSource).toContain("screenBudget?.release()");
     expect(directorSource).toContain("cleanupRealtimeChannel");
 
-    expect(draftSyncSource).toContain("DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME");
-    expect(draftSyncSource).toContain("supabase.removeChannel(channel)");
+    expect(draftSyncSource).toContain("createDirectorHandoffBroadcastChannel");
+    expect(draftSyncSource).toContain(
+      "removeDirectorHandoffBroadcastChannel(channel)",
+    );
+    expect(draftSyncTransportSource).toContain(
+      "DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME",
+    );
+    expect(draftSyncTransportSource).toContain(
+      `${directClientCall("removeChannel")}(channel)`,
+    );
     expect(requestRepositorySource).toContain("DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME");
     expect(requestRepositorySource).toContain("supabase.removeChannel(channel)");
 

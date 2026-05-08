@@ -281,6 +281,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle84JobQueueTransportFiles = [
       path.join(SRC, "lib", "infra", "jobQueue.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle85RequestDraftSyncTransportFiles = [
+      path.join(SRC, "lib", "api", "requestDraftSync.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -389,6 +392,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_81 adds one permanent sign-up auth transport boundary.
     // S-AUDIT_BATTLE_82 adds one permanent sign-in auth transport boundary.
     // S-AUDIT_BATTLE_84 adds one permanent job queue Supabase transport boundary.
+    // S-AUDIT_BATTLE_85 adds one permanent request draft sync transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -445,6 +449,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle81SignUpAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle82SignInAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle84JobQueueTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle85RequestDraftSyncTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -502,7 +507,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle80PasswordResetAuthTransportFiles -
         sAuditBattle81SignUpAuthTransportFiles -
         sAuditBattle82SignInAuthTransportFiles -
-        sAuditBattle84JobQueueTransportFiles,
+        sAuditBattle84JobQueueTransportFiles -
+        sAuditBattle85RequestDraftSyncTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

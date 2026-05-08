@@ -39,6 +39,7 @@ const mockSupabase = supabase as unknown as {
 const mockMapRequestRow = mapRequestRow as jest.Mock;
 const readLocalSource = (fileName: string) =>
   fs.readFileSync(path.join(__dirname, fileName), "utf8");
+const directClientCall = (method: string) => `supabase.${method}`;
 
 type MockHandoffChannel = {
   subscribe: jest.Mock<MockHandoffChannel, [(status: string) => void]>;
@@ -154,10 +155,24 @@ describe("request draft sync lifecycle boundary", () => {
   it("keeps request draft auth lookup behind the transport boundary", () => {
     const serviceSource = readLocalSource("requestDraftSync.service.ts");
     const transportSource = readLocalSource("requestDraftSync.auth.transport.ts");
+    const syncTransportSource = readLocalSource("requestDraftSync.transport.ts");
 
     expect(serviceSource).toContain('from "./requestDraftSync.auth.transport"');
+    expect(serviceSource).toContain('from "./requestDraftSync.transport"');
+    expect(serviceSource).not.toContain("../supabaseClient");
     expect(serviceSource).not.toContain("supabase.auth.getSession");
+    expect(serviceSource).not.toMatch(
+      /\bsupabase\s*\.\s*(rpc|from|channel|removeChannel)\b/,
+    );
     expect(transportSource).toContain("supabase.auth.getSession");
     expect(transportSource).toContain("Promise<string | null>");
+    expect(syncTransportSource).toContain(
+      `${directClientCall("rpc")}("request_sync_draft_v2"`,
+    );
+    expect(syncTransportSource).toContain(
+      `${directClientCall("from")}("notifications")`,
+    );
+    expect(syncTransportSource).toContain(directClientCall("channel"));
+    expect(syncTransportSource).toContain(directClientCall("removeChannel"));
   });
 });

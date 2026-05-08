@@ -1,10 +1,4 @@
-import type { Database } from "../database.types";
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
-import {
-  DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME,
-  DIRECTOR_HANDOFF_BROADCAST_EVENT,
-} from "../realtime/realtime.channels";
-import { supabase } from "../supabaseClient";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
 import { logger } from "../logger";
@@ -14,9 +8,16 @@ import {
   validateRpcResponse,
 } from "./queryBoundary";
 import { resolveRequestDraftSyncAccessToken } from "./requestDraftSync.auth.transport";
-
-type RequestDraftSyncArgsV2 = Database["public"]["Functions"]["request_sync_draft_v2"]["Args"];
-type RequestDraftSyncReturns = Database["public"]["Functions"]["request_sync_draft_v2"]["Returns"];
+import {
+  createDirectorHandoffBroadcastChannel,
+  insertDirectorRequestSubmittedNotification,
+  invokeRequestDraftSyncRpcV2,
+  removeDirectorHandoffBroadcastChannel,
+  sendDirectorHandoffBroadcast,
+  setRequestDraftSyncRealtimeAuth,
+  type RequestDraftSyncArgsV2,
+  type RequestDraftSyncReturns,
+} from "./requestDraftSync.transport";
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "1").trim() !== "0";
@@ -65,7 +66,7 @@ const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
 const ensureRealtimeAuth = async () => {
   const accessToken = await resolveRequestDraftSyncAccessToken();
   if (!accessToken) return false;
-  await supabase.realtime.setAuth(accessToken);
+  await setRequestDraftSyncRealtimeAuth(accessToken);
   return true;
 };
 
@@ -80,14 +81,7 @@ const signalDirectorRequestSubmitted = async (params: {
   const displayNo = asTrimmedString(params.displayNo) || requestId;
   try {
     await ensureRealtimeAuth();
-    const channel = supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
-      config: {
-        broadcast: {
-          ack: false,
-          self: false,
-        },
-      },
-    });
+    const channel = createDirectorHandoffBroadcastChannel();
     const broadcastResult = await new Promise<string>((resolve, reject) => {
       let settled = false;
       try {
@@ -95,14 +89,10 @@ const signalDirectorRequestSubmitted = async (params: {
           if (settled) return;
           if (status === "SUBSCRIBED") {
             try {
-              const sendResult = await channel.send({
-                type: "broadcast",
-                event: DIRECTOR_HANDOFF_BROADCAST_EVENT,
-                payload: {
-                  request_id: requestId,
-                  display_no: displayNo,
-                  source_path: params.sourcePath,
-                },
+              const sendResult = await sendDirectorHandoffBroadcast(channel, {
+                requestId,
+                displayNo,
+                sourcePath: params.sourcePath,
               });
               settled = true;
               resolve(String(sendResult));
@@ -125,7 +115,7 @@ const signalDirectorRequestSubmitted = async (params: {
         }
       }
     }).finally(() => {
-      void supabase.removeChannel(channel);
+      void removeDirectorHandoffBroadcastChannel(channel);
     });
     logger.info("request-draft-sync.signal", {
       kind: "broadcast",
@@ -145,15 +135,10 @@ const signalDirectorRequestSubmitted = async (params: {
   }
 
   try {
-    const insertResult = await supabase.from("notifications").insert({
-      role: "director",
-      title: `Новая заявка ${displayNo}`,
-      body: `Прораб отправил ${displayNo} на утверждение.`,
-      payload: {
-        request_id: requestId,
-        display_no: displayNo,
-        source_path: params.sourcePath,
-      },
+    const insertResult = await insertDirectorRequestSubmittedNotification({
+      requestId,
+      displayNo,
+      sourcePath: params.sourcePath,
     });
     logger.info("request-draft-sync.signal", {
       kind: insertResult.error ? "notification_error" : "notification",
@@ -291,7 +276,7 @@ export async function syncRequestDraftViaRpc(params: {
     p_zone_name: params.zoneName ?? null,
   };
 
-  const { data, error } = await supabase.rpc("request_sync_draft_v2", argsV2);
+  const { data, error } = await invokeRequestDraftSyncRpcV2(argsV2);
   if (error) {
     throw new Error(`request_sync_draft_v2 failed: ${error.message}`);
   }
