@@ -48,3 +48,10 @@ export function createContractorWorkModalRequestDisplayQuery(
     .in("id", params.requestIds)
     .order("id", { ascending: true }) as unknown as PagedQuery<ContractorWorkModalRequestDisplayRow>;
 }
+
+export async function seedContractorWorkDefaultsAuto(
+  supabaseClient: SupabaseClient<Database>,
+  workCode: string,
+) {
+  return await supabaseClient.rpc("work_seed_defaults_auto", { p_work_code: workCode });
+}

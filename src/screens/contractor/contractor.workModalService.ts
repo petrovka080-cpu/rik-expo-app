@@ -12,6 +12,7 @@ import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
 import {
   createContractorWorkModalRequestDisplayQuery,
   fetchContractorWorkModalRequestNoProbe,
+  seedContractorWorkDefaultsAuto,
   type ContractorWorkModalRequestDisplayRow as RequestDisplayRow,
 } from "./contractor.workModalService.transport";
 
@@ -700,7 +701,7 @@ export async function loadInitialWorkMaterialsForModal(
   if (!q1.error && Array.isArray(q1.data) && q1.data.length) {
     defaults = asArray(q1.data as WorkDefaultMaterialRow[]).map(normalizeWorkDefaultMaterialRow);
   } else {
-    const seed = await supabaseClient.rpc("work_seed_defaults_auto", { p_work_code: workCode });
+    const seed = await seedContractorWorkDefaultsAuto(supabaseClient, workCode);
     if (!seed.error) {
       const q2 = await supabaseClient
         .from("work_default_materials")

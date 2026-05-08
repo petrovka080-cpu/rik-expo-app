@@ -335,6 +335,17 @@ describe("contractor.workModalService", () => {
     expect(transportSource).toContain(".select(params.select)");
   });
 
+  it("keeps default material seeding RPC behind the transport boundary", () => {
+    const { readFileSync } = require("fs") as typeof import("fs");
+    const serviceSource = readFileSync(SERVICE_SOURCE_PATH, "utf8");
+    const transportSource = readFileSync(TRANSPORT_SOURCE_PATH, "utf8");
+
+    expect(serviceSource).toContain("seedContractorWorkDefaultsAuto(");
+    expect(serviceSource).not.toContain('supabaseClient.rpc("work_seed_defaults_auto"');
+    expect(transportSource).toContain("seedContractorWorkDefaultsAuto");
+    expect(transportSource).toContain('supabaseClient.rpc("work_seed_defaults_auto"');
+  });
+
   it("keeps empty state honest when there are no approved request ids in scope", async () => {
     mockFetchRequestScopeRows.mockResolvedValue([
       { id: REQUEST_UUID, status: "cancelled" },
@@ -426,5 +437,77 @@ describe("contractor.workModalService", () => {
       },
     ]);
     expect(supabaseClient.rpc).not.toHaveBeenCalled();
+  });
+
+  it("seeds default work materials through the transport fallback", async () => {
+    let defaultMaterialReadCount = 0;
+    const rpc = jest.fn().mockResolvedValue({ data: null, error: null });
+    const supabaseClient = {
+      from: jest.fn((table: string) => {
+        if (table === "work_progress_log") {
+          return {
+            select: jest.fn(() =>
+              makeEqOrderLimitMaybeSingle({
+                data: null,
+                error: null,
+              }),
+            ),
+          };
+        }
+        if (table === "work_default_materials") {
+          return {
+            select: jest.fn(() => ({
+              eq: jest.fn(() => ({
+                limit: jest.fn(() => {
+                  defaultMaterialReadCount += 1;
+                  return Promise.resolve(
+                    defaultMaterialReadCount === 1
+                      ? { data: [], error: null }
+                      : { data: [{ mat_code: "MAT-2", uom: "kg" }], error: null },
+                  );
+                }),
+              })),
+            })),
+          };
+        }
+        if (table === "catalog_items") {
+          return {
+            select: jest.fn(() =>
+              makePagedInQuery({
+                data: [{ rik_code: "MAT-2", name_human_ru: "РџРµСЃРѕРє", uom_code: "kg" }],
+                error: null,
+              }),
+            ),
+          };
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+      rpc,
+    };
+
+    const result = await service.loadInitialWorkMaterialsForModal({
+      supabaseClient: supabaseClient as never,
+      row: {
+        progress_id: PROGRESS_UUID,
+        work_code: "WORK-2",
+        uom_id: "kg",
+      },
+    });
+
+    expect(rpc).toHaveBeenCalledWith("work_seed_defaults_auto", {
+      p_work_code: "WORK-2",
+    });
+    expect(defaultMaterialReadCount).toBe(2);
+    expect(result).toEqual([
+      {
+        material_id: null,
+        qty: 0,
+        mat_code: "MAT-2",
+        name: "РџРµСЃРѕРє",
+        uom: "kg",
+        available: 0,
+        qty_fact: 0,
+      },
+    ]);
   });
 });
