@@ -57,10 +57,12 @@ describe("S-WAREHOUSE-LIFECYCLE-AND-DICTS-UNBOUNDED-PAGINATION-CLOSEOUT-1", () =
 
   it("moves the warehouse name map read off manual open pagination", () => {
     const source = read("src/screens/warehouse/warehouse.nameMap.ui.ts");
+    const transport = read("src/screens/warehouse/warehouse.nameMap.ui.transport.ts");
 
     expect(source).toContain("WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }");
-    expect(source).toContain("loadPagedRowsWithCeiling<UnknownRow>");
-    expect(source).toContain(".order(\"code\", { ascending: true })");
+    expect(source).toContain("loadPagedRowsWithCeiling<WarehouseNameMapUiRow>");
+    expect(source).toContain("createWarehouseNameMapUiQuery");
+    expect(transport).toContain(".order(\"code\", { ascending: true })");
     expect(source).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
     expect(source).not.toContain("codes.slice(0, 5000)");
   });

@@ -110,9 +110,11 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     expect(officeAccess).toContain(".range(profilePage.from, profilePage.to)");
 
     const warehouseNameMap = read("src/screens/warehouse/warehouse.nameMap.ui.ts");
+    const warehouseNameMapTransport = read("src/screens/warehouse/warehouse.nameMap.ui.transport.ts");
     expect(warehouseNameMap).toContain("WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 }");
-    expect(warehouseNameMap).toContain("loadPagedRowsWithCeiling<UnknownRow>");
-    expect(warehouseNameMap).toContain(".order(\"code\", { ascending: true })");
+    expect(warehouseNameMap).toContain("loadPagedRowsWithCeiling<WarehouseNameMapUiRow>");
+    expect(warehouseNameMap).toContain("createWarehouseNameMapUiQuery");
+    expect(warehouseNameMapTransport).toContain(".order(\"code\", { ascending: true })");
     expect(warehouseNameMap).not.toContain("for (let pageIndex = 0; ; pageIndex += 1)");
     expect(warehouseNameMap).not.toContain("codes.slice(0, 5000)");
   });

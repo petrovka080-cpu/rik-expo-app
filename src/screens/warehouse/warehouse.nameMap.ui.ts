@@ -1,12 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import { loadPagedRowsWithCeiling } from "../../lib/api/_core";
 import {
   isRpcNumberLikeResponse,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
 import { isUuid } from "./warehouse.utils";
-
-type UnknownRow = Record<string, unknown>;
+import {
+  createWarehouseNameMapUiQuery,
+  type WarehouseNameMapUiRow,
+} from "./warehouse.nameMap.ui.transport";
 
 export type WarehouseNameMapRefreshMode = "incremental" | "full";
 export type WarehouseNameMapScheduleResult = "queued" | "direct" | "noop";
@@ -26,9 +28,6 @@ const normalizeCode = (value: unknown): string =>
   String(value ?? "").trim().toUpperCase();
 
 const WAREHOUSE_NAME_MAP_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000, maxPages: 51 };
-
-const fromWarehouseNameMapUi = (supabase: SupabaseClient) =>
-  supabase.from("warehouse_name_map_ui" as never);
 
 const rpcWarehouseRefreshNameMapUi = (
   supabase: SupabaseClient,
@@ -64,12 +63,8 @@ export async function fetchWarehouseNameMapUi(
   const codes = normalizeWarehouseCodeList(codeList);
   if (!codes.length) return { available: true, map: {} };
 
-  const q = await loadPagedRowsWithCeiling<UnknownRow>(
-    () =>
-      fromWarehouseNameMapUi(supabase)
-        .select("code, display_name")
-        .in("code", codes)
-        .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+  const q = await loadPagedRowsWithCeiling<WarehouseNameMapUiRow>(
+    () => createWarehouseNameMapUiQuery(supabase, codes),
     WAREHOUSE_NAME_MAP_PAGE_DEFAULTS,
   );
 
@@ -84,7 +79,7 @@ export async function fetchWarehouseNameMapUi(
     return { available: true, map: {} };
   }
 
-  const rows = Array.isArray(q.data) ? (q.data as UnknownRow[]) : [];
+  const rows = Array.isArray(q.data) ? q.data : [];
   const out: Record<string, string> = {};
   for (const row of rows) {
     const code = normalizeCode(row.code);
