@@ -155,6 +155,14 @@ const isApprovedAuditBattle117WarehouseDayMaterialsPdfTransportBoundaryPatch = (
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatch = (file: string) =>
+  [
+    "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.service.ts",
+    "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.transport.ts",
+    "tests/api/warehouseIncomingMaterialsPdfTransport.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -224,6 +232,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAuditBattle109AttachmentOpenerStorageTransportBoundaryPatch(file) &&
       !isApprovedAuditBattle116WarehouseIncomingFormPdfTransportBoundaryPatch(file) &&
       !isApprovedAuditBattle117WarehouseDayMaterialsPdfTransportBoundaryPatch(file) &&
+      !isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

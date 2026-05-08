@@ -1,4 +1,3 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   registerPdfRpcRolloutPath,
   resolvePdfRpcRolloutMode,
@@ -10,6 +9,8 @@ import {
 } from "../../lib/documents/pdfRpcRollout";
 import { beginPdfLifecycleObservation } from "../../lib/pdf/pdfLifecycle";
 import { isCorruptedText, normalizeRuText } from "../../lib/text/encoding";
+import type { AppSupabaseClient } from "../../types/contracts/shared";
+import { callWarehouseIncomingMaterialsReportPdfSourceRpc } from "./warehouse.incomingMaterialsReport.pdf.transport";
 import {
   assertWarehousePdfRpcPrimary,
   logWarehousePdfSourceBranch,
@@ -74,7 +75,7 @@ type WarehouseIncomingMaterialsReportSource = {
 };
 
 type GetWarehouseIncomingMaterialsReportPdfSourceParams = {
-  supabase: SupabaseClient;
+  supabase: AppSupabaseClient;
   range: WarehouseIncomingMaterialsReportPdfRange;
   legacyDocsTotal: number;
   nameByCode?: Record<string, string>;
@@ -258,8 +259,8 @@ function validateWarehouseIncomingMaterialsPdfSourceV1(
 export async function fetchWarehouseIncomingMaterialsReportPdfSourceViaRpc(
   params: Pick<GetWarehouseIncomingMaterialsReportPdfSourceParams, "supabase" | "range" | "nameByCode">,
 ): Promise<WarehouseIncomingMaterialsReportSource> {
-  const { data, error } = await params.supabase.rpc(
-    "pdf_warehouse_incoming_materials_source_v1",
+  const { data, error } = await callWarehouseIncomingMaterialsReportPdfSourceRpc(
+    params.supabase,
     {
       p_from: params.range.rpcFrom,
       p_to: params.range.rpcTo,

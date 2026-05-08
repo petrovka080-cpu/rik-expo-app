@@ -375,6 +375,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle117WarehouseDayMaterialsPdfTransportFiles = [
       path.join(SRC, "screens", "warehouse", "warehouse.dayMaterialsReport.pdf.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditBattle118WarehouseIncomingMaterialsPdfTransportFiles = [
+      path.join(SRC, "screens", "warehouse", "warehouse.incomingMaterialsReport.pdf.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     // Baseline: 1008 source files. P2.K adds one permanent PDF viewer-entry boundary.
     // P3-A adds five permanent type-only database contract boundaries.
     // PDF-Z2 adds one permanent production report manifest contract test.
@@ -515,6 +518,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_115 adds one permanent director repository primary-list RPC transport boundary.
     // S-AUDIT_BATTLE_116 adds one permanent warehouse incoming-form PDF source RPC transport boundary.
     // S-AUDIT_BATTLE_117 adds one permanent warehouse day-materials PDF source RPC transport boundary.
+    // S-AUDIT_BATTLE_118 adds one permanent warehouse incoming-materials PDF source RPC transport boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -602,6 +606,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle115DirectorRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle116WarehouseIncomingFormPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle117WarehouseDayMaterialsPdfTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditBattle118WarehouseIncomingMaterialsPdfTransportFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -690,7 +695,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle114ContractorWorkSearchTransportFiles -
         sAuditBattle115DirectorRepositoryTransportFiles -
         sAuditBattle116WarehouseIncomingFormPdfTransportFiles -
-        sAuditBattle117WarehouseDayMaterialsPdfTransportFiles,
+        sAuditBattle117WarehouseDayMaterialsPdfTransportFiles -
+        sAuditBattle118WarehouseIncomingMaterialsPdfTransportFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
