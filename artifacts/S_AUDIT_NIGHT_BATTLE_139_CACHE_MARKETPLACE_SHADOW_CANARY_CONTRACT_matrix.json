@@ -1,0 +1,151 @@
+{
+  "wave": 139,
+  "slug": "CACHE_MARKETPLACE_SHADOW_CANARY_CONTRACT",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Lock marketplace.catalog.search as the only current read-through cache canary route, without enabling production cache or changing remote env.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "da3d2841d5c4393391979cb560823cc58ca6a7fe"
+  },
+  "freshScans": {
+    "commands": [
+      "git grep -n \"read_through\" src scripts tests",
+      "git grep -n \"marketplace.catalog.search\" src scripts tests docs",
+      "git grep -n \"payloadClass\" src/shared/scale scripts/server tests/scale",
+      "git grep -n \"cache_read_through\\|shadow_readonly\\|cache.shadow_canary\" src scripts tests",
+      "rg -n \"as any|@ts-ignore|catch \\\\{\\\\}|unknown as\" tests/scale/cacheMarketplaceShadowCanaryContract.test.ts"
+    ],
+    "summary": {
+      "readThroughGateFound": "scripts/server/stagingBffServerBoundary.ts checks policy.payloadClass === public_catalog before serving read-through",
+      "marketplacePolicyFound": "src/shared/scale/cachePolicies.ts has marketplace.catalog.search as public_catalog",
+      "disabledByDefaultConfirmed": true,
+      "newUnsafeSuppressionPatternsAdded": 0
+    }
+  },
+  "selectedFiles": [
+    {
+      "file": "tests/scale/cacheMarketplaceShadowCanaryContract.test.ts",
+      "changeType": "added",
+      "reason": "Focused contract test is the smallest safe scope to prevent cache canary broadening without touching production code."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_139_CACHE_MARKETPLACE_SHADOW_CANARY_CONTRACT_matrix.json",
+      "changeType": "added",
+      "reason": "Wave matrix artifact."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_139_CACHE_MARKETPLACE_SHADOW_CANARY_CONTRACT_proof.md",
+      "changeType": "added",
+      "reason": "Wave proof artifact."
+    }
+  ],
+  "before": {
+    "cacheEnablementMap": "Wave 138 identified marketplace.catalog.search as the top current read-through canary candidate.",
+    "dedicatedMarketplaceCanaryContract": false,
+    "productionCacheEnabled": false,
+    "remoteEnvChanged": false
+  },
+  "after": {
+    "dedicatedMarketplaceCanaryContract": true,
+    "productionCacheEnabled": false,
+    "remoteEnvChanged": false,
+    "contractAssertions": [
+      "Only marketplace.catalog.search has payloadClass=public_catalog in CACHE_POLICY_REGISTRY.",
+      "Only marketplace.catalog.search is read-through eligible among BFF staging read routes.",
+      "All cache policies remain defaultEnabled=false.",
+      "All BFF read cache metadata remains cachePolicyDefaultEnabled=false.",
+      "One-percent read-through serves marketplace only when the deterministic safe key is selected.",
+      "Tenant, finance, and stock read routes stay on the live fixture port path under read_through mode.",
+      "Disabled production shadow flag keeps marketplace uncached and records disabled shadow monitor decisions.",
+      "Read-through output does not expose raw cache keys, company scope, or query payload."
+    ]
+  },
+  "scannerBaseline": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "directSupabase": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "testOnlyFindings": 47,
+      "unclassifiedCurrentFindings": 0
+    },
+    "cacheRateScope": {
+      "cacheCanaryRouteScoped": true,
+      "cacheAllowedRoute": "marketplace.catalog.search",
+      "rateLimitCanaryRoute": "marketplace.catalog.search",
+      "rateLimitCanaryPercent": 1
+    },
+    "productionRawLoops": {
+      "totalFindings": 0,
+      "unapprovedFindings": 0
+    },
+    "unsafeCastRatchet": {
+      "baselineTotal": 189,
+      "currentTotal": 189,
+      "criticalFolderViolations": 0,
+      "allowlistedFindings": 0
+    }
+  },
+  "focusedTests": {
+    "status": "PASS",
+    "command": "npm test -- --runInBand tests/scale/cacheMarketplaceShadowCanaryContract.test.ts tests/scale/cacheIntegrationBoundary.test.ts tests/scale/bffStagingServerBoundary.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "summary": "4 suites, 69 tests passed"
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheMarketplaceShadowCanaryContract.test.ts tests/scale/cacheIntegrationBoundary.test.ts tests/scale/bffStagingServerBoundary.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "672 passed, 1 skipped, 673 total suites; 3991 passed, 1 skipped, 3992 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
