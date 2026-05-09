@@ -58,7 +58,16 @@ Broader auth/navigation scan after:
   - unclassifiedCurrentFindings: 0
   - production raw loop unapproved findings: 0
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
+  - `npm run release:verify -- --json`
+  - verified head: `8f3b039dd23941dcb03fe459b74570a220264a20`
+  - origin/main: `8f3b039dd23941dcb03fe459b74570a220264a20`
+  - sync status: synced
+  - release verify gates: tsc PASS, expo lint PASS, architecture anti-regression PASS, Jest runInBand PASS, Jest PASS, git diff --check PASS
+  - readiness status: pass
+  - OTA disposition: allow
+  - OTA published: false
+  - EAS update triggered: false
 
 ## Negative Confirmations
 
