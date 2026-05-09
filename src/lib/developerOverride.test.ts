@@ -1,3 +1,6 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
 import {
   normalizeDeveloperOverrideContext,
   DEVELOPER_OVERRIDE_ROLES,
@@ -39,5 +42,17 @@ describe("developerOverride", () => {
       "foreman",
       "contractor",
     ]);
+  });
+
+  it("keeps deployed developer RPC calls inside the contained boundary", () => {
+    const source = readFileSync(join(__dirname, "developerOverride.ts"), "utf8");
+    const forbiddenAnyCast = [" as", " any"].join("");
+
+    expect(source).toContain("runContainedRpc");
+    expect(source).toContain("developer_override_context_v1");
+    expect(source).toContain("developer_set_effective_role_v1");
+    expect(source).toContain("developer_clear_effective_role_v1");
+    expect(source).not.toContain(forbiddenAnyCast);
+    expect(source).not.toMatch(/supabase\s*\.\s*rpc/);
   });
 });

@@ -1,0 +1,107 @@
+{
+  "wave": 124,
+  "slug": "DEVELOPER_OVERRIDE_RPC_BOUNDARY",
+  "generatedAtLocal": "2026-05-09T13:42:24.9431198+06:00",
+  "objective": "Remove developer override runtime RPC type suppression while preserving the deployed RPC validation boundary.",
+  "selectedFiles": [
+    "src/lib/developerOverride.ts",
+    "src/lib/developerOverride.test.ts"
+  ],
+  "reasonSelected": [
+    "Fresh grep found existing runtime Supabase RPC any-casts in developer override code.",
+    "The repository already has `runContainedRpc` for deployed RPC names whose generated Supabase typings lag behind the live schema.",
+    "Developer override has focused unit and RPC-envelope contract coverage."
+  ],
+  "freshScanBefore": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "finalStatus": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "serviceBypassBudget": 0,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0
+  },
+  "before": {
+    "file": "src/lib/developerOverride.ts",
+    "directAnyRpcCalls": [
+      "developer_override_context_v1 through a direct any-cast RPC call",
+      "developer_set_effective_role_v1 through a direct any-cast RPC call",
+      "developer_clear_effective_role_v1 through a direct any-cast RPC call"
+    ],
+    "runtimeAsAnyCountInFile": 3
+  },
+  "after": {
+    "file": "src/lib/developerOverride.ts",
+    "rpcBoundary": "runContainedRpc",
+    "directAnyRpcCalls": 0,
+    "runtimeAsAnyCountInFile": 0,
+    "businessSemanticsChanged": false,
+    "rpcResponseValidationPreserved": true,
+    "rpcNamesPreserved": [
+      "developer_override_context_v1",
+      "developer_set_effective_role_v1",
+      "developer_clear_effective_role_v1"
+    ]
+  },
+  "contractTests": [
+    {
+      "file": "src/lib/developerOverride.test.ts",
+      "asserts": [
+        "developer RPC names remain present",
+        "runContainedRpc owns deployed RPC calls",
+        "src/lib/developerOverride.ts does not contain runtime any-casts",
+        "src/lib/developerOverride.ts does not call `supabase.rpc` directly"
+      ]
+    },
+    {
+      "file": "tests/api/sRpc7MutationResultEnvelopes.contract.test.ts",
+      "asserts": [
+        "developer override RPC result validator remains present",
+        "malformed developer override envelopes fail closed"
+      ]
+    },
+    {
+      "file": "tests/governance/type-suppression-audit.test.ts",
+      "asserts": [
+        "type-suppression baseline does not increase"
+      ]
+    }
+  ],
+  "freshScanAfter": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "finalStatus": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "serviceBypassBudget": 0,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PASS"
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "envWrites": false,
+    "deploy": false,
+    "ota": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "catchEmptyAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -4,6 +4,7 @@ import {
   isRpcRecord,
   isRpcRecordArray,
   isRpcString,
+  runContainedRpc,
   validateRpcResponse,
 } from "./api/queryBoundary";
 
@@ -95,7 +96,10 @@ export function normalizeDeveloperOverrideContext(
 }
 
 export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideContext> {
-  const { data, error } = await (supabase as any).rpc("developer_override_context_v1");
+  const { data, error } = await runContainedRpc<unknown>(
+    supabase,
+    "developer_override_context_v1",
+  );
   if (error) {
     if (__DEV__) console.warn("[developer_override_context_v1]", error.message);
     return EMPTY_CONTEXT;
@@ -121,9 +125,11 @@ export async function loadDeveloperOverrideContext(): Promise<DeveloperOverrideC
 export async function setDeveloperEffectiveRole(
   role: DeveloperOverrideRole,
 ): Promise<DeveloperOverrideContext> {
-  const { data, error } = await (supabase as any).rpc("developer_set_effective_role_v1", {
-    p_effective_role: role,
-  });
+  const { data, error } = await runContainedRpc<unknown>(
+    supabase,
+    "developer_set_effective_role_v1",
+    { p_effective_role: role },
+  );
   if (error) throw error;
   const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
     rpcName: "developer_set_effective_role_v1",
@@ -134,7 +140,10 @@ export async function setDeveloperEffectiveRole(
 }
 
 export async function clearDeveloperEffectiveRole(): Promise<DeveloperOverrideContext> {
-  const { data, error } = await (supabase as any).rpc("developer_clear_effective_role_v1");
+  const { data, error } = await runContainedRpc<unknown>(
+    supabase,
+    "developer_clear_effective_role_v1",
+  );
   if (error) throw error;
   const validated = validateRpcResponse(data, isDeveloperOverrideContextRpcResponse, {
     rpcName: "developer_clear_effective_role_v1",
