@@ -60,7 +60,7 @@
 - full Jest runInBand: PASS
 - architecture scanner: PASS
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
 
 ## Negative Confirmations
 
