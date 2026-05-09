@@ -1,0 +1,225 @@
+{
+  "wave": "S_AUDIT_NIGHT_BATTLE_137_UNSAFE_CAST_RATCHET_CONTRACT",
+  "slug": "UNSAFE_CAST_RATCHET_CONTRACT",
+  "generatedAtLocal": "2026-05-09",
+  "goal": "Prevent unsafe cast debt from growing by making the architecture scanner enforce a ratchet.",
+  "scope": {
+    "productionCodeChanged": false,
+    "scannerFilesChanged": [
+      "scripts/architecture_anti_regression_suite.ts"
+    ],
+    "testFilesChanged": [
+      "tests/architecture/architectureAntiRegressionSuite.test.ts"
+    ],
+    "artifactFilesChanged": [
+      "artifacts/S_AUDIT_NIGHT_BATTLE_137_UNSAFE_CAST_RATCHET_CONTRACT_matrix.json",
+      "artifacts/S_AUDIT_NIGHT_BATTLE_137_UNSAFE_CAST_RATCHET_CONTRACT_proof.md"
+    ]
+  },
+  "freshScan": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "directSupabase": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "unsafeCastRatchetCheck": {
+      "name": "unsafe_cast_ratchet_contract",
+      "status": "pass",
+      "errors": []
+    }
+  },
+  "unsafeCastCounts": {
+    "before": {
+      "total": 192,
+      "productionSource": 49,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 146
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 49
+      },
+      "testByPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 97
+      },
+      "criticalFolderByPattern": [
+        {
+          "folder": "src/lib/api",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 27
+          }
+        },
+        {
+          "folder": "src/lib/auth",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/transport",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/workers",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        }
+      ]
+    },
+    "after": {
+      "total": 192,
+      "productionSource": 49,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 146
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 49
+      },
+      "testByPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 97
+      },
+      "criticalFolderByPattern": [
+        {
+          "folder": "src/lib/api",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 27
+          }
+        },
+        {
+          "folder": "src/lib/auth",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/transport",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/workers",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        }
+      ]
+    }
+  },
+  "ratchetPolicy": {
+    "totalCountMustNotIncrease": true,
+    "productionAndTestTrackedSeparately": true,
+    "patternCountsMustNotIncrease": true,
+    "criticalFolderCountsMustNotIncrease": true,
+    "allowlistEntries": 0,
+    "allowlistRequires": [
+      "file",
+      "line",
+      "pattern",
+      "reason",
+      "owner",
+      "expiresAtLocalDate or migrationWave"
+    ],
+    "criticalFolders": [
+      "src/lib/api",
+      "src/lib/auth",
+      "src/lib/transport",
+      "src/lib/workers"
+    ]
+  },
+  "gates": {
+    "focusedTests": {
+      "command": "npm test -- --runInBand tests/architecture/architectureAntiRegressionSuite.test.ts tests/governance/type-suppression-audit.test.ts",
+      "status": "PASS"
+    },
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "summary": "670 suites passed, 1 skipped; 3981 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS"
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

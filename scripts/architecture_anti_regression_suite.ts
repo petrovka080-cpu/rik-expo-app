@@ -116,6 +116,74 @@ export type ProductionRawLoopFinding = {
   testCoverage: string | null;
 };
 
+export type UnsafeCastPattern =
+  | "as_any"
+  | "ts_ignore"
+  | "silent_catch"
+  | "unsafe_unknown_as";
+
+export type UnsafeCastScope = "production_source" | "test_source";
+
+export type UnsafeCastAllowlistEntry = {
+  file: string;
+  line: number;
+  pattern: UnsafeCastPattern;
+  reason: string;
+  owner: string;
+  expiresAtLocalDate?: string;
+  migrationWave?: string;
+};
+
+export type UnsafeCastFinding = {
+  file: string;
+  line: number;
+  pattern: UnsafeCastPattern;
+  matchedText: string;
+  scope: UnsafeCastScope;
+  criticalFolder: string | null;
+  allowlisted: boolean;
+  reason: string | null;
+  owner: string | null;
+  expiresAtLocalDate: string | null;
+  migrationWave: string | null;
+  expected: string;
+};
+
+export type UnsafeCastPatternCounts = Record<UnsafeCastPattern, number>;
+
+export type UnsafeCastRatchetBaseline = {
+  total: number;
+  productionSource: number;
+  testSource: number;
+  byPattern: UnsafeCastPatternCounts;
+  productionByPattern: UnsafeCastPatternCounts;
+  testByPattern: UnsafeCastPatternCounts;
+  criticalFolderByPattern: readonly {
+    folder: string;
+    byPattern: UnsafeCastPatternCounts;
+  }[];
+};
+
+export type UnsafeCastRatchetSummary = {
+  baseline: UnsafeCastRatchetBaseline;
+  current: {
+    total: number;
+    productionSource: number;
+    testSource: number;
+    byPattern: UnsafeCastPatternCounts;
+    productionByPattern: UnsafeCastPatternCounts;
+    testByPattern: UnsafeCastPatternCounts;
+    criticalFolderByPattern: readonly {
+      folder: string;
+      byPattern: UnsafeCastPatternCounts;
+    }[];
+  };
+  allowlistedFindings: number;
+  allowlistEntries: number;
+  criticalFolderViolations: number;
+  topFiles: readonly { file: string; count: number }[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -164,6 +232,7 @@ export type ArchitectureAntiRegressionReport = {
     allowlistEntries: number;
     topFiles: readonly { file: string; count: number }[];
   };
+  unsafeCastRatchet: UnsafeCastRatchetSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -214,6 +283,83 @@ const PRODUCTION_RAW_LOOP_BUDGET = 0;
 const PRODUCTION_RAW_LOOP_EXPECTED_OWNER =
   "cancellable worker loop primitive or explicit allowlist with reason, owner, and test coverage";
 const PRODUCTION_RAW_LOOP_ALLOWLIST: readonly ProductionRawLoopAllowlistEntry[] = [];
+const UNSAFE_CAST_SCAN_ROOTS = ["src", "app", "tests"] as const;
+const UNSAFE_CAST_EXPECTED =
+  "typed DTO, runtime guard, typed adapter, or documented allowlist with file, line, reason, owner, and expiration/migration wave";
+const UNSAFE_CAST_ALLOWLIST: readonly UnsafeCastAllowlistEntry[] = [];
+const UNSAFE_CAST_CRITICAL_FOLDERS = [
+  "src/lib/api",
+  "src/lib/auth",
+  "src/lib/transport",
+  "src/lib/workers",
+] as const;
+const emptyUnsafeCastPatternCounts = (): UnsafeCastPatternCounts => ({
+  as_any: 0,
+  ts_ignore: 0,
+  silent_catch: 0,
+  unsafe_unknown_as: 0,
+});
+const UNSAFE_CAST_RATCHET_BASELINE: UnsafeCastRatchetBaseline = {
+  total: 192,
+  productionSource: 49,
+  testSource: 143,
+  byPattern: {
+    as_any: 25,
+    ts_ignore: 6,
+    silent_catch: 15,
+    unsafe_unknown_as: 146,
+  },
+  productionByPattern: {
+    as_any: 0,
+    ts_ignore: 0,
+    silent_catch: 0,
+    unsafe_unknown_as: 49,
+  },
+  testByPattern: {
+    as_any: 25,
+    ts_ignore: 6,
+    silent_catch: 15,
+    unsafe_unknown_as: 97,
+  },
+  criticalFolderByPattern: [
+    {
+      folder: "src/lib/api",
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 27,
+      },
+    },
+    {
+      folder: "src/lib/auth",
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+    },
+    {
+      folder: "src/lib/transport",
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+    },
+    {
+      folder: "src/lib/workers",
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+    },
+  ],
+};
 
 const normalizePath = (value: string): string => value.replace(/\\/g, "/");
 
@@ -953,6 +1099,330 @@ export function evaluateProductionRawLoopGuardrail(params: {
   };
 }
 
+const unsafeCastPatterns: readonly {
+  pattern: UnsafeCastPattern;
+  regex: RegExp;
+}[] = [
+  { pattern: "as_any", regex: /\bas\s+any\b/g },
+  { pattern: "ts_ignore", regex: new RegExp(`${"@ts"}-${"ignore"}\\b`, "g") },
+  { pattern: "silent_catch", regex: /\bcatch\s*\{\s*\}/g },
+];
+
+const unsafeUnknownAsRegex = /\bunknown\s+as\b/g;
+const unsafeUnknownAsGuardEvidence =
+  /\b(createGuardedPagedQuery|assert[A-Z][A-Za-z0-9_]*|is[A-Z][A-Za-z0-9_]*|has[A-Z][A-Za-z0-9_]*|parse[A-Z][A-Za-z0-9_]*|validate[A-Z][A-Za-z0-9_]*|safeParse|schema|guard|narrow|normalize[A-Z][A-Za-z0-9_]*)\b/;
+
+const unsafeCastScopeForPath = (normalizedPath: string): UnsafeCastScope =>
+  normalizedPath.startsWith("tests/") || isTestPath(normalizedPath)
+    ? "test_source"
+    : "production_source";
+
+const unsafeCastCriticalFolderForPath = (normalizedPath: string): string | null =>
+  UNSAFE_CAST_CRITICAL_FOLDERS.find(
+    (folder) => normalizedPath === folder || normalizedPath.startsWith(`${folder}/`),
+  ) ?? null;
+
+const findUnsafeCastAllowlistEntry = (
+  allowlist: readonly UnsafeCastAllowlistEntry[],
+  finding: Pick<UnsafeCastFinding, "file" | "line" | "pattern">,
+): UnsafeCastAllowlistEntry | undefined =>
+  allowlist.find(
+    (entry) =>
+      normalizePath(entry.file) === finding.file &&
+      entry.line === finding.line &&
+      entry.pattern === finding.pattern,
+  );
+
+const hasRuntimeGuardEvidenceForUnknownAs = (lines: readonly string[], index: number): boolean => {
+  const start = Math.max(0, index - 4);
+  const nearbySource = lines.slice(start, index + 1).join("\n");
+  return unsafeUnknownAsGuardEvidence.test(nearbySource);
+};
+
+const buildUnsafeCastFinding = (
+  params: {
+    file: string;
+    line: number;
+    pattern: UnsafeCastPattern;
+    matchedText: string;
+    allowlist: readonly UnsafeCastAllowlistEntry[];
+  },
+): UnsafeCastFinding => {
+  const scope = unsafeCastScopeForPath(params.file);
+  const criticalFolder = unsafeCastCriticalFolderForPath(params.file);
+  const allowlistEntry = findUnsafeCastAllowlistEntry(params.allowlist, {
+    file: params.file,
+    line: params.line,
+    pattern: params.pattern,
+  });
+
+  return {
+    file: params.file,
+    line: params.line,
+    pattern: params.pattern,
+    matchedText: params.matchedText,
+    scope,
+    criticalFolder,
+    allowlisted: Boolean(allowlistEntry),
+    reason: allowlistEntry?.reason ?? null,
+    owner: allowlistEntry?.owner ?? null,
+    expiresAtLocalDate: allowlistEntry?.expiresAtLocalDate ?? null,
+    migrationWave: allowlistEntry?.migrationWave ?? null,
+    expected: UNSAFE_CAST_EXPECTED,
+  };
+};
+
+export function scanUnsafeCastSource(params: {
+  file: string;
+  source: string;
+  allowlist?: readonly UnsafeCastAllowlistEntry[];
+}): UnsafeCastFinding[] {
+  const file = normalizePath(params.file);
+  const allowlist = params.allowlist ?? UNSAFE_CAST_ALLOWLIST;
+  const lines = params.source.split(/\r?\n/);
+  const findings: UnsafeCastFinding[] = [];
+
+  lines.forEach((lineText, index) => {
+    const line = index + 1;
+    for (const candidate of unsafeCastPatterns) {
+      candidate.regex.lastIndex = 0;
+      const matches = lineText.matchAll(candidate.regex);
+      for (const match of matches) {
+        findings.push(
+          buildUnsafeCastFinding({
+            file,
+            line,
+            pattern: candidate.pattern,
+            matchedText: match[0] ?? candidate.pattern,
+            allowlist,
+          }),
+        );
+      }
+    }
+
+    unsafeUnknownAsRegex.lastIndex = 0;
+    if (hasRuntimeGuardEvidenceForUnknownAs(lines, index)) return;
+    const unknownMatches = lineText.matchAll(unsafeUnknownAsRegex);
+    for (const match of unknownMatches) {
+      findings.push(
+        buildUnsafeCastFinding({
+          file,
+          line,
+          pattern: "unsafe_unknown_as",
+          matchedText: match[0] ?? "unknown_as",
+          allowlist,
+        }),
+      );
+    }
+  });
+
+  return findings;
+}
+
+export function scanUnsafeCastRatchetFindings(
+  projectRoot: string,
+  allowlist: readonly UnsafeCastAllowlistEntry[] = UNSAFE_CAST_ALLOWLIST,
+): UnsafeCastFinding[] {
+  const roots = UNSAFE_CAST_SCAN_ROOTS.map((rootName) => path.join(projectRoot, rootName));
+  return roots.flatMap((root) =>
+    listSourceFiles(root).flatMap((filePath) => {
+      const relativePath = relativeProjectPath(projectRoot, filePath);
+      return scanUnsafeCastSource({
+        file: relativePath,
+        source: readProjectFile(projectRoot, relativePath),
+        allowlist,
+      });
+    }),
+  );
+}
+
+const incrementUnsafeCastCount = (
+  counts: UnsafeCastPatternCounts,
+  pattern: UnsafeCastPattern,
+): void => {
+  counts[pattern] += 1;
+};
+
+const unsafeCastPatternKeys: readonly UnsafeCastPattern[] = [
+  "as_any",
+  "ts_ignore",
+  "silent_catch",
+  "unsafe_unknown_as",
+];
+
+const unsafeCastCountForFolder = (
+  findings: readonly UnsafeCastFinding[],
+  folder: string,
+): UnsafeCastPatternCounts => {
+  const counts = emptyUnsafeCastPatternCounts();
+  for (const finding of findings) {
+    if (finding.file === folder || finding.file.startsWith(`${folder}/`)) {
+      incrementUnsafeCastCount(counts, finding.pattern);
+    }
+  }
+  return counts;
+};
+
+const summarizeUnsafeCastFindings = (
+  findings: readonly UnsafeCastFinding[],
+  baseline: UnsafeCastRatchetBaseline,
+): UnsafeCastRatchetSummary["current"] => {
+  const byPattern = emptyUnsafeCastPatternCounts();
+  const productionByPattern = emptyUnsafeCastPatternCounts();
+  const testByPattern = emptyUnsafeCastPatternCounts();
+  let productionSource = 0;
+  let testSource = 0;
+
+  for (const finding of findings) {
+    incrementUnsafeCastCount(byPattern, finding.pattern);
+    if (finding.scope === "production_source") {
+      productionSource += 1;
+      incrementUnsafeCastCount(productionByPattern, finding.pattern);
+    } else {
+      testSource += 1;
+      incrementUnsafeCastCount(testByPattern, finding.pattern);
+    }
+  }
+
+  return {
+    total: findings.length,
+    productionSource,
+    testSource,
+    byPattern,
+    productionByPattern,
+    testByPattern,
+    criticalFolderByPattern: baseline.criticalFolderByPattern.map((entry) => ({
+      folder: entry.folder,
+      byPattern: unsafeCastCountForFolder(findings, entry.folder),
+    })),
+  };
+};
+
+const validateUnsafeCastAllowlist = (
+  allowlist: readonly UnsafeCastAllowlistEntry[],
+  findings: readonly UnsafeCastFinding[],
+): string[] => {
+  const findingKeys = new Set(
+    findings.map((finding) => `${finding.file}:${finding.line}:${finding.pattern}`),
+  );
+  return allowlist.flatMap((entry) => {
+    const file = normalizePath(entry.file);
+    const missingMetadata =
+      !file.trim() ||
+      !Number.isInteger(entry.line) ||
+      entry.line <= 0 ||
+      !entry.reason.trim() ||
+      !entry.owner.trim() ||
+      (!entry.expiresAtLocalDate?.trim() && !entry.migrationWave?.trim());
+    const key = `${file}:${entry.line}:${entry.pattern}`;
+    return [
+      ...(missingMetadata
+        ? [`unsafe_cast_allowlist_missing_metadata:file=${file}:line=${entry.line}:pattern=${entry.pattern}`]
+        : []),
+      ...(findingKeys.has(key)
+        ? []
+        : [`unsafe_cast_allowlist_unused:file=${file}:line=${entry.line}:pattern=${entry.pattern}`]),
+    ];
+  });
+};
+
+const findCriticalFolderBaseline = (
+  baseline: UnsafeCastRatchetBaseline,
+  folder: string,
+): UnsafeCastPatternCounts =>
+  baseline.criticalFolderByPattern.find((entry) => entry.folder === folder)?.byPattern ??
+  emptyUnsafeCastPatternCounts();
+
+const formatUnsafeCastCriticalFailure = (
+  finding: UnsafeCastFinding,
+): string =>
+  [
+    "unsafe_cast_critical_folder_violation",
+    `file=${finding.file}`,
+    `line=${finding.line}`,
+    `pattern=${finding.pattern}`,
+    `matched=${finding.matchedText}`,
+    `expected=${finding.expected}`,
+  ].join(":");
+
+export function evaluateUnsafeCastRatchetGuardrail(params: {
+  findings: readonly UnsafeCastFinding[];
+  allowlist?: readonly UnsafeCastAllowlistEntry[];
+  baseline?: UnsafeCastRatchetBaseline;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: UnsafeCastRatchetSummary;
+} {
+  const allowlist = params.allowlist ?? UNSAFE_CAST_ALLOWLIST;
+  const baseline = params.baseline ?? UNSAFE_CAST_RATCHET_BASELINE;
+  const current = summarizeUnsafeCastFindings(params.findings, baseline);
+  const criticalViolations = params.findings.filter((finding) => {
+    if (!finding.criticalFolder || finding.scope !== "production_source" || finding.allowlisted) {
+      return false;
+    }
+    const folderBaseline = findCriticalFolderBaseline(baseline, finding.criticalFolder);
+    return folderBaseline[finding.pattern] === 0;
+  });
+  const countsByFile = new Map<string, number>();
+  for (const finding of params.findings) {
+    countsByFile.set(finding.file, (countsByFile.get(finding.file) ?? 0) + 1);
+  }
+  const topFiles = Array.from(countsByFile.entries())
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 10)
+    .map(([file, count]) => ({ file, count }));
+  const errors = [
+    ...(current.total > baseline.total
+      ? [`unsafe_cast_total_ratchet_exceeded:${current.total}>${baseline.total}`]
+      : []),
+    ...(current.productionSource > baseline.productionSource
+      ? [`unsafe_cast_production_ratchet_exceeded:${current.productionSource}>${baseline.productionSource}`]
+      : []),
+    ...(current.testSource > baseline.testSource
+      ? [`unsafe_cast_test_ratchet_exceeded:${current.testSource}>${baseline.testSource}`]
+      : []),
+    ...unsafeCastPatternKeys.flatMap((pattern) => [
+      ...(current.byPattern[pattern] > baseline.byPattern[pattern]
+        ? [`unsafe_cast_pattern_ratchet_exceeded:pattern=${pattern}:current=${current.byPattern[pattern]}:baseline=${baseline.byPattern[pattern]}`]
+        : []),
+      ...(current.productionByPattern[pattern] > baseline.productionByPattern[pattern]
+        ? [`unsafe_cast_production_pattern_ratchet_exceeded:pattern=${pattern}:current=${current.productionByPattern[pattern]}:baseline=${baseline.productionByPattern[pattern]}`]
+        : []),
+      ...(current.testByPattern[pattern] > baseline.testByPattern[pattern]
+        ? [`unsafe_cast_test_pattern_ratchet_exceeded:pattern=${pattern}:current=${current.testByPattern[pattern]}:baseline=${baseline.testByPattern[pattern]}`]
+        : []),
+    ]),
+    ...current.criticalFolderByPattern.flatMap((entry) => {
+      const folderBaseline = findCriticalFolderBaseline(baseline, entry.folder);
+      return unsafeCastPatternKeys.flatMap((pattern) =>
+        entry.byPattern[pattern] > folderBaseline[pattern]
+          ? [
+              `unsafe_cast_critical_folder_ratchet_exceeded:folder=${entry.folder}:pattern=${pattern}:current=${entry.byPattern[pattern]}:baseline=${folderBaseline[pattern]}`,
+            ]
+          : [],
+      );
+    }),
+    ...criticalViolations.map(formatUnsafeCastCriticalFailure),
+    ...validateUnsafeCastAllowlist(allowlist, params.findings),
+  ];
+
+  return {
+    check: {
+      name: "unsafe_cast_ratchet_contract",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      baseline,
+      current,
+      allowlistedFindings: params.findings.filter((finding) => finding.allowlisted).length,
+      allowlistEntries: allowlist.length,
+      criticalFolderViolations: criticalViolations.length,
+      topFiles,
+    },
+  };
+}
+
 export function scanComponentDebtSource(params: {
   file: string;
   source: string;
@@ -1003,6 +1473,9 @@ export function runArchitectureAntiRegressionSuite(
   const productionRawLoops = evaluateProductionRawLoopGuardrail({
     findings: scanProductionRawLoops(projectRoot),
   });
+  const unsafeCastRatchet = evaluateUnsafeCastRatchetGuardrail({
+    findings: scanUnsafeCastRatchetFindings(projectRoot),
+  });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -1015,6 +1488,7 @@ export function runArchitectureAntiRegressionSuite(
     productionReadonlyCanary.check,
     cacheRateScope.check,
     productionRawLoops.check,
+    unsafeCastRatchet.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -1028,6 +1502,7 @@ export function runArchitectureAntiRegressionSuite(
     productionReadonlyCanary: productionReadonlyCanary.summary,
     cacheRateScope: cacheRateScope.summary,
     productionRawLoops: productionRawLoops.summary,
+    unsafeCastRatchet: unsafeCastRatchet.summary,
     componentDebt,
     checks,
     safety: {
@@ -1054,6 +1529,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
     `direct_supabase_exception_unclassified: ${report.directSupabaseExceptionContainment.unclassifiedCurrentFindings}`,
   );
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
+  console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

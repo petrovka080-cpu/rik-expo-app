@@ -6,11 +6,14 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
+  evaluateUnsafeCastRatchetGuardrail,
   formatDirectSupabaseServiceBypassFailure,
   scanComponentDebtSource,
   scanDirectSupabaseSource,
   scanProductionRawLoopSource,
   scanProductionRawLoops,
+  scanUnsafeCastSource,
+  type UnsafeCastPattern,
 } from "../../scripts/architecture_anti_regression_suite";
 
 describe("architecture anti-regression suite", () => {
@@ -325,6 +328,202 @@ describe("architecture anti-regression suite", () => {
       allowlistEntries: 0,
     });
     expect(guardrail.check.status).toBe("pass");
+  });
+
+  it("blocks unsafe casts with readable ratchet and critical-folder failures", () => {
+    const asAnyText = ["as", "any"].join(" ");
+    const tsIgnoreText = ["@ts", "ignore"].join("-");
+    const silentCatchText = ["catch", "{}"].join(" ");
+    const unknownAsText = ["unknown", "as"].join(" ");
+    const findings = scanUnsafeCastSource({
+      file: "src/lib/workers/exampleWorker.ts",
+      source: [
+        `const value = payload ${asAnyText};`,
+        tsIgnoreText,
+        `try { runWorker(); } ${silentCatchText}`,
+        `const row = payload ${unknownAsText} WorkerRow;`,
+      ].join("\n"),
+    });
+    const baseline = {
+      total: 0,
+      productionSource: 0,
+      testSource: 0,
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+      productionByPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+      testByPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+      criticalFolderByPattern: [
+        {
+          folder: "src/lib/workers",
+          byPattern: {
+            as_any: 0,
+            ts_ignore: 0,
+            silent_catch: 0,
+            unsafe_unknown_as: 0,
+          },
+        },
+      ],
+    };
+    const guardrail = evaluateUnsafeCastRatchetGuardrail({ findings, baseline });
+
+    expect(findings).toHaveLength(4);
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          file: "src/lib/workers/exampleWorker.ts",
+          line: 1,
+          pattern: "as_any",
+          matchedText: asAnyText,
+          scope: "production_source",
+          criticalFolder: "src/lib/workers",
+        }),
+        expect.objectContaining({
+          line: 2,
+          pattern: "ts_ignore",
+          matchedText: tsIgnoreText,
+        }),
+        expect.objectContaining({
+          line: 3,
+          pattern: "silent_catch",
+          matchedText: silentCatchText,
+        }),
+        expect.objectContaining({
+          line: 4,
+          pattern: "unsafe_unknown_as",
+          matchedText: unknownAsText,
+        }),
+      ]),
+    );
+    expect(guardrail.check).toEqual(
+      expect.objectContaining({
+        name: "unsafe_cast_ratchet_contract",
+        status: "fail",
+      }),
+    );
+    expect(guardrail.check.errors).toEqual(
+      expect.arrayContaining([
+        "unsafe_cast_total_ratchet_exceeded:4>0",
+        expect.stringContaining("unsafe_cast_critical_folder_violation:file=src/lib/workers/exampleWorker.ts:line=1"),
+        expect.stringContaining(`matched=${asAnyText}`),
+      ]),
+    );
+  });
+
+  it("requires reason, owner, and expiration or migration wave for unsafe-cast allowlists", () => {
+    const unknownAsText = ["unknown", "as"].join(" ");
+    const pattern: UnsafeCastPattern = "unsafe_unknown_as";
+    const allowlist = [
+      {
+        file: "src/lib/api/example.ts",
+        line: 1,
+        pattern,
+        reason: "legacy provider payload narrowed in wave follow-up",
+        owner: "api-transport",
+        migrationWave: "S_AUDIT_NIGHT_BATTLE_138",
+      },
+    ];
+    const findings = scanUnsafeCastSource({
+      file: "src/lib/api/example.ts",
+      source: `const row = payload ${unknownAsText} ExampleRow;`,
+      allowlist,
+    });
+    const baseline = {
+      total: 1,
+      productionSource: 1,
+      testSource: 0,
+      byPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 1,
+      },
+      productionByPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 1,
+      },
+      testByPattern: {
+        as_any: 0,
+        ts_ignore: 0,
+        silent_catch: 0,
+        unsafe_unknown_as: 0,
+      },
+      criticalFolderByPattern: [
+        {
+          folder: "src/lib/api",
+          byPattern: {
+            as_any: 0,
+            ts_ignore: 0,
+            silent_catch: 0,
+            unsafe_unknown_as: 1,
+          },
+        },
+      ],
+    };
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        allowlisted: true,
+        reason: "legacy provider payload narrowed in wave follow-up",
+        owner: "api-transport",
+        migrationWave: "S_AUDIT_NIGHT_BATTLE_138",
+      }),
+    ]);
+    expect(evaluateUnsafeCastRatchetGuardrail({ findings, allowlist, baseline }).check.status).toBe("pass");
+
+    const invalidAllowlist = [{ ...allowlist[0], owner: "", migrationWave: "" }];
+    const invalidFindings = scanUnsafeCastSource({
+      file: "src/lib/api/example.ts",
+      source: `const row = payload ${unknownAsText} ExampleRow;`,
+      allowlist: invalidAllowlist,
+    });
+
+    expect(evaluateUnsafeCastRatchetGuardrail({
+      findings: invalidFindings,
+      allowlist: invalidAllowlist,
+      baseline,
+    }).check.errors).toEqual(
+      expect.arrayContaining([
+        "unsafe_cast_allowlist_missing_metadata:file=src/lib/api/example.ts:line=1:pattern=unsafe_unknown_as",
+      ]),
+    );
+  });
+
+  it("separates test findings from production findings and ignores guarded unknown casts", () => {
+    const asAnyText = ["as", "any"].join(" ");
+    const unknownAsText = ["unknown", "as"].join(" ");
+    const testFindings = scanUnsafeCastSource({
+      file: "tests/example/example.contract.test.ts",
+      source: `const value = payload ${asAnyText};`,
+    });
+    const guardedFindings = scanUnsafeCastSource({
+      file: "src/lib/api/example.ts",
+      source: `const query = createGuardedPagedQuery(payload ${unknownAsText} Query, isExampleRow, "example");`,
+    });
+
+    expect(testFindings).toEqual([
+      expect.objectContaining({
+        pattern: "as_any",
+        scope: "test_source",
+        criticalFolder: null,
+      }),
+    ]);
+    expect(guardedFindings).toEqual([]);
   });
 
   it("reports component line and hook pressure without failing the build", () => {
