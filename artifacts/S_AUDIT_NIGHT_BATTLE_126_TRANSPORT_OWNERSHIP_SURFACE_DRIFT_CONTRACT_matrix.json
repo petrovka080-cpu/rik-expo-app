@@ -1,0 +1,108 @@
+{
+  "wave": 126,
+  "slug": "TRANSPORT_OWNERSHIP_SURFACE_DRIFT_CONTRACT",
+  "startedFrom": {
+    "branch": "main",
+    "head": "22fd6a2d640d7ad5235012baacd3012db6c4f63c",
+    "originMain": "22fd6a2d640d7ad5235012baacd3012db6c4f63c",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "scope": {
+    "selectedFiles": [
+      "tests/architecture/transportOwnershipMap.test.ts"
+    ],
+    "reason": "The ownership map already locked transport-owned files, but provider surface counts could drift if a direct provider call was added to an existing transport file. This wave locks scanner baseline and per-surface count drift without touching runtime code."
+  },
+  "before": {
+    "ownershipMapFileListContract": true,
+    "ownershipMapProviderSurfaceCountContract": false,
+    "architectureScanner": {
+      "totalFindings": 222,
+      "serviceBypassBudget": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "testOnlyFindings": 47,
+      "generatedOrIgnoredFindings": 0,
+      "unclassifiedCurrentFindings": 0
+    }
+  },
+  "after": {
+    "ownershipMapFileListContract": true,
+    "ownershipMapProviderSurfaceCountContract": true,
+    "lockedProviderSurfaces": [
+      "auth",
+      "read",
+      "realtime",
+      "rpc",
+      "storage",
+      "write"
+    ],
+    "architectureScanner": {
+      "totalFindings": 222,
+      "serviceBypassBudget": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "testOnlyFindings": 47,
+      "generatedOrIgnoredFindings": 0,
+      "unclassifiedCurrentFindings": 0
+    }
+  },
+  "gates": {
+    "focusedTests": {
+      "command": "npx jest tests/architecture/transportOwnershipMap.test.ts --runInBand",
+      "status": "PASS",
+      "testSuites": 1,
+      "tests": 3
+    },
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "testSuitesPassed": 659,
+      "testSuitesSkipped": 1,
+      "testsPassed": 3912,
+      "testsSkipped": 1
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS"
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
