@@ -14,6 +14,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const DATE_WIDE_FROM = "2020-01-01";
 const DATE_WIDE_TO = "2030-01-01";
 const LEGACY_PAGE_SIZE = 1000;
+const LEGACY_MAX_START_OFFSET = 1000000;
 
 const normObj = (v) => String(v ?? "").trim() || "Без объекта";
 const normWork = (v) => String(v ?? "").trim() || "Без вида работ";
@@ -187,9 +188,12 @@ async function fetchLegacyIssueRows(scope) {
   const fromIso = `${scope.from}T00:00:00.000Z`;
   const toIso = `${scope.to}T23:59:59.999Z`;
   const out = [];
-  let fromIdx = 0;
 
-  while (true) {
+  for (
+    let fromIdx = 0;
+    fromIdx <= LEGACY_MAX_START_OFFSET;
+    fromIdx += LEGACY_PAGE_SIZE
+  ) {
     let q = supabase
       .from("warehouse_issue_items")
       .select("issue_id,rik_code,uom_id,qty,request_item_id,warehouse_issues!inner(id,iss_date,object_name,work_name,status,note)")
@@ -206,8 +210,6 @@ async function fetchLegacyIssueRows(scope) {
     if (!rows.length) break;
     out.push(...rows);
     if (rows.length < LEGACY_PAGE_SIZE) break;
-    fromIdx += LEGACY_PAGE_SIZE;
-    if (fromIdx > 1000000) break;
   }
 
   return out;

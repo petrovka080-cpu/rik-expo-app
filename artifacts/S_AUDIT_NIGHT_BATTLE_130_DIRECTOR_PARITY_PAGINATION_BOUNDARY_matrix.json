@@ -1,0 +1,114 @@
+{
+  "wave": 130,
+  "slug": "DIRECTOR_PARITY_PAGINATION_BOUNDARY",
+  "goal": "Remove the remaining operational director parity script while(true) pagination finding without changing read semantics or contacting production.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "0fb9db760e7ad02c0d86185e3eed5373f7645c34",
+    "originMain": "0fb9db760e7ad02c0d86185e3eed5373f7645c34",
+    "aheadBehind": "0/0"
+  },
+  "selectedScope": {
+    "file": "scripts/director_parity_check_v1.js",
+    "test": "tests/scripts/directorParityLoopBoundary.contract.test.ts",
+    "reason": "After the queue worker migration, this was the highest-priority remaining real while(true) finding: a read-only operational parity script with direct Supabase reads and a previously implicit hard offset guard."
+  },
+  "before": {
+    "loopShape": "fetchLegacyIssueRows used while(true) with break conditions for empty page, short page, and fromIdx > 1000000 after increment.",
+    "pageSize": 1000,
+    "maximumStartOffset": 1000000,
+    "productionCallsDuringWave": false
+  },
+  "after": {
+    "loopShape": "fetchLegacyIssueRows uses an explicit bounded for loop over fromIdx <= LEGACY_MAX_START_OFFSET.",
+    "pageSize": 1000,
+    "maximumStartOffset": 1000000,
+    "sameRangeWindow": ".range(fromIdx, fromIdx + LEGACY_PAGE_SIZE - 1)",
+    "sameExitConditions": [
+      "empty page",
+      "short page",
+      "maximum start offset reached"
+    ],
+    "productionCallsDuringWave": false
+  },
+  "freshSearch": {
+    "whileTrueCommand": "git grep -n \"while *(true\" src tests scripts",
+    "whileTrueStatus": "PASS",
+    "directorParityFindingPresent": false,
+    "remainingRealFindings": [
+      {
+        "file": "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+        "line": 177,
+        "classification": "false positive token counter from wave 125"
+      }
+    ],
+    "remainingTestOnlyGuardFindings": 11,
+    "forInfiniteCommand": "git grep -n \"for *(;;\" src tests scripts",
+    "forInfiniteStatus": "PASS",
+    "forInfiniteFindings": 0
+  },
+  "focusedTests": {
+    "command": "npx jest tests/scripts/directorParityLoopBoundary.contract.test.ts tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts --runInBand",
+    "status": "PASS",
+    "suitesPassed": 2,
+    "testsPassed": 5,
+    "coverage": [
+      "director parity pagination has no while(true)",
+      "director parity pagination has explicit maximum start offset",
+      "director parity script remains read-only at table boundary",
+      "existing read-only proof pagination ceiling contracts remain green"
+    ]
+  },
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING_POST_PUSH"
+  },
+  "gateEvidence": {
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "testSuites": "664 passed, 1 skipped, 664 of 665 total",
+      "tests": "3934 passed, 1 skipped, 3935 total"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": null
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadTypeEscape": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
