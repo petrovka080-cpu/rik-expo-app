@@ -1,0 +1,98 @@
+{
+  "wave": 125,
+  "slug": "DEV_STYLE_GUARD_CATCH_DISCIPLINE",
+  "startedFrom": {
+    "branch": "main",
+    "head": "a99b6dba30844ca0f2c2dc728fba663108499fe8",
+    "originMain": "a99b6dba30844ca0f2c2dc728fba663108499fe8",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/dev/_webStyleGuard.tsx",
+      "src/dev/_debugStyleTrap.web.ts",
+      "tests/observability/devStyleGuardCatchDiscipline.test.ts"
+    ],
+    "reason": "Narrow dev-only observability hardening: remove silent empty failure swallowing from web style guards and add a focused regression contract."
+  },
+  "before": {
+    "scopedEmptyCatchFindings": 3,
+    "scopedEmptyCatchFiles": 2,
+    "productionCodeChanged": false,
+    "architectureScanner": {
+      "serviceBypassBudget": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    }
+  },
+  "after": {
+    "scopedEmptyCatchFindings": 0,
+    "scopedEmptyCatchFiles": 0,
+    "productionCodeChanged": false,
+    "architectureScanner": {
+      "serviceBypassBudget": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    }
+  },
+  "gates": {
+    "focusedTests": {
+      "command": "npx jest tests/observability/devStyleGuardCatchDiscipline.test.ts tests/observability/noSilentRuntimeCatch.test.ts --runInBand",
+      "status": "PASS",
+      "testSuites": 2,
+      "tests": 7
+    },
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "testSuitesPassed": 658,
+      "testSuitesSkipped": 1,
+      "testsPassed": 3909,
+      "testsSkipped": 1
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS"
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
