@@ -34,7 +34,7 @@ After this wave, the primitive uses `while (!isAbortStop(signal))` and returns a
 - full Jest runInBand: PASS.
 - architecture scanner: PASS.
 - git diff --check: PASS.
-- release verify post-push: PENDING.
+- release verify post-push: PASS.
 
 Architecture scanner:
 
@@ -47,6 +47,17 @@ Full Jest:
 
 - Test suites: 662 passed, 1 skipped, 662 of 663 total.
 - Tests: 3925 passed, 1 skipped, 3926 total.
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS.
+- head commit: `c5370ee163e81e5594c7b750d547b9d90c617763`.
+- repo sync status: synced.
+- worktree clean: true.
+- head matches origin/main: true.
+- OTA disposition: allow.
+- OTA published: false.
+- EAS update triggered: false.
 
 ## Safety
 
