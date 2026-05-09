@@ -240,7 +240,7 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING"
+    "releaseVerifyPostPush": "PASS"
   },
   "gateEvidence": {
     "focusedTests": "npx jest src/workers/queueWorker.boundary.test.ts --runInBand; 4 tests passed",
@@ -254,7 +254,16 @@
       "transportControlledFindings": 175,
       "unclassifiedCurrentFindings": 0
     },
-    "gitDiffCheck": "git diff --check"
+    "gitDiffCheck": "git diff --check",
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PASS",
+      "headCommit": "81671a4752b68425c540fb5374840bff8f78bb4d",
+      "repoSyncStatus": "synced",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "otaDisposition": "skip"
+    }
   },
   "negativeConfirmations": {
     "productionCalls": false,
