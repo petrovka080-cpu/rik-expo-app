@@ -1,0 +1,456 @@
+{
+  "wave": 138,
+  "slug": "CACHE_ENABLEMENT_MAP",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Explain why cache/rate-limit score stays at 5.0 and map cache canary enablement without enabling production cache.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "cd29442ad83720dbc4d68d9eb1369f1a38c5ead8"
+  },
+  "freshScans": {
+    "commands": [
+      "git grep -n \"cache\" src scripts tests",
+      "git grep -n \"canary\" src scripts tests",
+      "git grep -n \"ttl\" src scripts tests",
+      "rg -n \"cache.*score|score.*cache|5\\\\.0|5,0|read_through|shadow_readonly|SCALE_REDIS_CACHE\" src scripts tests docs artifacts --glob '!artifacts/pdf-*'",
+      "rg -n \"CACHE_POLICY_REGISTRY|CACHE_READ_MODEL_CONTRACTS|cachePolicyRoute|payloadClass|read_through\" src/shared/scale scripts/server tests/scale docs/architecture/50k_cache_integration.md docs/architecture/50k_cache_read_models.md",
+      "rg -n \"defaultEnabled: false|executionEnabledByDefault: false|cachePolicyDefaultEnabled: false|payload_class_not_allowlisted|public_catalog\" src/shared/scale scripts/server tests/scale docs"
+    ],
+    "summary": {
+      "cacheInfraFound": true,
+      "canaryInfraFound": true,
+      "ttlPoliciesFound": true,
+      "scoreCalculatorFound": false,
+      "scoreFivePointZeroExplainedByCodeState": true
+    }
+  },
+  "whyScoreRemainsFivePointZero": [
+    "Cache infrastructure exists, but every route policy has defaultEnabled=false.",
+    "BFF staging read routes attach cache metadata, but cachePolicyDefaultEnabled=false.",
+    "Read models are contract_only and are disabled unless enabled=true, shadowMode=true, and a BFF base URL exists.",
+    "Redis/cache provider network access is disabled by default and requires explicit server-side staging or production shadow flags plus required env.",
+    "Production cache shadow guardrail is route-scoped to marketplace.catalog.search and percent-scoped; it is a safety scaffold, not live cache adoption.",
+    "Read-through serving currently allows only payloadClass=public_catalog; tenant, finance, and stock payloads are skipped.",
+    "Invalidation mappings exist, but executionEnabledByDefault=false and isCacheInvalidationExecutionEnabled always returns false.",
+    "No production canary was enabled in this wave."
+  ],
+  "existingCacheInfra": [
+    {
+      "file": "src/shared/scale/cachePolicies.ts",
+      "owns": [
+        "cache route registry",
+        "ttl and stale-while-revalidate budgets",
+        "payload classes",
+        "key part declarations",
+        "disabled-by-default route policies"
+      ],
+      "policyCount": 8
+    },
+    {
+      "file": "src/shared/scale/cacheKeySafety.ts",
+      "owns": [
+        "deterministic bounded keys",
+        "raw PII/key material rejection",
+        "stable hashing of key parts"
+      ]
+    },
+    {
+      "file": "src/shared/scale/cacheAdapters.ts",
+      "owns": [
+        "noop adapter",
+        "in-memory test adapter",
+        "Redis REST adapter",
+        "Redis URL adapter",
+        "TTL-bounded set/get/delete probes",
+        "tag invalidation adapter methods"
+      ]
+    },
+    {
+      "file": "src/shared/scale/cacheShadowRuntime.ts",
+      "owns": [
+        "disabled/shadow_readonly/synthetic_canary_only/read_through modes",
+        "route allowlist parsing",
+        "percent selection",
+        "synthetic canary",
+        "aggregate redacted monitor"
+      ]
+    },
+    {
+      "file": "src/shared/scale/cacheInvalidation.ts",
+      "owns": [
+        "mutation-to-cache-tag mapping",
+        "disabled invalidation execution"
+      ],
+      "mappingCount": 8
+    },
+    {
+      "file": "src/shared/scale/cacheReadModels.ts",
+      "owns": [
+        "contract-only read model inventory",
+        "ttl ceilings",
+        "future invalidation event names",
+        "disabled read-model calls"
+      ],
+      "contractCount": 9
+    },
+    {
+      "file": "scripts/server/stagingBffServerBoundary.ts",
+      "owns": [
+        "BFF read route cache metadata",
+        "observe-only cache shadow",
+        "read-through execution gate",
+        "server-authenticated cache diagnostics"
+      ],
+      "readRouteCount": 5
+    }
+  ],
+  "disabledFlagsAndGuards": [
+    {
+      "name": "route policy defaults",
+      "evidence": "CACHE_POLICY_REGISTRY entries use defaultEnabled=false.",
+      "effect": "No policy can turn on cache execution by default."
+    },
+    {
+      "name": "BFF route defaults",
+      "evidence": "BFF_STAGING_READ_ROUTES use cachePolicyDefaultEnabled=false.",
+      "effect": "BFF read metadata does not enable cache serving."
+    },
+    {
+      "name": "provider runtime",
+      "evidence": "SCALE_REDIS_CACHE_STAGING_ENABLED and SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED gate live network access.",
+      "effect": "No Redis/cache network access unless explicit server env is present."
+    },
+    {
+      "name": "production shadow config",
+      "evidence": "resolveCacheShadowRuntimeConfig disables cache unless production shadow flag is truthy and mode is not disabled.",
+      "effect": "Production cache canary remains opt-in only."
+    },
+    {
+      "name": "route-scoped canary guardrail",
+      "evidence": "architecture scanner reports cacheAllowedRoute=marketplace.catalog.search and rateLimitCanaryPercent=1.",
+      "effect": "Canary scope cannot broaden silently."
+    },
+    {
+      "name": "read-through payload gate",
+      "evidence": "invokeReadRouteWithCacheReadThrough skips policy.payloadClass values other than public_catalog.",
+      "effect": "Only marketplace.catalog.search can serve read-through under current code."
+    },
+    {
+      "name": "invalidation execution",
+      "evidence": "isCacheInvalidationExecutionEnabled returns false.",
+      "effect": "Tag mappings are documented, but no live invalidation writes happen."
+    }
+  ],
+  "cachePolicyInventory": [
+    {
+      "route": "marketplace.catalog.search",
+      "ttlMs": 120000,
+      "staleWhileRevalidateMs": 300000,
+      "payloadClass": "public_catalog",
+      "keyParts": ["companyId", "queryHash", "category", "page", "pageSize"],
+      "tags": ["marketplace", "catalog", "supplier"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "eligible_if_explicitly_enabled",
+      "canaryDisposition": "top_candidate_1"
+    },
+    {
+      "route": "request.proposal.list",
+      "ttlMs": 60000,
+      "staleWhileRevalidateMs": 120000,
+      "payloadClass": "tenant_business",
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "tags": ["request", "proposal", "director_pending"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "skipped_non_public_payload",
+      "canaryDisposition": "top_candidate_2_shadow_only_before_role_invalidation_proof"
+    },
+    {
+      "route": "director.pending.list",
+      "ttlMs": 45000,
+      "staleWhileRevalidateMs": 60000,
+      "payloadClass": "tenant_business",
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "tags": ["director", "approval", "proposal"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "skipped_non_public_payload",
+      "canaryDisposition": "top_candidate_3_shadow_only_before_role_invalidation_proof"
+    },
+    {
+      "route": "accountant.invoice.list",
+      "ttlMs": 15000,
+      "staleWhileRevalidateMs": 15000,
+      "payloadClass": "finance_sensitive",
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "tags": ["accountant", "invoice", "payment"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "skipped_non_public_payload",
+      "canaryDisposition": "not_top3_finance_sensitive"
+    },
+    {
+      "route": "warehouse.ledger.list",
+      "ttlMs": 30000,
+      "staleWhileRevalidateMs": 30000,
+      "payloadClass": "stock_freshness_sensitive",
+      "keyParts": ["companyId", "warehouseIdHash", "page", "pageSize", "filtersHash"],
+      "tags": ["warehouse", "ledger", "stock"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "skipped_non_public_payload",
+      "canaryDisposition": "not_top3_freshness_sensitive"
+    },
+    {
+      "route": "buyer.summary.inbox",
+      "ttlMs": 30000,
+      "staleWhileRevalidateMs": 30000,
+      "payloadClass": "tenant_business",
+      "keyParts": ["companyId", "buyerIdHash", "page", "pageSize", "filtersHash"],
+      "tags": ["buyer", "summary", "inbox", "proposal"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "hotspot_policy_only_no_staging_read_route",
+      "canaryDisposition": "defer_until_bff_route_exists"
+    },
+    {
+      "route": "warehouse.issue.queue",
+      "ttlMs": 20000,
+      "staleWhileRevalidateMs": 20000,
+      "payloadClass": "stock_freshness_sensitive",
+      "keyParts": ["companyId", "warehouseIdHash", "page", "pageSize", "filtersHash"],
+      "tags": ["warehouse", "issue_queue", "stock"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "hotspot_policy_only_no_staging_read_route",
+      "canaryDisposition": "defer_until_db_rpc_wave_and_freshness_proof"
+    },
+    {
+      "route": "warehouse.stock.page",
+      "ttlMs": 5000,
+      "staleWhileRevalidateMs": 0,
+      "payloadClass": "stock_freshness_sensitive",
+      "keyParts": ["companyId", "warehouseIdHash", "page", "pageSize", "filtersHash"],
+      "tags": ["warehouse", "stock"],
+      "defaultEnabled": false,
+      "readThroughCurrentCode": "hotspot_policy_only_no_staging_read_route",
+      "canaryDisposition": "do_not_enable_before_freshness_proof"
+    }
+  ],
+  "topThreeSafeReadThroughCandidates": [
+    {
+      "rank": 1,
+      "route": "marketplace.catalog.search",
+      "status": "canary_ready_under_existing_route_scope",
+      "why": [
+        "highest cache friendliness: public_catalog payload class",
+        "deterministic search envelope",
+        "low write frequency relative to reads",
+        "bounded TTL 120s and stale window 300s",
+        "key safety hashes company/query and rejects raw PII",
+        "current read-through code already permits public_catalog only"
+      ],
+      "safeCanarySequence": [
+        "synthetic_canary_only",
+        "shadow_readonly at 1 percent",
+        "read_through at 1 percent only after owner approval and post-shadow proof"
+      ],
+      "mustNotDoInThisWave": "do not set production env or enable read_through"
+    },
+    {
+      "rank": 2,
+      "route": "request.proposal.list",
+      "status": "shadow_only_candidate_before_read_through",
+      "why": [
+        "high-read BFF list route exists",
+        "tenant and role are represented in key parts",
+        "request/proposal invalidation tags are mapped",
+        "TTL is bounded at 60s"
+      ],
+      "blockersBeforeServingCache": [
+        "read-through payload gate currently skips tenant_business",
+        "need role-scoped response parity proof",
+        "need live invalidation execution proof or shorter canary TTL plan",
+        "need cross-role leak contract around role and company scoping"
+      ],
+      "safeCanarySequence": [
+        "shadow_readonly only",
+        "compare envelope parity against direct BFF port",
+        "promote to read_through only after a separate owner-approved wave"
+      ]
+    },
+    {
+      "rank": 3,
+      "route": "director.pending.list",
+      "status": "shadow_only_candidate_before_read_through",
+      "why": [
+        "high-read dashboard/list route exists",
+        "writes are approval/proposal state changes and already have invalidation tags",
+        "role is explicit in key parts",
+        "TTL is bounded at 45s"
+      ],
+      "blockersBeforeServingCache": [
+        "read-through payload gate currently skips tenant_business",
+        "director role/approval scope parity proof required",
+        "invalidation execution remains disabled",
+        "dashboard freshness needs stale-window observation"
+      ],
+      "safeCanarySequence": [
+        "shadow_readonly only",
+        "monitor miss/hit eligibility and parity",
+        "serve cache only in a later dedicated wave"
+      ]
+    }
+  ],
+  "notReadyForCanary": [
+    {
+      "route": "accountant.invoice.list",
+      "reason": "finance_sensitive payload with 15s TTL; keep shadow-only after finance redaction and role-specific parity proof."
+    },
+    {
+      "route": "warehouse.ledger.list",
+      "reason": "stock_freshness_sensitive; needs explicit warehouse mutation invalidation proof."
+    },
+    {
+      "route": "warehouse.stock.page",
+      "reason": "5s TTL and staleWhileRevalidate=0; freshness proof required before any live serving."
+    },
+    {
+      "route": "warehouse.issue.queue",
+      "reason": "hotspot policy only and DB/RPC wave is still required."
+    },
+    {
+      "route": "buyer.summary.inbox",
+      "reason": "hotspot policy only and no staging read route currently attaches it."
+    }
+  ],
+  "invalidationPoints": [
+    {
+      "operation": "proposal.submit",
+      "tags": ["proposal", "request", "director_pending", "buyer", "summary", "inbox"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "warehouse.receive.apply",
+      "tags": ["warehouse", "stock", "ledger"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "accountant.payment.apply",
+      "tags": ["accountant", "invoice", "payment", "director"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "director.approval.apply",
+      "tags": ["director", "approval", "proposal", "request"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "request.item.update",
+      "tags": ["request", "proposal", "buyer", "summary"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "catalog.request.meta.update",
+      "tags": ["request", "proposal", "buyer", "summary"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "catalog.request.item.cancel",
+      "tags": ["request", "proposal", "buyer", "summary"],
+      "executionEnabledByDefault": false
+    },
+    {
+      "operation": "notification.fanout",
+      "tags": ["notification", "inbox", "buyer", "director"],
+      "executionEnabledByDefault": false
+    }
+  ],
+  "roleAndUserScoping": {
+    "safeKeyContract": [
+      "companyId is hashed in keys",
+      "role is included for role-sensitive list routes",
+      "buyerIdHash and warehouseIdHash are used for actor/location scoped hot spots",
+      "filtersHash is used instead of raw filter payloads",
+      "raw email, phone, address, token, jwt, secret, bearer, password, and signed values are rejected"
+    ],
+    "crossRoleLeakRisk": {
+      "marketplace.catalog.search": "low",
+      "request.proposal.list": "medium_until_role_parity_proof",
+      "director.pending.list": "medium_until_director_scope_parity_proof",
+      "accountant.invoice.list": "high_finance_sensitive",
+      "warehouse.ledger.list": "medium_freshness_sensitive",
+      "warehouse.stock.page": "high_freshness_sensitive"
+    }
+  },
+  "recommendedNextWave": {
+    "slug": "CACHE_MARKETPLACE_SHADOW_CANARY_CONTRACT",
+    "scope": [
+      "do not change production env",
+      "add a contract proving marketplace.catalog.search is the only read-through-eligible route",
+      "prove read-through at 1 percent with in-memory/fixture adapter only",
+      "prove shadow_readonly never serves cached responses",
+      "prove monitor output redacts keys and payloads",
+      "prove rollback to disabled/noop"
+    ]
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheIntegrationBoundary.test.ts tests/scale/bffStagingServerBoundary.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts tests/scale/providerRuntimeConfig.test.ts",
+      "summary": "4 suites, 71 tests passed"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": {
+        "cacheCanaryRouteScoped": true,
+        "cacheAllowedRoute": "marketplace.catalog.search",
+        "rateLimitCanaryRoute": "marketplace.catalog.search",
+        "rateLimitCanaryPercent": 1,
+        "serviceBypassFindings": 0,
+        "unclassifiedCurrentFindings": 0
+      }
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "671 passed, 1 skipped, 672 total suites; 3987 passed, 1 skipped, 3988 total tests"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "catchEmptyAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
