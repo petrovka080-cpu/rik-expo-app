@@ -1,0 +1,128 @@
+{
+  "wave": 134,
+  "slug": "FOREMAN_TERMINAL_RECOVERY_OBSERVABILITY",
+  "finalStatus": "GREEN_FOREMAN_TERMINAL_RECOVERY_OBSERVABILITY",
+  "baseHead": "effbfe0f931d24b4f64286770fe620775f8b2e7d",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "tests/foreman/foreman.draftBoundary.recovery.test.ts",
+      "tests/foreman/foreman.draftBoundary.telemetry.test.ts"
+    ],
+    "productionFilesChanged": [],
+    "reasonSelected": "A1/R7 still listed Foreman terminal recovery remote-status inspection as a P1 silent-failure risk. The production recovery path already reports the degraded fallback, so this wave locks that behavior with focused contracts instead of changing runtime semantics.",
+    "excludedFromScope": [
+      "production behavior changes",
+      "DB writes",
+      "migrations",
+      "remote environment or deployment configuration",
+      "Supabase project settings",
+      "Realtime capacity work"
+    ]
+  },
+  "freshScans": {
+    "auditBacklog": "artifacts/A1_R7_errors.md",
+    "searches": [
+      "rg -n \"terminal|recovery|recover|remote.*status|inspection|inspect|swallow|draft\" src/screens/foreman/hooks/useForemanDraftBoundary.ts tests src/screens/foreman -g \"*.ts\" -g \"*.tsx\"",
+      "rg --files src/screens/foreman tests/foreman | rg \"draft|recovery|boundary|ForemanDraft\"",
+      "rg -n \"recordPlatformObservability|recordCatchDiscipline|reportAndSwallow|terminal.*recovery|remote.*recovery\" src/screens/foreman tests/foreman src/lib",
+      "rg -n \"terminal_recovery_remote_check_failed|restore_remote_terminal_check_failed|bootstrap_reconciliation_remote_check_failed|catch \\{|\\.catch\\(\\(\\) => undefined\\)\" src/screens/foreman tests/foreman -g \"*.ts\" -g \"*.tsx\""
+    ],
+    "targetFilesRead": [
+      "src/screens/foreman/foreman.draftBoundary.recovery.ts",
+      "src/screens/foreman/foreman.draftBoundary.telemetry.ts",
+      "src/screens/foreman/foreman.draftBoundaryFailure.model.ts",
+      "src/screens/foreman/foreman.terminalRecovery.ts",
+      "src/screens/foreman/hooks/useForemanBootstrapCoordinator.ts",
+      "src/screens/foreman/hooks/useForemanDraftBoundaryRuntimeSubscriptions.ts",
+      "tests/foreman/foreman.draftBoundary.recovery.test.ts",
+      "tests/foreman/foreman.draftBoundary.telemetry.test.ts",
+      "src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts",
+      "tests/foreman/foreman.draftBoundary.runtimeSubscriptions.test.ts"
+    ],
+    "selectedFindingBefore": {
+      "auditRisk": "Remote terminal-recovery inspection failure could skip cleanup without a behavior-level contract proving telemetry and retry-safe ownership preservation.",
+      "existingProductionSignal": "src/screens/foreman/foreman.draftBoundary.recovery.ts emits terminal_recovery_remote_check_failed through reportDraftBoundaryFailure."
+    },
+    "selectedFindingAfter": {
+      "recoveryContract": "runForemanClearTerminalRecoveryOwnerIfNeeded reports terminal_recovery_remote_check_failed, keeps the recovery owner for a retry, and avoids terminal local cleanup on failed inspection.",
+      "telemetryContract": "reportForemanDraftBoundaryFailure records degraded fallback catch discipline with rpc:fetch_request_details, recovery stage, bootstrap context, request id, queue key, candidate source, and retry marker."
+    }
+  },
+  "contracts": {
+    "terminalRecoveryRemoteCheckFailureObservable": true,
+    "terminalRecoveryOwnerPreservedForRetry": true,
+    "terminalLocalCleanupNotRunOnFailedInspection": true,
+    "degradedFallbackTelemetryIncludesRpcSource": true,
+    "degradedFallbackTelemetryIncludesCandidateContext": true,
+    "runtimeSubscriptionContractsPreserved": true,
+    "silentCatchSourceGuardPreserved": true,
+    "noProductionCodeChanged": true,
+    "noBusinessSemanticChange": true
+  },
+  "scannerSnapshot": {
+    "directSupabaseServiceBypassFindings": 0,
+    "directSupabaseServiceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "directSupabaseUnclassifiedCurrentFindings": 0,
+    "productionRawLoopFindings": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/foreman/foreman.draftBoundary.recovery.test.ts tests/foreman/foreman.draftBoundary.telemetry.test.ts src/screens/foreman/foreman.draftBoundary.silentCatch.test.ts tests/foreman/foreman.draftBoundary.runtimeSubscriptions.test.ts --runInBand",
+      "summary": "4 test suites passed; 19 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "666 test suites passed, 1 skipped; 3949 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedUnsafeAnyCast": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

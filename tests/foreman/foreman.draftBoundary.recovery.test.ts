@@ -13,6 +13,7 @@ jest.mock("../../src/screens/foreman/foreman.durableDraft.store", () => ({
 import { fetchRequestDetails } from "../../src/lib/catalog_api";
 import { getForemanDurableDraftState } from "../../src/screens/foreman/foreman.durableDraft.store";
 import {
+  runForemanClearTerminalRecoveryOwnerIfNeeded,
   runForemanRestoreDraftIfNeeded,
   runForemanRestoreTriggerPlan,
 } from "../../src/screens/foreman/foreman.draftBoundary.recovery";
@@ -203,6 +204,54 @@ describe("foreman draft boundary recovery", () => {
     );
     expect(syncLocalDraftNow).toHaveBeenCalledWith({ context: "focus" });
     expect(clearTerminalLocalDraft).not.toHaveBeenCalled();
+  });
+
+  it("reports terminal recovery remote-check failures and keeps the owner for retry", async () => {
+    const snapshot = makeSnapshot({
+      requestId: "req-terminal-retry",
+      displayNo: "req-terminal-retry",
+    });
+    const remoteCheckError = new Error("remote check unavailable");
+    mockGetForemanDurableDraftState.mockReturnValue(makeDurableState({
+      recoverableLocalSnapshot: snapshot,
+      conflictType: "retryable_sync_failure",
+      pendingOperationsCount: 1,
+      queueDraftKey: "req-terminal-retry",
+      requestIdKnown: true,
+      attentionNeeded: true,
+    }));
+    mockFetchRequestDetails.mockRejectedValueOnce(remoteCheckError);
+
+    const clearTerminalLocalDraft = jest.fn(async () => undefined);
+    const reportDraftBoundaryFailure = jest.fn();
+
+    const result = await runForemanClearTerminalRecoveryOwnerIfNeeded(
+      {
+        localDraftSnapshotRef: { current: null },
+        requestId: "req-terminal-retry",
+        clearTerminalLocalDraft,
+        reportDraftBoundaryFailure,
+      },
+      "bootstrap_complete",
+    );
+
+    expect(result).toBe(false);
+    expect(mockFetchRequestDetails).toHaveBeenCalledTimes(1);
+    expect(mockFetchRequestDetails).toHaveBeenCalledWith("req-terminal-retry");
+    expect(clearTerminalLocalDraft).not.toHaveBeenCalled();
+    expect(reportDraftBoundaryFailure).toHaveBeenCalledWith({
+      event: "terminal_recovery_remote_check_failed",
+      error: remoteCheckError,
+      context: "bootstrap_complete",
+      stage: "recovery",
+      kind: "degraded_fallback",
+      sourceKind: "rpc:fetch_request_details",
+      extra: {
+        candidateRequestId: "req-terminal-retry",
+        candidateSource: "recoverable_snapshot",
+        fallbackReason: "keep_recovery_owner_for_next_check",
+      },
+    });
   });
 
   it("runs restore trigger plans through the extracted recovery owner and reports failures explicitly", async () => {

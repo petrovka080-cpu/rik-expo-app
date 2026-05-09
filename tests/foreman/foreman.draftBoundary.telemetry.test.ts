@@ -138,4 +138,57 @@ describe("foreman draft boundary telemetry owner", () => {
       }),
     );
   });
+
+  it("records terminal recovery remote-check fallback with retry context", () => {
+    mockGetForemanDurableDraftState.mockReturnValue({
+      snapshot: null,
+    });
+    const error = new Error("remote check unavailable");
+
+    const classified = reportForemanDraftBoundaryFailure(
+      {
+        localDraftSnapshotRef: { current: makeSnapshot({ requestId: "req-terminal-retry" }) },
+        requestId: "req-route",
+        localOnlyRequestId: "__foreman_local_draft__",
+      },
+      {
+        event: "terminal_recovery_remote_check_failed",
+        error,
+        context: "bootstrap_complete",
+        stage: "recovery",
+        kind: "degraded_fallback",
+        sourceKind: "rpc:fetch_request_details",
+        extra: {
+          candidateRequestId: "req-terminal-retry",
+          candidateSource: "recoverable_snapshot",
+          fallbackReason: "keep_recovery_owner_for_next_check",
+        },
+      },
+    );
+
+    expect(classified).toMatchObject({
+      retryable: true,
+      conflictType: "retryable_sync_failure",
+    });
+    expect(mockRecordCatchDiscipline).toHaveBeenCalledWith(
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "draft_boundary",
+        event: "terminal_recovery_remote_check_failed",
+        kind: "degraded_fallback",
+        error,
+        sourceKind: "rpc:fetch_request_details",
+        errorStage: "recovery",
+        trigger: "bootstrap_complete",
+      }),
+    );
+    expect(mockRecordCatchDiscipline.mock.calls[0]?.[0]?.extra).toMatchObject({
+      candidateRequestId: "req-terminal-retry",
+      candidateSource: "recoverable_snapshot",
+      fallbackReason: "keep_recovery_owner_for_next_check",
+      queueDraftKey: "req-terminal-retry",
+      requestId: "req-terminal-retry",
+      retryable: true,
+    });
+  });
 });
