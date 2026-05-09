@@ -21,7 +21,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 
-import { getSessionSafe, supabase } from "../supabaseClient";
+import { getSessionSafe } from "../supabaseClient";
 import { warmCurrentSessionProfile } from "../sessionRole";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { resetSessionBoundary } from "../session/sessionBoundary";
@@ -29,6 +29,10 @@ import {
   POST_AUTH_ENTRY_ROUTE,
   type PostAuthEntryPath,
 } from "../authRouting";
+import {
+  hasAuthLifecycleClient,
+  subscribeAuthLifecycleStateChange,
+} from "./useAuthLifecycle.auth.transport";
 
 function isTimeoutLikeAuthError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
@@ -258,7 +262,7 @@ export function useAuthLifecycle(deps: {
 
   // --- Role profile warming (background, non-blocking) ---
   const loadRoleForCurrentSession = useCallback(async (user?: User | null) => {
-    if (!supabase) return;
+    if (!hasAuthLifecycleClient()) return;
     try {
       await warmCurrentSessionProfile("root_layout", user);
     } catch (e: unknown) {
@@ -297,7 +301,7 @@ export function useAuthLifecycle(deps: {
 
   // --- INIT: bootstrap session + auth listener (ONCE, stable deps) ---
   useEffect(() => {
-    if (!supabase) return;
+    if (!hasAuthLifecycleClient()) return;
     if (initStartedRef.current) return;
     initStartedRef.current = true;
     recordPlatformObservability({
@@ -455,7 +459,7 @@ export function useAuthLifecycle(deps: {
       }
     })();
 
-    const { data: listener } = supabase.auth.onAuthStateChange(
+    const { data: listener } = subscribeAuthLifecycleStateChange(
       async (event, session) => {
         const has = Boolean(session);
         const isTerminalSignOut =

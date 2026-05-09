@@ -215,6 +215,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle57RequestsAuthTransportFiles = [
       path.join(SRC, "lib", "api", "requests.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditNightBattle121AuthLifecycleTransportFiles = [
+      path.join(SRC, "lib", "auth", "useAuthLifecycle.auth.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle58ChatAuthTransportFiles = [
       path.join(SRC, "lib", "chat.auth.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -618,6 +621,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle55DirectorLifecycleAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle56MarketAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle57RequestsAuthTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAuditNightBattle121AuthLifecycleTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle58ChatAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle59BuyerSubcontractAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle60ContractorProfileAuthTransportFiles).toBeLessThanOrEqual(1);
@@ -724,6 +728,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle55DirectorLifecycleAuthTransportFiles -
         sAuditBattle56MarketAuthTransportFiles -
         sAuditBattle57RequestsAuthTransportFiles -
+        sAuditNightBattle121AuthLifecycleTransportFiles -
         sAuditBattle58ChatAuthTransportFiles -
         sAuditBattle59BuyerSubcontractAuthTransportFiles -
         sAuditBattle60ContractorProfileAuthTransportFiles -
