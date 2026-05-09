@@ -60,7 +60,9 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
 
     const workerSource = read("src/workers/queueWorker.ts");
     expect(workerSource).toContain("resolveQueueWorkerIdleBackoffMs");
-    expect(workerSource).toContain("await sleep(pollIdleMs)");
+    expect(workerSource).toContain("errorBackoffMs: pollIdleMs");
+    expect(workerSource).toContain("return { backoffMs: pollIdleMs }");
+    expect(workerSource).toContain("runCancellableWorkerLoop");
   });
 
   it("keeps queue runtime claim and worker budgets capped for future 50K providers", () => {

@@ -1,0 +1,109 @@
+{
+  "wave": 127,
+  "slug": "WORKER_LOOP_MIGRATION_BATCH_A",
+  "goal": "Migrate the wave 125 top-priority queue worker production path from direct restart/polling loops to the cancellable worker loop primitive.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "5768096df9cfc782c31364394ce00c95ab0e1f97",
+    "originMain": "5768096df9cfc782c31364394ce00c95ab0e1f97",
+    "aheadBehind": "0/0"
+  },
+  "selectedWorker": {
+    "wave125TopPriorityFile": "scripts/run-queue-worker.ts",
+    "implementationPath": "src/workers/queueWorker.ts",
+    "runnerPath": "scripts/run-queue-worker.ts",
+    "reason": "Wave 125 selected the queue runner as the only production worker finding; this wave migrated both the runner lifecycle and the worker polling implementation reached by that runner."
+  },
+  "freshSearch": {
+    "whileTrueCommand": "git grep -n \"while *(true\" src tests scripts",
+    "whileTrueStatus": "PASS",
+    "whileTrueRemainingProductionWorkerFindings": 0,
+    "whileTrueRemainingNonWorkerRealFindings": [
+      "scripts/director_parity_check_v1.js:192",
+      "scripts/foreman_warehouse_pdf_android_runtime_verify.ts:177"
+    ],
+    "forInfiniteCommand": "git grep -n \"for *(;;\" src tests scripts",
+    "forInfiniteStatus": "PASS",
+    "forInfiniteFindings": 0
+  },
+  "before": {
+    "runner": "Queue runner owned a direct while(!stopped) bootstrap loop with local sleep(restartBackoffMs) after bootstrap errors.",
+    "worker": "startQueueWorker owned a direct while(!stopped) polling loop with local sleep(pollIdleMs) for idle/error backoff and local sleep(compactionDelayMs) before processing claimed jobs.",
+    "api": "startQueueWorker returned the existing stop() handle.",
+    "observability": "Queue worker recorded worker_loop_failed and preserved queue.worker logs."
+  },
+  "after": {
+    "runner": "Queue runner uses runCancellableWorkerLoop with AbortController shutdown, defaultWorkerLoopClock, same restartBackoffMs, same maxBootstrapRestarts, and same bootstrap error logs.",
+    "worker": "startQueueWorker uses runCancellableWorkerLoop with AbortController shutdown, injectable WorkerLoopClock, same pollIdleMs idle/error backoff, same compactionDelayMs delay, and same queue processing dispatch.",
+    "api": "QueueWorkerHandle remains stop(): void.",
+    "observability": "worker_loop_failed observability and queue.worker logs are preserved; transient claim failures continue after errorBackoffMs."
+  },
+  "focusedTests": {
+    "command": "npx jest tests/workers/queueRunnerLifecycle.contract.test.ts src/workers/queueWorker.boundary.test.ts tests/async/cancellableWorkerLoop.test.ts tests/scale/sQueue1Backpressure.contract.test.ts tests/scale/s50kQueueRuntimeAdapter2.contract.test.ts --runInBand",
+    "status": "PASS",
+    "suitesPassed": 5,
+    "testsPassed": 29,
+    "coverage": [
+      "runner no unconditional production restart loop",
+      "runner uses cancellable loop primitive and abort shutdown",
+      "worker starts",
+      "worker processes one unit",
+      "worker stops on abort",
+      "transient claim error backs off without spinning",
+      "metrics cleanup stop is called",
+      "worker loop primitive tests remain green"
+    ]
+  },
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING_POST_PUSH"
+  },
+  "gateEvidence": {
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "testSuites": "663 passed, 1 skipped, 663 of 664 total",
+      "tests": "3932 passed, 1 skipped, 3933 total"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": null
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadTypeEscape": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

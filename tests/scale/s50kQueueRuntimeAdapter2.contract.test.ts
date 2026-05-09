@@ -63,7 +63,11 @@ describe("S-50K-QUEUE-RUNTIME-ADAPTER-2 runtime guardrails", () => {
     expect(workerSource).toContain("resolveSubmitJobClaimLimit(options.batchSize, WORKER_BATCH_SIZE)");
     expect(workerSource).toContain("resolveQueueWorkerConfiguredConcurrency");
     expect(workerSource).toContain("resolveQueueWorkerCompactionDelayMs");
-    expect(workerSource).toContain("await sleep(compactionDelayMs)");
+    expect(workerSource).toContain("runCancellableWorkerLoop");
+    expect(workerSource).toContain("errorBackoffMs: pollIdleMs");
+    expect(workerSource).toContain("workerLoopClock: deps.workerLoopClock ?? defaultWorkerLoopClock");
+    expect(workerSource).toContain("await deps.workerLoopClock.sleep(");
+    expect(workerSource).toContain("loopAbortController.signal");
   });
 
   it("keeps proof artifacts valid and does not touch live or native surfaces", () => {

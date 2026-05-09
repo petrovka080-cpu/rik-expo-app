@@ -2,13 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import {
+  MIN_WORKER_LOOP_BACKOFF_MS,
+  defaultWorkerLoopClock,
+  runCancellableWorkerLoop,
+} from "../src/lib/async/mapWithConcurrencyLimit";
+
 const DEFAULT_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 5_000;
 const MIN_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 1_000;
 const MAX_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 60_000;
 const DEFAULT_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS = 20;
 const MAX_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS = 100;
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function ignoreBrokenPipe(stream: NodeJS.WriteStream | undefined) {
   if (!stream) return;
@@ -107,9 +111,11 @@ async function main() {
   let stopped = false;
   let resolveStopped: (() => void) | null = null;
   let bootstrapRestartCount = 0;
+  const runnerAbortController = new AbortController();
 
   const stop = () => {
     stopped = true;
+    runnerAbortController.abort();
     try {
       handle?.stop();
     } catch (error: unknown) {
@@ -132,8 +138,14 @@ async function main() {
     process.exit(0);
   });
 
-  while (!stopped) {
-    try {
+  await runCancellableWorkerLoop({
+    label: "queue.runner.bootstrap",
+    signal: runnerAbortController.signal,
+    clock: defaultWorkerLoopClock,
+    backoffMs: MIN_WORKER_LOOP_BACKOFF_MS,
+    errorBackoffMs: restartBackoffMs,
+    shouldStop: () => stopped,
+    runIteration: async () => {
       const { startServerQueueWorker } = await import("../src/workers/queueWorker.server");
       handle = startServerQueueWorker({
         workerId: `node:${Date.now().toString(36)}`,
@@ -144,8 +156,13 @@ async function main() {
         // Keep process alive while the worker loop runs.
         resolveStopped = resolve;
       });
-    } catch (error: unknown) {
-      if (stopped) break;
+      return {
+        stop: stopped,
+        backoffMs: MIN_WORKER_LOOP_BACKOFF_MS,
+      };
+    },
+    onError: (error) => {
+      if (stopped) return "stop";
 
       bootstrapRestartCount += 1;
       const message = errorMessage(error, "unknown worker bootstrap error");
@@ -158,7 +175,7 @@ async function main() {
         });
         process.exitCode = 1;
         stop();
-        return;
+        return "stop";
       }
 
       console.error("[queue.runner] crashed, restarting", {
@@ -167,9 +184,9 @@ async function main() {
         maxBootstrapRestarts,
         restartBackoffMs,
       });
-      await sleep(restartBackoffMs);
-    }
-  }
+      return "continue";
+    },
+  });
 }
 
 void main();

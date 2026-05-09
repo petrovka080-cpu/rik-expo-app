@@ -9,7 +9,9 @@ describe("queue worker runner lifecycle boundary", () => {
 
     expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
     expect(source).not.toMatch(/for\s*\(\s*;\s*;\s*\)/);
-    expect(source).toContain("while (!stopped)");
+    expect(source).not.toMatch(/while\s*\(\s*!stopped\s*\)/);
+    expect(source).toContain("runCancellableWorkerLoop");
+    expect(source).toContain("runnerAbortController.abort()");
   });
 
   it("bounds bootstrap restarts and keeps an explicit backoff", () => {
@@ -20,7 +22,7 @@ describe("queue worker runner lifecycle boundary", () => {
     expect(source).toContain("bootstrapRestartCount > maxBootstrapRestarts");
     expect(source).toContain("process.exitCode = 1");
     expect(source).toContain("DEFAULT_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS");
-    expect(source).toContain("await sleep(restartBackoffMs)");
+    expect(source).toContain("errorBackoffMs: restartBackoffMs");
   });
 
   it("keeps explicit shutdown and error handling without silent catches", () => {

@@ -18,7 +18,13 @@ import {
 import { startQueueMetricsLoop } from "../lib/infra/queueMetrics";
 import { fetchQueueLatencyMetrics } from "../lib/infra/queueLatencyMetrics";
 import { logger } from "../lib/logger";
-import { mapWithConcurrencyLimit } from "../lib/async/mapWithConcurrencyLimit";
+import {
+  MIN_WORKER_LOOP_BACKOFF_MS,
+  defaultWorkerLoopClock,
+  mapWithConcurrencyLimit,
+  runCancellableWorkerLoop,
+  type WorkerLoopClock,
+} from "../lib/async/mapWithConcurrencyLimit";
 import { redactSensitiveText } from "../lib/security/redaction";
 import { compactJobsByEntity, dispatchJob } from "./jobDispatcher";
 import {
@@ -30,8 +36,6 @@ import {
 } from "./queueWorker.limits";
 import { normalizeAppError } from "../lib/errors/appError";
 import { recordPlatformObservability } from "../lib/observability/platformObservability";
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const runtimeOs = (): string => {
   if (typeof navigator === "undefined") return "node";
@@ -74,6 +78,7 @@ type QueueWorkerDeps = {
     }>;
   };
   fetchQueueLatencyMetrics?: typeof fetchQueueLatencyMetrics;
+  workerLoopClock?: WorkerLoopClock;
   sourceMeta?: {
     SUPABASE_HOST: string;
     SUPABASE_KEY_KIND: string;
@@ -163,6 +168,7 @@ const resolveQueueWorkerDeps = (deps: QueueWorkerDeps) => ({
   queueApi: deps.queueApi ?? defaultQueueApi,
   fetchQueueLatencyMetrics:
     deps.fetchQueueLatencyMetrics ?? fetchQueueLatencyMetrics,
+  workerLoopClock: deps.workerLoopClock ?? defaultWorkerLoopClock,
   sourceMeta: deps.sourceMeta ?? {
     SUPABASE_HOST,
     SUPABASE_KEY_KIND,
@@ -357,6 +363,7 @@ export function startQueueWorker(
   const pollIdleMs = resolveQueueWorkerIdleBackoffMs(options.pollIdleMs, 1000);
 
   let stopped = false;
+  const loopAbortController = new AbortController();
   let recoveryTick = 0;
   const metrics = startQueueMetricsLoop(60_000, {
     fetchSubmitJobMetrics: deps.queueApi.fetchSubmitJobMetrics,
@@ -369,9 +376,16 @@ export function startQueueWorker(
       batchSize,
       concurrency,
     });
-    while (!stopped) {
-      let loopPhase = "recover";
-      try {
+    let loopPhase = "recover";
+    await runCancellableWorkerLoop({
+      label: "queue.worker",
+      signal: loopAbortController.signal,
+      clock: deps.workerLoopClock,
+      backoffMs: MIN_WORKER_LOOP_BACKOFF_MS,
+      errorBackoffMs: pollIdleMs,
+      shouldStop: () => stopped,
+      runIteration: async () => {
+        loopPhase = "recover";
         recoveryTick += 1;
         if (recoveryTick % 10 === 0) {
           if (queueVerbose) {
@@ -402,18 +416,20 @@ export function startQueueWorker(
         }
         if (!claimed.length) {
           loopPhase = "idle_sleep";
-          await sleep(pollIdleMs);
-          continue;
+          return { backoffMs: pollIdleMs };
         }
 
         loopPhase = "compaction_delay";
         if (queueVerbose) {
-            logger.info("queue.worker", "compaction delay", {
-              ...queueWorkerScope(workerId),
-              compactionDelayMs,
-            });
-          }
-        await sleep(compactionDelayMs);
+          logger.info("queue.worker", "compaction delay", {
+            ...queueWorkerScope(workerId),
+            compactionDelayMs,
+          });
+        }
+        await deps.workerLoopClock.sleep(
+          compactionDelayMs,
+          loopAbortController.signal,
+        );
 
         loopPhase = "process_batch";
         logger.info("queue.worker", "processing batch", {
@@ -422,7 +438,9 @@ export function startQueueWorker(
           concurrency,
         });
         await processBatch(claimed, workerId, concurrency, deps);
-      } catch (error: unknown) {
+        return { backoffMs: MIN_WORKER_LOOP_BACKOFF_MS };
+      },
+      onError: (error) => {
         recordQueueWorkerBoundaryFailure({
           event: "worker_loop_failed",
           error,
@@ -434,14 +452,15 @@ export function startQueueWorker(
           phase: loopPhase,
           errorMessage: queueErrorText(error),
         });
-        await sleep(pollIdleMs);
-      }
-    }
+        return "continue";
+      },
+    });
   })();
 
   return {
     stop: () => {
       stopped = true;
+      loopAbortController.abort();
       metrics.stop();
       logger.info("queue.worker", "stopped", queueWorkerScope(workerId));
     },
