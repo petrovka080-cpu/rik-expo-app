@@ -7,6 +7,9 @@
 
 import { hasSafeBackHistory, safeBack } from "./safeBack";
 import type { SafeBackRouterLike } from "./safeBack";
+import type { Href } from "expo-router";
+
+const OFFICE_FALLBACK_ROUTE = "/(tabs)/office" satisfies Href;
 
 jest.mock("react-native", () => ({
   Platform: { OS: "ios" },
@@ -48,7 +51,7 @@ describe("hasSafeBackHistory", () => {
 describe("safeBack", () => {
   it("calls router.back() when canGoBack is true and returns 'back'", () => {
     const r = createRouter({ canGoBack: jest.fn().mockReturnValue(true) });
-    const result = safeBack(r, "/fallback" as any, { platform: "ios" });
+    const result = safeBack(r, OFFICE_FALLBACK_ROUTE, { platform: "ios" });
     expect(result).toBe("back");
     expect(r.back).toHaveBeenCalledTimes(1);
     expect(r.replace).not.toHaveBeenCalled();
@@ -56,17 +59,17 @@ describe("safeBack", () => {
 
   it("calls router.replace(fallback) when canGoBack is false and returns 'fallback'", () => {
     const r = createRouter({ canGoBack: jest.fn().mockReturnValue(false) });
-    const result = safeBack(r, "/office" as any, { platform: "ios" });
+    const result = safeBack(r, OFFICE_FALLBACK_ROUTE, { platform: "ios" });
     expect(result).toBe("fallback");
-    expect(r.replace).toHaveBeenCalledWith("/office");
+    expect(r.replace).toHaveBeenCalledWith(OFFICE_FALLBACK_ROUTE);
     expect(r.back).not.toHaveBeenCalled();
   });
 
   it("calls router.replace(fallback) when canGoBack is undefined", () => {
     const r = createRouter({ canGoBack: undefined });
-    const result = safeBack(r, "/office" as any, { platform: "android" });
+    const result = safeBack(r, OFFICE_FALLBACK_ROUTE, { platform: "android" });
     expect(result).toBe("fallback");
-    expect(r.replace).toHaveBeenCalledWith("/office");
+    expect(r.replace).toHaveBeenCalledWith(OFFICE_FALLBACK_ROUTE);
     expect(r.back).not.toHaveBeenCalled();
   });
 });

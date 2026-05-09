@@ -1,0 +1,168 @@
+{
+  "wave": 132,
+  "slug": "UNSAFE_CAST_AUTH_NAV_REDUCTION",
+  "createdAt": "2026-05-09T20:52:50.7329849+06:00",
+  "baseHead": "31481dd3fe027deb6b5bb5c0d63ca26c8751f63c",
+  "goal": "Reduce unsafe casts in auth/session/navigation lifecycle zone without changing business semantics.",
+  "scope": {
+    "selectedBucket": "auth/session/navigation lifecycle",
+    "selectedFiles": [
+      "app/_layout.tsx",
+      "src/screens/profile/ProfileContent.tsx",
+      "src/screens/profile/ProfileContent.composition.test.tsx",
+      "src/lib/navigation/safeBack.test.ts"
+    ],
+    "notSelected": [
+      {
+        "file": "src/screens/profile/profile.membership.transport.ts",
+        "reason": "Remaining production unknown-as finding is API/transport bucket, not auth/session/navigation lifecycle. Deferred to API/transport unsafe-cast reduction work."
+      },
+      {
+        "files": [
+          "tests/api/*",
+          "tests/strict-null/subcontracts.shared.phase2.test.ts"
+        ],
+        "reason": "Remaining broad-scan unknown-as findings are test/mock provider casts outside the selected production auth/navigation lifecycle scope."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/screens/profile/ProfileContent.tsx",
+      "line": 315,
+      "pattern": "unknown as",
+      "matchedCall": "router.push as unknown as (href: string) => void",
+      "risk": "navigation route type erased before active-context routing"
+    },
+    {
+      "file": "app/_layout.tsx",
+      "line": 37,
+      "pattern": "unknown as",
+      "matchedCall": "originalWarn.apply(console, args as unknown as [])",
+      "risk": "root lifecycle shell console forwarding used tuple cast instead of typed rest forwarding"
+    },
+    {
+      "file": "src/lib/navigation/safeBack.test.ts",
+      "line": 51,
+      "pattern": "as any",
+      "matchedCall": "safeBack(r, \"/fallback\" as any, ...)",
+      "risk": "navigation test fallback route bypassed Href typing"
+    },
+    {
+      "file": "src/lib/navigation/safeBack.test.ts",
+      "line": 59,
+      "pattern": "as any",
+      "matchedCall": "safeBack(r, \"/office\" as any, ...)",
+      "risk": "navigation test fallback route bypassed Href typing"
+    },
+    {
+      "file": "src/lib/navigation/safeBack.test.ts",
+      "line": 67,
+      "pattern": "as any",
+      "matchedCall": "safeBack(r, \"/office\" as any, ...)",
+      "risk": "navigation test fallback route bypassed Href typing"
+    }
+  ],
+  "selectedFindingsAfter": [],
+  "counts": {
+    "wave130AuthSessionNavigationProductionBucket": {
+      "before": 1,
+      "after": 0
+    },
+    "selectedRootLifecycleShellUnknownAs": {
+      "before": 1,
+      "after": 0
+    },
+    "selectedNavigationTestAsAny": {
+      "before": 3,
+      "after": 0
+    },
+    "selectedTotalUnsafePatterns": {
+      "before": 5,
+      "after": 0
+    }
+  },
+  "fixTypes": [
+    {
+      "file": "src/screens/profile/ProfileContent.tsx",
+      "type": "typed route constants",
+      "before": "Casted router.push through unknown/string.",
+      "after": "Calls router.push with existing Href-backed MARKET_TAB_ROUTE and OFFICE_TAB_ROUTE constants."
+    },
+    {
+      "file": "app/_layout.tsx",
+      "type": "safe fallback args typing",
+      "before": "Forwarded console.warn args through unknown-as empty tuple cast.",
+      "after": "Uses unknown[] rest args and direct originalWarn(...args) forwarding."
+    },
+    {
+      "file": "src/lib/navigation/safeBack.test.ts",
+      "type": "typed route test fixture",
+      "before": "Test fallback routes used as any.",
+      "after": "Test fallback route is a local Href-satisfying constant."
+    },
+    {
+      "file": "src/screens/profile/ProfileContent.composition.test.tsx",
+      "type": "focused contract coverage",
+      "before": "Active-context open callback was not asserted.",
+      "after": "Office and market active-context routing callbacks are asserted."
+    }
+  ],
+  "freshScans": {
+    "selectedFilesUnsafePatterns": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- app/_layout.tsx src/screens/profile/ProfileContent.tsx src/lib/navigation/safeBack.test.ts",
+      "status": "PASS",
+      "findings": 0
+    },
+    "authNavBroadUnsafePatterns": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- src/lib/auth src/lib/session src/lib/navigation src/screens/profile app tests/navigation tests/strict-null tests/api src/lib/entry",
+      "status": "PASS",
+      "remainingFindingsClassifiedOutsideSelectedScope": 9
+    }
+  },
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/authLifecycleTransport.contract.test.ts tests/navigation/auth-listener-lifecycle.test.tsx src/lib/entry/rootLayout.recovery.test.tsx tests/strict-null/authLifecycle.phase1.test.ts src/screens/profile/ProfileContent.composition.test.tsx src/lib/navigation/safeBack.test.ts",
+    "status": "PASS",
+    "suites": 6,
+    "tests": 40
+  },
+  "architectureScanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0,
+    "productionRawLoopsUnapprovedFindings": 0
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemanticsForRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

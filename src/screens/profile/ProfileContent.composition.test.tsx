@@ -195,6 +195,11 @@ describe("ProfileContent composition shell", () => {
       (capturedMainProps?.onOpenOfficeAccess as (() => void) | undefined)?.();
     });
     expect(mockPush).toHaveBeenCalledWith("/(tabs)/office");
+
+    act(() => {
+      (capturedMainProps?.onOpenActiveContext as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/office");
   });
 
   it("keeps seller entry hidden when there are no own listings", async () => {
@@ -246,6 +251,11 @@ describe("ProfileContent composition shell", () => {
         }
       ).activeContext,
     ).toBe("market");
+
+    act(() => {
+      (capturedMainProps?.onOpenActiveContext as (() => void) | undefined)?.();
+    });
+    expect(mockPush).toHaveBeenCalledWith("/(tabs)/market");
   });
 
   it("shows retry shell with diagnostics when profile load fails", async () => {

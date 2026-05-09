@@ -26,15 +26,15 @@ if (Platform.OS === "web") {
   ]);
 
   const originalWarn = console.warn;
-  console.warn = (...args: any[]) => {
-    const msg = String(args?.[0] ?? "");
+  console.warn = (...args: unknown[]) => {
+    const msg = String(args[0] ?? "");
     if (
       msg.includes("props.pointerEvents is deprecated") ||
       msg.includes('"shadow*" style props are deprecated')
     ) {
       return;
     }
-    originalWarn.apply(console, args as unknown as []);
+    originalWarn(...args);
   };
 }
 
