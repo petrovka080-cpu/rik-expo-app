@@ -61,6 +61,8 @@ const REPAIR_SPECS: RepairSpec[] = [
 ];
 
 const PAGE_SIZE = 500;
+const MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE = 200;
+const MOJIBAKE_REPAIR_MAX_ROWS_PER_TABLE = PAGE_SIZE * MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE;
 const MOJIBAKE_MARKERS =
   /(?:Р[\u0400-\u04FF](?:Р|С)|С[\u0400-\u04FF](?:Р|С)|Р[–ЉЊЎЂѓ]|С[ЏЎЂѓ]|вЂ|Гђ|Г‘|Гѓ|Г‚|пїЅ)/u;
 
@@ -80,13 +82,14 @@ function normalizeField(value: unknown): string | null {
 }
 
 async function repairTable(spec: RepairSpec) {
-  let offset = 0;
   let scannedRows = 0;
   let repairedRows = 0;
   let repairedFields = 0;
+  let completedWithinPageCeiling = false;
   const samples: Array<{ id: string; patch: RowRecord }> = [];
 
-  while (true) {
+  for (let pageIndex = 0; pageIndex < MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE; pageIndex += 1) {
+    const offset = pageIndex * PAGE_SIZE;
     const { data, error } = await adminUntyped
       .from(spec.table)
       .select([spec.idColumn, ...spec.columns].join(","))
@@ -94,7 +97,10 @@ async function repairTable(spec: RepairSpec) {
     if (error) throw error;
 
     const rows = Array.isArray(data) ? data : [];
-    if (!rows.length) break;
+    if (!rows.length) {
+      completedWithinPageCeiling = true;
+      break;
+    }
     scannedRows += rows.length;
 
     for (const row of rows) {
@@ -121,12 +127,23 @@ async function repairTable(spec: RepairSpec) {
       if (samples.length < 20) samples.push({ id, patch });
     }
 
-    if (rows.length < PAGE_SIZE) break;
-    offset += PAGE_SIZE;
+    if (rows.length < PAGE_SIZE) {
+      completedWithinPageCeiling = true;
+      break;
+    }
+  }
+
+  if (!completedWithinPageCeiling) {
+    throw new Error(
+      `mojibake_db_repair exceeded page ceiling for ${spec.table}: maxPages=${MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE}, maxRows=${MOJIBAKE_REPAIR_MAX_ROWS_PER_TABLE}`,
+    );
   }
 
   return {
     table: spec.table,
+    pageSize: PAGE_SIZE,
+    maxPages: MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE,
+    maxRows: MOJIBAKE_REPAIR_MAX_ROWS_PER_TABLE,
     scannedRows,
     repairedRows,
     repairedFields,
@@ -138,6 +155,9 @@ async function main() {
   const startedAt = new Date().toISOString();
   const tableResults: Array<{
     table: string;
+    pageSize: number;
+    maxPages: number;
+    maxRows: number;
     scannedRows: number;
     repairedRows: number;
     repairedFields: number;

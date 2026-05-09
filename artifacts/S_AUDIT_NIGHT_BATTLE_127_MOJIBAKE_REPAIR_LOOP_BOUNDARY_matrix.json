@@ -1,0 +1,125 @@
+{
+  "wave": 127,
+  "slug": "MOJIBAKE_REPAIR_LOOP_BOUNDARY",
+  "goal": "Close the next C2 unbounded-loop risk by replacing the mojibake DB repair script's unconditional table scan loop with an explicit fail-closed page ceiling.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "a198e69b53e72ad1b19349309faf708dec15cf14",
+    "originMain": "a198e69b53e72ad1b19349309faf708dec15cf14",
+    "aheadBehind": "0/0"
+  },
+  "freshSearchBefore": {
+    "whileTrueFindings": 16,
+    "forInfiniteFindings": 0,
+    "targetFinding": {
+      "file": "scripts/mojibake_db_repair.ts",
+      "line": 89,
+      "matchedCall": "while (true)",
+      "classification": "production-level DB repair script",
+      "cancellationMechanism": "page exhaustion only",
+      "backoff": "not applicable",
+      "maxRetryOrIdleWait": "none",
+      "errorHandling": "throws select/update errors and exits through main().catch",
+      "shutdownPath": "process exit through script failure or completion"
+    }
+  },
+  "selectedFiles": [
+    "scripts/mojibake_db_repair.ts",
+    "tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts"
+  ],
+  "reasonSelected": [
+    "Wave 125 inventory identified scripts/mojibake_db_repair.ts as the next highest-risk C2 finding after the queue runner: it is a DB-write repair script if manually executed.",
+    "The scope is the pagination lifecycle only; normalization, row selection, patch construction, and update semantics are unchanged.",
+    "The added contract is static and does not execute the repair script or contact Supabase."
+  ],
+  "before": {
+    "loop": "while (true)",
+    "pageSize": 500,
+    "pageCeiling": null,
+    "rowCeiling": null,
+    "completion": "empty or short page",
+    "failureMode": "select/update errors only"
+  },
+  "after": {
+    "loop": "for pageIndex < MOJIBAKE_REPAIR_MAX_PAGES_PER_TABLE",
+    "pageSize": 500,
+    "maxPages": 200,
+    "maxRows": 100000,
+    "completion": "empty or short page within the ceiling",
+    "failureMode": "select/update errors or explicit page-ceiling error",
+    "mutationSemantics": "unchanged normalized patch update by id"
+  },
+  "freshSearchAfter": {
+    "whileTrueFindings": 15,
+    "forInfiniteFindings": 0,
+    "targetWhileTrueFindings": 0,
+    "remainingFindings": {
+      "realScriptLoops": 4,
+      "testOnlyStringGuards": 11,
+      "remainingRealScriptFiles": [
+        "scripts/director_parity_check_v1.js",
+        "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+        "scripts/mojibake_elimination_verify.ts",
+        "scripts/t1_text_encoding_proof.ts"
+      ]
+    }
+  },
+  "focusedCommands": [
+    {
+      "command": "npx jest tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts --runInBand",
+      "status": "PASS",
+      "summary": "3 tests passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    }
+  ],
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING_POST_PUSH"
+  },
+  "gateEvidence": {
+    "focusedTests": "npx jest tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts --runInBand; 3 tests passed",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 661 suites passed, 1 skipped, 3918 tests passed",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check",
+    "releaseVerifyPostPush": "pending by design until the commit is pushed"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
