@@ -88,4 +88,10 @@ No production calls, DB writes, migrations, remote env writes, deploy, OTA, live
 
 Supabase Realtime status: `WAITING_FOR_SUPABASE_SUPPORT_RESPONSE`.
 
-Post-push release verify is intentionally pending until this commit is pushed.
+## Post-Push Release Verify
+
+- `git push origin main`: PASS for `180273288cc05409e5771628e58794bae23718ae`.
+- `npm run release:verify -- --json`: PASS after push.
+- Release verify repo state: `HEAD == origin/main`, ahead/behind `0/0`, worktree clean.
+- Release verify gates: tsc PASS, expo lint PASS, architecture scanner PASS, Jest runInBand PASS, Jest PASS, git diff check PASS.
+- Release verify classification: non-runtime, runtime files 0, build required false, OTA disposition skip, OTA published false.

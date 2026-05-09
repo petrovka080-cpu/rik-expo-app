@@ -81,8 +81,15 @@
       "command": "git diff --check"
     },
     "releaseVerifyPostPush": {
-      "status": "PENDING",
-      "command": "npm run release:verify -- --json"
+      "status": "PASS",
+      "command": "npm run release:verify -- --json",
+      "verifiedCommit": "180273288cc05409e5771628e58794bae23718ae",
+      "repoSyncStatus": "synced",
+      "headMatchesOriginMain": true,
+      "otaDisposition": "skip",
+      "runtimeFiles": 0,
+      "buildRequired": false,
+      "otaPublished": false
     }
   },
   "safety": {
