@@ -36,7 +36,7 @@
 - full Jest runInBand: PASS
 - architecture scanner: PASS
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
 
 Architecture post-change:
 
@@ -49,6 +49,14 @@ Full Jest post-change:
 
 - Test suites: 659 passed, 1 skipped, 659 of 660 total
 - Tests: 3912 passed, 1 skipped, 3913 total
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS
+- repo sync status: synced
+- worktree clean: true
+- head matches origin/main: true
+- OTA disposition: skip
 
 ## Safety
 
