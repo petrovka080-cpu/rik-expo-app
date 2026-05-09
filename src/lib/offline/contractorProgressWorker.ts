@@ -13,6 +13,7 @@ import {
   resetInflightContractorProgressQueue,
 } from "./contractorProgressQueue";
 import { trackQueueBacklogMetric } from "../observability/queueBacklogMetrics";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import type { PlatformOfflineRetryTriggerSource } from "./platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "./platformOffline.observability";
 import {
@@ -77,6 +78,7 @@ type ContractorProgressWorkerDeps = {
   inspectRemoteProgress?: (
     progressId: string,
   ) => Promise<PlatformTerminalTruth | null | undefined>;
+  loopIterationLimit?: number | null;
 };
 
 type ContractorProgressFailureAssessment = {
@@ -96,8 +98,15 @@ export const CONTRACTOR_PROGRESS_REPLAY_POLICY = {
   ordering: "created_at_fifo",
   backpressure: "coalesce_triggers_and_rerun_once",
 } as const satisfies OfflineReplayPolicy;
+export const CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING = 1_000;
 
 const trim = (value: unknown) => String(value ?? "").trim();
+const normalizeLoopIterationLimit = (value: number | null | undefined) => {
+  const limit = Number(value);
+  return Number.isInteger(limit) && limit > 0
+    ? limit
+    : CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING;
+};
 
 const serializeDraft = (draft: ContractorProgressDraftRecord | null) =>
   JSON.stringify({
@@ -257,8 +266,9 @@ const runFlush = async (
   let processedCount = 0;
   let lastProgressId: string | null = null;
   let lastErrorStage: string | null = null;
+  const loopIterationLimit = normalizeLoopIterationLimit(deps.loopIterationLimit);
 
-  while (true) {
+  for (let loopIteration = 0; loopIteration < loopIterationLimit; loopIteration += 1) {
     const entry = await peekNextContractorProgressQueueEntry({
       triggerSource,
     });
@@ -577,7 +587,7 @@ const runFlush = async (
         attemptCount: inflight.attemptCount,
         retryable: failure.retryable,
         conflicted: failure.conflictType !== "none",
-        errorKind: failure.errorKind as any,
+        errorKind: failure.errorKind,
       });
 
       if (decision.lifecycleStatus === "retry_scheduled") {
@@ -791,6 +801,51 @@ const runFlush = async (
       return await finalizeFailure(error, "sync_rpc", draftBefore.pendingLogId);
     }
   }
+
+  const remainingCount = await getContractorProgressPendingCount();
+  if (remainingCount === 0) {
+    return {
+      processedCount,
+      remainingCount,
+      failed: false,
+      errorMessage: null,
+      failureClass: "none",
+      lastProgressId,
+      lastErrorStage,
+      triggerSource,
+    };
+  }
+  recordPlatformObservability({
+    screen: "contractor",
+    surface: "offline_worker_loop",
+    category: "ui",
+    event: "worker_loop_ceiling_reached",
+    result: "error",
+    sourceKind: "queue:contractor_progress",
+    rowCount: remainingCount,
+    extra: {
+      worker: "contractor_progress",
+      processedCount,
+      remainingCount,
+      loopIterationLimit,
+      triggerSource,
+    },
+  });
+  await trackContractorProgressBacklog("contractor_progress_loop_ceiling", {
+    progressId: null,
+    triggerSource,
+    processedCount,
+  });
+  return {
+    processedCount,
+    remainingCount,
+    failed: true,
+    errorMessage: "contractor_progress_loop_ceiling_reached",
+    failureClass: "retryable_sync_failure",
+    lastProgressId,
+    lastErrorStage,
+    triggerSource,
+  };
 };
 
 export const flushContractorProgressQueue = async (

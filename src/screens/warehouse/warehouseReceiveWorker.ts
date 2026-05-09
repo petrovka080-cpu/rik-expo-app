@@ -1,6 +1,7 @@
 import type { RpcReceiveApplyResult } from "./warehouse.types";
 import type { PlatformOfflineRetryTriggerSource } from "../../lib/offline/platformOffline.model";
 import { recordPlatformOfflineTelemetry } from "../../lib/offline/platformOffline.observability";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   classifyOfflineMutationErrorKind,
   isOfflineMutationConflictKind,
@@ -68,6 +69,7 @@ type WarehouseReceiveWorkerDeps = {
   inspectRemoteReceive?: (
     incomingId: string,
   ) => Promise<PlatformTerminalTruth | null | undefined>;
+  loopIterationLimit?: number | null;
 };
 
 const trim = (value: unknown) => String(value ?? "").trim();
@@ -78,6 +80,14 @@ export const WAREHOUSE_RECEIVE_REPLAY_POLICY = {
   ordering: "created_at_fifo",
   backpressure: "coalesce_triggers_and_rerun_once",
 } as const satisfies OfflineReplayPolicy;
+export const WAREHOUSE_RECEIVE_FLUSH_LOOP_CEILING = 1_000;
+
+const normalizeLoopIterationLimit = (value: number | null | undefined) => {
+  const limit = Number(value);
+  return Number.isInteger(limit) && limit > 0
+    ? limit
+    : WAREHOUSE_RECEIVE_FLUSH_LOOP_CEILING;
+};
 
 const serializeDraftItems = (draft: WarehouseReceiveDraftRecord | null) =>
   JSON.stringify(
@@ -257,8 +267,9 @@ const runFlush = async (
   let lastOkCount = 0;
   let lastFailCount = 0;
   let lastLeftAfter: number | null = null;
+  const loopIterationLimit = normalizeLoopIterationLimit(deps.loopIterationLimit);
 
-  while (true) {
+  for (let loopIteration = 0; loopIteration < loopIterationLimit; loopIteration += 1) {
     const entry = await peekNextWarehouseReceiveQueueEntry({ triggerSource });
     if (!entry) {
       return {
@@ -614,6 +625,48 @@ const runFlush = async (
       };
     }
   }
+
+  const remainingCount = await getWarehouseReceivePendingCount();
+  if (remainingCount === 0) {
+    return {
+      processedCount,
+      remainingCount,
+      failed: false,
+      errorMessage: null,
+      lastIncomingId,
+      lastOkCount,
+      lastFailCount,
+      lastLeftAfter,
+      triggerSource,
+    };
+  }
+  recordPlatformObservability({
+    screen: "warehouse",
+    surface: "offline_worker_loop",
+    category: "ui",
+    event: "worker_loop_ceiling_reached",
+    result: "error",
+    sourceKind: "queue:warehouse_receive",
+    rowCount: remainingCount,
+    extra: {
+      worker: "warehouse_receive",
+      processedCount,
+      remainingCount,
+      loopIterationLimit,
+      triggerSource,
+    },
+  });
+  return {
+    processedCount,
+    remainingCount,
+    failed: true,
+    errorMessage: "warehouse_receive_loop_ceiling_reached",
+    lastIncomingId,
+    lastOkCount,
+    lastFailCount,
+    lastLeftAfter,
+    triggerSource,
+  };
 };
 
 export const flushWarehouseReceiveQueue = async (

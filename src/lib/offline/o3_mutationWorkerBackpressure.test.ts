@@ -9,6 +9,9 @@
  * E. No behavior drift — successful items still succeed, failures still fail
  */
 
+import { readFileSync } from "fs";
+import { join } from "path";
+
 import {
   configureMutationQueue,
   enqueueForemanMutation,
@@ -19,8 +22,14 @@ import {
 
 import {
   FOREMAN_DRAIN_BATCH_SIZE,
+  FOREMAN_MUTATION_FLUSH_LOOP_CEILING,
   flushForemanMutationQueue,
 } from "../../lib/offline/mutationWorker";
+
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
 
 import {
   resetOfflineReplayCoordinatorForTests,
@@ -57,6 +66,7 @@ const makeSnapshot = (requestId: string) => ({
 const makeDeps = (overrides?: {
   syncSnapshot?: (...args: unknown[]) => Promise<unknown>;
   getNetworkOnline?: () => boolean;
+  loopIterationLimit?: number;
 }) => {
   let snapshotRef = makeSnapshot("local-only");
   return {
@@ -79,6 +89,7 @@ const makeDeps = (overrides?: {
       snapshot: snapshotRef,
       submitted: null,
     })),
+    loopIterationLimit: overrides?.loopIterationLimit,
   } as unknown as Parameters<typeof flushForemanMutationQueue>[0];
 };
 
@@ -88,6 +99,7 @@ beforeEach(async () => {
   configureMutationQueue({ storage });
   await clearForemanMutationQueue();
   resetOfflineReplayCoordinatorForTests();
+  resetPlatformObservabilityEvents();
 });
 
 // ─── Section A: Constants ─────────────────────────────────────────────────────
@@ -100,6 +112,16 @@ describe("O3.2 constants", () => {
   it("FOREMAN_DRAIN_BATCH_SIZE is a positive integer", () => {
     expect(Number.isInteger(FOREMAN_DRAIN_BATCH_SIZE)).toBe(true);
     expect(FOREMAN_DRAIN_BATCH_SIZE).toBeGreaterThan(0);
+  });
+
+  it("FOREMAN_MUTATION_FLUSH_LOOP_CEILING bounds the worker loop source", () => {
+    const source = readFileSync(join(__dirname, "mutationWorker.ts"), "utf8");
+
+    expect(Number.isInteger(FOREMAN_MUTATION_FLUSH_LOOP_CEILING)).toBe(true);
+    expect(FOREMAN_MUTATION_FLUSH_LOOP_CEILING).toBeGreaterThan(FOREMAN_DRAIN_BATCH_SIZE);
+    expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(source).toContain("FOREMAN_MUTATION_FLUSH_LOOP_CEILING");
+    expect(source).toContain("worker_loop_ceiling_reached");
   });
 });
 
@@ -117,6 +139,51 @@ describe("O3.2 bounded replay", () => {
     expect(result.processedCount).toBe(1);
     expect(result.batchLimitReached).toBe(false);
     expect(result.failed).toBe(false);
+  });
+
+  it("loop ceiling exits after one iteration while preserving queued work", async () => {
+    for (let i = 0; i < 2; i++) {
+      await enqueueForemanMutation({
+        draftKey: `loop-ceiling-${i}`,
+        mutationKind: "background_sync",
+        triggerSource: "manual_retry",
+      });
+    }
+
+    const result = await flushForemanMutationQueue(
+      makeDeps({ loopIterationLimit: 1 }),
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 1,
+      remainingCount: 1,
+      failed: false,
+      errorMessage: null,
+      batchLimitReached: true,
+    });
+    const activeAfter = (await loadForemanMutationQueue()).filter(
+      (entry) => entry.lifecycleStatus === "queued" || entry.lifecycleStatus === "processing",
+    );
+    expect(activeAfter).toHaveLength(1);
+    expect(
+      getPlatformObservabilityEvents().filter(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        screen: "foreman",
+        sourceKind: "offline:foreman_draft",
+        rowCount: 1,
+        extra: expect.objectContaining({
+          worker: "foreman_mutation",
+          processedCount: 1,
+          remainingCount: 1,
+          loopIterationLimit: 1,
+          triggerSource: "manual_retry",
+        }),
+      }),
+    ]);
   });
 
   it("queue <= batch size: drains completely in one pass", async () => {

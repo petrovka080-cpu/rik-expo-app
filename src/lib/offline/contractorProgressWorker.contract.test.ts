@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createMemoryOfflineStorage } from "./offlineStorage";
 import {
   clearContractorProgressQueue,
@@ -14,6 +16,7 @@ import {
   resetPlatformObservabilityEvents,
 } from "../observability/platformObservability";
 import {
+  CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING,
   flushContractorProgressQueue,
   CONTRACTOR_PROGRESS_REPLAY_POLICY,
 } from "./contractorProgressWorker";
@@ -114,6 +117,101 @@ describe("contractorProgressWorker replay discipline", () => {
       ordering: "created_at_fifo",
       backpressure: "coalesce_triggers_and_rerun_once",
     });
+  });
+
+  it("bounds the flush loop with a ceiling instead of while true", () => {
+    const source = readFileSync(join(__dirname, "contractorProgressWorker.ts"), "utf8");
+
+    expect(CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING).toBeGreaterThan(0);
+    expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(source).toContain("CONTRACTOR_PROGRESS_FLUSH_LOOP_CEILING");
+    expect(source).toContain("worker_loop_ceiling_reached");
+  });
+
+  it("exits before the ceiling when there is no contractor progress work", async () => {
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 0,
+      remainingCount: 0,
+      failed: false,
+      errorMessage: null,
+      failureClass: "none",
+    });
+    expect(mockEnsureWorkProgressSubmission).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toBe(false);
+  });
+
+  it("exits at the loop ceiling and leaves remaining contractor progress work queued", async () => {
+    await seedProgressDraft("progress-ceiling-1");
+    await seedProgressDraft("progress-ceiling-2");
+    mockEnsureWorkProgressSubmission.mockResolvedValue({
+      ok: true,
+      logId: "log-ceiling",
+    });
+
+    const result = await flushContractorProgressQueue(
+      {
+        supabaseClient: {},
+        pickFirstNonEmpty: (...values: unknown[]) =>
+          values.map((value) => String(value ?? "").trim()).find(Boolean) ?? null,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 1,
+      remainingCount: 1,
+      failed: true,
+      errorMessage: "contractor_progress_loop_ceiling_reached",
+      failureClass: "retryable_sync_failure",
+    });
+    expect(mockEnsureWorkProgressSubmission).toHaveBeenCalledTimes(1);
+    expect(await loadContractorProgressQueue()).toEqual([
+      expect.objectContaining({ progressId: "progress-ceiling-2" }),
+    ]);
+    expect(
+      getPlatformObservabilityEvents().filter(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        screen: "contractor",
+        sourceKind: "queue:contractor_progress",
+        rowCount: 1,
+        extra: expect.objectContaining({
+          worker: "contractor_progress",
+          processedCount: 1,
+          remainingCount: 1,
+          loopIterationLimit: 1,
+          triggerSource: "manual_retry",
+        }),
+      }),
+    ]);
+    expect(getQueueBacklogSnapshot()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          queue: "contractor_progress",
+          size: 1,
+          processingCount: 0,
+        }),
+      ]),
+    );
   });
 
   it("does not run parallel submits when reconnect and manual retry collide", async () => {

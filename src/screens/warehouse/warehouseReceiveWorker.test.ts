@@ -1,8 +1,14 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createMemoryOfflineStorage } from "../../lib/offline/offlineStorage";
 import {
   getPlatformOfflineTelemetryEvents,
   resetPlatformOfflineTelemetryEvents,
 } from "../../lib/offline/platformOffline.observability";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../../lib/observability/platformObservability";
 import {
   OFFLINE_REPLAY_CIRCUIT_BREAKER_CONFIG,
   recordReplayFailure,
@@ -24,6 +30,7 @@ import {
   WAREHOUSE_RECEIVE_RETRY_POLICY,
 } from "./warehouseReceiveQueue";
 import {
+  WAREHOUSE_RECEIVE_FLUSH_LOOP_CEILING,
   WAREHOUSE_RECEIVE_REPLAY_POLICY,
   flushWarehouseReceiveQueue,
 } from "./warehouseReceiveWorker";
@@ -72,8 +79,18 @@ describe("warehouse receive worker", () => {
     configureWarehouseReceiveQueue({ storage: createMemoryOfflineStorage() });
     configureWarehouseReceiveDraftStore({ storage: createMemoryOfflineStorage() });
     resetPlatformOfflineTelemetryEvents();
+    resetPlatformObservabilityEvents();
     await clearWarehouseReceiveQueue();
     await clearWarehouseReceiveDraftStore();
+  });
+
+  it("bounds the flush loop with a ceiling instead of while true", () => {
+    const source = readFileSync(join(__dirname, "warehouseReceiveWorker.ts"), "utf8");
+
+    expect(WAREHOUSE_RECEIVE_FLUSH_LOOP_CEILING).toBeGreaterThan(0);
+    expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(source).toContain("WAREHOUSE_RECEIVE_FLUSH_LOOP_CEILING");
+    expect(source).toContain("worker_loop_ceiling_reached");
   });
 
   it("declares a serial FIFO replay policy owned by the worker", () => {
@@ -131,6 +148,81 @@ describe("warehouse receive worker", () => {
     expect(getWarehouseReceiveDraft("incoming-circuit")?.status).toBe(
       draftStatusBefore,
     );
+  });
+
+  it("exits before the ceiling when there is no receive work", async () => {
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 0,
+      remainingCount: 0,
+      failed: false,
+      errorMessage: null,
+    });
+    expect(applyReceive).not.toHaveBeenCalled();
+    expect(
+      getPlatformObservabilityEvents().some(
+        (event) => event.event === "worker_loop_ceiling_reached",
+      ),
+    ).toBe(false);
+  });
+
+  it("exits at the loop ceiling and leaves remaining receive work queued", async () => {
+    await seedReceiveDraft("incoming-ceiling-1");
+    await seedReceiveDraft("incoming-ceiling-2");
+    const applyReceive = jest.fn(async () => ({
+      data: { ok: 1, fail: 0, left_after: 0 },
+      error: null,
+    }));
+
+    const result = await flushWarehouseReceiveQueue(
+      {
+        getWarehousemanFio: () => "Warehouse Tester",
+        applyReceive,
+        getNetworkOnline: () => true,
+        loopIterationLimit: 1,
+      },
+      "manual_retry",
+    );
+
+    expect(result).toMatchObject({
+      processedCount: 1,
+      remainingCount: 1,
+      failed: true,
+      errorMessage: "warehouse_receive_loop_ceiling_reached",
+    });
+    expect(applyReceive).toHaveBeenCalledTimes(1);
+    expect(await loadWarehouseReceiveQueue()).toEqual([
+      expect.objectContaining({ incomingId: "incoming-ceiling-2" }),
+    ]);
+    expect(getPlatformObservabilityEvents()).toEqual([
+      expect.objectContaining({
+        screen: "warehouse",
+        event: "worker_loop_ceiling_reached",
+        sourceKind: "queue:warehouse_receive",
+        rowCount: 1,
+        extra: expect.objectContaining({
+          worker: "warehouse_receive",
+          processedCount: 1,
+          remainingCount: 1,
+          loopIterationLimit: 1,
+          triggerSource: "manual_retry",
+        }),
+      }),
+    ]);
   });
 
   it("does not duplicate receive apply while a flush is already in flight", async () => {

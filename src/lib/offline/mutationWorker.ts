@@ -120,6 +120,7 @@ type ForemanMutationWorkerDeps = {
     localBeforeCount?: number | null;
     localAfterCount?: number | null;
   }) => Promise<ForemanLocalDraftSyncResult>;
+  loopIterationLimit?: number | null;
 };
 
 const toErrorText = (error: unknown) =>
@@ -131,6 +132,7 @@ const FOREMAN_RETRY_POLICY = getOfflineMutationRetryPolicy("foreman_default");
 // After FOREMAN_DRAIN_BATCH_SIZE items, runFlush exits with batchLimitReached=true
 // and the coordinator re-triggers on remaining work — preventing resume burst.
 export const FOREMAN_DRAIN_BATCH_SIZE = 3;
+export const FOREMAN_MUTATION_FLUSH_LOOP_CEILING = 1_000;
 export const FOREMAN_MUTATION_REPLAY_POLICY = {
   queueKey: "foreman_draft",
   owner: "foreman_mutation_worker",
@@ -158,6 +160,13 @@ const getPendingCountForSnapshot = async (
   await getForemanPendingMutationCountForDraftKeys(
     getDraftQueueKeysFromSnapshot(snapshot),
   );
+
+const normalizeLoopIterationLimit = (value: number | null | undefined) => {
+  const limit = Number(value);
+  return Number.isInteger(limit) && limit > 0
+    ? limit
+    : FOREMAN_MUTATION_FLUSH_LOOP_CEILING;
+};
 
 const toOfflineState = (isOnline: boolean | null | undefined) => {
   if (isOnline === true) return "online" as const;
@@ -447,7 +456,8 @@ const deriveConflictFromFailure = async (params: {
                 },
               });
             }
-          } catch {
+          } catch (classificationError) {
+            void classificationError;
             // O5.2 classifier is best-effort — primary conflict path is unaffected
           }
         }
@@ -528,8 +538,9 @@ const runFlush = async (
   let latestRequestId: string | null = null;
   let latestSubmitted: RequestRecord | null = null;
   const drainStartedAt = Date.now();
+  const loopIterationLimit = normalizeLoopIterationLimit(deps.loopIterationLimit);
 
-  while (true) {
+  for (let loopIteration = 0; loopIteration < loopIterationLimit; loopIteration += 1) {
     // O3.2: Bounded drain — exit after FOREMAN_DRAIN_BATCH_SIZE items per pass.
     // The coordinator re-triggers if items remain, yielding the JS thread between passes.
     if (processedCount >= FOREMAN_DRAIN_BATCH_SIZE) {
@@ -1238,6 +1249,48 @@ const runFlush = async (
       return await finalizeFailure(stage, error);
     }
   }
+
+  const loopCeilingSummary = await getForemanMutationQueueSummary();
+  const remainingCount = loopCeilingSummary.activeCount;
+  if (remainingCount === 0) {
+    return {
+      processedCount,
+      remainingCount,
+      requestId: latestRequestId,
+      submitted: latestSubmitted,
+      failed: false,
+      errorMessage: null,
+      batchLimitReached: false,
+      drainDurationMs: Date.now() - drainStartedAt,
+    };
+  }
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "offline_mutation_worker",
+    category: "ui",
+    event: "worker_loop_ceiling_reached",
+    result: "skipped",
+    sourceKind: "offline:foreman_draft",
+    rowCount: remainingCount,
+    extra: {
+      worker: "foreman_mutation",
+      processedCount,
+      remainingCount,
+      loopIterationLimit,
+      drainDurationMs: Date.now() - drainStartedAt,
+      triggerSource: triggerSourceOverride ?? "unknown",
+    },
+  });
+  return {
+    processedCount,
+    remainingCount,
+    requestId: latestRequestId,
+    submitted: latestSubmitted,
+    failed: false,
+    errorMessage: null,
+    batchLimitReached: true,
+    drainDurationMs: Date.now() - drainStartedAt,
+  };
 };
 
 export const flushForemanMutationQueue = async (
