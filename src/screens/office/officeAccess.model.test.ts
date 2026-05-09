@@ -1,4 +1,5 @@
 import {
+  OFFICE_WORKSPACE_CARDS,
   OFFICE_BOOTSTRAP_ROLE,
   buildOfficeAccessEntryCopy,
   buildOfficeBootstrapProfilePayload,
@@ -41,6 +42,26 @@ describe("officeAccess.model", () => {
       "engineer",
       "reports",
     ]);
+  });
+
+  it("keeps navigable workspace cards on office routes", () => {
+    expect(
+      OFFICE_WORKSPACE_CARDS.filter((card) => card.entryKind === "screen").map(
+        (card) => card.route,
+      ),
+    ).toEqual([
+      "/office/director",
+      "/office/foreman",
+      "/office/buyer",
+      "/office/accountant",
+      "/office/warehouse",
+      "/office/contractor",
+      "/office/security",
+      "/office/reports",
+    ]);
+    expect(
+      OFFICE_WORKSPACE_CARDS.filter((card) => card.entryKind === "invite-only"),
+    ).toHaveLength(1);
   });
 
   it("marks bootstrap company creation as director-only start", () => {

@@ -1,31 +1,57 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type RefObject } from "react";
 import {
   InteractionManager,
   Keyboard,
   Platform,
   type KeyboardEvent,
   type NativeSyntheticEvent,
+  type ScrollView,
   type TextInputFocusEventData,
 } from "react-native";
 
+type ScrollToKeyboard = (
+  nodeHandle: number,
+  additionalOffset: number,
+  preventNegativeScrollOffset: boolean,
+) => void;
+
 type ScrollResponderLike = {
   getScrollResponder?: () => {
-    scrollResponderScrollNativeHandleToKeyboard?: (
-      nodeHandle: number,
-      additionalOffset: number,
-      preventNegativeScrollOffset: boolean,
-    ) => void;
+    scrollResponderScrollNativeHandleToKeyboard?: ScrollToKeyboard;
   };
-  scrollResponderScrollNativeHandleToKeyboard?: (
-    nodeHandle: number,
-    additionalOffset: number,
-    preventNegativeScrollOffset: boolean,
-  ) => void;
+  scrollResponderScrollNativeHandleToKeyboard?: ScrollToKeyboard;
 };
 
-const asScrollResponder = (v: unknown): ScrollResponderLike | null =>
-  v && typeof v === "object" ? (v as ScrollResponderLike) : null;
-export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
+const isScrollToKeyboard = (value: unknown): value is ScrollToKeyboard =>
+  typeof value === "function";
+
+const isGetScrollResponder = (value: unknown): value is () => unknown =>
+  typeof value === "function";
+
+const asScrollResponder = (value: unknown): ScrollResponderLike | null => {
+  if (!value || typeof value !== "object") return null;
+
+  const getScrollResponder = Reflect.get(value, "getScrollResponder");
+  const scrollToKeyboard = Reflect.get(
+    value,
+    "scrollResponderScrollNativeHandleToKeyboard",
+  );
+
+  return {
+    getScrollResponder: isGetScrollResponder(getScrollResponder)
+      ? () => getScrollResponder.call(value)
+      : undefined,
+    scrollResponderScrollNativeHandleToKeyboard: isScrollToKeyboard(
+      scrollToKeyboard,
+    )
+      ? scrollToKeyboard
+      : undefined,
+  };
+};
+
+export function useAccountantKeyboard(
+  cardScrollRef: RefObject<ScrollView | null>,
+) {
   const [kbdH, setKbdH] = useState(0);
   const [kbOpen, setKbOpen] = useState(false);
 
@@ -36,10 +62,10 @@ export function useAccountantKeyboard(cardScrollRef: { current: unknown }) {
     ) => {
       if (Platform.OS === "web") return;
 
-      const node = Number((e as { target?: unknown })?.target ?? 0);
+      const node = Number(e.target ?? 0);
       if (!node) return;
 
-      const additionalOffset = Number.isFinite(extra as number)
+      const additionalOffset = typeof extra === "number" && Number.isFinite(extra)
         ? Number(extra)
         : Platform.OS === "ios"
           ? 190

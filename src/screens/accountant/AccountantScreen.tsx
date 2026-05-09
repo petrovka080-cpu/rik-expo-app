@@ -36,6 +36,7 @@ import {
   toRpcDateOrNull,
   statusFromRaw,
   runNextTick,
+  getAccountantErrorText,
 } from "./helpers";
 import { formatProposalBaseNo, roleBadgeLabel } from "../../lib/format";
 import { normalizeRuText } from "../../lib/text/encoding";
@@ -73,10 +74,6 @@ const TAB_PAID: Tab = TABS[2];
 const TAB_REWORK: Tab = TABS[3];
 const TAB_HISTORY: Tab = TABS[4];
 const ruText = (v: unknown, fallback = "") => normalizeRuText(String(v ?? fallback));
-const getErrorText = (e: unknown) => {
-  const x = e as { message?: string; error_description?: string; details?: string };
-  return x?.message ?? x?.error_description ?? x?.details ?? String(e);
-};
 
 export function AccountantScreen() {
   const insets = useSafeAreaInsets();
@@ -182,7 +179,7 @@ export function AccountantScreen() {
     setFreezeWhileOpen(false);
   }, [cardOpen, freezeWhileOpen, setFreezeWhileOpen]);
 
-  const { kbOpen, kbdH, scrollInputIntoView } = useAccountantKeyboard(cardScrollRef as { current: unknown });
+  const { kbOpen, kbdH, scrollInputIntoView } = useAccountantKeyboard(cardScrollRef);
 
   const {
     focusedRef,
@@ -329,7 +326,7 @@ export function AccountantScreen() {
     kpp,
     gbusy,
     safeAlert,
-    getErrorText,
+    getErrorText: getAccountantErrorText,
     onBeforeNavigate: closeCard,
   });
 
@@ -340,7 +337,7 @@ export function AccountantScreen() {
     tabs: { pay: TAB_PAY, part: TAB_PART, paid: TAB_PAID, rework: TAB_REWORK },
   });
 
-  const errText = useCallback((e: unknown) => getErrorText(e), []);
+  const errText = useCallback((e: unknown) => getAccountantErrorText(e), []);
 
   const { onPayConfirm } = useAccountantPayActions({
     canAct: true,

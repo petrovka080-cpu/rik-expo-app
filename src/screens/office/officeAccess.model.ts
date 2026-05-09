@@ -1,3 +1,5 @@
+import type { Href } from "expo-router";
+
 import type { AppAccessOfficeRole } from "../../lib/appAccessModel";
 import type { ProfilePayload, UserProfile } from "../profile/profile.types";
 
@@ -18,7 +20,7 @@ export type OfficeWorkspaceCard = {
   key: string;
   title: string;
   subtitle: string;
-  route: string | null;
+  route: Href | null;
   entryKind: "screen" | "invite-only";
   tone: string;
   requiredRoles: readonly AppAccessOfficeRole[];

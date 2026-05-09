@@ -132,8 +132,18 @@ type ErrorLike = {
   hint?: unknown;
 };
 
-const asErrorLike = (value: unknown): ErrorLike =>
-  value && typeof value === "object" ? (value as ErrorLike) : {};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const readErrorLike = (value: unknown): ErrorLike => {
+  if (!isRecord(value)) return {};
+
+  return {
+    message: value.message,
+    error_description: value.error_description,
+    hint: value.hint,
+  };
+};
 
 const toErrorText = (value: unknown): string => {
   if (typeof value === "string") return value.trim();
@@ -142,7 +152,7 @@ const toErrorText = (value: unknown): string => {
 };
 
 export const pickErr = (e: unknown) => {
-  const errorLike = asErrorLike(e);
+  const errorLike = readErrorLike(e);
   return (
     toErrorText(errorLike.message) ||
     toErrorText(errorLike.error_description) ||
@@ -150,6 +160,18 @@ export const pickErr = (e: unknown) => {
     toErrorText(e) ||
     "Ошибка"
   );
+};
+
+export const getContractorErrorMessage = (error: unknown): string => {
+  const errorLike = readErrorLike(error);
+  const message =
+    errorLike.message || errorLike.error_description || errorLike.hint;
+
+  if (message) return String(message);
+
+  return error
+    ? String(error)
+    : "\u041d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u0430\u044f \u043e\u0448\u0438\u0431\u043a\u0430";
 };
 
 const textNormCache = new Map<string, string>();

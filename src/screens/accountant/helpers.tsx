@@ -38,6 +38,33 @@ export const safeAlert = (title: string, msg?: string) => {
   }
 };
 
+type AccountantErrorRecord = {
+  message?: unknown;
+  error_description?: unknown;
+  details?: unknown;
+};
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const readErrorRecord = (value: unknown): AccountantErrorRecord | null => {
+  if (!isRecord(value)) return null;
+
+  return {
+    message: value.message,
+    error_description: value.error_description,
+    details: value.details,
+  };
+};
+
+export const getAccountantErrorText = (error: unknown): string => {
+  const record = readErrorRecord(error);
+  const message =
+    record?.message ?? record?.error_description ?? record?.details;
+
+  return message == null ? String(error) : String(message);
+};
+
 export function SafeView({ children, ...rest }: PropsWithChildren<ViewProps>) {
   const kids = React.Children.toArray(children).map((c, i) => {
     if (typeof c === "string") return c.trim() ? <Text key={`t${i}`}>{c}</Text> : null;

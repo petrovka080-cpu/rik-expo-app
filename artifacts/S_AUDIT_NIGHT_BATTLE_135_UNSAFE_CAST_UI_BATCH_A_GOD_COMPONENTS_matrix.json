@@ -1,0 +1,221 @@
+{
+  "wave": 135,
+  "slug": "UNSAFE_CAST_UI_BATCH_A_GOD_COMPONENTS",
+  "createdAt": "2026-05-09T22:21:18.7476434+06:00",
+  "baseHead": "a7157c254cf47c192c543373ee3cfde836e42c4b",
+  "goal": "Reduce unsafe casts in large UI components without visual or UX refactor.",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/screens/accountant/AccountantScreen.tsx",
+      "src/screens/accountant/helpers.tsx",
+      "src/screens/accountant/useAccountantKeyboard.ts",
+      "src/screens/contractor/ContractorScreen.tsx",
+      "src/screens/contractor/contractor.utils.ts",
+      "src/screens/office/OfficeHubScreen.tsx",
+      "src/screens/office/officeAccess.model.ts",
+      "src/screens/office/officeAccess.model.test.ts",
+      "tests/api/uiUnsafeCastBatchA.contract.test.ts"
+    ],
+    "priorityTargetsScanned": [
+      "src/screens/buyer/BuyerScreen.tsx",
+      "src/screens/accountant/AccountantScreen.tsx",
+      "src/screens/office/OfficeHubScreen.tsx",
+      "src/features/market/MarketHomeScreen.tsx",
+      "src/screens/contractor/ContractorScreen.tsx"
+    ],
+    "notSelected": [
+      {
+        "files": [
+          "src/screens/buyer/BuyerScreen.tsx",
+          "src/features/market/MarketHomeScreen.tsx"
+        ],
+        "reason": "Fresh scan found no selected unsafe UI cast findings in the priority screen files."
+      },
+      {
+        "files": [
+          "src/screens/contractor/contractor.workModalService.ts",
+          "src/screens/contractor/contractor.workModalService.transport.ts",
+          "src/screens/contractor/contractor.actBuilderOpenService.ts"
+        ],
+        "reason": "Remaining contractor findings are service/transport work-modal reads, outside this UI god-component batch."
+      },
+      {
+        "files": [
+          "src/screens/office/OfficeHubScreen.test.tsx",
+          "tests/buyer/buyerScreenSheets.boundary.test.tsx",
+          "tests/map/mapscreen-cache.test.ts"
+        ],
+        "reason": "Remaining hits are existing test-only third-party/mock casts; this wave did not add or rely on them."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/screens/accountant/AccountantScreen.tsx",
+      "count": 1,
+      "pattern": "e as { message?: string; error_description?: string; details?: string }",
+      "fix": "Moved error text extraction to a typed record guard in existing accountant helpers."
+    },
+    {
+      "file": "src/screens/accountant/AccountantScreen.tsx",
+      "count": 1,
+      "pattern": "cardScrollRef as { current: unknown }",
+      "fix": "Typed the keyboard hook to accept RefObject<ScrollView | null>."
+    },
+    {
+      "file": "src/screens/accountant/useAccountantKeyboard.ts",
+      "count": 3,
+      "pattern": "Scroll responder/native event/extra numeric casts",
+      "fix": "Replaced with Reflect-based function guards, native event target typing, and typeof number narrowing."
+    },
+    {
+      "file": "src/screens/contractor/ContractorScreen.tsx",
+      "count": 1,
+      "pattern": "showErr(e: any)",
+      "fix": "Typed the callback as unknown and reused a guarded contractor error message helper."
+    },
+    {
+      "file": "src/screens/contractor/contractor.utils.ts",
+      "count": 2,
+      "pattern": "asErrorLike cast helper and its call site",
+      "fix": "Replaced with a record guard while preserving pickErr and UI alert fallback semantics."
+    },
+    {
+      "file": "src/screens/office/OfficeHubScreen.tsx",
+      "count": 1,
+      "pattern": "router.push(card.route as Href)",
+      "fix": "Typed OfficeWorkspaceCard.route as Href | null."
+    }
+  ],
+  "counts": {
+    "selectedUiCastFindings": {
+      "before": 9,
+      "after": 0,
+      "reduced": 9
+    },
+    "priorityScreenBannedPatterns": {
+      "before": 0,
+      "after": 0
+    },
+    "newSourceModules": {
+      "beforeFix": 4,
+      "afterBudgetFix": 0
+    }
+  },
+  "changes": [
+    {
+      "file": "src/screens/accountant/AccountantScreen.tsx",
+      "change": "Removed local error-object and scroll-ref casts by using typed helpers and a typed keyboard hook."
+    },
+    {
+      "file": "src/screens/accountant/helpers.tsx",
+      "change": "Added getAccountantErrorText with runtime record guards in an existing module to avoid source-module budget growth."
+    },
+    {
+      "file": "src/screens/accountant/useAccountantKeyboard.ts",
+      "change": "Replaced unsafe responder/native event casts with typed RefObject input and narrow guards."
+    },
+    {
+      "file": "src/screens/contractor/ContractorScreen.tsx",
+      "change": "Replaced any-typed showErr callback with unknown and guarded message extraction."
+    },
+    {
+      "file": "src/screens/contractor/contractor.utils.ts",
+      "change": "Replaced the error-like cast helper with record guards and preserved contractor alert truthy fallback semantics."
+    },
+    {
+      "file": "src/screens/office/officeAccess.model.ts",
+      "change": "Typed office workspace routes as Href | null."
+    },
+    {
+      "file": "src/screens/office/OfficeHubScreen.tsx",
+      "change": "Removed the router.push Href cast because card routes are now typed at the model boundary."
+    },
+    {
+      "file": "tests/api/uiUnsafeCastBatchA.contract.test.ts",
+      "change": "Added a UI unsafe-cast contract for priority files, typed adapters, and error text semantics."
+    }
+  ],
+  "freshScans": {
+    "priorityTargetsInitial": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- priority target files",
+      "status": "PASS",
+      "findings": 0
+    },
+    "selectedUiCastFindingsBefore": {
+      "command": "git grep -n -E selected UI cast patterns HEAD -- priority/touched files",
+      "status": "PASS_WITH_FINDINGS",
+      "findings": 9
+    },
+    "selectedUiCastFindingsAfter": {
+      "command": "git grep -n -E selected UI cast patterns -- priority/touched files and contract test",
+      "status": "PASS",
+      "findings": 0
+    }
+  },
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/uiUnsafeCastBatchA.contract.test.ts src/screens/accountant/useAccountantScreenViewModel.test.ts src/screens/office/officeAccess.model.test.ts src/screens/office/OfficeHubScreen.test.tsx src/screens/buyer/components/BuyerScreenHeader.test.tsx src/screens/buyer/hooks/useBuyerScreenSideEffects.test.tsx src/screens/buyer/hooks/useBuyerScreenStoreViewModel.test.ts tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts tests/buyer/buyerScreenSheets.boundary.test.tsx tests/api/contractorScreenDataAuthTransport.contract.test.ts",
+    "status": "PASS",
+    "suites": 10,
+    "tests": 51
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "architectureScanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0,
+    "productionRawLoopsUnapprovedFindings": 0
+  },
+  "performanceBudget": {
+    "command": "npm test -- --runInBand tests/perf/performance-budget.test.ts",
+    "status": "PASS",
+    "sourceModuleCountWithinBudget": true
+  },
+  "fullJestRunInBand": {
+    "command": "npm test -- --runInBand",
+    "status": "PASS",
+    "suitesPassed": 669,
+    "suitesSkipped": 1,
+    "testsPassed": 3970,
+    "testsSkipped": 1
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemanticsForRefactor": false,
+    "visualRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

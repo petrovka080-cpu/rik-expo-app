@@ -4,7 +4,6 @@ import {
   useFocusEffect,
   useLocalSearchParams,
   useRouter,
-  type Href,
 } from "expo-router";
 
 import {
@@ -442,7 +441,7 @@ export default function OfficeHubScreen({
   const handleOpenOfficeCard = useCallback(
     (card: OfficeWorkspaceCard) => {
       if (card.route) {
-        router.push(card.route as Href);
+        router.push(card.route);
       }
     },
     [router],
