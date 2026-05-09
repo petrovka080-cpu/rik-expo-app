@@ -1,8 +1,13 @@
-import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { client, normalizeUuid, parseErr, toFilterId } from "./_core";
 import { ensureRequestExists } from "./integrity.guards";
+import {
+  addOrIncrementRequestItemFromTransport,
+  updateRequestItemMetaFromTransport,
+  type RequestItemAddOrIncTransportArgs,
+  type RequestItemMetaPatchTransport,
+} from "./requests.itemMutations.transport";
 import { resolveCurrentRequestUserId } from "./requests.auth.transport";
 import {
   mapRequestRow,
@@ -41,7 +46,6 @@ const logRequestsDebug = (...args: unknown[]) => {
 let _draftRequestIdAny: string | number | null = null;
 
 type RequestsTable = Database["public"]["Tables"]["requests"];
-type RequestItemsTable = Database["public"]["Tables"]["request_items"];
 type RequestDraftInsertPayload = Pick<
   RequestsTable["Insert"],
   | "status"
@@ -54,10 +58,7 @@ type RequestDraftInsertPayload = Pick<
   | "zone_code"
 >;
 type RequestDraftUpsertPayload = Pick<RequestsTable["Insert"], "id" | "status">;
-type RequestItemMetaPatch = Pick<
-  RequestItemsTable["Update"],
-  "status" | "note" | "app_code" | "kind" | "name_human" | "uom"
->;
+type RequestItemMetaPatch = RequestItemMetaPatchTransport;
 type RequestItemAddOpts = {
   note?: string | null;
   app_code?: string | null;
@@ -88,7 +89,7 @@ type RequestDraftSelectRow = Pick<
   | "zone_code"
   | "created_at"
 >;
-type RequestItemAddOrIncArgs = Database["public"]["Functions"]["request_item_add_or_inc"]["Args"];
+type RequestItemAddOrIncArgs = RequestItemAddOrIncTransportArgs;
 type RequestItemAddOrIncResult = Database["public"]["Functions"]["request_item_add_or_inc"]["Returns"];
 type RequestItemsByRequestArgs = Database["public"]["Functions"]["request_items_by_request"]["Args"];
 type RequestFindReusableEmptyDraftArgs =
@@ -507,7 +508,7 @@ async function selectRequestRecordById(
 }
 
 async function patchRequestItemMeta(itemId: string, patch: RequestItemMetaPatch): Promise<void> {
-  const updateResult = await supabase.from("request_items").update(patch).eq("id", itemId);
+  const updateResult = await updateRequestItemMetaFromTransport(itemId, patch);
   if (updateResult.error) throw updateResult.error;
 }
 
@@ -677,8 +678,7 @@ export async function addRequestItemFromRikDetailed(
     sourceKind: "mutation:request_item_add_or_inc",
   });
 
-  const { data, error } = await supabase.rpc(
-    "request_item_add_or_inc",
+  const { data, error } = await addOrIncrementRequestItemFromTransport(
     buildRequestItemAddOrIncArgs(rid, rik_code, q),
   );
 

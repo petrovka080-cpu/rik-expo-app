@@ -37,18 +37,24 @@ describe("requests read transport boundary", () => {
     expect(transportSource).toContain(".maybeSingle()");
   });
 
-  it("leaves request mapping, validation, and mutation provider calls in the service layer", () => {
+  it("leaves request mapping and validation in the service layer without mixing item mutation ownership into read transport", () => {
     const serviceSource = read("src/lib/api/requests.ts");
     const transportSource = read("src/lib/api/requests.read.transport.ts");
+    const itemMutationTransportSource = read("src/lib/api/requests.itemMutations.transport.ts");
 
     expect(serviceSource).toContain("mapRequestRow(existing.data)");
     expect(serviceSource).toContain("validateRpcResponse");
-    expect(serviceSource).toContain('supabase.from("request_items").update(patch)');
-    expect(serviceSource).toContain("request_item_add_or_inc");
+    expect(serviceSource).toContain("addOrIncrementRequestItemFromTransport(");
+    expect(serviceSource).toContain("updateRequestItemMetaFromTransport(itemId, patch)");
+    expect(serviceSource).not.toContain('supabase.from("request_items")');
+    expect(serviceSource).not.toContain('supabase.rpc("request_item_add_or_inc"');
 
     expect(transportSource).not.toContain("mapRequestRow");
     expect(transportSource).not.toContain("validateRpcResponse");
     expect(transportSource).not.toContain("request_item_add_or_inc");
     expect(transportSource).not.toContain("request_items");
+
+    expect(itemMutationTransportSource).toContain("request_item_add_or_inc");
+    expect(itemMutationTransportSource).toContain("request_items");
   });
 });
