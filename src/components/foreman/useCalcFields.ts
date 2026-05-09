@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import {
+  createGuardedPagedQuery,
+  isRecordRow,
   loadPagedRowsWithCeiling,
-  type PagedQuery,
 } from "../../../src/lib/api/_core";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { enrichFieldUiMeta, type FieldUiPriority } from "./calcFieldProfiles";
@@ -53,11 +54,7 @@ type FieldRow = {
   used_in_norms?: boolean | null;
 };
 
-const asRecord = (v: unknown): Record<string, unknown> =>
-  v && typeof v === "object" ? (v as Record<string, unknown>) : {};
-
-const toFieldRow = (v: unknown): FieldRow | null => {
-  const r = asRecord(v);
+const toFieldRow = (r: Record<string, unknown>): FieldRow | null => {
   const basis_key = String(r.basis_key ?? "").trim();
   if (!basis_key) return null;
   return {
@@ -76,12 +73,13 @@ async function fetchCalcFieldRows(
   viewName: CalcFieldsViewName,
   workTypeCode: string,
 ): Promise<FieldRow[]> {
-  const result = await loadPagedRowsWithCeiling<unknown>(
+  const result = await loadPagedRowsWithCeiling<Record<string, unknown>>(
     () =>
-      supabase
-        .from(viewName)
-        .select(
-          `
+      createGuardedPagedQuery(
+        supabase
+          .from(viewName)
+          .select(
+            `
         basis_key,
         label_ru,
         uom_code,
@@ -91,12 +89,15 @@ async function fetchCalcFieldRows(
         sort_order,
         used_in_norms
       `,
-        )
-        .eq("work_type_code", workTypeCode)
-        .order("sort_order", { ascending: true })
-        .order("basis_key", {
-          ascending: true,
-        }) as unknown as PagedQuery<unknown>,
+          )
+          .eq("work_type_code", workTypeCode)
+          .order("sort_order", { ascending: true })
+          .order("basis_key", {
+            ascending: true,
+          }),
+        isRecordRow,
+        `useCalcFields.${viewName}`,
+      ),
     CALC_FIELDS_PAGE_DEFAULTS,
   );
 

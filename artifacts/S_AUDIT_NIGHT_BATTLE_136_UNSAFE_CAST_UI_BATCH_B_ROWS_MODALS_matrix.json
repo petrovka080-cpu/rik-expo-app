@@ -1,0 +1,190 @@
+{
+  "wave": 136,
+  "slug": "UNSAFE_CAST_UI_BATCH_B_ROWS_MODALS",
+  "createdAt": "2026-05-09T22:49:58.8319777+06:00",
+  "baseHead": "451ea14d79b4d76fc2d13e979feed71a6bfe5af5",
+  "goal": "Reduce unsafe casts in row and modal components without changing modal or map behavior.",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/screens/buyer/components/BuyerItemRow.tsx",
+      "src/screens/buyer/BuyerSubcontractTab.tsx",
+      "src/screens/buyer/buyerSubcontractForm.model.ts",
+      "src/components/foreman/useCalcFields.ts",
+      "src/components/foreman/WorkTypePicker.tsx",
+      "tests/buyer/buyerSubcontractForm.model.test.ts",
+      "tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts",
+      "tests/api/referenceListPageCeiling.contract.test.ts",
+      "tests/api/topListPaginationBatch6.contract.test.ts"
+    ],
+    "priorityTargetsScanned": [
+      "src/screens/buyer/components/BuyerItemRow.tsx",
+      "src/components/foreman/CalcModal.tsx",
+      "src/screens/buyer/BuyerSubcontractTab.tsx",
+      "src/components/map/MapScreen.tsx",
+      "src/components/foreman/useCalcFields.ts",
+      "src/components/foreman/WorkTypePicker.tsx"
+    ],
+    "notSelected": [
+      {
+        "file": "src/components/foreman/CalcModal.tsx",
+        "reason": "Fresh scan found no selected source unsafe cast findings; behavior covered by existing focused modal tests."
+      },
+      {
+        "file": "src/components/map/MapScreen.tsx",
+        "reason": "Fresh scan found no selected source unsafe cast findings; map behavior was not changed."
+      },
+      {
+        "files": [
+          "tests/foreman/CalcModal.test.tsx",
+          "tests/map/mapscreen-cache.test.ts"
+        ],
+        "reason": "Existing test-only third-party/mock casts were not part of this production UI source reduction batch."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+      "count": 4,
+      "pattern": "optional field casts for director reject fields and last offer fields",
+      "fix": "Used the existing typed BuyerInboxRow optional fields directly."
+    },
+    {
+      "file": "src/screens/buyer/BuyerSubcontractTab.tsx",
+      "count": 5,
+      "pattern": "work mode and price type casts, contractor row casts, and contractor attach as never",
+      "fix": "Moved select payload mapping and contractor row narrowing into typed model helpers, and replaced as never with a typed attach patch builder."
+    },
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "count": 2,
+      "pattern": "record helper cast and paged query unknown cast",
+      "fix": "Reused createGuardedPagedQuery with isRecordRow and typed page rows as Record<string, unknown>."
+    },
+    {
+      "file": "src/components/foreman/WorkTypePicker.tsx",
+      "count": 2,
+      "pattern": "record helper cast and paged query unknown cast",
+      "fix": "Reused createGuardedPagedQuery with isRecordRow and typed page rows as Record<string, unknown>."
+    }
+  ],
+  "counts": {
+    "selectedRowModalCastFindings": {
+      "before": 13,
+      "after": 0,
+      "reduced": 13
+    },
+    "selectedSourceBannedPatterns": {
+      "before": 13,
+      "after": 0
+    },
+    "mapSourceBehaviorChanges": 0,
+    "productionDirectSupabaseServiceBypassFindings": 0,
+    "transportControlledFindings": 175,
+    "productionRawLoopUnapprovedFindings": 0
+  },
+  "changes": [
+    {
+      "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+      "change": "Removed optional field casts by reading director reject and last offer fields from the typed row contract."
+    },
+    {
+      "file": "src/screens/buyer/buyerSubcontractForm.model.ts",
+      "change": "Added contractor row guards, row list filters, and nullable DTO helpers for subcontract select state."
+    },
+    {
+      "file": "src/screens/buyer/BuyerSubcontractTab.tsx",
+      "change": "Replaced form value casts and contractor row casts with typed helpers; replaced contractor attach as never with a typed patch builder."
+    },
+    {
+      "file": "src/components/foreman/useCalcFields.ts",
+      "change": "Replaced unknown paged query cast and record cast helper with guarded paged query row validation."
+    },
+    {
+      "file": "src/components/foreman/WorkTypePicker.tsx",
+      "change": "Replaced unknown paged query cast and record cast helper with guarded paged query row validation."
+    },
+    {
+      "file": "tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts",
+      "change": "Added a static contract for selected row, modal, and map source files plus guarded paged query adapters."
+    },
+    {
+      "files": [
+        "tests/api/referenceListPageCeiling.contract.test.ts",
+        "tests/api/topListPaginationBatch6.contract.test.ts"
+      ],
+      "change": "Updated existing pagination contracts to assert the stronger guarded Record<string, unknown> ceiling path."
+    }
+  ],
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/referenceListPageCeiling.contract.test.ts tests/api/topListPaginationBatch6.contract.test.ts tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts tests/buyer/buyerSubcontractForm.model.test.ts tests/buyer/buyerItemRow.decomposition.test.ts tests/buyer/buyerSubcontractTab.decomposition.test.ts tests/foreman/CalcModal.test.tsx tests/map/MapScreen.model.test.ts",
+    "status": "PASS",
+    "suites": 8,
+    "tests": 30
+  },
+  "gates": {
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "suitesPassed": 670,
+      "suitesSkipped": 1,
+      "testsPassed": 3976,
+      "testsSkipped": 1,
+      "initialRun": {
+        "status": "FAIL",
+        "reason": "Two existing pagination source-contract tests still expected loadPagedRowsWithCeiling<unknown>; they were updated to the stronger guarded Record<string, unknown> contract and rerun."
+      }
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0,
+      "productionRawLoopUnapprovedFindings": 0
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deploy": false,
+    "ota": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

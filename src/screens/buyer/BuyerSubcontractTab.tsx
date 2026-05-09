@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@/src/ui/FlashList";
 
 import { supabase } from "../../lib/supabaseClient";
+import type { Database } from "../../lib/database.types";
 import SingleDatePickerSheet from "../../components/SingleDatePickerSheet";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import ForemanDropdown from "../foreman/ForemanDropdown";
@@ -25,10 +26,13 @@ import {
   BUYER_SUBCONTRACT_EMPTY_FORM as EMPTY_FORM,
   BUYER_SUBCONTRACT_UOM_OPTIONS as UOM_OPTIONS,
   buyerSubcontractToNum as toNum,
+  filterBuyerSubcontractContractorRows,
+  firstBuyerSubcontractContractorRow,
   getBuyerSubcontractErrorText as errText,
   normalizeBuyerSubcontractInn as normalizeInn,
   normalizeBuyerSubcontractPhone996 as normalizePhone996,
-  type BuyerSubcontractContractorRow as ContractorRow,
+  toBuyerSubcontractPriceType,
+  toBuyerSubcontractWorkMode,
   type BuyerSubcontractFormState as FormState,
 } from "./buyerSubcontractForm.model";
 import { resolveCurrentBuyerSubcontractUserId } from "./BuyerSubcontractTab.auth.transport";
@@ -46,9 +50,14 @@ import {
   submitSubcontract,
   updateSubcontract,
   type Subcontract,
-  type SubcontractPriceType,
-  type SubcontractWorkMode,
 } from "../subcontracts/subcontracts.shared";
+
+type SubcontractUpdate = Database["public"]["Tables"]["subcontracts"]["Update"];
+type ContractorAttachPatch = SubcontractUpdate & { contractor_id: string };
+
+const buildContractorAttachPatch = (contractorId: string): ContractorAttachPatch => ({
+  contractor_id: contractorId,
+});
 
 const warnBuyerSubcontract = (
   scope: "load error" | "contractor_id attach skipped" | "contractor_id attach exception",
@@ -169,10 +178,10 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       uom: form.uom || null,
       date_start: form.dateStart || null,
       date_end: form.dateEnd || null,
-      work_mode: (form.workMode || null) as SubcontractWorkMode | null,
+      work_mode: toBuyerSubcontractWorkMode(form.workMode),
       price_per_unit: toNum(form.pricePerUnit),
       total_price: toNum(form.totalPrice),
-      price_type: (form.priceType || null) as SubcontractPriceType | null,
+      price_type: toBuyerSubcontractPriceType(form.priceType),
       foreman_comment: form.foremanComment.trim() || null,
     };
   }, [buyerFio, form]);
@@ -187,7 +196,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       .eq("phone", pn)
       .limit(1);
     if (!direct.error && Array.isArray(direct.data) && direct.data.length > 0) {
-      const first = (direct.data[0] ?? null) as ContractorRow | null;
+      const first = firstBuyerSubcontractContractorRow(direct.data);
       return String(first?.id ?? "").trim() || null;
     }
 
@@ -199,7 +208,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
       .ilike("phone", `%${tail}`)
       .limit(20);
     if (fallback.error || !Array.isArray(fallback.data)) return null;
-    const rows = fallback.data as ContractorRow[];
+    const rows = filterBuyerSubcontractContractorRows(fallback.data);
     const matched = rows.find((row) => normalizePhone996(String(row?.phone || "")) === pn);
     return matched ? String(matched.id ?? "").trim() || null : null;
   }, []);
@@ -211,7 +220,7 @@ export default function BuyerSubcontractTab({ contentTopPad, onScroll, buyerFio 
     try {
       const upd = await supabase
         .from("subcontracts")
-        .update({ contractor_id: cid } as never)
+        .update(buildContractorAttachPatch(cid))
         .eq("id", sid);
       if (upd.error && __DEV__) {
         warnBuyerSubcontract("contractor_id attach skipped", upd.error.message);

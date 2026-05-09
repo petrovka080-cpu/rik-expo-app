@@ -12,7 +12,12 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { normalizePage } from '../../lib/api/_core';
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  normalizePage,
+  type PagedQuery,
+} from '../../lib/api/_core';
 import { supabase } from '../../../src/lib/supabaseClient';
 
 type Props = {
@@ -43,12 +48,8 @@ type PagedWorkTypeResult<T> = {
   error: unknown;
 };
 
-type PagedWorkTypeQuery<T> = {
-  range: (from: number, to: number) => Promise<PagedWorkTypeResult<T>>;
-};
-
 const loadPagedWorkTypeRows = async <T,>(
-  queryFactory: () => PagedWorkTypeQuery<T>,
+  queryFactory: () => PagedQuery<T>,
 ): Promise<PagedWorkTypeResult<T>> => {
   const rows: T[] = [];
 
@@ -64,11 +65,8 @@ const loadPagedWorkTypeRows = async <T,>(
 };
 
 const sanitize = (v: unknown) => (v == null ? '' : String(v).trim());
-const asRecord = (v: unknown): Record<string, unknown> =>
-  v && typeof v === 'object' ? (v as Record<string, unknown>) : {};
 
-const toRow = (v: unknown): Row | null => {
-  const r = asRecord(v);
+const toRow = (r: Record<string, unknown>): Row | null => {
   const code = sanitize(r.code);
   if (!code) return null;
   return {
@@ -101,13 +99,17 @@ export default function WorkTypePicker({ visible, onClose, onSelect }: Props) {
       try {
         setLoading(true);
 
-        const { data, error: fetchError } = await loadPagedWorkTypeRows<Row>(() =>
-          supabase
-            .from('v_work_types_picker')
-            .select('code, work_name_ru, family_code, family_short_name_ru, family_sort')
-            .order('family_sort', { ascending: true })
-            .order('work_name_ru', { ascending: true })
-            .order('code', { ascending: true }) as unknown as PagedWorkTypeQuery<Row>,
+        const { data, error: fetchError } = await loadPagedWorkTypeRows<Record<string, unknown>>(() =>
+          createGuardedPagedQuery(
+            supabase
+              .from('v_work_types_picker')
+              .select('code, work_name_ru, family_code, family_short_name_ru, family_sort')
+              .order('family_sort', { ascending: true })
+              .order('work_name_ru', { ascending: true })
+              .order('code', { ascending: true }),
+            isRecordRow,
+            'WorkTypePicker.v_work_types_picker',
+          ),
         );
 
         if (fetchError) throw fetchError;

@@ -11,7 +11,9 @@ describe("S-REFERENCE-LISTS-PAGE-CEILING-1 contract", () => {
     const calcFields = read("src/components/foreman/useCalcFields.ts");
     expect(calcFields).toContain("const CALC_FIELDS_PAGE_DEFAULTS = {");
     expect(calcFields).toContain("maxRows: 5000");
-    expect(calcFields).toContain("loadPagedRowsWithCeiling<unknown>");
+    expect(calcFields).toContain("loadPagedRowsWithCeiling<Record<string, unknown>>");
+    expect(calcFields).toContain("createGuardedPagedQuery");
+    expect(calcFields).toContain("isRecordRow");
     expect(calcFields).toContain(".order(\"sort_order\",");
     expect(calcFields).toContain(".order(\"basis_key\",");
     expect(calcFields).not.toContain("while (true)");

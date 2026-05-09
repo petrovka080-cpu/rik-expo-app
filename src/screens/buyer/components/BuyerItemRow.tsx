@@ -541,12 +541,12 @@ function BuyerItemRowInner(props: {
   const { user: noteUser } = splitNote(m.note);
 
   const rejectReason = String(
-    (it as { director_reject_reason?: unknown }).director_reject_reason ??
-    (it as { director_reject_note?: unknown }).director_reject_note ??
+    it.director_reject_reason ??
+    it.director_reject_note ??
     "",
   ).trim();
-  const lastOfferSupplier = String((it as { last_offer_supplier?: unknown }).last_offer_supplier ?? "").trim();
-  const lastOfferPriceRaw = (it as { last_offer_price?: unknown }).last_offer_price;
+  const lastOfferSupplier = String(it.last_offer_supplier ?? "").trim();
+  const lastOfferPriceRaw = it.last_offer_price;
   const lastOfferPrice =
     typeof lastOfferPriceRaw === "number" && Number.isFinite(lastOfferPriceRaw)
       ? lastOfferPriceRaw

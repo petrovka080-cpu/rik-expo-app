@@ -139,7 +139,9 @@ describe("S-PAG-6 remaining safe list pagination contract", () => {
     expect(calcFields).toContain("async function fetchCalcFieldRows");
     expect(calcFields).toContain('.order("sort_order", { ascending: true })');
     expect(calcFields).toContain('.order("basis_key",');
-    expect(calcFields).toContain("loadPagedRowsWithCeiling<unknown>");
+    expect(calcFields).toContain("loadPagedRowsWithCeiling<Record<string, unknown>>");
+    expect(calcFields).toContain("createGuardedPagedQuery");
+    expect(calcFields).toContain("isRecordRow");
   });
 
   it("does not cap forbidden PDF, report, detail, integrity, queue, stock, package, or native surfaces", () => {

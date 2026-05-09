@@ -2,9 +2,14 @@ import {
   BUYER_SUBCONTRACT_EMPTY_FORM,
   BUYER_SUBCONTRACT_UOM_OPTIONS,
   buyerSubcontractToNum,
+  filterBuyerSubcontractContractorRows,
+  firstBuyerSubcontractContractorRow,
   getBuyerSubcontractErrorText,
+  isBuyerSubcontractContractorRow,
   normalizeBuyerSubcontractInn,
   normalizeBuyerSubcontractPhone996,
+  toBuyerSubcontractPriceType,
+  toBuyerSubcontractWorkMode,
 } from "../../src/screens/buyer/buyerSubcontractForm.model";
 
 describe("buyerSubcontractForm.model", () => {
@@ -72,5 +77,36 @@ describe("buyerSubcontractForm.model", () => {
     expect(getBuyerSubcontractErrorText(new Error(" saved message "), "fallback")).toBe("saved message");
     expect(getBuyerSubcontractErrorText(new Error("   "), "fallback")).toBe("fallback");
     expect(getBuyerSubcontractErrorText("plain failure", "fallback")).toBe("fallback");
+  });
+
+  it("narrows contractor rows while preserving optional id and phone fields", () => {
+    expect(isBuyerSubcontractContractorRow({ id: "contractor-1", phone: "+996555000111" })).toBe(true);
+    expect(isBuyerSubcontractContractorRow({ id: null })).toBe(true);
+    expect(isBuyerSubcontractContractorRow({ id: 42, phone: "+996555000111" })).toBe(false);
+    expect(isBuyerSubcontractContractorRow(null)).toBe(false);
+
+    const mixedRows = [
+      { id: 42, phone: "+996555000000" },
+      { id: "contractor-1", phone: null },
+      { id: "contractor-2", phone: "+996555000222" },
+    ];
+
+    expect(firstBuyerSubcontractContractorRow(mixedRows)).toEqual({
+      id: "contractor-1",
+      phone: null,
+    });
+    expect(filterBuyerSubcontractContractorRows(mixedRows)).toEqual([
+      { id: "contractor-1", phone: null },
+      { id: "contractor-2", phone: "+996555000222" },
+    ]);
+    expect(firstBuyerSubcontractContractorRow("not rows")).toBeNull();
+    expect(filterBuyerSubcontractContractorRows("not rows")).toEqual([]);
+  });
+
+  it("maps select state into nullable typed subcontract DTO fields", () => {
+    expect(toBuyerSubcontractWorkMode("turnkey")).toBe("turnkey");
+    expect(toBuyerSubcontractWorkMode("")).toBeNull();
+    expect(toBuyerSubcontractPriceType("by_hour")).toBe("by_hour");
+    expect(toBuyerSubcontractPriceType("")).toBeNull();
   });
 });

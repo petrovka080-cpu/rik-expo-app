@@ -24,6 +24,42 @@ export type BuyerSubcontractFormState = {
 
 export type BuyerSubcontractContractorRow = { id?: string | null; phone?: string | null };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const hasOptionalString = (
+  row: Record<string, unknown>,
+  key: "id" | "phone",
+): boolean => {
+  const value = row[key];
+  return value == null || typeof value === "string";
+};
+
+export const isBuyerSubcontractContractorRow = (
+  value: unknown,
+): value is BuyerSubcontractContractorRow =>
+  isRecord(value) && hasOptionalString(value, "id") && hasOptionalString(value, "phone");
+
+export const firstBuyerSubcontractContractorRow = (
+  value: unknown,
+): BuyerSubcontractContractorRow | null => {
+  if (!Array.isArray(value)) return null;
+  return value.find(isBuyerSubcontractContractorRow) ?? null;
+};
+
+export const filterBuyerSubcontractContractorRows = (
+  value: unknown,
+): BuyerSubcontractContractorRow[] =>
+  Array.isArray(value) ? value.filter(isBuyerSubcontractContractorRow) : [];
+
+export const toBuyerSubcontractWorkMode = (
+  value: BuyerSubcontractFormState["workMode"],
+): SubcontractWorkMode | null => value || null;
+
+export const toBuyerSubcontractPriceType = (
+  value: BuyerSubcontractFormState["priceType"],
+): SubcontractPriceType | null => value || null;
+
 export const BUYER_SUBCONTRACT_EMPTY_FORM: BuyerSubcontractFormState = {
   contractorOrg: "",
   contractorInn: "",
