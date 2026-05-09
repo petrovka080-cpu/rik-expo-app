@@ -118,8 +118,32 @@
       "command": "git diff --check"
     },
     "releaseVerifyPostPush": {
-      "status": "PENDING",
-      "command": "npm run release:verify -- --json"
+      "status": "PASS",
+      "command": "npm run release:verify -- --json",
+      "recordedAt": "2026-05-09T20:40:08.7549750+06:00",
+      "verifiedHeadCommit": "2df9531fe7ae3adc44737b29c5c9650b7dbfe3cd",
+      "verifiedOriginMainCommit": "2df9531fe7ae3adc44737b29c5c9650b7dbfe3cd",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "aheadBehind": "0/0",
+      "readinessStatus": "pass",
+      "classificationKind": "runtime-ota",
+      "changeClass": "js-logic",
+      "runtimeFiles": [
+        "src/screens/buyer/buyer.repo.read.transport.ts"
+      ],
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easUpdateTriggered": false,
+      "releaseGates": [
+        "tsc",
+        "expo-lint",
+        "architecture-anti-regression",
+        "jest-run-in-band",
+        "jest",
+        "git-diff-check"
+      ],
+      "note": "Release verification allowed the runtime OTA disposition for the JS logic change; no deploy or OTA publish was executed."
     }
   },
   "negativeConfirmations": {
