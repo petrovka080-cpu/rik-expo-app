@@ -1,0 +1,123 @@
+{
+  "wave": 126,
+  "slug": "WORKER_RUNNER_LIFECYCLE_BOUNDARY",
+  "goal": "Close the highest-risk C2 production worker finding by replacing the queue runner's unconditional restart loop with an explicit lifecycle and bounded bootstrap restart policy.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "47cf80168b34b61af8ee0ffbf7605314bb5729ec",
+    "originMain": "47cf80168b34b61af8ee0ffbf7605314bb5729ec",
+    "aheadBehind": "0/0"
+  },
+  "freshSearchBefore": {
+    "whileTrueFindings": 17,
+    "forInfiniteFindings": 0,
+    "productionWorkerWhileTrueFindings": [
+      {
+        "file": "scripts/run-queue-worker.ts",
+        "line": 62,
+        "matchedCall": "while (true)"
+      }
+    ]
+  },
+  "selectedFiles": [
+    "scripts/run-queue-worker.ts",
+    "tests/workers/queueRunnerLifecycle.contract.test.ts"
+  ],
+  "reasonSelected": [
+    "Wave 125 inventory identified scripts/run-queue-worker.ts as the only production worker while(true) finding.",
+    "The scope is the runner lifecycle wrapper only; queue processing semantics in src/workers/queueWorker.ts were not changed.",
+    "The change adds a focused contract test for no unconditional runner loop, explicit backoff, bounded bootstrap retries, signal shutdown, and no silent catch."
+  ],
+  "before": {
+    "runnerLoop": "while (true)",
+    "runnerCancellationPredicate": "signal handlers only",
+    "runnerBootstrapBackoffMs": 5000,
+    "runnerMaxBootstrapRestarts": null,
+    "runnerStopCatch": "silent catch"
+  },
+  "after": {
+    "runnerLoop": "while (!stopped)",
+    "runnerCancellationPredicate": "explicit stopped flag plus SIGINT/SIGTERM stop path",
+    "runnerBootstrapBackoffMs": {
+      "default": 5000,
+      "min": 1000,
+      "max": 60000,
+      "envOverride": "QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS"
+    },
+    "runnerMaxBootstrapRestarts": {
+      "default": 20,
+      "min": 1,
+      "max": 100,
+      "envOverride": "QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS"
+    },
+    "runnerStopCatch": "typed warning with message",
+    "runnerRestartLimitExit": "process.exitCode = 1"
+  },
+  "freshSearchAfter": {
+    "whileTrueFindings": 16,
+    "forInfiniteFindings": 0,
+    "productionWorkerWhileTrueFindings": 0,
+    "runnerWhileTrueFindings": 0,
+    "remainingFindings": {
+      "nonWorkerScriptLoops": 5,
+      "testOnlyStringGuards": 11
+    }
+  },
+  "focusedCommands": [
+    {
+      "command": "npx jest tests/workers/queueRunnerLifecycle.contract.test.ts --runInBand",
+      "status": "PASS",
+      "summary": "3 tests passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    }
+  ],
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "gateEvidence": {
+    "focusedTests": "npx jest tests/workers/queueRunnerLifecycle.contract.test.ts --runInBand; 3 tests passed",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 660 suites passed, 1 skipped, 3915 tests passed",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

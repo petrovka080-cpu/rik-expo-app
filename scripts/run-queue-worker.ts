@@ -2,6 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+const DEFAULT_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 5_000;
+const MIN_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 1_000;
+const MAX_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS = 60_000;
+const DEFAULT_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS = 20;
+const MAX_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS = 100;
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function ignoreBrokenPipe(stream: NodeJS.WriteStream | undefined) {
@@ -26,6 +32,53 @@ function loadEnvFile(filePath: string) {
   }
 }
 
+function finiteInteger(value: unknown): number | null {
+  const parsed = Math.floor(Number(value));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function clampPositiveInteger(
+  value: unknown,
+  fallback: number,
+  min: number,
+  max: number,
+): number {
+  const parsed = finiteInteger(value);
+  const parsedFallback = finiteInteger(fallback);
+  const candidate =
+    parsed != null && parsed > 0
+      ? parsed
+      : parsedFallback != null && parsedFallback > 0
+        ? parsedFallback
+        : min;
+
+  return Math.max(min, Math.min(max, candidate));
+}
+
+export function resolveQueueRunnerRestartBackoffMs(value: unknown): number {
+  return clampPositiveInteger(
+    value,
+    DEFAULT_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS,
+    MIN_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS,
+    MAX_QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS,
+  );
+}
+
+export function resolveQueueRunnerMaxBootstrapRestarts(value: unknown): number {
+  return clampPositiveInteger(
+    value,
+    DEFAULT_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS,
+    1,
+    MAX_QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS,
+  );
+}
+
+function errorMessage(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  const message = String(error ?? "").trim();
+  return message || fallback;
+}
+
 const root = process.cwd();
 loadEnvFile(path.join(root, ".env.local"));
 loadEnvFile(path.join(root, ".env"));
@@ -35,19 +88,39 @@ ignoreBrokenPipe(process.stderr);
 
 async function main() {
   const { SERVER_SUPABASE_KEY_KIND } = await import("../src/lib/server/serverSupabaseEnv");
+  const restartBackoffMs = resolveQueueRunnerRestartBackoffMs(
+    process.env.QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS,
+  );
+  const maxBootstrapRestarts = resolveQueueRunnerMaxBootstrapRestarts(
+    process.env.QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS,
+  );
 
   console.info("[queue.runner] starting", {
     JOB_QUEUE_ENABLED:
       process.env.EXPO_PUBLIC_JOB_QUEUE_ENABLED ?? process.env.JOB_QUEUE_ENABLED ?? null,
     SUPABASE_KEY_KIND: SERVER_SUPABASE_KEY_KIND,
+    QUEUE_RUNNER_BOOTSTRAP_RESTART_BACKOFF_MS: restartBackoffMs,
+    QUEUE_RUNNER_MAX_BOOTSTRAP_RESTARTS: maxBootstrapRestarts,
   });
 
   let handle: { stop: () => void } | null = null;
+  let stopped = false;
+  let resolveStopped: (() => void) | null = null;
+  let bootstrapRestartCount = 0;
 
   const stop = () => {
+    stopped = true;
     try {
       handle?.stop();
-    } catch {}
+    } catch (error: unknown) {
+      console.warn("[queue.runner] stop failed", {
+        message: errorMessage(error, "unknown worker stop error"),
+      });
+    } finally {
+      handle = null;
+      resolveStopped?.();
+      resolveStopped = null;
+    }
   };
 
   process.on("SIGINT", () => {
@@ -59,23 +132,42 @@ async function main() {
     process.exit(0);
   });
 
-  while (true) {
+  while (!stopped) {
     try {
       const { startServerQueueWorker } = await import("../src/workers/queueWorker.server");
       handle = startServerQueueWorker({
         workerId: `node:${Date.now().toString(36)}`,
       });
+      bootstrapRestartCount = 0;
 
-      await new Promise<void>(() => {
+      await new Promise<void>((resolve) => {
         // Keep process alive while the worker loop runs.
+        resolveStopped = resolve;
       });
     } catch (error: unknown) {
-      const message =
-        error instanceof Error && error.message.trim()
-          ? error.message.trim()
-          : String(error ?? "unknown worker bootstrap error");
-      console.error("[queue.runner] crashed, restarting", { message });
-      await sleep(5000);
+      if (stopped) break;
+
+      bootstrapRestartCount += 1;
+      const message = errorMessage(error, "unknown worker bootstrap error");
+
+      if (bootstrapRestartCount > maxBootstrapRestarts) {
+        console.error("[queue.runner] bootstrap restart limit reached", {
+          message,
+          bootstrapRestartCount,
+          maxBootstrapRestarts,
+        });
+        process.exitCode = 1;
+        stop();
+        return;
+      }
+
+      console.error("[queue.runner] crashed, restarting", {
+        message,
+        bootstrapRestartCount,
+        maxBootstrapRestarts,
+        restartBackoffMs,
+      });
+      await sleep(restartBackoffMs);
     }
   }
 }
