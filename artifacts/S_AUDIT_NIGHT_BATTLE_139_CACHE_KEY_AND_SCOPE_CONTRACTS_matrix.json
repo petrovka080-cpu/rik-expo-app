@@ -1,0 +1,186 @@
+{
+  "wave": 139,
+  "slug": "CACHE_KEY_AND_SCOPE_CONTRACTS",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Close cache key, role leak, and stale-data risk for top cache candidates without enabling production cache.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "088e0af67619d583fa26831982c88eb0c7b71540"
+  },
+  "freshScans": {
+    "commands": [
+      "rg -n \"buildSafeCacheKey|cache key|CacheKey|filtersHash|queryHash|payloadClass\" src scripts tests docs",
+      "rg -n \"request\\\\.proposal\\\\.list|director\\\\.pending\\\\.list|marketplace\\\\.catalog\\\\.search\" src/shared/scale scripts/server tests/scale docs artifacts",
+      "rg -n \"locale|status|sort|role|userId|actor|requestId|projectId|objectId\" src/shared/scale scripts/server tests/scale docs",
+      "rg -n \"as any|@ts-ignore|catch \\\\{\\\\}|unknown as\" src/shared/scale/cachePolicies.ts tests/scale/cacheKeyScopeContracts.test.ts"
+    ],
+    "summary": {
+      "centralKeyBuilderFound": "src/shared/scale/cacheKeySafety.ts::buildSafeCacheKey",
+      "existingHashDimensionsFound": ["queryHash", "filtersHash"],
+      "topCandidatesFromWave138": [
+        "marketplace.catalog.search",
+        "request.proposal.list",
+        "director.pending.list"
+      ],
+      "adjacentFinanceRiskLocked": "accountant.invoice.list actor scope added because payloadClass=finance_sensitive",
+      "newUnsafeSuppressionPatternsAdded": 0
+    }
+  },
+  "selectedFiles": [
+    {
+      "file": "src/shared/scale/cachePolicies.ts",
+      "changeType": "updated",
+      "reason": "Add missing scope dimensions to existing cache policies; leave defaults disabled and TTLs unchanged."
+    },
+    {
+      "file": "tests/scale/cacheKeyScopeContracts.test.ts",
+      "changeType": "added",
+      "reason": "Focused contract tests for user, role, filter, id, pagination, locale, and null/undefined key separation."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_139_CACHE_KEY_AND_SCOPE_CONTRACTS_matrix.json",
+      "changeType": "added",
+      "reason": "Wave matrix artifact."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_139_CACHE_KEY_AND_SCOPE_CONTRACTS_proof.md",
+      "changeType": "added",
+      "reason": "Wave proof artifact."
+    }
+  ],
+  "before": {
+    "marketplace.catalog.search": {
+      "keyParts": ["companyId", "queryHash", "category", "page", "pageSize"],
+      "risk": "filter, sort, direction, scope, and locale could collapse into one future read-through key"
+    },
+    "request.proposal.list": {
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "risk": "same company and role users could share tenant-sensitive cache"
+    },
+    "director.pending.list": {
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "risk": "same company and role users could share approval-sensitive cache"
+    },
+    "accountant.invoice.list": {
+      "keyParts": ["companyId", "role", "page", "pageSize", "filtersHash"],
+      "risk": "same company and role users could share finance-sensitive cache"
+    }
+  },
+  "after": {
+    "marketplace.catalog.search": {
+      "keyParts": ["companyId", "queryHash", "category", "page", "pageSize", "filtersHash", "locale"],
+      "status": "filter, sort, direction, scope, locale, pagination, category, and query scoped"
+    },
+    "request.proposal.list": {
+      "keyParts": ["companyId", "actorIdHash", "role", "page", "pageSize", "filtersHash"],
+      "status": "actor, role, company, pagination, request/project/object/status/filter scoped"
+    },
+    "director.pending.list": {
+      "keyParts": ["companyId", "actorIdHash", "role", "page", "pageSize", "filtersHash"],
+      "status": "actor, role, company, pagination, request/project/object/status/filter scoped"
+    },
+    "accountant.invoice.list": {
+      "keyParts": ["companyId", "actorIdHash", "role", "page", "pageSize", "filtersHash"],
+      "status": "actor, role, company, pagination, finance filter scoped"
+    },
+    "cacheDefaultsChanged": false,
+    "ttlChanged": false,
+    "productionCacheEnabled": false
+  },
+  "contractCoverage": [
+    "two users do not share sensitive cache keys",
+    "two roles do not share sensitive cache keys",
+    "different filters produce different keys",
+    "same semantic input produces the same key",
+    "object/project/request ids in filters affect the key",
+    "pagination affects the key",
+    "marketplace query/filter/sort/direction/scope/locale affect the key",
+    "undefined and null normalize consistently",
+    "auth/session secret material is rejected",
+    "raw company, actor, request, project, and object ids are not printed in keys"
+  ],
+  "scannerBaseline": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "directSupabase": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "testOnlyFindings": 47,
+      "unclassifiedCurrentFindings": 0
+    },
+    "cacheRateScope": {
+      "cacheCanaryRouteScoped": true,
+      "cacheAllowedRoute": "marketplace.catalog.search",
+      "rateLimitCanaryRoute": "marketplace.catalog.search",
+      "rateLimitCanaryPercent": 1
+    },
+    "productionRawLoops": {
+      "totalFindings": 0,
+      "unapprovedFindings": 0
+    },
+    "unsafeCastRatchet": {
+      "baselineTotal": 189,
+      "currentTotal": 189,
+      "criticalFolderViolations": 0,
+      "allowlistedFindings": 0
+    }
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheKeyScopeContracts.test.ts tests/scale/cacheIntegrationBoundary.test.ts tests/scale/cacheMarketplaceShadowCanaryContract.test.ts",
+      "summary": "3 suites, 31 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "673 passed, 1 skipped, 674 total suites; 3998 passed, 1 skipped, 3999 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
