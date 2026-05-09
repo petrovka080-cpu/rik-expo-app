@@ -1,0 +1,165 @@
+{
+  "wave": 140,
+  "slug": "CACHE_STALE_DATA_CONTRACTS",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Close the remaining cache stale-data risk after key/scope contracts without enabling production cache.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "9dedd62637070c0a136f17ae24058ba41f860a84"
+  },
+  "freshScans": {
+    "commands": [
+      "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "rg -n \"score|cache|rate-limit|canary|risk|TODO|FIXME|unsafe|while|bypass\" artifacts docs scripts src tests",
+      "rg -n \"cache|ttl|stale|invalidate|canary|rateLimit|buildSafeCacheKey|cachePolicies|cachePolicy|shadow\" src/shared/scale scripts/server tests/scale docs/operations",
+      "rg -n \"invalidateByTag|isCacheInvalidationExecutionEnabled|getInvalidationTagsForOperation|invalidationTags|staleWhileRevalidate|ttlMs\" src/shared/scale scripts/server tests/scale docs/architecture docs/operations"
+    ],
+    "summary": {
+      "architectureScannerGreen": true,
+      "cacheCanaryRouteScoped": true,
+      "cacheAllowedRoute": "marketplace.catalog.search",
+      "serviceBypassFindings": 0,
+      "unclassifiedDirectSupabaseFindings": 0,
+      "productionRawLoops": 0,
+      "unsafeCastRatchetCriticalFolderViolations": 0
+    }
+  },
+  "selectedFiles": [
+    {
+      "file": "tests/scale/cacheStaleDataContracts.test.ts",
+      "changeType": "added",
+      "reason": "Focused contract tests for TTL freshness, stale serving prevention, and mutation tag coverage."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_140_CACHE_STALE_DATA_CONTRACTS_matrix.json",
+      "changeType": "added",
+      "reason": "Wave matrix artifact."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_140_CACHE_STALE_DATA_CONTRACTS_proof.md",
+      "changeType": "added",
+      "reason": "Wave proof artifact."
+    }
+  ],
+  "before": {
+    "keyScopeContracts": "GREEN from wave 139",
+    "remainingRisk": [
+      "marketplace read-through needed proof that TTL expiry returns to live port instead of serving stale-window data",
+      "tenant, finance, and stock routes needed focused proof that read-through mode cannot serve cached stale responses",
+      "sensitive read routes needed explicit mutation tag coverage proof while invalidation execution remains disabled"
+    ],
+    "productionCacheEnabled": false
+  },
+  "after": {
+    "marketplace.catalog.search": {
+      "staleDataControl": "read-through cache expires at policy ttlMs and calls the live port after expiration",
+      "ttlMs": 120000,
+      "staleWhileRevalidateMs": 300000,
+      "staleWindowServed": false,
+      "productionCacheEnabled": false
+    },
+    "nonPublicPayloadRoutes": {
+      "routes": [
+        "request.proposal.list",
+        "warehouse.ledger.list",
+        "accountant.invoice.list",
+        "director.pending.list"
+      ],
+      "readThroughServing": "blocked by payloadClass gate",
+      "identicalRequestsUseLivePort": true,
+      "cacheWrites": 0
+    },
+    "mutationTagCoverage": [
+      {
+        "route": "request.proposal.list",
+        "operation": "proposal.submit",
+        "requiredTags": ["request", "proposal", "director_pending"]
+      },
+      {
+        "route": "director.pending.list",
+        "operation": "director.approval.apply",
+        "requiredTags": ["director", "approval", "proposal"]
+      },
+      {
+        "route": "accountant.invoice.list",
+        "operation": "accountant.payment.apply",
+        "requiredTags": ["accountant", "invoice", "payment"]
+      },
+      {
+        "route": "warehouse.ledger.list",
+        "operation": "warehouse.receive.apply",
+        "requiredTags": ["warehouse", "ledger", "stock"]
+      }
+    ],
+    "invalidationExecutionEnabled": false,
+    "productionCodeChanged": false,
+    "cacheDefaultsChanged": false,
+    "ttlChanged": false
+  },
+  "contractCoverage": [
+    "marketplace second identical request hits cache before ttl expiry",
+    "marketplace request after ttl expiry misses cache and calls live port again",
+    "read-through set uses policy ttlMs only, not ttlMs plus staleWhileRevalidateMs",
+    "tenant, finance, and stock payload classes stay on live port under read_through config",
+    "non-public routes do not write cache entries under read_through config",
+    "stale-sensitive routes have mutation tag coverage",
+    "cache invalidation execution remains disabled even when enabled=true is passed"
+  ],
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheStaleDataContracts.test.ts tests/scale/cacheKeyScopeContracts.test.ts tests/scale/cacheMarketplaceShadowCanaryContract.test.ts tests/scale/cacheIntegrationBoundary.test.ts",
+      "summary": "4 suites, 34 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "674 passed, 1 skipped, 675 total suites; 4001 passed, 1 skipped, 4002 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
