@@ -1,0 +1,130 @@
+{
+  "wave": 133,
+  "slug": "CANONICAL_BACKEND_FALLBACK_OBSERVABILITY",
+  "finalStatus": "GREEN_CANONICAL_BACKEND_FALLBACK_OBSERVABILITY",
+  "baseHead": "e9738629d8ca6ad12cca855e0c872a826ccae8a7",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/lib/api/canonicalPdfBackendInvoker.ts",
+      "tests/observability/canonicalBackendInvokeFallback.contract.test.ts"
+    ],
+    "reasonSelected": "A1/R7 P1 residual: canonical backend native access-token fallback and response body parse fallback were only dev-console visible.",
+    "excludedFromScope": [
+      "production behavior changes",
+      "DB writes",
+      "migrations",
+      "remote environment or deployment configuration",
+      "Supabase project settings",
+      "Realtime capacity work"
+    ]
+  },
+  "freshScans": {
+    "auditBacklog": "artifacts/A1_R7_errors.md",
+    "targetRead": [
+      "src/lib/api/canonicalPdfBackendInvoker.ts",
+      "src/lib/api/canonicalPdfAuth.transport.ts",
+      "src/lib/api/canonicalPdfBackendInvoker.test.ts",
+      "tests/strict-null/canonicalPdfBackendInvoker.phase8.test.ts"
+    ],
+    "selectedFindingBefore": [
+      {
+        "function": "resolveEdgeFunctionAccessToken via invokeDirectFetchOnce",
+        "behavior": "session lookup failure returned the anon key after dev-only diagnostic"
+      },
+      {
+        "function": "readFunctionResponseBody",
+        "behavior": "JSON/text body read failure returned null after dev-only diagnostic"
+      }
+    ],
+    "selectedFindingAfter": [
+      {
+        "function": "logCanonicalPdfBoundaryDiagnostic",
+        "behavior": "records production platform observability with redacted detail, fallbackUsed=true where applicable, functionName, platform, and error stage"
+      },
+      {
+        "function": "invokeDirectFetchOnce/readFunctionResponseBody",
+        "behavior": "keeps existing fallback and error propagation semantics while adding observable diagnostic context"
+      }
+    ]
+  },
+  "contracts": {
+    "anonFallbackBehaviorPreserved": true,
+    "sessionFailureObservable": true,
+    "responseParseFallbackObservable": true,
+    "signedOrAccessTokenNotStoredInEvent": true,
+    "functionNameIncluded": true,
+    "noBusinessSemanticChange": true,
+    "historicalScopeContractsPreserved": true
+  },
+  "scopeContractCorrection": {
+    "initialFullJestDetectedForbiddenTestPlacement": true,
+    "resolution": "Moved new assertions from src/lib/api/canonicalPdfBackendInvoker.test.ts into tests/observability/canonicalBackendInvokeFallback.contract.test.ts without weakening historical scope tests."
+  },
+  "scannerSnapshot": {
+    "directSupabaseServiceBypassFindings": 0,
+    "directSupabaseServiceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "directSupabaseUnclassifiedCurrentFindings": 0,
+    "productionRawLoopFindings": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "commands": [
+        "npx jest src/lib/api/canonicalPdfBackendInvoker.test.ts tests/strict-null/canonicalPdfBackendInvoker.phase8.test.ts tests/observability/canonicalBackendInvokeFallback.contract.test.ts --runInBand"
+      ]
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "666 test suites passed, 1 skipped; 3941 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

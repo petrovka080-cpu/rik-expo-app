@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { isAbortError, throwIfAborted } from "../requestCancellation";
 import { redactSensitiveText } from "../security/redaction";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, supabase } from "../supabaseClient";
 import {
   refreshCanonicalPdfSessionOnce,
@@ -95,6 +96,13 @@ export class CanonicalPdfTransportError extends Error {
 
 const trimText = (value: unknown) => String(value ?? "").trim();
 const isNativeRuntime = () => Platform.OS !== "web";
+const CANONICAL_PDF_FALLBACK_DIAGNOSTICS = new Set([
+  "resolve_access_token_failed",
+  "refresh_session_failed",
+  "function_response_summary_failed",
+  "read_json_response_failed",
+  "read_text_response_failed",
+]);
 
 function isCanonicalPdfInvokePayload(
   value: unknown,
@@ -144,13 +152,54 @@ function logCanonicalPdfBoundaryDiagnostic(
   error: unknown,
   extra?: Record<string, unknown>,
 ) {
+  const detail = extractTransportErrorDetail(error);
+
+  recordPlatformObservability({
+    screen: "request",
+    surface: "canonical_pdf_backend",
+    category: "fetch",
+    event: `canonical_pdf_backend_${event}`,
+    result: "error",
+    sourceKind: "canonical_pdf_function",
+    fallbackUsed: CANONICAL_PDF_FALLBACK_DIAGNOSTICS.has(event),
+    errorStage: event,
+    errorClass: getCanonicalPdfDiagnosticErrorClass(error),
+    errorMessage: detail ?? undefined,
+    extra: {
+      diagnosticEvent: event,
+      platform: Platform.OS,
+      ...(extra ?? {}),
+    },
+  });
+
   if (!__DEV__) return;
 
   console.warn(`[canonical-pdf-backend] ${event}`, {
     platform: Platform.OS,
-    detail: extractTransportErrorDetail(error),
+    detail,
     ...extra,
   });
+}
+
+function createCanonicalPdfFunctionDiagnostic(args: InvokeCanonicalPdfBackendArgs) {
+  return (
+    event: string,
+    error: unknown,
+    extra?: Record<string, unknown>,
+  ) => logCanonicalPdfBoundaryDiagnostic(event, error, {
+    ...(extra ?? {}),
+    functionName: args.functionName,
+  });
+}
+
+function getCanonicalPdfDiagnosticErrorClass(error: unknown): string | undefined {
+  if (error instanceof Error) return trimText(error.name) || "Error";
+  if (error == null) return undefined;
+  if (typeof error === "object") {
+    const name = trimText((error as { name?: unknown }).name);
+    return name || "object";
+  }
+  return typeof error;
 }
 
 function extractTransportErrorDetail(error: unknown): string | null {
@@ -238,7 +287,11 @@ async function invokeOnce(args: InvokeCanonicalPdfBackendArgs) {
   return result;
 }
 
-async function readFunctionResponseBody(response: Response, signal?: AbortSignal | null) {
+async function readFunctionResponseBody(
+  response: Response,
+  signal?: AbortSignal | null,
+  context?: { functionName: string },
+) {
   throwIfAborted(signal);
   const contentType = trimText(response.headers.get("Content-Type")).toLowerCase();
   if (contentType.includes("application/json")) {
@@ -251,7 +304,10 @@ async function readFunctionResponseBody(response: Response, signal?: AbortSignal
       logCanonicalPdfBoundaryDiagnostic(
         "read_json_response_failed",
         error,
-        { httpStatus: response.status },
+        {
+          httpStatus: response.status,
+          functionName: context?.functionName ?? "unknown",
+        },
       );
       return null;
     }
@@ -265,7 +321,10 @@ async function readFunctionResponseBody(response: Response, signal?: AbortSignal
     logCanonicalPdfBoundaryDiagnostic(
       "read_text_response_failed",
       error,
-      { httpStatus: response.status },
+      {
+        httpStatus: response.status,
+        functionName: context?.functionName ?? "unknown",
+      },
     );
     return null;
   }
@@ -275,7 +334,7 @@ async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
   throwIfAborted(args.signal);
   const accessToken = await resolveEdgeFunctionAccessToken({
     signal: args.signal,
-    onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+    onDiagnostic: createCanonicalPdfFunctionDiagnostic(args),
   });
   const url = `${SUPABASE_URL}/functions/v1/${args.functionName}`;
 
@@ -322,7 +381,9 @@ async function invokeDirectFetchOnce(args: InvokeCanonicalPdfBackendArgs) {
 
     let data: unknown;
     try {
-      data = await readFunctionResponseBody(response, args.signal);
+      data = await readFunctionResponseBody(response, args.signal, {
+        functionName: args.functionName,
+      });
     } catch (parseError) {
       if (__DEV__) console.error("[canonical-pdf-backend] native_parse_failed", {
         functionName: args.functionName,
@@ -428,7 +489,7 @@ async function invokeCanonicalPdfBackendViaDirectFetch(
     shouldRetryAuth &&
     (await refreshCanonicalPdfSessionOnce({
       signal: args.signal,
-      onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+      onDiagnostic: createCanonicalPdfFunctionDiagnostic(args),
     }))
   ) {
     throwIfAborted(args.signal);
@@ -480,7 +541,7 @@ async function invokeCanonicalPdfBackendViaSupabase(
   if (firstPayloadError?.errorCode === "auth_failed") {
     const refreshed = await refreshCanonicalPdfSessionOnce({
       signal: args.signal,
-      onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+      onDiagnostic: createCanonicalPdfFunctionDiagnostic(args),
     });
     throwIfAborted(args.signal);
     if (refreshed) {
@@ -501,7 +562,7 @@ async function invokeCanonicalPdfBackendViaSupabase(
     ) {
       const refreshed = await refreshCanonicalPdfSessionOnce({
         signal: args.signal,
-        onDiagnostic: logCanonicalPdfBoundaryDiagnostic,
+        onDiagnostic: createCanonicalPdfFunctionDiagnostic(args),
       });
       throwIfAborted(args.signal);
       if (refreshed) {
