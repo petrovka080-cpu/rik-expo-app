@@ -1,0 +1,126 @@
+{
+  "wave": 123,
+  "slug": "TRANSPORT_ZERO_REGRESSION_CONTRACT",
+  "generatedAtLocal": "2026-05-09T13:21:53.8317904+06:00",
+  "objective": "Make service-level Supabase bypass regression impossible through the architecture scanner contract.",
+  "selectedFiles": [
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts"
+  ],
+  "reasonSelected": [
+    "The scanner is the existing source of truth for direct provider call classification.",
+    "The architecture contract test already covers direct Supabase service bypass and transport boundary behavior."
+  ],
+  "freshScanBeforeContract": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "finalStatus": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "serviceBypassBudget": 157,
+    "totalFindings": 220,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 173,
+    "testOnlyFindings": 47,
+    "generatedOrIgnoredFindings": 0,
+    "unclassifiedCurrentFindings": 0
+  },
+  "freshScanAfterContract": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "finalStatus": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "serviceBypassBudget": 0,
+    "totalFindings": 222,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "testOnlyFindings": 47,
+    "generatedOrIgnoredFindings": 0,
+    "unclassifiedCurrentFindings": 0
+  },
+  "contract": {
+    "serviceBypassHardGate": true,
+    "serviceBypassBudgetBefore": 157,
+    "serviceBypassBudgetAfter": 0,
+    "nonTransportForbiddenCalls": [
+      "supabase.from",
+      "supabase.rpc",
+      "supabase.storage",
+      "supabase.channel",
+      "supabase.realtime",
+      "supabase.auth listeners and auth calls",
+      "params.supabase provider calls",
+      "deps.supabase provider calls",
+      "args.supabase provider calls"
+    ],
+    "allowedOwners": [
+      "root_client: src/lib/supabaseClient.ts",
+      "transport_file: *.transport.*",
+      "bff_client: *.bff.*",
+      "server_file: /server/",
+      "test_file: *.test.* / *.spec.* / __tests__",
+      "generated_or_ignored: *.d.ts / types/contracts"
+    ],
+    "readableFailureFields": [
+      "file",
+      "line",
+      "matched_call",
+      "expected_transport_owner"
+    ],
+    "rootClientProof": {
+      "path": "src/lib/supabaseClient.ts",
+      "transportOwner": "root_client",
+      "scannerClassification": "transport_controlled",
+      "serviceBypass": false
+    },
+    "newTransportFileProof": {
+      "syntheticPath": "src/lib/catalog/catalog.transport.supabase.ts",
+      "matchedOperations": [
+        "rpc:rik_quick_search",
+        "realtime:setAuth",
+        "auth:onAuthStateChange"
+      ],
+      "transportOwner": "transport_file",
+      "serviceBypassFindings": 0
+    }
+  },
+  "focusedTests": [
+    {
+      "command": "npm test -- tests/architecture/architectureAntiRegressionSuite.test.ts --runInBand",
+      "status": "PASS",
+      "testSuites": 1,
+      "tests": 7
+    },
+    {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS"
+    }
+  ],
+  "grepProof": {
+    "command": "git grep -n \"supabase\\.\\(from\\|rpc\\|auth\\|storage\\|channel\\|realtime\\)\" src",
+    "status": "PASS",
+    "observation": "Fresh grep shows direct Supabase calls in transport-owned files, tests, and src/lib/supabaseClient.ts root client; scanner reports serviceBypassFindings=0 and serviceBypassFiles=0."
+  },
+  "mandatoryGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "envWrites": false,
+    "deploy": false,
+    "ota": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

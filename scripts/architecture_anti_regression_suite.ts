@@ -18,6 +18,15 @@ export type DirectSupabaseFindingClass =
   | "generated_or_ignored"
   | "false_positive";
 
+export type DirectSupabaseTransportOwner =
+  | "root_client"
+  | "transport_file"
+  | "bff_client"
+  | "server_file"
+  | "test_file"
+  | "generated_or_ignored"
+  | "none";
+
 export type DirectSupabaseOperation =
   | "auth"
   | "storage"
@@ -31,7 +40,10 @@ export type DirectSupabaseFinding = {
   line: number;
   operation: DirectSupabaseOperation;
   callTarget: string;
+  matchedCall: string;
   classification: DirectSupabaseFindingClass;
+  transportOwner: DirectSupabaseTransportOwner;
+  expectedTransportOwner: string;
   risk: "low" | "medium" | "high";
   suggestedMigrationPath: string;
 };
@@ -156,15 +168,18 @@ const IGNORED_DIRECTORIES = new Set([
   "node_modules",
 ]);
 
-const DIRECT_SUPABASE_SERVICE_BYPASS_BUDGET = 157;
+const DIRECT_SUPABASE_SERVICE_BYPASS_BUDGET = 0;
 const DIRECT_SUPABASE_EXCEPTION_REGISTRY_RELATIVE_PATH =
   "artifacts/S_AUDIT_BATTLE_17_DIRECT_SUPABASE_EXCEPTION_CONTAINMENT_registry.json";
 const GOD_COMPONENT_LINE_THRESHOLD = 500;
 const HOOK_PRESSURE_THRESHOLD = 25;
 const CACHE_RATE_ALLOWED_ROUTE = "marketplace.catalog.search";
 const RATE_LIMIT_ALLOWED_PERCENT = 1;
+const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
+const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
+  "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
-  /\b(?:supabase(?:Client|Admin)?|params\.supabase|deps\.supabase|args\.supabase)\s*\.\s*(auth|storage|from|rpc|channel|removeChannel|getChannels)\b/g;
+  /\b(?:supabase(?:Client|Admin)?|params\.supabase|deps\.supabase|args\.supabase)\s*\.\s*(auth|storage|from|rpc|channel|removeChannel|getChannels|realtime)\b/g;
 
 const normalizePath = (value: string): string => value.replace(/\\/g, "/");
 
@@ -193,17 +208,41 @@ const isTestPath = (normalizedPath: string): boolean =>
   /\.spec\.[tj]sx?$/.test(normalizedPath) ||
   normalizedPath.includes("/__tests__/");
 
-const classifyDirectSupabasePath = (normalizedPath: string): DirectSupabaseFindingClass => {
-  if (isTestPath(normalizedPath)) return "test_only";
-  if (normalizedPath.endsWith(".d.ts") || normalizedPath.includes("/types/contracts/")) {
+export const classifyDirectSupabaseTransportOwner = (
+  normalizedPath: string,
+): DirectSupabaseTransportOwner => {
+  const filePath = normalizePath(normalizedPath);
+  if (isTestPath(filePath)) return "test_file";
+  if (filePath.endsWith(".d.ts") || filePath.includes("/types/contracts/")) {
     return "generated_or_ignored";
   }
-  if (
-    normalizedPath.includes(".transport.") ||
-    normalizedPath.includes(".bff.") ||
-    normalizedPath.endsWith("/supabaseClient.ts") ||
-    normalizedPath.includes("/server/")
-  ) {
+  if (filePath === ROOT_SUPABASE_CLIENT_PATH || filePath.endsWith(`/${ROOT_SUPABASE_CLIENT_PATH}`)) {
+    return "root_client";
+  }
+  if (filePath.includes(".transport.")) return "transport_file";
+  if (filePath.includes(".bff.")) return "bff_client";
+  if (filePath.includes("/server/")) return "server_file";
+  return "none";
+};
+
+export const describeDirectSupabaseExpectedTransportOwner = (
+  normalizedPath: string,
+): string => {
+  const owner = classifyDirectSupabaseTransportOwner(normalizedPath);
+  if (owner === "root_client") return "root client initializer src/lib/supabaseClient.ts";
+  if (owner === "transport_file") return "transport-owned file (*.transport.*)";
+  if (owner === "bff_client") return "transport-owned BFF client file (*.bff.*)";
+  if (owner === "server_file") return "transport-owned server file (/server/)";
+  if (owner === "test_file") return "test-only file";
+  if (owner === "generated_or_ignored") return "generated or ignored contract file";
+  return DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER;
+};
+
+const classifyDirectSupabasePath = (normalizedPath: string): DirectSupabaseFindingClass => {
+  const transportOwner = classifyDirectSupabaseTransportOwner(normalizedPath);
+  if (transportOwner === "test_file") return "test_only";
+  if (transportOwner === "generated_or_ignored") return "generated_or_ignored";
+  if (transportOwner !== "none") {
     return "transport_controlled";
   }
   return "service_bypass";
@@ -216,7 +255,12 @@ const classifyDirectSupabaseOperation = (
   if (operationToken === "auth") return "auth";
   if (operationToken === "storage") return "storage";
   if (operationToken === "rpc") return "rpc";
-  if (operationToken === "channel" || operationToken === "removeChannel" || operationToken === "getChannels") {
+  if (
+    operationToken === "channel" ||
+    operationToken === "removeChannel" ||
+    operationToken === "getChannels" ||
+    operationToken === "realtime"
+  ) {
     return "realtime";
   }
   if (/\.(insert|update|upsert|delete)\s*\(/.test(lineText)) return "write";
@@ -256,11 +300,20 @@ const extractDirectSupabaseCallTarget = (
     const match = /\.storage\s*\.\s*([A-Za-z0-9_]+)\s*\(/.exec(lineText);
     return `storage:${match?.[1] ?? "unknown"}`;
   }
+  if (operationToken === "realtime") {
+    const match = /\.realtime\s*\.\s*([A-Za-z0-9_]+)\s*\(/.exec(lineText);
+    return `realtime:${match?.[1] ?? "unknown"}`;
+  }
   if (operationToken === "channel") return "realtime:channel";
   if (operationToken === "removeChannel") return "realtime:removeChannel";
   if (operationToken === "getChannels") return "realtime:getChannels";
   return "unknown:direct_supabase";
 };
+
+const formatMatchedDirectSupabaseCall = (
+  matchedMethod: string,
+  callTarget: string,
+): string => `${matchedMethod.replace(/\s+/g, "")} (${callTarget})`;
 
 export function scanDirectSupabaseSource(params: {
   filePath: string;
@@ -268,6 +321,8 @@ export function scanDirectSupabaseSource(params: {
 }): DirectSupabaseFinding[] {
   const normalizedPath = normalizePath(params.filePath);
   const classification = classifyDirectSupabasePath(normalizedPath);
+  const transportOwner = classifyDirectSupabaseTransportOwner(normalizedPath);
+  const expectedTransportOwner = describeDirectSupabaseExpectedTransportOwner(normalizedPath);
   const findings: DirectSupabaseFinding[] = [];
   const lines = params.source.split(/\r?\n/);
 
@@ -276,12 +331,16 @@ export function scanDirectSupabaseSource(params: {
     const matches = lineText.matchAll(DIRECT_SUPABASE_CALL_REGEX);
     for (const match of matches) {
       const operation = classifyDirectSupabaseOperation(match[1] ?? "", lineText);
+      const callTarget = extractDirectSupabaseCallTarget(match[1] ?? "", lineText);
       findings.push({
         file: normalizedPath,
         line: index + 1,
         operation,
-        callTarget: extractDirectSupabaseCallTarget(match[1] ?? "", lineText),
+        callTarget,
+        matchedCall: formatMatchedDirectSupabaseCall(match[0] ?? "", callTarget),
         classification,
+        transportOwner,
+        expectedTransportOwner,
         risk: riskForOperation(operation),
         suggestedMigrationPath: suggestedMigrationPathForOperation(operation),
       });
@@ -315,6 +374,18 @@ const countByFile = (
     .sort((left, right) => right.count - left.count || left.file.localeCompare(right.file));
 };
 
+export function formatDirectSupabaseServiceBypassFailure(
+  finding: DirectSupabaseFinding,
+): string {
+  return [
+    "direct_supabase_service_bypass",
+    `file=${finding.file}`,
+    `line=${finding.line}`,
+    `matched_call=${finding.matchedCall}`,
+    `expected_transport_owner=${finding.expectedTransportOwner}`,
+  ].join(":");
+}
+
 export function evaluateDirectSupabaseGuardrail(
   findings: readonly DirectSupabaseFinding[],
   serviceBypassBudget = DIRECT_SUPABASE_SERVICE_BYPASS_BUDGET,
@@ -324,10 +395,12 @@ export function evaluateDirectSupabaseGuardrail(
 } {
   const serviceBypassFindings = findings.filter((finding) => finding.classification === "service_bypass");
   const serviceBypassFiles = new Set(serviceBypassFindings.map((finding) => finding.file));
-  const errors =
-    serviceBypassFindings.length > serviceBypassBudget
+  const errors = [
+    ...serviceBypassFindings.map(formatDirectSupabaseServiceBypassFailure),
+    ...(serviceBypassFindings.length > serviceBypassBudget
       ? [`service_bypass_budget_exceeded:${serviceBypassFindings.length}>${serviceBypassBudget}`]
-      : [];
+      : []),
+  ];
 
   return {
     check: {
