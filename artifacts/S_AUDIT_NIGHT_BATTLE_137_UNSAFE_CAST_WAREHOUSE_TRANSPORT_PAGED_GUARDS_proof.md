@@ -55,8 +55,16 @@ Selected findings after:
   - unclassifiedCurrentFindings: 0
   - production raw loop unapproved findings: 0
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
   - `npm run release:verify -- --json`
+  - headCommit: `82a8bca3c5b8bdb52e5a215488053e6c9ba16f1a`
+  - originMainCommit: `82a8bca3c5b8bdb52e5a215488053e6c9ba16f1a`
+  - worktreeClean: true
+  - headMatchesOriginMain: true
+  - ahead/behind: `0/0`
+  - readiness status: pass
+  - OTA disposition: allow
+  - OTA published: false
 
 ## Negative Confirmations
 
