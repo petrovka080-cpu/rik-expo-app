@@ -1,4 +1,10 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { createMemoryOfflineStorage } from "../../lib/offline/offlineStorage";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../../lib/observability/platformObservability";
 import { fetchRequestDetails, listRequestItems } from "../../lib/catalog_api";
 import {
   clearForemanDurableDraftState,
@@ -8,8 +14,10 @@ import {
 import {
   areForemanLocalDraftSnapshotsEqual,
   compareForemanLocalDraftSnapshotsByVersion,
+  loadForemanLocalDraftSnapshot,
   loadForemanRemoteDraftSnapshot,
   resolveForemanDraftBootstrap,
+  saveForemanLocalDraftSnapshot,
   type ForemanLocalDraftSnapshot,
 } from "./foreman.localDraft";
 
@@ -71,8 +79,56 @@ describe("foreman local draft lifecycle boundary", () => {
   beforeEach(async () => {
     configureForemanDurableDraftStore({ storage: createMemoryOfflineStorage() });
     await clearForemanDurableDraftState();
+    resetPlatformObservabilityEvents();
     mockFetchRequestDetails.mockReset();
     mockListRequestItems.mockReset();
+  });
+
+  it("uses guarded JSON helpers instead of direct JSON.parse in local draft runtime", () => {
+    const source = readFileSync(join(__dirname, "foreman.localDraft.ts"), "utf8");
+
+    expect(source).not.toMatch(/\bJSON\.parse\s*\(/);
+    expect(source).toContain("safeJsonParse");
+    expect(source).toContain("safeJsonStringify");
+    expect(source).toContain("snapshot_save_clone");
+  });
+
+  it("does not crash when saving a snapshot that cannot JSON round-trip", async () => {
+    const circularSnapshot: ForemanLocalDraftSnapshot & { self?: unknown } = {
+      ...sampleSnapshot,
+      header: { ...sampleSnapshot.header },
+      items: sampleSnapshot.items.map((item) => ({ ...item })),
+      qtyDrafts: { ...sampleSnapshot.qtyDrafts },
+      pendingDeletes: sampleSnapshot.pendingDeletes.map((item) => ({ ...item })),
+    };
+    circularSnapshot.self = circularSnapshot;
+
+    await expect(saveForemanLocalDraftSnapshot(circularSnapshot)).resolves.toBeUndefined();
+
+    const loaded = await loadForemanLocalDraftSnapshot();
+    expect(loaded).not.toBeNull();
+    if (!loaded) throw new Error("expected guarded local draft snapshot to load");
+    expect(loaded.requestId).toBe(sampleSnapshot.requestId);
+    expect(loaded.items).toEqual(sampleSnapshot.items);
+    expect("self" in loaded).toBe(false);
+    expect(
+      getPlatformObservabilityEvents().filter(
+        (event) => event.event === "snapshot_save_clone_serialize_failed",
+      ),
+    ).toEqual([
+      expect.objectContaining({
+        screen: "foreman",
+        surface: "local_draft",
+        result: "error",
+        errorClass: "Error",
+        extra: expect.objectContaining({
+          module: "foreman",
+          owner: "local_draft",
+          sourceKind: "local_snapshot_json",
+          fallbackUsed: true,
+        }),
+      }),
+    ]);
   });
 
   it("clears durable bootstrap snapshot when remote request is already submitted", async () => {

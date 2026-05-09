@@ -6,7 +6,7 @@ import {
   type ReqItemRow,
   type RequestDetails,
 } from "../../lib/catalog_api";
-import { safeJsonParse } from "../../lib/format";
+import { safeJsonParse, safeJsonStringify } from "../../lib/format";
 import { createDefaultOfflineStorage } from "../../lib/offline/offlineStorage";
 import { isDraftLikeStatus } from "./foreman.helpers";
 import {
@@ -172,8 +172,6 @@ const recordForemanLocalDraftFallback = (
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
 
-const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
-
 const makeLocalItemId = () => `fld-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 const makeDraftOwnerId = () => `fdo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 const resolveDraftOwnerId = (value: unknown, requestId?: unknown): string => {
@@ -236,9 +234,6 @@ const normalizePendingDelete = (value: unknown): ForemanLocalDraftDelete | null 
   };
 };
 
-const serializeSnapshot = (snapshot: ForemanLocalDraftSnapshot | null): string =>
-  JSON.stringify(snapshot ?? null);
-
 const parseForemanLocalDraftSnapshotRecord = (
   parsed: Record<string, unknown> | null,
 ): ForemanLocalDraftSnapshot | null => {
@@ -276,6 +271,32 @@ const parseForemanLocalDraftSnapshotRecord = (
   };
 
   return hasForemanLocalDraftContent(snapshot) ? snapshot : null;
+};
+
+const cloneForemanLocalDraftSnapshot = (
+  snapshot: ForemanLocalDraftSnapshot,
+  eventBase = "snapshot_clone",
+): ForemanLocalDraftSnapshot => {
+  const serialized = safeJsonStringify(snapshot, "");
+  if (serialized) {
+    const parsed = safeJsonParse<Record<string, unknown> | null>(serialized, null);
+    if (parsed.ok) {
+      return parseForemanLocalDraftSnapshotRecord(parsed.value) ?? snapshot;
+    }
+    recordForemanLocalDraftFallback(`${eventBase}_parse_failed`, parsed.error, {
+      sourceKind: "local_snapshot_json",
+    });
+  } else {
+    recordForemanLocalDraftFallback(
+      `${eventBase}_serialize_failed`,
+      new Error("foreman_local_draft_json_serialize_failed"),
+      {
+        sourceKind: "local_snapshot_json",
+      },
+    );
+  }
+
+  return parseForemanLocalDraftSnapshotRecord(asRecord(snapshot)) ?? snapshot;
 };
 
 const loadLegacyForemanLocalDraftSnapshot = async (): Promise<ForemanLocalDraftSnapshot | null> => {
@@ -570,7 +591,9 @@ export async function saveForemanLocalDraftSnapshot(snapshot: ForemanLocalDraftS
     await clearLegacyForemanLocalDraftSnapshot();
     return;
   }
-  await replaceForemanDurableDraftSnapshot(JSON.parse(serializeSnapshot(snapshot)) as ForemanLocalDraftSnapshot);
+  await replaceForemanDurableDraftSnapshot(
+    cloneForemanLocalDraftSnapshot(snapshot, "snapshot_save_clone"),
+  );
   await clearLegacyForemanLocalDraftSnapshot();
 }
 
@@ -609,7 +632,7 @@ export function buildForemanLocalDraftSnapshot(params: {
   items: ReqItemRow[];
   qtyDrafts: Record<string, string>;
 }): ForemanLocalDraftSnapshot | null {
-  const base = params.base ? clone(params.base) : null;
+  const base = params.base ? cloneForemanLocalDraftSnapshot(params.base) : null;
   const requestId = trim(params.requestId);
   const nextItems = params.items.map((row) => {
     const existing =
@@ -650,7 +673,7 @@ export function buildFreshForemanLocalDraftSnapshot(params: {
   base: ForemanLocalDraftSnapshot | null;
   header: Partial<ForemanLocalDraftHeader>;
 }): ForemanLocalDraftSnapshot {
-  const base = params.base ? clone(params.base) : null;
+  const base = params.base ? cloneForemanLocalDraftSnapshot(params.base) : null;
   return {
     version: 1,
     ownerId: makeDraftOwnerId(),
@@ -679,7 +702,7 @@ export function appendRowsToForemanLocalDraft(
 ): ForemanLocalDraftSnapshot {
   const base: ForemanLocalDraftSnapshot =
     snapshot != null
-      ? clone(snapshot)
+      ? cloneForemanLocalDraftSnapshot(snapshot)
       : {
           version: 1,
           ownerId: makeDraftOwnerId(),
@@ -744,7 +767,7 @@ export function updateForemanLocalDraftItemQty(
   const normalizedQty = Number(qty ?? 0);
   if (!normalizedRowId || !Number.isFinite(normalizedQty) || normalizedQty <= 0) return snapshot;
 
-  const next = clone(snapshot);
+  const next = cloneForemanLocalDraftSnapshot(snapshot);
   const item = next.items.find(
     (entry) => entry.local_id === normalizedRowId || trim(entry.remote_item_id) === normalizedRowId,
   );
@@ -764,7 +787,7 @@ export function removeForemanLocalDraftItem(
   const normalizedRowId = normalizeDraftRowId(rowId);
   if (!normalizedRowId) return snapshot;
 
-  const next = clone(snapshot);
+  const next = cloneForemanLocalDraftSnapshot(snapshot);
   const found = next.items.find(
     (entry) => entry.local_id === normalizedRowId || trim(entry.remote_item_id) === normalizedRowId,
   );
@@ -790,7 +813,7 @@ export function discardForemanLocalDraft(
 ): ForemanLocalDraftSnapshot | null {
   if (!snapshot) return null;
 
-  const next = clone(snapshot);
+  const next = cloneForemanLocalDraftSnapshot(snapshot);
   const requestId = trim(next.requestId);
   if (!requestId) return null;
 
@@ -821,7 +844,7 @@ export function markForemanLocalDraftSubmitRequested(
 ): ForemanLocalDraftSnapshot | null {
   if (!snapshot) return snapshot;
   return {
-    ...clone(snapshot),
+    ...cloneForemanLocalDraftSnapshot(snapshot),
     submitRequested: true,
     lastError: null,
     updatedAt: new Date().toISOString(),
@@ -835,7 +858,7 @@ export async function syncForemanLocalDraftSnapshot(params: {
   localBeforeCount?: number | null;
   localAfterCount?: number | null;
 }): Promise<ForemanLocalDraftSyncResult> {
-  const next = clone(params.snapshot);
+  const next = cloneForemanLocalDraftSnapshot(params.snapshot);
   const localItems = next.items.filter((item) => Number.isFinite(item.qty) && item.qty > 0);
 
   if (!trim(next.requestId) && !localItems.length && !next.submitRequested) {

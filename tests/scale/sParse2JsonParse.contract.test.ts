@@ -36,16 +36,12 @@ describe("S-PARSE-2 JSON parse hardening contracts", () => {
     }
   });
 
-  it("leaves only the central helper and intentional local snapshot roundtrips as direct JSON.parse", () => {
+  it("leaves only the central helper as a direct JSON.parse owner", () => {
     const remaining = [...walkSourceFiles("src"), ...walkSourceFiles("app")].flatMap((file) => {
       const source = readProjectFile(file);
       return [...source.matchAll(/JSON\.parse/g)].map(() => file);
     });
 
-    expect(remaining).toEqual([
-      "src/lib/format.ts",
-      "src/screens/foreman/foreman.localDraft.ts",
-      "src/screens/foreman/foreman.localDraft.ts",
-    ]);
+    expect(remaining).toEqual(["src/lib/format.ts"]);
   });
 });
