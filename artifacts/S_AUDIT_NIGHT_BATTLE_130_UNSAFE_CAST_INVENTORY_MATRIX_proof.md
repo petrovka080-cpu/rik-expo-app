@@ -71,7 +71,14 @@ The prompt referenced 162 unsafe casts. The fresh `src tests` scan is higher: 21
   - `npx tsx scripts/architecture_anti_regression_suite.ts --json`
   - service bypass findings 0, service bypass files 0, transport controlled findings 175, unclassified current findings 0, production raw loop findings 0
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
+  - `npm run release:verify -- --json`
+  - verified head: `b9d719f70143f4a8dd340b14544c521f5e2662ec`
+  - verified origin/main: `b9d719f70143f4a8dd340b14544c521f5e2662ec`
+  - sync status: ahead/behind `0/0`, readiness `pass`
+  - classification: `non-runtime`, OTA disposition `skip`
+  - release gates: `tsc`, `expo-lint`, `architecture-anti-regression`, `jest-run-in-band`, `jest`, `git-diff-check`
+  - no deploy or OTA publish was executed
 
 ## Safety
 - No production calls, DB writes, migrations, remote env writes, deploy, OTA, live load tests, Supabase project changes, spend cap changes, Realtime capacity work, force push, tags, secrets printed, empty-catch additions, TypeScript ignore suppressions, unsafe any-casts, scanner weakening, test deletion, or business-semantic refactor.

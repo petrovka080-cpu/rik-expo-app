@@ -278,8 +278,28 @@
       "command": "git diff --check"
     },
     "releaseVerifyPostPush": {
-      "status": "PENDING",
-      "command": "npm run release:verify -- --json"
+      "status": "PASS",
+      "command": "npm run release:verify -- --json",
+      "recordedAt": "2026-05-09T20:14:38.3851165+06:00",
+      "verifiedHeadCommit": "b9d719f70143f4a8dd340b14544c521f5e2662ec",
+      "verifiedOriginMainCommit": "b9d719f70143f4a8dd340b14544c521f5e2662ec",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "aheadBehind": "0/0",
+      "readinessStatus": "pass",
+      "classificationKind": "non-runtime",
+      "otaDisposition": "skip",
+      "otaPublished": false,
+      "easUpdateTriggered": false,
+      "releaseGates": [
+        "tsc",
+        "expo-lint",
+        "architecture-anti-regression",
+        "jest-run-in-band",
+        "jest",
+        "git-diff-check"
+      ],
+      "note": "Release verification classified the artifact-only wave as non-runtime; no deploy or OTA publish was executed."
     }
   },
   "negativeConfirmations": {
