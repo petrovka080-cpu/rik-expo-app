@@ -1,0 +1,115 @@
+{
+  "wave": 129,
+  "slug": "WORKER_RECOVERY_AND_CPU_BUDGET_CONTRACTS",
+  "finalStatus": "GREEN_WORKER_RECOVERY_AND_CPU_BUDGET_CONTRACTS",
+  "baseHead": "8886e360218ce5a4ef4605af3aae74c4289cf871",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "freshScans": {
+    "workerLoopSearch": [
+      "rg -n \"worker loop|cancellable|backoff|maxIterations|AbortSignal|run.*Loop|loop.*worker\" src tests scripts",
+      "rg --files src tests scripts | rg \"(worker|recovery|perf|performance|budget|rootLayout)\"",
+      "git grep -n \"while *(true\" src tests scripts",
+      "git grep -n \"for *(;;\" src tests scripts"
+    ],
+    "productionRawLoopFindings": 0,
+    "targetFilesRead": [
+      "src/lib/async/mapWithConcurrencyLimit.ts",
+      "tests/async/cancellableWorkerLoop.test.ts",
+      "src/workers/queueWorker.ts",
+      "src/workers/queueWorker.boundary.test.ts",
+      "tests/workers/queueRunnerLifecycle.contract.test.ts",
+      "src/lib/entry/rootLayout.recovery.test.tsx",
+      "tests/perf/performance-budget.test.ts"
+    ]
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/lib/async/mapWithConcurrencyLimit.ts",
+      "tests/async/cancellableWorkerLoop.test.ts",
+      "src/workers/queueWorker.ts",
+      "src/workers/queueWorker.boundary.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "productionFilesChanged": [
+      "src/workers/queueWorker.ts"
+    ],
+    "reasonSelected": "The queue worker is the production worker owner of the cancellable loop primitive; the primitive tests are the deterministic contract surface; the existing perf budget suite is compatible with a CPU-spin budget assertion.",
+    "productionBehaviorChange": "QueueWorkerHandle.stop now returns early after the first stop so cleanup remains idempotent; polling, retry, recovery, logging, and processing semantics are unchanged."
+  },
+  "contracts": {
+    "fastSuccessLoopRequiresSleepBeforeNextIteration": true,
+    "repeatedFailureUsesErrorBackoff": true,
+    "abortDuringSleepExitsCleanly": true,
+    "abortDuringTaskExitsAfterTaskBoundary": true,
+    "cleanupIsIdempotent": true,
+    "performanceBudgetAssertionAdded": true,
+    "rootLayoutRecoveryStillGreen": true,
+    "runnerLifecycleStillGreen": true,
+    "noRawProductionLoops": true
+  },
+  "scannerSnapshot": {
+    "directSupabaseServiceBypassFindings": 0,
+    "directSupabaseServiceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "directSupabaseUnclassifiedCurrentFindings": 0,
+    "productionRawLoopFindings": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/async/cancellableWorkerLoop.test.ts src/workers/queueWorker.boundary.test.ts tests/workers/queueRunnerLifecycle.contract.test.ts src/lib/entry/rootLayout.recovery.test.tsx tests/perf/performance-budget.test.ts --runInBand",
+      "summary": "5 test suites passed; 53 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "666 test suites passed, 1 skipped; 3947 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedUnsafeAnyCast": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

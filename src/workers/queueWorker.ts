@@ -459,6 +459,7 @@ export function startQueueWorker(
 
   return {
     stop: () => {
+      if (stopped) return;
       stopped = true;
       loopAbortController.abort();
       metrics.stop();

@@ -83,6 +83,28 @@ describe("performance budget — screen size", () => {
   }
 });
 
+describe("performance budget - worker loop CPU spin", () => {
+  it("keeps production worker loops on nonzero sleep/backoff budgets", () => {
+    const loopPrimitive = fs.readFileSync(
+      path.join(SRC, "lib", "async", "mapWithConcurrencyLimit.ts"),
+      "utf8",
+    );
+    const queueWorker = fs.readFileSync(
+      path.join(SRC, "workers", "queueWorker.ts"),
+      "utf8",
+    );
+
+    expect(loopPrimitive).toContain("export const MIN_WORKER_LOOP_BACKOFF_MS = 1;");
+    expect(loopPrimitive).toContain("Math.max(MIN_WORKER_LOOP_BACKOFF_MS");
+    expect(loopPrimitive).toContain("while (!isAbortStop(signal))");
+    expect(queueWorker).toContain("runCancellableWorkerLoop");
+    expect(queueWorker).toContain("errorBackoffMs: pollIdleMs");
+    expect(queueWorker).toContain("return { backoffMs: pollIdleMs }");
+    expect(queueWorker).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(queueWorker).not.toMatch(/for\s*\(\s*;\s*;\s*\)/);
+  });
+});
+
 describe("performance budget — bundle module count", () => {
   // Metro reported 2405 modules on 2026-04-14
   // Threshold: alert if source file count grows beyond ~20% above baseline

@@ -249,6 +249,28 @@ describe("queueWorker critical boundaries", () => {
     expect(mockMetricsStop).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps cleanup idempotent when stop is called repeatedly", async () => {
+    const { startQueueWorker } = await importQueueWorker();
+    const workerLoopClock: WorkerLoopClock = {
+      sleep: async (_ms, signal) => {
+        if (signal?.aborted) throw new Error("queue worker aborted");
+      },
+    };
+    const queueApi = createQueueApi();
+
+    const handle = startQueueWorker(
+      { workerId: "worker-idempotent-stop-test", pollIdleMs: 337 },
+      { queueApi, workerLoopClock },
+    );
+
+    handle.stop();
+    handle.stop();
+    handle.stop();
+    await flushAsyncTurns(20);
+
+    expect(mockMetricsStop).toHaveBeenCalledTimes(1);
+  });
+
   it("caps batch worker allocation to the compacted job count", () => {
     expect(resolveQueueWorkerBatchConcurrency(8, 3)).toBe(3);
     expect(resolveQueueWorkerBatchConcurrency(2, 3)).toBe(2);
