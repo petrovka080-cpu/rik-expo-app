@@ -1,0 +1,136 @@
+{
+  "wave": "S_AUDIT_NIGHT_BATTLE_123_MAPSCREEN_MODEL_BOUNDARY",
+  "final_status": "GREEN_MAPSCREEN_MODEL_BOUNDARY",
+  "generated_at_local": "2026-05-09T13:07:52.5255930+06:00",
+  "started_head": "bd80d81782699c48342bd89f811128858feab45f",
+  "scope": "narrow_component_debt_reduction",
+  "selected_files": [
+    "src/components/map/MapScreen.tsx",
+    "src/components/map/MapScreen.model.ts",
+    "tests/map/MapScreen.model.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_123_MAPSCREEN_MODEL_BOUNDARY_matrix.json",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_123_MAPSCREEN_MODEL_BOUNDARY_proof.md"
+  ],
+  "selection_reason": "Fresh architecture scanner showed src/components/map/MapScreen.tsx as the top component-debt file by line count. The safe scope was a pure model extraction for filters, route params, viewport math, cluster rows, and spiderfy rows; UI rendering, Supabase transports, routing targets, and mutation semantics stayed unchanged.",
+  "before": {
+    "architecture_scanner": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0,
+      "componentDebtTopFile": "src/components/map/MapScreen.tsx",
+      "mapScreenScannerLineCount": 770,
+      "mapScreenHookCount": 22
+    }
+  },
+  "after": {
+    "architecture_scanner": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0,
+      "mapScreenScannerLineCount": 656,
+      "mapScreenHookCount": 22,
+      "componentDebtTopFile": "src/screens/director/DirectorReportsModal.tsx"
+    },
+    "physical_line_counts": {
+      "src/components/map/MapScreen.tsx": 566,
+      "src/components/map/MapScreen.model.ts": 244,
+      "tests/map/MapScreen.model.test.ts": 208
+    }
+  },
+  "model_boundary": {
+    "new_file": "src/components/map/MapScreen.model.ts",
+    "runtime_dependencies": [
+      "none outside local type contracts"
+    ],
+    "not_importing": [
+      "Supabase",
+      "Location",
+      "expo-router",
+      "react-native",
+      "supercluster"
+    ],
+    "moved_logic": [
+      "route param scalar normalization",
+      "route-to-filter normalization",
+      "active filter count",
+      "listing filtering",
+      "focused listing region mapping",
+      "zoom-step and zoom-region math",
+      "cluster feature to map listing projection",
+      "bottom rows selection",
+      "spiderfy row projection"
+    ]
+  },
+  "focused_tests": {
+    "command": "npm test -- tests/map/MapScreen.model.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "exit_code": 0,
+    "testSuites": "2 passed",
+    "tests": "20 passed"
+  },
+  "gates": {
+    "focused_tests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "full_jest_runInBand": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "release_verify_post_push": "TO_RUN_AFTER_PUSH"
+  },
+  "gate_evidence": {
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "exit_code": 0
+    },
+    "full_jest_runInBand": {
+      "command": "npm test -- --runInBand",
+      "exit_code": 0,
+      "testSuites": "657 passed, 1 skipped, 658 total",
+      "tests": "3905 passed, 1 skipped, 3906 total"
+    },
+    "architecture_scanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "exit_code": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0,
+      "mapScreenScannerLineCount": 656
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    "release_verify_post_push": {
+      "command": "npm run release:verify -- --json",
+      "result": "TO_RUN_AFTER_PUSH"
+    }
+  },
+  "negative_confirmations": {
+    "production_calls": false,
+    "db_writes": false,
+    "migrations": false,
+    "env_writes": false,
+    "deploy": false,
+    "ota": false,
+    "live_load_tests": false,
+    "cache_or_rate_limit_production_enablement_without_versioned_safe_flag": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_capacity_work": false,
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "new_empty_catch_blocks": false,
+    "new_ts_ignore": false,
+    "new_as_any": false,
+    "business_semantics_changed_for_refactor": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -22,7 +22,6 @@ import MapRenderer from "./MapRenderer";
 import MapFab from "./MapFab";
 import type { Filters, CatalogItem } from "./types";
 import type {
-  ClusterListing,
   ListingRouteMeta,
   MapRegion,
   MapViewport,
@@ -32,6 +31,23 @@ import type {
 } from "./mapContracts";
 import { useMapListingsQuery } from "./useMapListingsQuery";
 import { MAP_SCREEN_UI as UI, styles } from "./MapScreen.styles";
+import {
+  applyMapRouteFilters,
+  buildClusterListings,
+  buildSpiderPoints,
+  defaultRegion,
+  filterMapListings,
+  findFocusedMapListing,
+  getActiveMapFiltersCount,
+  getFocusedMapRegion,
+  getMapRegionForZoom,
+  getMapZoomSteps,
+  getRouteParamValue,
+  normalizeListingRouteMeta,
+  regionToBounds,
+  resolveMapRowsForBottom,
+  type MapClusterMode,
+} from "./MapScreen.model";
 import { loadMapScreenCurrentAuthUser } from "./MapScreen.auth.transport";
 import {
   loadMapScreenListingRouteMeta,
@@ -43,41 +59,9 @@ import {
   getClusters,
   getClusterLeaves,
   getExpansionZoom,
-  isPointClusterFeature,
   toClusterListing,
   zoomFromRegion,
 } from "./pixelCluster";
-
-const defaultRegion: MapRegion = {
-  latitude: 42.8746,
-  longitude: 74.5698,
-  latitudeDelta: 0.2,
-  longitudeDelta: 0.2,
-};
-
-const regionToBounds = (r: MapRegion): MapViewport["bounds"] => ({
-  west: r.longitude - r.longitudeDelta / 2,
-  east: r.longitude + r.longitudeDelta / 2,
-  south: r.latitude - r.latitudeDelta / 2,
-  north: r.latitude + r.latitudeDelta / 2,
-});
-
-function normalizeListingRouteMeta(
-  value: {
-    id: string | null;
-    title: string | null;
-    user_id: string | null;
-    company_id: string | null;
-  } | null,
-): ListingRouteMeta | null {
-  if (!value?.id || !value.title || !value.user_id) return null;
-  return {
-    id: value.id,
-    title: value.title,
-    user_id: value.user_id,
-    company_id: value.company_id,
-  };
-}
 
 export default function MapScreen() {
   const { width: screenW } = useWindowDimensions();
@@ -91,11 +75,7 @@ export default function MapScreen() {
   const { listings } = useMapListingsQuery();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const [clusterMode, setClusterMode] = useState<{
-    clusterId: string;
-    title: string;
-    rows: MarketListing[];
-  } | null>(null);
+  const [clusterMode, setClusterMode] = useState<MapClusterMode>(null);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -109,13 +89,7 @@ export default function MapScreen() {
     catalogItem: null,
   });
 
-  const activeFiltersCount =
-    (filters.kind !== "all" ? 1 : 0) +
-    (filters.side !== "all" ? 1 : 0) +
-    (filters.city.trim() ? 1 : 0) +
-    (filters.minPrice != null ? 1 : 0) +
-    (filters.maxPrice != null ? 1 : 0) +
-    (filters.catalogItem ? 1 : 0);
+  const activeFiltersCount = getActiveMapFiltersCount(filters);
 
   const [region, setRegion] = useState<MapRegion>(defaultRegion);
   const [myLoc, setMyLoc] = useState<MyLoc | null>(null);
@@ -134,10 +108,10 @@ export default function MapScreen() {
   const [offerDays, setOfferDays] = useState("");
   const [offerComment, setOfferComment] = useState("");
   const [sendingOffer, setSendingOffer] = useState(false);
-  const routeSide = Array.isArray(params.side) ? params.side[0] : params.side;
-  const routeKind = Array.isArray(params.kind) ? params.kind[0] : params.kind;
-  const routeCity = Array.isArray(params.city) ? params.city[0] : params.city;
-  const routeFocusId = Array.isArray(params.focusId) ? params.focusId[0] : params.focusId;
+  const routeSide = getRouteParamValue(params.side);
+  const routeKind = getRouteParamValue(params.kind);
+  const routeCity = getRouteParamValue(params.city);
+  const routeFocusId = getRouteParamValue(params.focusId);
 
   // ✅ debounce region updates (пересчёт кластеров только когда карта “остановилась”)
   const regionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -163,62 +137,25 @@ export default function MapScreen() {
 
 
   useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      side: routeSide === "offer" || routeSide === "demand" ? routeSide : prev.side,
-      kind: routeKind === "material" || routeKind === "work" || routeKind === "service" ? routeKind : prev.kind,
-      city: typeof routeCity === "string" && routeCity.trim() ? routeCity.trim() : prev.city,
+    setFilters((prev) => applyMapRouteFilters(prev, {
+      side: routeSide,
+      kind: routeKind,
+      city: routeCity,
     }));
   }, [routeCity, routeKind, routeSide]);
 
   // ===== filter =====
-  const filteredListings = useMemo(() => {
-    const city = filters.city.trim().toLowerCase();
-    const min = filters.minPrice != null ? Number(filters.minPrice) : null;
-    const max = filters.maxPrice != null ? Number(filters.maxPrice) : null;
-
-    return listings.filter((l) => {
-      if (filters.side !== "all") {
-        if (l.side !== filters.side) return false;
-      }
-
-      if (city && l.city && !l.city.toLowerCase().includes(city)) return false;
-
-      if (min != null && l.price != null && l.price < min) return false;
-      if (max != null && l.price != null && l.price > max) return false;
-
-      if (filters.kind !== "all") {
-        const k = filters.kind;
-        if (l.kind === k) {
-          // ok
-        } else {
-          const items = Array.isArray(l.items_json) ? l.items_json : [];
-          const hasKind = items.some((item) => item.kind === k);
-          if (!hasKind) return false;
-        }
-      }
-
-      if (filters.catalogItem?.id) {
-        const ids = Array.isArray(l.catalog_item_ids) ? l.catalog_item_ids : [];
-        if (!ids.includes(filters.catalogItem.id)) return false;
-      }
-
-      return true;
-    });
-  }, [listings, filters]);
+  const filteredListings = useMemo(() => filterMapListings(listings, filters), [listings, filters]);
 
   useEffect(() => {
     if (!routeFocusId) return;
-    const match = filteredListings.find((row) => row.id === routeFocusId) || listings.find((row) => row.id === routeFocusId);
-    if (!match || match.lat == null || match.lng == null) return;
+    const match = findFocusedMapListing(routeFocusId, filteredListings, listings);
+    if (!match) return;
+    const focusedRegion = getFocusedMapRegion(match);
+    if (!focusedRegion) return;
     setClusterMode(null);
     setSelectedId(match.id);
-    setRegion({
-      latitude: Number(match.lat),
-      longitude: Number(match.lng),
-      latitudeDelta: 0.05,
-      longitudeDelta: 0.05,
-    });
+    setRegion(focusedRegion);
     if (match.side === "demand") setDemandDetails(match);
   }, [filteredListings, listings, routeFocusId]);
 
@@ -237,88 +174,37 @@ export default function MapScreen() {
   }, [clusterIndex, viewport]);
 
   // ===== markers to draw =====
-  const listingsForMap = useMemo(() => {
-    const out: ClusterListing[] = [];
-
-    for (const f of clusterFeatures) {
-      const [lng, lat] = f.geometry.coordinates;
-
-      if (!isPointClusterFeature(f)) {
-        out.push({
-          id: `cluster:${f.properties.cluster_id}`,
-          lat,
-          lng,
-          side: "demand",
-          kind: "material",
-          price: null,
-          city: null,
-          title: `НУЖНО (${f.properties.point_count})`,
-          items_json: null,
-          __clusterId: f.properties.cluster_id,
-          __clusterCount: f.properties.point_count,
-        });
-      } else {
-        out.push(toClusterListing(f));
-      }
-    }
-
-    return out;
-  }, [clusterFeatures]);
+  const listingsForMap = useMemo(
+    () => buildClusterListings(clusterFeatures, (count) => `НУЖНО (${count})`),
+    [clusterFeatures],
+  );
 
   // ===== bottom rows: либо clusterMode, либо все =====
-  const rowsForBottom = useMemo(() => {
-    if (clusterMode?.rows?.length) return clusterMode.rows;
-    return filteredListings;
-  }, [clusterMode, filteredListings]);
+  const rowsForBottom = useMemo(
+    () => resolveMapRowsForBottom(clusterMode, filteredListings),
+    [clusterMode, filteredListings],
+  );
 
   // ===== spiderfy: если одинаковые координаты и zoom >= 17 =====
-  const spiderPoints = useMemo(() => {
-    if (!clusterMode?.rows?.length) return [];
-    const zoom = viewport?.zoom ?? zoomFromRegion(region.longitudeDelta, screenW);
-    if (zoom < 17) return [];
-
-    const rows = clusterMode.rows.filter((x) => x.lat != null && x.lng != null);
-    if (rows.length <= 1) return [];
-
-    const baseLat = Number(rows[0].lat);
-    const baseLng = Number(rows[0].lng);
-
-    const same = rows.every((x) => Number(x.lat) === baseLat && Number(x.lng) === baseLng);
-    if (!same) return [];
-
-    const n = rows.length;
-    const r = 0.00025;
-    return rows.map((x, i) => {
-      const a = (2 * Math.PI * i) / n;
-      return {
-        ...x,
-        lat: baseLat + Math.sin(a) * r,
-        lng: baseLng + Math.cos(a) * r,
-        __spiderOf: clusterMode.clusterId,
-      };
-    });
-  }, [clusterMode, viewport?.zoom, region.longitudeDelta, screenW]);
+  const spiderPoints = useMemo(
+    () => buildSpiderPoints({
+      clusterMode,
+      viewportZoom: viewport?.zoom,
+      regionLongitudeDelta: region.longitudeDelta,
+      screenWidth: screenW,
+    }),
+    [clusterMode, viewport?.zoom, region.longitudeDelta, screenW],
+  );
 
   // ===== Zillow zoom helper (smooth 2-step) =====
   const zoomTo = (lat: number, lng: number, zTarget: number) => {
-    const z2 = Math.min(20, Math.max(1, zTarget));
-    const z1 = Math.min(20, Math.max(1, z2 - 1));
+    const [z1, z2] = getMapZoomSteps(zTarget);
+    const step1 = getMapRegionForZoom(lat, lng, z1, screenW);
+    const step2 = getMapRegionForZoom(lat, lng, z2, screenW);
 
-    const mkDelta = (z: number) => {
-      const lonDelta = 360 * (Math.max(320, screenW) / 256) / Math.pow(2, z);
-      const latDelta = lonDelta;
-      return {
-        latitudeDelta: Math.max(0.003, latDelta),
-        longitudeDelta: Math.max(0.003, lonDelta),
-      };
-    };
-
-    const step1 = mkDelta(z1);
-    const step2 = mkDelta(z2);
-
-    setRegion({ latitude: lat, longitude: lng, ...step1 });
+    setRegion(step1);
     setTimeout(() => {
-      setRegion({ latitude: lat, longitude: lng, ...step2 });
+      setRegion(step2);
     }, 180);
   };
 

@@ -176,6 +176,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle45MapScreenStyleBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditNightBattle123MapScreenModelBoundaryFiles = [
+      path.join(SRC, "components", "map", "MapScreen.model.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle46ContractorWorkModalTransportFiles = [
       path.join(SRC, "screens", "contractor", "contractor.workModalService.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -508,6 +511,7 @@ describe("performance budget — bundle module count", () => {
     // S-AUDIT_BATTLE_41 adds one permanent BuyerSubcontractTab form model boundary.
     // S-AUDIT_BATTLE_42 adds one permanent Director metrics transport boundary.
     // S-AUDIT_BATTLE_45 adds one permanent MapScreen static style boundary.
+    // S_AUDIT_NIGHT_BATTLE_123 adds one permanent MapScreen pure model boundary.
     // S-AUDIT_BATTLE_46 adds one permanent Contractor work-modal read probe transport boundary.
     // S-AUDIT_BATTLE_47 adds one permanent BuyerSubcontractTab static style boundary.
     // S-AUDIT_BATTLE_48 adds one permanent Office invite handoff render boundary.
@@ -608,6 +612,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sAuditNightBattle123MapScreenModelBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle48OfficeInviteHandoffBoundaryFiles).toBeLessThanOrEqual(1);
@@ -715,6 +720,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle41BuyerSubcontractFormModelFiles -
         sAuditBattle42DirectorMetricsTransportFiles -
         sAuditBattle45MapScreenStyleBoundaryFiles -
+        sAuditNightBattle123MapScreenModelBoundaryFiles -
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
         sAuditBattle48OfficeInviteHandoffBoundaryFiles -
