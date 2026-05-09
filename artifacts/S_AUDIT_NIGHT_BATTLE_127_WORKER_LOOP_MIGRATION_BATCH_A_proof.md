@@ -59,7 +59,7 @@ Covered:
 - full Jest runInBand: PASS
 - architecture scanner: PASS
 - git diff --check: PASS
-- release verify post-push: PENDING_POST_PUSH
+- release verify post-push: PASS
 
 Full Jest:
 
@@ -74,6 +74,21 @@ Architecture scanner:
 - serviceBypassFiles: 0
 - transportControlledFindings: 175
 - unclassifiedCurrentFindings: 0
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS
+- head commit: `844e20486d187b27b964a5fec1819918d62571f4`
+- origin/main commit: `844e20486d187b27b964a5fec1819918d62571f4`
+- repo sync status: synced
+- worktree clean: true
+- head matches origin/main: true
+- release gates: tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, git-diff-check
+- OTA disposition: allow
+- otaPublished: false
+- easUpdateTriggered: false
+- easBuildTriggered: false
+- easSubmitTriggered: false
 
 ## Safety
 

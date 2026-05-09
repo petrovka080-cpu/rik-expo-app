@@ -63,7 +63,7 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING_POST_PUSH"
+    "releaseVerifyPostPush": "PASS"
   },
   "gateEvidence": {
     "typecheck": "npx tsc --noEmit --pretty false",
@@ -83,7 +83,28 @@
       "unclassifiedCurrentFindings": 0
     },
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": null
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PASS",
+      "headCommit": "844e20486d187b27b964a5fec1819918d62571f4",
+      "originMainCommit": "844e20486d187b27b964a5fec1819918d62571f4",
+      "repoSyncStatus": "synced",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "gates": [
+        "tsc",
+        "expo-lint",
+        "architecture-anti-regression",
+        "jest-run-in-band",
+        "jest",
+        "git-diff-check"
+      ],
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easUpdateTriggered": false,
+      "easBuildTriggered": false,
+      "easSubmitTriggered": false
+    }
   },
   "safety": {
     "productionCalls": false,
