@@ -1,0 +1,306 @@
+{
+  "wave": 130,
+  "slug": "UNSAFE_CAST_INVENTORY_MATRIX",
+  "finalStatus": "GREEN_UNSAFE_CAST_INVENTORY_MATRIX",
+  "generatedAt": "2026-05-09T20:03:47.3767602+06:00",
+  "baseHead": "68b3f801260080912d5982346175156a7907876b",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "codeChanged": false,
+    "selectedFiles": [
+      "artifacts/S_AUDIT_NIGHT_BATTLE_130_UNSAFE_CAST_INVENTORY_MATRIX_matrix.json",
+      "artifacts/S_AUDIT_NIGHT_BATTLE_130_UNSAFE_CAST_INVENTORY_MATRIX_proof.md"
+    ],
+    "targetFilesRead": [
+      "tests/governance/type-suppression-audit.test.ts",
+      "artifacts/S_TYPE_SAFETY_PDF_DIRECTOR_ANY_REDUCTION_1_matrix.json",
+      "artifacts/S_TYPE_SAFETY_PDF_DIRECTOR_ANY_REDUCTION_1_proof.md",
+      "artifacts/S_AUDIT_NIGHT_BATTLE_127_UI_PREDICTABILITY_TYPED_BOUNDARY_matrix.json",
+      "artifacts/S_PDF_CANCELLATION_AND_DIRECTOR_TYPE_SAFETY_RELEASE_CANDIDATE_1_matrix.json"
+    ],
+    "reasonSelected": "Inventory-only H3 baseline wave. No production code was changed because the requested output is a reduction plan and bucket matrix."
+  },
+  "freshScan": {
+    "commandsRequested": [
+      "git grep -n \"as any\" src tests || true",
+      "git grep -n \"@ts-ignore\" src tests || true",
+      "git grep -n \"@ts-expect-error\" src tests || true",
+      "git grep -n \"unknown as\" src tests || true"
+    ],
+    "shellCompatibilityNote": "The PowerShell version in this workspace rejected the literal '|| true' separator, so the same git grep commands were rerun with equivalent LASTEXITCODE handling.",
+    "rawLineCounts": {
+      "asAny": 25,
+      "tsIgnore": 2,
+      "tsExpectError": 3,
+      "unknownAs": 181,
+      "total": 211
+    },
+    "actionableLineCounts": {
+      "asAnyActualCasts": 19,
+      "unknownAsActualCasts": 181,
+      "actualTsIgnoreSuppressions": 0,
+      "actualTsExpectErrorSuppressions": 0,
+      "totalActionableCastLikeFindings": 200
+    },
+    "expectedBaselineNote": "The prompt referenced 162 unsafe casts. The current fresh src+tests grep baseline is 211 raw lines and 200 actionable cast-like findings after excluding governance literal strings. This artifact records the fresh baseline instead of forcing a stale number."
+  },
+  "buckets": [
+    {
+      "bucket": "API/transport",
+      "count": 57,
+      "topFiles": [
+        { "file": "src/lib/api/buyer.ts", "count": 7 },
+        { "file": "src/screens/foreman/foreman.dicts.repo.ts", "count": 6 },
+        { "file": "src/screens/buyer/buyer.repo.read.transport.ts", "count": 5 },
+        { "file": "src/screens/director/director.data.ts", "count": 5 },
+        { "file": "src/lib/api/proposals.ts", "count": 4 },
+        { "file": "src/screens/warehouse/warehouse.seed.transport.ts", "count": 3 },
+        { "file": "src/lib/api/suppliers.ts", "count": 3 },
+        { "file": "src/lib/api/requestCanonical.read.ts", "count": 3 },
+        { "file": "src/lib/api/director_reports.naming.ts", "count": 3 },
+        { "file": "src/screens/director/director.repository.ts", "count": 2 }
+      ],
+      "risk": "high",
+      "riskReason": "Most casts are Supabase query-builder or RPC boundary casts. A schema drift can bypass compile-time checks and surface as runtime row-shape errors.",
+      "suggestedFixTypes": [
+        "typed adapter",
+        "generic constraint",
+        "schema guard"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 15,
+        "targetCountAfterWave": 42,
+        "startingFiles": [
+          "src/lib/api/buyer.ts",
+          "src/lib/api/proposals.ts",
+          "src/screens/buyer/buyer.repo.read.transport.ts"
+        ]
+      }
+    },
+    {
+      "bucket": "auth/session/navigation",
+      "count": 1,
+      "topFiles": [
+        { "file": "src/screens/profile/ProfileContent.tsx", "count": 1 }
+      ],
+      "risk": "medium",
+      "riskReason": "The remaining finding adapts Expo Router's typed push surface to a string href. Route contract drift could hide behind the cast.",
+      "suggestedFixTypes": [
+        "typed adapter",
+        "discriminated union"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 1,
+        "targetCountAfterWave": 0,
+        "startingFiles": [
+          "src/screens/profile/ProfileContent.tsx"
+        ]
+      }
+    },
+    {
+      "bucket": "domain services",
+      "count": 19,
+      "topFiles": [
+        { "file": "src/screens/contractor/contractor.workModalService.ts", "count": 7 },
+        { "file": "src/screens/contractor/contractor.loadWorksService.ts", "count": 5 },
+        { "file": "src/screens/warehouse/warehouse.stockReports.service.ts", "count": 3 },
+        { "file": "src/screens/foreman/foreman.requests.ts", "count": 2 },
+        { "file": "src/lib/pdf/pdf.builder.ts", "count": 1 },
+        { "file": "src/screens/contractor/contractor.actBuilderOpenService.ts", "count": 1 }
+      ],
+      "risk": "high",
+      "riskReason": "Domain service casts sit close to business row mapping and can mask missing fields before screen-level semantics apply.",
+      "suggestedFixTypes": [
+        "schema guard",
+        "typed adapter",
+        "generic constraint"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 10,
+        "targetCountAfterWave": 9,
+        "startingFiles": [
+          "src/screens/contractor/contractor.workModalService.ts",
+          "src/screens/contractor/contractor.loadWorksService.ts"
+        ]
+      }
+    },
+    {
+      "bucket": "UI props/screens",
+      "count": 6,
+      "topFiles": [
+        { "file": "src/screens/warehouse/components/WarehouseSheet.tsx", "count": 1 },
+        { "file": "src/screens/warehouse/hooks/useWarehouseReqHeads.ts", "count": 1 },
+        { "file": "src/ui/React19SafeModal.tsx", "count": 1 },
+        { "file": "src/components/foreman/WorkTypePicker.tsx", "count": 1 },
+        { "file": "src/components/foreman/useCalcFields.ts", "count": 1 },
+        { "file": "src/screens/warehouse/WarehouseScreenContent.tsx", "count": 1 }
+      ],
+      "risk": "medium",
+      "riskReason": "UI casts mostly bridge React Native style/listener/query typing. Risk is lower than data-layer casts but can hide platform prop drift.",
+      "suggestedFixTypes": [
+        "typed adapter",
+        "generic constraint"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 4,
+        "targetCountAfterWave": 2,
+        "startingFiles": [
+          "src/ui/React19SafeModal.tsx",
+          "src/screens/warehouse/components/WarehouseSheet.tsx",
+          "src/screens/warehouse/WarehouseScreenContent.tsx"
+        ]
+      }
+    },
+    {
+      "bucket": "tests/mocks",
+      "count": 112,
+      "topFiles": [
+        { "file": "src/lib/supabaseClient.test.ts", "count": 7 },
+        { "file": "src/lib/api/proposals.silentCatch.test.ts", "count": 6 },
+        { "file": "src/screens/buyer/buyer.status.mutation.test.ts", "count": 5 },
+        { "file": "src/screens/buyer/buyer.actions.test.ts", "count": 4 },
+        { "file": "src/lib/api/accountant.financial.test.ts", "count": 3 },
+        { "file": "src/screens/accountant/accountant.windowing.service.test.ts", "count": 3 },
+        { "file": "src/lib/api/requests.test.ts", "count": 3 },
+        { "file": "src/screens/buyer/buyer.rfq.rework.mutation.test.ts", "count": 3 },
+        { "file": "tests/foreman/foreman.draftBoundary.postSubmit.test.ts", "count": 3 },
+        { "file": "src/lib/logger.test.ts", "count": 3 }
+      ],
+      "risk": "medium",
+      "riskReason": "Most findings are Jest mock and invalid-input fixtures. They do not ship to runtime, but they weaken test compiler signal and can normalize unsafe examples.",
+      "suggestedFixTypes": [
+        "typed mock",
+        "typed adapter",
+        "discriminated union"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 35,
+        "targetCountAfterWave": 77,
+        "startingFiles": [
+          "src/lib/supabaseClient.test.ts",
+          "src/lib/api/proposals.silentCatch.test.ts",
+          "src/screens/buyer/buyer.status.mutation.test.ts",
+          "src/screens/buyer/buyer.actions.test.ts"
+        ]
+      }
+    },
+    {
+      "bucket": "generated/irreducible",
+      "count": 16,
+      "actionableCount": 5,
+      "governanceLiteralCount": 11,
+      "topFiles": [
+        { "file": "tests/governance/type-suppression-audit.test.ts", "count": 11 },
+        { "file": "src/lib/text/encoding.ts", "count": 1 },
+        { "file": "src/screens/director/director.finance.rpc.ts", "count": 1 },
+        { "file": "src/lib/runtime/installWeakRefPolyfill.ts", "count": 1 },
+        { "file": "src/lib/api/_core.ts", "count": 1 },
+        { "file": "src/lib/api/director_reports.cache.ts", "count": 1 }
+      ],
+      "risk": "low",
+      "riskReason": "Governance literal matches are not suppressions. The remaining actionable entries are platform/generic compatibility edges that need targeted review before changing.",
+      "suggestedFixTypes": [
+        "typed adapter",
+        "generic constraint",
+        "schema guard"
+      ],
+      "nextWaveTarget": {
+        "targetReduction": 2,
+        "targetCountAfterWave": 14,
+        "startingFiles": [
+          "src/lib/api/_core.ts",
+          "src/lib/api/director_reports.cache.ts",
+          "src/screens/director/director.finance.rpc.ts"
+        ]
+      }
+    }
+  ],
+  "targetCountsForNextWaves": {
+    "totalRawLineFindings": 211,
+    "totalActionableCastLikeFindings": 200,
+    "productionActionableCastLikeFindings": 88,
+    "testMockActionableCastLikeFindings": 112,
+    "phase1TargetReduction": 67,
+    "phase1TargetActionableCastLikeFindings": 133,
+    "doNotIncrease": [
+      "actual @ts-ignore suppressions remain 0",
+      "actual @ts-expect-error suppressions remain 0",
+      "new production as any remains 0"
+    ]
+  },
+  "highestRiskNextSlice": {
+    "bucket": "API/transport",
+    "reason": "57 findings sit at provider/query/RPC boundaries and are closest to runtime schema drift.",
+    "recommendedScope": [
+      "src/lib/api/buyer.ts",
+      "src/lib/api/proposals.ts",
+      "src/screens/buyer/buyer.repo.read.transport.ts"
+    ],
+    "recommendedContract": "Add typed query adapter or schema guard tests around selected row-shape boundaries before removing casts."
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/governance/type-suppression-audit.test.ts --runInBand",
+      "summary": "1 test suite passed; 6 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "666 test suites passed, 1 skipped; 3950 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": {
+        "serviceBypassFindings": 0,
+        "serviceBypassFiles": 0,
+        "transportControlledFindings": 175,
+        "unclassifiedCurrentFindings": 0,
+        "productionRawLoopFindings": 0
+      }
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedUnsafeAnyCast": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
