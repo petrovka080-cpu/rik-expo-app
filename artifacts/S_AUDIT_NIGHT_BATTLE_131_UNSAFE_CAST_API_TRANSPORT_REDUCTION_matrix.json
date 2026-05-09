@@ -1,0 +1,146 @@
+{
+  "wave": 131,
+  "slug": "UNSAFE_CAST_API_TRANSPORT_REDUCTION",
+  "finalStatus": "GREEN_UNSAFE_CAST_API_TRANSPORT_REDUCTION",
+  "generatedAt": "2026-05-09T20:25:33.7132607+06:00",
+  "baseHead": "e865a10d3dfa26e9c3d8a24afc655eda8c875f69",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "freshScans": {
+    "sourceBucket": "wave 130 API/transport",
+    "commands": [
+      "git grep -n \"as any\" src/lib/api src/screens/*/*.transport.ts src/screens/*/*.repo*.ts src/screens/*/*.data.ts",
+      "git grep -n \"unknown as\" src/lib/api src/screens/*/*.transport.ts src/screens/*/*.repo*.ts src/screens/*/*.data.ts",
+      "wave 130 bucket classifier over src tests"
+    ],
+    "apiTransportBucketBefore": 57,
+    "apiTransportBucketAfter": 52,
+    "apiTransportBucketReduction": 5,
+    "asAnyInTouchedFiles": 0,
+    "unknownAsInTouchedProductionFiles": 0,
+    "remainingTouchedUnknownAsHits": [
+      {
+        "file": "tests/api/buyerRepoReadTransport.contract.test.ts",
+        "reason": "test assertion literal that forbids unknown as PagedQuery in the transport source"
+      }
+    ],
+    "targetFilesRead": [
+      "artifacts/S_AUDIT_NIGHT_BATTLE_130_UNSAFE_CAST_INVENTORY_MATRIX_matrix.json",
+      "src/lib/api/_core.ts",
+      "src/lib/api/buyer.ts",
+      "src/lib/api/proposals.ts",
+      "src/screens/buyer/buyer.repo.read.transport.ts",
+      "src/screens/buyer/buyer.repo.ts",
+      "tests/api/buyerRepoReadTransport.contract.test.ts",
+      "tests/api/buyerRepoHotspotPagination.test.ts",
+      "tests/api/dictionaryReferenceReads.contract.test.ts",
+      "tests/api/coreRpcCompatTransport.contract.test.ts"
+    ]
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/screens/buyer/buyer.repo.read.transport.ts",
+      "tests/api/guardedPagedQueryTransport.contract.test.ts",
+      "tests/api/buyerRepoReadTransport.contract.test.ts"
+    ],
+    "productionFilesChanged": [
+      "src/screens/buyer/buyer.repo.read.transport.ts"
+    ],
+    "reasonSelected": "Buyer read transport had 5 high-confidence query-boundary casts in the wave 130 API/transport bucket. They could be replaced safely with a reusable runtime DTO guard adapter without changing repository mapping, provider calls, pagination ceilings, or error/fallback semantics.",
+    "businessSemantics": "Preserved: query shape, ordering, pagination, provider-error propagation, repository fallback handling, and null/undefined empty-list behavior remain unchanged."
+  },
+  "changes": {
+    "added": [
+      "createGuardedPagedQuery runtime adapter inside the existing buyer read transport module",
+      "isRecordRow row-shape guard helper",
+      "Buyer repo read DTO guards for accounting rows, proposal item view rows, request item rows, proposal item links, and request-item-to-request rows"
+    ],
+    "removedUnsafeCasts": [
+      "createBuyerProposalItemsForAccountingQuery unknown-as PagedQuery",
+      "createBuyerProposalItemsForViewQuery unknown-as PagedQuery",
+      "createBuyerRequestItemsByIdsQuery unknown-as PagedQuery",
+      "createBuyerProposalItemLinksQuery unknown-as PagedQuery",
+      "createBuyerRequestItemToRequestMapQuery unknown-as PagedQuery"
+    ],
+    "notChanged": [
+      "Supabase provider calls remain in the same transport file",
+      "repository business mapping remains unchanged",
+      "write ownership remains unchanged",
+      "legacy rpcCompat fallback semantics in _core remain unchanged"
+    ]
+  },
+  "contracts": {
+    "successPayloadParse": true,
+    "malformedPayloadRejectedSafely": true,
+    "providerErrorPreserved": true,
+    "nullUndefinedHandledAsBefore": true,
+    "buyerTransportNoUnknownAsPagedQuery": true,
+    "noAsAnyAdded": true,
+    "noTsIgnoreAdded": true,
+    "noEmptyCatchAdded": true
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/api/guardedPagedQueryTransport.contract.test.ts tests/api/buyerRepoReadTransport.contract.test.ts tests/api/buyerRepoHotspotPagination.test.ts tests/perf/performance-budget.test.ts --runInBand",
+      "summary": "4 test suites passed; 24 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "667 test suites passed, 1 skipped; 3955 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": {
+        "serviceBypassFindings": 0,
+        "serviceBypassFiles": 0,
+        "transportControlledFindings": 175,
+        "unclassifiedCurrentFindings": 0,
+        "productionRawLoopFindings": 0
+      }
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedUnsafeAnyCast": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -49,15 +49,129 @@ export type BuyerProposalItemLinkRow = Pick<
 
 export type BuyerRequestItemToRequestRow = Pick<RequestItemRow, "id" | "request_id">;
 
+export type PagedQueryProvider = {
+  range: (
+    from: number,
+    to: number,
+  ) => PromiseLike<{ data?: unknown; error?: unknown }>;
+};
+
+export type PagedQueryRowGuard<T> = (value: unknown) => value is T;
+
+const buildMalformedPagedPayloadError = (context: string, reason: string) =>
+  new Error(`${context} returned malformed paged payload: ${reason}`);
+
+export const isRecordRow = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+export function createGuardedPagedQuery<T>(
+  query: PagedQueryProvider,
+  isRow: PagedQueryRowGuard<T>,
+  context: string,
+): PagedQuery<T> {
+  return {
+    range: async (from: number, to: number) => {
+      const result = await query.range(from, to);
+      if (result.error) return { data: null, error: result.error };
+      if (result.data == null) return { data: null, error: null };
+      if (!Array.isArray(result.data)) {
+        return {
+          data: null,
+          error: buildMalformedPagedPayloadError(context, "expected array data"),
+        };
+      }
+
+      const rows: T[] = [];
+      for (let index = 0; index < result.data.length; index += 1) {
+        const row = result.data[index];
+        if (!isRow(row)) {
+          return {
+            data: null,
+            error: buildMalformedPagedPayloadError(
+              context,
+              `row ${index} failed DTO guard`,
+            ),
+          };
+        }
+        rows.push(row);
+      }
+      return { data: rows, error: null };
+    },
+  };
+}
+
+const hasNullableStringField = (
+  row: Record<string, unknown>,
+  field: string,
+): boolean => row[field] == null || typeof row[field] === "string";
+
+const hasNullableNumberField = (
+  row: Record<string, unknown>,
+  field: string,
+): boolean => row[field] == null || typeof row[field] === "number";
+
+export const isBuyerProposalAccountingItemRow = (
+  value: unknown,
+): value is BuyerProposalAccountingItemRow =>
+  isRecordRow(value) &&
+  hasNullableStringField(value, "supplier") &&
+  hasNullableNumberField(value, "qty") &&
+  hasNullableNumberField(value, "price");
+
+export const isBuyerProposalItemViewRow = (
+  value: unknown,
+): value is BuyerProposalItemViewRow =>
+  isRecordRow(value) &&
+  hasNullableStringField(value, "request_item_id") &&
+  hasNullableStringField(value, "name_human") &&
+  hasNullableStringField(value, "uom") &&
+  hasNullableNumberField(value, "qty") &&
+  hasNullableStringField(value, "rik_code") &&
+  hasNullableStringField(value, "app_code") &&
+  hasNullableNumberField(value, "price") &&
+  hasNullableStringField(value, "supplier") &&
+  hasNullableStringField(value, "note");
+
+export const isBuyerRequestItemRow = (
+  value: unknown,
+): value is BuyerRequestItemRow =>
+  isRecordRow(value) &&
+  hasNullableStringField(value, "id") &&
+  hasNullableStringField(value, "name_human") &&
+  hasNullableStringField(value, "uom") &&
+  hasNullableNumberField(value, "qty") &&
+  hasNullableStringField(value, "rik_code") &&
+  hasNullableStringField(value, "app_code") &&
+  hasNullableStringField(value, "status") &&
+  hasNullableStringField(value, "cancelled_at");
+
+export const isBuyerProposalItemLinkRow = (
+  value: unknown,
+): value is BuyerProposalItemLinkRow =>
+  isRecordRow(value) &&
+  hasNullableStringField(value, "proposal_id") &&
+  hasNullableStringField(value, "request_item_id");
+
+export const isBuyerRequestItemToRequestRow = (
+  value: unknown,
+): value is BuyerRequestItemToRequestRow =>
+  isRecordRow(value) &&
+  hasNullableStringField(value, "id") &&
+  hasNullableStringField(value, "request_id");
+
 export function createBuyerProposalItemsForAccountingQuery(
   supabase: SupabaseClient,
   proposalId: string,
 ): PagedQuery<BuyerProposalAccountingItemRow> {
-  return supabase
-    .from("proposal_items")
-    .select("supplier, qty, price")
-    .eq("proposal_id", proposalId)
-    .order("id", { ascending: true }) as unknown as PagedQuery<BuyerProposalAccountingItemRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("proposal_items")
+      .select("supplier, qty, price")
+      .eq("proposal_id", proposalId)
+      .order("id", { ascending: true }),
+    isBuyerProposalAccountingItemRow,
+    "createBuyerProposalItemsForAccountingQuery",
+  );
 }
 
 export function selectBuyerSupplierCardByName(
@@ -75,43 +189,59 @@ export function createBuyerProposalItemsForViewQuery(
   supabase: SupabaseClient,
   proposalId: string,
 ): PagedQuery<BuyerProposalItemViewRow> {
-  return supabase
-    .from("proposal_items")
-    .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
-    .eq("proposal_id", proposalId)
-    .order("request_item_id", { ascending: true }) as unknown as PagedQuery<BuyerProposalItemViewRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("proposal_items")
+      .select("request_item_id, name_human, uom, qty, rik_code, app_code, price, supplier, note")
+      .eq("proposal_id", proposalId)
+      .order("request_item_id", { ascending: true }),
+    isBuyerProposalItemViewRow,
+    "createBuyerProposalItemsForViewQuery",
+  );
 }
 
 export function createBuyerRequestItemsByIdsQuery(
   supabase: SupabaseClient,
   requestItemIds: string[],
 ): PagedQuery<BuyerRequestItemRow> {
-  return supabase
-    .from("request_items")
-    .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
-    .in("id", requestItemIds)
-    .order("id", { ascending: true }) as unknown as PagedQuery<BuyerRequestItemRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("request_items")
+      .select("id, name_human, uom, qty, rik_code, app_code, status, cancelled_at")
+      .in("id", requestItemIds)
+      .order("id", { ascending: true }),
+    isBuyerRequestItemRow,
+    "createBuyerRequestItemsByIdsQuery",
+  );
 }
 
 export function createBuyerProposalItemLinksQuery(
   supabase: SupabaseClient,
   proposalIds: string[],
 ): PagedQuery<BuyerProposalItemLinkRow> {
-  return supabase
-    .from("proposal_items")
-    .select("proposal_id, request_item_id")
-    .in("proposal_id", proposalIds)
-    .order("proposal_id", { ascending: true })
-    .order("request_item_id", { ascending: true }) as unknown as PagedQuery<BuyerProposalItemLinkRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("proposal_items")
+      .select("proposal_id, request_item_id")
+      .in("proposal_id", proposalIds)
+      .order("proposal_id", { ascending: true })
+      .order("request_item_id", { ascending: true }),
+    isBuyerProposalItemLinkRow,
+    "createBuyerProposalItemLinksQuery",
+  );
 }
 
 export function createBuyerRequestItemToRequestMapQuery(
   supabase: SupabaseClient,
   requestItemIds: string[],
 ): PagedQuery<BuyerRequestItemToRequestRow> {
-  return supabase
-    .from("request_items")
-    .select("id, request_id")
-    .in("id", requestItemIds)
-    .order("id", { ascending: true }) as unknown as PagedQuery<BuyerRequestItemToRequestRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("request_items")
+      .select("id, request_id")
+      .in("id", requestItemIds)
+      .order("id", { ascending: true }),
+    isBuyerRequestItemToRequestRow,
+    "createBuyerRequestItemToRequestMapQuery",
+  );
 }

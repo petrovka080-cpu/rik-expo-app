@@ -50,9 +50,13 @@ describe("buyer repo read transport boundary", () => {
     expect(transportSource).toContain("export type BuyerRequestItemRow");
     expect(transportSource).toContain("export type BuyerProposalItemLinkRow");
     expect(transportSource).toContain("export type BuyerRequestItemToRequestRow");
+    expect(transportSource).toContain("createGuardedPagedQuery");
+    expect(transportSource).toContain("isBuyerProposalAccountingItemRow");
+    expect(transportSource).toContain("isBuyerProposalItemViewRow");
     expect(transportSource).toContain('.from("proposal_items")');
     expect(transportSource).toContain('.from("request_items")');
     expect(transportSource).toContain('.from("suppliers")');
+    expect(transportSource).not.toContain("unknown as PagedQuery");
   });
 
   it("preserves query contracts while repository keeps mapping and error semantics", () => {
