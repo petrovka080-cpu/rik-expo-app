@@ -164,7 +164,15 @@
     },
     "releaseVerifyPostPush": {
       "command": "npm run release:verify -- --json",
-      "status": "PENDING"
+      "status": "PASS",
+      "headCommit": "4e2f857a0f85159c250d62d2ecbdf30780b7992a",
+      "originMainCommit": "4e2f857a0f85159c250d62d2ecbdf30780b7992a",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "aheadBehind": "0/0",
+      "readinessStatus": "pass",
+      "otaDisposition": "allow",
+      "otaPublished": false
     }
   },
   "safety": {
