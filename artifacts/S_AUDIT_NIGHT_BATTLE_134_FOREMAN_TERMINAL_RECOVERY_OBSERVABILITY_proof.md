@@ -42,7 +42,11 @@
   - `npx tsx scripts/architecture_anti_regression_suite.ts --json`
   - service bypass findings 0, service bypass files 0, transport controlled findings 175, unclassified current findings 0, production raw loop findings 0
 - git diff --check: PASS
-- release verify post-push: PENDING
+- release verify post-push: PASS
+  - `npm run release:verify -- --json`
+  - verified pushed commit `1dbe05dd572f33cae7c558b4b17552d1623212f6` matched `origin/main`, sync status `synced`
+  - OTA disposition: skip, non-runtime test/proof-only change
+  - release gates passed: tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, git-diff-check
 
 ## Safety
 - No production calls, DB writes, migrations, remote env writes, deploy, OTA, live load tests, Supabase project changes, spend cap changes, Realtime capacity work, force push, tags, secrets printed, empty-catch additions, TypeScript ignore suppressions, unsafe any-casts, scanner weakening, test deletion, or business-semantic refactor.

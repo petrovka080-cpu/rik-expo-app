@@ -100,8 +100,21 @@
       "command": "git diff --check"
     },
     "releaseVerifyPostPush": {
-      "status": "PENDING",
-      "command": "npm run release:verify -- --json"
+      "status": "PASS",
+      "command": "npm run release:verify -- --json",
+      "timestamp": "2026-05-09T13:33:53.920Z",
+      "verifiedHead": "1dbe05dd572f33cae7c558b4b17552d1623212f6",
+      "verifiedOriginMain": "1dbe05dd572f33cae7c558b4b17552d1623212f6",
+      "syncStatus": "synced",
+      "otaDisposition": "skip",
+      "releaseGates": [
+        "tsc",
+        "expo-lint",
+        "architecture-anti-regression",
+        "jest-run-in-band",
+        "jest",
+        "git-diff-check"
+      ]
     }
   },
   "negativeConfirmations": {
