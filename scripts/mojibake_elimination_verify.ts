@@ -79,6 +79,8 @@ const DB_SPECS: ScanSpec[] = [
 ];
 
 const PAGE_SIZE = 500;
+const MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE = 200;
+const MOJIBAKE_VERIFY_MAX_ROWS_PER_TABLE = PAGE_SIZE * MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE;
 const STRING_LITERAL_RE = /(["'`])((?:\\.|(?!\1)[\s\S])*?)\1/g;
 const MOJIBAKE_MARKERS =
   /(?:Р[\u0400-\u04FF](?:Р|С)|С[\u0400-\u04FF](?:Р|С)|Р[–ЉЊЎЂѓ]|С[ЏЎЂѓ]|вЂ|Гђ|Г‘|Гѓ|Г‚|пїЅ)/u;
@@ -119,12 +121,13 @@ function scanSourceFile(relativePath: string) {
 }
 
 async function scanTable(spec: ScanSpec) {
-  let offset = 0;
   let scannedRows = 0;
   let corruptedFieldCount = 0;
+  let completedWithinPageCeiling = false;
   const samples: Array<{ id: string; column: string; value: string }> = [];
 
-  while (true) {
+  for (let pageIndex = 0; pageIndex < MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE; pageIndex += 1) {
+    const offset = pageIndex * PAGE_SIZE;
     const { data, error } = await adminUntyped
       .from(spec.table)
       .select([spec.idColumn, ...spec.columns].join(","))
@@ -132,7 +135,10 @@ async function scanTable(spec: ScanSpec) {
     if (error) throw error;
 
     const rows = Array.isArray(data) ? data : [];
-    if (!rows.length) break;
+    if (!rows.length) {
+      completedWithinPageCeiling = true;
+      break;
+    }
     scannedRows += rows.length;
 
     for (const row of rows) {
@@ -150,12 +156,23 @@ async function scanTable(spec: ScanSpec) {
       }
     }
 
-    if (rows.length < PAGE_SIZE) break;
-    offset += PAGE_SIZE;
+    if (rows.length < PAGE_SIZE) {
+      completedWithinPageCeiling = true;
+      break;
+    }
+  }
+
+  if (!completedWithinPageCeiling) {
+    throw new Error(
+      `mojibake_elimination_verify exceeded page ceiling for ${spec.table}: maxPages=${MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE}, maxRows=${MOJIBAKE_VERIFY_MAX_ROWS_PER_TABLE}`,
+    );
   }
 
   return {
     table: spec.table,
+    pageSize: PAGE_SIZE,
+    maxPages: MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE,
+    maxRows: MOJIBAKE_VERIFY_MAX_ROWS_PER_TABLE,
     scannedRows,
     corruptedFieldCount,
     samples,

@@ -106,6 +106,8 @@ const BEFORE_AFTER_SAMPLES = [
 ];
 
 const PAGE_SIZE = 500;
+const T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE = 200;
+const T1_TEXT_ENCODING_MAX_ROWS_PER_TABLE = PAGE_SIZE * T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE;
 const STRING_LITERAL_RE = /(["'`])((?:\\.|(?!\1)[\s\S])*?)\1/g;
 const MOJIBAKE_MARKERS =
   /(?:Р[\u0400-\u04ff](?:Р|С)|С[\u0400-\u04ff](?:Р|С)|Р[–ЉЊЎЂѓ]|С[ЏЎЂѓ]|вЂ|Гђ|Г‘|Гѓ|Г‚|�)/u;
@@ -168,12 +170,13 @@ async function scanTable(spec: ScanSpec) {
     };
   }
 
-  let offset = 0;
   let scannedRows = 0;
   let corruptedFieldCount = 0;
+  let completedWithinPageCeiling = false;
   const samples: Array<{ id: string; column: string; value: string; normalized: string }> = [];
 
-  while (true) {
+  for (let pageIndex = 0; pageIndex < T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE; pageIndex += 1) {
+    const offset = pageIndex * PAGE_SIZE;
     const { data, error } = await admin
       .from(spec.table)
       .select([spec.idColumn, ...spec.columns].join(","))
@@ -190,7 +193,10 @@ async function scanTable(spec: ScanSpec) {
     }
 
     const rows = Array.isArray(data) ? (data as unknown as JsonRecord[]) : [];
-    if (!rows.length) break;
+    if (!rows.length) {
+      completedWithinPageCeiling = true;
+      break;
+    }
     scannedRows += rows.length;
 
     for (const row of rows) {
@@ -211,12 +217,23 @@ async function scanTable(spec: ScanSpec) {
       }
     }
 
-    if (rows.length < PAGE_SIZE) break;
-    offset += PAGE_SIZE;
+    if (rows.length < PAGE_SIZE) {
+      completedWithinPageCeiling = true;
+      break;
+    }
+  }
+
+  if (!completedWithinPageCeiling) {
+    throw new Error(
+      `t1_text_encoding_proof exceeded page ceiling for ${spec.table}: maxPages=${T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE}, maxRows=${T1_TEXT_ENCODING_MAX_ROWS_PER_TABLE}`,
+    );
   }
 
   return {
     table: spec.table,
+    pageSize: PAGE_SIZE,
+    maxPages: T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE,
+    maxRows: T1_TEXT_ENCODING_MAX_ROWS_PER_TABLE,
     scannedRows,
     corruptedFieldCount,
     samples,

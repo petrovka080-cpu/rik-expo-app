@@ -1,0 +1,144 @@
+{
+  "wave": 129,
+  "slug": "READ_ONLY_PROOF_PAGINATION_CEILING",
+  "goal": "Remove unbounded while(true) pagination from read-only text proof scripts by adding explicit fail-closed page ceilings and source-level contract coverage.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "6c200c2574ec193b0664e05d5f2f4bbab9c4a848",
+    "originMain": "6c200c2574ec193b0664e05d5f2f4bbab9c4a848",
+    "aheadBehind": "0/0"
+  },
+  "freshScanBefore": {
+    "commands": [
+      "git grep -n \"while *(true\" src tests scripts",
+      "git grep -n \"for *(;;\" src tests scripts"
+    ],
+    "whileTrueFindings": {
+      "total": 15,
+      "runtimeOrScriptFindings": [
+        "scripts/director_parity_check_v1.js:192",
+        "scripts/foreman_warehouse_pdf_android_runtime_verify.ts:177",
+        "scripts/mojibake_elimination_verify.ts:127",
+        "scripts/t1_text_encoding_proof.ts:176"
+      ],
+      "testOnlyGuards": 11
+    },
+    "forInfiniteFindings": 0
+  },
+  "selectedFiles": [
+    "scripts/mojibake_elimination_verify.ts",
+    "scripts/t1_text_encoding_proof.ts",
+    "tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts"
+  ],
+  "reasonSelected": [
+    "Both selected scripts are read-only text proof/verifier scripts with the same page-exhaustion DB scan pattern.",
+    "Both were fresh runtime/script while(true) findings with no explicit max page ceiling.",
+    "The remaining director parity loop already has a hard offset guard, and the Android runtime verifier loop is a string token counter false positive.",
+    "The selected scripts were not executed in this wave, so no DB reads or writes were performed."
+  ],
+  "before": {
+    "mojibakeEliminationLoop": "while (true) paginated until empty page or short page",
+    "t1TextEncodingLoop": "while (true) paginated until empty page, short page, or query skip",
+    "explicitPageCeiling": false,
+    "proofScriptReadOnlyContract": false
+  },
+  "after": {
+    "mojibakeEliminationLoop": "for pageIndex < MOJIBAKE_VERIFY_MAX_PAGES_PER_TABLE",
+    "t1TextEncodingLoop": "for pageIndex < T1_TEXT_ENCODING_MAX_PAGES_PER_TABLE",
+    "pageSize": 500,
+    "maxPagesPerTable": 200,
+    "maxRowsPerTable": 100000,
+    "pageCeilingBehavior": "fail closed with an explicit exceeded page ceiling error",
+    "dbWriteBehaviorChanged": false,
+    "proofScriptsExecuted": false,
+    "sourceContractAdded": true
+  },
+  "freshScanAfter": {
+    "commands": [
+      "git grep -n \"while *(true\" src tests scripts",
+      "git grep -n \"for *(;;\" src tests scripts"
+    ],
+    "whileTrueFindings": {
+      "total": 13,
+      "runtimeOrScriptFindings": [
+        "scripts/director_parity_check_v1.js:192",
+        "scripts/foreman_warehouse_pdf_android_runtime_verify.ts:177"
+      ],
+      "testOnlyGuards": 11,
+      "selectedScriptFindings": 0
+    },
+    "forInfiniteFindings": 0,
+    "forbiddenPatternScanOnTouchedFiles": {
+      "command": "rg -n \"catch \\{\\}|@ts-ignore|as any\" scripts/mojibake_elimination_verify.ts scripts/t1_text_encoding_proof.ts tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts",
+      "status": "PASS",
+      "matches": 0
+    }
+  },
+  "focusedCommands": [
+    {
+      "command": "npx jest tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts --runInBand",
+      "status": "PASS",
+      "summary": "2 suites passed, 6 tests passed"
+    }
+  ],
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "gateEvidence": {
+    "focusedTests": "npx jest tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts --runInBand; 2 suites passed, 6 tests passed",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 663 suites passed, 1 skipped, 3928 tests passed, 1 skipped",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "remainingC2Findings": [
+    {
+      "file": "scripts/director_parity_check_v1.js",
+      "classification": "bounded read parity script with existing hard offset guard",
+      "recommendedPriority": "next P2 cleanup"
+    },
+    {
+      "file": "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+      "classification": "string token counter false positive",
+      "recommendedPriority": "low-risk syntax cleanup"
+    }
+  ],
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbReadsFromSelectedScripts": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
