@@ -194,6 +194,12 @@ const isApprovedAuditBattle127SupplierFilesMetadataTransportBoundaryPatch = (fil
     "tests/api/supplierFilesStorageTransport.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
+  [
+    "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+    "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -268,6 +274,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
       !isApprovedAuditBattle123BuyerRepoStorageTransportBoundaryPatch(file) &&
       !isApprovedAuditBattle127SupplierFilesMetadataTransportBoundaryPatch(file) &&
+      !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

@@ -173,13 +173,14 @@ function readLogDelta(baselineLength: number) {
 function countToken(source: string, token: string) {
   if (!token) return 0;
   let count = 0;
-  let index = 0;
-  while (true) {
-    const found = source.indexOf(token, index);
-    if (found < 0) return count;
+  for (
+    let index = source.indexOf(token);
+    index >= 0;
+    index = source.indexOf(token, index + token.length)
+  ) {
     count += 1;
-    index = found + token.length;
   }
+  return count;
 }
 
 function buildRelevantLogExcerpt(source: string) {

@@ -178,6 +178,12 @@ const isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatc
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
+  [
+    "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+    "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -257,6 +263,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatch(file) &&
+        !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

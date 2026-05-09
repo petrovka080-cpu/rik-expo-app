@@ -180,6 +180,12 @@ const isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch = (file:
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
+  [
+    "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+    "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -243,6 +249,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAuditBattle118WarehouseIncomingMaterialsPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
+        !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||
