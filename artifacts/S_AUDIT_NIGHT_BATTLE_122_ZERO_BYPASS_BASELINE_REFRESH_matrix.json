@@ -1,0 +1,191 @@
+{
+  "wave": "S_AUDIT_NIGHT_BATTLE_122_ZERO_BYPASS_BASELINE_REFRESH",
+  "final_status": "GREEN_ZERO_BYPASS_BASELINE_REFRESH",
+  "generated_at_local": "2026-05-09T12:45:32.8938721+06:00",
+  "started_head": "c39b910a11bf295cc17db19a65fc1d0e5ed12184",
+  "scope": "audit_only_baseline_refresh",
+  "production_code_changed": false,
+  "selected_files": [
+    "artifacts/S_AUDIT_NIGHT_BATTLE_122_ZERO_BYPASS_BASELINE_REFRESH_matrix.json",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_122_ZERO_BYPASS_BASELINE_REFRESH_proof.md"
+  ],
+  "selection_reason": "Fresh scanner was already green for zero service bypass. The minimum safe scope is an audit-only baseline refresh after waves 120 and 121.",
+  "target_expectations": {
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings_min": 173,
+    "unclassifiedCurrentFindings": 0
+  },
+  "baseline_matrix": [
+    {
+      "label": "old_audit_baseline_before_wave_120",
+      "source": "artifacts/S_AUDIT_NIGHT_BATTLE_120_REQUESTS_ITEM_MUTATION_TRANSPORT_BOUNDARY_matrix.json",
+      "serviceBypassFindings": 3,
+      "serviceBypassFiles": 2,
+      "transportControlledFindings": 170,
+      "unclassifiedCurrentFindings": 0,
+      "notes": "Morning audit residual service bypass baseline carried into wave 120."
+    },
+    {
+      "label": "after_wave_120",
+      "source": "artifacts/S_AUDIT_NIGHT_BATTLE_120_REQUESTS_ITEM_MUTATION_TRANSPORT_BOUNDARY_matrix.json",
+      "serviceBypassFindings": 1,
+      "serviceBypassFiles": 1,
+      "transportControlledFindings": 172,
+      "unclassifiedCurrentFindings": 0,
+      "notes": "Requests item mutation provider calls moved behind a transport boundary."
+    },
+    {
+      "label": "after_wave_121",
+      "source": "artifacts/S_AUDIT_NIGHT_BATTLE_121_AUTH_LIFECYCLE_TRANSPORT_BOUNDARY_matrix.json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0,
+      "notes": "Auth lifecycle provider call moved behind a transport boundary."
+    },
+    {
+      "label": "current_fresh_scanner",
+      "source": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0,
+      "notes": "Fresh post-audit baseline confirmed at HEAD."
+    }
+  ],
+  "fresh_scanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "exit_code": 0,
+    "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "directSupabase": {
+      "serviceBypassBudget": 157,
+      "totalFindings": 220,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "testOnlyFindings": 47,
+      "generatedOrIgnoredFindings": 0,
+      "topServiceBypassFiles": []
+    },
+    "directSupabaseExceptionContainment": {
+      "registryLoaded": true,
+      "registryEntries": 156,
+      "currentServiceBypassFindings": 0,
+      "allowedCurrentFindings": 0,
+      "unclassifiedCurrentFindings": 0,
+      "disallowedCurrentFindings": 0
+    },
+    "checks": {
+      "direct_supabase_service_bypass_budget": "PASS",
+      "direct_supabase_exception_registry": "PASS",
+      "production_readonly_canary_contract": "PASS",
+      "cache_rate_route_scope": "PASS",
+      "component_debt_report": "REPORT_ONLY"
+    },
+    "safety": {
+      "productionCalls": false,
+      "dbWrites": false,
+      "migrations": false,
+      "supabaseProjectChanges": false,
+      "envChanges": false,
+      "secretsPrinted": false
+    }
+  },
+  "direct_supabase_grep": {
+    "command": "git grep -n \"supabase\\.\\(from\\|rpc\\|auth\\|storage\\|channel\\|realtime\\)\" src",
+    "exit_code": 0,
+    "totalMatches": 204,
+    "nonTransportServiceMatches": 0,
+    "allowedTransportBffTestOrRootMatches": 204,
+    "rootClientMatches": 4,
+    "nonTransportServiceFilter": "rg -v '(\\.transport\\.|\\.bff\\.client\\.|\\.test\\.|src/lib/supabaseClient\\.ts)'"
+  },
+  "root_client_confirmation": {
+    "file": "src/lib/supabaseClient.ts",
+    "status": "irreducible_root_client_not_service_bypass",
+    "scanner_rule": "scripts/architecture_anti_regression_suite.ts classifies paths ending with /supabaseClient.ts as transport_controlled.",
+    "grep_matches": [
+      "src/lib/supabaseClient.ts:480",
+      "src/lib/supabaseClient.ts:484",
+      "src/lib/supabaseClient.ts:516",
+      "src/lib/supabaseClient.ts:535"
+    ]
+  },
+  "gates": {
+    "focused_tests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "full_jest_runInBand": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "release_verify_post_push": "TO_RUN_AFTER_PUSH"
+  },
+  "gate_evidence": {
+    "focused_tests": [
+      {
+        "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+        "result": "PASS",
+        "serviceBypassFindings": 0,
+        "serviceBypassFiles": 0,
+        "transportControlledFindings": 173,
+        "unclassifiedCurrentFindings": 0
+      },
+      {
+        "command": "(git grep -n 'supabase\\.\\(from\\|rpc\\|auth\\|storage\\|channel\\|realtime\\)' src | rg -v '(\\.transport\\.|\\.bff\\.client\\.|\\.test\\.|src/lib/supabaseClient\\.ts)' | Measure-Object -Line).Lines",
+        "result": "PASS",
+        "nonTransportServiceMatches": 0
+      }
+    ],
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "exit_code": 0
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "exit_code": 0
+    },
+    "full_jest_runInBand": {
+      "command": "npm test -- --runInBand",
+      "exit_code": 0,
+      "testSuites": "656 passed, 1 skipped, 657 total",
+      "tests": "3898 passed, 1 skipped, 3899 total"
+    },
+    "architecture_scanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "exit_code": 0,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 173,
+      "unclassifiedCurrentFindings": 0
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    "release_verify_post_push": {
+      "command": "npm run release:verify -- --json",
+      "result": "TO_RUN_AFTER_PUSH"
+    }
+  },
+  "negative_confirmations": {
+    "production_calls": false,
+    "db_writes": false,
+    "migrations": false,
+    "env_writes": false,
+    "deploy": false,
+    "ota": false,
+    "live_load_tests": false,
+    "cache_or_rate_limit_production_enablement_without_versioned_safe_flag": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_capacity_work": false,
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "new_empty_catch_blocks": false,
+    "new_ts_ignore": false,
+    "new_as_any": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
