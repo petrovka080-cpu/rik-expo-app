@@ -94,6 +94,28 @@ export type ComponentDebtEntry = {
   hookCount: number;
 };
 
+export type ProductionRawLoopPattern = "while_true" | "for_ever";
+
+export type ProductionRawLoopAllowlistEntry = {
+  file: string;
+  line: number;
+  pattern: ProductionRawLoopPattern;
+  reason: string;
+  owner: string;
+  testCoverage: string;
+};
+
+export type ProductionRawLoopFinding = {
+  file: string;
+  line: number;
+  pattern: ProductionRawLoopPattern;
+  matchedLoop: string;
+  allowlisted: boolean;
+  reason: string | null;
+  owner: string | null;
+  testCoverage: string | null;
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -133,6 +155,14 @@ export type ArchitectureAntiRegressionReport = {
     cacheAllowedRoute: string;
     rateLimitCanaryRoute: string;
     rateLimitCanaryPercent: number;
+  };
+  productionRawLoops: {
+    rawLoopBudget: 0;
+    totalFindings: number;
+    unapprovedFindings: number;
+    allowlistedFindings: number;
+    allowlistEntries: number;
+    topFiles: readonly { file: string; count: number }[];
   };
   componentDebt: {
     reportOnly: true;
@@ -180,6 +210,10 @@ const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
   /\b(?:supabase(?:Client|Admin)?|params\.supabase|deps\.supabase|args\.supabase)\s*\.\s*(auth|storage|from|rpc|channel|removeChannel|getChannels|realtime)\b/g;
+const PRODUCTION_RAW_LOOP_BUDGET = 0;
+const PRODUCTION_RAW_LOOP_EXPECTED_OWNER =
+  "cancellable worker loop primitive or explicit allowlist with reason, owner, and test coverage";
+const PRODUCTION_RAW_LOOP_ALLOWLIST: readonly ProductionRawLoopAllowlistEntry[] = [];
 
 const normalizePath = (value: string): string => value.replace(/\\/g, "/");
 
@@ -779,6 +813,146 @@ export function evaluateCacheRateScopeGuardrail(params: {
   };
 }
 
+const findProductionRawLoopAllowlistEntry = (
+  allowlist: readonly ProductionRawLoopAllowlistEntry[],
+  finding: Pick<ProductionRawLoopFinding, "file" | "line" | "pattern">,
+): ProductionRawLoopAllowlistEntry | undefined =>
+  allowlist.find(
+    (entry) =>
+      normalizePath(entry.file) === finding.file &&
+      entry.line === finding.line &&
+      entry.pattern === finding.pattern,
+  );
+
+const productionRawLoopPatterns: readonly {
+  pattern: ProductionRawLoopPattern;
+  regex: RegExp;
+}[] = [
+  { pattern: "while_true", regex: /\bwhile\s*\(\s*true\s*\)/g },
+  { pattern: "for_ever", regex: /\bfor\s*\(\s*;\s*;\s*\)/g },
+];
+
+export function scanProductionRawLoopSource(params: {
+  file: string;
+  source: string;
+  allowlist?: readonly ProductionRawLoopAllowlistEntry[];
+}): ProductionRawLoopFinding[] {
+  const file = normalizePath(params.file);
+  const allowlist = params.allowlist ?? PRODUCTION_RAW_LOOP_ALLOWLIST;
+  const findings: ProductionRawLoopFinding[] = [];
+
+  params.source.split(/\r?\n/).forEach((lineText, index) => {
+    const line = index + 1;
+    for (const candidate of productionRawLoopPatterns) {
+      candidate.regex.lastIndex = 0;
+      const match = candidate.regex.exec(lineText);
+      if (!match) continue;
+      const allowlistEntry = findProductionRawLoopAllowlistEntry(allowlist, {
+        file,
+        line,
+        pattern: candidate.pattern,
+      });
+      findings.push({
+        file,
+        line,
+        pattern: candidate.pattern,
+        matchedLoop: match[0],
+        allowlisted: Boolean(allowlistEntry),
+        reason: allowlistEntry?.reason ?? null,
+        owner: allowlistEntry?.owner ?? null,
+        testCoverage: allowlistEntry?.testCoverage ?? null,
+      });
+    }
+  });
+
+  return findings;
+}
+
+export function scanProductionRawLoops(
+  projectRoot: string,
+  allowlist: readonly ProductionRawLoopAllowlistEntry[] = PRODUCTION_RAW_LOOP_ALLOWLIST,
+): ProductionRawLoopFinding[] {
+  const sourceRoot = path.join(projectRoot, "src");
+  return listSourceFiles(sourceRoot)
+    .map((filePath) => relativeProjectPath(projectRoot, filePath))
+    .filter((relativePath) => !isTestPath(relativePath))
+    .flatMap((relativePath) =>
+      scanProductionRawLoopSource({
+        file: relativePath,
+        source: readProjectFile(projectRoot, relativePath),
+        allowlist,
+      }),
+    );
+}
+
+export function evaluateProductionRawLoopGuardrail(params: {
+  findings: readonly ProductionRawLoopFinding[];
+  allowlist?: readonly ProductionRawLoopAllowlistEntry[];
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: ArchitectureAntiRegressionReport["productionRawLoops"];
+} {
+  const allowlist = params.allowlist ?? PRODUCTION_RAW_LOOP_ALLOWLIST;
+  const unapprovedFindings = params.findings.filter((finding) => !finding.allowlisted);
+  const invalidAllowlistEntries = allowlist.filter(
+    (entry) =>
+      !entry.reason.trim() ||
+      !entry.owner.trim() ||
+      !entry.testCoverage.trim(),
+  );
+  const unusedAllowlistEntries = allowlist.filter(
+    (entry) =>
+      !params.findings.some(
+        (finding) =>
+          finding.allowlisted &&
+          finding.file === normalizePath(entry.file) &&
+          finding.line === entry.line &&
+          finding.pattern === entry.pattern,
+      ),
+  );
+  const countsByFile = new Map<string, number>();
+  for (const finding of params.findings) {
+    countsByFile.set(finding.file, (countsByFile.get(finding.file) ?? 0) + 1);
+  }
+  const topFiles = Array.from(countsByFile.entries())
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 10)
+    .map(([file, count]) => ({ file, count }));
+  const errors = [
+    ...unapprovedFindings.map(
+      (finding) =>
+        `production_raw_loop:file=${finding.file}:line=${finding.line}:matched_loop=${finding.matchedLoop}:expected=${PRODUCTION_RAW_LOOP_EXPECTED_OWNER}`,
+    ),
+    ...invalidAllowlistEntries.map(
+      (entry) =>
+        `production_raw_loop_allowlist_missing_metadata:file=${normalizePath(entry.file)}:line=${entry.line}:pattern=${entry.pattern}`,
+    ),
+    ...unusedAllowlistEntries.map(
+      (entry) =>
+        `production_raw_loop_allowlist_unused:file=${normalizePath(entry.file)}:line=${entry.line}:pattern=${entry.pattern}`,
+    ),
+    ...(unapprovedFindings.length > PRODUCTION_RAW_LOOP_BUDGET
+      ? [`production_raw_loop_budget_exceeded:${unapprovedFindings.length}>${PRODUCTION_RAW_LOOP_BUDGET}`]
+      : []),
+  ];
+
+  return {
+    check: {
+      name: "production_raw_loop_boundary",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      rawLoopBudget: PRODUCTION_RAW_LOOP_BUDGET,
+      totalFindings: params.findings.length,
+      unapprovedFindings: unapprovedFindings.length,
+      allowlistedFindings: params.findings.length - unapprovedFindings.length,
+      allowlistEntries: allowlist.length,
+      topFiles,
+    },
+  };
+}
+
 export function scanComponentDebtSource(params: {
   file: string;
   source: string;
@@ -826,6 +1000,9 @@ export function runArchitectureAntiRegressionSuite(
   });
   const productionReadonlyCanary = evaluateProductionReadonlyCanaryGuardrail();
   const cacheRateScope = evaluateCacheRateScopeGuardrail({ projectRoot });
+  const productionRawLoops = evaluateProductionRawLoopGuardrail({
+    findings: scanProductionRawLoops(projectRoot),
+  });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -837,6 +1014,7 @@ export function runArchitectureAntiRegressionSuite(
     directSupabaseExceptionContainment.check,
     productionReadonlyCanary.check,
     cacheRateScope.check,
+    productionRawLoops.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -849,6 +1027,7 @@ export function runArchitectureAntiRegressionSuite(
     directSupabaseExceptionContainment: directSupabaseExceptionContainment.summary,
     productionReadonlyCanary: productionReadonlyCanary.summary,
     cacheRateScope: cacheRateScope.summary,
+    productionRawLoops: productionRawLoops.summary,
     componentDebt,
     checks,
     safety: {
@@ -874,6 +1053,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(
     `direct_supabase_exception_unclassified: ${report.directSupabaseExceptionContainment.unclassifiedCurrentFindings}`,
   );
+  console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

@@ -4,10 +4,13 @@ import {
   evaluateCacheRateScopeGuardrail,
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
+  evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   formatDirectSupabaseServiceBypassFailure,
   scanComponentDebtSource,
   scanDirectSupabaseSource,
+  scanProductionRawLoopSource,
+  scanProductionRawLoops,
 } from "../../scripts/architecture_anti_regression_suite";
 
 describe("architecture anti-regression suite", () => {
@@ -215,6 +218,113 @@ describe("architecture anti-regression suite", () => {
         "rate_limit_canary_percent_changed:25",
       ]),
     );
+  });
+
+  it("blocks raw production infinite loops with readable owner failures", () => {
+    const findings = scanProductionRawLoopSource({
+      file: "src/workers/exampleWorker.ts",
+      source: [
+        "export async function runExampleWorker() {",
+        "  while (true) {",
+        "    await doWork();",
+        "  }",
+        "}",
+        "export function spin() { for (;;) break; }",
+      ].join("\n"),
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        file: "src/workers/exampleWorker.ts",
+        line: 2,
+        pattern: "while_true",
+        matchedLoop: "while (true)",
+        allowlisted: false,
+        owner: null,
+      }),
+      expect.objectContaining({
+        file: "src/workers/exampleWorker.ts",
+        line: 6,
+        pattern: "for_ever",
+        matchedLoop: "for (;;)",
+        allowlisted: false,
+        owner: null,
+      }),
+    ]);
+
+    const guardrail = evaluateProductionRawLoopGuardrail({ findings });
+    expect(guardrail.check).toEqual(
+      expect.objectContaining({
+        name: "production_raw_loop_boundary",
+        status: "fail",
+      }),
+    );
+    expect(guardrail.check.errors).toEqual(
+      expect.arrayContaining([
+        "production_raw_loop:file=src/workers/exampleWorker.ts:line=2:matched_loop=while (true):expected=cancellable worker loop primitive or explicit allowlist with reason, owner, and test coverage",
+        "production_raw_loop:file=src/workers/exampleWorker.ts:line=6:matched_loop=for (;;):expected=cancellable worker loop primitive or explicit allowlist with reason, owner, and test coverage",
+        "production_raw_loop_budget_exceeded:2>0",
+      ]),
+    );
+  });
+
+  it("requires reason, owner, and test coverage for any explicit raw-loop allowlist", () => {
+    const allowlist = [
+      {
+        file: "src/workers/exampleWorker.ts",
+        line: 1,
+        pattern: "while_true" as const,
+        reason: "bounded by external blocking read and abort signal",
+        owner: "platform-workers",
+        testCoverage: "tests/workers/exampleWorker.contract.test.ts",
+      },
+    ];
+    const findings = scanProductionRawLoopSource({
+      file: "src/workers/exampleWorker.ts",
+      source: "while (true) await next();",
+      allowlist,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        allowlisted: true,
+        reason: "bounded by external blocking read and abort signal",
+        owner: "platform-workers",
+        testCoverage: "tests/workers/exampleWorker.contract.test.ts",
+      }),
+    ]);
+    expect(evaluateProductionRawLoopGuardrail({ findings, allowlist }).check.status).toBe("pass");
+
+    const invalidAllowlist = [{ ...allowlist[0], owner: "" }];
+    const invalidFindings = scanProductionRawLoopSource({
+      file: "src/workers/exampleWorker.ts",
+      source: "while (true) await next();",
+      allowlist: invalidAllowlist,
+    });
+
+    expect(evaluateProductionRawLoopGuardrail({
+      findings: invalidFindings,
+      allowlist: invalidAllowlist,
+    }).check.errors).toEqual(
+      expect.arrayContaining([
+        "production_raw_loop_allowlist_missing_metadata:file=src/workers/exampleWorker.ts:line=1:pattern=while_true",
+      ]),
+    );
+  });
+
+  it("keeps production src raw infinite loop inventory at zero", () => {
+    const findings = scanProductionRawLoops(process.cwd());
+    const guardrail = evaluateProductionRawLoopGuardrail({ findings });
+
+    expect(findings).toEqual([]);
+    expect(guardrail.summary).toMatchObject({
+      rawLoopBudget: 0,
+      totalFindings: 0,
+      unapprovedFindings: 0,
+      allowlistedFindings: 0,
+      allowlistEntries: 0,
+    });
+    expect(guardrail.check.status).toBe("pass");
   });
 
   it("reports component line and hook pressure without failing the build", () => {

@@ -1,0 +1,91 @@
+{
+  "wave": 128,
+  "slug": "WORKER_LOOP_MIGRATION_BATCH_B",
+  "finalStatus": "GREEN_WORKER_LOOP_MIGRATION_BATCH_B",
+  "preflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeBeforeWave": "clean",
+    "head": "810cf8f063c455002143054f300e0ce36b022dc2",
+    "originMain": "810cf8f063c455002143054f300e0ce36b022dc2",
+    "aheadBehind": "0/0"
+  },
+  "freshGreps": {
+    "git grep -n \"while *(true\" src || true": {
+      "status": "PASS",
+      "findings": []
+    },
+    "git grep -n \"for *(;;\" src || true": {
+      "status": "PASS",
+      "findings": []
+    }
+  },
+  "productionRawLoops": {
+    "productionUnboundedLoops": 0,
+    "rawLoopBudget": 0,
+    "scannerTotalFindings": 0,
+    "scannerUnapprovedFindings": 0,
+    "scannerAllowlistedFindings": 0,
+    "scannerAllowlistEntries": 0,
+    "remainingFindingsClassification": "none",
+    "explicitAllowlistRequired": false
+  },
+  "scannerContract": {
+    "file": "scripts/architecture_anti_regression_suite.ts",
+    "checkName": "production_raw_loop_boundary",
+    "scope": "production src files only; test files excluded by test-path classifier",
+    "blockedPatterns": [
+      "while (true)",
+      "for (;;)"
+    ],
+    "allowlistPolicy": {
+      "allowedOnlyWithReason": true,
+      "allowedOnlyWithOwner": true,
+      "allowedOnlyWithTestCoverage": true,
+      "staleAllowlistFails": true,
+      "currentEntries": 0
+    }
+  },
+  "focusedTests": {
+    "command": "npx jest tests/architecture/architectureAntiRegressionSuite.test.ts --runInBand",
+    "status": "PASS",
+    "result": "1 suite passed, 10 tests passed"
+  },
+  "architectureScanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "finalStatus": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0,
+    "productionRawLoopBoundary": "PASS"
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deploy": false,
+    "ota": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettings": false,
+    "spendCaps": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
