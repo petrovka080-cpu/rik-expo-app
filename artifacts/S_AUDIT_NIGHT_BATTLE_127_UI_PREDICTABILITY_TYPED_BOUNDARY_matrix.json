@@ -1,0 +1,94 @@
+{
+  "wave": 127,
+  "slug": "UI_PREDICTABILITY_TYPED_BOUNDARY",
+  "goal": "Remove broad test-only type casts from the UI predictability contract while preserving runtime invalid-input coverage.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "4751b2dafd7ebb98d1db1b3e4b35de94a1349e52",
+    "originMain": "4751b2dafd7ebb98d1db1b3e4b35de94a1349e52",
+    "aheadBehind": "0/0"
+  },
+  "freshArchitectureScannerBefore": {
+    "serviceBypassBudget": 0,
+    "totalFindings": 222,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "testOnlyFindings": 47,
+    "generatedOrIgnoredFindings": 0,
+    "unclassifiedCurrentFindings": 0
+  },
+  "selectedFiles": [
+    "tests/ui/ui-predictability.test.ts"
+  ],
+  "reasonSelected": [
+    "Fresh grep found six broad test-only casts in the UI predictability contract.",
+    "The file already owns focused foreman and warehouse UI-store behavior tests.",
+    "The change is test-only and does not touch production code, database paths, migrations, environment, deploy, or Supabase settings."
+  ],
+  "before": {
+    "targetFileBroadAnyCasts": 6,
+    "targetFileTsIgnore": 0,
+    "targetFileEmptyCatch": 0
+  },
+  "after": {
+    "targetFileBroadAnyCasts": 0,
+    "targetFileTsIgnore": 0,
+    "targetFileEmptyCatch": 0,
+    "foremanPreviewFixture": "typed ForemanAiQuickItem",
+    "foremanInvalidInputBoundary": "unknown input via Reflect.apply",
+    "warehouseOptionFixture": "typed Option"
+  },
+  "focusedCommands": [
+    {
+      "command": "npx jest tests/ui/ui-predictability.test.ts --runInBand",
+      "status": "PASS",
+      "summary": "11 tests passed"
+    }
+  ],
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "gateEvidence": {
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 659 suites passed, 1 skipped, 3912 tests passed",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

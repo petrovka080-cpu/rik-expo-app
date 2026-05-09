@@ -7,8 +7,22 @@
  * (most filter/pick options).
  */
 
+import type { ForemanAiQuickItem } from "../../src/screens/foreman/foreman.ai";
 import { useForemanUiStore } from "../../src/screens/foreman/foremanUi.store";
+import type { Option } from "../../src/screens/warehouse/warehouse.types";
 import { useWarehouseUiStore } from "../../src/screens/warehouse/warehouseUi.store";
+
+const buildForemanAiQuickItem = (name: string): ForemanAiQuickItem => ({
+  name,
+  unit: "kg",
+  qty: 1,
+  kind: "material",
+  rik_code: `TEST-${name.toUpperCase()}`,
+});
+
+const pushAiQuickSessionTurnFromRuntime = (value: unknown): void => {
+  Reflect.apply(useForemanUiStore.getState().pushAiQuickSessionTurn, undefined, [value]);
+};
 
 describe("UI predictability — foreman AI panel cluster", () => {
   beforeEach(() => {
@@ -76,7 +90,7 @@ describe("UI predictability — foreman AI panel cluster", () => {
     store.setAiQuickVisible(true);
     store.setAiQuickText("query 1");
     store.setAiQuickOutcomeType("resolved_items");
-    store.setAiQuickPreview([{ name: "test", unit: "kg", qty: 1 }] as any);
+    store.setAiQuickPreview([buildForemanAiQuickItem("test")]);
 
     // Close/reset
     useForemanUiStore.getState().resetAiQuickUi();
@@ -93,11 +107,10 @@ describe("UI predictability — foreman AI panel cluster", () => {
   });
 
   it("pushAiQuickSessionTurn respects history limit", () => {
-    const _store = useForemanUiStore.getState();
     for (let i = 0; i < 10; i++) {
       useForemanUiStore.getState().pushAiQuickSessionTurn({
         prompt: `prompt ${i}`,
-        items: [{ name: `item${i}`, unit: "kg", qty: 1 }] as any,
+        items: [buildForemanAiQuickItem(`item${i}`)],
         createdAt: new Date().toISOString(),
       });
     }
@@ -109,10 +122,9 @@ describe("UI predictability — foreman AI panel cluster", () => {
   });
 
   it("pushAiQuickSessionTurn rejects empty/invalid turns", () => {
-    const store = useForemanUiStore.getState();
-    store.pushAiQuickSessionTurn(null as any);
-    store.pushAiQuickSessionTurn({ prompt: "", items: [], createdAt: "" } as any);
-    store.pushAiQuickSessionTurn({ prompt: "valid", items: [], createdAt: "" } as any);
+    pushAiQuickSessionTurnFromRuntime(null);
+    pushAiQuickSessionTurnFromRuntime({ prompt: "", items: [], createdAt: "" });
+    pushAiQuickSessionTurnFromRuntime({ prompt: "valid", items: [], createdAt: "" });
     const after = useForemanUiStore.getState();
     expect(after.aiQuickSessionHistory).toEqual([]);
   });
@@ -160,7 +172,8 @@ describe("UI predictability — warehouse UI store", () => {
 
   it("items modal open/close preserves other state", () => {
     const store = useWarehouseUiStore.getState();
-    store.setObjectOpt({ id: "obj1", label: "Object 1" } as any);
+    const objectOption: Option = { id: "obj1", label: "Object 1" };
+    store.setObjectOpt(objectOption);
     store.setItemsModal({
       incomingId: "inc-1",
       purchaseId: "pur-1",
