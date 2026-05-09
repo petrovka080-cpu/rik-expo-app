@@ -90,7 +90,7 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING"
+    "releaseVerifyPostPush": "PASS"
   },
   "gateEvidence": {
     "focusedTests": "npx jest tests/scripts/readOnlyProofPaginationCeiling.contract.test.ts tests/scripts/mojibakeDbRepairLoopBoundary.contract.test.ts --runInBand; 2 suites passed, 6 tests passed",
@@ -105,7 +105,17 @@
       "unclassifiedCurrentFindings": 0
     },
     "gitDiffCheck": "git diff --check",
-    "releaseVerifyPostPush": "PENDING"
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PASS",
+      "headCommit": "e8d2e9fd7b97f7859ee34d9077c6cd21a4248789",
+      "repoSyncStatus": "synced",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "otaDisposition": "skip",
+      "otaPublished": false,
+      "easUpdateTriggered": false
+    }
   },
   "remainingC2Findings": [
     {

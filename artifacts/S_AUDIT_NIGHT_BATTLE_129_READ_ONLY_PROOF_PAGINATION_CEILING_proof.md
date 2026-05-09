@@ -44,7 +44,7 @@ The rest of the matches are test-only guard strings.
 - full Jest runInBand: PASS.
 - architecture scanner: PASS.
 - git diff --check: PASS.
-- release verify post-push: PENDING.
+- release verify post-push: PASS.
 
 Architecture scanner:
 
@@ -57,6 +57,17 @@ Full Jest:
 
 - Test suites: 663 passed, 1 skipped, 663 of 664 total.
 - Tests: 3928 passed, 1 skipped, 3929 total.
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS.
+- head commit: `e8d2e9fd7b97f7859ee34d9077c6cd21a4248789`.
+- repo sync status: synced.
+- worktree clean: true.
+- head matches origin/main: true.
+- OTA disposition: skip.
+- OTA published: false.
+- EAS update triggered: false.
 
 ## Safety
 
