@@ -447,6 +447,30 @@ describe("contractor.loadWorksService", () => {
     );
   });
 
+  it("rejects malformed rpc work rows without returning to legacy client enrich", async () => {
+    const rpc = jest.fn(async () => ({
+      data: buildScopeEnvelope({
+        rows: [
+          {
+            work_code: "WORK-MALFORMED",
+            contractor_org: "Scoped Contractor",
+            contractor_inn: "12345678901234",
+          },
+        ],
+      }),
+      error: null,
+    }));
+    const from = jest.fn(() => {
+      throw new Error("legacy enrich path must not be used");
+    });
+
+    await expect(loadContractorWorksBundle(buildParams({ rpc, from }))).rejects.toThrow(
+      "progress_id",
+    );
+
+    expect(from).not.toHaveBeenCalled();
+  });
+
   it("filters unscoped rpc rows instead of silently falling back to legacy enrich", async () => {
     const rpc = jest.fn(async () => ({
       data: buildScopeEnvelope({

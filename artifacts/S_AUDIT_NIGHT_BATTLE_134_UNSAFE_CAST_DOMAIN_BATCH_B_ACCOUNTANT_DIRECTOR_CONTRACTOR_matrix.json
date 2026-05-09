@@ -1,0 +1,235 @@
+{
+  "wave": 134,
+  "slug": "UNSAFE_CAST_DOMAIN_BATCH_B_ACCOUNTANT_DIRECTOR_CONTRACTOR",
+  "createdAt": "2026-05-09T21:47:15.5447168+06:00",
+  "baseHead": "33695fbef02c2b87589dcd068f734931994cf057",
+  "goal": "Reduce unsafe casts in accountant, director, and contractor domain flows using typed DTO adapters and parser guards while keeping provider IO in transport-owned boundaries.",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/screens/accountant/accountant.inbox.service.ts",
+      "src/screens/director/director.proposals.repo.ts",
+      "src/screens/director/director.repository.ts",
+      "src/lib/api/director.ts",
+      "src/screens/contractor/contractor.loadWorksService.ts",
+      "src/screens/contractor/contractorPdfSource.service.ts",
+      "src/screens/contractor/contractor.loadWorksService.test.ts",
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts"
+    ],
+    "selectedDomainFlows": [
+      "accountant inbox scope DTO row mapping",
+      "director pending proposal scope parser and pending-row fallback reads",
+      "contractor works bundle enrichment fallback rows",
+      "contractor work PDF source DTO parsing"
+    ],
+    "notSelected": [
+      {
+        "files": [
+          "src/screens/director/director.data.ts"
+        ],
+        "reason": "React hook fallback/preload casts remain classified for a later UI/hook-focused director data wave. This wave handled director repository and proposal-scope parsing."
+      },
+      {
+        "files": [
+          "src/screens/contractor/contractor.workModalService.ts",
+          "src/screens/contractor/contractor.workModalService.transport.ts",
+          "src/screens/contractor/contractor.actBuilderOpenService.ts"
+        ],
+        "reason": "Remaining contractor casts are work-modal or act-builder source reads, separate from selected works bundle and PDF source flows."
+      },
+      {
+        "files": [
+          "src/screens/accountant/*.test.ts",
+          "src/lib/api/accountant.financial.test.ts",
+          "src/screens/director/*.test.ts",
+          "tests/api/*"
+        ],
+        "reason": "Remaining hits are test/mock casts or contract literal coverage, not selected production data flow code."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/lib/api/director.ts",
+      "count": 1,
+      "pattern": "as unknown as PagedQuery<DirectorRequestItemFallbackRow>",
+      "flow": "director listPending request item fallback"
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "count": 2,
+      "pattern": "as unknown as PagedDirectorQuery<...>",
+      "flow": "director pending-row fallback reads"
+    },
+    {
+      "file": "src/screens/contractor/contractor.loadWorksService.ts",
+      "count": 5,
+      "pattern": "as unknown as PagedQuery<...>",
+      "flow": "contractor works bundle enrichment fallback reads"
+    },
+    {
+      "file": "src/screens/accountant/accountant.inbox.service.ts",
+      "count": 3,
+      "pattern": "object-to-record and object-to-row parser casts",
+      "flow": "accountant inbox scope DTO parser"
+    },
+    {
+      "file": "src/screens/director/director.proposals.repo.ts",
+      "count": 2,
+      "pattern": "object-to-record parser casts",
+      "flow": "director pending proposal scope parser"
+    },
+    {
+      "file": "src/screens/contractor/contractorPdfSource.service.ts",
+      "count": 1,
+      "pattern": "object-to-record parser cast",
+      "flow": "contractor PDF source parser"
+    }
+  ],
+  "selectedFindingsAfter": [],
+  "counts": {
+    "selectedUnknownAsFindings": {
+      "before": 8,
+      "after": 0,
+      "reduced": 8
+    },
+    "selectedParserObjectCasts": {
+      "before": 6,
+      "after": 0,
+      "reduced": 6
+    },
+    "selectedUnsafePatterns": {
+      "before": 14,
+      "after": 0,
+      "reduced": 14
+    }
+  },
+  "changes": [
+    {
+      "file": "src/screens/accountant/accountant.inbox.service.ts",
+      "change": "Replaced accountant inbox object and row parser casts with isRpcRecord-based DTO guards and safer error message extraction."
+    },
+    {
+      "file": "src/screens/director/director.proposals.repo.ts",
+      "change": "Exported and hardened the director proposal-scope parser with isRpcRecord guards instead of object-to-record casts."
+    },
+    {
+      "file": "src/screens/director/director.repository.ts",
+      "change": "Replaced director pending fallback PagedDirectorQuery casts with guarded paged query adapters and filtered primary RPC blobs through record guards."
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "change": "Replaced director listPending fallback PagedQuery cast with createGuardedPagedQuery."
+    },
+    {
+      "file": "src/screens/contractor/contractor.loadWorksService.ts",
+      "change": "Replaced contractor works enrichment PagedQuery casts and typed-array casts with guarded paged query adapters and row guards."
+    },
+    {
+      "file": "src/screens/contractor/contractorPdfSource.service.ts",
+      "change": "Extracted a pure contractor PDF source parser and replaced object-to-record casts with isRpcRecord guards."
+    }
+  ],
+  "runtimeGuardCoverage": {
+    "typedRowMapping": [
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts maps accountant inbox DTO rows",
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts parses director pending proposal scope rows",
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts parses contractor PDF source rows"
+    ],
+    "emptyResult": [
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts checks empty accountant inbox rows",
+      "src/screens/contractor/contractor.loadWorksService.test.ts keeps empty RPC result as honest empty state"
+    ],
+    "malformedResult": [
+      "tests/api/domainUnsafeCastBatchB.contract.test.ts rejects malformed director proposal and contractor PDF payloads",
+      "src/screens/contractor/contractor.loadWorksService.test.ts rejects malformed contractor RPC work rows"
+    ],
+    "providerError": [
+      "src/screens/accountant/accountant.windowing.service.test.ts surfaces inbox RPC failure",
+      "src/screens/contractor/contractor.loadWorksService.test.ts surfaces RPC failure without legacy fallback"
+    ],
+    "roleSpecificBehavior": [
+      "src/screens/contractor/contractor.loadWorksService.test.ts keeps contractor-created_by scope behavior and filters unscoped rows"
+    ]
+  },
+  "freshScans": {
+    "selectedFilesUnsafePatternsBefore": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" HEAD -- selected files",
+      "status": "PASS_WITH_FINDINGS",
+      "findings": 8
+    },
+    "selectedFilesUnsafePatternsAfter": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- selected files",
+      "status": "PASS",
+      "findings": 0
+    },
+    "broaderAccountantDirectorContractorScan": {
+      "command": "git grep -n -E \"unknown as|as any|@ts-ignore|@ts-expect-error\" -- src/screens/accountant src/screens/director src/screens/contractor src/lib/api",
+      "status": "PASS_WITH_CLASSIFIED_REMAINDERS",
+      "remainingCategories": [
+        "director.data hook/preload fallback casts",
+        "contractor work-modal and act-builder casts",
+        "director reports cache/naming and finance runtime env casts",
+        "test/mock casts"
+      ]
+    }
+  },
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/domainUnsafeCastBatchB.contract.test.ts src/screens/accountant/accountant.windowing.service.test.ts tests/api/accountantInboxTransport.contract.test.ts tests/api/directorProposalsTransport.contract.test.ts tests/api/rpcRuntimeValidationBatch3.contract.test.ts src/screens/contractor/contractor.loadWorksService.test.ts tests/api/contractorPdfSourceTransport.contract.test.ts tests/api/contractorProfileAuthTransport.contract.test.ts tests/api/remainingTrueListReadsCloseout.contract.test.ts",
+    "status": "PASS",
+    "suites": 9,
+    "tests": 45
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "architectureScanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0,
+    "productionRawLoopsUnapprovedFindings": 0
+  },
+  "fullJestRunInBand": {
+    "command": "npm test -- --runInBand",
+    "status": "PASS",
+    "suitesPassed": 668,
+    "suitesSkipped": 1,
+    "testsPassed": 3966,
+    "testsSkipped": 1
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemanticsForRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

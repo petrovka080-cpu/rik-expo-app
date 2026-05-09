@@ -1,4 +1,5 @@
 import type { AppSupabaseClient } from "../../types/contracts/shared";
+import { isRpcRecord } from "../../lib/api/queryBoundary";
 import { callContractorWorkPdfSourceRpc } from "./contractorPdfSource.transport";
 
 export type ContractorWorkPdfSourceWork = {
@@ -57,7 +58,7 @@ export type ContractorWorkPdfSourceEnvelope = {
 type ContractorPdfRecord = Record<string, unknown>;
 
 const asRecord = (value: unknown): ContractorPdfRecord =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as ContractorPdfRecord) : {};
+  isRpcRecord(value) ? value : {};
 
 const asRows = (value: unknown): ContractorPdfRecord[] =>
   Array.isArray(value) ? value.map(asRecord) : [];
@@ -81,21 +82,7 @@ export class ContractorWorkPdfSourceError extends Error {
   }
 }
 
-export async function loadContractorWorkPdfSourceViaRpc(args: {
-  supabaseClient: AppSupabaseClient;
-  progressId: string;
-  logId?: string | null;
-}): Promise<ContractorWorkPdfSourceEnvelope> {
-  const { supabaseClient, progressId, logId } = args;
-  const { data, error } = await callContractorWorkPdfSourceRpc(supabaseClient, {
-    p_progress_id: progressId,
-    p_log_id: logId ?? null,
-  });
-
-  if (error) {
-    throw new ContractorWorkPdfSourceError(`pdf_contractor_work_source_v1 failed: ${error.message}`);
-  }
-
+export function parseContractorWorkPdfSourceEnvelope(data: unknown): ContractorWorkPdfSourceEnvelope {
   const root = asRecord(data);
   if (toText(root.document_type) !== "contractor_work_pdf" || toText(root.version) !== "v1") {
     throw new ContractorWorkPdfSourceError("pdf_contractor_work_source_v1 returned invalid envelope");
@@ -166,4 +153,22 @@ export async function loadContractorWorkPdfSourceViaRpc(args: {
     })),
     log: resolvedLog,
   };
+}
+
+export async function loadContractorWorkPdfSourceViaRpc(args: {
+  supabaseClient: AppSupabaseClient;
+  progressId: string;
+  logId?: string | null;
+}): Promise<ContractorWorkPdfSourceEnvelope> {
+  const { supabaseClient, progressId, logId } = args;
+  const { data, error } = await callContractorWorkPdfSourceRpc(supabaseClient, {
+    p_progress_id: progressId,
+    p_log_id: logId ?? null,
+  });
+
+  if (error) {
+    throw new ContractorWorkPdfSourceError(`pdf_contractor_work_source_v1 failed: ${error.message}`);
+  }
+
+  return parseContractorWorkPdfSourceEnvelope(data);
 }

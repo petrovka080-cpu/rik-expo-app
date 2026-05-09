@@ -1,11 +1,12 @@
 import type { Database } from "../database.types";
 import {
   client,
+  createGuardedPagedQuery,
+  isRecordRow,
   loadPagedRowsWithCeiling,
   normalizePage,
   toRpcId,
   parseErr,
-  type PagedQuery,
   type PageInput,
 } from "./_core";
 import {
@@ -104,10 +105,12 @@ type DirectorRequestItemFallbackRow = {
 const asRequestStatus = (value: string): RequestStatus => value as RequestStatus;
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : null;
+  return isRecordRow(value) ? value : null;
 }
+
+const isDirectorRequestItemFallbackRow = (
+  value: unknown,
+): value is DirectorRequestItemFallbackRow => isRecordRow(value);
 
 function asDirectorPendingRpcRawRows(value: unknown): DirectorPendingRpcRawRow[] {
   if (!Array.isArray(value)) return [];
@@ -235,13 +238,17 @@ export async function listPending(pageInput?: PageInput): Promise<DirectorPendin
     });
 
     const ri = await loadPagedRowsWithCeiling<DirectorRequestItemFallbackRow>(() =>
-      client
-      .from("request_items")
-      .select("id,request_id,name_human,qty,uom,status")
-      .in("request_id", ids)
-      .neq("status", asRequestStatus("Утверждено"))
-      .order("request_id", { ascending: true })
-      .order("id", { ascending: true }) as unknown as PagedQuery<DirectorRequestItemFallbackRow>,
+      createGuardedPagedQuery(
+        client
+          .from("request_items")
+          .select("id,request_id,name_human,qty,uom,status")
+          .in("request_id", ids)
+          .neq("status", asRequestStatus("Утверждено"))
+          .order("request_id", { ascending: true })
+          .order("id", { ascending: true }),
+        isDirectorRequestItemFallbackRow,
+        "director.listPending.request_items_fallback",
+      ),
       DIRECTOR_REFERENCE_PAGE_DEFAULTS,
     );
 

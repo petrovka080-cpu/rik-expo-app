@@ -2,6 +2,7 @@ import { supabase } from "../../lib/supabaseClient";
 import { normalizeAccountantInboxRpcTab } from "../../lib/api/accountant";
 import { filterProposalLinkedRowsByExistingProposalLinks } from "../../lib/api/integrity.guards";
 import {
+  isRpcRecord,
   isRpcRowsEnvelope,
   validateRpcResponse,
 } from "../../lib/api/queryBoundary";
@@ -85,6 +86,10 @@ const toMaybeText = (value: unknown): string | null => {
 
 const toBooleanOrFalse = (value: unknown): boolean => value === true;
 
+const isAccountantInboxScopeRow = (
+  value: unknown,
+): value is AccountantInboxScopeRow => isRpcRecord(value);
+
 export const resolveAccountantInboxRpcTabContract = (
   tab: Tab,
 ): AccountantInboxRpcTabContract => {
@@ -109,12 +114,12 @@ export const buildAccountantInboxScopeRpcArgs = (params: {
 };
 
 export const adaptAccountantInboxScopeEnvelope = (value: unknown): AccountantInboxScopeEnvelope => {
-  const envelope = typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {};
+  const envelope = isRpcRecord(value) ? value : {};
   const rowsRaw = Array.isArray(envelope.rows) ? envelope.rows : [];
   const rows: AccountantInboxUiRow[] = [];
   for (const row of rowsRaw) {
-    if (!row || typeof row !== "object") continue;
-    const item = row as AccountantInboxScopeRow;
+    if (!isAccountantInboxScopeRow(row)) continue;
+    const item = row;
     const proposalId = toMaybeText(item.proposal_id);
     if (!proposalId) continue;
     rows.push({
@@ -141,16 +146,14 @@ export const adaptAccountantInboxScopeEnvelope = (value: unknown): AccountantInb
 
   return {
     rows,
-    meta:
-      typeof envelope.meta === "object" && envelope.meta !== null
-        ? (envelope.meta as Record<string, unknown>)
-        : {},
+    meta: isRpcRecord(envelope.meta) ? envelope.meta : {},
   };
 };
 
-const errorMessage = (e: unknown) => {
-  const x = e as { message?: string };
-  return x?.message ?? String(e);
+const errorMessage = (error: unknown) => {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  if (isRpcRecord(error) && typeof error.message === "string") return error.message;
+  return String(error);
 };
 
 export async function loadAccountantInboxWindowData(params: {

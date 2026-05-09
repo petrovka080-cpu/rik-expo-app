@@ -63,7 +63,7 @@ class DirectorProposalScopeValidationError extends Error {
 }
 
 const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+  isRpcRecord(value) ? value : {};
 
 const toInt = (value: unknown, fallback = 0): number => {
   const parsed = Number(value);
@@ -78,10 +78,10 @@ const toNullableString = (value: unknown): string | null => {
 };
 
 const requireRecord = (value: unknown, scope: string): Record<string, unknown> => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
+  if (!isRpcRecord(value)) {
     throw new DirectorProposalScopeValidationError(`${scope} must be an object`);
   }
-  return value as Record<string, unknown>;
+  return value;
 };
 
 const requireString = (value: unknown, field: string, scope: string): string => {
@@ -108,7 +108,7 @@ export const isDirectorPendingProposalsScopeResponse = (
   Array.isArray(value.heads) &&
   (value.meta == null || isRpcRecord(value.meta));
 
-const adaptDirectorProposalScopeEnvelope = (value: unknown): DirectorProposalScopeEnvelope => {
+export const adaptDirectorProposalScopeEnvelope = (value: unknown): DirectorProposalScopeEnvelope => {
   const root = requireRecord(value, "director_pending_proposals_scope_v1");
   const documentType = requireString(root.document_type, "document_type", "director_pending_proposals_scope_v1");
   if (documentType !== "director_pending_proposals_scope") {

@@ -10,7 +10,12 @@ import {
   recordPlatformObservability,
 } from "../../lib/observability/platformObservability";
 import { runContainedRpc } from "../../lib/api/queryBoundary";
-import { loadPagedRowsWithCeiling, normalizePage, type PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  loadPagedRowsWithCeiling,
+  normalizePage,
+} from "../../lib/api/_core";
 
 export type ContractorWorkRow = {
   progress_id: string;
@@ -153,7 +158,64 @@ class ContractorWorksBundleScopeValidationError extends Error {
 }
 
 const asRecord = (value: unknown): Record<string, unknown> =>
-  value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+  isRecordRow(value) ? value : {};
+
+const hasOptionalTextField = (row: Record<string, unknown>, field: string): boolean => {
+  const value = row[field];
+  return value == null || typeof value === "string";
+};
+
+const hasOptionalNumberField = (row: Record<string, unknown>, field: string): boolean => {
+  const value = row[field];
+  return value == null || typeof value === "number";
+};
+
+const isWorkProgressRawRow = (value: unknown): value is WorkProgressRawRow =>
+  isRecordRow(value) &&
+  hasOptionalTextField(value, "id") &&
+  hasOptionalTextField(value, "progress_id") &&
+  hasOptionalTextField(value, "purchase_item_id") &&
+  hasOptionalTextField(value, "object_id");
+
+const isPurchaseItemRawRow = (value: unknown): value is PurchaseItemRawRow =>
+  isRecordRow(value) &&
+  hasOptionalTextField(value, "id") &&
+  hasOptionalTextField(value, "request_item_id");
+
+const isRequestItemRawRow = (value: unknown): value is RequestItemRawRow =>
+  isRecordRow(value) &&
+  hasOptionalTextField(value, "id") &&
+  hasOptionalTextField(value, "request_id");
+
+const isRequestRawRow = (value: unknown): value is RequestRawRow =>
+  isRecordRow(value) &&
+  hasOptionalTextField(value, "id") &&
+  hasOptionalTextField(value, "status") &&
+  hasOptionalTextField(value, "contractor_job_id") &&
+  hasOptionalTextField(value, "object_type_code") &&
+  hasOptionalTextField(value, "level_code") &&
+  hasOptionalTextField(value, "system_code");
+
+const isSubcontractObjectRawRow = (value: unknown): value is SubcontractObjectRawRow =>
+  isRecordRow(value) &&
+  hasOptionalTextField(value, "id") &&
+  hasOptionalTextField(value, "object_name");
+
+const isSubcontractLiteLike = (value: unknown): value is SubcontractLiteLike =>
+  isRecordRow(value) &&
+  typeof value.id === "string" &&
+  hasOptionalTextField(value, "status") &&
+  hasOptionalTextField(value, "object_name") &&
+  hasOptionalTextField(value, "work_type") &&
+  hasOptionalNumberField(value, "qty_planned") &&
+  hasOptionalTextField(value, "uom") &&
+  hasOptionalTextField(value, "contractor_org") &&
+  hasOptionalTextField(value, "contractor_inn") &&
+  hasOptionalTextField(value, "contractor_phone") &&
+  hasOptionalTextField(value, "contract_number") &&
+  hasOptionalTextField(value, "contract_date") &&
+  hasOptionalTextField(value, "created_at") &&
+  hasOptionalTextField(value, "created_by");
 
 const pickNonEmptyString = (value: unknown): string | null => {
   const normalized = String(value ?? "").trim();
@@ -439,15 +501,19 @@ export async function enrichWorksRows(params: {
   if (wpIds.length) {
     const wpByIdRes = await loadPagedRowsWithCeiling<WorkProgressRawRow>(
       () =>
-        supabaseClient
-          .from("work_progress")
-          .select("id, purchase_item_id, object_id")
-          .in("id", wpIds)
-          .order("id", { ascending: true }) as unknown as PagedQuery<WorkProgressRawRow>,
+        createGuardedPagedQuery(
+          supabaseClient
+            .from("work_progress")
+            .select("id, purchase_item_id, object_id")
+            .in("id", wpIds)
+            .order("id", { ascending: true }),
+          isWorkProgressRawRow,
+          "contractor.loadWorksService.work_progress",
+        ),
       CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
     );
     if (!wpByIdRes.error && Array.isArray(wpByIdRes.data)) {
-      for (const row of wpByIdRes.data as WorkProgressRawRow[]) {
+      for (const row of wpByIdRes.data) {
         const id = pickWorkProgressRow(row);
         if (id) wpById.set(id, row);
       }
@@ -475,17 +541,21 @@ export async function enrichWorksRows(params: {
   if (piIds.length) {
     const piQ = await loadPagedRowsWithCeiling<PurchaseItemRawRow>(
       () =>
-        supabaseClient
-          .from("purchase_items")
-          .select("id, request_item_id")
-          .in("id", piIds)
-          .order("id", { ascending: true }) as unknown as PagedQuery<PurchaseItemRawRow>,
+        createGuardedPagedQuery(
+          supabaseClient
+            .from("purchase_items")
+            .select("id, request_item_id")
+            .in("id", piIds)
+            .order("id", { ascending: true }),
+          isPurchaseItemRawRow,
+          "contractor.loadWorksService.purchase_items",
+        ),
       CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
     );
     if (!piQ.error && Array.isArray(piQ.data)) {
       const reqItemIds = Array.from(
         new Set(
-          (piQ.data as PurchaseItemRawRow[])
+          piQ.data
             .map((x) => String(x.request_item_id || "").trim())
             .filter(Boolean),
         ),
@@ -494,22 +564,26 @@ export async function enrichWorksRows(params: {
       if (reqItemIds.length) {
         const riQ = await loadPagedRowsWithCeiling<RequestItemRawRow>(
           () =>
-            supabaseClient
-              .from("request_items")
-              .select("id, request_id")
-              .in("id", reqItemIds)
-              .order("id", { ascending: true }) as unknown as PagedQuery<RequestItemRawRow>,
+            createGuardedPagedQuery(
+              supabaseClient
+                .from("request_items")
+                .select("id, request_id")
+                .in("id", reqItemIds)
+                .order("id", { ascending: true }),
+              isRequestItemRawRow,
+              "contractor.loadWorksService.request_items",
+            ),
           CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
         );
         if (!riQ.error && Array.isArray(riQ.data)) {
-          for (const ri of riQ.data as RequestItemRawRow[]) {
+          for (const ri of riQ.data) {
             const riId = String(ri.id || "").trim();
             const reqId = String(ri.request_id || "").trim();
             if (riId && reqId) reqByReqItem.set(riId, reqId);
           }
         }
       }
-      for (const pi of piQ.data as PurchaseItemRawRow[]) {
+      for (const pi of piQ.data) {
         const piId = String(pi.id || "").trim();
         const riId = String(pi.request_item_id || "").trim();
         const reqId = reqByReqItem.get(riId) || "";
@@ -542,15 +616,19 @@ export async function enrichWorksRows(params: {
   if (reqIds.length) {
     const rq = await loadPagedRowsWithCeiling<RequestRawRow>(
       () =>
-        supabaseClient
-          .from("requests")
-          .select("id, status, contractor_job_id, object_type_code, level_code, system_code")
-          .in("id", reqIds)
-          .order("id", { ascending: true }) as unknown as PagedQuery<RequestRawRow>,
+        createGuardedPagedQuery(
+          supabaseClient
+            .from("requests")
+            .select("id, status, contractor_job_id, object_type_code, level_code, system_code")
+            .in("id", reqIds)
+            .order("id", { ascending: true }),
+          isRequestRawRow,
+          "contractor.loadWorksService.requests",
+        ),
       CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
     );
     if (!rq.error && Array.isArray(rq.data)) {
-      for (const r of rq.data as RequestRawRow[]) {
+      for (const r of rq.data) {
         const id = String(r.id || "").trim();
         if (id) reqById.set(id, r);
       }
@@ -584,15 +662,19 @@ export async function enrichWorksRows(params: {
   if (jobIds.length) {
     const sq = await loadPagedRowsWithCeiling<SubcontractObjectRawRow>(
       () =>
-        supabaseClient
-          .from("subcontracts")
-          .select("id, object_name")
-          .in("id", jobIds)
-          .order("id", { ascending: true }) as unknown as PagedQuery<SubcontractObjectRawRow>,
+        createGuardedPagedQuery(
+          supabaseClient
+            .from("subcontracts")
+            .select("id, object_name")
+            .in("id", jobIds)
+            .order("id", { ascending: true }),
+          isSubcontractObjectRawRow,
+          "contractor.loadWorksService.subcontracts.object_name",
+        ),
       CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS,
     );
     if (!sq.error && Array.isArray(sq.data)) {
-      for (const s of sq.data as SubcontractObjectRawRow[]) {
+      for (const s of sq.data) {
         const id = String(s.id || "").trim();
         const obj = String(s.object_name || "").trim();
         if (id && obj) objByJob.set(id, obj);
@@ -655,7 +737,7 @@ async function loadContractorWorksBundleLegacyInternal(
     }
 
     const mappedBase = mapWorksFactRows(
-      Array.isArray(worksRes.data) ? (worksRes.data as Record<string, unknown>[]) : [],
+      Array.isArray(worksRes.data) ? worksRes.data.filter(isRecordRow) : [],
       normText,
     );
     const enrichResult = await enrichWorksRows({
@@ -670,7 +752,9 @@ async function loadContractorWorksBundleLegacyInternal(
       throw sqApproved.error;
     }
 
-    const allApproved = Array.isArray(sqApproved.data) ? (sqApproved.data as SubcontractLiteLike[]) : [];
+    const allApproved = Array.isArray(sqApproved.data)
+      ? sqApproved.data.filter(isSubcontractLiteLike)
+      : [];
     const subcontractCards = selectScopedApprovedSubcontracts({
       allApproved,
       isStaff,
