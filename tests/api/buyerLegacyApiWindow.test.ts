@@ -1,5 +1,9 @@
 import { listBuyerInbox } from "../../src/lib/api/buyer";
 import { supabase as mockedSupabase } from "../../src/lib/supabaseClient";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../../src/lib/observability/platformObservability";
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   supabase: {
@@ -52,6 +56,7 @@ describe("buyer legacy inbox API bounded routing", () => {
   beforeEach(() => {
     const runtime = globalThis as typeof globalThis & { __DEV__?: boolean };
     runtime.__DEV__ = false;
+    resetPlatformObservabilityEvents();
     mockSupabase.rpc.mockReset();
     mockSupabase.from.mockReset();
   });
@@ -137,5 +142,69 @@ describe("buyer legacy inbox API bounded routing", () => {
 
     await expect(listBuyerInbox()).rejects.toThrow("max row ceiling");
     expect(requestItemsQuery.range).toHaveBeenCalledWith(5000, 5000);
+  });
+
+  it("records buyer inbox fallback exhaustion before preserving the empty-list contract", async () => {
+    const rpcError = new Error("scope unavailable");
+    const fallbackError = new Error("request_items unavailable");
+    mockSupabase.rpc.mockResolvedValueOnce({
+      data: null,
+      error: rpcError,
+    });
+
+    const requestItemsQuery = buildPagedQuery(async () => ({
+      data: null,
+      error: fallbackError,
+    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table !== "request_items")
+        throw new Error(`Unexpected table ${table}`);
+      return requestItemsQuery;
+    });
+
+    await expect(listBuyerInbox()).resolves.toEqual([]);
+
+    const events = getPlatformObservabilityEvents();
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "inbox_window",
+          event: "buyer_inbox_scope_rpc_failed",
+          result: "error",
+          fallbackUsed: true,
+          sourceKind: "rpc:buyer_summary_inbox_scope_v1",
+          errorStage: "scope_rpc",
+          extra: expect.objectContaining({
+            fallbackReason: "request_items_compatibility_fallback",
+          }),
+        }),
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "inbox_window",
+          event: "buyer_inbox_compatibility_fallback_failed",
+          result: "error",
+          fallbackUsed: true,
+          sourceKind: "table:request_items",
+          errorStage: "compatibility_fallback",
+          extra: expect.objectContaining({
+            fallbackReason: "empty_list_legacy_contract",
+          }),
+        }),
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "inbox_window",
+          event: "load_buyer_inbox",
+          result: "error",
+          fallbackUsed: true,
+          sourceKind: "table:request_items",
+          errorStage: "fallback_exhausted",
+          rowCount: 0,
+          extra: expect.objectContaining({
+            publishState: "empty_after_fallback_error",
+          }),
+        }),
+      ]),
+    );
   });
 });

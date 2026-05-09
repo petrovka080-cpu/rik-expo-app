@@ -14,6 +14,8 @@ import {
 import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
+import { beginPlatformObservability } from "../observability/platformObservability";
+import { recordCatchDiscipline } from "../observability/catchDiscipline";
 
 const logBuyerApiDebug = (...args: unknown[]) => {
   if (__DEV__) console.warn(...args);
@@ -90,6 +92,24 @@ const BUYER_INBOX_LEGACY_SCOPE_DOCUMENT_TYPES = new Set([
   "buyer_summary_inbox_scope",
   "buyer_summary_inbox_scope_v1",
 ]);
+
+const recordBuyerInboxFallbackFailure = (params: {
+  event: string;
+  error: unknown;
+  sourceKind: string;
+  errorStage: string;
+  extra?: Record<string, unknown>;
+}) =>
+  recordCatchDiscipline({
+    screen: "buyer",
+    surface: "inbox_window",
+    event: params.event,
+    kind: "degraded_fallback",
+    error: params.error,
+    sourceKind: params.sourceKind,
+    errorStage: params.errorStage,
+    extra: params.extra,
+  });
 
 export const isBuyerInboxRpcResponse = isRpcNullableRecordArrayResponse;
 export const isBuyerInboxScopeRpcResponse = (
@@ -506,12 +526,37 @@ async function filterInboxByRequestStatus(
 }
 
 export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
+  const observation = beginPlatformObservability({
+    screen: "buyer",
+    surface: "inbox_window",
+    category: "fetch",
+    event: "load_buyer_inbox",
+    sourceKind: `rpc:${BUYER_INBOX_LEGACY_SCOPE_RPC}`,
+  });
+
   try {
     const rows = await loadBuyerInboxRowsFromScopeRpc();
     const gatedRows = await filterInboxByRequestStatus(rows);
-    return await enrichRejectedRows(gatedRows);
+    const enrichedRows = await enrichRejectedRows(gatedRows);
+    observation.success({
+      sourceKind: `rpc:${BUYER_INBOX_LEGACY_SCOPE_RPC}`,
+      rowCount: enrichedRows.length,
+      extra: {
+        publishState: enrichedRows.length ? "ready" : "empty",
+      },
+    });
+    return enrichedRows;
   } catch (e) {
     if (isBuyerInboxLegacyCeilingError(e)) throw e;
+    recordBuyerInboxFallbackFailure({
+      event: "buyer_inbox_scope_rpc_failed",
+      error: e,
+      sourceKind: `rpc:${BUYER_INBOX_LEGACY_SCOPE_RPC}`,
+      errorStage: "scope_rpc",
+      extra: {
+        fallbackReason: "request_items_compatibility_fallback",
+      },
+    });
     logBuyerApiDebug(
       "[listBuyerInbox] rpc buyer_summary_inbox_scope_v1 failed, hitting fallback:",
       parseErr(e),
@@ -519,8 +564,8 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
   }
 
   try {
-    let fbData: any[] = [];
-    let fbErr: any = null;
+    let fbData: FallbackBuyerRow[] = [];
+    let fbErr: unknown = null;
 
     const plans = [
       () =>
@@ -580,9 +625,36 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
       };
     }) as (BuyerInboxRow & { request_status?: string })[];
     const gatedRows = await filterInboxByRequestStatus(rows as BuyerInboxRow[]);
-    return await enrichRejectedRows(gatedRows);
+    const enrichedRows = await enrichRejectedRows(gatedRows);
+    observation.success({
+      sourceKind: "table:request_items",
+      fallbackUsed: true,
+      rowCount: enrichedRows.length,
+      extra: {
+        publishState: enrichedRows.length ? "degraded" : "empty",
+      },
+    });
+    return enrichedRows;
   } catch (err) {
     if (isBuyerInboxLegacyCeilingError(err)) throw err;
+    recordBuyerInboxFallbackFailure({
+      event: "buyer_inbox_compatibility_fallback_failed",
+      error: err,
+      sourceKind: "table:request_items",
+      errorStage: "compatibility_fallback",
+      extra: {
+        fallbackReason: "empty_list_legacy_contract",
+      },
+    });
+    observation.error(err, {
+      sourceKind: "table:request_items",
+      errorStage: "fallback_exhausted",
+      fallbackUsed: true,
+      rowCount: 0,
+      extra: {
+        publishState: "empty_after_fallback_error",
+      },
+    });
     logBuyerApiDebug("[listBuyerInbox] fallback failed:", parseErr(err));
     return [];
   }

@@ -1,0 +1,119 @@
+{
+  "wave": 135,
+  "slug": "BUYER_INBOX_FALLBACK_OBSERVABILITY",
+  "finalStatus": "GREEN_BUYER_INBOX_FALLBACK_OBSERVABILITY",
+  "baseHead": "931cdb25f632ea695ba0f5bcef68d2f13058bb8d",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "freshScans": {
+    "auditBacklog": "artifacts/A1_R7_errors.md",
+    "officeNavigationResidual": {
+      "status": "already_behavior_covered",
+      "evidence": "app/(tabs)/office/_layout.tsx records safe_back_navigate and safe_back_replace through recordOfficeBackPathFailure; tests/app/office-layout.test.tsx covers both navigation methods failing and skipping receipt."
+    },
+    "selectedResidual": "A1/R7 P2 buyer inbox fallback failure returned an empty list after dev-only logging.",
+    "searches": [
+      "rg -n \"office.*layout|router\\.replace|router\\.navigate|safeBack|office_reentry|office navigation|recordCatchDiscipline|navigation\" app src tests -g \"*.ts\" -g \"*.tsx\"",
+      "rg -n \"buyer.*inbox|load.*buyer|fallback|empty|recordCatchDiscipline|buyer_summary|buyer inbox|debug\" src/lib/api src/screens/buyer tests -g \"*.ts\" -g \"*.tsx\"",
+      "rg -n \"buyer_inbox_scope_rpc_failed|buyer_inbox_compatibility_fallback_failed|load_buyer_inbox|as any|@ts-ignore|catch \\{\\}\" src/lib/api/buyer.ts tests/api/buyerLegacyApiWindow.test.ts"
+    ],
+    "targetFilesRead": [
+      "artifacts/A1_R7_errors.md",
+      "app/(tabs)/office/_layout.tsx",
+      "tests/app/office-layout.test.tsx",
+      "src/lib/navigation/officeReentryBreadcrumbMarkers.ts",
+      "src/lib/api/buyer.ts",
+      "tests/api/buyerLegacyApiWindow.test.ts",
+      "tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts",
+      "tests/api/buyerInboxFullScanSafeRouting.contract.test.ts",
+      "src/screens/buyer/buyer.observability.ts",
+      "src/lib/observability/platformObservability.ts",
+      "src/lib/observability/catchDiscipline.ts"
+    ]
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/lib/api/buyer.ts",
+      "tests/api/buyerLegacyApiWindow.test.ts"
+    ],
+    "productionFilesChanged": [
+      "src/lib/api/buyer.ts"
+    ],
+    "reasonSelected": "Buyer inbox was the remaining real A1/R7 residual after the P1 office navigation path was found already behavior-covered. The safe fix is production observability without changing the legacy empty-list contract.",
+    "businessSemantics": "Preserved: listBuyerInbox still returns [] after both the scope RPC and compatibility fallback fail, except existing ceiling errors still throw fail-closed."
+  },
+  "contracts": {
+    "scopeRpcFailureRecordsDegradedFallback": true,
+    "compatibilityFallbackFailureRecordsDegradedFallback": true,
+    "loadBuyerInboxRecordsErrorBeforeReturningEmpty": true,
+    "legacyEmptyListContractPreserved": true,
+    "ceilingErrorsStillThrow": true,
+    "fallbackSuccessRecordsFallbackUsed": true,
+    "noNewUnsafeAnyCast": true,
+    "noBusinessSemanticChange": true
+  },
+  "scannerSnapshot": {
+    "directSupabaseServiceBypassFindings": 0,
+    "directSupabaseServiceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "directSupabaseUnclassifiedCurrentFindings": 0,
+    "productionRawLoopFindings": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/api/buyerLegacyApiWindow.test.ts tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts tests/api/buyerInboxFullScanSafeRouting.contract.test.ts src/screens/buyer/buyer.observability.test.ts --runInBand",
+      "summary": "4 test suites passed; 9 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "666 test suites passed, 1 skipped; 3950 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedUnsafeAnyCast": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
