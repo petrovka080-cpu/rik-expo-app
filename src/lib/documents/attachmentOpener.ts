@@ -169,6 +169,16 @@ function guessMimeType(fileName?: string | null, uri?: string | null, mimeType?:
   return "application/octet-stream";
 }
 
+function getUnknownErrorClass(error: unknown): string {
+  if (error instanceof Error) return error.name || "Error";
+  return typeof error;
+}
+
+function getUnknownErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error ?? "Unknown attachment open error");
+}
+
 async function fileExists(uri: string): Promise<boolean> {
   try {
     const info = await FileSystemCompat.getInfoAsync(uri);
@@ -308,7 +318,24 @@ async function openAttachmentOnWeb(input: AppAttachmentOpenInput, source: Resolv
       document.body.removeChild(a);
     }
     setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-  } catch {
+  } catch (error) {
+    recordPlatformObservability({
+      screen: "request",
+      surface: "attachment_open",
+      category: "ui",
+      event: "web_blob_open_fallback_to_direct",
+      result: "error",
+      sourceKind: "fetch:attachment_open",
+      fallbackUsed: true,
+      errorStage: "web_blob_open",
+      errorClass: getUnknownErrorClass(error),
+      errorMessage: redactSensitiveText(getUnknownErrorMessage(error)),
+      extra: {
+        uriScheme: getUriScheme(uri),
+        uriHash: hashString32(uri),
+        fileNameHash: hashString32(fileName),
+      },
+    });
     openDirect();
   }
 }

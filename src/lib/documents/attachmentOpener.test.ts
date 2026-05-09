@@ -1,5 +1,9 @@
 import { openAppAttachment } from "./attachmentOpener";
 import { createAttachmentSignedUrl } from "./attachmentOpener.storage.transport";
+import {
+  getPlatformObservabilityEvents,
+  resetPlatformObservabilityEvents,
+} from "../observability/platformObservability";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -11,6 +15,7 @@ const mockGetContentUriAsync = jest.fn();
 const mockShareAsync = jest.fn();
 const mockIsAvailableAsync = jest.fn();
 const mockStartActivityAsync = jest.fn();
+const mockFetchWithRequestTimeout = jest.fn();
 
 jest.mock("react-native", () => ({
   Linking: {
@@ -37,6 +42,10 @@ jest.mock("expo-intent-launcher", () => ({
   startActivityAsync: (...args: unknown[]) => mockStartActivityAsync(...args),
 }));
 
+jest.mock("../requestTimeoutPolicy", () => ({
+  fetchWithRequestTimeout: (...args: unknown[]) => mockFetchWithRequestTimeout(...args),
+}));
+
 jest.mock("../fileSystemPaths", () => ({
   getFileSystemPaths: jest.fn(() => ({
     cacheDir: "file:///cache/",
@@ -61,6 +70,8 @@ const getMockPlatform = () =>
 
 describe("attachmentOpener", () => {
   const originalPlatformOs = getMockPlatform().OS;
+  const originalWindow = (globalThis as typeof globalThis & { window?: Window }).window;
+  const originalDocument = (globalThis as typeof globalThis & { document?: Document }).document;
 
   beforeEach(() => {
     Object.defineProperty(getMockPlatform(), "OS", {
@@ -76,6 +87,8 @@ describe("attachmentOpener", () => {
     mockIsAvailableAsync.mockReset();
     mockStartActivityAsync.mockReset();
     mockCreateAttachmentSignedUrl.mockReset();
+    mockFetchWithRequestTimeout.mockReset();
+    resetPlatformObservabilityEvents();
 
     mockCreateAttachmentSignedUrl.mockResolvedValue({
       data: { signedUrl: "https://example.com/signed-attachment.pdf" },
@@ -92,6 +105,14 @@ describe("attachmentOpener", () => {
     Object.defineProperty(getMockPlatform(), "OS", {
       configurable: true,
       value: originalPlatformOs,
+    });
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: originalWindow,
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: originalDocument,
     });
   });
 
@@ -201,6 +222,87 @@ describe("attachmentOpener", () => {
     expect(mockGetContentUriAsync).not.toHaveBeenCalled();
     expect(mockStartActivityAsync).not.toHaveBeenCalled();
     expect(mockShareAsync).not.toHaveBeenCalled();
+  });
+
+  it("reports web blob-open fallback without leaking the signed URL", async () => {
+    Object.defineProperty(getMockPlatform(), "OS", {
+      configurable: true,
+      value: "web",
+    });
+    const signedUrl = "https://example.com/signed-attachment.pdf?token=super-secret-token";
+    const windowOpen = jest.fn(() => null);
+    const click = jest.fn();
+    const appendChild = jest.fn();
+    const removeChild = jest.fn();
+    const anchor = {
+      href: "",
+      target: "",
+      rel: "",
+      download: "",
+      click,
+    };
+
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: {
+        open: windowOpen,
+      },
+    });
+    Object.defineProperty(globalThis, "document", {
+      configurable: true,
+      value: {
+        createElement: jest.fn(() => anchor),
+        body: {
+          appendChild,
+          removeChild,
+        },
+      },
+    });
+    mockCreateAttachmentSignedUrl.mockResolvedValueOnce({
+      data: { signedUrl },
+      error: null,
+    });
+    mockFetchWithRequestTimeout.mockRejectedValueOnce(new Error("blob fetch blocked"));
+
+    await expect(
+      openAppAttachment({
+        bucketId: "proposal_files",
+        storagePath: "proposal-1/secret.pdf",
+        fileName: "secret.pdf",
+        mimeType: "application/pdf",
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(mockFetchWithRequestTimeout).toHaveBeenCalled();
+    expect(windowOpen).toHaveBeenCalledWith(signedUrl, "_blank", "noopener,noreferrer");
+    expect(click).toHaveBeenCalledTimes(1);
+    const event = getPlatformObservabilityEvents().find(
+      (item) => item.event === "web_blob_open_fallback_to_direct",
+    );
+
+    expect(event).toEqual(
+      expect.objectContaining({
+        screen: "request",
+        surface: "attachment_open",
+        event: "web_blob_open_fallback_to_direct",
+        result: "error",
+        fallbackUsed: true,
+        errorStage: "web_blob_open",
+        errorClass: "Error",
+        errorMessage: "blob fetch blocked",
+      }),
+    );
+    expect(event?.extra).toEqual(
+      expect.objectContaining({
+        uriScheme: "https",
+        uriHash: expect.any(String),
+        fileNameHash: expect.any(String),
+      }),
+    );
+    const serializedEvent = JSON.stringify(event);
+    expect(serializedEvent).not.toContain(signedUrl);
+    expect(serializedEvent).not.toContain("super-secret-token");
+    expect(serializedEvent).not.toContain("secret.pdf");
   });
 });
 

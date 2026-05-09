@@ -1,0 +1,120 @@
+{
+  "wave": 132,
+  "slug": "ATTACHMENT_WEB_FALLBACK_OBSERVABILITY",
+  "finalStatus": "GREEN_ATTACHMENT_WEB_FALLBACK_OBSERVABILITY",
+  "baseHead": "e1c7ee61e5bd289399691fce971c703b420d8645",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/lib/documents/attachmentOpener.ts",
+      "src/lib/documents/attachmentOpener.test.ts"
+    ],
+    "reasonSelected": "A1/R7 residual risk: web attachment blob-open failure fell back to direct open via a silent catch, hiding a user-visible degraded path.",
+    "excludedFromScope": [
+      "production code unrelated to attachment web open fallback",
+      "DB writes",
+      "migrations",
+      "remote environment or deployment configuration"
+    ]
+  },
+  "freshScans": {
+    "targetRead": "PASS",
+    "existingAttachmentOpenerCatchBlocks": [
+      {
+        "file": "src/lib/documents/attachmentOpener.ts",
+        "line": 114,
+        "classification": "bounded decode fallback, not selected in this wave"
+      },
+      {
+        "file": "src/lib/documents/attachmentOpener.ts",
+        "line": 186,
+        "classification": "bounded file-exists probe fallback, not selected in this wave"
+      }
+    ],
+    "selectedFindingBefore": {
+      "file": "src/lib/documents/attachmentOpener.ts",
+      "function": "openAttachmentOnWeb",
+      "behavior": "catch block silently called openDirect() after blob fetch/open failure"
+    },
+    "selectedFindingAfter": {
+      "file": "src/lib/documents/attachmentOpener.ts",
+      "function": "openAttachmentOnWeb",
+      "behavior": "catch(error) records redacted platform observability with fallbackUsed=true, then preserves openDirect() fallback"
+    }
+  },
+  "contracts": {
+    "webFallbackStillCompletes": true,
+    "signedUrlNotStoredInObservabilityEvent": true,
+    "queryTokenNotStoredInObservabilityEvent": true,
+    "fileNameNotStoredInObservabilityEvent": true,
+    "rawProviderBoundaryUnchanged": true,
+    "noBusinessSemanticChange": true
+  },
+  "scannerSnapshot": {
+    "directSupabaseServiceBypassFindings": 0,
+    "directSupabaseServiceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "directSupabaseUnclassifiedCurrentFindings": 0,
+    "productionRawLoopFindings": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "commands": [
+        "npx jest src/lib/documents/attachmentOpener.test.ts --runInBand",
+        "npx jest tests/observability/noSilentRuntimeCatch.test.ts tests/observability/devStyleGuardCatchDiscipline.test.ts --runInBand"
+      ]
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "665 test suites passed, 1 skipped; 3939 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectSettingsChanged": false,
+    "spendCapsChanged": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemantics": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
