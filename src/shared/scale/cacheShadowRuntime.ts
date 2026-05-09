@@ -54,6 +54,11 @@ export type CacheShadowMonitorSnapshot = {
   hitCount: number;
   missCount: number;
   readThroughCount: number;
+  dryRunDecisionCount: number;
+  wouldCacheRead: number;
+  wouldCacheHit: number;
+  wouldCacheMiss: number;
+  wouldCacheBypassReason: readonly CacheShadowDryRunBypassReasonSnapshot[];
   skippedCount: number;
   unsafeKeyCount: number;
   errorCount: number;
@@ -76,6 +81,12 @@ export type CacheShadowRouteMetricSnapshot = {
   skippedCount: number;
   unsafeKeyCount: number;
   errorCount: number;
+  redacted: true;
+};
+
+export type CacheShadowDryRunBypassReasonSnapshot = {
+  reasonCode: string;
+  count: number;
   redacted: true;
 };
 
@@ -225,6 +236,27 @@ const observeCacheDecisionCounts = (
   if (decision.status === "error" || decision.status === "adapter_unavailable") snapshot.errorCount += 1;
 };
 
+const CACHE_DRY_RUN_BYPASS_REASON_PATTERN = /[^a-z0-9_.:-]/gi;
+
+const normalizeCacheDryRunBypassReason = (reason: string): string => {
+  const normalized = reason
+    .trim()
+    .replace(CACHE_DRY_RUN_BYPASS_REASON_PATTERN, "_")
+    .slice(0, 80);
+  return normalized || "unknown";
+};
+
+const buildCacheDryRunBypassReasonSnapshot = (
+  reasons: ReadonlyMap<string, number>,
+): readonly CacheShadowDryRunBypassReasonSnapshot[] =>
+  Array.from(reasons.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([reasonCode, count]) => ({
+      reasonCode,
+      count,
+      redacted: true,
+    }));
+
 const CACHE_SHADOW_ROUTE_METRIC_ALLOWED_KEYS = new Set([
   "route",
   "observedDecisionCount",
@@ -302,6 +334,11 @@ export function createCacheShadowMonitor(): CacheShadowMonitor {
     hitCount: 0,
     missCount: 0,
     readThroughCount: 0,
+    dryRunDecisionCount: 0,
+    wouldCacheRead: 0,
+    wouldCacheHit: 0,
+    wouldCacheMiss: 0,
+    wouldCacheBypassReason: [],
     skippedCount: 0,
     unsafeKeyCount: 0,
     errorCount: 0,
@@ -314,10 +351,22 @@ export function createCacheShadowMonitor(): CacheShadowMonitor {
     piiLogged: false,
   };
   const routeMetrics = new Map<CachePolicyRoute, CacheShadowRouteMetricSnapshot>();
+  const dryRunBypassReasons = new Map<string, number>();
 
   return {
     async observe(decision) {
       observeCacheDecisionCounts(snapshot, decision);
+      if (decision.mode !== "read_through") {
+        snapshot.dryRunDecisionCount += 1;
+        if (decision.shadowReadAttempted) {
+          snapshot.wouldCacheRead += 1;
+          if (decision.cacheHit) snapshot.wouldCacheHit += 1;
+          if (!decision.cacheHit) snapshot.wouldCacheMiss += 1;
+        } else {
+          const reason = normalizeCacheDryRunBypassReason(decision.reason);
+          dryRunBypassReasons.set(reason, (dryRunBypassReasons.get(reason) ?? 0) + 1);
+        }
+      }
       const routeMetric = routeMetrics.get(decision.route) ?? createEmptyRouteMetric(decision.route);
       observeCacheDecisionCounts(routeMetric, decision);
       routeMetrics.set(decision.route, routeMetric);
@@ -325,6 +374,7 @@ export function createCacheShadowMonitor(): CacheShadowMonitor {
     snapshot() {
       return {
         ...snapshot,
+        wouldCacheBypassReason: buildCacheDryRunBypassReasonSnapshot(dryRunBypassReasons),
         routeMetrics: Array.from(routeMetrics.values())
           .sort((left, right) => left.route.localeCompare(right.route))
           .map((metric) => ({ ...metric })),

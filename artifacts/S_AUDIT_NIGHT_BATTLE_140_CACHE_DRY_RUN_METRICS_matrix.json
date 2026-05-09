@@ -1,0 +1,160 @@
+{
+  "wave": 140,
+  "slug": "CACHE_DRY_RUN_METRICS",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Add cache dry-run instrumentation that measures would-hit and would-miss without changing read behavior.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "7a9f7e14a26fbd107096e9a7fe1000036ae8bf64"
+  },
+  "freshScans": {
+    "commands": [
+      "rg -n \"wouldCache|cacheHit|cache\\\\.hit|cache\\\\.miss|recordMetric|recordEvent|recordSpan|platformObservability|createCacheShadowMonitor|CacheShadowMonitor|serverTiming\" src scripts tests docs",
+      "rg -n \"cacheShadow|invokeReadRouteWithCacheReadThrough|observeBffStagingCacheShadow|handleBffStagingServerRequest|BFF_STAGING_READ_ROUTES\" scripts/server src/shared/scale tests/scale",
+      "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "forbidden suppression scan over changed code/test files"
+    ],
+    "summary": {
+      "observabilityPatternFound": [
+        "src/shared/scale/scaleObservabilityEvents.ts",
+        "src/shared/scale/scaleMetricsPolicies.ts",
+        "src/shared/scale/cacheShadowRuntime.ts",
+        "scripts/server/stagingBffServerBoundary.ts"
+      ],
+      "existingDryRunLikeMode": "shadow_readonly",
+      "newUnsafeSuppressionPatternsAdded": 0,
+      "architectureScannerGreen": true,
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "unclassifiedDirectSupabaseFindings": 0,
+      "cacheAllowedRoute": "marketplace.catalog.search"
+    }
+  },
+  "selectedFiles": [
+    {
+      "file": "src/shared/scale/cacheShadowRuntime.ts",
+      "changeType": "updated",
+      "reason": "Central cache shadow monitor owns aggregate cache observability state."
+    },
+    {
+      "file": "scripts/server/stagingBffServerBoundary.ts",
+      "changeType": "updated",
+      "reason": "Cache shadow monitor endpoint envelope exposes the new dry-run counters."
+    },
+    {
+      "file": "tests/scale/cacheDryRunMetrics.test.ts",
+      "changeType": "added",
+      "reason": "Focused dry-run cache metrics contract."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_140_CACHE_DRY_RUN_METRICS_matrix.json",
+      "changeType": "added",
+      "reason": "Wave matrix artifact."
+    },
+    {
+      "file": "artifacts/S_AUDIT_NIGHT_BATTLE_140_CACHE_DRY_RUN_METRICS_proof.md",
+      "changeType": "added",
+      "reason": "Wave proof artifact."
+    }
+  ],
+  "before": {
+    "cacheShadowMonitor": [
+      "tracked hit/miss/read-through/skipped/error counters",
+      "did not expose explicit wouldCacheRead/wouldCacheHit/wouldCacheMiss dry-run counters",
+      "did not aggregate dry-run bypass reasons"
+    ],
+    "readBehavior": "shadow_readonly observed cache without serving it",
+    "productionCacheEnabled": false
+  },
+  "after": {
+    "cacheShadowMonitor": {
+      "dryRunDecisionCount": "added",
+      "wouldCacheRead": "added",
+      "wouldCacheHit": "added",
+      "wouldCacheMiss": "added",
+      "wouldCacheBypassReason": "added as redacted aggregate reason counts",
+      "readThroughCountSemanticsChanged": false,
+      "rawKeysStored": false,
+      "rawPayloadLogged": false,
+      "piiLogged": false
+    },
+    "bffMonitorEnvelope": {
+      "exposesDryRunCounters": true,
+      "exposesRawKeysOrPayloads": false
+    },
+    "dryRunMode": {
+      "modeUsed": "shadow_readonly",
+      "returnsOriginalProviderResult": true,
+      "servesCachedData": false,
+      "writesCache": false,
+      "productionCacheEnabled": false
+    },
+    "envDefaultsChanged": false,
+    "cacheDefaultsChanged": false,
+    "ttlChanged": false
+  },
+  "contractCoverage": [
+    "dry-run emits wouldCacheHit for a cached marketplace key while returning the live provider result",
+    "dry-run emits wouldCacheMiss for an empty cache while returning the live provider result",
+    "dry-run does not mask provider errors when the cache would hit",
+    "dry-run adapter-unavailable path preserves live provider success and emits a redacted bypass reason",
+    "disabled dry-run emits minimal telemetry and does not change the provider result"
+  ],
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheDryRunMetrics.test.ts tests/scale/cacheStaleDataContracts.test.ts tests/scale/cacheMarketplaceShadowCanaryContract.test.ts tests/scale/cacheIntegrationBoundary.test.ts tests/scale/scaleObservabilityBoundary.test.ts",
+      "summary": "5 suites, 46 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "675 passed, 1 skipped, 676 total suites; 4006 passed, 1 skipped, 4007 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
