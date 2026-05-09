@@ -164,7 +164,28 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING"
+    "releaseVerifyPostPush": "PASS"
+  },
+  "postPushReleaseVerify": {
+    "command": "npm run release:verify -- --json",
+    "status": "PASS",
+    "headCommit": "4179eefbd4f27b9d7e3084e63d944cee6ec6e5cc",
+    "originMainCommit": "4179eefbd4f27b9d7e3084e63d944cee6ec6e5cc",
+    "headMatchesOriginMain": true,
+    "localCommitsAheadOriginMain": 0,
+    "originMainCommitsAheadHead": 0,
+    "syncStatus": "synced",
+    "readinessStatus": "pass",
+    "otaDisposition": "allow",
+    "otaPublished": false,
+    "gates": {
+      "tsc": "passed",
+      "expoLint": "passed",
+      "architectureAntiRegression": "passed",
+      "jestRunInBand": "passed",
+      "jest": "passed",
+      "gitDiffCheck": "passed"
+    }
   },
   "negativeConfirmations": {
     "productionCalls": false,
