@@ -75,7 +75,7 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING_POST_PUSH"
+    "releaseVerifyPostPush": "PASS"
   },
   "gateEvidence": {
     "focusedTests": "npx jest tests/async/cancellableWorkerLoop.test.ts src/lib/async/mapWithConcurrencyLimit.test.ts src/workers/queueWorker.boundary.test.ts tests/workers/queueRunnerLifecycle.contract.test.ts tests/perf/performance-budget.test.ts --runInBand; 5 suites passed, 33 tests passed",
@@ -90,7 +90,17 @@
       "unclassifiedCurrentFindings": 0
     },
     "gitDiffCheck": "git diff --check",
-    "releaseVerifyPostPush": "pending by design until the commit is pushed"
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PASS",
+      "headCommit": "7415ec94b1078a3e57ef256808383d16752b7fd6",
+      "repoSyncStatus": "synced",
+      "worktreeClean": true,
+      "headMatchesOriginMain": true,
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easUpdateTriggered": false
+    }
   },
   "negativeConfirmations": {
     "productionCalls": false,

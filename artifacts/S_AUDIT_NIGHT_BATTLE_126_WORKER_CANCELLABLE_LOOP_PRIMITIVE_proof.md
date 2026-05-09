@@ -53,7 +53,7 @@ Covered primitive cases:
 - full Jest runInBand: PASS.
 - architecture scanner: PASS.
 - git diff --check: PASS.
-- release verify post-push: pending by design until the commit is pushed.
+- release verify post-push: PASS.
 
 Architecture scanner:
 
@@ -66,6 +66,17 @@ Full Jest:
 
 - Test suites: 662 passed, 1 skipped, 662 of 663 total.
 - Tests: 3924 passed, 1 skipped, 3925 total.
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS.
+- head commit: `7415ec94b1078a3e57ef256808383d16752b7fd6`.
+- repo sync status: synced.
+- worktree clean: true.
+- head matches origin/main: true.
+- OTA disposition: allow.
+- OTA published: false.
+- EAS update triggered: false.
 
 ## Safety
 
