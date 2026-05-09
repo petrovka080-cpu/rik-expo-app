@@ -172,7 +172,38 @@
     "fullJestRunInBand": "PASS",
     "architectureScanner": "PASS",
     "gitDiffCheck": "PASS",
-    "releaseVerifyPostPush": "PENDING"
+    "releaseVerifyPostPush": "PASS"
+  },
+  "postPushReleaseVerify": {
+    "command": "npm run release:verify -- --json",
+    "status": "PASS",
+    "verifiedAfterPush": true,
+    "headCommit": "9511775b00850abe76ef1f0b38dcafbd5cabf7a7",
+    "originMainCommit": "9511775b00850abe76ef1f0b38dcafbd5cabf7a7",
+    "worktreeClean": true,
+    "headMatchesOriginMain": true,
+    "localCommitsAheadOriginMain": 0,
+    "originMainCommitsAheadHead": 0,
+    "syncStatus": "synced",
+    "readinessStatus": "pass",
+    "otaDisposition": "allow",
+    "otaPublished": false,
+    "gates": {
+      "tsc": "passed",
+      "expoLint": "passed",
+      "architectureAntiRegression": "passed",
+      "jestRunInBand": "passed",
+      "jest": "passed",
+      "gitDiffCheck": "passed"
+    },
+    "safety": {
+      "productionCalls": false,
+      "dbWrites": false,
+      "migrations": false,
+      "supabaseProjectChanges": false,
+      "envChanges": false,
+      "secretsPrinted": false
+    }
   },
   "architectureScanner": {
     "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
