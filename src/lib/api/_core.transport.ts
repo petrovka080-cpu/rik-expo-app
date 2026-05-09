@@ -20,6 +20,14 @@ export type RpcCompatTransportResult = {
   error: unknown;
 };
 
+export async function runUntypedRpcTransport(
+  fn: string,
+  args?: Record<string, unknown>,
+): Promise<RpcCompatTransportResult> {
+  const variant = args === undefined ? { fn } : { fn, args };
+  return runRpcCompatTransportVariant(variant as RpcCompatTransportVariant);
+}
+
 export async function runRpcCompatTransportVariant<TName extends RpcName>(
   variant: RpcCompatTransportVariant<TName>,
 ): Promise<RpcCompatTransportResult> {

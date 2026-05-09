@@ -1,11 +1,12 @@
-import {
-  loadPagedRowsWithCeiling,
-} from "../../src/lib/api/_core";
+import { readFileSync } from "fs";
+import path from "path";
+
 import {
   createGuardedPagedQuery,
-  isBuyerProposalItemViewRow,
+  loadPagedRowsWithCeiling,
   type PagedQueryProvider,
-} from "../../src/screens/buyer/buyer.repo.read.transport";
+} from "../../src/lib/api/_core";
+import { isBuyerProposalItemViewRow } from "../../src/screens/buyer/buyer.repo.read.transport";
 
 type GuardedRow = {
   id: string;
@@ -70,6 +71,25 @@ describe("guarded paged-query transport adapter", () => {
     expect(harness.ranges).toEqual([[0, 99]]);
   });
 
+  it("accepts missing optional fields and explicit null values", async () => {
+    const harness = buildProvider([
+      {
+        data: [
+          { id: "row-1" },
+          { id: "row-2", qty: null },
+        ],
+      },
+    ]);
+
+    const result = await loadGuardedRows(harness.provider);
+
+    expect(result.error).toBeNull();
+    expect(result.data).toEqual([
+      { id: "row-1" },
+      { id: "row-2", qty: null },
+    ]);
+  });
+
   it("rejects malformed payload rows safely without throwing from the adapter", async () => {
     const harness = buildProvider([
       {
@@ -120,5 +140,23 @@ describe("guarded paged-query transport adapter", () => {
     expect(result.data).toBeNull();
     expect(result.error).toBeInstanceOf(Error);
     expect(String(result.error)).toContain("row 1 failed DTO guard");
+  });
+
+  it("keeps requests, buyer, and warehouse selected reads on the guarded adapter", () => {
+    const root = path.resolve(__dirname, "..", "..");
+    const read = (relativePath: string) =>
+      readFileSync(path.join(root, relativePath), "utf8");
+
+    const requestCanonical = read("src/lib/api/requestCanonical.read.ts");
+    const buyerApi = read("src/lib/api/buyer.ts");
+    const warehouseStock = read("src/screens/warehouse/warehouse.stockReports.service.ts");
+
+    expect(requestCanonical).toContain("createGuardedPagedQuery(");
+    expect(buyerApi).toContain("createGuardedPagedQuery(");
+    expect(warehouseStock).toContain("createGuardedPagedQuery(");
+
+    expect(requestCanonical).not.toContain("as unknown as PagedQuery");
+    expect(buyerApi).not.toContain("as unknown as PagedQuery");
+    expect(warehouseStock).not.toContain("as unknown as PagedQuery");
   });
 });

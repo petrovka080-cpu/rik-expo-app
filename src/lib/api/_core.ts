@@ -95,6 +95,57 @@ export type PagedQuery<T> = {
   range: (from: number, to: number) => PromiseLike<{ data: T[] | null; error?: unknown }>;
 };
 
+export type PagedQueryProvider = {
+  range: (
+    from: number,
+    to: number,
+  ) => PromiseLike<{ data?: unknown; error?: unknown }>;
+};
+
+export type PagedQueryRowGuard<T> = (value: unknown) => value is T;
+
+const buildMalformedPagedPayloadError = (context: string, reason: string) =>
+  new Error(`${context} returned malformed paged payload: ${reason}`);
+
+export const isRecordRow = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+export function createGuardedPagedQuery<T>(
+  query: PagedQueryProvider,
+  isRow: PagedQueryRowGuard<T>,
+  context: string,
+): PagedQuery<T> {
+  return {
+    range: async (from: number, to: number) => {
+      const result = await query.range(from, to);
+      if (result.error) return { data: null, error: result.error };
+      if (result.data == null) return { data: null, error: null };
+      if (!Array.isArray(result.data)) {
+        return {
+          data: null,
+          error: buildMalformedPagedPayloadError(context, "expected array data"),
+        };
+      }
+
+      const rows: T[] = [];
+      for (let index = 0; index < result.data.length; index += 1) {
+        const row = result.data[index];
+        if (!isRow(row)) {
+          return {
+            data: null,
+            error: buildMalformedPagedPayloadError(
+              context,
+              `row ${index} failed DTO guard`,
+            ),
+          };
+        }
+        rows.push(row);
+      }
+      return { data: rows, error: null };
+    },
+  };
+}
+
 const toInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? Math.trunc(parsed) : fallback;
@@ -289,5 +340,5 @@ export async function rpcCompat<T = unknown>(
     }
   }
   if (lastErr) throw lastErr;
-  return [] as unknown as T;
+  return [] as T;
 }

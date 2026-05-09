@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  loadPagedRowsWithCeiling,
+} from "./_core";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { normalizeRuText } from "../text/encoding";
 import {
@@ -188,12 +192,16 @@ export async function loadCanonicalRequestItemCountsByRequestIds(
 
   const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
     () =>
-      supabase
-        .from("request_items")
-        .select("request_id, qty, status")
-        .in("request_id", ids)
-        .order("request_id", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+      createGuardedPagedQuery(
+        supabase
+          .from("request_items")
+          .select("request_id, qty, status")
+          .in("request_id", ids)
+          .order("request_id", { ascending: true })
+          .order("id", { ascending: true }),
+        isRecordRow,
+        "loadCanonicalRequestItemCountsByRequestIds",
+      ),
     CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
   );
 
@@ -215,7 +223,7 @@ export async function loadCanonicalRequestItemCountsByRequestIds(
     });
   }
 
-  for (const value of Array.isArray(data) ? (data as UnknownRow[]) : []) {
+  for (const value of Array.isArray(data) ? data : []) {
     const requestId = String(value.request_id ?? "").trim();
     if (!requestId) continue;
     const counts = countsByRequestId.get(requestId) ?? {
@@ -277,11 +285,15 @@ export async function loadCanonicalRequestsByIds(
     pending = (async () => {
       const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
         () =>
-          supabase
-            .from("requests")
-            .select(selectedColumns.join(","))
-            .in("id", missingIds)
-            .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+          createGuardedPagedQuery(
+            supabase
+              .from("requests")
+              .select(selectedColumns.join(","))
+              .in("id", missingIds)
+              .order("id", { ascending: true }),
+            isRecordRow,
+            "loadCanonicalRequestsByIds",
+          ),
         CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
       );
 
@@ -393,13 +405,17 @@ export async function loadCanonicalRequestItemsByRequestId(
 
   const { data, error } = await loadPagedRowsWithCeiling<UnknownRow>(
     () =>
-      supabase
-        .from("request_items")
-        .select("id, request_id, rik_code, name_human, uom, qty, status, note, app_code, item_kind, created_at")
-        .eq("request_id", requestIdValue)
-        .order("position_order", { ascending: true })
-        .order("name_human", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+      createGuardedPagedQuery(
+        supabase
+          .from("request_items")
+          .select("id, request_id, rik_code, name_human, uom, qty, status, note, app_code, item_kind, created_at")
+          .eq("request_id", requestIdValue)
+          .order("position_order", { ascending: true })
+          .order("name_human", { ascending: true })
+          .order("id", { ascending: true }),
+        isRecordRow,
+        "loadCanonicalRequestItemsByRequestId",
+      ),
     CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS,
   );
 
@@ -411,7 +427,7 @@ export async function loadCanonicalRequestItemsByRequestId(
   }
 
   const rows = Array.isArray(data)
-    ? (data as UnknownRow[]).map((row) => ({
+    ? data.map((row) => ({
         id: String(row.id ?? "").trim(),
         request_id: String(row.request_id ?? "").trim(),
         rik_code: row.rik_code == null ? null : String(row.rik_code),

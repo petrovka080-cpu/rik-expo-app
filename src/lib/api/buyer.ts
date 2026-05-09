@@ -1,4 +1,5 @@
 import {
+  createGuardedPagedQuery,
   client,
   loadPagedRowsWithCeiling,
   normalizePage,
@@ -11,6 +12,7 @@ import {
   isRpcNullableRecordArrayResponse,
   validateRpcResponse,
 } from "./queryBoundary";
+import { runUntypedRpcTransport } from "./_core.transport";
 import type { BuyerInboxRow } from "./types";
 import { isRequestApprovedForProcurement } from "../requestStatus";
 import { normalizeRuText } from "../text/encoding";
@@ -23,6 +25,16 @@ const logBuyerApiDebug = (...args: unknown[]) => {
 
 const isApprovedForBuyer = (raw: unknown) =>
   isRequestApprovedForProcurement(raw);
+
+const hasOptionalStringField = (
+  row: Record<string, unknown>,
+  field: string,
+): boolean => row[field] == null || typeof row[field] === "string";
+
+const hasOptionalNumberField = (
+  row: Record<string, unknown>,
+  field: string,
+): boolean => row[field] == null || typeof row[field] === "number";
 
 type RequestStatusRow = {
   id?: string | null;
@@ -66,12 +78,52 @@ type ProposalLifecycleRow = {
   submitted_at?: string | null;
 };
 
-type BuyerInboxScopeRpcTransport = {
-  rpc: (
-    fn: string,
-    args: Record<string, unknown>,
-  ) => PromiseLike<{ data: unknown; error: unknown }>;
-};
+const isPartialRecordRow = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const isRequestStatusRow = (value: unknown): value is RequestStatusRow =>
+  isPartialRecordRow(value) &&
+  hasOptionalStringField(value, "id") &&
+  hasOptionalStringField(value, "status");
+
+const isProposalLifecycleRow = (value: unknown): value is ProposalLifecycleRow =>
+  isPartialRecordRow(value) &&
+  hasOptionalStringField(value, "proposal_id") &&
+  hasOptionalStringField(value, "status") &&
+  hasOptionalStringField(value, "sent_to_accountant_at") &&
+  hasOptionalStringField(value, "submitted_at");
+
+const isBuyerRejectContextRow = (value: unknown): value is BuyerRejectContextRow =>
+  isPartialRecordRow(value) &&
+  hasOptionalStringField(value, "request_item_id") &&
+  hasOptionalStringField(value, "proposal_id") &&
+  hasOptionalStringField(value, "supplier") &&
+  hasOptionalNumberField(value, "price") &&
+  hasOptionalStringField(value, "note") &&
+  hasOptionalStringField(value, "director_comment") &&
+  hasOptionalStringField(value, "director_decision") &&
+  hasOptionalStringField(value, "updated_at") &&
+  hasOptionalStringField(value, "created_at");
+
+const isFallbackBuyerRequestRow = (value: unknown): value is NonNullable<FallbackBuyerRow["requests"]> =>
+  isPartialRecordRow(value) &&
+  hasOptionalStringField(value, "id_old") &&
+  hasOptionalStringField(value, "status");
+
+const isFallbackBuyerRow = (value: unknown): value is FallbackBuyerRow =>
+  isPartialRecordRow(value) &&
+  hasOptionalStringField(value, "id") &&
+  hasOptionalStringField(value, "request_id") &&
+  hasOptionalStringField(value, "name_human") &&
+  hasOptionalNumberField(value, "qty") &&
+  hasOptionalStringField(value, "uom") &&
+  hasOptionalStringField(value, "app_code") &&
+  hasOptionalStringField(value, "status") &&
+  hasOptionalStringField(value, "director_reject_note") &&
+  hasOptionalStringField(value, "director_reject_at") &&
+  hasOptionalStringField(value, "kind") &&
+  hasOptionalStringField(value, "request_status") &&
+  (value.requests == null || isFallbackBuyerRequestRow(value.requests));
 
 const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = {
   pageSize: 100,
@@ -171,14 +223,13 @@ const readScopeHasMore = (
 const loadBuyerInboxRowsFromScopeRpc = async (): Promise<BuyerInboxRow[]> => {
   const rows: BuyerInboxRow[] = [];
   let offsetGroups = 0;
-  const rpcClient = client as unknown as BuyerInboxScopeRpcTransport;
 
   for (
     let pageIndex = 0;
     pageIndex < BUYER_INBOX_LEGACY_SCOPE_MAX_PAGES;
     pageIndex += 1
   ) {
-    const { data, error } = await rpcClient.rpc(BUYER_INBOX_LEGACY_SCOPE_RPC, {
+    const { data, error } = await runUntypedRpcTransport(BUYER_INBOX_LEGACY_SCOPE_RPC, {
       p_offset: offsetGroups,
       p_limit: BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS.pageSize,
       p_search: null,
@@ -282,20 +333,22 @@ async function loadLatestProposalLifecycleByRequestItem(
 
   const piQ = await loadPagedBuyerApiRows<BuyerRejectContextRow>(
     () =>
-      client
-        .from("proposal_items_view")
-        .select("proposal_id, request_item_id")
-        .in("request_item_id", ids)
-        .order("request_item_id", { ascending: true })
-        .order("proposal_id", {
-          ascending: true,
-        }) as unknown as PagedQuery<BuyerRejectContextRow>,
+      createGuardedPagedQuery(
+        client
+          .from("proposal_items_view")
+          .select("proposal_id, request_item_id")
+          .in("request_item_id", ids)
+          .order("request_item_id", { ascending: true })
+          .order("proposal_id", {
+            ascending: true,
+          }),
+        isBuyerRejectContextRow,
+        "loadLatestProposalLifecycleByRequestItem.proposalItems",
+      ),
   );
   if (piQ.error) throw piQ.error;
 
-  const proposalItems = Array.isArray(piQ.data)
-    ? (piQ.data as BuyerRejectContextRow[])
-    : [];
+  const proposalItems = Array.isArray(piQ.data) ? piQ.data : [];
   const proposalIds = Array.from(
     new Set(
       proposalItems
@@ -307,19 +360,22 @@ async function loadLatestProposalLifecycleByRequestItem(
 
   const propQ = await loadPagedBuyerApiRows<ProposalLifecycleRow>(
     () =>
-      client
-        .from("v_proposals_summary")
-        .select("proposal_id, status, sent_to_accountant_at, submitted_at")
-        .in("proposal_id", proposalIds)
-        .order("proposal_id", {
-          ascending: true,
-        }) as unknown as PagedQuery<ProposalLifecycleRow>,
+      createGuardedPagedQuery(
+        client
+          .from("v_proposals_summary")
+          .select("proposal_id, status, sent_to_accountant_at, submitted_at")
+          .in("proposal_id", proposalIds)
+          .order("proposal_id", {
+            ascending: true,
+          }),
+        isProposalLifecycleRow,
+        "loadLatestProposalLifecycleByRequestItem.proposals",
+      ),
   );
   if (propQ.error) throw propQ.error;
 
   const proposalById = new Map<string, ProposalLifecycleRow>();
-  (propQ.data || []).forEach((raw) => {
-    const row = raw as ProposalLifecycleRow;
+  (propQ.data || []).forEach((row) => {
     const id = String(row?.proposal_id || "").trim();
     if (!id) return;
     proposalById.set(id, row);
@@ -383,13 +439,17 @@ async function enrichRejectedRows(
   // Keep query schema-safe: no order by potentially missing columns.
   const q = await loadPagedBuyerApiRows<BuyerRejectContextRow>(
     () =>
-      client
-        .from("proposal_items")
-        .select("*")
-        .in("request_item_id", rejectedIds)
-        .order("id", {
-          ascending: true,
-        }) as unknown as PagedQuery<BuyerRejectContextRow>,
+      createGuardedPagedQuery(
+        client
+          .from("proposal_items")
+          .select("*")
+          .in("request_item_id", rejectedIds)
+          .order("id", {
+            ascending: true,
+          }),
+        isBuyerRejectContextRow,
+        "enrichRejectedRows.rejectContext",
+      ),
   );
 
   if (!q.error) {
@@ -412,8 +472,7 @@ async function enrichRejectedRows(
   }
 
   const byRequestItemId = new Map<string, BuyerRejectContextRow>();
-  for (const raw of ctxData) {
-    const row = raw as BuyerRejectContextRow;
+  for (const row of ctxData) {
     const requestItemId = String(row?.request_item_id || "").trim();
     if (!requestItemId || byRequestItemId.has(requestItemId)) continue;
     byRequestItemId.set(requestItemId, row);
@@ -460,20 +519,23 @@ async function filterInboxByRequestStatus(
   try {
     const { data, error } = await loadPagedBuyerApiRows<RequestStatusRow>(
       () =>
-        client
-          .from("requests")
-          .select("id, status")
-          .in("id", reqIds)
-          .order("id", {
-            ascending: true,
-          }) as unknown as PagedQuery<RequestStatusRow>,
+        createGuardedPagedQuery(
+          client
+            .from("requests")
+            .select("id, status")
+            .in("id", reqIds)
+            .order("id", {
+              ascending: true,
+            }),
+          isRequestStatusRow,
+          "filterInboxByRequestStatus.requests",
+        ),
     );
     if (error) throw error;
 
     const statusByReqId = new Map<string, string>();
     (data || []).forEach((row) => {
-      const r = row as RequestStatusRow;
-      statusByReqId.set(String(r.id || "").trim(), String(r.status || ""));
+      statusByReqId.set(String(row.id || "").trim(), String(row.status || ""));
     });
 
     const rejectedItemIds = list
@@ -571,20 +633,28 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
       () =>
         loadPagedBuyerApiRows<FallbackBuyerRow>(
           () =>
-            client
-              .from("request_items")
-              .select("*")
-              .order("created_at", { ascending: false })
-              .order("id", {
-                ascending: false,
-              }) as unknown as PagedQuery<FallbackBuyerRow>,
+            createGuardedPagedQuery(
+              client
+                .from("request_items")
+                .select("*")
+                .order("created_at", { ascending: false })
+                .order("id", {
+                  ascending: false,
+                }),
+              isFallbackBuyerRow,
+              "listBuyerInbox.fallback.requestItemsByCreatedAt",
+            ),
         ),
       () =>
         loadPagedBuyerApiRows<FallbackBuyerRow>(
           () =>
-            client.from("request_items").select("*").order("id", {
-              ascending: false,
-            }) as unknown as PagedQuery<FallbackBuyerRow>,
+            createGuardedPagedQuery(
+              client.from("request_items").select("*").order("id", {
+                ascending: false,
+              }),
+              isFallbackBuyerRow,
+              "listBuyerInbox.fallback.requestItemsById",
+            ),
         ),
     ] as const;
 
@@ -601,8 +671,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
 
     if (fbErr) throw fbErr;
 
-    const rows = (fbData ?? []).map((row) => {
-      const r = row as FallbackBuyerRow;
+    const rows: (BuyerInboxRow & { request_status?: string })[] = (fbData ?? []).map((r) => {
       const reqIdOldRaw = r.requests?.id_old;
       const reqIdOld = reqIdOldRaw == null ? null : Number(reqIdOldRaw);
       return {
@@ -623,8 +692,8 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         kind: r.kind ?? null,
         request_status: String(r.requests?.status ?? r.request_status ?? ""),
       };
-    }) as (BuyerInboxRow & { request_status?: string })[];
-    const gatedRows = await filterInboxByRequestStatus(rows as BuyerInboxRow[]);
+    });
+    const gatedRows = await filterInboxByRequestStatus(rows);
     const enrichedRows = await enrichRejectedRows(gatedRows);
     observation.success({
       sourceKind: "table:request_items",

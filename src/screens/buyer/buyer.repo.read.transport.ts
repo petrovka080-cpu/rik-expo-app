@@ -1,7 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  type PagedQuery,
+  type PagedQueryProvider,
+  type PagedQueryRowGuard,
+} from "../../lib/api/_core";
 import type { Database } from "../../lib/database.types";
+
+export { createGuardedPagedQuery, isRecordRow };
+export type { PagedQueryProvider, PagedQueryRowGuard };
 
 type ProposalItemRow = Database["public"]["Tables"]["proposal_items"]["Row"];
 type RequestItemRow = Database["public"]["Tables"]["request_items"]["Row"];
@@ -48,57 +57,6 @@ export type BuyerProposalItemLinkRow = Pick<
 >;
 
 export type BuyerRequestItemToRequestRow = Pick<RequestItemRow, "id" | "request_id">;
-
-export type PagedQueryProvider = {
-  range: (
-    from: number,
-    to: number,
-  ) => PromiseLike<{ data?: unknown; error?: unknown }>;
-};
-
-export type PagedQueryRowGuard<T> = (value: unknown) => value is T;
-
-const buildMalformedPagedPayloadError = (context: string, reason: string) =>
-  new Error(`${context} returned malformed paged payload: ${reason}`);
-
-export const isRecordRow = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === "object" && !Array.isArray(value);
-
-export function createGuardedPagedQuery<T>(
-  query: PagedQueryProvider,
-  isRow: PagedQueryRowGuard<T>,
-  context: string,
-): PagedQuery<T> {
-  return {
-    range: async (from: number, to: number) => {
-      const result = await query.range(from, to);
-      if (result.error) return { data: null, error: result.error };
-      if (result.data == null) return { data: null, error: null };
-      if (!Array.isArray(result.data)) {
-        return {
-          data: null,
-          error: buildMalformedPagedPayloadError(context, "expected array data"),
-        };
-      }
-
-      const rows: T[] = [];
-      for (let index = 0; index < result.data.length; index += 1) {
-        const row = result.data[index];
-        if (!isRow(row)) {
-          return {
-            data: null,
-            error: buildMalformedPagedPayloadError(
-              context,
-              `row ${index} failed DTO guard`,
-            ),
-          };
-        }
-        rows.push(row);
-      }
-      return { data: rows, error: null };
-    },
-  };
-}
 
 const hasNullableStringField = (
   row: Record<string, unknown>,

@@ -207,4 +207,39 @@ describe("buyer legacy inbox API bounded routing", () => {
       ]),
     );
   });
+
+  it("rejects malformed fallback rows before buyer inbox mapping", async () => {
+    const rpcError = new Error("scope unavailable");
+    mockSupabase.rpc.mockResolvedValueOnce({
+      data: null,
+      error: rpcError,
+    });
+
+    const requestItemsQuery = buildPagedQuery(async () => ({
+      data: [42],
+      error: null,
+    }));
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table !== "request_items")
+        throw new Error(`Unexpected table ${table}`);
+      return requestItemsQuery;
+    });
+
+    await expect(listBuyerInbox()).resolves.toEqual([]);
+
+    expect(requestItemsQuery.range).toHaveBeenCalledWith(0, 99);
+    const events = getPlatformObservabilityEvents();
+    expect(events).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          screen: "buyer",
+          surface: "inbox_window",
+          event: "buyer_inbox_compatibility_fallback_failed",
+          result: "error",
+          sourceKind: "table:request_items",
+          errorStage: "compatibility_fallback",
+        }),
+      ]),
+    );
+  });
 });

@@ -1,0 +1,190 @@
+{
+  "wave": 133,
+  "slug": "UNSAFE_CAST_DOMAIN_BATCH_A_REQUESTS_BUYER_WAREHOUSE",
+  "createdAt": "2026-05-09T21:24:32.9438762+06:00",
+  "baseHead": "6d65d9bbc47003536488dd164687df52d5a3c698",
+  "goal": "Reduce unsafe casts in high-value requests, buyer, and warehouse domain flows while preserving service validation/payload ownership and transport/provider IO ownership.",
+  "scope": {
+    "selectedFiles": [
+      "src/lib/api/_core.ts",
+      "src/lib/api/_core.transport.ts",
+      "src/lib/api/requestCanonical.read.ts",
+      "src/lib/api/buyer.ts",
+      "src/screens/buyer/buyer.repo.read.transport.ts",
+      "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "tests/api/guardedPagedQueryTransport.contract.test.ts",
+      "tests/api/buyerLegacyApiWindow.test.ts",
+      "tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts"
+    ],
+    "selectedDomainFlows": [
+      "requests canonical request item counts and item row parsing",
+      "buyer inbox fallback/enrichment/status proposal lifecycle maps",
+      "buyer proposal/read guarded paged-query transport adapter",
+      "warehouse stock name-map source row loaders"
+    ],
+    "notSelected": [
+      {
+        "file": "src/lib/api/requests.ts",
+        "reason": "Remaining request_reopen_atomic_v1 untyped RPC adapter is outside this batch's request item row/payload parsing slice. It remains covered by runtime validation tests and can be moved in a separate requests mutation transport wave."
+      },
+      {
+        "files": [
+          "src/screens/warehouse/warehouse.api.repo.transport.ts",
+          "src/screens/warehouse/warehouse.seed.transport.ts",
+          "src/screens/warehouse/warehouse.nameMap.ui.transport.ts"
+        ],
+        "reason": "Remaining warehouse casts are transport-owned provider boundary casts, not selected stock-report service source row parsing."
+      },
+      {
+        "files": [
+          "src/screens/buyer/*.test.ts",
+          "tests/buyer/*",
+          "tests/api/*"
+        ],
+        "reason": "Remaining buyer/request/warehouse hits are test/mock casts or contract literal strings outside production domain flow code."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/lib/api/requestCanonical.read.ts",
+      "count": 3,
+      "pattern": "as unknown as PagedQuery<UnknownRow>",
+      "flow": "requests canonical request item/read row parsing"
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "count": 7,
+      "pattern": "client as unknown as BuyerInboxScopeRpcTransport and as unknown as PagedQuery<...>",
+      "flow": "buyer inbox scope RPC, proposal lifecycle maps, rejected-row enrichment, request status gate, fallback row parsing"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "count": 3,
+      "pattern": "as unknown as PagedQuery<UnknownRow>",
+      "flow": "warehouse stock name-map source row loaders"
+    },
+    {
+      "file": "src/lib/api/_core.ts",
+      "count": 1,
+      "pattern": "return [] as unknown as T",
+      "flow": "shared rpc compatibility fallback typing"
+    }
+  ],
+  "selectedFindingsAfter": [],
+  "counts": {
+    "selectedUnsafePatternFindings": {
+      "before": 14,
+      "after": 0,
+      "reduced": 14
+    },
+    "selectedProductionPagedQueryUnknownAs": {
+      "before": 12,
+      "after": 0
+    },
+    "selectedBuyerScopeRpcUnknownAs": {
+      "before": 1,
+      "after": 0
+    },
+    "selectedCoreUnknownAsFallback": {
+      "before": 1,
+      "after": 0
+    }
+  },
+  "changes": [
+    {
+      "file": "src/lib/api/_core.ts",
+      "change": "Promoted guarded paged-query adapter to shared core API with runtime DTO row guard, malformed payload errors, provider error preservation, and null/undefined empty-list semantics."
+    },
+    {
+      "file": "src/lib/api/_core.transport.ts",
+      "change": "Added untyped RPC transport adapter that delegates through the existing transport runner without creating additional Supabase provider call sites."
+    },
+    {
+      "file": "src/lib/api/requestCanonical.read.ts",
+      "change": "Replaced request canonical PagedQuery casts with guarded row adapters before request item count and item row service mapping."
+    },
+    {
+      "file": "src/lib/api/buyer.ts",
+      "change": "Replaced buyer PagedQuery casts with guarded row adapters, removed buyer scope RPC unknown-as adapter, and removed direct row remapping casts in proposal/status/fallback flows."
+    },
+    {
+      "file": "src/screens/buyer/buyer.repo.read.transport.ts",
+      "change": "Re-exported the shared guarded paged-query adapter to preserve existing buyer transport contract imports."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.stockReports.service.ts",
+      "change": "Replaced warehouse stock name-map PagedQuery casts with guarded UnknownRow adapters."
+    }
+  ],
+  "runtimeGuardCoverage": {
+    "happyPath": "tests/api/guardedPagedQueryTransport.contract.test.ts parses guarded rows successfully",
+    "malformedRow": "tests/api/guardedPagedQueryTransport.contract.test.ts rejects malformed row; tests/api/buyerLegacyApiWindow.test.ts rejects malformed buyer fallback row before mapping",
+    "missingOptionalField": "tests/api/guardedPagedQueryTransport.contract.test.ts accepts rows with missing optional qty",
+    "nullValues": "tests/api/guardedPagedQueryTransport.contract.test.ts accepts nullable qty and null provider payload as empty list",
+    "providerError": "tests/api/guardedPagedQueryTransport.contract.test.ts preserves provider error object"
+  },
+  "freshScans": {
+    "selectedFilesUnsafePatterns": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- src/lib/api/requestCanonical.read.ts src/lib/api/buyer.ts src/screens/warehouse/warehouse.stockReports.service.ts src/screens/buyer/buyer.repo.read.transport.ts src/lib/api/_core.ts src/lib/api/_core.transport.ts",
+      "status": "PASS",
+      "findings": 0
+    },
+    "domainBroaderScan": {
+      "command": "git grep -n -E \"as any|unknown as|@ts-ignore|@ts-expect-error\" -- src/lib/api src/screens/buyer src/screens/warehouse tests/api tests/buyer tests/warehouse",
+      "status": "PASS_WITH_CLASSIFIED_REMAINDERS",
+      "remainingCategories": [
+        "non-selected request reopen/director transport or service-adjacent casts",
+        "warehouse transport-owned provider boundary casts",
+        "UI style/query typing casts",
+        "test/mock casts",
+        "contract literal strings"
+      ]
+    }
+  },
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/guardedPagedQueryTransport.contract.test.ts tests/api/buyerLegacyApiWindow.test.ts tests/api/buyerInboxLegacyApiWindowContract.contract.test.ts tests/api/buyerRepoReadTransport.contract.test.ts tests/api/requestsReadTransport.contract.test.ts tests/api/dictionaryReferenceReads.contract.test.ts tests/api/warehouseApiBffRouting.contract.test.ts tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts tests/architecture/transportOwnershipMap.test.ts tests/perf/performance-budget.test.ts",
+    "status": "PASS",
+    "suites": 10,
+    "tests": 49
+  },
+  "architectureScanner": {
+    "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "status": "PASS",
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 175,
+    "unclassifiedCurrentFindings": 0,
+    "productionRawLoopsUnapprovedFindings": 0
+  },
+  "gates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchEmpty": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "weakenedScannerTestsLint": false,
+    "deletedTestsForGreen": false,
+    "changedBusinessSemanticsForRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

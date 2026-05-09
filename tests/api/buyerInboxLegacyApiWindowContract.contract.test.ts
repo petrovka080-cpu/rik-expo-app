@@ -8,10 +8,15 @@ const read = (relativePath: string) =>
 describe("S-BUYER-INBOX-LEGACY-API-WINDOW-CONTRACT-1", () => {
   it("routes legacy listBuyerInbox through a typed bounded scope contract", () => {
     const source = read("src/lib/api/buyer.ts");
+    const transportSource = read("src/lib/api/_core.transport.ts");
 
+    expect(source).toContain('from "./_core.transport"');
+    expect(source).toContain("runUntypedRpcTransport");
     expect(source).toContain(
       'const BUYER_INBOX_LEGACY_SCOPE_RPC = "buyer_summary_inbox_scope_v1"',
     );
+    expect(transportSource).toContain("runUntypedRpcTransport");
+    expect(transportSource).toContain("runRpcCompatTransportVariant");
     expect(source).toContain("isBuyerInboxScopeRpcResponse");
     expect(source).toContain("loadBuyerInboxRowsFromScopeRpc");
     expect(source).toContain("p_offset: offsetGroups");
@@ -23,6 +28,7 @@ describe("S-BUYER-INBOX-LEGACY-API-WINDOW-CONTRACT-1", () => {
     expect(source).toContain("BUYER_INBOX_LEGACY_SCOPE_MAX_PAGES");
     expect(source).toContain("BuyerInboxLegacyWindowCeilingError");
     expect(source).not.toContain('client.rpc("list_buyer_inbox"');
+    expect(source).not.toContain("client as unknown as BuyerInboxScopeRpcTransport");
   });
 
   it("keeps compatibility fallback bounded, ordered, and fail-closed", () => {

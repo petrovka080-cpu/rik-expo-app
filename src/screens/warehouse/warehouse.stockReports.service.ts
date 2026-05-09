@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  loadPagedRowsWithCeiling,
+} from "../../lib/api/_core";
 import { validateRpcResponse } from "../../lib/api/queryBoundary";
 import { normalizeRuText } from "../../lib/text/encoding";
 import { trimMapSize } from "../../lib/cache/boundedCacheUtils";
@@ -118,11 +122,15 @@ async function loadNameMapOverrides(
 
     const q = await loadPagedRowsWithCeiling<UnknownRow>(
       () =>
-        supabase
-          .from("catalog_name_overrides")
-          .select("code, name_ru")
-          .in("code", codes)
-          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+        createGuardedPagedQuery(
+          supabase
+            .from("catalog_name_overrides")
+            .select("code, name_ru")
+            .in("code", codes)
+            .order("code", { ascending: true }),
+          isRecordRow,
+          "loadNameMapOverrides",
+        ),
       WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
     );
 
@@ -149,11 +157,15 @@ async function loadNameMapRikRu(
 
     const q = await loadPagedRowsWithCeiling<UnknownRow>(
       () =>
-        supabase
-          .from("v_rik_names_ru")
-          .select("code, name_ru")
-          .in("code", codes)
-          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+        createGuardedPagedQuery(
+          supabase
+            .from("v_rik_names_ru")
+            .select("code, name_ru")
+            .in("code", codes)
+            .order("code", { ascending: true }),
+          isRecordRow,
+          "loadNameMapRikRu",
+        ),
       WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
     );
 
@@ -180,11 +192,15 @@ async function loadNameMapLedgerUi(
 
     const q = await loadPagedRowsWithCeiling<UnknownRow>(
       () =>
-        supabase
-          .from("v_wh_balance_ledger_ui")
-          .select("code, name")
-          .in("code", codes)
-          .order("code", { ascending: true }) as unknown as PagedQuery<UnknownRow>,
+        createGuardedPagedQuery(
+          supabase
+            .from("v_wh_balance_ledger_ui")
+            .select("code, name")
+            .in("code", codes)
+            .order("code", { ascending: true }),
+          isRecordRow,
+          "loadNameMapLedgerUi",
+        ),
       WAREHOUSE_STOCK_REFERENCE_PAGE_DEFAULTS,
     );
 
