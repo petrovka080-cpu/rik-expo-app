@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  type PagedQuery,
+} from "../../lib/api/_core";
 
 export type WarehouseNameMapUiRow = Record<string, unknown>;
 export type WarehouseRefreshNameMapUiRpcArgs = {
@@ -11,10 +15,14 @@ export function createWarehouseNameMapUiQuery(
   supabase: SupabaseClient,
   codes: string[],
 ): PagedQuery<WarehouseNameMapUiRow> {
-  return supabase.from("warehouse_name_map_ui" as never)
-    .select("code, display_name")
-    .in("code", codes)
-    .order("code", { ascending: true }) as unknown as PagedQuery<WarehouseNameMapUiRow>;
+  return createGuardedPagedQuery(
+    supabase.from("warehouse_name_map_ui" as never)
+      .select("code, display_name")
+      .in("code", codes)
+      .order("code", { ascending: true }),
+    isRecordRow,
+    "warehouse.nameMapUi.warehouse_name_map_ui",
+  );
 }
 
 export const callWarehouseRefreshNameMapUiRpc = (

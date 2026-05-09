@@ -6,6 +6,11 @@ import {
   loadDirectSupabaseExceptionRegistry,
   scanDirectSupabaseBypasses,
 } from "../../../scripts/architecture_anti_regression_suite";
+import {
+  isWarehouseSeedProposalSnapshotRow,
+  isWarehouseSeedPurchaseItemRow,
+  isWarehouseSeedRequestItemMini,
+} from "./warehouse.seed.transport";
 
 const root = join(__dirname, "..", "..", "..");
 const read = (relativePath: string) =>
@@ -47,6 +52,42 @@ describe("warehouse seed runtime transport boundary", () => {
     expect(transport).toContain('onConflict: "incoming_id,purchase_item_id"');
     expect(transport).toContain("ignoreDuplicates: false");
     expect(transport).toContain("return supabase.rpc(fn, { p_incoming_id: incomingId });");
+    expect(transport).toContain("createGuardedPagedQuery");
+    expect(transport).toContain("isWarehouseSeedPurchaseItemRow");
+    expect(transport).toContain("isWarehouseSeedProposalSnapshotRow");
+    expect(transport).toContain("isWarehouseSeedRequestItemMini");
+    expect(transport).not.toContain("as unknown as PagedQuery");
+  });
+
+  it("rejects malformed seed transport rows while accepting optional nullable fields", () => {
+    expect(isWarehouseSeedRequestItemMini({
+      id: "request-item-1",
+      name_human: null,
+      rik_code: "MAT-1",
+      uom: "kg",
+    })).toBe(true);
+    expect(isWarehouseSeedRequestItemMini({ id: 42 })).toBe(false);
+
+    expect(isWarehouseSeedProposalSnapshotRow({
+      request_item_id: "request-item-1",
+      uom: null,
+      total_qty: "12.5",
+    })).toBe(true);
+    expect(isWarehouseSeedProposalSnapshotRow({ total_qty: { bad: true } })).toBe(false);
+
+    expect(isWarehouseSeedPurchaseItemRow({
+      id: "purchase-item-1",
+      request_item_id: "request-item-1",
+      qty: 3,
+      uom: null,
+      name_human: "Material",
+      rik_code: "MAT-1",
+      request_items: [{ id: "request-item-1", name_human: "Material" }],
+    })).toBe(true);
+    expect(isWarehouseSeedPurchaseItemRow({
+      id: "purchase-item-1",
+      request_items: [{ id: 42 }],
+    })).toBe(false);
   });
 
   it("moves warehouse seed scanner findings to transport and keeps exception registry clean", () => {

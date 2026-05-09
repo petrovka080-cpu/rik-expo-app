@@ -1,0 +1,160 @@
+{
+  "wave": 137,
+  "slug": "UNSAFE_CAST_WAREHOUSE_TRANSPORT_PAGED_GUARDS",
+  "createdAt": "2026-05-09T23:13:31.7391772+06:00",
+  "baseHead": "d4bea2aa8e5b8d92e0a637b796b1854ed2a1fe8f",
+  "goal": "Reduce production unsafe paged-query casts in warehouse transport files by replacing query-builder casts with guarded paged adapters.",
+  "gitPreflight": {
+    "gitFetchOrigin": "PASS",
+    "worktreeCleanAtStart": true,
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": "0/0"
+  },
+  "scope": {
+    "selectedFiles": [
+      "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
+      "src/screens/warehouse/warehouse.seed.transport.ts",
+      "src/screens/warehouse/warehouse.seed.transport.contract.test.ts",
+      "tests/api/warehouseApiBffRouting.contract.test.ts",
+      "tests/api/warehouseNameMapTransport.contract.test.ts"
+    ],
+    "reasonSelected": "Fresh unsafe-cast scan still showed production warehouse transport `as unknown as PagedQuery` casts on readonly paged reads. This batch is narrower and higher production priority than test-only mock casts.",
+    "notSelected": [
+      {
+        "files": [
+          "src/screens/warehouse/warehouse.seed.ts",
+          "src/screens/warehouse/WarehouseScreenContent.tsx",
+          "src/screens/warehouse/components/WarehouseSheet.tsx",
+          "src/screens/warehouse/hooks/useWarehouseReqHeads.ts"
+        ],
+        "reason": "These are adjacent warehouse casts but outside this transport paged-query boundary batch."
+      },
+      {
+        "files": [
+          "src/lib/api/proposals.ts",
+          "src/screens/contractor/contractor.workModalService.ts",
+          "src/screens/foreman/foreman.dicts.repo.ts"
+        ],
+        "reason": "Still important, but not part of the selected warehouse transport slice."
+      }
+    ]
+  },
+  "selectedFindingsBefore": [
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "count": 2,
+      "pattern": "as unknown as PagedQuery<WarehouseApiUnknownRow>",
+      "fix": "Wrapped wh_ledger incoming paged reads in createGuardedPagedQuery with isRecordRow."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
+      "count": 1,
+      "pattern": "as unknown as PagedQuery<WarehouseNameMapUiRow>",
+      "fix": "Wrapped warehouse_name_map_ui paged read in createGuardedPagedQuery with isRecordRow."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
+      "count": 3,
+      "pattern": "as unknown as PagedQuery<WarehouseSeed...>",
+      "fix": "Added explicit DTO guards for purchase item, proposal snapshot, and request item rows."
+    }
+  ],
+  "counts": {
+    "selectedProductionPagedQueryCasts": {
+      "before": 6,
+      "after": 0,
+      "reduced": 6
+    },
+    "selectedSourceBannedPatterns": {
+      "before": 6,
+      "after": 0
+    },
+    "productionDirectSupabaseServiceBypassFindings": 0,
+    "transportControlledFindings": 175,
+    "productionRawLoopUnapprovedFindings": 0
+  },
+  "changes": [
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "change": "Replaced two wh_ledger paged query casts with createGuardedPagedQuery and record-row validation."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
+      "change": "Replaced the name-map paged query cast with createGuardedPagedQuery."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
+      "change": "Added seed DTO guard functions and routed three seed paged queries through createGuardedPagedQuery."
+    },
+    {
+      "files": [
+        "src/screens/warehouse/warehouse.seed.transport.contract.test.ts",
+        "tests/api/warehouseApiBffRouting.contract.test.ts",
+        "tests/api/warehouseNameMapTransport.contract.test.ts"
+      ],
+      "change": "Updated focused contract tests to require guarded paged query adapters and malformed-row rejection."
+    }
+  ],
+  "focusedTests": {
+    "command": "npm test -- --runInBand tests/api/warehouseApiBffRouting.contract.test.ts tests/api/warehouseNameMapTransport.contract.test.ts src/screens/warehouse/warehouse.seed.transport.contract.test.ts tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts",
+    "status": "PASS",
+    "suites": 4,
+    "tests": 17
+  },
+  "gates": {
+    "typecheck": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "fullJestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "suitesPassed": 670,
+      "suitesSkipped": 1,
+      "testsPassed": 3978,
+      "testsSkipped": 1
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0,
+      "productionRawLoopUnapprovedFindings": 0
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deploy": false,
+    "ota": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedCatchBlock": false,
+    "addedTsIgnore": false,
+    "addedAsAny": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

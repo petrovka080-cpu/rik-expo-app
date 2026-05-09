@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  loadPagedRowsWithCeiling,
+} from "../../lib/api/_core";
 import {
   applySupabaseAbortSignal,
   throwIfAborted,
@@ -116,14 +120,18 @@ export async function callWarehouseApiSupabaseIncomingLedgerRows(
 ): Promise<WarehouseApiRepoResult> {
   return await loadPagedRowsWithCeiling<WarehouseApiUnknownRow>(
     () =>
-      supabase
-        .from("wh_ledger")
-        .select("code, uom_id, qty, moved_at, warehouseman_fio")
-        .eq("direction", "in")
-        .gte("moved_at", p.from ?? null)
-        .lte("moved_at", p.to ?? null)
-        .order("moved_at", { ascending: true })
-        .order("code", { ascending: true }) as unknown as PagedQuery<WarehouseApiUnknownRow>,
+      createGuardedPagedQuery(
+        supabase
+          .from("wh_ledger")
+          .select("code, uom_id, qty, moved_at, warehouseman_fio")
+          .eq("direction", "in")
+          .gte("moved_at", p.from ?? null)
+          .lte("moved_at", p.to ?? null)
+          .order("moved_at", { ascending: true })
+          .order("code", { ascending: true }),
+        isRecordRow,
+        "warehouse.api.wh_ledger.incoming",
+      ),
     WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS,
   );
 }
@@ -134,12 +142,16 @@ export async function callWarehouseApiSupabaseIncomingLineRows(
 ): Promise<WarehouseApiRepoResult> {
   return await loadPagedRowsWithCeiling<WarehouseApiUnknownRow>(
     () =>
-      supabase
-        .from("wh_ledger")
-        .select("code, uom_id, qty")
-        .eq("incoming_id", incomingId)
-        .eq("direction", "in")
-        .order("code", { ascending: true }) as unknown as PagedQuery<WarehouseApiUnknownRow>,
+      createGuardedPagedQuery(
+        supabase
+          .from("wh_ledger")
+          .select("code, uom_id, qty")
+          .eq("incoming_id", incomingId)
+          .eq("direction", "in")
+          .order("code", { ascending: true }),
+        isRecordRow,
+        "warehouse.api.wh_ledger.incoming_lines",
+      ),
     WAREHOUSE_API_BFF_REFERENCE_PAGE_DEFAULTS,
   );
 }

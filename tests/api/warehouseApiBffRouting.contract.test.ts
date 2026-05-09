@@ -73,6 +73,9 @@ describe("warehouse API BFF routing contract", () => {
 
     expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(12);
     expect(transportSource.match(/\.from\(/g) ?? []).toHaveLength(2);
+    expect(transportSource).toContain("createGuardedPagedQuery");
+    expect(transportSource).toContain("isRecordRow");
+    expect(transportSource).not.toContain("as unknown as PagedQuery");
     expect(reportsRepoSource).toContain("fetchWarehouseIssueLineRows");
     expect(reportsRepoSource).not.toContain("supabase.rpc(");
     expect(reportsRepoSource).not.toContain("supabase.from(");

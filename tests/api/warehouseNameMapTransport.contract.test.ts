@@ -27,8 +27,10 @@ describe("warehouse name-map transport boundary", () => {
     expect(transportSource).toContain("WarehouseRefreshNameMapUiRpcArgs");
   });
 
-  it("preserves query-builder chaining semantics", () => {
-    const order = jest.fn(() => "query");
+  it("preserves query-builder chaining semantics", async () => {
+    const rangeResult = { data: [{ code: "A", display_name: "Alpha" }], error: null };
+    const range = jest.fn(async () => rangeResult);
+    const order = jest.fn(() => ({ range }));
     const query = {
       select: jest.fn(() => ({
         in: jest.fn(() => ({ order })),
@@ -38,10 +40,32 @@ describe("warehouse name-map transport boundary", () => {
       from: jest.fn(() => query),
     };
 
-    expect(createWarehouseNameMapUiQuery(supabase as never, ["A", "B"])).toBe("query");
+    const pagedQuery = createWarehouseNameMapUiQuery(supabase as never, ["A", "B"]);
+
+    await expect(pagedQuery.range(0, 99)).resolves.toEqual(rangeResult);
     expect(supabase.from).toHaveBeenCalledWith("warehouse_name_map_ui");
     expect(query.select).toHaveBeenCalledWith("code, display_name");
     expect(order).toHaveBeenCalledWith("code", { ascending: true });
+    expect(range).toHaveBeenCalledWith(0, 99);
+  });
+
+  it("rejects malformed name-map rows before they reach the service layer", async () => {
+    const range = jest.fn(async () => ({ data: [null], error: null }));
+    const order = jest.fn(() => ({ range }));
+    const query = {
+      select: jest.fn(() => ({
+        in: jest.fn(() => ({ order })),
+      })),
+    };
+    const supabase = {
+      from: jest.fn(() => query),
+    };
+
+    const result = await createWarehouseNameMapUiQuery(supabase as never, ["A"]).range(0, 99);
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeInstanceOf(Error);
+    expect(String(result.error)).toContain("warehouse.nameMapUi.warehouse_name_map_ui");
   });
 
   it("keeps the refresh RPC provider call typed and transport-owned", async () => {

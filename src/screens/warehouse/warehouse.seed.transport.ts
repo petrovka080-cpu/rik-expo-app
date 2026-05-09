@@ -1,6 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { PagedQuery } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  type PagedQuery,
+} from "../../lib/api/_core";
 
 export type WarehouseSeedRequestItemMini = {
   id?: string | null;
@@ -48,6 +52,48 @@ export type WarehouseSeedEnsureRpcName =
   | "ensure_incoming_items"
   | "wh_incoming_seed_from_purchase";
 
+const isOptionalString = (value: unknown): boolean =>
+  value == null || typeof value === "string";
+
+const isOptionalNumberOrString = (value: unknown): boolean =>
+  value == null || typeof value === "number" || typeof value === "string";
+
+export const isWarehouseSeedRequestItemMini = (
+  value: unknown,
+): value is WarehouseSeedRequestItemMini =>
+  isRecordRow(value) &&
+  isOptionalString(value.id) &&
+  isOptionalString(value.name_human) &&
+  isOptionalString(value.rik_code) &&
+  isOptionalString(value.uom);
+
+const isWarehouseSeedRequestItemsRelation = (
+  value: unknown,
+): value is WarehouseSeedRequestItemMini | WarehouseSeedRequestItemMini[] | null | undefined =>
+  value == null ||
+  isWarehouseSeedRequestItemMini(value) ||
+  (Array.isArray(value) && value.every(isWarehouseSeedRequestItemMini));
+
+export const isWarehouseSeedPurchaseItemRow = (
+  value: unknown,
+): value is WarehouseSeedPurchaseItemRow =>
+  isRecordRow(value) &&
+  isOptionalString(value.id) &&
+  isOptionalString(value.request_item_id) &&
+  isOptionalNumberOrString(value.qty) &&
+  isOptionalString(value.uom) &&
+  isOptionalString(value.name_human) &&
+  isOptionalString(value.rik_code) &&
+  isWarehouseSeedRequestItemsRelation(value.request_items);
+
+export const isWarehouseSeedProposalSnapshotRow = (
+  value: unknown,
+): value is WarehouseSeedProposalSnapshotRow =>
+  isRecordRow(value) &&
+  isOptionalString(value.request_item_id) &&
+  isOptionalString(value.uom) &&
+  isOptionalNumberOrString(value.total_qty);
+
 export function selectWarehouseSeedIncomingPurchaseId(
   supabase: SupabaseClient,
   incomingId: string,
@@ -63,10 +109,11 @@ export function createWarehouseSeedPurchaseItemsQuery(
   supabase: SupabaseClient,
   purchaseId: string,
 ): PagedQuery<WarehouseSeedPurchaseItemRow> {
-  return supabase
-    .from("purchase_items")
-    .select(
-      `
+  return createGuardedPagedQuery(
+    supabase
+      .from("purchase_items")
+      .select(
+        `
       id,
       request_item_id,
       qty,
@@ -79,9 +126,12 @@ export function createWarehouseSeedPurchaseItemsQuery(
         uom
       )
     `,
-    )
-    .eq("purchase_id", purchaseId)
-    .order("id", { ascending: true }) as unknown as PagedQuery<WarehouseSeedPurchaseItemRow>;
+      )
+      .eq("purchase_id", purchaseId)
+      .order("id", { ascending: true }),
+    isWarehouseSeedPurchaseItemRow,
+    "warehouse.seed.purchase_items",
+  );
 }
 
 export function selectWarehouseSeedPurchaseProposalId(
@@ -99,22 +149,30 @@ export function createWarehouseSeedProposalSnapshotItemsQuery(
   supabase: SupabaseClient,
   proposalId: string,
 ): PagedQuery<WarehouseSeedProposalSnapshotRow> {
-  return supabase
-    .from("proposal_snapshot_items")
-    .select("request_item_id, uom, total_qty")
-    .eq("proposal_id", proposalId)
-    .order("request_item_id", { ascending: true }) as unknown as PagedQuery<WarehouseSeedProposalSnapshotRow>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("proposal_snapshot_items")
+      .select("request_item_id, uom, total_qty")
+      .eq("proposal_id", proposalId)
+      .order("request_item_id", { ascending: true }),
+    isWarehouseSeedProposalSnapshotRow,
+    "warehouse.seed.proposal_snapshot_items",
+  );
 }
 
 export function createWarehouseSeedRequestItemsQuery(
   supabase: SupabaseClient,
   requestItemIds: string[],
 ): PagedQuery<WarehouseSeedRequestItemMini> {
-  return supabase
-    .from("request_items")
-    .select("id, name_human, rik_code, uom")
-    .in("id", requestItemIds)
-    .order("id", { ascending: true }) as unknown as PagedQuery<WarehouseSeedRequestItemMini>;
+  return createGuardedPagedQuery(
+    supabase
+      .from("request_items")
+      .select("id, name_human, rik_code, uom")
+      .in("id", requestItemIds)
+      .order("id", { ascending: true }),
+    isWarehouseSeedRequestItemMini,
+    "warehouse.seed.request_items",
+  );
 }
 
 export function insertWarehouseSeedPurchaseItems(
