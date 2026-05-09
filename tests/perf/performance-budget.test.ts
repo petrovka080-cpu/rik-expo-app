@@ -404,6 +404,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "warehouse", "hooks", "useWarehouseReceiveApply.transport.ts"),
       path.join(SRC, "screens", "warehouse", "hooks", "useWarehouseReceiveApply.transport.contract.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAuditNightBattle117DirectorProposalDecisionTransportFiles = [
+      path.join(SRC, "screens", "director", "director.proposalDecision.transport.ts"),
+      path.join(SRC, "screens", "director", "director.proposalDecision.transport.contract.test.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle125MarketRepositoryTransportFiles = [
       path.join(SRC, "features", "market", "market.repository.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -672,6 +676,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditNightBattle114OfficeAccessTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle115WarehouseSeedTransportFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle116WarehouseReceiveApplyTransportFiles).toBeLessThanOrEqual(2);
+    expect(sAuditNightBattle117DirectorProposalDecisionTransportFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle125MarketRepositoryTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle126FilesStorageTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle130DirectorApproveTransportFiles).toBeLessThanOrEqual(1);
@@ -776,6 +781,7 @@ describe("performance budget — bundle module count", () => {
         sAuditNightBattle114OfficeAccessTransportFiles -
         sAuditNightBattle115WarehouseSeedTransportFiles -
         sAuditBattle116WarehouseReceiveApplyTransportFiles -
+        sAuditNightBattle117DirectorProposalDecisionTransportFiles -
         sAuditBattle125MarketRepositoryTransportFiles -
         sAuditBattle126FilesStorageTransportFiles -
         sAuditBattle130DirectorApproveTransportFiles -

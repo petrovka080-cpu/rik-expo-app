@@ -11,6 +11,10 @@ import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import type { ProposalItem } from "./director.types";
 import { runDirectorApprovePipelineAction } from "./director.approve.boundary";
+import {
+  callDirectorDecideProposalItemsRpc,
+  type DirectorProposalItemDecision,
+} from "./director.proposalDecision.transport";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 type Deps = {
@@ -193,9 +197,11 @@ export function useDirectorProposalActions({
 
       const beforeCount = (itemsByProp[pidStr] || items || []).length;
       const isLast = beforeCount <= 1;
-      const payload = [{ request_item_id: rid, decision: "rejected", comment: "Отклонено директором" }];
+      const payload: DirectorProposalItemDecision[] = [
+        { request_item_id: rid, decision: "rejected", comment: "Отклонено директором" },
+      ];
 
-      const res = await supabase.rpc("director_decide_proposal_items", {
+      const res = await callDirectorDecideProposalItemsRpc(supabase, {
         p_proposal_id: pidStr,
         p_decisions: payload,
         p_finalize: isLast,

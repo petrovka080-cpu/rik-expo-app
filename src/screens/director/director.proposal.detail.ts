@@ -8,6 +8,10 @@ import {
 } from "../../lib/api/proposalAttachments.service";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import type { ProposalAttachmentRow, ProposalItem } from "./director.types";
+import {
+  callDirectorDecideProposalItemsRpc,
+  type DirectorProposalItemDecision,
+} from "./director.proposalDecision.transport";
 
 type Deps = {
   supabase: any;
@@ -163,13 +167,13 @@ export function useDirectorProposalDetail({
       }
 
       const comment = (note || "").trim() || "Отклонено директором";
-      const payload = ids.map((requestItemId) => ({
+      const payload: DirectorProposalItemDecision[] = ids.map((requestItemId) => ({
         request_item_id: requestItemId,
         decision: "rejected",
         comment,
       }));
 
-      const res = await supabase.rpc("director_decide_proposal_items", {
+      const res = await callDirectorDecideProposalItemsRpc(supabase, {
         p_proposal_id: pidStr,
         p_decisions: payload,
         p_finalize: true,
