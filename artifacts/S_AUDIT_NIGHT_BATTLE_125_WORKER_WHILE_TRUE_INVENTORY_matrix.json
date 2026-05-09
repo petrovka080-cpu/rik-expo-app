@@ -1,0 +1,280 @@
+{
+  "wave": 125,
+  "slug": "WORKER_WHILE_TRUE_INVENTORY",
+  "goal": "Close audit risk C2 inventory for production-level while(true) and for(;;) loops in worker-adjacent code.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "6e593d9607727e3bbc13c4be08db3a419a2bc517",
+    "originMain": "6e593d9607727e3bbc13c4be08db3a419a2bc517",
+    "aheadBehind": "0/0"
+  },
+  "freshSearchCommands": [
+    {
+      "command": "git grep -n \"while *(true\" src tests scripts",
+      "status": "PASS",
+      "findingCount": 16
+    },
+    {
+      "command": "git grep -n \"for *(;;\" src tests scripts",
+      "status": "PASS",
+      "findingCount": 0
+    }
+  ],
+  "summary": {
+    "realLoopFindings": 6,
+    "testOnlyStringGuardFindings": 10,
+    "productionWorkerFindings": 1,
+    "mockLoopFindings": 0,
+    "forInfiniteFindings": 0,
+    "highestRiskWorkerForNextWave": "scripts/run-queue-worker.ts"
+  },
+  "productionWorkerAssessment": [
+    {
+      "file": "scripts/run-queue-worker.ts",
+      "line": 62,
+      "matchedCall": "while (true)",
+      "classification": "production worker",
+      "workerEntrypoint": "startServerQueueWorker -> startQueueWorker",
+      "cancellationMechanism": "partial: SIGINT and SIGTERM call handle.stop() and exit; startQueueWorker also has a stopped flag",
+      "backoff": "yes: runner sleeps 5000ms after bootstrap crash; inner worker sleeps pollIdleMs on idle/error",
+      "maxRetryOrIdleWait": "idle wait exists; no maximum bootstrap restart count on the runner loop",
+      "errorHandling": "yes: bootstrap catch logs a redacted message; inner worker records queue worker boundary failure and sleeps",
+      "shutdownPath": "yes: process signal handlers call stop and process.exit",
+      "riskPriority": "P0",
+      "nextWaveCandidate": true,
+      "notes": [
+        "The outer runner loop is unconditional and has no cancellation predicate or retry budget.",
+        "The inner worker loop is safer because it uses while(!stopped), bounded batch size/concurrency, idle backoff, metrics stop, and typed boundary failure recording.",
+        "Next wave should replace runner-level unconditional restart semantics with an explicit lifecycle/retry policy, without changing queue business semantics."
+      ]
+    }
+  ],
+  "nonWorkerRealLoopAssessment": [
+    {
+      "file": "scripts/director_parity_check_v1.js",
+      "line": 192,
+      "matchedCall": "while (true)",
+      "classification": "bounded/retry loop",
+      "productionWorker": false,
+      "cancellationMechanism": "none",
+      "backoff": "none",
+      "maxRetryOrIdleWait": "page exhaustion plus hard offset guard fromIdx > 1000000",
+      "errorHandling": "query errors are thrown",
+      "shutdownPath": "not applicable: one-shot parity script",
+      "riskPriority": "P2",
+      "notes": [
+        "Direct Supabase read pagination if the script is run.",
+        "Not a worker loop; bounded by page size, empty page, short page, and hard offset guard."
+      ]
+    },
+    {
+      "file": "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
+      "line": 177,
+      "matchedCall": "while (true)",
+      "classification": "false positive",
+      "productionWorker": false,
+      "cancellationMechanism": "not applicable",
+      "backoff": "not applicable",
+      "maxRetryOrIdleWait": "bounded by monotonic source.indexOf search and non-empty token guard",
+      "errorHandling": "not applicable",
+      "shutdownPath": "not applicable",
+      "riskPriority": "P4",
+      "notes": [
+        "String token counter, not process/work polling.",
+        "Terminates when indexOf returns -1."
+      ]
+    },
+    {
+      "file": "scripts/mojibake_db_repair.ts",
+      "line": 89,
+      "matchedCall": "while (true)",
+      "classification": "bounded/retry loop",
+      "productionWorker": false,
+      "cancellationMechanism": "none",
+      "backoff": "none",
+      "maxRetryOrIdleWait": "page exhaustion only; no explicit max page cap",
+      "errorHandling": "query/update errors are thrown",
+      "shutdownPath": "not applicable: one-shot repair script",
+      "riskPriority": "P1",
+      "notes": [
+        "Potential production DB write script if executed with admin credentials.",
+        "Not executed in this wave.",
+        "Should stay outside worker remediation unless the repair script is retained for future operational use."
+      ]
+    },
+    {
+      "file": "scripts/mojibake_elimination_verify.ts",
+      "line": 127,
+      "matchedCall": "while (true)",
+      "classification": "bounded/retry loop",
+      "productionWorker": false,
+      "cancellationMechanism": "none",
+      "backoff": "none",
+      "maxRetryOrIdleWait": "page exhaustion only; no explicit max page cap",
+      "errorHandling": "query errors return a skipped result with message",
+      "shutdownPath": "not applicable: one-shot verification script",
+      "riskPriority": "P2",
+      "notes": [
+        "Potential production DB read script if executed with admin credentials.",
+        "Not a worker loop and not executed in this wave."
+      ]
+    },
+    {
+      "file": "scripts/t1_text_encoding_proof.ts",
+      "line": 176,
+      "matchedCall": "while (true)",
+      "classification": "bounded/retry loop",
+      "productionWorker": false,
+      "cancellationMechanism": "none",
+      "backoff": "none",
+      "maxRetryOrIdleWait": "page exhaustion only; no explicit max page cap",
+      "errorHandling": "query errors return a skipped result with message",
+      "shutdownPath": "not applicable: one-shot proof script",
+      "riskPriority": "P2",
+      "notes": [
+        "Potential production DB read script if executed with admin credentials.",
+        "Not a worker loop and not executed in this wave."
+      ]
+    }
+  ],
+  "testOnlyStringGuardAssessment": [
+    {
+      "file": "tests/api/buyerInboxFullScanSafeRouting.contract.test.ts",
+      "line": 23,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/directorReportsAggregationContracts.contract.test.ts",
+      "line": 139,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts",
+      "line": 35,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts",
+      "line": 47,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/fetchAllUnboundedReadsCloseout.contract.test.ts",
+      "line": 48,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/referenceListPageCeiling.contract.test.ts",
+      "line": 17,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/referenceListPageCeiling.contract.test.ts",
+      "line": 25,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/topListPaginationBatch5A.contract.test.ts",
+      "line": 55,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/topListPaginationBatch6.contract.test.ts",
+      "line": 132,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts",
+      "line": 17,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    },
+    {
+      "file": "tests/api/warehouseLifecycleAndDictsUnboundedPaginationCloseout.contract.test.ts",
+      "line": 61,
+      "matchedCall": "while (true)",
+      "classification": "test-only loop guard",
+      "riskPriority": "P4"
+    }
+  ],
+  "selectedNextWaveWorker": {
+    "file": "scripts/run-queue-worker.ts",
+    "reason": "Only production worker finding from the mandated search; it has runner-level unconditional restart semantics with no max bootstrap retry budget.",
+    "proposedSafeScope": [
+      "Add or update a lifecycle contract test for the runner restart policy.",
+      "Introduce an explicit cancellation/retry policy around runner bootstrap without changing queue processing semantics.",
+      "Keep production DB behavior and queue job semantics unchanged."
+    ]
+  },
+  "focusedCommands": {
+    "gitGrepWhileTrue": "PASS",
+    "gitGrepForInfinite": "PASS",
+    "workerBoundaryTest": "PASS",
+    "typecheck": "PASS"
+  },
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "gateEvidence": {
+    "focusedTests": "npx jest src/workers/queueWorker.boundary.test.ts --runInBand; 4 tests passed",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 659 suites passed, 1 skipped, 3912 tests passed",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
