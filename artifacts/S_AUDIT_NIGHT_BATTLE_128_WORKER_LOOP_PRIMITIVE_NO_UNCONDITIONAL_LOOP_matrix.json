@@ -1,0 +1,141 @@
+{
+  "wave": 128,
+  "slug": "WORKER_LOOP_PRIMITIVE_NO_UNCONDITIONAL_LOOP",
+  "goal": "Remove the unconditional runtime loop from the shared worker-loop primitive and add a focused contract preventing while(true) or for(;;) from returning to that primitive.",
+  "gitPreflight": {
+    "fetch": "PASS",
+    "statusShort": "clean",
+    "statusSb": "## main...origin/main",
+    "head": "c45f46f3c9bd962125056be357572bf8a3c54936",
+    "originMain": "c45f46f3c9bd962125056be357572bf8a3c54936",
+    "aheadBehind": "0/0"
+  },
+  "freshScanBefore": {
+    "commands": [
+      "git grep -n \"while *(true\" src tests scripts || true",
+      "git grep -n \"for *(;;\" src tests scripts || true"
+    ],
+    "whileTrueFindings": {
+      "total": 16,
+      "productionRuntimePrimitiveRegression": [
+        {
+          "file": "src/lib/async/mapWithConcurrencyLimit.ts",
+          "line": 235,
+          "classification": "production async primitive regression",
+          "matchedCall": "while (true)"
+        }
+      ],
+      "productionScriptLoopsCarriedForward": [
+        "scripts/director_parity_check_v1.js:192",
+        "scripts/foreman_warehouse_pdf_android_runtime_verify.ts:177",
+        "scripts/mojibake_elimination_verify.ts:127",
+        "scripts/t1_text_encoding_proof.ts:176"
+      ],
+      "testOnlyGuards": 11
+    },
+    "forInfiniteFindings": 0,
+    "selectedRegression": "src/lib/async/mapWithConcurrencyLimit.ts runtime while(true) in the newly added worker-loop primitive"
+  },
+  "selectedFiles": [
+    "src/lib/async/mapWithConcurrencyLimit.ts",
+    "tests/async/cancellableWorkerLoop.test.ts"
+  ],
+  "reasonSelected": [
+    "The only new runtime C2 finding was introduced by the shared worker-loop primitive.",
+    "Replacing the unconditional loop preserves the primitive semantics while making cancellation the loop boundary.",
+    "A focused contract test blocks unconditional loop forms in the primitive source without broadening scanner allowlists.",
+    "No concrete worker behavior is changed in this wave."
+  ],
+  "before": {
+    "runtimePrimitiveLoopBoundary": "while (true) with an early abort return inside the loop body",
+    "c2InventoryImpact": "src/lib/async/mapWithConcurrencyLimit.ts appeared as a fresh runtime while(true) finding",
+    "contractGuardAgainstUnconditionalPrimitiveLoop": false
+  },
+  "after": {
+    "runtimePrimitiveLoopBoundary": "while (!isAbortStop(signal)) with an explicit aborted summary after loop exit",
+    "abortSemantics": "unchanged: abort exits with reason aborted",
+    "errorSemantics": "unchanged: fatal errors still throw by default and transient errors follow the onError decision",
+    "backoffSemantics": "unchanged: continuing iterations still sleep with at least MIN_WORKER_LOOP_BACKOFF_MS",
+    "concreteWorkerBehaviorChanged": false,
+    "contractGuardAgainstUnconditionalPrimitiveLoop": true
+  },
+  "freshScanAfter": {
+    "commands": [
+      "git grep -n \"while *(true\" src tests scripts || true",
+      "git grep -n \"for *(;;\" src tests scripts || true"
+    ],
+    "whileTrueFindings": {
+      "total": 15,
+      "productionRuntimePrimitiveRegression": 0,
+      "productionScriptLoopsCarriedForward": [
+        "scripts/director_parity_check_v1.js:192",
+        "scripts/foreman_warehouse_pdf_android_runtime_verify.ts:177",
+        "scripts/mojibake_elimination_verify.ts:127",
+        "scripts/t1_text_encoding_proof.ts:176"
+      ],
+      "testOnlyGuards": 11
+    },
+    "forInfiniteFindings": 0,
+    "forbiddenPatternScanOnTouchedFiles": {
+      "command": "rg -n \"catch \\{\\}|@ts-ignore|as any\" src/lib/async/mapWithConcurrencyLimit.ts tests/async/cancellableWorkerLoop.test.ts",
+      "status": "PASS",
+      "matches": 0
+    }
+  },
+  "focusedCommands": [
+    {
+      "command": "npx jest tests/async/cancellableWorkerLoop.test.ts src/lib/async/mapWithConcurrencyLimit.test.ts src/workers/queueWorker.boundary.test.ts tests/workers/queueRunnerLifecycle.contract.test.ts tests/perf/performance-budget.test.ts --runInBand",
+      "status": "PASS",
+      "summary": "5 suites passed, 34 tests passed"
+    },
+    {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    }
+  ],
+  "requiredGates": {
+    "focusedTests": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "fullJestRunInBand": "PASS",
+    "architectureScanner": "PASS",
+    "gitDiffCheck": "PASS",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "gateEvidence": {
+    "focusedTests": "npx jest tests/async/cancellableWorkerLoop.test.ts src/lib/async/mapWithConcurrencyLimit.test.ts src/workers/queueWorker.boundary.test.ts tests/workers/queueRunnerLifecycle.contract.test.ts tests/perf/performance-budget.test.ts --runInBand; 5 suites passed, 34 tests passed",
+    "typecheck": "npx tsc --noEmit --pretty false",
+    "lint": "npx expo lint",
+    "fullJestRunInBand": "npm test -- --runInBand; 662 suites passed, 1 skipped, 3925 tests passed, 1 skipped",
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "gitDiffCheck": "git diff --check",
+    "releaseVerifyPostPush": "PENDING"
+  },
+  "negativeConfirmations": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "addedEmptyCatch": false,
+    "addedTsIgnore": false,
+    "addedBroadAnyCast": false,
+    "weakenedScannerTestsOrLint": false,
+    "deletedTestsForGreen": false,
+    "businessSemanticRefactor": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

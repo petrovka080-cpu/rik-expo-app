@@ -232,11 +232,7 @@ export async function runCancellableWorkerLoop(
   let iterations = 0;
   let errors = 0;
 
-  while (true) {
-    if (isAbortStop(signal)) {
-      return buildSummary(label, iterations, errors, "aborted");
-    }
-
+  while (!isAbortStop(signal)) {
     if (options.shouldStop?.(buildStateContext(label, signal, iterations, errors))) {
       return buildSummary(label, iterations, errors, "stop_condition");
     }
@@ -323,4 +319,6 @@ export async function runCancellableWorkerLoop(
       throw sleepError;
     }
   }
+
+  return buildSummary(label, iterations, errors, "aborted");
 }

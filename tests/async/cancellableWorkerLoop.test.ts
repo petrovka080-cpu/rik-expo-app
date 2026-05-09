@@ -1,3 +1,6 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
 import {
   MIN_WORKER_LOOP_BACKOFF_MS,
   WorkerLoopAbortError,
@@ -18,6 +21,17 @@ const createImmediateClock = () => {
 };
 
 describe("runCancellableWorkerLoop", () => {
+  it("does not use unconditional loop forms in the runtime primitive", () => {
+    const source = readFileSync(
+      join(__dirname, "../../src/lib/async/mapWithConcurrencyLimit.ts"),
+      "utf8",
+    );
+
+    expect(source).not.toMatch(/while\s*\(\s*true\s*\)/);
+    expect(source).not.toMatch(/for\s*\(\s*;\s*;\s*\)/);
+    expect(source).toContain("while (!isAbortStop(signal))");
+  });
+
   it("exits on abort without sleeping again", async () => {
     const controller = new AbortController();
     const { clock, sleeps } = createImmediateClock();
