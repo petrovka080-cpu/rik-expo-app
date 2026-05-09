@@ -1,5 +1,6 @@
 import {
   client,
+  createGuardedPagedQuery,
   loadPagedRowsWithCeiling,
   normStr,
   parseErr,
@@ -18,15 +19,49 @@ type PagedSupplierResult<T> = {
   error: unknown;
 };
 
-type PagedSupplierQuery<T> = {
-  range: (from: number, to: number) => Promise<PagedSupplierResult<T>>;
+export type SupplierFileRow = {
+  id: string;
+  created_at: string | null;
+  file_name: string | null;
+  file_url: string | null;
+  group_key: string | null;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+const hasOptionalStringField = (
+  row: Record<string, unknown>,
+  field: string,
+): boolean => row[field] == null || typeof row[field] === "string";
+
+export const isSupplierRow = (value: unknown): value is Supplier =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  typeof value.name === "string" &&
+  hasOptionalStringField(value, "inn") &&
+  hasOptionalStringField(value, "bank_account") &&
+  hasOptionalStringField(value, "specialization") &&
+  hasOptionalStringField(value, "phone") &&
+  hasOptionalStringField(value, "email") &&
+  hasOptionalStringField(value, "website") &&
+  hasOptionalStringField(value, "address") &&
+  hasOptionalStringField(value, "contact_name") &&
+  hasOptionalStringField(value, "notes");
+
+export const isSupplierFileRow = (value: unknown): value is SupplierFileRow =>
+  isRecord(value) &&
+  typeof value.id === "string" &&
+  hasOptionalStringField(value, "created_at") &&
+  hasOptionalStringField(value, "file_name") &&
+  hasOptionalStringField(value, "file_url") &&
+  hasOptionalStringField(value, "group_key");
+
 const loadPagedSupplierRows = async <T>(
-  queryFactory: () => PagedSupplierQuery<T>,
+  queryFactory: () => PagedQuery<T>,
 ): Promise<PagedSupplierResult<T>> => {
   const result = await loadPagedRowsWithCeiling<T>(
-    () => queryFactory() as unknown as PagedQuery<T>,
+    queryFactory,
     SUPPLIER_LIST_PAGE_DEFAULTS,
   );
   return { data: result.data, error: result.error };
@@ -36,15 +71,19 @@ export async function listSuppliers(q?: string): Promise<Supplier[]> {
   try {
     const r = await loadPagedSupplierRows<Supplier>(
       () =>
-        client
-          .from("suppliers")
-          .select(
-            "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes",
-          )
-          .order("name", { ascending: true })
-          .order("id", {
-            ascending: true,
-          }) as unknown as PagedSupplierQuery<Supplier>,
+        createGuardedPagedQuery(
+          client
+            .from("suppliers")
+            .select(
+              "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes",
+            )
+            .order("name", { ascending: true })
+            .order("id", {
+              ascending: true,
+            }),
+          isSupplierRow,
+          "suppliers.listSuppliers.suppliers",
+        ),
     );
 
     if (r.error) throw r.error;
@@ -110,26 +149,18 @@ export async function upsertSupplier(
 
 export async function listSupplierFiles(supplierId: string) {
   try {
-    const r = await loadPagedSupplierRows<{
-      id: string;
-      created_at: string | null;
-      file_name: string | null;
-      file_url: string | null;
-      group_key: string | null;
-    }>(
+    const r = await loadPagedSupplierRows<SupplierFileRow>(
       () =>
-        client
-          .from("supplier_files")
-          .select("id,created_at,file_name,file_url,group_key")
-          .eq("supplier_id", supplierId)
-          .order("created_at", { ascending: false })
-          .order("id", { ascending: false }) as unknown as PagedSupplierQuery<{
-          id: string;
-          created_at: string | null;
-          file_name: string | null;
-          file_url: string | null;
-          group_key: string | null;
-        }>,
+        createGuardedPagedQuery(
+          client
+            .from("supplier_files")
+            .select("id,created_at,file_name,file_url,group_key")
+            .eq("supplier_id", supplierId)
+            .order("created_at", { ascending: false })
+            .order("id", { ascending: false }),
+          isSupplierFileRow,
+          "suppliers.listSupplierFiles.supplier_files",
+        ),
     );
     if (r.error) throw r.error;
     return r.data || [];

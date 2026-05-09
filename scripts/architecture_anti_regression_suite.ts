@@ -300,20 +300,20 @@ const emptyUnsafeCastPatternCounts = (): UnsafeCastPatternCounts => ({
   unsafe_unknown_as: 0,
 });
 const UNSAFE_CAST_RATCHET_BASELINE: UnsafeCastRatchetBaseline = {
-  total: 192,
-  productionSource: 49,
+  total: 189,
+  productionSource: 46,
   testSource: 143,
   byPattern: {
     as_any: 25,
     ts_ignore: 6,
     silent_catch: 15,
-    unsafe_unknown_as: 146,
+    unsafe_unknown_as: 143,
   },
   productionByPattern: {
     as_any: 0,
     ts_ignore: 0,
     silent_catch: 0,
-    unsafe_unknown_as: 49,
+    unsafe_unknown_as: 46,
   },
   testByPattern: {
     as_any: 25,
@@ -328,7 +328,7 @@ const UNSAFE_CAST_RATCHET_BASELINE: UnsafeCastRatchetBaseline = {
         as_any: 0,
         ts_ignore: 0,
         silent_catch: 0,
-        unsafe_unknown_as: 27,
+        unsafe_unknown_as: 24,
       },
     },
     {

@@ -1,0 +1,189 @@
+{
+  "wave": 138,
+  "slug": "UNSAFE_CAST_API_SUPPLIERS_GUARDED_PAGED_QUERY",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-09",
+  "scope": {
+    "selectedFiles": [
+      "src/lib/api/suppliers.ts",
+      "tests/api/suppliersGuardedPagedQuery.contract.test.ts",
+      "scripts/architecture_anti_regression_suite.ts"
+    ],
+    "reasonSelected": "Fresh unsafe-cast ratchet scan showed remaining production unsafe unknown casts concentrated in critical src/lib/api. src/lib/api/suppliers.ts had three paged-query transport casts that could be replaced by existing guarded paged query infrastructure without changing business semantics.",
+    "nonGoals": [
+      "no production code outside the supplier paged-query boundary",
+      "no provider or DB writes",
+      "no migrations",
+      "no production feature enablement",
+      "no broad unsafe-cast sweep"
+    ]
+  },
+  "freshScanBefore": {
+    "unsafeCastRatchet": {
+      "total": 192,
+      "productionSource": 49,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 146
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 49
+      },
+      "criticalFolderByPattern": {
+        "src/lib/api": {
+          "as_any": 0,
+          "ts_ignore": 0,
+          "silent_catch": 0,
+          "unsafe_unknown_as": 27
+        }
+      }
+    },
+    "targetFileFindings": {
+      "src/lib/api/suppliers.ts": {
+        "unsafe_unknown_as_paged_query_casts": 3,
+        "legacyPagedSupplierQueryType": true
+      }
+    }
+  },
+  "after": {
+    "unsafeCastRatchetBaseline": {
+      "total": 189,
+      "productionSource": 46,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 143
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 46
+      },
+      "criticalFolderByPattern": {
+        "src/lib/api": {
+          "as_any": 0,
+          "ts_ignore": 0,
+          "silent_catch": 0,
+          "unsafe_unknown_as": 24
+        }
+      }
+    },
+    "targetFileFindings": {
+      "src/lib/api/suppliers.ts": {
+        "unsafe_unknown_as_paged_query_casts": 0,
+        "legacyPagedSupplierQueryType": false,
+        "guardedPagedQueries": [
+          "suppliers.listSuppliers.suppliers",
+          "suppliers.listSupplierFiles.supplier_files"
+        ],
+        "dtoGuards": [
+          "isSupplierRow",
+          "isSupplierFileRow"
+        ]
+      }
+    },
+    "directSupabaseBoundary": {
+      "serviceBypassFindings": 0,
+      "serviceBypassFiles": 0,
+      "transportControlledFindings": 175,
+      "unclassifiedCurrentFindings": 0
+    },
+    "allowlistEntriesAdded": 0
+  },
+  "delta": {
+    "unsafeCastTotal": -3,
+    "productionSource": -3,
+    "unsafeUnknownAs": -3,
+    "srcLibApiUnsafeUnknownAs": -3,
+    "supplierPagedQueryCasts": -3
+  },
+  "contracts": [
+    {
+      "file": "tests/api/suppliersGuardedPagedQuery.contract.test.ts",
+      "coverage": [
+        "supplier reads use createGuardedPagedQuery",
+        "legacy supplier paged-query cast string is absent",
+        "legacy PagedSupplierQuery type is absent",
+        "valid supplier rows with missing optional fields and nulls are accepted",
+        "malformed supplier rows are rejected safely",
+        "provider errors are preserved",
+        "null and undefined paged payloads are handled as empty reads",
+        "supplier file metadata rows are DTO-guarded"
+      ]
+    },
+    {
+      "file": "scripts/architecture_anti_regression_suite.ts",
+      "coverage": [
+        "ratchet baseline reduced by the three removed production unsafe unknown casts",
+        "critical src/lib/api unsafe unknown cast baseline reduced from 27 to 24",
+        "no allowlist entry added"
+      ]
+    }
+  ],
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/api/suppliersGuardedPagedQuery.contract.test.ts tests/api/supplierFilesListDefaultLimit.contract.test.ts tests/api/guardedPagedQueryTransport.contract.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "671 passed, 1 skipped, 672 total suites; 3987 passed, 1 skipped, 3988 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json"
+    },
+    "targetUnsafeScan": {
+      "status": "PASS",
+      "command": "rg -n \"\\bunknown\\s+as\\b|\\bas\\s+any\\b|@ts-ignore|catch\\s*\\{\\}\" src\\lib\\api\\suppliers.ts tests\\api\\suppliersGuardedPagedQuery.contract.test.ts",
+      "summary": "no matches"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "catchEmptyAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
