@@ -48,7 +48,7 @@ After the queue worker migration, `scripts/director_parity_check_v1.js` was the 
 - full Jest runInBand: PASS
 - architecture scanner: PASS
 - git diff --check: PASS
-- release verify post-push: PENDING_POST_PUSH
+- release verify post-push: PASS
 
 Full Jest:
 
@@ -63,6 +63,21 @@ Architecture scanner:
 - serviceBypassFiles: 0
 - transportControlledFindings: 175
 - unclassifiedCurrentFindings: 0
+
+Post-push release verify:
+
+- `npm run release:verify -- --json`: PASS
+- head commit: `82b9acf9594637de08504d5d9a8992f13b87e8ec`
+- origin/main commit: `82b9acf9594637de08504d5d9a8992f13b87e8ec`
+- repo sync status: synced
+- worktree clean: true
+- head matches origin/main: true
+- release gates: tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, git-diff-check
+- OTA disposition: skip
+- otaPublished: false
+- easUpdateTriggered: false
+- easBuildTriggered: false
+- easSubmitTriggered: false
 
 ## Safety
 
