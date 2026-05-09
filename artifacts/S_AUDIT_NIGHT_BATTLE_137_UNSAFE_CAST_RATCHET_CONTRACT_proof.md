@@ -58,7 +58,7 @@ Any future allowlist entry must include file, line, pattern, reason, owner, and 
 - full Jest runInBand: PASS
 - architecture scanner: PASS
 - git diff --check: PASS
-- release verify post-push: PENDING_POST_PUSH
+- release verify post-push: PASS (`ff844f72ac4ca9f855d2008795f5ae309527f530`, synced, OTA skipped)
 
 ## Safety
 

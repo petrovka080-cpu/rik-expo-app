@@ -204,7 +204,11 @@
     },
     "releaseVerifyPostPush": {
       "command": "npm run release:verify -- --json",
-      "status": "PENDING_POST_PUSH"
+      "status": "PASS",
+      "verifiedCommit": "ff844f72ac4ca9f855d2008795f5ae309527f530",
+      "repoSyncStatus": "synced",
+      "otaDisposition": "skip",
+      "otaPublished": false
     }
   },
   "negativeConfirmations": {
