@@ -38,6 +38,20 @@ type BuyerItemEditorProps = {
 };
 
 const supplierKeyExtractor = (item: string, idx: number) => `${item}:${idx}`;
+const INLINE_SUPPLIER_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 3,
+  removeClippedSubviews: false,
+} as const;
+const MODAL_SUPPLIER_FLATLIST_TUNING = {
+  initialNumToRender: 12,
+  maxToRenderPerBatch: 12,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: Platform.OS !== "web",
+} as const;
 
 export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerItemEditorProps) {
   const {
@@ -409,6 +423,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 keyboardShouldPersistTaps="always"
                 style={styles.inlineSupplierList}
                 renderItem={renderInlineSupplierItem}
+                {...INLINE_SUPPLIER_FLATLIST_TUNING}
               />
             </View>
           ) : null}
@@ -484,6 +499,7 @@ export const BuyerItemEditor = React.memo(function BuyerItemEditor(props: BuyerI
                 keyboardShouldPersistTaps="always"
                 contentContainerStyle={styles.modalSupplierListContent}
                 renderItem={renderModalSupplierItem}
+                {...MODAL_SUPPLIER_FLATLIST_TUNING}
                 ListEmptyComponent={
                   <Text style={modalEmptyTextStyle}>
                     Ничего не найдено

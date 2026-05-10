@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,14 @@ const UI = {
   accent: "#0EA5E9",
   ok: "#22C55E",
 };
+const RESULTS_CARD_GAP = 12;
+const RESULTS_BOTTOM_SHEET_FLATLIST_TUNING = {
+  initialNumToRender: 4,
+  maxToRenderPerBatch: 4,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: false,
+} as const;
 
 type Row = {
   id: string;
@@ -50,6 +58,8 @@ type Props = {
 type ViewabilityChange = {
   viewableItems: (ViewToken & { item?: Row })[];
 };
+
+const resultsKeyExtractor = (item: Row) => item.id;
 
 function readMovementY(event: GestureResponderEvent): number {
   const nativeEvent = event.nativeEvent as unknown;
@@ -80,11 +90,11 @@ export default function ResultsBottomSheet({
   const MID = 0.42;
   const MAX = 0.75;
 
-  const setSnap = (h: number) => {
+  const setSnap = useCallback((h: number) => {
     const clamped = Math.max(MIN, Math.min(MAX, h));
     setSheetHeight(clamped);
     sheetHeightRef.current = clamped;
-  };
+  }, []);
 
   const panResponder = useMemo(
     () =>
@@ -103,12 +113,17 @@ export default function ResultsBottomSheet({
           setSnap(snapTo);
         },
       }),
-    [containerH],
+    [containerH, setSnap],
   );
 
   const screenW = Dimensions.get("window").width;
   const cardW = Math.min(screenW - 28, 420);
   const sidePad = Math.max(14, (screenW - cardW) / 2);
+  const itemExtent = cardW + RESULTS_CARD_GAP;
+  const resultsListContentStyle = useMemo(
+    () => [styles.resultsListContent, { paddingHorizontal: sidePad }],
+    [sidePad],
+  );
 
   const listRef = useRef<FlatList<Row> | null>(null);
 
@@ -141,9 +156,15 @@ export default function ResultsBottomSheet({
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
 
-  const toggle = () => setSnap(sheetHeightRef.current < MID ? MID : MIN);
+  const toggle = useCallback(() => setSnap(sheetHeightRef.current < MID ? MID : MIN), [setSnap]);
 
-  const renderCard = ({ item }: { item: Row }) => {
+  const getResultsItemLayout = useCallback((_: ArrayLike<Row> | null | undefined, index: number) => ({
+    length: itemExtent,
+    offset: itemExtent * index,
+    index,
+  }), [itemExtent]);
+
+  const renderCard = useCallback(({ item }: { item: Row }) => {
     const active = item.id === selectedId;
     const items = Array.isArray(item.items_json) ? item.items_json : [];
     const top = items.slice(0, 3);
@@ -211,7 +232,15 @@ export default function ResultsBottomSheet({
         </View>
       </View>
     );
-  };
+  }, [
+    cardW,
+    onOpenChat,
+    onOpenDetails,
+    onOpenShowcase,
+    onPick,
+    onSendOffer,
+    selectedId,
+  ]);
 
   return (
     <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
@@ -262,29 +291,36 @@ export default function ResultsBottomSheet({
             listRef.current = ref;
           }}
           data={rows}
-          keyExtractor={(item) => item.id}
-          estimatedItemSize={cardW + 12}
+          keyExtractor={resultsKeyExtractor}
+          estimatedItemSize={itemExtent}
           horizontal
           showsHorizontalScrollIndicator={false}
-          snapToInterval={cardW + 12}
+          snapToInterval={itemExtent}
           decelerationRate="fast"
-          contentContainerStyle={{ paddingHorizontal: sidePad, paddingBottom: 12 }}
-          ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+          contentContainerStyle={resultsListContentStyle}
+          ItemSeparatorComponent={ResultsItemSeparator}
           renderItem={renderCard}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
-          getItemLayout={(_, index) => ({
-            length: cardW + 12,
-            offset: (cardW + 12) * index,
-            index,
-          })}
+          getItemLayout={getResultsItemLayout}
+          {...RESULTS_BOTTOM_SHEET_FLATLIST_TUNING}
         />
       </View>
     </View>
   );
 }
 
+const ResultsItemSeparator = React.memo(function ResultsItemSeparator() {
+  return <View style={styles.itemSeparator} />;
+});
+
 const styles = StyleSheet.create({
+  resultsListContent: {
+    paddingBottom: 12,
+  },
+  itemSeparator: {
+    width: RESULTS_CARD_GAP,
+  },
   sheet: {
     position: "absolute",
     left: 0,

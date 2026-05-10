@@ -33,6 +33,25 @@ type BuyerMobileItemEditorModalProps = {
   onClose: () => void;
 };
 
+const EMPTY_FORM_ROWS: never[] = [];
+const supplierKeyExtractor = (item: string, idx: number) => `${item}:${idx}`;
+const emptyFormKeyExtractor = (_item: never, idx: number) => `form:${idx}`;
+const renderEmptyFormRow = () => null;
+const FORM_FLATLIST_TUNING = {
+  initialNumToRender: 1,
+  maxToRenderPerBatch: 1,
+  updateCellsBatchingPeriod: 64,
+  windowSize: 3,
+  removeClippedSubviews: false,
+} as const;
+const SUPPLIER_PICKER_FLATLIST_TUNING = {
+  initialNumToRender: 12,
+  maxToRenderPerBatch: 12,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: Platform.OS !== "web",
+} as const;
+
 function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps) {
   const {
     it,
@@ -99,6 +118,28 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
   const shellStyle = isWeb ? styles.webShell : styles.nativeShell;
   const cardStyle = isWeb ? styles.webCard : styles.nativeCard;
 
+  const closeSupplierPicker = useCallback(() => {
+    setIsSupplierModalOpen(false);
+  }, []);
+
+  const openSupplierPicker = useCallback(() => {
+    if (hasAnyCounterpartyOptions) setIsSupplierModalOpen(true);
+  }, [hasAnyCounterpartyOptions]);
+
+  const renderSupplierItem = useCallback(
+    ({ item }: { item: string }) => (
+      <Pressable onPress={() => commitSelectedSupplier(item)} style={styles.supplierItem}>
+        <Text style={styles.supplierItemText}>{item}</Text>
+      </Pressable>
+    ),
+    [commitSelectedSupplier],
+  );
+
+  const renderSupplierListEmpty = useCallback(
+    () => <Text style={styles.emptyListText}>Ничего не найдено</Text>,
+    [],
+  );
+
   const renderInfoChip = (label: string, value?: string) =>
     value ? (
       <View style={styles.infoChip}>
@@ -114,7 +155,7 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
       transparent={isWeb}
       animationType={isWeb ? "fade" : "slide"}
       presentationStyle={isWeb ? "overFullScreen" : "fullScreen"}
-      onRequestClose={() => setIsSupplierModalOpen(false)}
+      onRequestClose={closeSupplierPicker}
     >
       <SafeAreaView style={shellStyle}>
         <View style={cardStyle}>
@@ -124,7 +165,7 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
                 Выберите {counterpartyLabel.toLowerCase()}
               </Text>
               <Pressable
-                onPress={() => setIsSupplierModalOpen(false)}
+                onPress={closeSupplierPicker}
                 style={styles.roundCloseButton}
               >
                 <Ionicons name="close" size={24} color={P.text} />
@@ -143,17 +184,12 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
 
             <FlatList
               data={filteredSuppliers}
-              keyExtractor={(item, idx) => `${item}:${idx}`}
+              keyExtractor={supplierKeyExtractor}
               keyboardShouldPersistTaps="always"
               contentContainerStyle={styles.supplierListContent}
-              renderItem={({ item }) => (
-                <Pressable onPress={() => commitSelectedSupplier(item)} style={styles.supplierItem}>
-                  <Text style={styles.supplierItemText}>{item}</Text>
-                </Pressable>
-              )}
-              ListEmptyComponent={
-                <Text style={styles.emptyListText}>Ничего не найдено</Text>
-              }
+              renderItem={renderSupplierItem}
+              ListEmptyComponent={renderSupplierListEmpty}
+              {...SUPPLIER_PICKER_FLATLIST_TUNING}
             />
           </View>
         </View>
@@ -192,8 +228,10 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
 
           <FlatList
             keyboardShouldPersistTaps="handled"
-            data={[]}
-            renderItem={() => null}
+            data={EMPTY_FORM_ROWS}
+            keyExtractor={emptyFormKeyExtractor}
+            renderItem={renderEmptyFormRow}
+            {...FORM_FLATLIST_TUNING}
             ListHeaderComponent={
               <View style={styles.formContent}>
                 <View>
@@ -215,9 +253,7 @@ function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps)
                 <View>
                   <Text style={styles.fieldLabel}>{counterpartyLabel} *</Text>
                   <Pressable
-                    onPress={() => {
-                      if (hasAnyCounterpartyOptions) setIsSupplierModalOpen(true);
-                    }}
+                    onPress={openSupplierPicker}
                     disabled={!hasAnyCounterpartyOptions}
                     style={[
                       s.fieldInput,
