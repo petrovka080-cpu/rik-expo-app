@@ -10,11 +10,15 @@ const read = (relativePath: string) =>
 describe("MapScreen auth transport boundary", () => {
   it("keeps MapScreen auth reads behind the transport boundary", () => {
     const screenSource = read("src/components/map/MapScreen.tsx");
+    const controllerSource = read("src/components/map/useMapScreenController.tsx");
     const transportSource = read("src/components/map/MapScreen.auth.transport.ts");
 
-    expect(screenSource).toContain("MapScreen.auth.transport");
+    expect(screenSource).toContain("MapScreenContainer");
+    expect(controllerSource).toContain("MapScreen.auth.transport");
     expect(screenSource).not.toContain("supabase.auth.getUser");
+    expect(controllerSource).not.toContain("supabase.auth.getUser");
     expect(screenSource).not.toContain("auth.getUser");
+    expect(controllerSource).not.toContain("auth.getUser");
     expect(transportSource).toContain("auth.getUser");
     expect(transportSource).toContain("loadMapScreenCurrentAuthUser");
   });

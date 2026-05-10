@@ -230,6 +230,11 @@ describe("performance budget — bundle module count", () => {
     const sAuditNightBattle123MapScreenModelBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.model.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi17MapScreenControllerDecompositionAFiles = [
+      path.join(SRC, "components", "map", "MapScreenContainer.tsx"),
+      path.join(SRC, "components", "map", "MapScreenView.tsx"),
+      path.join(SRC, "components", "map", "useMapScreenController.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle46ContractorWorkModalTransportFiles = [
       path.join(SRC, "screens", "contractor", "contractor.workModalService.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -697,6 +702,7 @@ describe("performance budget — bundle module count", () => {
     expect(sNightUi13DirectorReportsModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sNightUi14ForemanAiQuickModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle123MapScreenModelBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi17MapScreenControllerDecompositionAFiles).toBeLessThanOrEqual(3);
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle48OfficeInviteHandoffBoundaryFiles).toBeLessThanOrEqual(1);
@@ -819,6 +825,7 @@ describe("performance budget — bundle module count", () => {
         sNightUi13DirectorReportsModalStyleBoundaryFiles -
         sNightUi14ForemanAiQuickModalStyleBoundaryFiles -
         sAuditNightBattle123MapScreenModelBoundaryFiles -
+        sNightUi17MapScreenControllerDecompositionAFiles -
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
         sAuditBattle48OfficeInviteHandoffBoundaryFiles -

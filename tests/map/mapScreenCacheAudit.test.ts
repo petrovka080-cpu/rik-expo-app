@@ -18,21 +18,32 @@ import { join } from "path";
 import { mapListingsKeys } from "../../src/components/map/useMapListingsQuery";
 
 const MAP_SCREEN_PATH = join(__dirname, "..", "..", "src", "components", "map", "MapScreen.tsx");
+const MAP_SCREEN_CONTROLLER_PATH = join(
+  __dirname,
+  "..",
+  "..",
+  "src",
+  "components",
+  "map",
+  "useMapScreenController.tsx",
+);
 const MAP_QUERY_PATH = join(__dirname, "..", "..", "src", "components", "map", "useMapListingsQuery.ts");
 
 describe("O3: MapScreen data-fetch ownership", () => {
   const mapScreenSource = readFileSync(MAP_SCREEN_PATH, "utf8");
+  const mapScreenControllerSource = readFileSync(MAP_SCREEN_CONTROLLER_PATH, "utf8");
   const mapQuerySource = readFileSync(MAP_QUERY_PATH, "utf8");
 
-  it("MapScreen imports useMapListingsQuery (not manual fetch)", () => {
-    expect(mapScreenSource).toContain("useMapListingsQuery");
+  it("MapScreen delegates query ownership to the controller", () => {
+    expect(mapScreenSource).toContain("MapScreenContainer");
+    expect(mapScreenControllerSource).toContain("useMapListingsQuery");
   });
 
-  it("MapScreen does NOT contain manual useEffect-based fetch", () => {
+  it("MapScreen controller does NOT contain manual useEffect-based fetch", () => {
     // Should not contain patterns like:
     // supabase.from("market_listings_map").select(...)
-    expect(mapScreenSource).not.toContain('from("market_listings_map")');
-    expect(mapScreenSource).not.toContain("from('market_listings_map')");
+    expect(mapScreenControllerSource).not.toContain('from("market_listings_map")');
+    expect(mapScreenControllerSource).not.toContain("from('market_listings_map')");
   });
 
   it("useMapListingsQuery uses @tanstack/react-query", () => {
@@ -52,36 +63,36 @@ describe("O3: MapScreen data-fetch ownership", () => {
 });
 
 describe("O3: MapScreen remaining refs are non-data", () => {
-  const mapScreenSource = readFileSync(MAP_SCREEN_PATH, "utf8");
+  const mapScreenControllerSource = readFileSync(MAP_SCREEN_CONTROLLER_PATH, "utf8");
 
   it("routeMetaCacheRef is a Map (per-click lookup cache, not data fetch)", () => {
-    expect(mapScreenSource).toContain("routeMetaCacheRef");
-    expect(mapScreenSource).toContain("useRef<Map<string, ListingRouteMeta>>");
+    expect(mapScreenControllerSource).toContain("routeMetaCacheRef");
+    expect(mapScreenControllerSource).toContain("useRef<Map<string, ListingRouteMeta>>");
   });
 
   it("regionTimerRef is a setTimeout handle (debounce, not data cache)", () => {
-    expect(mapScreenSource).toContain("regionTimerRef");
-    expect(mapScreenSource).toContain("clearTimeout(regionTimerRef");
+    expect(mapScreenControllerSource).toContain("regionTimerRef");
+    expect(mapScreenControllerSource).toContain("clearTimeout(regionTimerRef");
   });
 
   it("lastClusterTapRef is UI double-tap detection (not data cache)", () => {
-    expect(mapScreenSource).toContain("lastClusterTapRef");
+    expect(mapScreenControllerSource).toContain("lastClusterTapRef");
     // Pattern: stores { id, t } for double-tap timing
-    expect(mapScreenSource).toContain("now - last.t");
+    expect(mapScreenControllerSource).toContain("now - last.t");
   });
 
-  it("MapScreen has exactly 3 useRef calls (all classified)", () => {
-    const useRefCount = (mapScreenSource.match(/useRef[<(]/g) || []).length;
+  it("MapScreen controller has exactly 3 useRef calls (all classified)", () => {
+    const useRefCount = (mapScreenControllerSource.match(/useRef[<(]/g) || []).length;
     expect(useRefCount).toBe(3);
   });
 
-  it("no manual fetch dedup refs exist in MapScreen", () => {
+  it("no manual fetch dedup refs exist in MapScreen controller", () => {
     // No patterns like fetchSeqRef, fetchInFlightRef, requestRef
-    expect(mapScreenSource).not.toContain("fetchSeqRef");
-    expect(mapScreenSource).not.toContain("fetchInFlightRef");
-    expect(mapScreenSource).not.toContain("requestRef");
-    expect(mapScreenSource).not.toContain("reportsReqSeqRef");
-    expect(mapScreenSource).not.toContain("reportsCacheRef");
+    expect(mapScreenControllerSource).not.toContain("fetchSeqRef");
+    expect(mapScreenControllerSource).not.toContain("fetchInFlightRef");
+    expect(mapScreenControllerSource).not.toContain("requestRef");
+    expect(mapScreenControllerSource).not.toContain("reportsReqSeqRef");
+    expect(mapScreenControllerSource).not.toContain("reportsCacheRef");
   });
 });
 

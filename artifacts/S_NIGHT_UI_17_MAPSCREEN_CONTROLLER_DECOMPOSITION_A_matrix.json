@@ -1,0 +1,141 @@
+{
+  "wave": "S_NIGHT_UI_17_MAPSCREEN_CONTROLLER_DECOMPOSITION_A",
+  "final_status": "GREEN_MAPSCREEN_CONTROLLER_DECOMPOSITION_A",
+  "selected_files": [
+    "src/components/map/MapScreen.tsx",
+    "src/components/map/MapScreenContainer.tsx",
+    "src/components/map/MapScreenView.tsx",
+    "src/components/map/useMapScreenController.tsx",
+    "tests/map/mapScreenControllerDecompositionA.contract.test.ts",
+    "tests/map/mapScreenDecomposition.test.ts",
+    "tests/map/mapScreenCacheAudit.test.ts",
+    "tests/api/mapScreenMarketTransportBoundary.contract.test.ts",
+    "tests/api/mapScreenAuthTransport.contract.test.ts",
+    "tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "Fresh architecture scanner still showed MapScreen.tsx as a high-line map file. WAVE 17 required controller decomposition unless the file was already below budget.",
+  "start_state": {
+    "fetch": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_before_wave": true,
+    "base_commit": "2df9a216cb65dbb210b917f7171fb19c588c294f"
+  },
+  "scope": {
+    "screen": "MapScreen",
+    "target_reduction": {
+      "hooks": 10,
+      "lines": 80
+    },
+    "geolocation_behavior_changed": false,
+    "routing_changed": false,
+    "demand_offer_semantics_changed": false,
+    "new_provider_calls": false,
+    "production_config_changed": false
+  },
+  "before_metrics": {
+    "src/components/map/MapScreen.tsx": {
+      "lines": 655,
+      "hook_calls": 22,
+      "imports": 19,
+      "controller_files": 0,
+      "render_view_files": 0
+    }
+  },
+  "after_metrics": {
+    "src/components/map/MapScreen.tsx": {
+      "lines": 7,
+      "hook_calls": 0,
+      "imports": 2,
+      "role": "route shell"
+    },
+    "src/components/map/MapScreenContainer.tsx": {
+      "lines": 9,
+      "hook_call_matches": 1,
+      "role": "controller-to-view bridge"
+    },
+    "src/components/map/useMapScreenController.tsx": {
+      "lines": 505,
+      "hook_call_matches": 23,
+      "role": "typed map controller boundary"
+    },
+    "src/components/map/MapScreenView.tsx": {
+      "lines": 240,
+      "hook_calls": 0,
+      "role": "render-only map view"
+    }
+  },
+  "delta_metrics": {
+    "root_lines_delta": -648,
+    "root_hook_calls_delta": -22,
+    "root_imports_delta": -17,
+    "target_hooks_reduced_by_at_least_10": true,
+    "target_lines_reduced_by_at_least_80": true
+  },
+  "implementation": {
+    "controller_boundary": "useMapScreenController owns route filters, selected marker state, region/viewport state, cluster/list models, geolocation action, demand offer submit, and listing route actions.",
+    "container_boundary": "MapScreenContainer calls the controller and passes typed props into the view.",
+    "root_boundary": "MapScreen now only renders MapScreenContainer.",
+    "render_sections": "MapScreenView owns render-only map renderer, search/filter host, bottom sheet, demand details modal, fab, and offer modal.",
+    "encoding_safety": "Split was regenerated with UTF-8 reads/writes after detecting a PowerShell encoding draft issue; visible text semantics were preserved."
+  },
+  "focused_tests": {
+    "command": "npx jest tests/map/mapScreenControllerDecompositionA.contract.test.ts tests/map/mapScreenDecomposition.test.ts tests/map/mapScreenCacheAudit.test.ts tests/api/mapScreenMarketTransportBoundary.contract.test.ts tests/api/mapScreenAuthTransport.contract.test.ts tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "suites": 7,
+    "tests": 41
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_run_in_band": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING_POST_PUSH"
+  },
+  "full_test_summary": {
+    "command": "npm test -- --runInBand",
+    "status": "PASS",
+    "test_suites": {
+      "passed": 705,
+      "skipped": 1,
+      "total": 706
+    },
+    "tests": {
+      "passed": 4117,
+      "skipped": 1,
+      "total": 4118
+    }
+  },
+  "architecture_summary": {
+    "status": "PASS",
+    "direct_supabase_service_bypass_findings": 0,
+    "transport_boundary": "CLOSED",
+    "unresolved_unbounded_selects": 0,
+    "select_star_findings": 0,
+    "component_debt_mode": "report_only",
+    "map_screen_root_removed_from_top_by_lines": true,
+    "map_screen_root_removed_from_top_by_hooks": true
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secret_values_printed": true,
+    "no_typescript_ignore_directives": true,
+    "no_unsafe_any_casts": true,
+    "no_empty_catch_blocks": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_native_or_ota_builds": true,
+    "no_production_mutation_route_enablement": true,
+    "no_cache_or_rate_limit_changes": true,
+    "no_new_provider_calls": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -9,14 +9,19 @@ const read = (relativePath: string) =>
 describe("S_AUDIT_BATTLE_99_MAP_SCREEN_MARKET_TRANSPORT_BOUNDARY", () => {
   it("keeps MapScreen UI state local while routing market reads and writes through transport", () => {
     const screen = read("src/components/map/MapScreen.tsx");
+    const controller = read("src/components/map/useMapScreenController.tsx");
     const transport = read("src/components/map/MapScreen.market.transport.ts");
 
-    expect(screen).toContain("loadMapScreenCurrentAuthUser()");
-    expect(screen).toContain("submitMapScreenDemandOffer");
-    expect(screen).toContain("loadMapScreenListingRouteMeta");
+    expect(screen).toContain("MapScreenContainer");
+    expect(controller).toContain("loadMapScreenCurrentAuthUser()");
+    expect(controller).toContain("submitMapScreenDemandOffer");
+    expect(controller).toContain("loadMapScreenListingRouteMeta");
     expect(screen).not.toContain("../../lib/supabaseClient");
+    expect(controller).not.toContain("../../lib/supabaseClient");
     expect(screen).not.toContain('from("demand_offers")');
     expect(screen).not.toContain('from("market_listings")');
+    expect(controller).not.toContain('from("demand_offers")');
+    expect(controller).not.toContain('from("market_listings")');
 
     expect(transport).toContain('supabase.from("demand_offers").insert');
     expect(transport).toContain('supabase.from("market_listings").select');

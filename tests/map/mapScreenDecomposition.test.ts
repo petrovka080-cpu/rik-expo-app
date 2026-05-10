@@ -3,6 +3,7 @@ import { join } from "path";
 import { MAP_SCREEN_UI } from "../../src/components/map/MapScreen.styles";
 
 const MAP_SCREEN_PATH = join(__dirname, "..", "..", "src", "components", "map", "MapScreen.tsx");
+const MAP_SCREEN_VIEW_PATH = join(__dirname, "..", "..", "src", "components", "map", "MapScreenView.tsx");
 const MAP_SCREEN_STYLES_PATH = join(
   __dirname,
   "..",
@@ -15,11 +16,14 @@ const MAP_SCREEN_STYLES_PATH = join(
 
 describe("MapScreen decomposition", () => {
   const mapScreenSource = readFileSync(MAP_SCREEN_PATH, "utf8");
+  const mapScreenViewSource = readFileSync(MAP_SCREEN_VIEW_PATH, "utf8");
   const stylesSource = readFileSync(MAP_SCREEN_STYLES_PATH, "utf8");
 
   it("keeps static styles in the dedicated typed boundary", () => {
-    expect(mapScreenSource).toContain('from "./MapScreen.styles"');
+    expect(mapScreenSource).toContain("MapScreenContainer");
+    expect(mapScreenViewSource).toContain('from "./MapScreen.styles"');
     expect(mapScreenSource).not.toContain("StyleSheet.create({");
+    expect(mapScreenViewSource).not.toContain("StyleSheet.create({");
     expect(stylesSource).toContain("StyleSheet.create({");
   });
 

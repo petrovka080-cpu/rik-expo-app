@@ -14,6 +14,8 @@ const selectedSourceFiles = [
   "src/components/foreman/useCalcFields.ts",
   "src/components/foreman/WorkTypePicker.tsx",
   "src/components/map/MapScreen.tsx",
+  "src/components/map/MapScreenView.tsx",
+  "src/components/map/useMapScreenController.tsx",
 ] as const;
 
 const weakCastPatterns = [
