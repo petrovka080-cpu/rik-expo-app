@@ -1,0 +1,111 @@
+{
+  "wave": "S_NIGHT_UI_15_FOREMAN_SUBCONTRACT_DRAFT_SECTIONS_SPLIT",
+  "final_status": "GREEN_FOREMAN_SUBCONTRACT_DRAFT_SECTIONS_SPLIT",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/screens/foreman/ForemanSubcontractTab.sections.tsx",
+    "src/screens/foreman/ForemanSubcontractDraftSections.tsx",
+    "tests/foreman/foremanSubcontractDraftSections.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "ForemanSubcontractTab.sections.tsx was one of the highest current report-only UI debt files by line count, and the draft/detail modal bodies were presentational, transport-free, and safe to split without changing business logic.",
+  "target_interpretation": {
+    "chosen_priority": "Reduce top UI line-count debt through a durable render-section extraction instead of adding temporary hooks or touching production behavior.",
+    "public_contract": "ForemanSubcontractTab.sections.tsx remains the facade and re-exports DraftSheetBody and SubcontractDetailsModalBody for existing imports.",
+    "business_logic_scope": "No controller, transport, DB, cache, rate-limit, or accounting/domain behavior changed."
+  },
+  "route_scope": {
+    "changed": false,
+    "cache_changed": false,
+    "rate_limit_changed": false,
+    "transport_changed": false,
+    "supabase_changed": false,
+    "db_or_env_changed": false
+  },
+  "before_metrics": {
+    "foreman_subcontract_sections_lines": 726,
+    "foreman_subcontract_sections_hook_calls": 5,
+    "foreman_subcontract_sections_imports": 23,
+    "foreman_subcontract_draft_sections_files": 0,
+    "component_debt_god_component_count": 28,
+    "scanner_top_by_lines_included_sections_file": true
+  },
+  "after_metrics": {
+    "foreman_subcontract_sections_lines": 410,
+    "foreman_subcontract_sections_hook_calls": 3,
+    "foreman_subcontract_sections_imports": 19,
+    "foreman_subcontract_draft_sections_lines": 324,
+    "foreman_subcontract_draft_sections_hook_calls": 2,
+    "foreman_subcontract_draft_sections_imports": 15,
+    "component_debt_god_component_count": 27,
+    "scanner_top_by_lines_included_sections_file": false
+  },
+  "delta_metrics": {
+    "foreman_subcontract_sections_lines": -316,
+    "foreman_subcontract_sections_hook_calls": -2,
+    "foreman_subcontract_sections_imports": -4,
+    "foreman_subcontract_draft_sections_files": 1,
+    "component_debt_god_component_count": -1
+  },
+  "focused_tests": {
+    "command": "npx jest tests/foreman/foremanSubcontractDraftSections.decomposition.test.ts src/screens/foreman/ForemanSubcontractTab.sections.test.tsx tests/foreman/foreman.subcontractController.decomposition.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "test_suites": 4,
+    "tests": 23
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING"
+  },
+  "full_test_summary": {
+    "test_suites_passed": 701,
+    "test_suites_skipped": 1,
+    "test_suites_total": 702,
+    "tests_passed": 4102,
+    "tests_skipped": 1,
+    "tests_total": 4103
+  },
+  "architecture_scanner_summary": {
+    "status": "PASS",
+    "direct_supabase_service_bypass": 0,
+    "unresolved_unbounded_selects": 0,
+    "select_star_findings": 0,
+    "component_debt_report_only": true
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_business_logic_change": true,
+    "no_transport_changes": true,
+    "no_db_env_or_prod_calls": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_15_FOREMAN_SUBCONTRACT_DRAFT_SECTIONS_SPLIT_matrix.json",
+    "artifacts/S_NIGHT_UI_15_FOREMAN_SUBCONTRACT_DRAFT_SECTIONS_SPLIT_proof.md"
+  ]
+}

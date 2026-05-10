@@ -191,6 +191,9 @@ describe("performance budget — bundle module count", () => {
     const sNightUi13BuyerScreenRenderSectionFiles = [
       path.join(SRC, "screens", "buyer", "components", "BuyerScreenRenderSections.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi15ForemanSubcontractDraftSectionFiles = [
+      path.join(SRC, "screens", "foreman", "ForemanSubcontractDraftSections.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRuntime01BuyerScreenHookPressureBoundaryFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenUiState.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenChromeModel.ts"),
@@ -671,6 +674,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
     expect(sNightUi12BuyerScreenControllerFiles).toBeLessThanOrEqual(1);
     expect(sNightUi13BuyerScreenRenderSectionFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi15ForemanSubcontractDraftSectionFiles).toBeLessThanOrEqual(1);
     expect(sRuntime01BuyerScreenHookPressureBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sRuntime03ForemanSubcontractHookPressureBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sRuntime06BuyerItemEditorModelFiles).toBeLessThanOrEqual(1);
@@ -789,6 +793,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle12BuyerScreenStoreViewModelFiles -
         sNightUi12BuyerScreenControllerFiles -
         sNightUi13BuyerScreenRenderSectionFiles -
+        sNightUi15ForemanSubcontractDraftSectionFiles -
         sRuntime01BuyerScreenHookPressureBoundaryFiles -
         sRuntime03ForemanSubcontractHookPressureBoundaryFiles -
         sRuntime06BuyerItemEditorModelFiles -
