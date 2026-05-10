@@ -80,6 +80,7 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
   it("adds the extracted buyer owner-boundary modules", () => {
     const requiredFiles = [
       "src/screens/buyer/buyer.screen.model.ts",
+      "src/screens/buyer/hooks/useBuyerScreenController.ts",
       "src/screens/buyer/hooks/useBuyerScreenUiState.ts",
       "src/screens/buyer/hooks/useBuyerScreenChromeModel.ts",
       "src/screens/buyer/components/BuyerSearchBar.tsx",
@@ -91,35 +92,40 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     }
   });
 
-  it("keeps BuyerScreen as orchestration while moving view/config noise out", () => {
+  it("keeps BuyerScreen as a composition shell while controller owns orchestration", () => {
     const source = readRepoFile("src/screens/buyer/BuyerScreen.tsx");
+    const controllerSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenController.ts");
     const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
     const chromeSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenChromeModel.ts");
     const sideEffectsSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenSideEffects.ts");
 
-    expect(source).toContain("useBuyerScreenUiState");
-    expect(source).toContain("useBuyerScreenChromeModel");
-    expect(chromeSource).toContain("buildBuyerScreenViewModel");
-    expect(source).toContain("useBuyerScreenLoadingPublisher");
-    expect(sideEffectsSource).toContain("buildBuyerScreenLoadingState");
-    expect(source).toContain("useBuyerScreenContentProps");
-    expect(contentSource).toContain("export function useBuyerScreenContentProps");
+    expect(source).toContain("useBuyerScreenController");
     expect(source).toContain("<BuyerScreenContent");
+    expect(controllerSource).toContain("useBuyerScreenUiState");
+    expect(controllerSource).toContain("useBuyerScreenChromeModel");
+    expect(chromeSource).toContain("buildBuyerScreenViewModel");
+    expect(controllerSource).toContain("useBuyerScreenLoadingPublisher");
+    expect(sideEffectsSource).toContain("buildBuyerScreenLoadingState");
+    expect(controllerSource).toContain("useBuyerScreenContentProps");
+    expect(contentSource).toContain("export function useBuyerScreenContentProps");
     expect(source).not.toContain("TextInput");
     expect(source).not.toContain("RoleScreenLayout");
     expect(source).not.toContain("Ionicons");
     expect(source).not.toContain("BuyerScreenSheets");
-    expect((source.match(/^import /gm) || []).length).toBeLessThan(61);
-    expect(source.split("\n").length).toBeLessThan(727);
+    expect(source).not.toContain("supabase");
+    expect(source).not.toContain("listBuyerInbox");
+    expect(source).not.toContain("proposalSubmit");
+    expect((source.match(/^import /gm) || []).length).toBeLessThanOrEqual(3);
+    expect(source.split("\n").length).toBeLessThanOrEqual(12);
   });
 
   it("ratchets BuyerScreen root hook pressure below the runtime risk budget", () => {
     const source = readRepoFile("src/screens/buyer/BuyerScreen.tsx");
     const hookCalls = source.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
 
-    expect(hookCalls.length).toBeLessThanOrEqual(36);
-    expect(source).toContain("useBuyerScreenUiState({ supabase, alertUser: screenAlertUser })");
-    expect(source).toContain("useBuyerScreenChromeModel");
+    expect(hookCalls).toEqual(["useBuyerScreenController("]);
+    expect(source).not.toContain("useBuyerScreenUiState({ supabase, alertUser: screenAlertUser })");
+    expect(source).not.toContain("useBuyerScreenChromeModel");
     expect(source).not.toContain("useBuyerScreenStoreViewModel();");
   });
 

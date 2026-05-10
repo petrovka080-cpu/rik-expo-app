@@ -35,15 +35,21 @@ describe("buyer observability boundary", () => {
       path.join(process.cwd(), "src/screens/buyer/BuyerScreen.tsx"),
       "utf8",
     );
+    const controllerSource = fs.readFileSync(
+      path.join(process.cwd(), "src/screens/buyer/hooks/useBuyerScreenController.ts"),
+      "utf8",
+    );
     const uiStateSource = fs.readFileSync(
       path.join(process.cwd(), "src/screens/buyer/hooks/useBuyerScreenUiState.ts"),
       "utf8",
     );
 
-    expect(buyerScreenSource).toContain("./hooks/useBuyerScreenUiState");
+    expect(buyerScreenSource).toContain("./hooks/useBuyerScreenController");
+    expect(controllerSource).toContain("./useBuyerScreenUiState");
     expect(uiStateSource).toContain("../buyer.observability");
     expect(uiStateSource).toContain("reportBuyerTabsScrollToStartFailure(error)");
     expect(buyerScreenSource).not.toContain("../../lib/observability/swallowedError");
+    expect(controllerSource).not.toContain("../../../lib/observability/swallowedError");
     expect(uiStateSource).not.toContain("../../../lib/observability/swallowedError");
   });
 });

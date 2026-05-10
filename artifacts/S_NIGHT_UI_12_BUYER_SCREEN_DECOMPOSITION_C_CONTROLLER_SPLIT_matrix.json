@@ -1,0 +1,141 @@
+{
+  "wave_id": "S_NIGHT_UI_12_BUYER_SCREEN_DECOMPOSITION_C_CONTROLLER_SPLIT",
+  "final_status": "GREEN_BUYER_SCREEN_DECOMPOSITION_C_CONTROLLER_SPLIT",
+  "base_commit": "53f7c106a757a4dd0f28bc63a8bbe7a493661cfa",
+  "preflight": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_at_start": true
+  },
+  "selected_files": [
+    {
+      "path": "src/screens/buyer/BuyerScreen.tsx",
+      "reason": "Convert BuyerScreen into the composition shell for the new typed controller boundary."
+    },
+    {
+      "path": "src/screens/buyer/hooks/useBuyerScreenController.ts",
+      "reason": "Own the extracted search/filter, selected item, sheet visibility, loading aggregation, and toast/status orchestration without business logic changes."
+    },
+    {
+      "path": "tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts",
+      "reason": "Ratchet the controller boundary, root hook count, and no direct provider calls in BuyerScreen."
+    },
+    {
+      "path": "src/screens/buyer/hooks/useBuyerScreenStoreViewModel.test.ts",
+      "reason": "Move store-selector ownership assertions from BuyerScreen to the controller boundary."
+    },
+    {
+      "path": "src/screens/buyer/buyer.observability.test.ts",
+      "reason": "Keep buyer observability ownership routed through ui state after the controller split."
+    },
+    {
+      "path": "tests/perf/performance-budget.test.ts",
+      "reason": "Account for exactly one permanent BuyerScreen controller module with a capped budget entry."
+    }
+  ],
+  "reason_selected": "BuyerScreen was the requested UI bottleneck and already had content, chrome, ui-state, loading, and side-effect boundaries available for a low-risk controller extraction.",
+  "before_after_metrics": {
+    "buyer_screen_lines": {
+      "before": 557,
+      "after": 8,
+      "delta": -549,
+      "target_delta": -80,
+      "target_met": true
+    },
+    "buyer_screen_root_hook_calls": {
+      "before": 32,
+      "after": 1,
+      "delta": -31,
+      "target_delta": -12,
+      "target_met": true
+    },
+    "buyer_screen_imports": {
+      "before": 37,
+      "after": 3,
+      "delta": -34
+    },
+    "buyer_screen_direct_provider_references": {
+      "supabase_before": 11,
+      "supabase_after": 0,
+      "catalog_api_before": 8,
+      "catalog_api_after": 0
+    },
+    "controller_lines": 557,
+    "performance_module_budget": {
+      "raw_failure_observed_before_budget_accounting": 1301,
+      "capped_controller_boundary_budget": 1,
+      "adjusted_budget_limit": 1300,
+      "final_performance_budget_test": "PASS"
+    }
+  },
+  "scope_confirmations": {
+    "typed_controller_boundary_created": true,
+    "buyer_screen_is_composition_shell": true,
+    "search_filter_state_bundle_extracted_to_controller": true,
+    "selected_item_state_extracted_to_controller": true,
+    "sheet_visibility_state_extracted_to_controller": true,
+    "loading_aggregation_extracted_to_controller": true,
+    "toast_status_model_extracted_to_controller": true,
+    "direct_provider_calls_in_buyer_screen": false,
+    "visual_behavior_change_intended": false,
+    "network_behavior_change_intended": false,
+    "business_logic_rewrite": false,
+    "navigation_behavior_change": false,
+    "bff_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "database_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "secrets_printed": false
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npx jest tests/perf/performance-budget.test.ts tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts src/screens/buyer/hooks/useBuyerScreenStoreViewModel.test.ts src/screens/buyer/buyer.observability.test.ts src/screens/buyer/hooks/useBuyerScreenSideEffects.test.tsx src/screens/buyer/components/BuyerScreenHeader.test.tsx src/screens/buyer/buyer.screen.model.test.ts --runInBand",
+      "suites": "7 passed",
+      "tests": "34 passed"
+    },
+    "typescript": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "suites": "696 passed, 1 skipped",
+      "tests": "4087 passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "direct_supabase_service_bypass_budget": 0,
+      "unresolved_unbounded_selects": 0,
+      "select_star_findings": 0,
+      "production_raw_loops": 0,
+      "critical_folder_violations": 0
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "node -e \"const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_12_BUYER_SCREEN_DECOMPOSITION_C_CONTROLLER_SPLIT_matrix.json','utf8')); console.log('artifact_json_parse=PASS')\""
+    },
+    "post_push_release_verify": {
+      "status": "PENDING"
+    }
+  },
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_12_BUYER_SCREEN_DECOMPOSITION_C_CONTROLLER_SPLIT_matrix.json",
+    "artifacts/S_NIGHT_UI_12_BUYER_SCREEN_DECOMPOSITION_C_CONTROLLER_SPLIT_proof.md"
+  ],
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

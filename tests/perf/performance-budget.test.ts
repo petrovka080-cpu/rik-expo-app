@@ -181,6 +181,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi12BuyerScreenControllerFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenController.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRuntime01BuyerScreenHookPressureBoundaryFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenUiState.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenChromeModel.ts"),
@@ -629,6 +632,7 @@ describe("performance budget — bundle module count", () => {
     // warehouse seed transport boundary plus a focused src-owned contract test.
     // S_AUDIT_BATTLE_116_SINGLE_CALL_LOW_RISK_BYPASS_SWEEP_A adds one permanent
     // warehouse receive apply RPC transport boundary plus a focused src-owned contract test.
+    // S_NIGHT_UI_12 adds one permanent BuyerScreen controller hook boundary.
     // S_RUNTIME_01 adds two permanent BuyerScreen hook-pressure view-model boundaries.
     // S_RUNTIME_03 adds one permanent Foreman subcontract hook-pressure view-model boundary.
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
@@ -650,6 +654,7 @@ describe("performance budget — bundle module count", () => {
     expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle11AccountantScreenViewModelFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
+    expect(sNightUi12BuyerScreenControllerFiles).toBeLessThanOrEqual(1);
     expect(sRuntime01BuyerScreenHookPressureBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sRuntime03ForemanSubcontractHookPressureBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sRuntime06BuyerItemEditorModelFiles).toBeLessThanOrEqual(1);
@@ -763,6 +768,7 @@ describe("performance budget — bundle module count", () => {
         sBuyerScreenSideEffectBoundaryFiles -
         sAuditBattle11AccountantScreenViewModelFiles -
         sAuditBattle12BuyerScreenStoreViewModelFiles -
+        sNightUi12BuyerScreenControllerFiles -
         sRuntime01BuyerScreenHookPressureBoundaryFiles -
         sRuntime03ForemanSubcontractHookPressureBoundaryFiles -
         sRuntime06BuyerItemEditorModelFiles -

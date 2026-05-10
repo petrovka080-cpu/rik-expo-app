@@ -80,15 +80,17 @@ describe("useBuyerScreenStoreViewModel", () => {
 
   it("keeps BuyerScreen store selector pressure behind one typed hook", () => {
     const screenSource = readBuyerFile("BuyerScreen.tsx");
+    const controllerSource = readBuyerFile("hooks/useBuyerScreenController.ts");
     const uiStateSource = readBuyerFile("hooks/useBuyerScreenUiState.ts");
     const hookSource = readBuyerFile("hooks/useBuyerScreenStoreViewModel.ts");
     const hookCalls = screenSource.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
 
-    expect(screenSource).toContain('import { useBuyerScreenUiState } from "./hooks/useBuyerScreenUiState";');
-    expect(screenSource).toContain("} = useBuyerScreenUiState({ supabase, alertUser: screenAlertUser });");
+    expect(screenSource).toContain('import { useBuyerScreenController } from "./hooks/useBuyerScreenController";');
+    expect(controllerSource).toContain('import { useBuyerScreenUiState } from "./useBuyerScreenUiState";');
+    expect(controllerSource).toContain("} = useBuyerScreenUiState({ supabase, alertUser: screenAlertUser });");
     expect(screenSource).not.toContain("useBuyerStore(");
     expect(screenSource).not.toContain("useBuyerScreenStoreViewModel();");
-    expect(hookCalls.length).toBeLessThanOrEqual(36);
+    expect(hookCalls).toEqual(["useBuyerScreenController("]);
 
     expect(hookSource).toContain("export type BuyerScreenStoreViewModel");
     expect(hookSource).toContain("selectBuyerScreenStoreViewModel");
