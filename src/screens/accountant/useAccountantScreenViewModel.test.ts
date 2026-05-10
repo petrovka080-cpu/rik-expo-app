@@ -61,13 +61,15 @@ describe("useAccountantScreenViewModel", () => {
 
   it("keeps AccountantScreen selector pressure behind one typed view-model hook", () => {
     const screenSource = readAccountantFile("AccountantScreen.tsx");
+    const compositionSource = readAccountantFile("useAccountantScreenComposition.tsx");
     const viewModelSource = readAccountantFile("useAccountantScreenViewModel.ts");
     const screenHookCalls = screenSource.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
 
-    expect(screenSource).toContain('import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";');
+    expect(screenSource).toContain('import { useAccountantScreenComposition } from "./useAccountantScreenComposition";');
+    expect(compositionSource).toContain('import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";');
     expect(screenSource).not.toContain("useAccountantUiStore(");
-    expect(screenSource).toContain("} = useAccountantScreenViewModel();");
-    expect(screenHookCalls.length).toBeLessThanOrEqual(33);
+    expect(compositionSource).toContain("} = useAccountantScreenViewModel();");
+    expect(screenHookCalls).toEqual(["useAccountantScreenComposition("]);
 
     expect(viewModelSource).toContain("export type AccountantScreenViewModel");
     expect(viewModelSource).toContain("selectAccountantScreenViewModel");

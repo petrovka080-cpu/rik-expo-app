@@ -1,0 +1,115 @@
+{
+  "wave": "S_NIGHT_UI_14_ACCOUNTANT_SCREEN_DECOMPOSITION_A",
+  "final_status": "GREEN_ACCOUNTANT_SCREEN_DECOMPOSITION_A",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/screens/accountant/AccountantScreen.tsx",
+    "src/screens/accountant/useAccountantScreenComposition.tsx",
+    "src/screens/accountant/components/AccountantScreenView.tsx",
+    "src/screens/accountant/useAccountantScreenViewModel.test.ts",
+    "src/screens/accountant/accountant.screen.boundaries.test.ts",
+    "tests/accountant/accountantScreenDecompositionA.contract.test.ts",
+    "tests/api/uiUnsafeCastBatchA.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "AccountantScreen.tsx was the second large UI composition surface and still owned controller state, modal/sheet state, summary model wiring, and render markup in one file.",
+  "target_interpretation": {
+    "root_screen_target": "Reduce the AccountantScreen root component, not the domain hooks or accounting logic internals.",
+    "controller_boundary": "useAccountantScreenComposition owns the existing orchestration and passes a typed model to a presentational view.",
+    "render_boundary": "AccountantScreenView owns JSX composition without hooks or transport calls."
+  },
+  "route_scope": {
+    "changed": false,
+    "cache_changed": false,
+    "rate_limit_changed": false,
+    "transport_changed": false,
+    "supabase_changed": false,
+    "db_or_env_changed": false
+  },
+  "before_metrics": {
+    "accountant_screen_lines": 604,
+    "accountant_screen_hook_calls": 32,
+    "accountant_screen_imports": 42,
+    "composition_hook_files": 0,
+    "presentational_view_files": 0
+  },
+  "after_metrics": {
+    "accountant_screen_lines": 10,
+    "accountant_screen_hook_calls": 1,
+    "accountant_screen_imports": 3,
+    "accountant_screen_composition_lines": 513,
+    "accountant_screen_composition_hook_calls": 33,
+    "accountant_screen_view_lines": 318,
+    "accountant_screen_view_hook_calls": 0,
+    "composition_hook_files": 1,
+    "presentational_view_files": 1
+  },
+  "delta_metrics": {
+    "accountant_screen_lines": -594,
+    "accountant_screen_hook_calls": -31,
+    "accountant_screen_imports": -39,
+    "composition_hook_files": 1,
+    "presentational_view_files": 1
+  },
+  "target_result": {
+    "hooks_reduced_by_at_least_20": true,
+    "lines_reduced_by_at_least_120": true,
+    "accounting_business_logic_changed": false,
+    "transport_changed": false,
+    "db_env_or_prod_calls_changed": false
+  },
+  "focused_tests": {
+    "command": "npx jest tests/api/uiUnsafeCastBatchA.contract.test.ts tests/accountant/accountantScreenDecompositionA.contract.test.ts src/screens/accountant/useAccountantScreenViewModel.test.ts src/screens/accountant/accountant.screen.boundaries.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "test_suites": 5,
+    "tests": 23
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING"
+  },
+  "full_test_summary": {
+    "test_suites_passed": 700,
+    "test_suites_skipped": 1,
+    "test_suites_total": 701,
+    "tests_passed": 4099,
+    "tests_skipped": 1,
+    "tests_total": 4100
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_accounting_business_logic_change": true,
+    "no_transport_changes": true,
+    "no_db_env_or_prod_calls": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_14_ACCOUNTANT_SCREEN_DECOMPOSITION_A_matrix.json",
+    "artifacts/S_NIGHT_UI_14_ACCOUNTANT_SCREEN_DECOMPOSITION_A_proof.md"
+  ]
+}

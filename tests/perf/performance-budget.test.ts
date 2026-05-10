@@ -177,6 +177,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "accountant", "useAccountantScreenViewModel.ts"),
       path.join(SRC, "screens", "accountant", "useAccountantScreenViewModel.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi14AccountantScreenDecompositionAFiles = [
+      path.join(SRC, "screens", "accountant", "useAccountantScreenComposition.tsx"),
+      path.join(SRC, "screens", "accountant", "components", "AccountantScreenView.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle12BuyerScreenStoreViewModelFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.test.ts"),
@@ -663,6 +667,7 @@ describe("performance budget — bundle module count", () => {
     expect(sDirectSupabaseBypassDirectorPdfSourceTransportFiles).toBeLessThanOrEqual(1);
     expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle11AccountantScreenViewModelFiles).toBeLessThanOrEqual(2);
+    expect(sNightUi14AccountantScreenDecompositionAFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
     expect(sNightUi12BuyerScreenControllerFiles).toBeLessThanOrEqual(1);
     expect(sNightUi13BuyerScreenRenderSectionFiles).toBeLessThanOrEqual(1);
@@ -780,6 +785,7 @@ describe("performance budget — bundle module count", () => {
         sDirectSupabaseBypassDirectorPdfSourceTransportFiles -
         sBuyerScreenSideEffectBoundaryFiles -
         sAuditBattle11AccountantScreenViewModelFiles -
+        sNightUi14AccountantScreenDecompositionAFiles -
         sAuditBattle12BuyerScreenStoreViewModelFiles -
         sNightUi12BuyerScreenControllerFiles -
         sNightUi13BuyerScreenRenderSectionFiles -
