@@ -8,6 +8,8 @@ import {
   Platform,
   Animated,
   type FlatList,
+  type StyleProp,
+  type ViewStyle,
 } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
@@ -38,6 +40,67 @@ const DIRECTOR_TOP_TABS: TopTabItem[] = [
   { key: "Склад", label: "Склад" },
   { key: "Отчёты", label: "Отчёты" },
 ];
+
+type DirectorFinanceDashboardCard = { key: "debt" | "spend" };
+
+const DIRECTOR_FINANCE_DASHBOARD_CARDS: DirectorFinanceDashboardCard[] = [
+  { key: "debt" },
+  { key: "spend" },
+];
+
+const DIRECTOR_TOP_TABS_FLATLIST_TUNING = {
+  initialNumToRender: 5,
+  maxToRenderPerBatch: 5,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 3,
+  removeClippedSubviews: false,
+} as const;
+
+const DIRECTOR_REQUEST_GROUPS_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: false,
+} as const;
+
+const DIRECTOR_PROPOSAL_HEADS_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: false,
+} as const;
+
+const DIRECTOR_FINANCE_FLATLIST_TUNING = {
+  initialNumToRender: 2,
+  maxToRenderPerBatch: 2,
+  updateCellsBatchingPeriod: 64,
+  windowSize: 3,
+  removeClippedSubviews: false,
+} as const;
+
+const DIRECTOR_TOP_TABS_CONTENT_CONTAINER_STYLE: StyleProp<ViewStyle> = [
+  officeRoleChrome.switcherRow,
+  {
+    paddingTop: 2,
+    paddingBottom: 2,
+    alignItems: "center",
+    paddingRight: 12,
+  },
+];
+
+const directorTopTabKeyExtractor = (item: TopTabItem) => item.key;
+
+const directorForemanGroupKeyExtractor = (group: Group, index: number) =>
+  group?.request_id ? `req:${String(group.request_id)}` : `g:${index}`;
+
+const directorProposalHeadKeyExtractor = (proposal: ProposalHead, index: number) =>
+  proposal?.id ? `pp:${proposal.id}` : `pp:${index}`;
+
+const directorFinanceCardKeyExtractor = (item: DirectorFinanceDashboardCard) => item.key;
+
+const getDirectorFinanceCardType = (item: DirectorFinanceDashboardCard) => item.key;
 
 type Props = {
   HEADER_MAX: number;
@@ -94,6 +157,22 @@ export default function DirectorDashboard(p: Props) {
   const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
   const contentTopPad = Math.max(p.HEADER_MAX + 16 + headerPadTop, p.HEADER_MIN + 16 + headerPadTop);
+  const requestGroupsContentContainerStyle = React.useMemo(
+    () => ({ paddingTop: contentTopPad, paddingBottom: 24 }),
+    [contentTopPad],
+  );
+  const proposalHeadsContentContainerStyle = React.useMemo(
+    () => ({
+      paddingTop: contentTopPad,
+      paddingHorizontal: 16,
+      paddingBottom: 24,
+    }),
+    [contentTopPad],
+  );
+  const financeContentContainerStyle = React.useMemo(
+    () => ({ paddingTop: contentTopPad, paddingBottom: 24 }),
+    [contentTopPad],
+  );
 
   const topTabsRef = React.useRef<FlatList<TopTabItem> | null>(null);
   const topTabXRef = React.useRef<Record<string, { x: number; w: number }>>({});
@@ -193,8 +272,9 @@ export default function DirectorDashboard(p: Props) {
         <FlashList
         ref={topTabsRef}
         data={DIRECTOR_TOP_TABS}
-        keyExtractor={(item) => item.key}
+        keyExtractor={directorTopTabKeyExtractor}
         estimatedItemSize={112}
+        {...DIRECTOR_TOP_TABS_FLATLIST_TUNING}
         horizontal
         showsHorizontalScrollIndicator={false}
         bounces={false}
@@ -221,12 +301,7 @@ export default function DirectorDashboard(p: Props) {
             </Pressable>
           );
         }}
-        contentContainerStyle={[officeRoleChrome.switcherRow, {
-          paddingTop: 2,
-          paddingBottom: 2,
-          alignItems: "center",
-          paddingRight: 12,
-        }]}
+        contentContainerStyle={DIRECTOR_TOP_TABS_CONTENT_CONTAINER_STYLE}
       />
 
       {String(p.dirTab) === "Заявки" ? (
@@ -375,8 +450,9 @@ export default function DirectorDashboard(p: Props) {
           {p.tab === "foreman" ? (
             <FlashList
               data={p.groups}
-              keyExtractor={(g, idx) => (g?.request_id ? `req:${String(g.request_id)}` : `g:${idx}`)}
+              keyExtractor={directorForemanGroupKeyExtractor}
               estimatedItemSize={108}
+              {...DIRECTOR_REQUEST_GROUPS_FLATLIST_TUNING}
               keyboardShouldPersistTaps="handled"
               renderItem={renderForemanGroup}
               ListEmptyComponent={
@@ -387,13 +463,14 @@ export default function DirectorDashboard(p: Props) {
               refreshControl={refreshRowsControl}
               onScroll={p.onScroll}
               scrollEventThrottle={16}
-              contentContainerStyle={{ paddingTop: contentTopPad, paddingBottom: 24 }}
+              contentContainerStyle={requestGroupsContentContainerStyle}
             />
           ) : (
             <FlashList
               data={p.propsHeads}
-              keyExtractor={(x, idx) => (x?.id ? `pp:${x.id}` : `pp:${idx}`)}
+              keyExtractor={directorProposalHeadKeyExtractor}
               estimatedItemSize={160}
+              {...DIRECTOR_PROPOSAL_HEADS_FLATLIST_TUNING}
               renderItem={renderProposalHead}
               refreshControl={refreshPropsControl}
               onEndReached={() => {
@@ -414,20 +491,17 @@ export default function DirectorDashboard(p: Props) {
               }
               onScroll={p.onScroll}
               scrollEventThrottle={16}
-              contentContainerStyle={{
-                paddingTop: contentTopPad,
-                paddingHorizontal: 16,
-                paddingBottom: 24,
-              }}
+              contentContainerStyle={proposalHeadsContentContainerStyle}
             />
           )}
         </>
       ) : String(p.dirTab) === "Финансы" ? (
         <FlashList
-          data={[{ key: "debt" }, { key: "spend" }]}
-          keyExtractor={(x) => x.key}
+          data={DIRECTOR_FINANCE_DASHBOARD_CARDS}
+          keyExtractor={directorFinanceCardKeyExtractor}
           estimatedItemSize={132}
-          getItemType={(item) => item.key}
+          {...DIRECTOR_FINANCE_FLATLIST_TUNING}
+          getItemType={getDirectorFinanceCardType}
           renderItem={({ item }) => {
             if (item.key === "debt") {
               return (
@@ -497,10 +571,7 @@ export default function DirectorDashboard(p: Props) {
               ) : null}
             </View>
           }
-          contentContainerStyle={{
-            paddingTop: contentTopPad,
-            paddingBottom: 24,
-          }}
+          contentContainerStyle={financeContentContainerStyle}
           onScroll={p.onScroll}
           scrollEventThrottle={16}
         />

@@ -1,0 +1,95 @@
+{
+  "wave": "S_RUNTIME_05_FLATLIST_TUNING_BATCH_C",
+  "final_status": "GREEN_FLATLIST_TUNING_BATCH_C",
+  "baseline": {
+    "head": "b778c30b28cc77bc5165d9b66dcc202df6e27ee2",
+    "origin_main": "b778c30b28cc77bc5165d9b66dcc202df6e27ee2",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true
+  },
+  "selected_files": [
+    "src/screens/director/DirectorDashboard.tsx",
+    "tests/perf/flatListTuningBatchC.contract.test.ts"
+  ],
+  "reason_selected": "Continues the FlatList audit after batches A and B. DirectorDashboard is the remaining priority candidate from the original audit list and this wave is intentionally single-component to avoid expanding scope.",
+  "metrics": {
+    "src/screens/director/DirectorDashboard.tsx": {
+      "flash_list_tags_before": 4,
+      "flash_list_tags_after": 4,
+      "tuning_props_before": 0,
+      "tuning_props_after": 20,
+      "stable_key_extractor_props_before": 0,
+      "stable_key_extractor_props_after": 4,
+      "stable_render_item_props_before": 2,
+      "stable_render_item_props_after": 2,
+      "inline_data_arrays_before": 1,
+      "inline_data_arrays_after": 0
+    }
+  },
+  "gates": [
+    {
+      "name": "focused_component_list_tests",
+      "command": "npm test -- --runInBand tests/perf/flatListTuningBatchC.contract.test.ts tests/perf/flatListTuningBatchB.contract.test.ts src/screens/director/director.observability.test.tsx tests/e2e/maestroCriticalBusinessPhase1.contract.test.ts",
+      "status": "PASS",
+      "summary": "4 suites passed, 17 tests passed"
+    },
+    {
+      "name": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    {
+      "name": "expo_lint",
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    {
+      "name": "full_jest",
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "summary": "680 suites passed, 1 skipped; 4030 tests passed, 1 skipped"
+    },
+    {
+      "name": "architecture_scanner",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "summary": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED; service bypass 0; unclassified direct Supabase findings 0; cache route scoped to marketplace.catalog.search"
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    {
+      "name": "artifact_json_parse",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_05_FLATLIST_TUNING_BATCH_C_matrix.json','utf8'))\"",
+      "status": "PASS"
+    },
+    {
+      "name": "post_push_release_verify",
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  ],
+  "negative_confirmations": {
+    "list_ordering_change": false,
+    "item_identity_change": false,
+    "selection_or_focus_behavior_change": false,
+    "visual_behavior_change": false,
+    "data_fetching_change": false,
+    "pagination_behavior_change": false,
+    "route_list_expanded": false,
+    "cache_enabled": false,
+    "rate_limit_touched": false,
+    "supabase_project_change": false,
+    "spend_cap_change": false,
+    "realtime_load_test": false,
+    "destructive_or_unbounded_dml": false,
+    "ota_eas_testflight_native_build": false,
+    "production_mutation_route_broad_enablement": false,
+    "force_push": false,
+    "tags": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
