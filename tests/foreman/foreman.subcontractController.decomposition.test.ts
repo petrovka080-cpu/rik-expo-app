@@ -17,6 +17,14 @@ describe("foreman subcontract controller decomposition audit", () => {
     ),
     "utf8",
   );
+  const viewSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "ForemanSubcontractControllerView.tsx"),
+    "utf8",
+  );
+  const draftActionsSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractDraftActions.ts"),
+    "utf8",
+  );
 
   const countHookCallSites = (source: string) =>
     (source.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) || []).length;
@@ -26,10 +34,12 @@ describe("foreman subcontract controller decomposition audit", () => {
     expect(controllerSource).toContain("foreman.subcontractController.guards");
     expect(controllerSource).toContain("foreman.subcontractController.effects");
     expect(controllerSource).toContain("foreman.subcontractController.telemetry");
-    expect(controllerSource).toContain("guardSendToDirector");
+    expect(draftActionsSource).toContain("guardSendToDirector");
     expect(controllerSource).toContain("planSelectedSubcontractHydration");
     expect(controllerSource).toContain("getForemanSubcontractErrorMessage");
     expect(controllerSource).toContain("useForemanSubcontractControllerUiState");
+    expect(controllerSource).toContain("ForemanSubcontractControllerView");
+    expect(controllerSource).toContain("useForemanSubcontractDraftActions");
   });
 
   it("removes legacy inline helpers and silent catch from the controller owner", () => {
@@ -57,7 +67,17 @@ describe("foreman subcontract controller decomposition audit", () => {
     expect(controllerSource).not.toContain("deriveSubcontractControllerModel(");
   });
 
+  it("keeps rendering and draft action orchestration behind focused typed boundaries", () => {
+    expect(viewSource).toContain("ForemanSubcontractMainSections");
+    expect(viewSource).toContain("ForemanSubcontractModalStack");
+    expect(draftActionsSource).toContain("guardSendToDirector");
+    expect(draftActionsSource).toContain('mutationKind: "submit"');
+    expect(draftActionsSource).toContain('mutationKind: "whole_cancel"');
+    expect(controllerSource).not.toContain("const sendToDirector = useCallback");
+    expect(controllerSource).not.toContain("const clearDraft = useCallback");
+  });
+
   it("keeps the owner hook at or below the reduced source hook budget", () => {
-    expect(countHookCallSites(controllerSource)).toBeLessThanOrEqual(25);
+    expect(countHookCallSites(controllerSource)).toBeLessThanOrEqual(24);
   });
 });

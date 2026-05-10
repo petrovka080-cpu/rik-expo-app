@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { Alert, View } from "react-native";
+import { Alert } from "react-native";
 import { supabase } from "../../../lib/supabaseClient";
 import { type PickedRow as CatalogPickedRow } from "../../../components/foreman/CatalogModal";
 import {
@@ -16,10 +16,6 @@ import {
 } from "../foreman.draftSync.repository";
 import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
 import { prepareAndPreviewGeneratedPdfFromDescriptorFactory } from "../../../lib/pdf/pdf.runner";
-import {
-  ForemanSubcontractMainSections,
-  ForemanSubcontractModalStack,
-} from "../ForemanSubcontractTab.sections";
 import { s } from "../foreman.styles";
 import { REQUEST_STATUS_STYLES, UI } from "../foreman.ui";
 import { resolveStatusInfo as resolveStatusHelper, shortId } from "../foreman.helpers";
@@ -47,7 +43,6 @@ import {
 import {
   guardDraftUser,
   guardPdfRequest,
-  guardSendToDirector,
   guardTemplateContract,
   isSubcontractControllerGuardFailure,
 } from "./foreman.subcontractController.guards";
@@ -65,7 +60,9 @@ import {
   loadCurrentForemanAuthIdentity,
   loadCurrentForemanAuthUserId,
 } from "../foreman.auth.transport";
+import { ForemanSubcontractControllerView } from "./ForemanSubcontractControllerView";
 import { useForemanSubcontractControllerUiState } from "./useForemanSubcontractControllerUiState";
+import { useForemanSubcontractDraftActions } from "./useForemanSubcontractDraftActions";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -444,38 +441,6 @@ export function useForemanSubcontractController({
     });
   }, [saveDraftAtomic, draftItems]);
 
-  const sendToDirector = useCallback(async () => {
-    const sendGuard = guardSendToDirector({ templateContract, requestId, draftItems });
-    if (isSubcontractControllerGuardFailure(sendGuard)) {
-      const copy = getForemanSubcontractAlertCopy(sendGuard.reason);
-      Alert.alert(copy.title, copy.message);
-      return;
-    }
-
-    const okId = await saveDraftAtomic({
-      submit: true,
-      itemsSnapshot: draftItems,
-      mutationKind: "submit",
-      localBeforeCount: draftItems.length,
-      localAfterCount: draftItems.length,
-    });
-    if (okId) {
-      Alert.alert("Успешно", "Заявка отправлена директору.");
-      await loadHistory(userId);
-      resetSubcontractDraftContext({ clearForm: true });
-      closeSubcontractFlow();
-    }
-  }, [
-    closeSubcontractFlow,
-    draftItems,
-    loadHistory,
-    requestId,
-    resetSubcontractDraftContext,
-    saveDraftAtomic,
-    templateContract,
-    userId,
-  ]);
-
   const onPdf = useCallback(async () => {
     const pdfGuard = guardPdfRequest(requestId);
     if (!pdfGuard.ok) {
@@ -548,23 +513,16 @@ export function useForemanSubcontractController({
     await openRequestHistoryPdf(reqId);
   }, [openRequestHistoryPdf]);
 
-  const clearDraft = useCallback(async () => {
-    const pendingDeleteIds = draftItems
-      .map((item) => toRemoteDraftItemId(item.id))
-      .filter((id): id is string => Boolean(id));
-    if (draftItems.length > 0 || pendingDeleteIds.length > 0) {
-      const cleared = await saveDraftAtomic({
-        itemsSnapshot: [],
-        pendingDeleteIds,
-        mutationKind: "whole_cancel",
-        localBeforeCount: draftItems.length,
-        localAfterCount: 0,
-      });
-      if (!cleared) return;
-    }
-    resetSubcontractDraftContext({ clearForm: true });
-    closeSubcontractFlow();
-  }, [draftItems, closeSubcontractFlow, resetSubcontractDraftContext, saveDraftAtomic]);
+  const { clearDraft, sendToDirector } = useForemanSubcontractDraftActions({
+    closeSubcontractFlow,
+    draftItems,
+    loadHistory,
+    requestId,
+    resetSubcontractDraftContext,
+    saveDraftAtomic,
+    templateContract,
+    userId,
+  });
 
   const hydrateSelectedSubcontract = useCallback(
     async (it: Subcontract) => {
@@ -608,123 +566,122 @@ export function useForemanSubcontractController({
   }, [hydrateSelectedSubcontract]);
 
   return (
-    <View style={{ flex: 1 }}>
-      <ForemanSubcontractMainSections
-        approvedContracts={approvedContracts}
-        approvedContractsLoading={historyLoading}
-        contentTopPad={contentTopPad}
-        onScroll={onScroll}
-        objOptions={dicts.objOptions}
-        sysOptions={dicts.sysOptions}
-        selectedTemplateId={selectedTemplateId}
-        onSelectApprovedContract={acceptApprovedFromDirector}
-        busy={saving || sending}
-        onOpenRequestHistory={() => fetchRequestHistory(foremanName)}
-        onOpenSubcontractHistory={() => {
+    <ForemanSubcontractControllerView
+      mainSectionsProps={{
+        approvedContracts,
+        approvedContractsLoading: historyLoading,
+        contentTopPad,
+        onScroll,
+        objOptions: dicts.objOptions,
+        sysOptions: dicts.sysOptions,
+        selectedTemplateId,
+        onSelectApprovedContract: acceptApprovedFromDirector,
+        busy: saving || sending,
+        onOpenRequestHistory: () => fetchRequestHistory(foremanName),
+        onOpenSubcontractHistory: () => {
           void loadHistory(userId);
           setHistoryOpen(true);
-        }}
-        ui={UI}
-        styles={s}
-      />
-
-      <ForemanSubcontractModalStack
-        subcontractDetailsVisible={subcontractDetailsVisible}
-        onCloseSubcontractFlow={closeSubcontractFlow}
-        modalHeaderTopPad={modalHeaderTopPad}
-        templateContract={templateContract}
-        templateObjectName={templateObjectName}
-        templateLevelName={templateLevelName}
-        templateSystemName={templateSystemName}
-        formLevelCode={form.levelCode}
-        formSystemCode={form.systemCode}
-        formZoneText={form.zoneText}
-        draftItemsCount={draftItems.length}
-        lvlOptions={dicts.lvlOptions}
-        sysOptions={dicts.sysOptions}
-        onChangeLevelCode={(value) => setField("levelCode", value)}
-        onChangeSystemCode={(value) => setField("systemCode", value)}
-        onChangeZoneText={(value) => setField("zoneText", value)}
-        onOpenCatalog={() => setSubcontractFlowScreen("catalog")}
-        onOpenCalc={() => setSubcontractFlowScreen("workType")}
-        onOpenDraft={() => setSubcontractFlowScreen("draft")}
-        displayNo={displayNo}
-        draftOpen={draftOpen}
-        onCloseDraft={() => setSubcontractFlowScreen("details")}
-        objectName={objectName}
-        levelName={levelName}
-        systemName={systemName}
-        zoneName={zoneName}
-        contractorName={contractorName}
-        phoneName={phoneName}
-        volumeText={volumeText}
-        draftItems={draftItems}
-        saving={saving}
-        sending={sending}
-        requestId={requestId}
-        onRemoveDraftItem={removeDraftItem}
-        onClearDraft={() => void clearDraft()}
-        onPdf={() => void onPdf()}
-        onExcel={() => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен.")}
-        onSendToDirector={() => void sendToDirector()}
-        periodPickerVisible={!!dateTarget}
-        onClosePeriodPicker={() => setDateTarget(null)}
-        periodInitialFrom={dateTarget ? String(form[dateTarget] || "") : ""}
-        periodInitialTo={dateTarget ? String(form[dateTarget] || "") : ""}
-        onClearPeriod={() => {
+        },
+        ui: UI,
+        styles: s,
+      }}
+      modalStackProps={{
+        subcontractDetailsVisible,
+        onCloseSubcontractFlow: closeSubcontractFlow,
+        modalHeaderTopPad,
+        templateContract,
+        templateObjectName,
+        templateLevelName,
+        templateSystemName,
+        formLevelCode: form.levelCode,
+        formSystemCode: form.systemCode,
+        formZoneText: form.zoneText,
+        draftItemsCount: draftItems.length,
+        lvlOptions: dicts.lvlOptions,
+        sysOptions: dicts.sysOptions,
+        onChangeLevelCode: (value) => setField("levelCode", value),
+        onChangeSystemCode: (value) => setField("systemCode", value),
+        onChangeZoneText: (value) => setField("zoneText", value),
+        onOpenCatalog: () => setSubcontractFlowScreen("catalog"),
+        onOpenCalc: () => setSubcontractFlowScreen("workType"),
+        onOpenDraft: () => setSubcontractFlowScreen("draft"),
+        displayNo,
+        draftOpen,
+        onCloseDraft: () => setSubcontractFlowScreen("details"),
+        objectName,
+        levelName,
+        systemName,
+        zoneName,
+        contractorName,
+        phoneName,
+        volumeText,
+        draftItems,
+        saving,
+        sending,
+        requestId,
+        onRemoveDraftItem: removeDraftItem,
+        onClearDraft: () => void clearDraft(),
+        onPdf: () => void onPdf(),
+        onExcel: () => Alert.alert("Excel", "Экспорт Excel для подрядов будет добавлен."),
+        onSendToDirector: () => void sendToDirector(),
+        periodPickerVisible: !!dateTarget,
+        onClosePeriodPicker: () => setDateTarget(null),
+        periodInitialFrom: dateTarget ? String(form[dateTarget] || "") : "",
+        periodInitialTo: dateTarget ? String(form[dateTarget] || "") : "",
+        onClearPeriod: () => {
           if (!dateTarget) return;
           setField(dateTarget, "");
           setDateTarget(null);
-        }}
-        onApplyPeriod={(from) => {
+        },
+        onApplyPeriod: (from) => {
           if (!dateTarget) return;
           setField(dateTarget, String(from || ""));
           setDateTarget(null);
-        }}
-        ui={UI}
-        catalogVisible={catalogVisible}
-        onCloseCatalog={() => setSubcontractFlowScreen("details")}
-        rikQuickSearch={rikQuickSearch}
-        onCommitCatalogToDraft={(rows) => void appendCatalogRows(rows)}
-        onOpenDraftFromCatalog={() => {
+        },
+        ui: UI,
+        catalogVisible,
+        onCloseCatalog: () => setSubcontractFlowScreen("details"),
+        rikQuickSearch,
+        onCommitCatalogToDraft: (rows) => void appendCatalogRows(rows),
+        onOpenDraftFromCatalog: () => {
           setSubcontractFlowScreen("draft");
-        }}
-        workTypePickerVisible={workTypePickerVisible}
-        onCloseWorkTypePicker={() => setSubcontractFlowScreen("details")}
-        onSelectWorkType={(wt) => {
+        },
+        workTypePickerVisible,
+        onCloseWorkTypePicker: () => setSubcontractFlowScreen("details"),
+        onSelectWorkType: (wt) => {
           setSelectedWorkType(wt);
           setSubcontractFlowScreen("calc");
-        }}
-        calcVisible={calcVisible}
-        onCloseCalc={() => {
+        },
+        calcVisible,
+        onCloseCalc: () => {
           setSubcontractFlowScreen("details");
           setSelectedWorkType(null);
-        }}
-        onBackFromCalc={() => {
+        },
+        onBackFromCalc: () => {
           setSubcontractFlowScreen("workType");
-        }}
-        selectedWorkType={selectedWorkType}
-        onAddCalcToRequest={async (rows) => {
+        },
+        selectedWorkType,
+        onAddCalcToRequest: async (rows) => {
           await appendCalcRows(rows);
           setSubcontractFlowScreen("details");
           setSelectedWorkType(null);
-        }}
-        requestHistoryVisible={requestHistoryVisible}
-        onCloseRequestHistory={closeRequestHistory}
-        requestHistoryLoading={requestHistoryLoading}
-        requestHistoryRequests={historyRequests}
-        resolveRequestStatusInfo={resolveRequestStatusInfo}
-        onShowRequestDetails={(request) => void handleRequestHistorySelect(request.id)}
-        onSelectRequest={(request) => void handleRequestHistorySelect(request.id)}
-        onReopenRequest={(request) => void handleRequestHistorySelect(request.id)}
-        onOpenRequestPdf={(reqId) => void openRequestHistoryPdf(reqId)}
-        shortId={shortId}
-        styles={s}
-        subcontractHistoryVisible={historyOpen}
-        onCloseSubcontractHistory={() => setHistoryOpen(false)}
-        subcontractHistoryLoading={historyLoading}
-        subcontractHistory={history}
-      />
-    </View>
+        },
+        requestHistoryVisible,
+        onCloseRequestHistory: closeRequestHistory,
+        requestHistoryLoading,
+        requestHistoryRequests: historyRequests,
+        resolveRequestStatusInfo,
+        onShowRequestDetails: (request) => void handleRequestHistorySelect(request.id),
+        onSelectRequest: (request) => void handleRequestHistorySelect(request.id),
+        onReopenRequest: (request) => void handleRequestHistorySelect(request.id),
+        onOpenRequestPdf: (reqId) => void openRequestHistoryPdf(reqId),
+        shortId,
+        styles: s,
+        subcontractHistoryVisible: historyOpen,
+        onCloseSubcontractHistory: () => setHistoryOpen(false),
+        subcontractHistoryLoading: historyLoading,
+        subcontractHistory: history,
+      }}
+    />
   );
 }

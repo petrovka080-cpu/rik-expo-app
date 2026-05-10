@@ -201,6 +201,10 @@ describe("performance budget — bundle module count", () => {
     const sRuntime03ForemanSubcontractHookPressureBoundaryFiles = [
       path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractControllerUiState.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi18ForemanSubcontractControllerSplitFiles = [
+      path.join(SRC, "screens", "foreman", "hooks", "ForemanSubcontractControllerView.tsx"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractDraftActions.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRuntime06BuyerItemEditorModelFiles = [
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerItemEditorModel.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -668,6 +672,7 @@ describe("performance budget — bundle module count", () => {
     // S_NIGHT_UI_13 adds one permanent DirectorReportsModal style boundary.
     // S_RUNTIME_01 adds two permanent BuyerScreen hook-pressure view-model boundaries.
     // S_RUNTIME_03 adds one permanent Foreman subcontract hook-pressure view-model boundary.
+    // S_NIGHT_UI_18 adds two permanent Foreman subcontract controller split boundaries.
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
     // S_RUNTIME_07 adds one permanent CalcModal controller boundary.
     // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
@@ -693,6 +698,7 @@ describe("performance budget — bundle module count", () => {
     expect(sNightUi15ForemanSubcontractDraftSectionFiles).toBeLessThanOrEqual(1);
     expect(sRuntime01BuyerScreenHookPressureBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sRuntime03ForemanSubcontractHookPressureBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi18ForemanSubcontractControllerSplitFiles).toBeLessThanOrEqual(2);
     expect(sRuntime06BuyerItemEditorModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
@@ -816,6 +822,7 @@ describe("performance budget — bundle module count", () => {
         sNightUi15ForemanSubcontractDraftSectionFiles -
         sRuntime01BuyerScreenHookPressureBoundaryFiles -
         sRuntime03ForemanSubcontractHookPressureBoundaryFiles -
+        sNightUi18ForemanSubcontractControllerSplitFiles -
         sRuntime06BuyerItemEditorModelFiles -
         sAuditBattle13AiAssistantStyleBoundaryFiles -
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -

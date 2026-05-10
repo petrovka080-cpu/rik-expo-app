@@ -1,0 +1,127 @@
+{
+  "wave": "S_NIGHT_UI_18_FOREMAN_SUBCONTRACT_CONTROLLER_DRAFT_RENDER_SPLIT",
+  "final_status": "GREEN_FOREMAN_SUBCONTRACT_CONTROLLER_DRAFT_RENDER_SPLIT",
+  "started_from": {
+    "head": "10a4533ea0b5a4f8277d4941c99d79773939929f",
+    "origin_main": "10a4533ea0b5a4f8277d4941c99d79773939929f",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "selected_files": [
+    "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+    "src/screens/foreman/hooks/ForemanSubcontractControllerView.tsx",
+    "src/screens/foreman/hooks/useForemanSubcontractDraftActions.ts",
+    "tests/foreman/foreman.subcontractController.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "Fresh architecture scanner reported useForemanSubcontractController.tsx as the top line-count component debt item and below-threshold but still high hook-pressure owner; this wave extracted render composition and draft submit/cancel actions without touching PDF, transport, env, cache, rate-limit, DB, navigation, or production mutation paths.",
+  "metrics": {
+    "before": {
+      "architecture_scanner_lines": 731,
+      "source_count_lines": 730,
+      "hook_call_sites": 25,
+      "imports": 23
+    },
+    "after": {
+      "architecture_scanner_lines": 688,
+      "source_count_lines": 687,
+      "hook_call_sites": 24,
+      "imports": 24
+    },
+    "delta": {
+      "architecture_scanner_lines": -43,
+      "source_count_lines": -43,
+      "hook_call_sites": -1,
+      "imports": 1,
+      "new_render_boundaries": 1,
+      "new_action_boundaries": 1
+    }
+  },
+  "scope": {
+    "ui_only": true,
+    "render_split": true,
+    "draft_action_split": true,
+    "business_logic_rewrite": false,
+    "transport_changes": false,
+    "navigation_changes": false,
+    "pdf_route_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "db_writes": false,
+    "migrations": false,
+    "env_changes": false,
+    "production_calls": false
+  },
+  "gates": {
+    "focused_tests": {
+      "command": "npx jest tests/foreman/foreman.subcontractController.decomposition.test.ts src/screens/foreman/ForemanSubcontractPdfGuard.test.ts tests/foreman/ForemanSubcontractController.test.tsx tests/perf/performance-budget.test.ts --runInBand",
+      "status": "PASS",
+      "test_suites": "4 passed",
+      "tests": "25 passed"
+    },
+    "typescript": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "expo_lint": {
+      "command": "npx expo lint",
+      "status": "PASS",
+      "secrets_printed": false
+    },
+    "full_jest": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "test_suites": "705 passed, 1 skipped",
+      "tests": "4118 passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+      "service_bypass_findings": 0,
+      "unresolved_unbounded_selects": 0,
+      "select_star_findings": 0,
+      "production_calls": false,
+      "db_writes": false,
+      "migrations": false,
+      "supabase_project_changes": false,
+      "env_changes": false,
+      "secrets_printed": false
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "artifact_json_parse": {
+      "command": "node -e \"const fs=require('fs'); const p='artifacts/S_NIGHT_UI_18_FOREMAN_SUBCONTRACT_CONTROLLER_DRAFT_RENDER_SPLIT_matrix.json'; JSON.parse(fs.readFileSync(p,'utf8')); console.log(JSON.stringify({status:'PASS', file:p}))\"",
+      "status": "PASS"
+    },
+    "release_verify": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_CLEAN_WORKTREE_POST_COMMIT"
+    },
+    "post_push_release_verify": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING"
+    }
+  },
+  "negative_confirmations": {
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "ts_ignore_added": false,
+    "as_any_added": false,
+    "catch_empty_added": false,
+    "broad_rewrite": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_50k_60k_load": false,
+    "destructive_or_unbounded_dml": false,
+    "ota_eas_testflight_native_builds": false,
+    "production_mutation_broad_enablement": false,
+    "broad_cache_enablement": false,
+    "broad_rate_limit_enablement": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
