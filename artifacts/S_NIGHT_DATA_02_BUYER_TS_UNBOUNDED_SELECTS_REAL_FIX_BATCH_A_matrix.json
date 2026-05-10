@@ -92,7 +92,7 @@
     "npmTestRunInBand": "pass",
     "architectureScanner": "pass",
     "gitDiffCheck": "pass",
-    "releaseVerifyPostPush": "pending_post_push_clean_tree",
+    "releaseVerifyPostPush": "pass",
     "artifactJsonParse": "pass"
   },
   "safety": {
@@ -113,5 +113,16 @@
     "pdfExportFlowsChanged": false,
     "paginationChanged": false
   },
-  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "postPushReleaseVerify": {
+    "status": "pass",
+    "command": "npm run release:verify -- --json",
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktreeClean": true,
+    "readiness": "pass",
+    "otaDisposition": "allow",
+    "commitShaRecordedInFinalResponse": true
+  }
 }
