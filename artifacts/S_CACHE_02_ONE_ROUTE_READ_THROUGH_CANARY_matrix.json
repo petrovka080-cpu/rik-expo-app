@@ -1,0 +1,139 @@
+{
+  "wave": "S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY",
+  "final_status": "BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK",
+  "approvals": {
+    "CACHE_CANARY_APPROVED": true,
+    "ROLLBACK_APPROVED": true,
+    "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_PREFLIGHT_APPROVED": true,
+    "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_APPLY_APPROVED": true,
+    "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_ROLLBACK_APPROVED": true
+  },
+  "approvals_present": true,
+  "head": "4b4dd43eeb92587a988a18e0a4d8b9d0e462a6df",
+  "origin_main": "4b4dd43eeb92587a988a18e0a4d8b9d0e462a6df",
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean_before": true,
+  "render_config_present": true,
+  "render_auto_deploy": "no",
+  "deploy_in_progress_before": false,
+  "production_health_before": 200,
+  "production_ready_before": 200,
+  "env_snapshot_captured": true,
+  "env_snapshot_redacted": {
+    "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_MODE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED": {
+      "present": false,
+      "valueClass": "absent"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_PERCENT": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_NAMESPACE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "REDIS_URL": {
+      "present": false,
+      "valueClass": "absent"
+    },
+    "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS": {
+      "present": true,
+      "valueClass": "present_redacted"
+    }
+  },
+  "auth_source": "render_api_in_memory",
+  "auth_resolution_status": "present",
+  "route": "marketplace.catalog.search",
+  "route_path_class": "marketplace_catalog_search",
+  "route_allowlist_count": 1,
+  "route_readonly": true,
+  "canary_percent": 1,
+  "unique_cache_key_strategy": "utf8_query_nonce_percent_selected_redacted",
+  "utf8_input_used": true,
+  "percent_selection_attempts": 62,
+  "cache_env_written": true,
+  "rollback_required": true,
+  "rollback_triggered": true,
+  "rollback_succeeded": true,
+  "db_writes": false,
+  "migrations_applied": false,
+  "rate_limit_changes": false,
+  "load_test_run": false,
+  "supabase_project_changes": false,
+  "production_mutation_calls": false,
+  "secrets_printed": false,
+  "env_values_printed": false,
+  "urls_printed": false,
+  "raw_cache_keys_printed": false,
+  "raw_cache_values_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "business_rows_printed": false,
+  "preflight_ok": true,
+  "service_api_read_ok": true,
+  "env_api_read_ok": true,
+  "render_auto_deploy_safe": true,
+  "baseline_read_status_class": "2xx",
+  "baseline_cache_hit": false,
+  "approved_cache_env_keys_written_count": 5,
+  "deploy_triggered": true,
+  "latest_deploy_live": true,
+  "live_deploy_contains_head_commit": true,
+  "production_health_after_deploy": 200,
+  "production_ready_after_deploy": 200,
+  "runtime_status": "configured",
+  "runtime_mode": "read_through",
+  "runtime_read_through_v1_enabled": true,
+  "runtime_percent": 1,
+  "runtime_route_allowlist_count": 1,
+  "runtime_scoped_only": true,
+  "first_read_status_class": "2xx",
+  "second_read_status_class": "2xx",
+  "first_request_miss_read_through": true,
+  "second_request_hit": false,
+  "response_contract_unchanged": true,
+  "utf8_safe": true,
+  "monitor_status": 200,
+  "metrics_redacted": true,
+  "blocked_reason": "second_request_hit_false_after_route_scoped_read_through_enablement",
+  "before_after_metrics": {
+    "health_before": 200,
+    "ready_before": 200,
+    "health_after_canary_deploy": 200,
+    "ready_after_canary_deploy": 200,
+    "health_after_rollback": 200,
+    "ready_after_rollback": 200,
+    "baseline_cache_hit": false,
+    "first_request_miss_read_through": true,
+    "second_request_hit": false,
+    "response_contract_unchanged": true,
+    "metrics_redacted": true,
+    "rollback_succeeded": true
+  },
+  "rollback_latest_deploy_status": "live",
+  "production_health_after_rollback": 200,
+  "production_ready_after_rollback": 200,
+  "canary_retained": false,
+  "retention_policy_explicitly_allowed": false,
+  "total_read_route_requests": 3,
+  "total_production_mutation_requests": 0,
+  "cache_canary_passed": false
+}
