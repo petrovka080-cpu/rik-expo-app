@@ -115,7 +115,7 @@
     "npmTestRunInBand": "pass",
     "architectureScanner": "pass",
     "gitDiffCheck": "pass",
-    "releaseVerifyPostPush": "pending_post_push_clean_tree",
+    "releaseVerifyPostPush": "pass",
     "artifactJsonParse": "pass"
   },
   "negativeConfirmations": {
@@ -146,8 +146,15 @@
     "behind": 0,
     "worktree": "clean"
   },
-  "releaseVerifyPreCommit": {
-    "status": "blocked_dirty_worktree_expected_before_commit",
-    "reason": "release guard requires a clean repository; post-push verify will be run after commit/push"
+  "postPushReleaseVerify": {
+    "status": "pass",
+    "command": "npm run release:verify -- --json",
+    "headCommit": "fe980bb30930f2cc5097645f8fae6962a351c0d7",
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktreeClean": true,
+    "readiness": "pass",
+    "otaDisposition": "skip"
   }
 }
