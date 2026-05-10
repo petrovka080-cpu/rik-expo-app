@@ -7,7 +7,7 @@ type Props = {
   matSum: number;
 };
 
-export default function ActBuilderSelectionStats(props: Props) {
+function ActBuilderSelectionStats(props: Props) {
   return (
     <View
       style={{
@@ -28,3 +28,5 @@ export default function ActBuilderSelectionStats(props: Props) {
     </View>
   );
 }
+
+export default React.memo(ActBuilderSelectionStats);

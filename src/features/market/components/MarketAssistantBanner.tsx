@@ -9,7 +9,7 @@ type Props = {
   onOpenMap: () => void;
 };
 
-export default function MarketAssistantBanner({ onOpenAssistant, onOpenMap }: Props) {
+function MarketAssistantBanner({ onOpenAssistant, onOpenMap }: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.copy}>
@@ -35,6 +35,8 @@ export default function MarketAssistantBanner({ onOpenAssistant, onOpenMap }: Pr
     </View>
   );
 }
+
+export default React.memo(MarketAssistantBanner);
 
 const styles = StyleSheet.create({
   card: {

@@ -6,7 +6,7 @@ type Props = {
   matSum: number;
 };
 
-export default function ActBuilderTotalsCard(props: Props) {
+function ActBuilderTotalsCard(props: Props) {
   const total = props.workSum + props.matSum;
   return (
     <View
@@ -33,3 +33,5 @@ export default function ActBuilderTotalsCard(props: Props) {
     </View>
   );
 }
+
+export default React.memo(ActBuilderTotalsCard);

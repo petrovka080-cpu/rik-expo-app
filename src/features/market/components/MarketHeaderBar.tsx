@@ -27,7 +27,7 @@ function LogoMark() {
   );
 }
 
-export default function MarketHeaderBar({
+function MarketHeaderBar({
   query,
   onChangeQuery,
   onMapPress,
@@ -73,6 +73,8 @@ export default function MarketHeaderBar({
     </View>
   );
 }
+
+export default React.memo(MarketHeaderBar);
 
 const styles = StyleSheet.create({
   row: {

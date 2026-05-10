@@ -1,0 +1,133 @@
+{
+  "wave": "S_RUNTIME_04_REACT_MEMO_BARRIERS_BATCH_A",
+  "final_status": "GREEN_REACT_MEMO_BARRIERS_BATCH_A",
+  "started_from": {
+    "head": "e1489c1f985b1b0955c47cbf1fa5ee097658198a",
+    "origin_main": "e1489c1f985b1b0955c47cbf1fa5ee097658198a",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "selection": {
+    "target_min": 10,
+    "target_max": 20,
+    "selected_count": 14,
+    "reason": "Safe pure presentational and list-boundary components used by market, contractor, and warehouse high-render surfaces. Components with hooks, timers, subscriptions, navigation side effects, transport calls, or unstable inline parent props were avoided unless parent props were stabilized.",
+    "files": [
+      "src/features/market/components/MarketHeaderBar.tsx",
+      "src/features/market/components/MarketAssistantBanner.tsx",
+      "src/features/market/components/MarketTenderBanner.tsx",
+      "src/features/market/components/MarketCategoryRail.tsx",
+      "src/screens/contractor/components/ActBuilderHeaderInfo.tsx",
+      "src/screens/contractor/components/ActBuilderTotalsCard.tsx",
+      "src/screens/contractor/components/ActBuilderSelectionStats.tsx",
+      "src/screens/contractor/components/ActBuilderFooter.tsx",
+      "src/screens/contractor/components/ContractorLoadingView.tsx",
+      "src/screens/contractor/components/ContractorActivationView.tsx",
+      "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+      "src/screens/contractor/components/ModalSheetHeader.tsx",
+      "src/screens/warehouse/components/ReqHeadRowItem.tsx",
+      "src/screens/warehouse/components/IncomingRowItem.tsx"
+    ],
+    "support_files": [
+      "src/screens/contractor/components/ActBuilderModal.tsx",
+      "tests/perf/reactMemoBarriersBatchA.contract.test.ts"
+    ]
+  },
+  "metrics": {
+    "before": {
+      "react_memo_or_memo_call_count": 38,
+      "react_memo_call_count": 33,
+      "use_state_call_count": 252
+    },
+    "after": {
+      "react_memo_or_memo_call_count": 52,
+      "react_memo_call_count": 47,
+      "use_state_call_count": 252
+    },
+    "delta": {
+      "react_memo_or_memo_call_count": 14,
+      "react_memo_call_count": 14,
+      "use_state_call_count": 0
+    }
+  },
+  "props_stability_proof": {
+    "market": [
+      "MarketHomeScreen passes stable setQuery and controller callbacks to MarketHeaderBar, MarketCategoryRail, MarketTenderBanner, and MarketAssistantBanner."
+    ],
+    "contractor_act_builder": [
+      "ActBuilderModal already memoizes listHeader and listFooter.",
+      "ModalSheetHeader style objects were lifted to module constants, with only paddingTop computed through React.useMemo keyed by modalHeaderTopPad."
+    ],
+    "contractor_shell": [
+      "ContractorActivationView receives primitive text/code props, React state setter onCodeChange, and useCallback activateCode.",
+      "ContractorSubcontractsList receives memoized contractorWorkCards and useCallback onRefresh/onOpen handlers."
+    ],
+    "warehouse": [
+      "useWarehouseRenderers memoizes row renderer factories for ReqHeadRowItem and IncomingRowItem."
+    ]
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "pass",
+      "command": "npm test -- --runInBand tests/perf/reactMemoBarriersBatchA.contract.test.ts tests/market/marketHomeController.decomposition.test.ts src/features/market/marketCleanup.contract.test.tsx src/screens/warehouse/hooks/useWarehouseReqHeadsQuery.rows.test.tsx src/screens/contractor/contractor.loadWorksService.test.ts",
+      "summary": "5 suites passed, 25 tests passed"
+    },
+    "typescript": {
+      "status": "pass",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "pass",
+      "command": "npx expo lint"
+    },
+    "full_jest": {
+      "status": "pass",
+      "command": "npm test -- --runInBand",
+      "summary": "684 suites passed, 1 skipped; 4045 tests passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "pass",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "direct_supabase_service_bypass": 0,
+      "transport_boundary": "closed",
+      "cache_allowed_route": "marketplace.catalog.search",
+      "rate_limit_canary_percent": 1
+    },
+    "git_diff_check": {
+      "status": "pass",
+      "command": "git diff --check"
+    },
+    "forbidden_sweep": {
+      "status": "pass",
+      "command": "rg -n \"@ts-ignore|as any|catch\\\\s*\\\\{\\\\s*\\\\}\" <selected paths>",
+      "matches": 0
+    },
+    "artifact_json_parse": {
+      "status": "pass",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_04_REACT_MEMO_BARRIERS_BATCH_A_matrix.json','utf8'));\""
+    },
+    "post_push_release_verify": {
+      "status": "pending",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load_test": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_build": true,
+    "no_production_cache_enablement": true,
+    "no_rate_limit_changes": true,
+    "no_route_list_expansion": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

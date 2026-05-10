@@ -7,7 +7,7 @@ type Props = {
   text: string;
 };
 
-export default function ContractorLoadingView({ text }: Props) {
+function ContractorLoadingView({ text }: Props) {
   return (
     <View style={styles.center}>
       <ActivityIndicator size="large" />
@@ -16,3 +16,4 @@ export default function ContractorLoadingView({ text }: Props) {
   );
 }
 
+export default React.memo(ContractorLoadingView);

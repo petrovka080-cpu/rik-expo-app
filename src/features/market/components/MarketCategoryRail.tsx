@@ -10,7 +10,7 @@ type Props = {
   onSelect: (category: MarketHomeCategoryKey) => void;
 };
 
-export default function MarketCategoryRail({
+function MarketCategoryRail({
   categories,
   activeCategory,
   onSelect,
@@ -39,6 +39,8 @@ export default function MarketCategoryRail({
     </ScrollView>
   );
 }
+
+export default React.memo(MarketCategoryRail);
 
 const styles = StyleSheet.create({
   content: {

@@ -52,7 +52,7 @@ const toCardToken = (value: unknown) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-export default function ContractorSubcontractsList(props: Props) {
+function ContractorSubcontractsList(props: Props) {
   const { data, screenContract, refreshing, loadingWorks, onRefresh, onOpen, styles } = props;
   const emptyMessage = loadingWorks
     ? "Р—Р°РіСЂСѓР·РєР°..."
@@ -176,3 +176,5 @@ export default function ContractorSubcontractsList(props: Props) {
     />
   );
 }
+
+export default React.memo(ContractorSubcontractsList);

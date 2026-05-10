@@ -15,7 +15,7 @@ type Props = {
   syncStatusText?: string | null;
 };
 
-export default function IncomingRowItem({
+function IncomingRowItem({
   row,
   onPress,
   fmtRuDate,
@@ -48,6 +48,8 @@ export default function IncomingRowItem({
     </WarehouseCardShell>
   );
 }
+
+export default React.memo(IncomingRowItem);
 
 const localStyles = StyleSheet.create({
   card: {

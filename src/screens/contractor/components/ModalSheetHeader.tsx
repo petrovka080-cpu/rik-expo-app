@@ -12,7 +12,7 @@ type Props = {
   closeTextStyle?: any;
 };
 
-export default function ModalSheetHeader(props: Props) {
+function ModalSheetHeader(props: Props) {
   const closeBtnStyle = [
     { minWidth: 44, minHeight: 44, alignItems: "center", justifyContent: "center" },
     props.closeBtnStyle,
@@ -34,3 +34,5 @@ export default function ModalSheetHeader(props: Props) {
     </View>
   );
 }
+
+export default React.memo(ModalSheetHeader);

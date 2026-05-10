@@ -9,7 +9,7 @@ type Props = {
   onSubmit: () => void;
 };
 
-export default function ActBuilderFooter(props: Props) {
+function ActBuilderFooter(props: Props) {
   return (
     <View style={{ padding: 16, backgroundColor: "#fff", borderTopWidth: 1, borderTopColor: "#e2e8f0" }}>
       <Pressable
@@ -43,3 +43,5 @@ export default function ActBuilderFooter(props: Props) {
     </View>
   );
 }
+
+export default React.memo(ActBuilderFooter);

@@ -29,7 +29,7 @@ function HeaderMetric({
   );
 }
 
-export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
+function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
   const card = mapWarehouseReqHeadToCardProps({ row, fmtRuDate });
 
   return (
@@ -68,6 +68,8 @@ export default function ReqHeadRowItem({ row, onPress, fmtRuDate }: Props) {
     </View>
   );
 }
+
+export default React.memo(ReqHeadRowItem);
 
 const localStyles = StyleSheet.create({
   metricValue: {

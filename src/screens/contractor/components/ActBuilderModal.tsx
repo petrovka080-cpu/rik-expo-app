@@ -63,6 +63,26 @@ type ActBuilderListEntry =
   | { key: string; kind: "material"; item: ActBuilderItem; index: number }
   | { key: string; kind: "materials_empty" };
 
+const modalHeaderContainerBaseStyle = {
+  paddingHorizontal: 16,
+  paddingBottom: 10,
+  borderBottomWidth: 1,
+  borderColor: "#e2e8f0",
+  backgroundColor: "#fff",
+};
+
+const modalHeaderTitleStyle = { fontSize: 18, fontWeight: "800", color: "#0f172a" };
+const modalHeaderSubtitleStyle = { fontSize: 11, color: "#94a3b8", marginTop: 2 };
+const modalHeaderCloseButtonStyle = {
+  width: 34,
+  height: 34,
+  borderRadius: 17,
+  backgroundColor: "#f1f5f9",
+  alignItems: "center",
+  justifyContent: "center",
+};
+const modalHeaderCloseTextStyle = { color: "#64748b", fontWeight: "800", fontSize: 20 };
+
 export default function ActBuilderModal(props: Props) {
   const listData = React.useMemo<ActBuilderListEntry[]>(() => {
     const entries: ActBuilderListEntry[] = [];
@@ -125,6 +145,14 @@ export default function ActBuilderModal(props: Props) {
   const listFooter = React.useMemo(
     () => <ActBuilderTotalsCard workSum={props.actBuilderWorkSum} matSum={props.actBuilderMatSum} />,
     [props.actBuilderMatSum, props.actBuilderWorkSum],
+  );
+
+  const modalHeaderContainerStyle = React.useMemo(
+    () => ({
+      ...modalHeaderContainerBaseStyle,
+      paddingTop: props.modalHeaderTopPad,
+    }),
+    [props.modalHeaderTopPad],
   );
 
   const renderItem = React.useCallback(
@@ -205,25 +233,11 @@ export default function ActBuilderModal(props: Props) {
           title="Формирование акта"
           subtitle={`${props.jobHeader?.contract_number || "—"} • ${props.resolvedObjectName || "—"} • ${props.actBuilderDateText}`}
           onClose={props.onClose}
-          containerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: props.modalHeaderTopPad,
-            paddingBottom: 10,
-            borderBottomWidth: 1,
-            borderColor: "#e2e8f0",
-            backgroundColor: "#fff",
-          }}
-          titleStyle={{ fontSize: 18, fontWeight: "800", color: "#0f172a" }}
-          subtitleStyle={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}
-          closeBtnStyle={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
-            backgroundColor: "#f1f5f9",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          closeTextStyle={{ color: "#64748b", fontWeight: "800", fontSize: 20 }}
+          containerStyle={modalHeaderContainerStyle}
+          titleStyle={modalHeaderTitleStyle}
+          subtitleStyle={modalHeaderSubtitleStyle}
+          closeBtnStyle={modalHeaderCloseButtonStyle}
+          closeTextStyle={modalHeaderCloseTextStyle}
         />
 
         <FlashList

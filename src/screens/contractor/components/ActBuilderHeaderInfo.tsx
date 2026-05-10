@@ -22,7 +22,7 @@ type Props = {
   actDateText: string;
 };
 
-export default function ActBuilderHeaderInfo(props: Props) {
+function ActBuilderHeaderInfo(props: Props) {
   return (
     <View
       style={{
@@ -62,3 +62,5 @@ export default function ActBuilderHeaderInfo(props: Props) {
     </View>
   );
 }
+
+export default React.memo(ActBuilderHeaderInfo);

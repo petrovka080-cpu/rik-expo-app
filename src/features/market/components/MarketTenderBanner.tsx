@@ -61,7 +61,7 @@ const getVisualState = (summary: MarketplaceAuctionSummary | null, loading: bool
   };
 };
 
-export default function MarketTenderBanner({ summary, loading = false, onPress }: Props) {
+function MarketTenderBanner({ summary, loading = false, onPress }: Props) {
   const visual = getVisualState(summary, loading);
 
   return (
@@ -90,6 +90,8 @@ export default function MarketTenderBanner({ summary, loading = false, onPress }
     </Pressable>
   );
 }
+
+export default React.memo(MarketTenderBanner);
 
 const styles = StyleSheet.create({
   banner: {

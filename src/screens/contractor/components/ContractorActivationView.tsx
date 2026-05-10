@@ -15,7 +15,7 @@ type Props = {
   activatingText: string;
 };
 
-export default function ContractorActivationView({
+function ContractorActivationView({
   code,
   activating,
   onCodeChange,
@@ -48,3 +48,4 @@ export default function ContractorActivationView({
   );
 }
 
+export default React.memo(ContractorActivationView);
