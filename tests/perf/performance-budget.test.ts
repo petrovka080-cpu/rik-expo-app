@@ -229,6 +229,9 @@ describe("performance budget — bundle module count", () => {
     const sRuntime07CalcModalControllerFiles = [
       path.join(SRC, "components", "foreman", "useCalcModalController.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sRuntime08MarketHomeControllerFiles = [
+      path.join(SRC, "features", "market", "useMarketHomeController.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle51ProfileMembershipTransportFiles = [
       path.join(SRC, "screens", "profile", "profile.membership.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -630,6 +633,7 @@ describe("performance budget — bundle module count", () => {
     // S_RUNTIME_03 adds one permanent Foreman subcontract hook-pressure view-model boundary.
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
     // S_RUNTIME_07 adds one permanent CalcModal controller boundary.
+    // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -661,6 +665,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle49ActivePaymentFormStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle50CalcModalContentStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sRuntime07CalcModalControllerFiles).toBeLessThanOrEqual(1);
+    expect(sRuntime08MarketHomeControllerFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle51ProfileMembershipTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle51ProfileAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle52CanonicalPdfAuthTransportFiles).toBeLessThanOrEqual(1);
@@ -773,6 +778,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle49ActivePaymentFormStyleBoundaryFiles -
         sAuditBattle50CalcModalContentStyleBoundaryFiles -
         sRuntime07CalcModalControllerFiles -
+        sRuntime08MarketHomeControllerFiles -
         sAuditBattle51ProfileMembershipTransportFiles -
         sAuditBattle51ProfileAuthTransportFiles -
         sAuditBattle52CanonicalPdfAuthTransportFiles -

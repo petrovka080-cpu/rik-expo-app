@@ -1,0 +1,135 @@
+{
+  "wave": "S_RUNTIME_08_MARKET_HOME_HOOK_PRESSURE_REDUCTION",
+  "final_status": "GREEN_MARKET_HOME_HOOK_PRESSURE_REDUCED",
+  "startedFrom": {
+    "head": "430e13115fa60da102b6d8e79e6ff1e9378dc418",
+    "originMain": "430e13115fa60da102b6d8e79e6ff1e9378dc418",
+    "aheadBehind": "0/0",
+    "worktree": "clean"
+  },
+  "selection": {
+    "selectedFile": "src/features/market/MarketHomeScreen.tsx",
+    "reason": "Fresh architecture scanner reported MarketHomeScreen as the top remaining TSX hook-pressure owner after S_RUNTIME_07.",
+    "scannerBefore": {
+      "componentDebtHookPressureComponentCount": 6,
+      "componentDebtGodComponentCount": 30,
+      "marketHomeHookCount": 33,
+      "marketHomeLineCount": 668
+    }
+  },
+  "changes": [
+    {
+      "path": "src/features/market/useMarketHomeController.ts",
+      "type": "added",
+      "purpose": "Typed controller boundary for MarketHomeScreen state, effects, store selectors, navigation callbacks, feed loading, pagination, and observability."
+    },
+    {
+      "path": "src/features/market/MarketHomeScreen.tsx",
+      "type": "modified",
+      "purpose": "Reduced to render shell while preserving feed FlatList tuning, placeholder rendering, refresh, pagination, and section composition."
+    },
+    {
+      "path": "tests/market/marketHomeController.decomposition.test.ts",
+      "type": "added",
+      "purpose": "Source contract proving hook-pressure reduction, behavior-owner preservation, FlatList wiring, and no direct Supabase ownership in the controller."
+    },
+    {
+      "path": "tests/perf/performance-budget.test.ts",
+      "type": "modified",
+      "purpose": "Budgets the one permanent controller boundary added by this wave."
+    }
+  ],
+  "metrics": {
+    "before": {
+      "marketHomeScreenHooks": 33,
+      "marketHomeScreenLines": 668,
+      "scannerHookPressureComponentCount": 6,
+      "scannerGodComponentCount": 30
+    },
+    "after": {
+      "marketHomeScreenHooks": 3,
+      "marketHomeScreenLines": 376,
+      "marketHomeControllerHooks": 38,
+      "marketHomeControllerLines": 342,
+      "scannerHookPressureComponentCount": 5,
+      "scannerGodComponentCount": 29
+    },
+    "delta": {
+      "marketHomeScreenHooks": -30,
+      "marketHomeScreenLines": -292,
+      "scannerHookPressureComponentCount": -1,
+      "scannerGodComponentCount": -1
+    }
+  },
+  "behaviorPreservation": {
+    "publicPropsChanged": false,
+    "navigationChanged": false,
+    "networkChanged": false,
+    "supabaseOrBffChanged": false,
+    "visualChanged": false,
+    "flatListTuningChanged": false,
+    "paginationChanged": false,
+    "refreshChanged": false
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "pass",
+      "command": "npm test -- --runInBand tests/market/marketHomeController.decomposition.test.ts tests/perf/flatListTuningBatchB.contract.test.ts tests/api/uiUnsafeCastBatchA.contract.test.ts tests/perf/performance-budget.test.ts"
+    },
+    "typescript": {
+      "status": "pass",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "architectureScanner": {
+      "status": "pass",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
+    },
+    "expoLint": {
+      "status": "pass",
+      "command": "npx expo lint"
+    },
+    "fullJest": {
+      "status": "pass",
+      "command": "npm test -- --runInBand",
+      "result": "683 suites passed, 1 skipped; 4040 tests passed, 1 skipped"
+    },
+    "gitDiffCheck": {
+      "status": "pass",
+      "command": "git diff --check"
+    },
+    "artifactJsonParse": {
+      "status": "pass",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_08_MARKET_HOME_HOOK_PRESSURE_REDUCTION_matrix.json','utf8'))\""
+    },
+    "forbiddenPatternSweep": {
+      "status": "pass",
+      "patterns": [
+        "@ts-ignore",
+        "as any",
+        "catch {}"
+      ]
+    },
+    "postPushReleaseVerify": {
+      "status": "pending_after_push",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoad": false,
+    "destructiveDml": false,
+    "otaOrNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "cacheRouteExpansion": false,
+    "rateLimitTouched": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
