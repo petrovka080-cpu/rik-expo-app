@@ -9,7 +9,11 @@ const readRepoFile = (relativePath: string): string =>
 const selectedSourceFiles = [
   "src/screens/buyer/components/BuyerItemRow.tsx",
   "src/screens/buyer/BuyerSubcontractTab.tsx",
+  "src/screens/buyer/BuyerSubcontractTab.model.ts",
   "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+  "src/screens/buyer/useBuyerSubcontractActions.ts",
+  "src/screens/buyer/useBuyerSubcontractDataModel.ts",
+  "src/screens/buyer/useBuyerSubcontractEditorState.ts",
   "src/screens/buyer/buyerSubcontractForm.model.ts",
   "src/components/foreman/CalcModal.tsx",
   "src/components/foreman/useCalcFields.ts",
@@ -52,13 +56,16 @@ describe("UI unsafe cast batch B rows/modals contract", () => {
   });
 
   it("keeps BuyerSubcontractTab contractor attach and select payloads typed without casts", () => {
-    const source = readRepoFile("src/screens/buyer/BuyerSubcontractTab.tsx");
+    const tabSource = readRepoFile("src/screens/buyer/BuyerSubcontractTab.tsx");
+    const modelSource = readRepoFile("src/screens/buyer/BuyerSubcontractTab.model.ts");
+    const actionsSource = readRepoFile("src/screens/buyer/useBuyerSubcontractActions.ts");
 
-    expect(source).toContain("toBuyerSubcontractWorkMode(form.workMode)");
-    expect(source).toContain("toBuyerSubcontractPriceType(form.priceType)");
-    expect(source).toContain("firstBuyerSubcontractContractorRow(direct.data)");
-    expect(source).toContain("filterBuyerSubcontractContractorRows(fallback.data)");
-    expect(source).toContain("buildContractorAttachPatch(cid)");
+    expect(modelSource).toContain("toBuyerSubcontractWorkMode(form.workMode)");
+    expect(modelSource).toContain("toBuyerSubcontractPriceType(form.priceType)");
+    expect(tabSource).toContain("firstBuyerSubcontractContractorRow(direct.data)");
+    expect(tabSource).toContain("filterBuyerSubcontractContractorRows(fallback.data)");
+    expect(tabSource).toContain("buildContractorAttachPatch(cid)");
+    expect(actionsSource).toContain("buildBuyerSubcontractPatch(form, buyerFio)");
   });
 
   it("keeps CalcModal row sources behind guarded paged query adapters", () => {

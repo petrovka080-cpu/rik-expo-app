@@ -24,6 +24,7 @@ import {
   BUYER_SUBCONTRACT_UOM_OPTIONS as UOM_OPTIONS,
   type BuyerSubcontractFormState as FormState,
 } from "./buyerSubcontractForm.model";
+import type { BuyerSubcontractDateTarget } from "./BuyerSubcontractTab.model";
 import { styles } from "./BuyerSubcontractTab.styles";
 import {
   PRICE_TYPE_OPTIONS,
@@ -33,8 +34,6 @@ import {
   fmtDate,
   type Subcontract,
 } from "../subcontracts/subcontracts.shared";
-
-export type BuyerSubcontractDateTarget = "dateStart" | "dateEnd" | "contractDate";
 
 type BuyerSubcontractTabViewProps = {
   contentTopPad: number;

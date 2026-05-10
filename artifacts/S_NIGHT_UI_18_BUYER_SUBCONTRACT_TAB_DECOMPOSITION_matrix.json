@@ -1,0 +1,162 @@
+{
+  "wave": "S_NIGHT_UI_18_BUYER_SUBCONTRACT_TAB_DECOMPOSITION",
+  "final_status": "GREEN_BUYER_SUBCONTRACT_TAB_DECOMPOSITION",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "status_short_branch": "## main...origin/main",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true,
+    "head_sha_before_wave": "f13743fc452338d581b1260541694542083cc438",
+    "origin_main_sha_before_wave": "f13743fc452338d581b1260541694542083cc438"
+  },
+  "scope": {
+    "target": "BuyerSubcontractTab",
+    "production_cache_enabled": false,
+    "rate_limit_changed": false,
+    "db_writes_added": false,
+    "migrations_added": false,
+    "supabase_project_changed": false,
+    "native_builds_run": false,
+    "new_provider_call_boundaries": false
+  },
+  "selected_files": [
+    {
+      "path": "src/screens/buyer/BuyerSubcontractTab.tsx",
+      "reason": "Collapse the tab into a composition shell while keeping the existing direct Supabase contractor lookup in the already-registered file boundary."
+    },
+    {
+      "path": "src/screens/buyer/BuyerSubcontractTab.model.ts",
+      "reason": "Extract pure patch/build and edit-row mapping logic for focused model tests."
+    },
+    {
+      "path": "src/screens/buyer/useBuyerSubcontractDataModel.ts",
+      "reason": "Move tab data paging, refresh, end-reached, and loading state into a typed data model hook."
+    },
+    {
+      "path": "src/screens/buyer/useBuyerSubcontractEditorState.ts",
+      "reason": "Move selection/edit/date sheet state and editable row mapping into a typed editor hook."
+    },
+    {
+      "path": "src/screens/buyer/useBuyerSubcontractActions.ts",
+      "reason": "Move save/submit state and handlers behind injected provider helpers to avoid new provider calls."
+    },
+    {
+      "path": "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+      "reason": "Consume the shared date target type from the extracted tab model."
+    },
+    {
+      "path": "tests/buyer/buyerSubcontractTab.decomposition.test.ts",
+      "reason": "Ratchet hook pressure, source boundaries, no-new-provider-call contract, and empty/loading panel ownership."
+    },
+    {
+      "path": "tests/buyer/buyerSubcontractTab.model.test.ts",
+      "reason": "Focused model proof for patch normalization and edit-row-to-form mapping."
+    },
+    {
+      "path": "tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts",
+      "reason": "Extend unsafe-cast and typed subcontract payload source coverage to the extracted files."
+    },
+    {
+      "path": "tests/perf/performance-budget.test.ts",
+      "reason": "Update the permanent module budget for the new tab decomposition boundaries."
+    }
+  ],
+  "before_after_metrics": {
+    "buyer_subcontract_tab_lines": {
+      "before": 343,
+      "after": 137,
+      "delta": -206,
+      "target_delta_or_better": -100,
+      "status": "PASS"
+    },
+    "buyer_subcontract_tab_hooks": {
+      "before": 24,
+      "after": 4,
+      "delta": -20,
+      "target_delta_or_better": -12,
+      "status": "PASS"
+    },
+    "new_provider_calls_in_extracted_boundaries": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "direct_supabase_service_bypass_budget": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "unresolved_unbounded_selects": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "select_star_findings": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "commands": [
+        "npm test -- --runInBand tests/buyer/buyerSubcontractTab.decomposition.test.ts tests/buyer/buyerSubcontractTab.model.test.ts",
+        "npm test -- --runInBand tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts tests/api/buyerSubcontractAuthTransport.contract.test.ts tests/perf/performance-budget.test.ts"
+      ]
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "note": "Initial 120s tool timeout was rerun with a longer timeout and passed."
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "scanner_final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "post_push_release_verify": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    },
+    "artifact_json_parse": {
+      "status": "PASS"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_18_BUYER_SUBCONTRACT_TAB_DECOMPOSITION_matrix.json",
+    "artifacts/S_NIGHT_UI_18_BUYER_SUBCONTRACT_TAB_DECOMPOSITION_proof.md"
+  ]
+}

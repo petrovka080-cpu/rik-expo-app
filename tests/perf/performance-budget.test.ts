@@ -225,6 +225,12 @@ describe("performance budget — bundle module count", () => {
     const sNightUi19BuyerSubcontractViewFiles = [
       path.join(SRC, "screens", "buyer", "BuyerSubcontractTab.view.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi18BuyerSubcontractTabDecompositionFiles = [
+      path.join(SRC, "screens", "buyer", "BuyerSubcontractTab.model.ts"),
+      path.join(SRC, "screens", "buyer", "useBuyerSubcontractActions.ts"),
+      path.join(SRC, "screens", "buyer", "useBuyerSubcontractDataModel.ts"),
+      path.join(SRC, "screens", "buyer", "useBuyerSubcontractEditorState.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle42DirectorMetricsTransportFiles = [
       path.join(SRC, "screens", "director", "director.metrics.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -684,6 +690,7 @@ describe("performance budget — bundle module count", () => {
     // S_RUNTIME_07 adds one permanent CalcModal controller boundary.
     // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
     // S_NIGHT_UI_19 adds one permanent BuyerSubcontractTab render view boundary.
+    // S_NIGHT_UI_18 adds four permanent BuyerSubcontractTab model/controller boundaries.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -713,6 +720,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(sNightUi19BuyerSubcontractViewFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi18BuyerSubcontractTabDecompositionFiles).toBeLessThanOrEqual(4);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sNightUi13DirectorReportsModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
@@ -839,6 +847,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -
         sAuditBattle41BuyerSubcontractFormModelFiles -
         sNightUi19BuyerSubcontractViewFiles -
+        sNightUi18BuyerSubcontractTabDecompositionFiles -
         sAuditBattle42DirectorMetricsTransportFiles -
         sAuditBattle45MapScreenStyleBoundaryFiles -
         sNightUi13DirectorReportsModalStyleBoundaryFiles -
