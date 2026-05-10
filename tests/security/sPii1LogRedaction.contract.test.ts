@@ -27,7 +27,7 @@ describe("S-PII-1 log redaction source contracts", () => {
   });
 
   it("summarizes CalcModal RPC payload diagnostics instead of logging raw payload values", () => {
-    const source = read("src/components/foreman/CalcModal.tsx");
+    const source = read("src/components/foreman/useCalcModalController.ts");
 
     expect(source).not.toContain('console.error("[CalcModal][rpc_calc_work_kit]", { payload, error })');
     expect(source).toContain("summarizeCalcModalPayloadForLog(payload)");

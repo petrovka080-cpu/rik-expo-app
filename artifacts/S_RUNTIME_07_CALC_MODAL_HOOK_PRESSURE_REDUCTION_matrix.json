@@ -1,0 +1,129 @@
+{
+  "wave": "S_RUNTIME_07_CALC_MODAL_HOOK_PRESSURE_REDUCTION",
+  "final_status": "GREEN_CALC_MODAL_HOOK_PRESSURE_REDUCED",
+  "started_from": {
+    "head": "f2bb5c82fcc12a59d4d9f3bcc2f9258207cde735",
+    "origin_main": "f2bb5c82fcc12a59d4d9f3bcc2f9258207cde735",
+    "ahead_behind": "0/0",
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/components/foreman/CalcModal.tsx",
+    "src/components/foreman/useCalcModalController.ts",
+    "tests/foreman/calcModalController.decomposition.test.ts",
+    "tests/api/calcModalRpcTransportBoundary.contract.test.ts",
+    "tests/security/sPii1LogRedaction.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "Fresh architecture scanner showed CalcModal.tsx as the highest remaining TSX hook-pressure owner at 41 hook call-sites.",
+  "change_summary": [
+    "Extracted CalcModal keyboard, toast, form, parsing, field synchronization, RPC calculation, redaction diagnostics, and add-to-request orchestration into useCalcModalController.",
+    "Kept CalcModal.tsx as a thin Modal and CalcModalContent render shell.",
+    "Preserved CalcModalContent props, calculation RPC transport boundary, payload summary redaction, close/back behavior, calculate/send behavior, and field validation behavior.",
+    "Updated focused source contracts and performance module budget for one permanent CalcModal controller boundary."
+  ],
+  "before_after_metrics": {
+    "calc_modal_before": {
+      "hook_call_sites": 41,
+      "imports": 12,
+      "lines": 478,
+      "size_kb": 13
+    },
+    "calc_modal_after": {
+      "hook_call_sites": 1,
+      "imports": 4,
+      "lines": 24,
+      "size_kb": 1
+    },
+    "new_boundary": {
+      "file": "src/components/foreman/useCalcModalController.ts",
+      "hook_call_sites": 43,
+      "imports": 11,
+      "lines": 485,
+      "size_kb": 13
+    },
+    "component_debt_scanner": {
+      "hook_pressure_component_count_before": 7,
+      "hook_pressure_component_count_after": 6,
+      "calc_modal_removed_from_top_hook_pressure": true
+    },
+    "delta": {
+      "calc_modal_hook_call_sites": -40,
+      "calc_modal_imports": -8,
+      "calc_modal_lines": -454,
+      "calc_modal_size_kb": -12
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/foreman/CalcModal.test.tsx tests/foreman/calcModalController.decomposition.test.ts tests/foreman/calcModalContent.decomposition.test.ts tests/api/calcModalRpcTransportBoundary.contract.test.ts tests/security/sPii1LogRedaction.contract.test.ts tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts tests/perf/performance-budget.test.ts",
+      "result": "7 suites passed, 35 tests passed"
+    },
+    "typescript": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_jest": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "682 suites passed, 1 skipped; 4036 tests passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+      "direct_supabase_service_bypasses": 0,
+      "direct_supabase_exception_unclassified": 0,
+      "production_raw_loop_unapproved": 0,
+      "hook_pressure_component_count": 6,
+      "cache_allowed_route": "marketplace.catalog.search",
+      "cache_route_scoped": true,
+      "rate_limit_canary_route": "marketplace.catalog.search",
+      "rate_limit_canary_percent": 1
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "forbidden_pattern_sweep": {
+      "status": "PASS",
+      "patterns": [
+        "type-ignore directive",
+        "unsafe any cast",
+        "empty catch block"
+      ]
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_07_CALC_MODAL_HOOK_PRESSURE_REDUCTION_matrix.json','utf8'))\""
+    },
+    "post_push_release_verify": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_type_ignore_directive_added": true,
+    "no_unsafe_any_cast_added": true,
+    "no_empty_catch_block_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load_test": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_cache_route_expansion": true,
+    "no_cache_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
