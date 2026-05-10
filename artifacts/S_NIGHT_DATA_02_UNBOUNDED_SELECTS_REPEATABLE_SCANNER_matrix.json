@@ -1,0 +1,153 @@
+{
+  "wave": "S_NIGHT_DATA_02_UNBOUNDED_SELECTS_REPEATABLE_SCANNER",
+  "final_status": "GREEN_UNBOUNDED_SELECTS_REPEATABLE_SCANNER_READY",
+  "generatedAt": "2026-05-10T15:10:36.133Z",
+  "startedFrom": {
+    "head": "83b4f4799b2a9730ef8d56930424403d9071cedd",
+    "origin_main": "83b4f4799b2a9730ef8d56930424403d9071cedd",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "scope": {
+    "roots": [
+      "src",
+      "app"
+    ],
+    "extensions": [
+      ".ts",
+      ".tsx"
+    ],
+    "excludedFilePatterns": [
+      "*.test.ts(x)",
+      "*.spec.ts(x)",
+      "*.contract.ts(x)",
+      "*.d.ts"
+    ],
+    "ignoresCommentsAndStringLiterals": true,
+    "excludedNonSupabaseSelectCalls": 10,
+    "classifier": "AST-light balanced-call scanner with Supabase chain/context heuristics; no production calls and no DB writes"
+  },
+  "metrics": {
+    "totalSelectCalls": 284,
+    "scannerScope": "src/** and app/** TypeScript/TSX runtime files; excludes tests/specs/contracts, comments, string literals, and non-Supabase Platform.select calls",
+    "excludedNonSupabaseSelectCalls": 10,
+    "currentUnresolvedUnboundedSelects": 0,
+    "selectStarCount": 36,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "alreadyClassifiedCount": 91,
+    "alreadyBoundedCount": 246,
+    "domainBoundedCount": 31,
+    "exportAllowlistCount": 7,
+    "realCodeFixCandidates": 0,
+    "unboundedWithoutDetectedLimitRangeSingle": 38,
+    "topRiskFiles": [
+      {
+        "file": "src/lib/api/pdf_proposal.ts",
+        "high": 0,
+        "medium": 3,
+        "total": 3,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/screens/contractor/contractor.pdfService.ts",
+        "high": 0,
+        "medium": 2,
+        "total": 2,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/lib/api/director_reports.naming.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/lib/pdf/pdf.builder.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/screens/subcontracts/subcontracts.shared.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      }
+    ],
+    "byAction": {
+      "already_bounded": 246,
+      "domain_bounded": 31,
+      "export_allowlist": 7
+    },
+    "byRisk": {
+      "low": 276,
+      "medium": 8
+    },
+    "byQueryType": {
+      "lookup": 158,
+      "list": 25,
+      "reference": 53,
+      "existence": 23,
+      "aggregation": 8,
+      "export": 17
+    }
+  },
+  "selectedFiles": [
+    "artifacts/S_NIGHT_DATA_02_UNBOUNDED_SELECTS_REPEATABLE_SCANNER_matrix.json",
+    "artifacts/S_NIGHT_DATA_02_UNBOUNDED_SELECTS_REPEATABLE_SCANNER_proof.md",
+    "artifacts/S_NIGHT_DATA_02_UNBOUNDED_SELECTS_REPEATABLE_SCANNER_inventory.json"
+  ],
+  "reasonSelected": "Repeatable scanner wave to make exact unbounded select inventory reproducible from the current checkout.",
+  "gates": {
+    "focusedTests": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "npmTestRunInBand": "pass",
+    "architectureScanner": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerifyPostPush": "pending_post_push_clean_tree",
+    "artifactJsonParse": "pass"
+  },
+  "negativeConfirmations": {
+    "toolingOnlyCodeChanged": true,
+    "runtimeCodeChanged": false,
+    "productionTouched": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveDml": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "secretsPrinted": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "preWaveBaseline": {
+    "commands": [
+      "git fetch origin main",
+      "git status --short --branch",
+      "git rev-list --left-right --count HEAD...origin/main"
+    ],
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "releaseVerifyPreCommit": {
+    "status": "blocked_dirty_worktree_expected_before_commit",
+    "reason": "release guard requires a clean repository; post-push verify will be run after commit/push"
+  }
+}
