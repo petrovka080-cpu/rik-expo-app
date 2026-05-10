@@ -84,8 +84,9 @@
       "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_matrix.json','utf8')); JSON.parse(require('fs').readFileSync('artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_inventory_delta.json','utf8'));\""
     },
     "post_push_release_verify": {
-      "status": "pending",
-      "command": "npm run release:verify -- --json"
+      "status": "pass",
+      "command": "npm run release:verify -- --json",
+      "summary": "post-push verify passed with headMatchesOriginMain=true and ahead/behind 0/0"
     }
   },
   "negative_confirmations": {

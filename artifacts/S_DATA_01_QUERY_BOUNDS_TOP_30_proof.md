@@ -62,7 +62,7 @@ The selection covers the user-priority files plus scanner-listed broad reads (`s
 - architecture scanner: PASS (`serviceBypassFindings=0`, `transportControlledFindings=173`, `totalFindings=220`)
 - git diff check: PASS
 - artifact JSON parse: PASS
-- post-push release verify: pending
+- post-push release verify: PASS (`npm run release:verify -- --json`)
 
 ## Negative Confirmations
 
