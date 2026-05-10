@@ -934,7 +934,6 @@ const renderProof = (payload: SLoad01ArtifactPayload): string => {
     `- no spend cap changes: ${payload.safety.spendCapChanged ? "NO" : "YES"}`,
     `- no cache config changes: ${payload.safety.cacheConfigChanged ? "NO" : "YES"}`,
     `- no rate-limit changes: ${payload.safety.rateLimitChanged ? "NO" : "YES"}`,
-    "",
   ];
   return `${lines.join("\n")}\n`;
 };

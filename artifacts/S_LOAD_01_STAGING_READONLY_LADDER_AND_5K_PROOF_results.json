@@ -1,0 +1,804 @@
+{
+  "wave": "S_LOAD_01_STAGING_READONLY_LADDER_AND_5K_PROOF",
+  "final_status": "BLOCKED_STAGING_LOAD_ABORTED_SAFELY",
+  "generatedAt": "2026-05-10T14:35:41.399Z",
+  "mode": "staging-readonly-ramped-load-proof",
+  "allowLive": true,
+  "environment": {
+    "canRunLive": true,
+    "missingKeys": [],
+    "presentKeys": [
+      "STAGING_SUPABASE_URL",
+      "STAGING_SUPABASE_READONLY_KEY"
+    ],
+    "stagingBffBaseUrlPresent": true,
+    "productionFallbackUsed": false,
+    "secretsPrinted": false
+  },
+  "approvals": {
+    "commonPresent": true,
+    "phaseBPresent": true,
+    "commonKeys": [
+      {
+        "key": "S_LOAD_PROOF_STAGING_READONLY_ONLY_APPROVED",
+        "present": true
+      },
+      {
+        "key": "S_LOAD_PROOF_NO_BUSINESS_MUTATIONS_APPROVED",
+        "present": true
+      },
+      {
+        "key": "S_LOAD_PROOF_ABORT_ON_HEALTH_READY_FAILURE_APPROVED",
+        "present": true
+      },
+      {
+        "key": "S_LOAD_PROOF_ABORT_ON_ERROR_RATE_APPROVED",
+        "present": true
+      },
+      {
+        "key": "S_LOAD_PROOF_REDACTED_METRICS_ONLY_APPROVED",
+        "present": true
+      }
+    ],
+    "phaseBKeys": [
+      {
+        "key": "S_5K_STAGING_READONLY_LOAD_PROOF_APPROVED",
+        "present": true
+      },
+      {
+        "key": "S_5K_STAGING_READONLY_LOAD_PROOF_ROLLBACK_ABORT_APPROVED",
+        "present": true
+      }
+    ]
+  },
+  "safety": {
+    "stagingOnly": true,
+    "readonlySyntheticOnly": true,
+    "productionTouched": false,
+    "productionMutated": false,
+    "dbWritesInitiated": false,
+    "migrationsRun": false,
+    "supabaseProjectChanged": false,
+    "spendCapChanged": false,
+    "realtimeLoadRun": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "cacheConfigChanged": false,
+    "rateLimitChanged": false,
+    "routeScopeChanged": false,
+    "redactedMetricsOnly": true,
+    "loadRunnerSafetyDryRun": {
+      "status": "passed",
+      "realNetworkCallsMade": false,
+      "stagingCallsMade": false,
+      "productionCallsMade": false,
+      "scenariosValidated": 6,
+      "readOnlyScenariosDefined": true,
+      "mutationScenariosRejected": true,
+      "maxObservedConcurrency": 6,
+      "maxConcurrencyRespected": true,
+      "abortCriteriaValidated": true,
+      "timeoutHandlingPassed": false,
+      "redactionPassed": true,
+      "logs": [
+        {
+          "statusClass": "ok",
+          "count": 1,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "catalog.readonly",
+          "errorCategory": null
+        },
+        {
+          "statusClass": "ok",
+          "count": 1,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "director.reports.readonly",
+          "errorCategory": null
+        },
+        {
+          "statusClass": "ok",
+          "count": 1,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "warehouse.readonly",
+          "errorCategory": null
+        },
+        {
+          "statusClass": "ok",
+          "count": 0,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "bff.health",
+          "errorCategory": null
+        },
+        {
+          "statusClass": "ok",
+          "count": 0,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "bff.ready",
+          "errorCategory": null
+        },
+        {
+          "statusClass": "ok",
+          "count": 0,
+          "latencyPercentiles": {
+            "p50": 25,
+            "p95": 25,
+            "p99": 25
+          },
+          "endpointCategoryName": "bff.read_ports",
+          "errorCategory": null
+        }
+      ],
+      "errors": []
+    },
+    "scenarioValidation": {
+      "passed": true,
+      "errors": [],
+      "readOnlyScenarioCount": 6,
+      "mutationScenarioCount": 0,
+      "categories": [
+        "catalog_readonly",
+        "director_reports_readonly",
+        "warehouse_readonly",
+        "bff_health_ready_probe",
+        "bff_readonly_probe"
+      ]
+    },
+    "railsValidation": {
+      "passed": true,
+      "errors": []
+    }
+  },
+  "routeScope": {
+    "routeCount": 5,
+    "readonlyRpcTargets": [
+      {
+        "id": "warehouse_issue_queue_page_25",
+        "rpcName": "warehouse_issue_queue_scope_v4",
+        "readOnly": true
+      },
+      {
+        "id": "warehouse_incoming_queue_page_30",
+        "rpcName": "warehouse_incoming_queue_scope_v1",
+        "readOnly": true
+      },
+      {
+        "id": "warehouse_stock_page_60",
+        "rpcName": "warehouse_stock_scope_v2",
+        "readOnly": true
+      },
+      {
+        "id": "buyer_summary_inbox_page_25",
+        "rpcName": "buyer_summary_inbox_scope_v1",
+        "readOnly": true
+      },
+      {
+        "id": "buyer_summary_buckets_fixed_scope",
+        "rpcName": "buyer_summary_buckets_scope_v1",
+        "readOnly": true
+      }
+    ],
+    "noRouteExpansion": true
+  },
+  "blockers": [],
+  "steps": [
+    {
+      "id": "staging_readonly_100",
+      "phase": "phase_a_ladder",
+      "requestCount": 100,
+      "status": "green",
+      "skipReason": null,
+      "failureReasons": [],
+      "durationMs": 8426,
+      "concurrency": {
+        "configured": 100,
+        "maxObserved": 25
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100
+        ],
+        "batchCount": 6,
+        "maxBatchConcurrency": 25,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": false,
+        "reason": null
+      },
+      "healthBefore": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "healthAfter": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 100,
+        "totalRequestsAttempted": 100,
+        "totalRequestsCompleted": 100,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": 520,
+        "latencyP95": 1239,
+        "latencyP99": 1299,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 100,
+        "maxConcurrencyObserved": 25,
+        "statusClassCounts": {
+          "ok": 100
+        },
+        "errorCategoryCounts": {},
+        "healthReadyDuring": []
+      },
+      "targetSummaries": [
+        {
+          "targetId": "warehouse_issue_queue_page_25",
+          "domain": "warehouse",
+          "rpcName": "warehouse_issue_queue_scope_v4",
+          "readOnly": true,
+          "sampleCount": 20,
+          "medianLatencyMs": 612.5,
+          "maxLatencyMs": 1217,
+          "medianPayloadBytes": 18776,
+          "maxPayloadBytes": 18776,
+          "maxRowCount": 25,
+          "recommendation": "watch",
+          "errorCategories": []
+        },
+        {
+          "targetId": "warehouse_incoming_queue_page_30",
+          "domain": "warehouse",
+          "rpcName": "warehouse_incoming_queue_scope_v1",
+          "readOnly": true,
+          "sampleCount": 20,
+          "medianLatencyMs": 461.5,
+          "maxLatencyMs": 1201,
+          "medianPayloadBytes": 7182,
+          "maxPayloadBytes": 7182,
+          "maxRowCount": 16,
+          "recommendation": "watch",
+          "errorCategories": []
+        },
+        {
+          "targetId": "warehouse_stock_page_60",
+          "domain": "warehouse",
+          "rpcName": "warehouse_stock_scope_v2",
+          "readOnly": true,
+          "sampleCount": 20,
+          "medianLatencyMs": 467.5,
+          "maxLatencyMs": 1248,
+          "medianPayloadBytes": 16791,
+          "maxPayloadBytes": 16791,
+          "maxRowCount": 60,
+          "recommendation": "watch",
+          "errorCategories": []
+        },
+        {
+          "targetId": "buyer_summary_inbox_page_25",
+          "domain": "buyer",
+          "rpcName": "buyer_summary_inbox_scope_v1",
+          "readOnly": true,
+          "sampleCount": 20,
+          "medianLatencyMs": 840,
+          "maxLatencyMs": 1318,
+          "medianPayloadBytes": 14187,
+          "maxPayloadBytes": 14187,
+          "maxRowCount": 25,
+          "recommendation": "watch",
+          "errorCategories": []
+        },
+        {
+          "targetId": "buyer_summary_buckets_fixed_scope",
+          "domain": "buyer",
+          "rpcName": "buyer_summary_buckets_scope_v1",
+          "readOnly": true,
+          "sampleCount": 20,
+          "medianLatencyMs": 519.5,
+          "maxLatencyMs": 606,
+          "medianPayloadBytes": 28333,
+          "maxPayloadBytes": 28333,
+          "maxRowCount": 132,
+          "recommendation": "safe_now",
+          "errorCategories": []
+        }
+      ],
+      "thresholdDecision": {
+        "passed": true,
+        "hardFailure": false,
+        "reasons": [],
+        "completionPolicy": "error_budget"
+      }
+    },
+    {
+      "id": "staging_readonly_250",
+      "phase": "phase_a_ladder",
+      "requestCount": 250,
+      "status": "aborted",
+      "skipReason": null,
+      "failureReasons": [
+        "p95_latency_exceeded"
+      ],
+      "durationMs": 7614,
+      "concurrency": {
+        "configured": 250,
+        "maxObserved": 100
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250
+        ],
+        "batchCount": 8,
+        "maxBatchConcurrency": 100,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": true,
+        "reason": "p95_latency_exceeded"
+      },
+      "healthBefore": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "healthAfter": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 250,
+        "totalRequestsAttempted": 250,
+        "totalRequestsCompleted": 250,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": 499,
+        "latencyP95": 2499,
+        "latencyP99": 2541,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 250,
+        "maxConcurrencyObserved": 100,
+        "statusClassCounts": {
+          "ok": 250
+        },
+        "errorCategoryCounts": {},
+        "healthReadyDuring": [
+          {
+            "health": 200,
+            "ready": 200
+          }
+        ]
+      },
+      "targetSummaries": [
+        {
+          "targetId": "warehouse_issue_queue_page_25",
+          "domain": "warehouse",
+          "rpcName": "warehouse_issue_queue_scope_v4",
+          "readOnly": true,
+          "sampleCount": 50,
+          "medianLatencyMs": 427,
+          "maxLatencyMs": 457,
+          "medianPayloadBytes": 18776,
+          "maxPayloadBytes": 18776,
+          "maxRowCount": 25,
+          "recommendation": "safe_now",
+          "errorCategories": []
+        },
+        {
+          "targetId": "warehouse_incoming_queue_page_30",
+          "domain": "warehouse",
+          "rpcName": "warehouse_incoming_queue_scope_v1",
+          "readOnly": true,
+          "sampleCount": 50,
+          "medianLatencyMs": 462,
+          "maxLatencyMs": 1277,
+          "medianPayloadBytes": 7182,
+          "maxPayloadBytes": 7182,
+          "maxRowCount": 16,
+          "recommendation": "watch",
+          "errorCategories": []
+        },
+        {
+          "targetId": "warehouse_stock_page_60",
+          "domain": "warehouse",
+          "rpcName": "warehouse_stock_scope_v2",
+          "readOnly": true,
+          "sampleCount": 50,
+          "medianLatencyMs": 859,
+          "maxLatencyMs": 1560,
+          "medianPayloadBytes": 16791,
+          "maxPayloadBytes": 16791,
+          "maxRowCount": 60,
+          "recommendation": "optimize_next",
+          "errorCategories": []
+        },
+        {
+          "targetId": "buyer_summary_inbox_page_25",
+          "domain": "buyer",
+          "rpcName": "buyer_summary_inbox_scope_v1",
+          "readOnly": true,
+          "sampleCount": 50,
+          "medianLatencyMs": 2249,
+          "maxLatencyMs": 2555,
+          "medianPayloadBytes": 14187,
+          "maxPayloadBytes": 14187,
+          "maxRowCount": 25,
+          "recommendation": "optimize_next",
+          "errorCategories": []
+        },
+        {
+          "targetId": "buyer_summary_buckets_fixed_scope",
+          "domain": "buyer",
+          "rpcName": "buyer_summary_buckets_scope_v1",
+          "readOnly": true,
+          "sampleCount": 50,
+          "medianLatencyMs": 901.5,
+          "maxLatencyMs": 1890,
+          "medianPayloadBytes": 28333,
+          "maxPayloadBytes": 28333,
+          "maxRowCount": 132,
+          "recommendation": "optimize_next",
+          "errorCategories": []
+        }
+      ],
+      "thresholdDecision": {
+        "passed": true,
+        "hardFailure": false,
+        "reasons": [],
+        "completionPolicy": "error_budget"
+      }
+    },
+    {
+      "id": "staging_readonly_500",
+      "phase": "phase_a_ladder",
+      "requestCount": 500,
+      "status": "not_run",
+      "skipReason": "prior_step_not_green:250",
+      "failureReasons": [
+        "prior_step_not_green:250"
+      ],
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 500,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null,
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 500,
+        "totalRequestsAttempted": 0,
+        "totalRequestsCompleted": 0,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": null,
+        "latencyP95": null,
+        "latencyP99": null,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 500,
+        "maxConcurrencyObserved": 0,
+        "statusClassCounts": {},
+        "errorCategoryCounts": {},
+        "healthReadyDuring": []
+      },
+      "targetSummaries": [],
+      "thresholdDecision": null
+    },
+    {
+      "id": "staging_readonly_1000",
+      "phase": "phase_a_ladder",
+      "requestCount": 1000,
+      "status": "not_run",
+      "skipReason": "prior_step_not_green:250",
+      "failureReasons": [
+        "prior_step_not_green:250"
+      ],
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 1000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null,
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 1000,
+        "totalRequestsAttempted": 0,
+        "totalRequestsCompleted": 0,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": null,
+        "latencyP95": null,
+        "latencyP99": null,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 1000,
+        "maxConcurrencyObserved": 0,
+        "statusClassCounts": {},
+        "errorCategoryCounts": {},
+        "healthReadyDuring": []
+      },
+      "targetSummaries": [],
+      "thresholdDecision": null
+    },
+    {
+      "id": "staging_readonly_2000",
+      "phase": "phase_b_5k",
+      "requestCount": 2000,
+      "status": "not_run",
+      "skipReason": "prior_step_not_green:250",
+      "failureReasons": [
+        "prior_step_not_green:250"
+      ],
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 2000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000,
+          1500,
+          2000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 1000,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null,
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 2000,
+        "totalRequestsAttempted": 0,
+        "totalRequestsCompleted": 0,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": null,
+        "latencyP95": null,
+        "latencyP99": null,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 2000,
+        "maxConcurrencyObserved": 0,
+        "statusClassCounts": {},
+        "errorCategoryCounts": {},
+        "healthReadyDuring": []
+      },
+      "targetSummaries": [],
+      "thresholdDecision": null
+    },
+    {
+      "id": "staging_readonly_5000",
+      "phase": "phase_b_5k",
+      "requestCount": 5000,
+      "status": "not_run",
+      "skipReason": "prior_step_not_green:250",
+      "failureReasons": [
+        "prior_step_not_green:250"
+      ],
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 5000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000,
+          1500,
+          2000,
+          3000,
+          4000,
+          5000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 1000,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null,
+      "metrics": {
+        "targetCount": 5,
+        "totalRequestsPlanned": 5000,
+        "totalRequestsAttempted": 0,
+        "totalRequestsCompleted": 0,
+        "totalRequestsAborted": 0,
+        "errorCount": 0,
+        "observedErrorRate": 0,
+        "latencyP50": null,
+        "latencyP95": null,
+        "latencyP99": null,
+        "timeoutCount": 0,
+        "maxConcurrencyConfigured": 5000,
+        "maxConcurrencyObserved": 0,
+        "statusClassCounts": {},
+        "errorCategoryCounts": {},
+        "healthReadyDuring": []
+      },
+      "targetSummaries": [],
+      "thresholdDecision": null
+    }
+  ],
+  "gates": {
+    "focusedTests": "not_run",
+    "tsc": "not_run",
+    "lint": "not_run",
+    "npmTestRunInBand": "not_run",
+    "architectureScanner": "not_run",
+    "gitDiffCheck": "not_run",
+    "releaseVerifyPostPush": "not_run",
+    "artifactJsonParse": "not_run"
+  }
+}

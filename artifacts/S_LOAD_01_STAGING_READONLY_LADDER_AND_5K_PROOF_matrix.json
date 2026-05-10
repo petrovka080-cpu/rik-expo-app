@@ -1,0 +1,392 @@
+{
+  "wave": "S_LOAD_01_STAGING_READONLY_LADDER_AND_5K_PROOF",
+  "final_status": "BLOCKED_STAGING_LOAD_ABORTED_SAFELY",
+  "generatedAt": "2026-05-10T14:35:41.399Z",
+  "environment": {
+    "canRunLive": true,
+    "missingKeys": [],
+    "presentKeys": [
+      "STAGING_SUPABASE_URL",
+      "STAGING_SUPABASE_READONLY_KEY"
+    ],
+    "stagingBffBaseUrlPresent": true,
+    "productionFallbackUsed": false,
+    "secretsPrinted": false
+  },
+  "approvals": {
+    "commonPresent": true,
+    "phaseBPresent": true
+  },
+  "routeScope": {
+    "routeCount": 5,
+    "readonlyRpcTargets": [
+      {
+        "id": "warehouse_issue_queue_page_25",
+        "rpcName": "warehouse_issue_queue_scope_v4",
+        "readOnly": true
+      },
+      {
+        "id": "warehouse_incoming_queue_page_30",
+        "rpcName": "warehouse_incoming_queue_scope_v1",
+        "readOnly": true
+      },
+      {
+        "id": "warehouse_stock_page_60",
+        "rpcName": "warehouse_stock_scope_v2",
+        "readOnly": true
+      },
+      {
+        "id": "buyer_summary_inbox_page_25",
+        "rpcName": "buyer_summary_inbox_scope_v1",
+        "readOnly": true
+      },
+      {
+        "id": "buyer_summary_buckets_fixed_scope",
+        "rpcName": "buyer_summary_buckets_scope_v1",
+        "readOnly": true
+      }
+    ],
+    "noRouteExpansion": true
+  },
+  "steps": [
+    {
+      "requestCount": 100,
+      "phase": "phase_a_ladder",
+      "status": "green",
+      "durationMs": 8426,
+      "concurrency": {
+        "configured": 100,
+        "maxObserved": 25
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100
+        ],
+        "batchCount": 6,
+        "maxBatchConcurrency": 25,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 100,
+      "error": 0,
+      "errorRate": 0,
+      "p50": 520,
+      "p95": 1239,
+      "p99": 1299,
+      "abortStatus": {
+        "triggered": false,
+        "reason": null
+      },
+      "healthBefore": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "healthAfter": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      }
+    },
+    {
+      "requestCount": 250,
+      "phase": "phase_a_ladder",
+      "status": "aborted",
+      "durationMs": 7614,
+      "concurrency": {
+        "configured": 250,
+        "maxObserved": 100
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250
+        ],
+        "batchCount": 8,
+        "maxBatchConcurrency": 100,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 250,
+      "error": 0,
+      "errorRate": 0,
+      "p50": 499,
+      "p95": 2499,
+      "p99": 2541,
+      "abortStatus": {
+        "triggered": true,
+        "reason": "p95_latency_exceeded"
+      },
+      "healthBefore": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      },
+      "healthAfter": {
+        "stagingBffBaseUrlPresent": true,
+        "productionTargetUsed": false,
+        "health": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null
+        },
+        "ready": {
+          "statusCode": 200,
+          "ok": true,
+          "errorCategory": null,
+          "readPortsConfigured": true,
+          "mutationRoutesEnabled": false
+        }
+      }
+    },
+    {
+      "requestCount": 500,
+      "phase": "phase_a_ladder",
+      "status": "not_run",
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 500,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 0,
+      "error": 0,
+      "errorRate": 0,
+      "p50": null,
+      "p95": null,
+      "p99": null,
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null
+    },
+    {
+      "requestCount": 1000,
+      "phase": "phase_a_ladder",
+      "status": "not_run",
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 1000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 500,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 0,
+      "error": 0,
+      "errorRate": 0,
+      "p50": null,
+      "p95": null,
+      "p99": null,
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null
+    },
+    {
+      "requestCount": 2000,
+      "phase": "phase_b_5k",
+      "status": "not_run",
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 2000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000,
+          1500,
+          2000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 1000,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 0,
+      "error": 0,
+      "errorRate": 0,
+      "p50": null,
+      "p95": null,
+      "p99": null,
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null
+    },
+    {
+      "requestCount": 5000,
+      "phase": "phase_b_5k",
+      "status": "not_run",
+      "durationMs": 0,
+      "concurrency": {
+        "configured": 5000,
+        "maxObserved": 0
+      },
+      "rampConfig": {
+        "steps": [
+          5,
+          10,
+          15,
+          20,
+          25,
+          50,
+          100,
+          250,
+          500,
+          750,
+          1000,
+          1500,
+          2000,
+          3000,
+          4000,
+          5000
+        ],
+        "batchCount": 0,
+        "maxBatchConcurrency": 0,
+        "cooldownMs": 1000,
+        "requestTimeoutMs": 8000,
+        "maxP95LatencyMs": 1500,
+        "maxErrorRate": 0.02
+      },
+      "success": 0,
+      "error": 0,
+      "errorRate": 0,
+      "p50": null,
+      "p95": null,
+      "p99": null,
+      "abortStatus": {
+        "triggered": false,
+        "reason": "prior_step_not_green:250"
+      },
+      "healthBefore": null,
+      "healthAfter": null
+    }
+  ],
+  "gates": {
+    "focusedTests": "not_run",
+    "tsc": "not_run",
+    "lint": "not_run",
+    "npmTestRunInBand": "not_run",
+    "architectureScanner": "not_run",
+    "gitDiffCheck": "not_run",
+    "releaseVerifyPostPush": "not_run",
+    "artifactJsonParse": "not_run"
+  },
+  "safety": {
+    "stagingOnly": true,
+    "readonlySyntheticOnly": true,
+    "productionTouched": false,
+    "productionMutated": false,
+    "dbWritesInitiated": false,
+    "migrationsRun": false,
+    "supabaseProjectChanged": false,
+    "spendCapChanged": false,
+    "realtimeLoadRun": false,
+    "redactedMetricsOnly": true,
+    "loadRunnerSafetyDryRunStatus": "passed"
+  }
+}
