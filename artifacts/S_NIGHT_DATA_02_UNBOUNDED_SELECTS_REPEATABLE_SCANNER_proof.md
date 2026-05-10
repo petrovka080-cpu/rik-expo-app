@@ -54,7 +54,7 @@ generated_at: 2026-05-10T15:10:36.133Z
 ## Post-Push Release Verify
 
 - command: `npm run release:verify -- --json`
-- head commit: `fe980bb30930f2cc5097645f8fae6962a351c0d7`
+- commit SHA: recorded in final response after the artifact-only proof commit
 - HEAD == origin/main: PASS
 - ahead/behind: 0/0
 - worktree clean: PASS

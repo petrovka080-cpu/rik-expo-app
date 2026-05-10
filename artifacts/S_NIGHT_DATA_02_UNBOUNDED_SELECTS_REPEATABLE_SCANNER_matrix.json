@@ -149,12 +149,12 @@
   "postPushReleaseVerify": {
     "status": "pass",
     "command": "npm run release:verify -- --json",
-    "headCommit": "fe980bb30930f2cc5097645f8fae6962a351c0d7",
     "headMatchesOriginMain": true,
     "ahead": 0,
     "behind": 0,
     "worktreeClean": true,
     "readiness": "pass",
-    "otaDisposition": "skip"
+    "otaDisposition": "skip",
+    "commitShaRecordedInFinalResponse": true
   }
 }
