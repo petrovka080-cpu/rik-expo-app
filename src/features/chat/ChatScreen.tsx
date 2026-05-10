@@ -45,6 +45,16 @@ function getParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? String(value[0] || "") : String(value || "");
 }
 
+const CHAT_THREAD_LIST_TUNING = {
+  initialNumToRender: 16,
+  maxToRenderPerBatch: 12,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: Platform.OS !== "web",
+} as const;
+
+const chatMessageKeyExtractor = (item: ChatMessage) => item.id;
+
 export default function ChatScreen() {
   const params = useLocalSearchParams<{
     listingId?: string | string[];
@@ -201,6 +211,18 @@ export default function ChatScreen() {
     [currentUserId, currentUserName, handleDelete],
   );
 
+  const chatEmptyComponent = useMemo(
+    () => (
+      <View style={styles.centerState}>
+        <Text style={styles.stateTitle}>Пока пусто</Text>
+        <Text style={styles.stateText}>
+          Начните переписку по этому объявлению.
+        </Text>
+      </View>
+    ),
+    [],
+  );
+
   if (!listingId) {
     return (
       <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
@@ -347,17 +369,11 @@ export default function ChatScreen() {
             ref={listRef}
             data={messages}
             estimatedItemSize={88}
-            keyExtractor={(item) => item.id}
+            {...CHAT_THREAD_LIST_TUNING}
+            keyExtractor={chatMessageKeyExtractor}
             renderItem={renderItem}
             contentContainerStyle={styles.listContent}
-            ListEmptyComponent={
-              <View style={styles.centerState}>
-                <Text style={styles.stateTitle}>Пока пусто</Text>
-                <Text style={styles.stateText}>
-                  Начните переписку по этому объявлению.
-                </Text>
-              </View>
-            }
+            ListEmptyComponent={chatEmptyComponent}
           />
         )}
 

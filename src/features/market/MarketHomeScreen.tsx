@@ -4,6 +4,7 @@ import {
   Alert,
   Linking,
   ListRenderItemInfo,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -68,6 +69,16 @@ const DEFAULT_FEED_STATE: FeedState = {
 };
 
 const MARKET_HOME_SURFACE = "home_feed";
+
+const MARKET_HOME_FEED_FLATLIST_TUNING = {
+  initialNumToRender: 6,
+  maxToRenderPerBatch: 6,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: Platform.OS !== "web",
+} as const;
+
+const marketHomeListingKeyExtractor = (item: MarketHomeListingCard) => item.id;
 
 export default function MarketHomeScreen() {
   const { width } = useWindowDimensions();
@@ -468,10 +479,11 @@ export default function MarketHomeScreen() {
         ref={listRef}
         data={feedPhase === "ready" || feed.listings.length > 0 ? filteredListings : []}
         key={numColumns}
-        keyExtractor={(item) => item.id}
+        keyExtractor={marketHomeListingKeyExtractor}
         renderItem={renderCard}
         numColumns={numColumns}
         estimatedItemSize={360}
+        {...MARKET_HOME_FEED_FLATLIST_TUNING}
         ListHeaderComponent={header}
         ListFooterComponent={footer}
         ListEmptyComponent={renderFeedPlaceholder}

@@ -25,6 +25,13 @@ type InboxCellRenderer = NonNullable<FlashListProps<InboxSheetRow>["CellRenderer
 const FOOTER_BOTTOM_INSET = 18;
 const FOOTER_RESERVED_HEIGHT = 86 + FOOTER_BOTTOM_INSET;
 const STICKY_HEADER_INDICES = [1];
+const BUYER_INBOX_SHEET_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: false,
+} as const;
 
 const getInboxSheetItemType = (item: InboxSheetRow) =>
   "__kind" in item && item.__kind === "attachments" ? "attachments" : "line";
@@ -206,10 +213,10 @@ export function BuyerInboxSheetBody({
         stickyHeaderIndices={STICKY_HEADER_INDICES}
         estimatedItemSize={184}
         getItemType={getInboxSheetItemType}
+        {...BUYER_INBOX_SHEET_FLATLIST_TUNING}
         keyExtractor={keyExtractor}
         keyboardShouldPersistTaps="always"
         nestedScrollEnabled
-        removeClippedSubviews={false}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={contentContainerStyle}
         onScrollToIndexFailed={handleScrollToIndexFailed}
