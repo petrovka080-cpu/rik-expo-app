@@ -1,0 +1,107 @@
+{
+  "wave": "S_NIGHT_DATA_02_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A",
+  "final_status": "GREEN_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A",
+  "target": "src/lib/api/buyer.ts",
+  "generatedAt": "2026-05-10T15:40:14.426Z",
+  "before": {
+    "totalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "selectStarCount": 36,
+    "buyerSelectCalls": 7,
+    "buyerSelectStarCount": 3,
+    "buyerUnresolvedUnboundedSelects": 0,
+    "buyerTargetedShapes": [
+      {
+        "line": 339,
+        "queryString": "proposal_id, request_item_id",
+        "action": "already_bounded",
+        "risk": "low"
+      },
+      {
+        "line": 366,
+        "queryString": "proposal_id, status, sent_to_accountant_at, submitted_at",
+        "action": "already_bounded",
+        "risk": "low"
+      },
+      {
+        "line": 445,
+        "queryString": "*",
+        "action": "already_bounded",
+        "risk": "low"
+      },
+      {
+        "line": 525,
+        "queryString": "id, status",
+        "action": "already_bounded",
+        "risk": "low"
+      },
+      {
+        "line": 639,
+        "queryString": "*",
+        "action": "already_bounded",
+        "risk": "low"
+      },
+      {
+        "line": 652,
+        "queryString": "*",
+        "action": "already_bounded",
+        "risk": "low"
+      }
+    ]
+  },
+  "after": {
+    "totalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "selectStarCount": 33,
+    "buyerSelectCalls": 7,
+    "buyerSelectStarCount": 0,
+    "buyerUnresolvedUnboundedSelects": 0,
+    "buyerTargetedLiteralShapesRemaining": 0
+  },
+  "delta": {
+    "globalUnresolvedUnboundedSelects": 0,
+    "globalSelectStarCount": -3,
+    "buyerSelectStarCount": -3,
+    "buyerTargetedLiteralShapesRemaining": 0
+  },
+  "fixedQueryShapes": [
+    {
+      "before": ".select(\"*\") in proposal_items reject context",
+      "after": ".select(BUYER_REJECT_CONTEXT_SELECT) plus existing paged read-through"
+    },
+    {
+      "before": ".select(\"*\") in request_items compatibility fallback",
+      "after": ".select(BUYER_REQUEST_ITEMS_FALLBACK_SELECT_WITH_REQUEST_STATUS) plus existing paged read-through"
+    },
+    {
+      "before": ".select(\"proposal_id, request_item_id\") literal fanout",
+      "after": ".select(BUYER_PROPOSAL_ITEMS_VIEW_SELECT) with input-id ceiling"
+    },
+    {
+      "before": ".select(\"proposal_id, status, sent_to_accountant_at, submitted_at\") literal fanout",
+      "after": ".select(BUYER_PROPOSAL_LIFECYCLE_SELECT) with input-id ceiling"
+    },
+    {
+      "before": ".select(\"id, status\") request status map",
+      "after": ".select(BUYER_REQUEST_STATUS_SELECT) with input-id ceiling"
+    }
+  ],
+  "safety": {
+    "runtimeCodeChanged": true,
+    "targetOnlyRuntimeFile": true,
+    "productionTouched": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveDml": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "secretsPrinted": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "pdfExportFlowsChanged": false,
+    "paginationChanged": false
+  }
+}

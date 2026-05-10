@@ -1,0 +1,117 @@
+{
+  "wave": "S_NIGHT_DATA_02_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A",
+  "final_status": "GREEN_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A",
+  "target": "src/lib/api/buyer.ts",
+  "selectedFiles": [
+    "src/lib/api/buyer.ts",
+    "tests/api/buyerUnboundedSelectsBatchA.contract.test.ts",
+    "artifacts/S_NIGHT_DATA_02_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A_matrix.json",
+    "artifacts/S_NIGHT_DATA_02_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A_proof.md",
+    "artifacts/S_NIGHT_DATA_02_BUYER_TS_UNBOUNDED_SELECTS_REAL_FIX_BATCH_A_delta.json"
+  ],
+  "reasonSelected": "buyer.ts contained the requested real query shapes; patch replaces wildcard selects with explicit columns and adds bounded input-id fanout proof.",
+  "preWaveBaseline": {
+    "commands": [
+      "git fetch origin main",
+      "git status --short --branch",
+      "git rev-list --left-right --count HEAD...origin/main"
+    ],
+    "head": "15966cd45272b79faefbfa0833da08ee4cd96bc8",
+    "originMain": "15966cd45272b79faefbfa0833da08ee4cd96bc8",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "metrics": {
+    "before": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 36,
+      "buyerSelectCalls": 7,
+      "buyerSelectStarCount": 3,
+      "buyerUnresolvedUnboundedSelects": 0,
+      "buyerTargetedShapes": [
+        {
+          "line": 339,
+          "queryString": "proposal_id, request_item_id",
+          "action": "already_bounded",
+          "risk": "low"
+        },
+        {
+          "line": 366,
+          "queryString": "proposal_id, status, sent_to_accountant_at, submitted_at",
+          "action": "already_bounded",
+          "risk": "low"
+        },
+        {
+          "line": 445,
+          "queryString": "*",
+          "action": "already_bounded",
+          "risk": "low"
+        },
+        {
+          "line": 525,
+          "queryString": "id, status",
+          "action": "already_bounded",
+          "risk": "low"
+        },
+        {
+          "line": 639,
+          "queryString": "*",
+          "action": "already_bounded",
+          "risk": "low"
+        },
+        {
+          "line": 652,
+          "queryString": "*",
+          "action": "already_bounded",
+          "risk": "low"
+        }
+      ]
+    },
+    "after": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 33,
+      "buyerSelectCalls": 7,
+      "buyerSelectStarCount": 0,
+      "buyerUnresolvedUnboundedSelects": 0,
+      "buyerTargetedLiteralShapesRemaining": 0
+    },
+    "delta": {
+      "globalUnresolvedUnboundedSelects": 0,
+      "globalSelectStarCount": -3,
+      "buyerSelectStarCount": -3,
+      "buyerTargetedLiteralShapesRemaining": 0
+    }
+  },
+  "gates": {
+    "focusedTests": "pass",
+    "tsc": "pass",
+    "lint": "pass",
+    "npmTestRunInBand": "pass",
+    "architectureScanner": "pass",
+    "gitDiffCheck": "pass",
+    "releaseVerifyPostPush": "pending_post_push_clean_tree",
+    "artifactJsonParse": "pass"
+  },
+  "safety": {
+    "runtimeCodeChanged": true,
+    "targetOnlyRuntimeFile": true,
+    "productionTouched": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveDml": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "secretsPrinted": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "pdfExportFlowsChanged": false,
+    "paginationChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

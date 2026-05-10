@@ -130,6 +130,15 @@ const BUYER_API_SAFE_LIST_PAGE_DEFAULTS = {
   maxPageSize: 100,
   maxRows: 5000,
 };
+const BUYER_API_INPUT_ID_MAX = BUYER_API_SAFE_LIST_PAGE_DEFAULTS.maxRows;
+const BUYER_PROPOSAL_ITEMS_VIEW_SELECT = "proposal_id, request_item_id";
+const BUYER_PROPOSAL_LIFECYCLE_SELECT =
+  "proposal_id, status, sent_to_accountant_at, submitted_at";
+const BUYER_REJECT_CONTEXT_SELECT =
+  "request_item_id, proposal_id, supplier, price, note, director_comment, director_decision, updated_at, created_at";
+const BUYER_REQUEST_STATUS_SELECT = "id, status";
+const BUYER_REQUEST_ITEMS_FALLBACK_SELECT_WITH_REQUEST_STATUS =
+  "id, request_id, name_human, qty, uom, app_code, status, director_reject_note, director_reject_at, kind, request_status";
 const BUYER_INBOX_LEGACY_SCOPE_RPC = "buyer_summary_inbox_scope_v1";
 const BUYER_INBOX_LEGACY_SCOPE_PAGE_DEFAULTS = {
   pageSize: 100,
@@ -195,9 +204,33 @@ class BuyerInboxLegacyWindowCeilingError extends Error {
   }
 }
 
+class BuyerApiInputIdCeilingError extends Error {
+  constructor(context: string, count: number) {
+    super(
+      `${context} exceeded max input id ceiling (${count}>${BUYER_API_INPUT_ID_MAX})`,
+    );
+    this.name = "BuyerApiInputIdCeilingError";
+  }
+}
+
 const isBuyerInboxLegacyCeilingError = (error: unknown): boolean =>
   error instanceof BuyerInboxLegacyWindowCeilingError ||
   parseErr(error).toLowerCase().includes("max row ceiling");
+
+const normalizeBuyerApiInputIds = (
+  values: readonly (string | null | undefined)[],
+  context: string,
+): string[] => {
+  const ids = Array.from(
+    new Set(
+      values.map((id) => String(id || "").trim()).filter(Boolean),
+    ),
+  );
+  if (ids.length > BUYER_API_INPUT_ID_MAX) {
+    throw new BuyerApiInputIdCeilingError(context, ids.length);
+  }
+  return ids;
+};
 
 const toNonNegativeInt = (value: unknown, fallback: number): number => {
   const parsed = Number(value);
@@ -320,14 +353,11 @@ const rowTimestampMs = (...values: (string | null | undefined)[]): number => {
 };
 
 async function loadLatestProposalLifecycleByRequestItem(
-  requestItemIds: string[],
+  requestItemIds: readonly string[],
 ): Promise<Map<string, ProposalLifecycleRow>> {
-  const ids = Array.from(
-    new Set(
-      (requestItemIds || [])
-        .map((id) => String(id || "").trim())
-        .filter(Boolean),
-    ),
+  const ids = normalizeBuyerApiInputIds(
+    requestItemIds,
+    "loadLatestProposalLifecycleByRequestItem.requestItemIds",
   );
   if (!ids.length) return new Map();
 
@@ -336,7 +366,7 @@ async function loadLatestProposalLifecycleByRequestItem(
       createGuardedPagedQuery(
         client
           .from("proposal_items_view")
-          .select("proposal_id, request_item_id")
+          .select(BUYER_PROPOSAL_ITEMS_VIEW_SELECT)
           .in("request_item_id", ids)
           .order("request_item_id", { ascending: true })
           .order("proposal_id", {
@@ -349,12 +379,9 @@ async function loadLatestProposalLifecycleByRequestItem(
   if (piQ.error) throw piQ.error;
 
   const proposalItems = Array.isArray(piQ.data) ? piQ.data : [];
-  const proposalIds = Array.from(
-    new Set(
-      proposalItems
-        .map((row) => String(row?.proposal_id || "").trim())
-        .filter(Boolean),
-    ),
+  const proposalIds = normalizeBuyerApiInputIds(
+    proposalItems.map((row) => row?.proposal_id),
+    "loadLatestProposalLifecycleByRequestItem.proposalIds",
   );
   if (!proposalIds.length) return new Map();
 
@@ -363,7 +390,7 @@ async function loadLatestProposalLifecycleByRequestItem(
       createGuardedPagedQuery(
         client
           .from("v_proposals_summary")
-          .select("proposal_id, status, sent_to_accountant_at, submitted_at")
+          .select(BUYER_PROPOSAL_LIFECYCLE_SELECT)
           .in("proposal_id", proposalIds)
           .order("proposal_id", {
             ascending: true,
@@ -424,14 +451,21 @@ async function enrichRejectedRows(
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return [];
 
-  const rejectedIds = Array.from(
-    new Set(
+  let rejectedIds: string[] = [];
+  try {
+    rejectedIds = normalizeBuyerApiInputIds(
       list
         .filter((row) => isRejectedInboxRow(row))
-        .map((row) => String(row?.request_item_id || "").trim())
-        .filter(Boolean),
-    ),
-  );
+        .map((row) => row?.request_item_id),
+      "enrichRejectedRows.rejectedRequestItemIds",
+    );
+  } catch (inputErr) {
+    logBuyerApiDebug(
+      "[listBuyerInbox] reject context input ceiling failed:",
+      parseErr(inputErr),
+    );
+    return list;
+  }
   if (!rejectedIds.length) return list;
 
   let ctxData: BuyerRejectContextRow[] = [];
@@ -442,7 +476,7 @@ async function enrichRejectedRows(
       createGuardedPagedQuery(
         client
           .from("proposal_items")
-          .select("*")
+          .select(BUYER_REJECT_CONTEXT_SELECT)
           .in("request_item_id", rejectedIds)
           .order("id", {
             ascending: true,
@@ -509,20 +543,19 @@ async function filterInboxByRequestStatus(
   const list = Array.isArray(rows) ? rows : [];
   if (!list.length) return [];
 
-  const reqIds = Array.from(
-    new Set(
-      list.map((r) => String(r?.request_id || "").trim()).filter(Boolean),
-    ),
-  );
-  if (!reqIds.length) return [];
-
   try {
+    const reqIds = normalizeBuyerApiInputIds(
+      list.map((row) => row?.request_id),
+      "filterInboxByRequestStatus.requestIds",
+    );
+    if (!reqIds.length) return [];
+
     const { data, error } = await loadPagedBuyerApiRows<RequestStatusRow>(
       () =>
         createGuardedPagedQuery(
           client
             .from("requests")
-            .select("id, status")
+            .select(BUYER_REQUEST_STATUS_SELECT)
             .in("id", reqIds)
             .order("id", {
               ascending: true,
@@ -636,7 +669,7 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
             createGuardedPagedQuery(
               client
                 .from("request_items")
-                .select("*")
+                .select(BUYER_REQUEST_ITEMS_FALLBACK_SELECT_WITH_REQUEST_STATUS)
                 .order("created_at", { ascending: false })
                 .order("id", {
                   ascending: false,
@@ -649,11 +682,14 @@ export async function listBuyerInbox(): Promise<BuyerInboxRow[]> {
         loadPagedBuyerApiRows<FallbackBuyerRow>(
           () =>
             createGuardedPagedQuery(
-              client.from("request_items").select("*").order("id", {
-                ascending: false,
-              }),
+              client
+                .from("request_items")
+                .select(BUYER_REQUEST_ITEMS_FALLBACK_SELECT_WITH_REQUEST_STATUS)
+                .order("id", {
+                  ascending: false,
+                }),
               isFallbackBuyerRow,
-              "listBuyerInbox.fallback.requestItemsById",
+              "listBuyerInbox.fallback.requestItemsWithStatusById",
             ),
         ),
     ] as const;
