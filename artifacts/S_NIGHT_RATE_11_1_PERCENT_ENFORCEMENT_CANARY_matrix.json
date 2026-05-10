@@ -1,0 +1,90 @@
+{
+  "wave": "S_NIGHT_RATE_11_1_PERCENT_ENFORCEMENT_CANARY",
+  "generated_at": "2026-05-10T18:59:07.296Z",
+  "head": "a89b4c62d31b450cd51aa392e9f09cfbeb70d56f",
+  "origin_main": "a89b4c62d31b450cd51aa392e9f09cfbeb70d56f",
+  "branch": "main",
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean": true,
+  "wave10_prerequisite_status": "GREEN_RATE_LIMIT_SHADOW_SMOKE_MARKETPLACE_SEARCH",
+  "route": "marketplace.catalog.search",
+  "final_status": "GREEN_RATE_LIMIT_1PCT_ENFORCEMENT_CANARY",
+  "approvals_present": true,
+  "env_snapshot_captured": true,
+  "env_snapshot_redacted": {
+    "SCALE_RATE_ENFORCEMENT_MODE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_PRODUCTION_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_STORE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_NAMESPACE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "BFF_RATE_LIMIT_METADATA_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    }
+  },
+  "env_already_matching": true,
+  "apply_required": false,
+  "render_env_write_triggered": false,
+  "deploy_triggered": false,
+  "rollback_required": false,
+  "rollback_triggered": false,
+  "route_allowlist_count": 1,
+  "route_scoped_enforcement": true,
+  "canary_percent": 1,
+  "broad_rate_limit_enabled": false,
+  "all_routes_enabled": false,
+  "cache_changes": false,
+  "selected_subject_proof": "selected_redacted",
+  "selected_subject_selection_attempts": 156,
+  "non_selected_subject_proof": "non_selected_redacted",
+  "non_selected_subject_selection_attempts": 1,
+  "selected_request_status_class": "2xx",
+  "selected_request_error_category": "none",
+  "non_selected_request_status_class": "2xx",
+  "non_selected_request_error_category": "none",
+  "private_smoke_status_class": "2xx",
+  "private_smoke_error_category": "none",
+  "private_smoke_would_allow_verified": true,
+  "private_smoke_would_throttle_verified": true,
+  "private_smoke_cleanup_ok": true,
+  "private_smoke_ttl_bounded": true,
+  "private_smoke_enforcement_enabled": false,
+  "private_smoke_production_user_blocked": false,
+  "production_health_before": 200,
+  "production_ready_before": 200,
+  "production_health_after": 200,
+  "production_ready_after": 200,
+  "total_production_read_route_requests": 2,
+  "total_synthetic_diagnostic_requests": 1,
+  "secrets_printed": false,
+  "env_values_printed": false,
+  "urls_printed": false,
+  "raw_keys_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "business_rows_printed": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "no_5_10_percent_expansion": true
+}
