@@ -224,6 +224,20 @@ export type ArchitectureAntiRegressionReport = {
     rateLimitCanaryRoute: string;
     rateLimitCanaryPercent: number;
   };
+  cacheColdMissProof: {
+    proofTestPresent: boolean;
+    matrixArtifactPresent: boolean;
+    proofArtifactPresent: boolean;
+    matrixStatus: string;
+    deterministicProofReady: boolean;
+    knownEmptyKeyProof: boolean;
+    firstMissSecondHitProof: boolean;
+    utf8SafeProof: boolean;
+    metricsRedactedProof: boolean;
+    routeScopeUnchanged: boolean;
+    rollbackSafeProof: boolean;
+    productionCacheStillDisabled: boolean;
+  };
   productionRawLoops: {
     rawLoopBudget: 0;
     totalFindings: number;
@@ -274,6 +288,10 @@ const GOD_COMPONENT_LINE_THRESHOLD = 500;
 const HOOK_PRESSURE_THRESHOLD = 25;
 const CACHE_RATE_ALLOWED_ROUTE = "marketplace.catalog.search";
 const RATE_LIMIT_ALLOWED_PERCENT = 1;
+const CACHE_COLD_MISS_PROOF_TEST_PATH = "tests/scale/cacheColdMissDeterministicProof.test.ts";
+const CACHE_COLD_MISS_MATRIX_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_matrix.json";
+const CACHE_COLD_MISS_PROOF_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_proof.md";
+const CACHE_COLD_MISS_READY_STATUS = "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY";
 const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
@@ -903,6 +921,56 @@ export function evaluateProductionReadonlyCanaryGuardrail(): {
 const readProjectFile = (projectRoot: string, relativePath: string): string =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
+const safeReadProjectFile = (params: {
+  readFile: ReadFile;
+  relativePath: string;
+}): string | null => {
+  try {
+    return params.readFile(params.relativePath);
+  } catch (_error: unknown) {
+    return null;
+  }
+};
+
+const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const parseJsonRecord = (source: string | null): Record<string, unknown> | null => {
+  if (!source) return null;
+  try {
+    const parsed: unknown = JSON.parse(source);
+    return isPlainRecord(parsed) ? parsed : null;
+  } catch (_error: unknown) {
+    return null;
+  }
+};
+
+const recordValue = (record: Record<string, unknown> | null, key: string): unknown =>
+  record ? record[key] : undefined;
+
+const recordChild = (record: Record<string, unknown> | null, key: string): Record<string, unknown> | null => {
+  const value = recordValue(record, key);
+  return isPlainRecord(value) ? value : null;
+};
+
+const recordString = (record: Record<string, unknown> | null, key: string): string =>
+  typeof recordValue(record, key) === "string" ? String(recordValue(record, key)) : "";
+
+const recordNumber = (record: Record<string, unknown> | null, key: string): number | null => {
+  const value = recordValue(record, key);
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+};
+
+const recordBoolean = (record: Record<string, unknown> | null, key: string): boolean | null => {
+  const value = recordValue(record, key);
+  return typeof value === "boolean" ? value : null;
+};
+
+const recordStringArray = (record: Record<string, unknown> | null, key: string): readonly string[] => {
+  const value = recordValue(record, key);
+  return Array.isArray(value) && value.every((entry) => typeof entry === "string") ? value : [];
+};
+
 const extractConstString = (source: string, constName: string): string | null => {
   const escapedName = constName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = new RegExp(`const\\s+${escapedName}\\s*=\\s*\"([^\"]+)\"`).exec(source);
@@ -960,6 +1028,122 @@ export function evaluateCacheRateScopeGuardrail(params: {
       cacheAllowedRoute: cacheConfig.routeAllowlist[0] ?? "",
       rateLimitCanaryRoute: rateLimitRoute,
       rateLimitCanaryPercent: Number.isFinite(rateLimitPercent) ? rateLimitPercent : -1,
+    },
+  };
+}
+
+export function evaluateCacheColdMissProofGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: ArchitectureAntiRegressionReport["cacheColdMissProof"];
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const testSource = safeReadProjectFile({ readFile, relativePath: CACHE_COLD_MISS_PROOF_TEST_PATH });
+  const matrixSource = safeReadProjectFile({ readFile, relativePath: CACHE_COLD_MISS_MATRIX_PATH });
+  const proofSource = safeReadProjectFile({ readFile, relativePath: CACHE_COLD_MISS_PROOF_PATH });
+  const matrix = parseJsonRecord(matrixSource);
+  const baseline = recordChild(matrix, "baseline");
+  const proofStrategy = recordChild(matrix, "proofStrategy");
+  const routeScope = recordChild(matrix, "routeScope");
+  const rollback = recordChild(matrix, "rollbackAndInvalidation");
+  const beforeAfter = recordChild(matrix, "beforeAfterMetrics");
+  const after = recordChild(beforeAfter, "after");
+  const safety = recordChild(matrix, "safety");
+  const readThroughAllowedRoutes = recordStringArray(routeScope, "readThroughAllowedRoutes");
+  const publicCatalogReadThroughRoutes = recordStringArray(routeScope, "publicCatalogReadThroughRoutes");
+
+  const proofTestPresent =
+    testSource !== null &&
+    testSource.includes("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF") &&
+    testSource.includes("expect(await redis.adapter.get(proofKey)).toBeNull()") &&
+    testSource.includes("serverTiming: expect.objectContaining({ cacheHit: false })") &&
+    testSource.includes("serverTiming: expect.objectContaining({ cacheHit: true })") &&
+    testSource.includes("invalidateByTag(\"marketplace\")") &&
+    testSource.includes("resolveCacheShadowRuntimeConfig({}).enabled");
+  const matrixArtifactPresent = matrix !== null;
+  const proofArtifactPresent =
+    proofSource !== null &&
+    proofSource.includes(CACHE_COLD_MISS_READY_STATUS) &&
+    proofSource.includes("No production cache enablement") &&
+    proofSource.includes("Supabase Realtime status remains");
+  const matrixStatus = recordString(matrix, "status");
+  const deterministicProofReady =
+    matrixStatus === CACHE_COLD_MISS_READY_STATUS &&
+    recordBoolean(after, "deterministicColdMissProof") === true;
+  const knownEmptyKeyProof =
+    recordBoolean(after, "knownEmptyKeyProof") === true &&
+    recordBoolean(proofStrategy, "knownEmptyBeforeFirstRequest") === true;
+  const firstMissSecondHitProof =
+    recordBoolean(after, "firstMissSecondHitProof") === true &&
+    recordNumber(after, "missCount") === 1 &&
+    recordNumber(after, "hitCount") === 1 &&
+    recordNumber(after, "readThroughCount") === 1 &&
+    recordNumber(after, "providerCalls") === 1;
+  const utf8SafeProof =
+    recordBoolean(after, "utf8SafeProof") === true &&
+    recordBoolean(proofStrategy, "utf8Safe") === true;
+  const metricsRedactedProof =
+    recordBoolean(proofStrategy, "metricsRedacted") === true &&
+    recordBoolean(proofStrategy, "routeMetricsRedactionSafe") === true &&
+    recordBoolean(proofStrategy, "rawCacheKeyReturned") === false &&
+    recordBoolean(proofStrategy, "rawPayloadLogged") === false &&
+    recordBoolean(proofStrategy, "piiLogged") === false;
+  const routeScopeUnchanged =
+    readThroughAllowedRoutes.length === 1 &&
+    readThroughAllowedRoutes[0] === CACHE_RATE_ALLOWED_ROUTE &&
+    publicCatalogReadThroughRoutes.length === 1 &&
+    publicCatalogReadThroughRoutes[0] === CACHE_RATE_ALLOWED_ROUTE &&
+    recordBoolean(routeScope, "routeExpansion") === false &&
+    recordBoolean(routeScope, "readRoutesCacheDefaultEnabled") === false;
+  const rollbackSafeProof =
+    recordBoolean(after, "rollbackSafeProof") === true &&
+    recordBoolean(rollback, "cacheInvalidationExecutionEnabledByDefault") === false &&
+    recordNumber(rollback, "rollbackDeletedEntries") === 1 &&
+    recordBoolean(rollback, "postRollbackReadNull") === true &&
+    recordBoolean(rollback, "dbWrites") === false;
+  const productionCacheStillDisabled =
+    recordBoolean(baseline, "productionCacheEnabled") === false &&
+    recordBoolean(baseline, "readThroughV1DefaultEnabled") === false &&
+    recordBoolean(baseline, "cachePoliciesDefaultEnabled") === false &&
+    recordBoolean(safety, "productionCacheEnabled") === false &&
+    recordBoolean(safety, "cacheLeftEnabled") === false &&
+    recordBoolean(safety, "broadCacheConfigChange") === false;
+
+  const errors = [
+    ...(proofTestPresent ? [] : ["cache_cold_miss_proof_test_missing_or_weakened"]),
+    ...(matrixArtifactPresent ? [] : ["cache_cold_miss_matrix_missing_or_invalid"]),
+    ...(proofArtifactPresent ? [] : ["cache_cold_miss_proof_artifact_missing_or_weakened"]),
+    ...(deterministicProofReady ? [] : [`cache_cold_miss_status_not_ready:${matrixStatus || "missing"}`]),
+    ...(knownEmptyKeyProof ? [] : ["cache_cold_miss_known_empty_key_not_proven"]),
+    ...(firstMissSecondHitProof ? [] : ["cache_cold_miss_first_miss_second_hit_not_proven"]),
+    ...(utf8SafeProof ? [] : ["cache_cold_miss_utf8_not_proven"]),
+    ...(metricsRedactedProof ? [] : ["cache_cold_miss_metrics_not_redaction_safe"]),
+    ...(routeScopeUnchanged ? [] : ["cache_cold_miss_route_scope_changed"]),
+    ...(rollbackSafeProof ? [] : ["cache_cold_miss_rollback_not_safe"]),
+    ...(productionCacheStillDisabled ? [] : ["cache_cold_miss_production_cache_not_disabled"]),
+  ];
+
+  return {
+    check: {
+      name: "cache_cold_miss_deterministic_proof",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      proofTestPresent,
+      matrixArtifactPresent,
+      proofArtifactPresent,
+      matrixStatus,
+      deterministicProofReady,
+      knownEmptyKeyProof,
+      firstMissSecondHitProof,
+      utf8SafeProof,
+      metricsRedactedProof,
+      routeScopeUnchanged,
+      rollbackSafeProof,
+      productionCacheStillDisabled,
     },
   };
 }
@@ -1475,6 +1659,7 @@ export function runArchitectureAntiRegressionSuite(
   });
   const productionReadonlyCanary = evaluateProductionReadonlyCanaryGuardrail();
   const cacheRateScope = evaluateCacheRateScopeGuardrail({ projectRoot });
+  const cacheColdMissProof = evaluateCacheColdMissProofGuardrail({ projectRoot });
   const productionRawLoops = evaluateProductionRawLoopGuardrail({
     findings: scanProductionRawLoops(projectRoot),
   });
@@ -1492,6 +1677,7 @@ export function runArchitectureAntiRegressionSuite(
     directSupabaseExceptionContainment.check,
     productionReadonlyCanary.check,
     cacheRateScope.check,
+    cacheColdMissProof.check,
     productionRawLoops.check,
     unsafeCastRatchet.check,
     componentDebtCheck,
@@ -1506,6 +1692,7 @@ export function runArchitectureAntiRegressionSuite(
     directSupabaseExceptionContainment: directSupabaseExceptionContainment.summary,
     productionReadonlyCanary: productionReadonlyCanary.summary,
     cacheRateScope: cacheRateScope.summary,
+    cacheColdMissProof: cacheColdMissProof.summary,
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
     componentDebt,
@@ -1533,6 +1720,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(
     `direct_supabase_exception_unclassified: ${report.directSupabaseExceptionContainment.unclassifiedCurrentFindings}`,
   );
+  console.info(`cache_cold_miss_deterministic_proof: ${report.cacheColdMissProof.deterministicProofReady}`);
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);

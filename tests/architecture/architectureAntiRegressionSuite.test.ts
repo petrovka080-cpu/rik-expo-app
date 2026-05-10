@@ -1,6 +1,7 @@
 import {
   buildDirectSupabaseExceptionRegistry,
   classifyDirectSupabaseTransportOwner,
+  evaluateCacheColdMissProofGuardrail,
   evaluateCacheRateScopeGuardrail,
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
@@ -222,6 +223,109 @@ describe("architecture anti-regression suite", () => {
         "cache_canary_not_route_scoped",
         "rate_limit_canary_route_changed:proposal.submit",
         "rate_limit_canary_percent_changed:25",
+      ]),
+    );
+  });
+
+  it("ratchets deterministic cache cold-miss proof artifacts and invariants", () => {
+    const passing = evaluateCacheColdMissProofGuardrail({ projectRoot: process.cwd() });
+
+    expect(passing.check).toEqual({
+      name: "cache_cold_miss_deterministic_proof",
+      status: "pass",
+      errors: [],
+    });
+    expect(passing.summary).toEqual(
+      expect.objectContaining({
+        proofTestPresent: true,
+        matrixArtifactPresent: true,
+        proofArtifactPresent: true,
+        matrixStatus: "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY",
+        deterministicProofReady: true,
+        knownEmptyKeyProof: true,
+        firstMissSecondHitProof: true,
+        utf8SafeProof: true,
+        metricsRedactedProof: true,
+        routeScopeUnchanged: true,
+        rollbackSafeProof: true,
+        productionCacheStillDisabled: true,
+      }),
+    );
+
+    const failing = evaluateCacheColdMissProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "tests/scale/cacheColdMissDeterministicProof.test.ts") {
+          return "describe('S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF', () => undefined);";
+        }
+        if (relativePath === "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_proof.md") {
+          return "# weakened proof";
+        }
+        if (relativePath === "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_matrix.json") {
+          return JSON.stringify({
+            status: "BLOCKED_NO_SAFE_COLD_MISS_PROOF",
+            baseline: {
+              productionCacheEnabled: false,
+              readThroughV1DefaultEnabled: false,
+              cachePoliciesDefaultEnabled: false,
+            },
+            proofStrategy: {
+              knownEmptyBeforeFirstRequest: false,
+              utf8Safe: false,
+              metricsRedacted: false,
+              routeMetricsRedactionSafe: false,
+              rawCacheKeyReturned: true,
+              rawPayloadLogged: true,
+              piiLogged: true,
+            },
+            routeScope: {
+              readThroughAllowedRoutes: ["marketplace.catalog.search", "request.proposal.list"],
+              publicCatalogReadThroughRoutes: ["marketplace.catalog.search"],
+              routeExpansion: true,
+              readRoutesCacheDefaultEnabled: true,
+            },
+            rollbackAndInvalidation: {
+              cacheInvalidationExecutionEnabledByDefault: true,
+              rollbackDeletedEntries: 0,
+              postRollbackReadNull: false,
+              dbWrites: true,
+            },
+            beforeAfterMetrics: {
+              after: {
+                deterministicColdMissProof: false,
+                knownEmptyKeyProof: false,
+                firstMissSecondHitProof: false,
+                utf8SafeProof: false,
+                rollbackSafeProof: false,
+                missCount: 0,
+                hitCount: 0,
+                readThroughCount: 0,
+                providerCalls: 2,
+              },
+            },
+            safety: {
+              productionCacheEnabled: false,
+              cacheLeftEnabled: false,
+              broadCacheConfigChange: false,
+            },
+          });
+        }
+        throw new Error(`Unexpected file ${relativePath}`);
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "cache_cold_miss_proof_test_missing_or_weakened",
+        "cache_cold_miss_proof_artifact_missing_or_weakened",
+        "cache_cold_miss_status_not_ready:BLOCKED_NO_SAFE_COLD_MISS_PROOF",
+        "cache_cold_miss_known_empty_key_not_proven",
+        "cache_cold_miss_first_miss_second_hit_not_proven",
+        "cache_cold_miss_utf8_not_proven",
+        "cache_cold_miss_metrics_not_redaction_safe",
+        "cache_cold_miss_route_scope_changed",
+        "cache_cold_miss_rollback_not_safe",
       ]),
     );
   });

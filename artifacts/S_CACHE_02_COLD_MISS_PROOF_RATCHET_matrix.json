@@ -1,0 +1,69 @@
+{
+  "wave": "S_CACHE_02_COLD_MISS_PROOF_RATCHET",
+  "status": "GREEN_CACHE_COLD_MISS_PROOF_RATCHET_READY",
+  "mode": "repo-only architecture scanner ratchet",
+  "goal": "Make deterministic cold-miss proof a required architecture guard without enabling production cache.",
+  "baseline": {
+    "previousWave": "S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF",
+    "previousStatus": "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY",
+    "productionCacheEnabled": false,
+    "routeScope": ["marketplace.catalog.search"],
+    "architectureScannerAlreadyRouteScoped": true,
+    "architectureScannerColdMissProofRatchetBefore": false
+  },
+  "scannerRatchet": {
+    "checkName": "cache_cold_miss_deterministic_proof",
+    "requiresProofTest": true,
+    "requiresMatrixArtifact": true,
+    "requiresProofArtifact": true,
+    "requiresGreenMatrixStatus": true,
+    "requiresKnownEmptyKeyProof": true,
+    "requiresFirstMissSecondHitMetrics": true,
+    "requiresUtf8Proof": true,
+    "requiresRedactedMetrics": true,
+    "requiresRouteScopeUnchanged": true,
+    "requiresRollbackSafeProof": true,
+    "requiresProductionCacheDisabled": true,
+    "failingFixtureCovered": true
+  },
+  "beforeAfterMetrics": {
+    "before": {
+      "architectureScannerColdMissProofRatchet": false,
+      "architectureScannerCheckCount": 7,
+      "coldMissProofCanBeDeletedWithoutScannerFailure": true
+    },
+    "after": {
+      "architectureScannerColdMissProofRatchet": true,
+      "architectureScannerCheckCount": 8,
+      "coldMissProofCanBeDeletedWithoutScannerFailure": false,
+      "focusedSuites": 2,
+      "focusedTests": 16
+    }
+  },
+  "selectedFiles": [
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "artifacts/S_CACHE_02_COLD_MISS_PROOF_RATCHET_matrix.json",
+    "artifacts/S_CACHE_02_COLD_MISS_PROOF_RATCHET_proof.md"
+  ],
+  "reasonSelected": "The production-safe next priority after deterministic proof is preventing regression of that proof in the architecture scanner without changing app runtime behavior.",
+  "safety": {
+    "productionCacheEnabled": false,
+    "cacheLeftEnabled": false,
+    "runtimeLogicChanged": false,
+    "businessLogicChanged": false,
+    "broadCacheConfigChange": false,
+    "productionMutation": false,
+    "rateLimitChange": false,
+    "loadTest": false,
+    "dbWrites": false,
+    "supabaseProjectChanges": false,
+    "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+    "secretsPrinted": false,
+    "temporaryHooks": false,
+    "workarounds": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "tagsCreated": false,
+    "forcePush": false
+  }
+}
