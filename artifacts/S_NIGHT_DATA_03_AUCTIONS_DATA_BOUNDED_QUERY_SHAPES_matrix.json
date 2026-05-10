@@ -143,7 +143,19 @@
     },
     "releaseVerifyPostPush": {
       "command": "npm run release:verify -- --json",
-      "status": "pending_post_push"
+      "status": "pass",
+      "verifiedCommitSha": "78063957b0bc6228d16f4872d7cc6af3faca6575",
+      "headMatchesOriginMain": true,
+      "ahead": 0,
+      "behind": 0,
+      "worktreeClean": true,
+      "readiness": "pass",
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easBuildTriggered": false,
+      "easSubmitTriggered": false,
+      "secretsPrinted": false,
+      "finalArtifactCommitRequiresRepeatVerify": true
     }
   },
   "negativeConfirmations": {
@@ -166,5 +178,21 @@
     "migrations": false,
     "productionDataTouched": false
   },
-  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "postPushReleaseVerify": {
+    "command": "npm run release:verify -- --json",
+    "status": "pass",
+    "verifiedCommitSha": "78063957b0bc6228d16f4872d7cc6af3faca6575",
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktreeClean": true,
+    "readiness": "pass",
+    "otaDisposition": "allow",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "secretsPrinted": false,
+    "finalArtifactCommitRequiresRepeatVerify": true
+  }
 }
