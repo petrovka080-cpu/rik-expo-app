@@ -1,23 +1,12 @@
 // app/(tabs)/buyer.tsx
 import { formatRequestDisplay } from "../../lib/format";
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback } from 'react';
 import {
   Platform,
-  type ScrollView
 } from 'react-native';
-import { useLatest } from "../../lib/useLatest";
 import { pickFileAny } from "../../lib/filePick";
-import { KICK_THROTTLE_MS, TOAST_DEFAULT_MS } from "./buyerUi";
-import {
-  fmtLocal as fmtLocalHelper,
-  setDeadlineHours as setDeadlineHoursHelper,
-  isDeadlineHoursActive as isDeadlineHoursActiveHelper,
-  inferCountryCode as inferCountryCodeHelper,
-} from "./buyer.helpers";
-import {
-  selectPickedIds,
-} from "./buyer.selectors";
+import { KICK_THROTTLE_MS } from "./buyerUi";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { useBuyerDocuments } from "./useBuyerDocuments";
 
@@ -36,28 +25,16 @@ import {
   createProposalsBySupplier as apiCreateProposalsBySupplier,
 } from '../../lib/catalog_api';
 import { supabase } from '../../lib/supabaseClient';
-import { useBuyerFioConfirm } from "./useBuyerFioConfirm";
-import { useBuyerSheets } from "./hooks/useBuyerSheets";
-import { useBuyerRfqForm } from "./hooks/useBuyerRfqForm";
-import { useBuyerRfqPrefill } from "./hooks/useBuyerRfqPrefill";
 import { useBuyerDerived } from "./hooks/useBuyerDerived";
 import { useBuyerProposalCaches } from "./hooks/useBuyerProposalCaches";
-import { useBuyerRequestLabels } from "./hooks/useBuyerRequestLabels";
-import { useTimedToast } from "./hooks/useTimedToast";
 import { useBuyerTotals } from "./hooks/useBuyerTotals";
 import { useBuyerSelectionActions } from "./hooks/useBuyerSelectionActions";
-import { reportBuyerTabsScrollToStartFailure } from "./buyer.observability";
-import { useBuyerSelection } from "./hooks/useBuyerSelection";
 import { useBuyerState } from "./hooks/useBuyerState";
 import { useBuyerLoadingController } from "./hooks/useBuyerLoadingController";
 import { useBuyerSuppliers } from "./hooks/useBuyerSuppliers";
 import { useBuyerKeyboard } from "./hooks/useBuyerKeyboard";
-import { useBuyerHeaderCollapse } from "./hooks/useBuyerHeaderCollapse";
-import { useBuyerTabsAutoScroll } from "./hooks/useBuyerTabsAutoScroll";
-import { useBuyerAutoFio } from "./hooks/useBuyerAutoFio";
 import { useBuyerSupplierSuggestions } from "./hooks/useBuyerSupplierSuggestions";
 import { useBuyerAccountingModal } from "./hooks/useBuyerAccountingModal";
-import { buyerStyles } from "./buyer.styles";
 import { useBuyerEnsureAccountingFlags } from "./hooks/useBuyerEnsureAccountingFlags";
 import { useBuyerReworkFlow } from "./hooks/useBuyerReworkFlow";
 import { useBuyerProposalDetailsFlow } from "./hooks/useBuyerProposalDetailsFlow";
@@ -65,22 +42,18 @@ import { useBuyerAccountingSend } from "./hooks/useBuyerAccountingSend";
 import { useBuyerCreateGuards } from "./hooks/useBuyerCreateGuards";
 import { useBuyerCreateProposalsFlow } from "./hooks/useBuyerCreateProposalsFlow";
 import { useBuyerSheetTitle } from "./hooks/useBuyerSheetTitle";
-import { useBuyerRfqPublish } from "./hooks/useBuyerRfqPublish";
 import { useBuyerInboxRenderers } from "./hooks/useBuyerInboxRenderers";
 import { useBuyerProposalCardRenderer } from "./hooks/useBuyerProposalCardRenderer";
 import { useBuyerAlerts } from "./hooks/useBuyerAlerts";
-import { useBuyerScreenHeader } from "./hooks/useBuyerScreenHeader";
 import { useBuyerAccountingSheetState } from "./hooks/useBuyerAccountingSheetState";
 import { useBuyerProposalDetailsState } from "./hooks/useBuyerProposalDetailsState";
-import {
-  buildBuyerScreenViewModel,
-} from "./buyer.screen.model";
 import {
   useBuyerAttachmentBlockAutoClose,
   useBuyerPreloadProposalRequestNumbers,
   useBuyerScreenLoadingPublisher,
 } from "./hooks/useBuyerScreenSideEffects";
-import { useBuyerScreenStoreViewModel } from "./hooks/useBuyerScreenStoreViewModel";
+import { useBuyerScreenUiState } from "./hooks/useBuyerScreenUiState";
+import { useBuyerScreenChromeModel } from "./hooks/useBuyerScreenChromeModel";
 
 const isWeb = Platform.OS === 'web';
 
@@ -89,35 +62,33 @@ export function BuyerScreen() {
   const busy = useGlobalBusy();
   const { alertUser: screenAlertUser } = useBuyerAlerts();
   const {
+    s,
     tab,
     setTab,
     searchQuery,
-    setFilters,
     setLoading,
     setRefreshReason,
-  } = useBuyerScreenStoreViewModel();
-  const [buyerFio, setBuyerFio] = useState<string>("");
-  const {
+    setSearchQuery,
+    buyerFio,
+    buyerFioRef,
     buyerHistory,
     isFioConfirmVisible,
     isFioLoading,
     setIsFioConfirmVisible,
     handleFioConfirm,
-  } = useBuyerFioConfirm({ setBuyerFio });
-
-
-  const { picked, setPicked, meta, setMeta, attachments, setAttachments } = useBuyerSelection();
-
-
-  const pickedIds = useMemo(() => selectPickedIds(picked), [picked]);
-
-  const pickedIdsRef = useLatest(pickedIds);
-  const metaRef = useLatest(meta);
-  const attachmentsRef = useLatest(attachments);
-  const buyerFioRef = useLatest(buyerFio);
-
-  const [showAttachBlock, setShowAttachBlock] = useState(false);
-  const {
+    picked,
+    setPicked,
+    pickedRef,
+    pickedIds,
+    pickedIdsRef,
+    meta,
+    setMeta,
+    metaRef,
+    attachments,
+    setAttachments,
+    attachmentsRef,
+    showAttachBlock,
+    setShowAttachBlock,
     sheetKind,
     selectedRequestId,
     isSheetOpen,
@@ -127,35 +98,14 @@ export function BuyerScreen() {
     openReworkSheet,
     openPropDetailsSheet,
     openRfqSheet,
-  } = useBuyerSheets({
-    onCloseExtras: () => setShowAttachBlock(false),
-  });
-
-  const { toast, showToast } = useTimedToast(TOAST_DEFAULT_MS);
-  const rfqForm = useBuyerRfqForm();
-  const {
-    rfqBusy,
-    setRfqBusy,
-    rfqDeadlineIso,
-    setRfqDeadlineIso,
-    rfqDeliveryDays,
-    rfqPhone,
-    setRfqPhone,
-    rfqCountryCode,
-    setRfqCountryCode,
-    rfqEmail,
-    setRfqEmail,
-    rfqCity,
-    rfqAddressText,
-    rfqNote,
-    rfqVisibility,
-    rfqCountryCodeTouched,
-  } = rfqForm;
-
-  const rfqCityRef = useLatest(rfqCity);
-  const rfqEmailRef = useLatest(rfqEmail);
-  const rfqPhoneRef = useLatest(rfqPhone);
-  const {
+    toast,
+    showToast,
+    rfqForm,
+    publishRfq,
+    fmtLocal,
+    setDeadlineHours,
+    isDeadlineHoursActive,
+    inferCountryCode,
     measuredHeaderMax,
     scrollY,
     headerHeight,
@@ -163,28 +113,15 @@ export function BuyerScreen() {
     subOpacity,
     headerShadow,
     onHeaderMeasure,
-  } = useBuyerHeaderCollapse();
-
-  const fmtLocal = useCallback((iso: string) => fmtLocalHelper(iso), []);
-
-  const setDeadlineHours = useCallback((hours: number) => {
-    setDeadlineHoursHelper(hours, setRfqDeadlineIso);
-  }, [setRfqDeadlineIso]);
-
-  const isDeadlineHoursActive = useCallback((hours: number) => {
-    return isDeadlineHoursActiveHelper(hours, rfqDeadlineIso);
-  }, [rfqDeadlineIso]);
-
-  useBuyerRfqPrefill({
-    sheetKind,
-    rfqCityRef,
-    rfqEmailRef,
-    rfqPhoneRef,
-    rfqCountryCodeTouchedRef: rfqCountryCodeTouched,
-    setRfqCountryCode,
-    setRfqEmail,
-    setRfqPhone,
-  });
+    tabsScrollRef,
+    scrollTabsToStart,
+    prettyLabel,
+    preloadDisplayNos,
+    preloadPrNosByRequests,
+  } = useBuyerScreenUiState({ supabase, alertUser: screenAlertUser });
+  const {
+    rfqBusy,
+  } = rfqForm;
 
   const {
     rows,
@@ -232,19 +169,6 @@ export function BuyerScreen() {
   const accountingSheet = useBuyerAccountingSheetState();
   const proposalDetailsSheet = useBuyerProposalDetailsState();
 
-  const tabsScrollRef = useRef<ScrollView | null>(null);
-  const scrollTabsToStart = useCallback((animated = true) => {
-    try {
-      tabsScrollRef.current?.scrollTo?.({ x: 0, y: 0, animated });
-    } catch (error) {
-      reportBuyerTabsScrollToStartFailure(error);
-    }
-  }, []);
-
-  const { prettyLabel, preloadDisplayNos, preloadPrNosByRequests } = useBuyerRequestLabels();
-  useBuyerAutoFio({ supabase, buyerFio, setBuyerFio });
-
-  useBuyerTabsAutoScroll(scrollTabsToStart);
   const { fetchInbox, fetchInboxNextPage, fetchBuckets, onRefresh } = useBuyerLoadingController({
     supabase,
     activeTab: tab,
@@ -309,31 +233,10 @@ export function BuyerScreen() {
     titleByPid
   });
 
-  const setSearchQuery = useCallback((value: string) => {
-    setFilters({ searchQuery: value });
-  }, [setFilters]);
-
   useBuyerPreloadProposalRequestNumbers({ groups, preloadPrNosByRequests });
-  const { publishRfq } = useBuyerRfqPublish({
-    pickedIds,
-    rfqDeadlineIso,
-    rfqDeliveryDays,
-    rfqCity,
-    rfqAddressText,
-    rfqPhone,
-    rfqCountryCode,
-    rfqEmail,
-    rfqVisibility,
-    rfqNote,
-    supabase,
-    setRfqBusy,
-    closeSheet,
-    alertUser: screenAlertUser,
-  });
   const { lineTotal, requestSum } = useBuyerTotals({ rows, pickedIds, meta });
 
 
-  const pickedRef = useLatest(picked);
   const { togglePick, clearPick, setLineMeta } = useBuyerSelectionActions({
     setPicked,
     setMeta,
@@ -522,20 +425,25 @@ export function BuyerScreen() {
     openProposalDetailsAttachments,
   });
 
-  const viewModel = useMemo(
-    () =>
-      buildBuyerScreenViewModel({
-        measuredHeaderMax,
-        kbOpen,
-        isMobileEditorVisible,
-        pickedIdsLength: pickedIds.length,
-        creating,
-        tab,
-        isWeb,
-        isDev: __DEV__,
-      }),
-    [creating, isMobileEditorVisible, kbOpen, measuredHeaderMax, pickedIds.length, tab],
-  );
+  const { viewModel, header } = useBuyerScreenChromeModel({
+    s,
+    tab,
+    setTab,
+    buyerFio,
+    setIsFioConfirmVisible,
+    measuredHeaderMax,
+    kbOpen,
+    isMobileEditorVisible,
+    pickedIdsLength: pickedIds.length,
+    creating,
+    isWeb,
+    tabCounts,
+    subcontractCount,
+    titleSize,
+    subOpacity,
+    tabsScrollRef,
+    scrollTabsToStart,
+  });
 
   useBuyerScreenLoadingPublisher({
     tab,
@@ -560,27 +468,6 @@ export function BuyerScreen() {
     propViewId: proposalDetailsSheet.propViewId,
     proposalNoByPid,
     prettyLabel,
-  });
-
-  const openFioModal = useCallback(() => setIsFioConfirmVisible(true), [setIsFioConfirmVisible]);
-  const headerCounts = useMemo(
-    () => ({
-      ...tabCounts,
-      subcontractCount,
-    }),
-    [subcontractCount, tabCounts],
-  );
-  const header = useBuyerScreenHeader({
-    s,
-    tab,
-    setTab,
-    buyerFio,
-    onOpenFioModal: openFioModal,
-    titleSize,
-    subOpacity,
-    counts: headerCounts,
-    tabsScrollRef,
-    scrollTabsToStart,
   });
 
   const contentProps = useBuyerScreenContentProps({
@@ -685,7 +572,7 @@ export function BuyerScreen() {
           fmtLocal,
           setDeadlineHours,
           isDeadlineHoursActive,
-          inferCountryCode: inferCountryCodeHelper,
+          inferCountryCode,
           publishRfq,
         },
         toast,
@@ -694,5 +581,3 @@ export function BuyerScreen() {
 
   return <BuyerScreenContent {...contentProps} />;
 }
-
-const s = buyerStyles;

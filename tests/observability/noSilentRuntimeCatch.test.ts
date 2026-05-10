@@ -21,7 +21,7 @@ const auditedRuntimeFiles = [
     markerOwner: "recordSwallowedError",
   },
   {
-    relativePath: "src/screens/buyer/BuyerScreen.tsx",
+    relativePath: "src/screens/buyer/hooks/useBuyerScreenUiState.ts",
     markerOwner: "reportBuyerTabsScrollToStartFailure",
   },
 ];

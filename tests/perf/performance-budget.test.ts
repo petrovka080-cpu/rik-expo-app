@@ -181,6 +181,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.ts"),
       path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenStoreViewModel.test.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sRuntime01BuyerScreenHookPressureBoundaryFiles = [
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenUiState.ts"),
+      path.join(SRC, "screens", "buyer", "hooks", "useBuyerScreenChromeModel.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle13AiAssistantStyleBoundaryFiles = [
       path.join(SRC, "features", "ai", "AIAssistantScreen.styles.ts"),
       path.join(SRC, "features", "ai", "AIAssistantScreen.decomposition.test.ts"),
@@ -613,6 +617,7 @@ describe("performance budget — bundle module count", () => {
     // warehouse seed transport boundary plus a focused src-owned contract test.
     // S_AUDIT_BATTLE_116_SINGLE_CALL_LOW_RISK_BYPASS_SWEEP_A adds one permanent
     // warehouse receive apply RPC transport boundary plus a focused src-owned contract test.
+    // S_RUNTIME_01 adds two permanent BuyerScreen hook-pressure view-model boundaries.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -629,6 +634,7 @@ describe("performance budget — bundle module count", () => {
     expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle11AccountantScreenViewModelFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
+    expect(sRuntime01BuyerScreenHookPressureBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
@@ -737,6 +743,7 @@ describe("performance budget — bundle module count", () => {
         sBuyerScreenSideEffectBoundaryFiles -
         sAuditBattle11AccountantScreenViewModelFiles -
         sAuditBattle12BuyerScreenStoreViewModelFiles -
+        sRuntime01BuyerScreenHookPressureBoundaryFiles -
         sAuditBattle13AiAssistantStyleBoundaryFiles -
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -
         sAuditBattle41BuyerSubcontractFormModelFiles -

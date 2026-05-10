@@ -1,0 +1,124 @@
+{
+  "wave": "S_RUNTIME_01_BUYER_SCREEN_HOOK_PRESSURE_DECOMPOSITION",
+  "final_status": "GREEN_BUYER_SCREEN_HOOK_PRESSURE_REDUCED",
+  "started_from": {
+    "fetched": "git fetch origin main",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true,
+    "start_sha": "60dbb5e0d7a248ef3babe6f3f2e20569d4b04990"
+  },
+  "selected_files": [
+    "src/screens/buyer/BuyerScreen.tsx",
+    "src/screens/buyer/hooks/useBuyerScreenUiState.ts",
+    "src/screens/buyer/hooks/useBuyerScreenChromeModel.ts",
+    "src/screens/buyer/hooks/useBuyerScreenStoreViewModel.test.ts",
+    "src/screens/buyer/buyer.observability.test.ts",
+    "tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts",
+    "tests/observability/noSilentRuntimeCatch.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "artifacts/S_RUNTIME_01_BUYER_SCREEN_HOOK_PRESSURE_DECOMPOSITION_matrix.json",
+    "artifacts/S_RUNTIME_01_BUYER_SCREEN_HOOK_PRESSURE_DECOMPOSITION_proof.md"
+  ],
+  "reason_selected": {
+    "BuyerScreen.tsx": "Primary target for root hook pressure reduction without behavior, navigation, visual, or network changes.",
+    "useBuyerScreenUiState.ts": "Typed UI-state/view-model boundary for store selector, FIO, selection, sheet, RFQ, header collapse, tab scroll, search, toast, and request-label state.",
+    "useBuyerScreenChromeModel.ts": "Typed chrome/view-model boundary for header counts, FIO modal opener, and buildBuyerScreenViewModel orchestration.",
+    "tests": "Focused source-budget, decomposition, observability, and performance-budget proofs for the extracted boundaries."
+  },
+  "before_after_metrics": {
+    "BuyerScreen.tsx": {
+      "before_origin_main": {
+        "hook_call_sites": 61,
+        "lines": 699,
+        "imports": 54
+      },
+      "after_worktree": {
+        "hook_call_sites": 32,
+        "lines": 584,
+        "imports": 37
+      },
+      "delta": {
+        "hook_call_sites": -29,
+        "lines": -115,
+        "imports": -17
+      },
+      "target_met": true
+    }
+  },
+  "gates": {
+    "focused_buyer_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand src/screens/buyer/buyer.observability.test.ts tests/perf/performance-budget.test.ts tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts src/screens/buyer/hooks/useBuyerScreenStoreViewModel.test.ts src/screens/buyer/buyer.screen.model.test.ts src/screens/buyer/hooks/useBuyerScreenSideEffects.test.tsx src/screens/buyer/components/BuyerScreenHeader.test.tsx",
+      "result": "7 suites passed, 34 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "direct_supabase_service_bypass_findings": 0,
+      "service_bypass_files": 0,
+      "unclassified_current_findings": 0,
+      "buyer_screen_component_debt": {
+        "hook_count": 32,
+        "line_count": 584
+      }
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "full_jest": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "676 suites passed, 1 skipped, 4013 tests passed, 1 skipped"
+    },
+    "forbidden_patterns_touched_surface": {
+      "status": "PASS",
+      "patterns": [
+        "@ts-ignore",
+        "as any",
+        "catch {}"
+      ],
+      "matches": 0
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "Get-Content -Raw artifacts/S_RUNTIME_01_BUYER_SCREEN_HOOK_PRESSURE_DECOMPOSITION_matrix.json | ConvertFrom-Json"
+    },
+    "post_push_release_verify_json": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_or_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_cache_route_expansion_or_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "architecture_baseline": {
+    "direct_supabase_service_bypass": "CLOSED / 0",
+    "transport_boundary": "CLOSED",
+    "root_supabase_client": "allowed only in supabaseClient.ts",
+    "supabase_realtime": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+  }
+}

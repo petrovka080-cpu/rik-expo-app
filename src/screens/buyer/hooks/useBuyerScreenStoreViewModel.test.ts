@@ -80,17 +80,20 @@ describe("useBuyerScreenStoreViewModel", () => {
 
   it("keeps BuyerScreen store selector pressure behind one typed hook", () => {
     const screenSource = readBuyerFile("BuyerScreen.tsx");
+    const uiStateSource = readBuyerFile("hooks/useBuyerScreenUiState.ts");
     const hookSource = readBuyerFile("hooks/useBuyerScreenStoreViewModel.ts");
     const hookCalls = screenSource.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
 
-    expect(screenSource).toContain('import { useBuyerScreenStoreViewModel } from "./hooks/useBuyerScreenStoreViewModel";');
+    expect(screenSource).toContain('import { useBuyerScreenUiState } from "./hooks/useBuyerScreenUiState";');
+    expect(screenSource).toContain("} = useBuyerScreenUiState({ supabase, alertUser: screenAlertUser });");
     expect(screenSource).not.toContain("useBuyerStore(");
-    expect(screenSource).toContain("} = useBuyerScreenStoreViewModel();");
-    expect(hookCalls.length).toBeLessThanOrEqual(61);
+    expect(screenSource).not.toContain("useBuyerScreenStoreViewModel();");
+    expect(hookCalls.length).toBeLessThanOrEqual(36);
 
     expect(hookSource).toContain("export type BuyerScreenStoreViewModel");
     expect(hookSource).toContain("selectBuyerScreenStoreViewModel");
     expect(hookSource).toContain("useShallow(selectBuyerScreenStoreViewModel)");
     expect(hookSource.match(/useBuyerStore\(/g) ?? []).toHaveLength(1);
+    expect(uiStateSource).toContain("useBuyerScreenStoreViewModel()");
   });
 });

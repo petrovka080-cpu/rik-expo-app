@@ -31,12 +31,19 @@ describe("buyer observability boundary", () => {
   });
 
   it("keeps BuyerScreen behind the buyer observability boundary", () => {
-    const source = fs.readFileSync(
+    const buyerScreenSource = fs.readFileSync(
       path.join(process.cwd(), "src/screens/buyer/BuyerScreen.tsx"),
       "utf8",
     );
+    const uiStateSource = fs.readFileSync(
+      path.join(process.cwd(), "src/screens/buyer/hooks/useBuyerScreenUiState.ts"),
+      "utf8",
+    );
 
-    expect(source).toContain("./buyer.observability");
-    expect(source).not.toContain("../../lib/observability/swallowedError");
+    expect(buyerScreenSource).toContain("./hooks/useBuyerScreenUiState");
+    expect(uiStateSource).toContain("../buyer.observability");
+    expect(uiStateSource).toContain("reportBuyerTabsScrollToStartFailure(error)");
+    expect(buyerScreenSource).not.toContain("../../lib/observability/swallowedError");
+    expect(uiStateSource).not.toContain("../../../lib/observability/swallowedError");
   });
 });
