@@ -18,6 +18,11 @@ export type ContractorProfileCard = {
   inn: string | null;
 };
 
+const CONTRACTOR_USER_PROFILE_SELECT =
+  "user_id,full_name,phone,is_contractor";
+const CONTRACTOR_PROFILE_SELECT =
+  "id,company_name,full_name,phone,inn";
+
 export async function loadCurrentContractorUserProfile(params: {
   supabaseClient: any;
   normText: (value: any) => string;
@@ -39,7 +44,7 @@ export async function loadCurrentContractorUserProfile(params: {
 
   const { data } = await supabaseClient
     .from("user_profiles")
-    .select("*")
+    .select(CONTRACTOR_USER_PROFILE_SELECT)
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -81,7 +86,7 @@ export async function loadCurrentContractorProfile(params: {
 
   const { data, error } = await supabaseClient
     .from("contractors")
-    .select("*")
+    .select(CONTRACTOR_PROFILE_SELECT)
     .eq("user_id", user.id)
     .maybeSingle();
 

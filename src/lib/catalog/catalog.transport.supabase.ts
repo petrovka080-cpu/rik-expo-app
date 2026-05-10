@@ -32,6 +32,8 @@ const SUPPLIERS_COUNTERPARTY_SELECT = "id,name,inn,phone";
 const SUBCONTRACTS_COUNTERPARTY_SELECT =
   "id,status,contractor_org,contractor_inn,contractor_phone";
 const CONTRACTORS_COUNTERPARTY_SELECT = "id,company_name,phone,inn";
+const PROFILE_CONTRACTOR_COMPAT_SELECT =
+  "user_id,full_name,phone,is_contractor";
 const CATALOG_SEARCH_FALLBACK_SELECT =
   "rik_code,name_human,uom_code,sector_code,spec,kind,group_code";
 const RIK_QUICK_SEARCH_FALLBACK_FIELDS =
@@ -156,7 +158,7 @@ export const loadContractorProfileRowsFromSupabase = async (withFilter: boolean)
   const buildQuery = () => {
     let query = supabase
       .from("user_profiles")
-      .select("*")
+      .select(PROFILE_CONTRACTOR_COMPAT_SELECT)
       .order("user_id", { ascending: true });
     if (withFilter) {
       query = query.eq("is_contractor", true);

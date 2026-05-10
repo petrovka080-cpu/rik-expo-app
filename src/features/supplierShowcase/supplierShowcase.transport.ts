@@ -16,6 +16,11 @@ import type {
   SupplierShowcaseProfile,
 } from "./supplierShowcase.types";
 
+const SUPPLIER_SHOWCASE_PROFILE_SELECT =
+  "user_id,full_name,phone,city,bio,telegram,whatsapp,position,usage_market,usage_build";
+const SUPPLIER_SHOWCASE_COMPANY_SELECT =
+  "id,owner_user_id,name,city,industry,about_short,about_full,phone_main,phone_whatsapp,email,site,telegram,work_time,contact_person,services,regions,clients_types";
+
 const singleResult = <T>(result: LowRiskReadResult<T>): { data: T | null; error: { code?: string; message?: string } | null } => ({
   data: Array.isArray(result.data) ? (result.data[0] ?? null) : null,
   error: result.error,
@@ -30,7 +35,11 @@ export async function loadSupplierShowcaseProfileByUserId(
       args: { userId },
     },
     async () => {
-      const fallback = await supabase.from("user_profiles").select("*").eq("user_id", userId).maybeSingle();
+      const fallback = await supabase
+        .from("user_profiles")
+        .select(SUPPLIER_SHOWCASE_PROFILE_SELECT)
+        .eq("user_id", userId)
+        .maybeSingle();
       return {
         data: fallback.data ? [fallback.data as SupplierShowcaseProfile] : [],
         error: fallback.error,
@@ -49,7 +58,11 @@ export async function loadSupplierShowcaseCompanyById(
       args: { companyId },
     },
     async () => {
-      const fallback = await supabase.from("companies").select("*").eq("id", companyId).maybeSingle();
+      const fallback = await supabase
+        .from("companies")
+        .select(SUPPLIER_SHOWCASE_COMPANY_SELECT)
+        .eq("id", companyId)
+        .maybeSingle();
       return {
         data: fallback.data ? [fallback.data as SupplierShowcaseCompany] : [],
         error: fallback.error,
@@ -70,7 +83,7 @@ export async function loadSupplierShowcaseCompanyByOwnerUserId(
     async () => {
       const fallback = await supabase
         .from("companies")
-        .select("*")
+        .select(SUPPLIER_SHOWCASE_COMPANY_SELECT)
         .eq("owner_user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1);

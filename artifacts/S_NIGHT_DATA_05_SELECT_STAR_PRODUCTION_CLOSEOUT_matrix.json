@@ -1,0 +1,119 @@
+{
+  "wave": "S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT",
+  "final_status": "GREEN_SELECT_STAR_PRODUCTION_CLOSEOUT",
+  "generatedAt": "2026-05-10T17:20:12.419Z",
+  "selectedFiles": [
+    "app/(tabs)/request/[id].tsx",
+    "src/features/supplierShowcase/supplierShowcase.transport.ts",
+    "src/lib/api/requests.read-capabilities.ts",
+    "src/lib/api/suppliers.ts",
+    "src/lib/assistant_store_read.low_risk.transport.ts",
+    "src/lib/catalog/catalog.request.transport.ts",
+    "src/lib/catalog/catalog.transport.supabase.ts",
+    "src/lib/chat_api.ts",
+    "src/lib/store_supabase.read.transport.ts",
+    "src/lib/store_supabase.write.transport.ts",
+    "src/screens/buyer/buyer.summary.service.ts",
+    "src/screens/buyer/hooks/useBuyerSubcontractCount.ts",
+    "src/screens/contractor/contractor.loadWorksService.ts",
+    "src/screens/contractor/contractor.profileService.ts",
+    "src/screens/contractor/contractor.resolvers.ts",
+    "src/screens/contractor/contractor.workModalService.ts",
+    "src/screens/director/director.data.transport.ts",
+    "src/screens/office/officeAccess.services.ts",
+    "src/screens/profile/profile.services.ts",
+    "tests/api/selectStarProductionCloseout.contract.test.ts",
+    "tests/api/assistantStoreBffRouting.contract.test.ts",
+    "tests/api/directorDataTransport.contract.test.ts",
+    "tests/catalog/catalog.request.transport.test.ts",
+    "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_matrix.json",
+    "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_proof.md",
+    "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_inventory.json",
+    "docs/architecture/transport_ownership_map.md",
+    "tests/architecture/transportOwnershipMap.test.ts",
+    "tests/security/companyInvitesRlsHardening.test.ts",
+    "tests/api/storeSupabaseWriteTransport.contract.test.ts"
+  ],
+  "reasonSelected": "All current production runtime select-star call sites were selected because WAVE 05 requires unsafe production wildcard projections to be zero; tests/artifacts were selected to lock and prove the invariant.",
+  "beforeMetrics": {
+    "totalSelectCalls": 284,
+    "productionRuntimeSelectStarCount": 28,
+    "unsafeProductionSelectStarCount": 28,
+    "allowlistCount": 0,
+    "scriptOrTestOnlySelectStarCountObserved": 23
+  },
+  "afterMetrics": {
+    "totalSelectCalls": 284,
+    "productionRuntimeSelectStarCount": 0,
+    "unsafeProductionSelectStarCount": 0,
+    "currentUnresolvedUnboundedSelects": 0,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "allowlistCount": 0,
+    "scriptOrTestOnlySelectStarCountObserved": 23
+  },
+  "commitSha": "pending_until_commit",
+  "headEqualsOriginMainAtStart": true,
+  "aheadBehindAtStart": {
+    "ahead": 0,
+    "behind": 0
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/api/selectStarProductionCloseout.contract.test.ts tests/architecture/transportOwnershipMap.test.ts tests/security/companyInvitesRlsHardening.test.ts tests/api/storeSupabaseWriteTransport.contract.test.ts tests/api/assistantStoreBffRouting.contract.test.ts tests/api/directorDataTransport.contract.test.ts tests/catalog/catalog.request.transport.test.ts tests/api/suppliersGuardedPagedQuery.contract.test.ts tests/api/warehouseApiBffRouting.contract.test.ts tests/contractor/contractor.resolvers.fanout.test.ts tests/api/referenceListPageCeiling.contract.test.ts --runInBand",
+      "result": "11 suites passed, 53 tests passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expoLint": {
+      "status": "PASS",
+      "command": "npx expo lint",
+      "note": "Expo printed env variable names only, no values."
+    },
+    "npmTestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "695 suites passed, 1 skipped; 4082 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "result": "serviceBypassFindings=0; directSupabase.totalFindings=215; transportControlledFindings=168"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": "pending_until_after_push",
+    "artifactJsonParse": {
+      "status": "PASS",
+      "command": "node -e JSON.parse(matrix); JSON.parse(inventory)"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_matrix.json",
+    "proof": "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_proof.md",
+    "inventory": "artifacts/S_NIGHT_DATA_05_SELECT_STAR_PRODUCTION_CLOSEOUT_inventory.json"
+  },
+  "negativeConfirmations": {
+    "codeWave": true,
+    "productionMutation": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveDml": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "secretsPrinted": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "forcePush": false,
+    "tags": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

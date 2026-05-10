@@ -28,6 +28,8 @@ type WorkRowLike = {
 };
 
 const WORK_MODAL_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const ISSUE_REQ_ITEM_UI_SELECT =
+  "display_no,level_code,level_name,name_human,object_name,qty_available,qty_can_issue_now,qty_issued,qty_left,qty_limit,request_id,request_item_id,rik_code,submitted_at,system_code,system_name,uom,zone_code,zone_name";
 
 type RequestHeaderRow = {
   display_no?: string | null;
@@ -555,7 +557,7 @@ export async function loadIssuedTodayData(
     () =>
       supabaseClient
         .from("v_wh_issue_req_items_ui")
-        .select("*")
+        .select(ISSUE_REQ_ITEM_UI_SELECT)
         .in("request_id", scopeIds)
         .order("request_id", { ascending: true })
         .order("request_item_id", { ascending: true }) as unknown as PagedQuery<IssueReqItemUiRow>,

@@ -26,6 +26,28 @@ type WorkProgressRow = {
 const looksLikeUuid = (v: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 
+async function loadWorkProgressJobLink(
+  supabaseClient: any,
+  progressId: string,
+): Promise<WorkProgressRow | null> {
+  const attempts = [
+    "contractor_job_id, subcontract_id",
+    "contractor_job_id",
+    "subcontract_id",
+  ];
+
+  for (const columns of attempts) {
+    const result = await supabaseClient
+      .from("work_progress")
+      .select(columns)
+      .eq("id", progressId)
+      .maybeSingle();
+    if (!result.error) return (result.data || null) as WorkProgressRow | null;
+  }
+
+  return null;
+}
+
 export async function resolveRequestIdForRow(
   supabaseClient: any,
   row: RowLike
@@ -92,12 +114,7 @@ export async function resolveContractorJobIdForRow(
   const progressId = String(row.progress_id || "").trim();
   if (!looksLikeUuid(progressId)) return "";
 
-  const wpById = await supabaseClient
-    .from("work_progress")
-    .select("*")
-    .eq("id", progressId)
-    .maybeSingle();
-  const wpData = (wpById.data || null) as WorkProgressRow | null;
+  const wpData = await loadWorkProgressJobLink(supabaseClient, progressId);
   if (!wpData) return "";
   return String(wpData.contractor_job_id || wpData.subcontract_id || "").trim();
 }

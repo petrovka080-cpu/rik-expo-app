@@ -91,6 +91,8 @@ describe("company_invites RLS hardening phase 1", () => {
     expect(officeSource).toContain('.eq("company_id", companyId)');
     expect(officeSource).toContain("company_id: params.companyId");
     expect(officeSource).toContain('status: "pending"');
-    expect(officeSource).toContain(".select(\"*\")");
+    expect(officeSource).toContain("OFFICE_COMPANY_INVITE_SELECT");
+    expect(officeSource).toContain(".select(OFFICE_COMPANY_INVITE_SELECT)");
+    expect(officeSource).not.toContain(".select(\"*\")");
   });
 });

@@ -26,7 +26,9 @@ describe("store_supabase write transport boundary", () => {
 
     expect(transportSource).toContain('send_request_to_director');
     expect(transportSource).toContain('approve_or_decline_request_pending');
-    expect(transportSource).toContain('supabase.from("purchases")');
+    expect(transportSource).toMatch(/\.from\("purchases"\)/);
+    expect(transportSource).toContain("STORE_PURCHASE_SELECT");
+    expect(transportSource).toContain(".select(STORE_PURCHASE_SELECT)");
     expect(transportSource).toContain('supabase.from("purchase_items")');
     expect(transportSource).toContain('supabase.from("purchases_pending")');
     expect(transportSource.match(/\bsupabase\s*\.\s*rpc\s*\(/g) ?? []).toHaveLength(2);

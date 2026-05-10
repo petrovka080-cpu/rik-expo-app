@@ -47,6 +47,11 @@ type CompanyInviteRow = {
   comment: string | null;
 };
 
+const OFFICE_COMPANY_SELECT =
+  "id,owner_user_id,name,city,legal_form,address,industry,employees_count,about_short,phone_main,phone_whatsapp,email,site,telegram,work_time,contact_person,about_full,services,regions,clients_types,inn,bin,reg_number,bank_details,licenses_info";
+const OFFICE_COMPANY_INVITE_SELECT =
+  "id,company_id,invite_code,name,phone,email,role,status,created_at,expires_at,comment";
+
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 const OFFICE_INVITES_PAGE_DEFAULTS = { pageSize: 30, maxPageSize: 30 };
 
@@ -123,7 +128,7 @@ const mapInviteRow = (row: CompanyInviteRow): OfficeAccessInvite => ({
 async function loadCompanyById(companyId: string): Promise<Company | null> {
   const result = await supabase
     .from("companies")
-    .select("*")
+    .select(OFFICE_COMPANY_SELECT)
     .eq("id", companyId)
     .maybeSingle();
 
@@ -209,7 +214,7 @@ async function loadCompanyInvites(
   const page = normalizePage(undefined, OFFICE_INVITES_PAGE_DEFAULTS);
   const result = await supabase
     .from("company_invites")
-    .select("*")
+    .select(OFFICE_COMPANY_INVITE_SELECT)
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -314,7 +319,7 @@ export async function createOfficeCompany(params: {
         draft: params.draft,
       }),
     )
-    .select("*")
+    .select(OFFICE_COMPANY_SELECT)
     .single();
 
   if (companyError) throw companyError;
@@ -376,7 +381,7 @@ export async function createOfficeInvite(params: {
       status: "pending",
       comment: normalizeText(params.draft.comment) || null,
     })
-    .select("*")
+    .select(OFFICE_COMPANY_INVITE_SELECT)
     .single();
 
   if (result.error) throw result.error;

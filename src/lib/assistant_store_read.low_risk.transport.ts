@@ -28,6 +28,9 @@ export type ChatProfileNameRow = {
   full_name?: string | null;
 };
 
+const CHAT_MESSAGE_SELECT =
+  "id,company_id,object_id,supplier_id,user_id,message_type,content,mentions,media_url,media_thumbnail,media_duration,read_by,reply_to_id,reactions,is_pinned,pinned_at,pinned_by,is_deleted,created_at";
+
 const bffErrorToReadError = (
   error: AssistantStoreReadBffReadErrorDto | { code?: string; message?: string },
 ): { code?: string; message?: string } => ({
@@ -123,7 +126,7 @@ export async function loadListingChatMessageRows<T>(
       const page = normalizePage({ pageSize: limit }, ASSISTANT_STORE_READ_BFF_CHAT_PAGE_DEFAULTS);
       const result = await supabase
         .from("chat_messages" as never)
-        .select("*")
+        .select(CHAT_MESSAGE_SELECT)
         .eq("supplier_id", listingId)
         .eq("is_deleted", false)
         .order("created_at", { ascending: true })

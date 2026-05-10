@@ -20,9 +20,9 @@ Realtime capacity changed: NO
 
 ## Scanner Baseline
 
-- Total direct Supabase findings: 220
-- Transport-controlled findings: 173
-- Transport-owned files with provider findings: 89
+- Total direct Supabase findings: 215
+- Transport-controlled findings: 168
+- Transport-owned files with provider findings: 87
 - Service bypass findings: 0
 - Service bypass files: 0
 - Test-only findings: 47
@@ -31,11 +31,11 @@ Realtime capacity changed: NO
 ## Provider Surface Summary
 
 - auth: 49 findings across 32 files
-- read: 18 findings across 11 files
+- read: 14 findings across 9 files
 - realtime: 7 findings across 2 files
 - rpc: 71 findings across 42 files
 - storage: 11 findings across 5 files
-- write: 17 findings across 12 files
+- write: 16 findings across 12 files
 
 ## Provider Surface Ownership
 

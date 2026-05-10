@@ -15,7 +15,7 @@ describe("director data transport boundary", () => {
     expect(serviceSource).toContain("director.data.transport");
     expect(serviceSource).toContain("fetchDirectorRequestDisplayProbeRows");
     expect(serviceSource).not.toContain('supabase.from("requests").select("*").limit(1)');
-    expect(transportSource).toContain('supabase.from("requests").select("*").limit(1)');
+    expect(transportSource).toContain('select("request_no,display_no")');
   });
 
   it("preserves data and error probe result semantics", async () => {
@@ -46,5 +46,8 @@ describe("director data transport boundary", () => {
     });
     expect(successClient.from).toHaveBeenCalledWith("requests");
     expect(failureClient.from).toHaveBeenCalledWith("requests");
+    expect(successClient.from.mock.results[0]?.value.select).toHaveBeenCalledWith(
+      "request_no,display_no",
+    );
   });
 });

@@ -187,7 +187,9 @@ describe("catalog request read transport", () => {
     await loadCatalogRequestExtendedMetaSampleRows();
 
     expect(mockFrom).toHaveBeenCalledWith("requests");
-    expect(query.select).toHaveBeenCalledWith("*");
+    expect(query.select).toHaveBeenCalledWith(
+      "id,subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name",
+    );
     expect(query.limit).toHaveBeenCalledWith(1);
   });
 

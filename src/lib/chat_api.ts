@@ -44,6 +44,8 @@ const buildListingChatChannelName = (listingId: string) => `chat:listing:${listi
 
 export const CHAT_BACKEND_HINT =
   "Apply db/20260317_chat_backend_foundation.sql to the current Supabase project before using chat.";
+const CHAT_MESSAGE_SELECT =
+  "id,company_id,object_id,supplier_id,user_id,message_type,content,mentions,media_url,media_thumbnail,media_duration,read_by,reply_to_id,reactions,is_pinned,pinned_at,pinned_by,is_deleted,created_at";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -183,7 +185,7 @@ export async function sendListingChatMessage(
       content: content.trim(),
       mentions: [],
     } as never)
-    .select("*")
+    .select(CHAT_MESSAGE_SELECT)
     .single();
 
   if (error) throw toChatError(error, "Failed to send message.");

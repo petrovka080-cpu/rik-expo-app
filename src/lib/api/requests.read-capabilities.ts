@@ -16,6 +16,8 @@ type RequestsReadableColumnsCacheEntry = {
 
 const REQUESTS_READ_CAPABILITY_POSITIVE_TTL_MS = 5 * 60 * 1000;
 const REQUESTS_READ_CAPABILITY_NEGATIVE_TTL_MS = 60 * 1000;
+const REQUESTS_READABLE_COLUMNS_PROBE_SELECT =
+  "id,request_no,display_no,status,object_id,object_name,object_type_code,system_code,level_code,zone_code,object,submitted_at,created_at,note,comment,foreman_name,need_by,year,seq";
 
 let requestsSubmittedAtSupportedCache: RequestsSubmittedAtCacheEntry | null = null;
 let requestsReadableColumnsCache: RequestsReadableColumnsCacheEntry | null = null;
@@ -68,7 +70,7 @@ export async function resolveRequestsReadableColumns(): Promise<Set<string>> {
 
   requestsReadableColumnsInFlight = (async () => {
     try {
-      const q = await client.from("requests").select("*").limit(1);
+      const q = await client.from("requests").select(REQUESTS_READABLE_COLUMNS_PROBE_SELECT).limit(1);
       if (q.error) throw q.error;
       const first =
         Array.isArray(q.data) && q.data.length ? (q.data[0] as Record<string, unknown>) : null;

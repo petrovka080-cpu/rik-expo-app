@@ -13,6 +13,8 @@ const SUPPLIER_LIST_PAGE_DEFAULTS = {
   maxPageSize: 100,
   maxRows: 5000,
 };
+const SUPPLIER_ROW_SELECT =
+  "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes";
 
 type PagedSupplierResult<T> = {
   data: T[] | null;
@@ -74,9 +76,7 @@ export async function listSuppliers(q?: string): Promise<Supplier[]> {
         createGuardedPagedQuery(
           client
             .from("suppliers")
-            .select(
-              "id,name,inn,bank_account,specialization,phone,email,website,address,contact_name,notes",
-            )
+            .select(SUPPLIER_ROW_SELECT)
             .order("name", { ascending: true })
             .order("id", {
               ascending: true,
@@ -129,7 +129,7 @@ export async function upsertSupplier(
       .from("suppliers")
       .update(payload)
       .eq("id", draft.id)
-      .select("*")
+      .select(SUPPLIER_ROW_SELECT)
       .maybeSingle();
 
     if (error) throw error;
@@ -140,7 +140,7 @@ export async function upsertSupplier(
   const { data, error } = await client
     .from("suppliers")
     .insert([payload])
-    .select("*")
+    .select(SUPPLIER_ROW_SELECT)
     .maybeSingle();
 
   if (error) throw error;

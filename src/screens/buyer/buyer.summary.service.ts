@@ -241,7 +241,7 @@ export function createBuyerSummaryService(params: BuyerSummaryServiceParams) {
     try {
       const { count, error } = await supabase
         .from("subcontracts")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("created_by", userId);
 
       if (error || count == null) return { count: null };

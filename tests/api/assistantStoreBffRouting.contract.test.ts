@@ -153,7 +153,8 @@ describe("assistant/store BFF routing contract", () => {
 
     expect(capabilitySource).toContain("loadRequestsSubmittedAtCapability");
     expect(capabilitySource).not.toContain('select("submitted_at")');
-    expect(capabilitySource).toContain('select("*").limit(1)');
+    expect(capabilitySource).toContain("REQUESTS_READABLE_COLUMNS_PROBE_SELECT");
+    expect(capabilitySource).toContain("select(REQUESTS_READABLE_COLUMNS_PROBE_SELECT)");
 
     expect(`${lowRiskTransportSource}\n${supplierTransportSource}`).toContain("callAssistantStoreReadBff");
     expect(lowRiskTransportSource).toContain("return await fallback()");

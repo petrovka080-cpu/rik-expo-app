@@ -10,7 +10,10 @@ export type DirectorRequestDisplayProbeResult = {
 export async function fetchDirectorRequestDisplayProbeRows(
   supabase: AppSupabaseClient,
 ): Promise<DirectorRequestDisplayProbeResult> {
-  const result = await supabase.from("requests").select("*").limit(1);
+  const result = await supabase
+    .from("requests")
+    .select("request_no,display_no")
+    .limit(1);
   return {
     data: Array.isArray(result.data) ? (result.data as DirectorRequestDisplayProbeRow[]) : null,
     error: result.error,

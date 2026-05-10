@@ -6,9 +6,19 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { supabase } from "../../../src/lib/supabaseClient";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
+type RequestDetailsRow = {
+  id: string;
+  object: string | null;
+  rik_code: string | null;
+  name: string | null;
+  qty: number | null;
+  uom: string | null;
+  status: string | null;
+};
+
 function RequestDetails() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [item, setItem] = useState<any>(null);
+  const [item, setItem] = useState<RequestDetailsRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorText, setErrorText] = useState<string | null>(null);
 
@@ -22,7 +32,7 @@ function RequestDetails() {
 
       const { data, error } = await supabase
         .from("requests")
-        .select("*")
+        .select("id,object,rik_code,name,qty,uom,status")
         .eq("id", String(id))
         .single();
 

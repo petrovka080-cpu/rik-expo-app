@@ -6,7 +6,7 @@ export async function fetchBuyerSubcontractCount(
 ): Promise<number | null> {
   const { count, error } = await supabase
     .from("subcontracts")
-    .select("*", { count: "exact", head: true })
+    .select("id", { count: "exact", head: true })
     .eq("created_by", userId);
 
   if (error || count == null) return null;

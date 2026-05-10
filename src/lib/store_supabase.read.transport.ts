@@ -16,6 +16,11 @@ export type RequestItemRowDb = Pick<
 export type PendingRequestItemDb = Database["public"]["Views"]["request_items_pending_view"]["Row"];
 export type ApprovedRequestItemDb = Database["public"]["Views"]["v_request_items_display"]["Row"];
 
+const PENDING_REQUEST_ITEM_SELECT =
+  "id,name_human,qty,request_id,request_item_id,uom";
+const APPROVED_REQUEST_ITEM_SELECT =
+  "id,name_human,note,qty,request_id,rik_code,uom";
+
 type StoreSupabaseReadResult<T> = {
   data: T[] | null;
   error: unknown | null;
@@ -89,7 +94,7 @@ export async function loadDirectorInboxRows(): Promise<StoreSupabaseReadResult<P
       await loadPagedStoreSupabaseRows<PendingRequestItemDb>(() =>
         supabase
           .from("request_items_pending_view")
-          .select("*")
+          .select(PENDING_REQUEST_ITEM_SELECT)
           .order("created_at", { ascending: false })
           .order("request_item_id", { ascending: true }),
       ),
@@ -108,7 +113,7 @@ export async function loadApprovedRequestItemRows(
       await loadPagedStoreSupabaseRows<ApprovedRequestItemDb>(() =>
         supabase
           .from("v_request_items_display")
-          .select("*")
+          .select(APPROVED_REQUEST_ITEM_SELECT)
           .eq("request_id", String(requestId))
           .order("id", { ascending: true }),
       ),

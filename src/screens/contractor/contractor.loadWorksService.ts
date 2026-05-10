@@ -91,6 +91,8 @@ type SubcontractLiteLike = {
 };
 
 const CONTRACTOR_WORKS_REFERENCE_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const WORKS_FACT_SELECT =
+  "contractor_id,contractor_name,created_at,finished_at,object_id,object_name,progress_id,proposal_id,purchase_id,purchase_item_id,qty_done,qty_left,qty_planned,started_at,uom_id,updated_at,work_code,work_name,work_status";
 
 export type ContractorSubcontractCard = SubcontractLiteLike;
 
@@ -728,7 +730,7 @@ async function loadContractorWorksBundleLegacyInternal(
 
     const worksRes = await supabaseClient
       .from("v_works_fact")
-      .select("*")
+      .select(WORKS_FACT_SELECT)
       .order("created_at", { ascending: false })
       .order("progress_id", { ascending: false })
       .range(page.from, page.to);

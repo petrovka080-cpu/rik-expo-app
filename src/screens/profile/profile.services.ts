@@ -137,6 +137,11 @@ const getMetadataRole = (user: User): string | null => {
 
 export { loadCurrentAuthUser, signOutProfileSession } from "./profile.auth.transport";
 
+const PROFILE_USER_SELECT =
+  "id,user_id,full_name,phone,city,usage_market,usage_build,bio,telegram,whatsapp,position";
+const PROFILE_COMPANY_SELECT =
+  "id,owner_user_id,name,city,legal_form,address,industry,employees_count,about_short,phone_main,phone_whatsapp,email,site,telegram,work_time,contact_person,about_full,services,regions,clients_types,inn,bin,reg_number,bank_details,licenses_info";
+
 export const loadProfileScreenData =
   async (): Promise<ProfileScreenLoadResult> => {
     const user = await loadCurrentAuthUser();
@@ -157,12 +162,12 @@ export const loadProfileScreenData =
       getMyRole(),
       supabase
         .from("user_profiles")
-        .select("*")
+        .select(PROFILE_USER_SELECT)
         .eq("user_id", user.id)
         .maybeSingle(),
       supabase
         .from("companies")
-        .select("*")
+        .select(PROFILE_COMPANY_SELECT)
         .eq("owner_user_id", user.id)
         .maybeSingle(),
       supabase

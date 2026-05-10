@@ -96,6 +96,8 @@ export const CATALOG_REQUEST_REFERENCE_PAGE_DEFAULTS = {
 
 const REQUEST_ITEM_SELECT =
   "id,request_id,rik_code,name_human,uom,qty,status,note,app_code,supplier_hint,row_no,position_order,updated_at";
+const CATALOG_REQUEST_EXTENDED_META_PROBE_SELECT =
+  "id,subcontract_id,contractor_job_id,contractor_org,subcontractor_org,contractor_phone,subcontractor_phone,planned_volume,qty_plan,volume,object_name,level_name,system_name,zone_name";
 
 const FOREMAN_REQUEST_SELECT = `id,status,created_at,need_by,display_no,
      object_type_code,level_code,system_code,zone_code,
@@ -203,7 +205,11 @@ export const loadCatalogRequestDraftStatusRow = async (
 export const loadCatalogRequestExtendedMetaSampleRows = async (): Promise<{
   data: unknown[] | null;
   error: { message?: string } | null;
-}> => await supabase.from("requests").select("*").limit(1);
+}> =>
+  await supabase
+    .from("requests")
+    .select(CATALOG_REQUEST_EXTENDED_META_PROBE_SELECT)
+    .limit(1);
 
 export const loadCatalogRequestDisplayHeaderRow = async (
   requestId: string,
