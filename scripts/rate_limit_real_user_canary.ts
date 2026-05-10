@@ -35,8 +35,25 @@ type SafeBffCallResult = {
   errorCategory: string;
 };
 
-const MATRIX_PATH = "artifacts/S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_1_matrix.json";
-const PROOF_PATH = "artifacts/S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_1_proof.md";
+type SubjectSelection = {
+  subject: string;
+  attempts: number;
+  routeCanarySelected: boolean;
+};
+
+type RollbackResult = {
+  attempted: boolean;
+  envRestored: boolean;
+  deployTriggered: boolean;
+  live: boolean;
+  healthStatus: number | null;
+  readyStatus: number | null;
+  succeeded: boolean;
+};
+
+const WAVE = "S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY";
+const MATRIX_PATH = "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_matrix.json";
+const PROOF_PATH = "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_proof.md";
 
 const REQUIRED_APPROVALS = [
   "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_PREFLIGHT_APPROVED",
@@ -47,6 +64,15 @@ const REQUIRED_APPROVALS = [
 const CANARY_ROUTE = "marketplace.catalog.search" as const;
 const CANARY_ROUTE_KEY = "marketplace_catalog_search";
 const CANARY_PERCENT = "1";
+const RATE_LIMIT_ENV_SNAPSHOT_KEYS = [
+  "SCALE_RATE_ENFORCEMENT_MODE",
+  "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+  "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+  "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
+  "SCALE_RATE_LIMIT_STORE_URL",
+  "SCALE_RATE_LIMIT_NAMESPACE",
+  "BFF_RATE_LIMIT_METADATA_ENABLED",
+] as const;
 
 const inProgressDeployStatuses = new Set([
   "created",
@@ -82,20 +108,29 @@ function writeArtifacts(matrix: Matrix): void {
   fs.writeFileSync(
     PROOF_PATH,
     [
-      "# S-RATE-LIMIT-PRODUCTION-REAL-USER-ENFORCEMENT-CANARY-1-BATTLESAFE",
+      "# S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY Proof",
       "",
       `final_status: ${matrix.final_status}`,
       "",
       "## Summary",
+      `- route: ${String(matrix.route ?? CANARY_ROUTE)}`,
+      `- route_allowlist_count: ${String(matrix.route_allowlist_count ?? "not_run")}`,
       `- route_scoped_enforcement: ${String(matrix.route_scoped_enforcement ?? false)}`,
       `- canary_route_class: ${String(matrix.canary_route_class ?? "none")}`,
       `- canary_percent: ${String(matrix.canary_percent ?? 0)}`,
+      `- selected_subject_proof: ${String(matrix.selected_subject_proof ?? "not_run")}`,
+      `- non_selected_subject_proof: ${String(matrix.non_selected_subject_proof ?? "not_run")}`,
+      `- selected_request_status_class: ${String(matrix.selected_canary_request_status_class ?? "not_run")}`,
+      `- non_selected_request_status_class: ${String(matrix.non_selected_allow_request_status_class ?? "not_run")}`,
+      `- private_smoke_green: ${String(matrix.private_in_service_smoke_green ?? false)}`,
       `- health_ready_stable: ${String(matrix.health_ready_stable ?? false)}`,
       `- rollback_triggered: ${String(matrix.rollback_triggered ?? false)}`,
+      `- rollback_succeeded: ${String(matrix.rollback_succeeded ?? false)}`,
+      `- canary_retained: ${String(matrix.canary_retained ?? false)}`,
       "",
       "## Safety",
       "- raw keys, URLs, tokens, env values, payloads, DB rows, business rows: not printed",
-      "- DB writes, migrations, BFF traffic percent changes, global enforcement: not performed",
+      "- DB writes, migrations, cache changes, BFF traffic percent changes, global enforcement: not performed",
       "",
     ].join("\n"),
     "utf8",
@@ -131,6 +166,18 @@ function envItemValue(items: RenderEnvItem[], key: string): { present: boolean; 
     }
   }
   return { present: false, value: "" };
+}
+
+function redactedEnvSnapshot(items: RenderEnvItem[]): Record<string, { present: boolean; valueClass: string }> {
+  const snapshot: Record<string, { present: boolean; valueClass: string }> = {};
+  for (const key of RATE_LIMIT_ENV_SNAPSHOT_KEYS) {
+    const item = envItemValue(items, key);
+    snapshot[key] = {
+      present: item.present,
+      valueClass: item.present ? "present_redacted" : "absent",
+    };
+  }
+  return snapshot;
 }
 
 function renderEnvItems(body: unknown): RenderEnvItem[] {
@@ -169,7 +216,25 @@ async function readBffErrorCategory(response: Response): Promise<string> {
 const statusClass = (status: number | null): string =>
   status == null ? "error" : `${Math.trunc(status / 100)}xx`;
 
-async function findCanarySubject(selected: boolean): Promise<string> {
+function blockedStatusForRollback(rollback: RollbackResult): string {
+  return rollback.succeeded
+    ? "BLOCKED_RATE_LIMIT_CANARY_FAILED_ROLLED_BACK"
+    : "BLOCKED_RATE_LIMIT_CANARY_FAILED_ROLLBACK_FAILED";
+}
+
+function rollbackMatrixFields(rollback: RollbackResult): Record<string, unknown> {
+  return {
+    rollback_triggered: rollback.attempted,
+    rollback_env_restored: rollback.envRestored,
+    rollback_deploy_triggered: rollback.deployTriggered,
+    rollback_latest_deploy_live: rollback.live,
+    production_health_after_rollback: rollback.healthStatus,
+    production_ready_after_rollback: rollback.readyStatus,
+    rollback_succeeded: rollback.succeeded,
+  };
+}
+
+async function findCanarySubject(selected: boolean): Promise<SubjectSelection> {
   for (let index = 0; index < 5_000; index += 1) {
     const candidate = `rlc${selected ? "s" : "n"}${index.toString(36)}`;
     const provider = createRateEnforcementProviderFromEnv(
@@ -193,7 +258,13 @@ async function findCanarySubject(selected: boolean): Promise<string> {
         routeKey: CANARY_ROUTE_KEY,
       },
     });
-    if (decision.routeCanarySelected === selected) return candidate;
+    if (decision.routeCanarySelected === selected) {
+      return {
+        subject: candidate,
+        attempts: index + 1,
+        routeCanarySelected: decision.routeCanarySelected,
+      };
+    }
   }
   throw new Error("subject_selection_unavailable");
 }
@@ -320,25 +391,77 @@ async function main(): Promise<void> {
 
   const envResult = await api(`/services/${encodeURIComponent(serviceId)}/env-vars?limit=100`);
   const envItems = renderEnvItems(envResult.body);
+  const envSnapshotRedacted = redactedEnvSnapshot(envItems);
   const previous = {
     mode: envItemValue(envItems, "SCALE_RATE_ENFORCEMENT_MODE"),
     allowlist: envItemValue(envItems, "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST"),
     percent: envItemValue(envItems, "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT"),
   };
-  const restoreEnv = async () => {
-    await Promise.all([
-      previous.mode.present
-        ? putEnv("SCALE_RATE_ENFORCEMENT_MODE", previous.mode.value)
-        : deleteEnv("SCALE_RATE_ENFORCEMENT_MODE"),
-      previous.allowlist.present
-        ? putEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST", previous.allowlist.value)
-        : deleteEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST"),
-      previous.percent.present
-        ? putEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT", previous.percent.value)
-        : deleteEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT"),
-    ]).catch(() => undefined);
-    await triggerDeploy().catch(() => undefined);
-    await waitForLive().catch(() => undefined);
+  const restoreEnv = async (): Promise<RollbackResult> => {
+    let envRestored = false;
+    let deployTriggered = false;
+    let live = false;
+    let healthStatus: number | null = null;
+    let readyStatus: number | null = null;
+
+    try {
+      const envRestore = await Promise.all([
+        previous.mode.present
+          ? putEnv("SCALE_RATE_ENFORCEMENT_MODE", previous.mode.value)
+          : deleteEnv("SCALE_RATE_ENFORCEMENT_MODE"),
+        previous.allowlist.present
+          ? putEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST", previous.allowlist.value)
+          : deleteEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST"),
+        previous.percent.present
+          ? putEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT", previous.percent.value)
+          : deleteEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT"),
+      ]);
+      envRestored = envRestore.every((result) => result.ok);
+    } catch (_error: unknown) {
+      envRestored = false;
+    }
+
+    if (envRestored) {
+      try {
+        const rollbackDeploy = await triggerDeploy();
+        deployTriggered = rollbackDeploy.ok;
+      } catch (_error: unknown) {
+        deployTriggered = false;
+      }
+    }
+
+    if (deployTriggered) {
+      try {
+        const rollbackLive = await waitForLive();
+        live = rollbackLive.live;
+      } catch (_error: unknown) {
+        live = false;
+      }
+    }
+
+    if (live) {
+      try {
+        const [health, ready] = await Promise.all([
+          fetch(`${cleanBase}/health`, { method: "GET" }),
+          fetch(`${cleanBase}/ready`, { method: "GET" }),
+        ]);
+        healthStatus = health.status;
+        readyStatus = ready.status;
+      } catch (_error: unknown) {
+        healthStatus = null;
+        readyStatus = null;
+      }
+    }
+
+    return {
+      attempted: true,
+      envRestored,
+      deployTriggered,
+      live,
+      healthStatus,
+      readyStatus,
+      succeeded: envRestored && deployTriggered && live && healthStatus === 200 && readyStatus === 200,
+    };
   };
 
   const envApply = await Promise.all([
@@ -347,78 +470,98 @@ async function main(): Promise<void> {
     putEnv("SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT", CANARY_PERCENT),
   ]);
   if (!envApply.every((result) => result.ok)) {
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_SCOPE_UNSAFE",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       render_env_written: false,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
   const deployResult = await triggerDeploy();
   if (!deployResult.ok) {
-    await restoreEnv();
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_HEALTH_READY_FAILED_ROLLBACK",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       render_env_written: true,
       deploy_triggered: false,
-      rollback_triggered: true,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
   const live = await waitForLive();
   if (!live.live) {
-    await restoreEnv();
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_HEALTH_READY_FAILED_ROLLBACK",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       render_env_written: true,
       deploy_triggered: true,
-      rollback_triggered: true,
       latest_deploy_live: false,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
   const healthAfterDeploy = await fetch(`${cleanBase}/health`, { method: "GET" });
   const readyAfterDeploy = await fetch(`${cleanBase}/ready`, { method: "GET" });
   if (healthAfterDeploy.status !== 200 || readyAfterDeploy.status !== 200) {
-    await restoreEnv();
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_HEALTH_READY_FAILED_ROLLBACK",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       render_env_written: true,
       deploy_triggered: true,
-      rollback_triggered: true,
       production_health_after_deploy: healthAfterDeploy.status,
       production_ready_after_deploy: readyAfterDeploy.status,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
   const auth = await resolveProductionBusinessReadonlyCanaryServerAuthSecret({ env });
   const serverAuth = auth.secret;
   if (!serverAuth) {
-    await restoreEnv();
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_SCOPE_UNSAFE",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       auth_category: auth.status,
       auth_source: auth.source,
-      rollback_triggered: true,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
-  let selectedSubject = "";
-  let nonSelectedSubject = "";
+  let selectedSubject: SubjectSelection;
+  let nonSelectedSubject: SubjectSelection;
   try {
     selectedSubject = await findCanarySubject(true);
     nonSelectedSubject = await findCanarySubject(false);
-  } catch {
-    await restoreEnv();
+  } catch (_error: unknown) {
+    const rollback = await restoreEnv();
     fail({
-      final_status: "BLOCKED_RATE_LIMIT_ENFORCEMENT_SCOPE_UNSAFE",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       selection_category: "unavailable",
-      rollback_triggered: true,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
@@ -444,8 +587,8 @@ async function main(): Promise<void> {
     };
   };
 
-  const selectedRead = await callRead(selectedSubject);
-  const nonSelectedRead = await callRead(nonSelectedSubject);
+  const selectedRead = await callRead(selectedSubject.subject);
+  const nonSelectedRead = await callRead(nonSelectedSubject.subject);
   const privateSmoke = await fetch(`${cleanBase}/api/staging-bff/diagnostics/rate-limit-private-smoke`, {
     method: "POST",
     headers: { authorization: `Bearer ${serverAuth}` },
@@ -480,15 +623,23 @@ async function main(): Promise<void> {
   const readyAfterCanary = await fetch(`${cleanBase}/ready`, { method: "GET" });
   const routeCanaryOk = selectedRead.ok && nonSelectedRead.ok;
   if (!routeCanaryOk || !syntheticThrottleOk || healthAfterCanary.status !== 200 || readyAfterCanary.status !== 200) {
-    await restoreEnv();
+    const rollback = await restoreEnv();
     fail({
-      final_status: routeCanaryOk
-        ? "BLOCKED_RATE_LIMIT_ENFORCEMENT_HEALTH_READY_FAILED_ROLLBACK"
-        : "BLOCKED_RATE_LIMIT_ENFORCEMENT_FALSE_POSITIVE_ROLLBACK",
+      final_status: blockedStatusForRollback(rollback),
       approvals_present: true,
+      wave: WAVE,
+      env_snapshot_captured: true,
+      env_snapshot_redacted: envSnapshotRedacted,
       render_env_written: true,
       deploy_triggered: true,
-      rollback_triggered: true,
+      route: CANARY_ROUTE,
+      route_allowlist_count: 1,
+      route_scoped_enforcement: true,
+      canary_percent: Number(CANARY_PERCENT),
+      selected_subject_proof: selectedSubject.routeCanarySelected ? "selected_redacted" : "selection_mismatch",
+      non_selected_subject_proof: nonSelectedSubject.routeCanarySelected
+        ? "selection_mismatch"
+        : "non_selected_redacted",
       selected_canary_request_status_class: selectedRead.statusClass,
       non_selected_allow_request_status_class: nonSelectedRead.statusClass,
       selected_error_category: selectedRead.errorCategory,
@@ -499,17 +650,21 @@ async function main(): Promise<void> {
       auth_resolution_status: auth.status,
       production_health_after_canary: healthAfterCanary.status,
       production_ready_after_canary: readyAfterCanary.status,
+      ...rollbackMatrixFields(rollback),
     });
   }
 
   const matrix: Matrix = {
-    final_status: "GREEN_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_HEALTHY",
+    final_status: "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+    wave: WAVE,
     approvals_present: true,
     head_equals_origin_main: true,
     ahead,
     behind,
     worktree_clean: worktreeClean,
     release_verify_status: "PASS",
+    env_snapshot_captured: true,
+    env_snapshot_redacted: envSnapshotRedacted,
     render_auto_deploy: autoDeploy,
     deploy_in_progress_before: deployInProgressBefore,
     latest_deploy_live: live.live,
@@ -524,20 +679,32 @@ async function main(): Promise<void> {
     synthetic_enforcement_canary_prior_green: true,
     private_in_service_smoke_green: true,
     target_environment: "production",
+    route: CANARY_ROUTE,
     canary_route_class: CANARY_ROUTE,
+    route_allowlist_count: 1,
     route_scoped_enforcement: true,
     global_real_user_enforcement: false,
     canary_percent: Number(CANARY_PERCENT),
     broad_mutation_route_enforcement: false,
+    second_route_enabled: false,
     business_logic_changed: false,
     business_mutations_made: false,
     db_writes: false,
     migrations_applied: false,
+    cache_changes: false,
     render_env_written: true,
     deploy_triggered: true,
     redeploy_triggered: true,
     rollback_triggered: false,
+    rollback_succeeded: false,
+    canary_retained: true,
     bff_traffic_changed: false,
+    selected_subject_proof: selectedSubject.routeCanarySelected ? "selected_redacted" : "selection_mismatch",
+    selected_subject_selection_attempts: selectedSubject.attempts,
+    non_selected_subject_proof: nonSelectedSubject.routeCanarySelected
+      ? "selection_mismatch"
+      : "non_selected_redacted",
+    non_selected_subject_selection_attempts: nonSelectedSubject.attempts,
     selected_canary_request_status_class: selectedRead.statusClass,
     non_selected_allow_request_status_class: nonSelectedRead.statusClass,
     selected_error_category: selectedRead.errorCategory,
