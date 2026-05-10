@@ -1,0 +1,145 @@
+{
+  "wave": "S_NIGHT_UI_19_REACT_MEMO_RENDER_BARRIERS_BATCH_B",
+  "final_status": "GREEN_REACT_MEMO_RENDER_BARRIERS_BATCH_B",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "status_short_branch": "## main...origin/main",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true,
+    "head_sha_before_wave": "70866b9a7472480a699d88376a360a3ad9da6704",
+    "origin_main_sha_before_wave": "70866b9a7472480a699d88376a360a3ad9da6704"
+  },
+  "scope": {
+    "target": "React.memo render barriers batch B",
+    "memo_boundaries_added": 15,
+    "custom_comparators_added": 0,
+    "provider_paths_added": 0,
+    "production_cache_enabled": false,
+    "rate_limit_changed": false,
+    "db_writes_added": false,
+    "migrations_added": false,
+    "supabase_project_changed": false,
+    "native_builds_run": false
+  },
+  "selected_files": [
+    {
+      "path": "src/screens/accountant/components/Chip.tsx",
+      "reason": "Small pure display chip rendered repeatedly in accountant views."
+    },
+    {
+      "path": "src/screens/accountant/components/TabsBar.tsx",
+      "reason": "Pure accountant tab strip with stable scalar props and parent callback."
+    },
+    {
+      "path": "src/screens/accountant/components/AccountantListSection.tsx",
+      "reason": "Memoize only the pure empty-state leaf used by heavy accountant list screens."
+    },
+    {
+      "path": "src/screens/contractor/components/ContractorModeHeader.tsx",
+      "reason": "Pure contractor mode header driven by props."
+    },
+    {
+      "path": "src/screens/contractor/components/ContractorModeHomeSwitcher.tsx",
+      "reason": "Pure contractor mode switcher with parent-owned actions."
+    },
+    {
+      "path": "src/screens/contractor/components/NormalizedText.tsx",
+      "reason": "Pure text normalization wrapper used as a display leaf."
+    },
+    {
+      "path": "src/screens/office/officeHub.sections.tsx",
+      "reason": "Nine pure OfficeHub direction section wrappers around existing DirectionCard rendering."
+    },
+    {
+      "path": "tests/perf/reactMemoBarriersBatchB.contract.test.ts",
+      "reason": "Focused proof for exact memo count growth, selected export lines, no custom comparator, and no provider paths."
+    }
+  ],
+  "before_after_metrics": {
+    "react_memo_exact_count": {
+      "before": 52,
+      "after": 67,
+      "delta": 15,
+      "target_delta_or_better": 15,
+      "status": "PASS"
+    },
+    "custom_comparators_added": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "provider_paths_added": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "direct_supabase_service_bypass_budget": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    },
+    "unresolved_unbounded_selects": {
+      "before": 0,
+      "after": 0,
+      "status": "PASS"
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/perf/reactMemoBarriersBatchB.contract.test.ts tests/perf/reactMemoBarriersBatchA.contract.test.ts tests/office/officeHub.extraction.test.ts tests/perf/performance-budget.test.ts"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "scanner_final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "post_push_release_verify": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    },
+    "artifact_json_parse": {
+      "status": "PASS"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_19_REACT_MEMO_RENDER_BARRIERS_BATCH_B_matrix.json",
+    "artifacts/S_NIGHT_UI_19_REACT_MEMO_RENDER_BARRIERS_BATCH_B_proof.md"
+  ]
+}

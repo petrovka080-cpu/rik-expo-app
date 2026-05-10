@@ -4,7 +4,7 @@ import type { Tab } from "../types";
 import { TABS } from "../types";
 import { UI } from "../ui";
 
-export default function TabsBar({
+export default React.memo(function TabsBar({
   tab,
   onPressTab,
 }: {
@@ -38,4 +38,4 @@ export default function TabsBar({
       </ScrollView>
     </View>
   );
-}
+});

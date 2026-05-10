@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function Chip({
+export default React.memo(function Chip({
   label,
   bg,
   fg,
@@ -28,4 +28,4 @@ export default function Chip({
       </Text>
     </View>
   );
-}
+});

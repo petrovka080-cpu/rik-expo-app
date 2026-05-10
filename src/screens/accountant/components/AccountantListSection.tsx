@@ -17,7 +17,7 @@ import {
   type AccountantListItem,
 } from "../accountant.listModel";
 
-export function AccountantEmptyState({
+export const AccountantEmptyState = React.memo(function AccountantEmptyState({
   title,
   hint,
   titleColor,
@@ -35,7 +35,7 @@ export function AccountantEmptyState({
       <Text style={{ color: hintColor, textAlign: "center", fontWeight: "500" }}>{hint}</Text>
     </View>
   );
-}
+});
 
 export function AccountantListBlock<TInbox extends AccountantInboxListRowBase>({
   isHistory,

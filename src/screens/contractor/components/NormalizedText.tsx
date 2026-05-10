@@ -8,7 +8,6 @@ const normalizeTextChildren = (children: React.ReactNode): React.ReactNode => {
   return children;
 };
 
-export default function NormalizedText({ children, ...props }: TextProps) {
+export default React.memo(function NormalizedText({ children, ...props }: TextProps) {
   return <RNText {...props}>{normalizeTextChildren(children)}</RNText>;
-}
-
+});

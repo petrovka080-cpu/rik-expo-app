@@ -7,7 +7,7 @@ type Props = {
   styles: any;
 };
 
-export default function ContractorModeHeader(props: Props) {
+export default React.memo(function ContractorModeHeader(props: Props) {
   const { listMode, onBackHome, styles } = props;
   const title = listMode === "home" ? "Подрядчик" : listMode === "subcontracts" ? "Подряды" : "Другие";
   return (
@@ -22,4 +22,4 @@ export default function ContractorModeHeader(props: Props) {
       </View>
     </View>
   );
-}
+});

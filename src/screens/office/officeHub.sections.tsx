@@ -84,46 +84,43 @@ function OfficeDirectionSectionCard({
   );
 }
 
-export function DirectorOfficeSection(props: OfficeDirectionSectionProps) {
+export const DirectorOfficeSection = React.memo(function DirectorOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function ForemanOfficeSection(props: OfficeDirectionSectionProps) {
+export const ForemanOfficeSection = React.memo(function ForemanOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function BuyerOfficeSection(props: OfficeDirectionSectionProps) {
+export const BuyerOfficeSection = React.memo(function BuyerOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function AccountantOfficeSection(props: OfficeDirectionSectionProps) {
+export const AccountantOfficeSection = React.memo(function AccountantOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function WarehouseOfficeSection(props: OfficeDirectionSectionProps) {
+export const WarehouseOfficeSection = React.memo(function WarehouseOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function ContractorOfficeSection(props: OfficeDirectionSectionProps) {
+export const ContractorOfficeSection = React.memo(function ContractorOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function SecurityOfficeSection(props: OfficeDirectionSectionProps) {
+export const SecurityOfficeSection = React.memo(function SecurityOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function EngineerOfficeSection(props: OfficeDirectionSectionProps) {
+export const EngineerOfficeSection = React.memo(function EngineerOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-export function ReportsOfficeSection(props: OfficeDirectionSectionProps) {
+export const ReportsOfficeSection = React.memo(function ReportsOfficeSection(props: OfficeDirectionSectionProps) {
   return <OfficeDirectionSectionCard {...props} />;
-}
+});
 
-const OFFICE_DIRECTION_SECTION_BY_KEY: Record<
-  string,
-  (props: OfficeDirectionSectionProps) => React.ReactElement
-> = {
+const OFFICE_DIRECTION_SECTION_BY_KEY: Record<string, React.ElementType<OfficeDirectionSectionProps>> = {
   accountant: AccountantOfficeSection,
   buyer: BuyerOfficeSection,
   contractor: ContractorOfficeSection,

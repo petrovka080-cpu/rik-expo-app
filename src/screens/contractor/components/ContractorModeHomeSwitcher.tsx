@@ -7,7 +7,7 @@ type Props = {
   styles: any;
 };
 
-export default function ContractorModeHomeSwitcher(props: Props) {
+export default React.memo(function ContractorModeHomeSwitcher(props: Props) {
   const { onOpenOthers, onOpenSubcontracts, styles } = props;
   return (
     <View style={styles.modeHomeWrap}>
@@ -19,4 +19,4 @@ export default function ContractorModeHomeSwitcher(props: Props) {
       </Pressable>
     </View>
   );
-}
+});
