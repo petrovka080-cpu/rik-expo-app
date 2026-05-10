@@ -20,6 +20,9 @@ const UI_BATCH_A_FILES = [
   "src/screens/office/officeAccess.model.ts",
   "src/features/market/MarketHomeScreen.tsx",
   "src/screens/contractor/ContractorScreen.tsx",
+  "src/screens/contractor/ContractorScreenContainer.tsx",
+  "src/screens/contractor/ContractorScreenView.tsx",
+  "src/screens/contractor/useContractorScreenController.tsx",
   "src/screens/contractor/contractor.utils.ts",
 ] as const;
 
@@ -35,6 +38,8 @@ describe("UI unsafe cast batch A contract", () => {
     const accountantComposition = read("src/screens/accountant/useAccountantScreenComposition.tsx");
     const accountantKeyboard = read("src/screens/accountant/useAccountantKeyboard.ts");
     const contractorScreen = read("src/screens/contractor/ContractorScreen.tsx");
+    const contractorController = read("src/screens/contractor/useContractorScreenController.tsx");
+    const contractorView = read("src/screens/contractor/ContractorScreenView.tsx");
     const officeScreen = read("src/screens/office/OfficeHubScreen.tsx");
     const officeController = read("src/screens/office/useOfficeHubScreenController.tsx");
     const officeModel = read("src/screens/office/officeAccess.model.ts");
@@ -46,8 +51,10 @@ describe("UI unsafe cast batch A contract", () => {
     expect(accountantScreen).not.toContain("cardScrollRef as");
     expect(accountantComposition).not.toContain("cardScrollRef as");
     expect(accountantKeyboard).toContain("RefObject<ScrollView | null>");
-    expect(contractorScreen).toContain("getContractorErrorMessage");
-    expect(contractorScreen).not.toContain("(e: any)");
+    expect(contractorScreen).toContain("ContractorScreenContainer");
+    expect(contractorController).toContain("getContractorErrorMessage");
+    expect(contractorController).not.toContain("(e: any)");
+    expect(contractorView).toContain("onCodeChange={setCode}");
     expect(officeModel).toContain("route: Href | null");
     expect(officeScreen).toContain("useOfficeHubScreenController");
     expect(officeController).toContain("router.push(card.route);");

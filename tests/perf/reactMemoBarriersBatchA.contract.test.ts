@@ -139,12 +139,12 @@ describe("S_RUNTIME_04_REACT_MEMO_BARRIERS_BATCH_A", () => {
     expect(actBuilderModal).toContain("closeBtnStyle={modalHeaderCloseButtonStyle}");
     expect(actBuilderModal).toContain("closeTextStyle={modalHeaderCloseTextStyle}");
 
-    const contractorScreen = readRepoFile("src/screens/contractor/ContractorScreen.tsx");
-    expect(contractorScreen).toContain("onCodeChange={setCode}");
-    expect(contractorScreen).toContain("onActivate={activateCode}");
-    expect(contractorScreen).toContain("data={contractorWorkCards}");
-    expect(contractorScreen).toContain("onRefresh={handleRefresh}");
-    expect(contractorScreen).toContain("onOpen={handleOpenUnifiedCard}");
+    const contractorScreenView = readRepoFile("src/screens/contractor/ContractorScreenView.tsx");
+    expect(contractorScreenView).toContain("onCodeChange={setCode}");
+    expect(contractorScreenView).toContain("onActivate={activateCode}");
+    expect(contractorScreenView).toContain("data={contractorWorkCards}");
+    expect(contractorScreenView).toContain("onRefresh={handleRefresh}");
+    expect(contractorScreenView).toContain("onOpen={handleOpenUnifiedCard}");
 
     const contractorActivationHook = readRepoFile("src/screens/contractor/hooks/useContractorActivation.ts");
     expect(contractorActivationHook).toContain("const activateCode = useCallback");

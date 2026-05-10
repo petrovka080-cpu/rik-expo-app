@@ -1,0 +1,138 @@
+{
+  "wave": "S_NIGHT_UI_16_CONTRACTOR_SCREEN_DECOMPOSITION_A",
+  "final_status": "GREEN_CONTRACTOR_SCREEN_DECOMPOSITION_A",
+  "selected_files": [
+    "src/screens/contractor/ContractorScreen.tsx",
+    "src/screens/contractor/ContractorScreenContainer.tsx",
+    "src/screens/contractor/ContractorScreenView.tsx",
+    "src/screens/contractor/useContractorScreenController.tsx",
+    "tests/contractor/contractorScreenDecompositionA.contract.test.ts",
+    "tests/api/uiUnsafeCastBatchA.contract.test.ts",
+    "tests/perf/reactMemoBarriersBatchA.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "ContractorScreen.tsx was the explicitly requested WAVE 16 high-line contractor screen. It mixed route shell, refresh lifecycle, selection state, action handlers, modal props, and render sections.",
+  "start_state": {
+    "fetch": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_before_wave": true,
+    "base_commit": "b1d08b8ecf181bfe25bdca493896f417fb3535fd"
+  },
+  "scope": {
+    "screen": "ContractorScreen",
+    "target_reduction": {
+      "hooks": 15,
+      "lines": 100
+    },
+    "baseline_note": "Fresh baseline had 14 hook calls in ContractorScreen.tsx, so a reduction of 15 from the requested file was not mathematically possible. All root hook calls were removed.",
+    "business_behavior_changed": false,
+    "auth_or_transport_changed": false,
+    "navigation_changed": false,
+    "production_config_changed": false
+  },
+  "before_metrics": {
+    "src/screens/contractor/ContractorScreen.tsx": {
+      "lines": 597,
+      "hook_calls": 14,
+      "imports": 29,
+      "controller_files": 0,
+      "render_view_files": 0
+    }
+  },
+  "after_metrics": {
+    "src/screens/contractor/ContractorScreen.tsx": {
+      "lines": 9,
+      "hook_calls": 0,
+      "imports": 3,
+      "role": "route shell"
+    },
+    "src/screens/contractor/ContractorScreenContainer.tsx": {
+      "lines": 12,
+      "hook_call_matches": 1,
+      "role": "controller-to-view bridge"
+    },
+    "src/screens/contractor/useContractorScreenController.tsx": {
+      "lines": 534,
+      "hook_call_matches": 15,
+      "role": "typed controller boundary"
+    },
+    "src/screens/contractor/ContractorScreenView.tsx": {
+      "lines": 161,
+      "hook_calls": 0,
+      "role": "render-only view sections"
+    }
+  },
+  "delta_metrics": {
+    "root_lines_delta": -588,
+    "root_hook_calls_delta": -14,
+    "root_imports_delta": -26,
+    "target_lines_reduced_by_at_least_100": true,
+    "target_hooks_reduced_by_at_least_15": false,
+    "maximum_safe_root_hook_reduction_achieved": true
+  },
+  "implementation": {
+    "controller_boundary": "useContractorScreenController owns refresh lifecycle model, selection state, modal state, action handlers, progress reliability, card model, and modal prop model.",
+    "container_boundary": "ContractorScreenContainer calls the controller and passes typed props into the view.",
+    "root_boundary": "ContractorScreen keeps the existing Supabase client owner file and passes the existing client to the container without adding new provider calls.",
+    "render_sections": "ContractorScreenView owns render-only loading, activation, list, and modal host sections.",
+    "behavior_preservation": "Existing contractor hooks, modal props, PDF actions, activation flow, refresh lifecycle, and work card handlers were moved without changing call order or route behavior."
+  },
+  "focused_tests": {
+    "command": "npx jest tests/contractor/contractorScreenDecompositionA.contract.test.ts tests/api/uiUnsafeCastBatchA.contract.test.ts tests/perf/reactMemoBarriersBatchA.contract.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "suites": 4,
+    "tests": 26
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_run_in_band": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING_POST_PUSH"
+  },
+  "full_test_summary": {
+    "command": "npm test -- --runInBand",
+    "status": "PASS",
+    "test_suites": {
+      "passed": 704,
+      "skipped": 1,
+      "total": 705
+    },
+    "tests": {
+      "passed": 4113,
+      "skipped": 1,
+      "total": 4114
+    }
+  },
+  "architecture_summary": {
+    "status": "PASS",
+    "direct_supabase_service_bypass_findings": 0,
+    "transport_boundary": "CLOSED",
+    "unresolved_unbounded_selects": 0,
+    "select_star_findings": 0,
+    "component_debt_mode": "report_only",
+    "contractor_screen_root_removed_from_top_by_hooks": true
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secret_values_printed": true,
+    "no_typescript_ignore_directives": true,
+    "no_unsafe_any_casts": true,
+    "no_empty_catch_blocks": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_native_or_ota_builds": true,
+    "no_production_mutation_route_enablement": true,
+    "no_cache_or_rate_limit_changes": true,
+    "no_new_provider_calls": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
