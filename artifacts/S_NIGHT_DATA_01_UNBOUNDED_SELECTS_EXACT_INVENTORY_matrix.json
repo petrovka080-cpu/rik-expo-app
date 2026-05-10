@@ -1,0 +1,163 @@
+{
+  "wave": "S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY",
+  "final_status": "GREEN_UNBOUNDED_SELECTS_EXACT_INVENTORY_READY",
+  "generatedAt": "2026-05-10T14:54:32.868Z",
+  "startedFrom": {
+    "head": "56906e1dd31a44de003cf8a618766c78697b0ef5",
+    "origin_main": "56906e1dd31a44de003cf8a618766c78697b0ef5",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "scope": {
+    "roots": [
+      "src",
+      "app"
+    ],
+    "extensions": [
+      ".ts",
+      ".tsx"
+    ],
+    "excludedFilePatterns": [
+      "*.test.ts(x)",
+      "*.spec.ts(x)",
+      "*.contract.ts(x)",
+      "*.d.ts"
+    ],
+    "ignoresCommentsAndStringLiterals": true,
+    "excludedNonSupabaseSelectCalls": 10,
+    "classifier": "AST-light balanced-call scanner with Supabase chain/context heuristics; no production calls and no DB writes"
+  },
+  "metrics": {
+    "totalSelectCalls": 284,
+    "scannerScope": "src/** and app/** TypeScript/TSX runtime files; excludes tests/specs/contracts, comments, string literals, and non-Supabase Platform.select calls",
+    "excludedNonSupabaseSelectCalls": 10,
+    "currentUnresolvedUnboundedSelects": 0,
+    "selectStarCount": 36,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "alreadyClassifiedCount": 91,
+    "alreadyBoundedCount": 246,
+    "domainBoundedCount": 31,
+    "exportAllowlistCount": 7,
+    "realCodeFixCandidates": 0,
+    "unboundedWithoutDetectedLimitRangeSingle": 38,
+    "topRiskFiles": [
+      {
+        "file": "src/lib/api/pdf_proposal.ts",
+        "high": 0,
+        "medium": 3,
+        "total": 3,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/screens/contractor/contractor.pdfService.ts",
+        "high": 0,
+        "medium": 2,
+        "total": 2,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/lib/api/director_reports.naming.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/lib/pdf/pdf.builder.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      },
+      {
+        "file": "src/screens/subcontracts/subcontracts.shared.ts",
+        "high": 0,
+        "medium": 1,
+        "total": 1,
+        "fixNow": 0,
+        "needsRpcChange": 0
+      }
+    ],
+    "byAction": {
+      "already_bounded": 246,
+      "domain_bounded": 31,
+      "export_allowlist": 7
+    },
+    "byRisk": {
+      "low": 276,
+      "medium": 8
+    },
+    "byQueryType": {
+      "lookup": 158,
+      "list": 25,
+      "reference": 53,
+      "existence": 23,
+      "aggregation": 8,
+      "export": 17
+    }
+  },
+  "selectedFiles": [
+    "artifacts/S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY_matrix.json",
+    "artifacts/S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY_proof.md",
+    "artifacts/S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY_inventory.json"
+  ],
+  "reasonSelected": "Inventory-only wave to reconcile old audit count with current checkout. Runtime code was not changed; scanner reads current src/app Supabase-like select call sites and writes artifacts only.",
+  "gates": {
+    "focusedTests": {
+      "status": "pass",
+      "command": "node artifact invariant check for matrix/inventory JSON and inventory counts"
+    },
+    "tsc": {
+      "status": "pass",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "pass",
+      "command": "npx expo lint"
+    },
+    "npmTestRunInBand": {
+      "status": "pass",
+      "command": "npm test -- --runInBand",
+      "summary": "689 suites passed, 1 skipped; 4063 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "pass",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": "serviceBypassFindings=0; transport boundary pass"
+    },
+    "gitDiffCheck": {
+      "status": "pass",
+      "command": "git diff --cached --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "pending_post_push",
+      "command": "npm run release:verify -- --json"
+    },
+    "artifactJsonParse": {
+      "status": "pass",
+      "command": "JSON.parse matrix + inventory"
+    }
+  },
+  "negativeConfirmations": {
+    "codeChanged": false,
+    "productionTouched": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveDml": false,
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "secretsPrinted": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
