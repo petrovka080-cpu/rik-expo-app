@@ -1,0 +1,173 @@
+{
+  "wave": "S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY",
+  "status": "BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK",
+  "final_status": "BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK",
+  "generatedAt": "2026-05-11T00:26:04.8230422+06:00",
+  "route": "marketplace.catalog.search",
+  "prerequisite": {
+    "wave08Status": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+    "wave08Artifact": "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_matrix.json",
+    "wave08Green": true
+  },
+  "selectedFiles": [
+    "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_matrix.json",
+    "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_proof.md",
+    "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.json",
+    "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_proof.md"
+  ],
+  "reasonSelected": "WAVE 09 used the existing approval-gated one-route cache canary lifecycle to attempt a production read-through apply for marketplace.catalog.search, with redacted env snapshot, health/ready checks, and automatic rollback on ambiguous runtime state.",
+  "baseline": {
+    "headAtStart": "b69e092dbe3bf5f3b518cd1e7a32b82431da1ac5",
+    "originMainAtStart": "b69e092dbe3bf5f3b518cd1e7a32b82431da1ac5",
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": {
+      "ahead": 0,
+      "behind": 0
+    },
+    "worktreeAtStart": "clean"
+  },
+  "preflight": {
+    "approvalsPresent": true,
+    "renderConfigPresent": true,
+    "renderAutoDeploySafe": true,
+    "deployInProgressBefore": false,
+    "envSnapshotCaptured": true,
+    "envSnapshotRedacted": true,
+    "healthBefore": 200,
+    "readyBefore": 200,
+    "baselineReadStatusClass": "2xx",
+    "baselineCacheHit": false
+  },
+  "apply": {
+    "approvedCacheEnvKeysWrittenCount": 5,
+    "versionedSafeFlagApplied": true,
+    "routeAllowlistCount": 1,
+    "canaryPercent": 1,
+    "secondRouteEnabled": false,
+    "fiveOrTenPercentExpansion": false,
+    "deployTriggered": true,
+    "latestDeployLive": true,
+    "liveDeployContainsHeadCommit": true,
+    "healthAfterDeploy": 200,
+    "readyAfterDeploy": 200
+  },
+  "runtime": {
+    "status": "configured",
+    "mode": "read_through",
+    "readThroughV1Enabled": false,
+    "percent": 1,
+    "routeAllowlistCount": 1,
+    "runtimeScopedOnly": false,
+    "blockedReason": "runtime_not_scoped_to_one_route"
+  },
+  "canaryRequests": {
+    "cacheShadowDiagnosticGreen": false,
+    "missPathRun": false,
+    "hitPathRun": false,
+    "unapprovedRouteFallbackRun": false,
+    "utf8InputSelected": true,
+    "firstRequestMissReadThrough": false,
+    "secondRequestHit": false,
+    "responseContractUnchanged": false,
+    "metricsRedacted": false,
+    "monitorStatus": "not_run"
+  },
+  "beforeAfterMetrics": {
+    "before": {
+      "cacheEnabledForReadThroughV1": false,
+      "health": 200,
+      "ready": 200,
+      "baselineCacheHit": false
+    },
+    "afterApply": {
+      "runtimeMode": "read_through",
+      "runtimeReadThroughV1Enabled": false,
+      "runtimeRouteAllowlistCount": 1,
+      "health": 200,
+      "ready": 200,
+      "canaryPassed": false
+    },
+    "afterRollback": {
+      "rollbackSucceeded": true,
+      "health": 200,
+      "ready": 200,
+      "canaryRetained": false
+    }
+  },
+  "rollback": {
+    "required": true,
+    "triggered": true,
+    "succeeded": true,
+    "latestDeployStatus": "live",
+    "healthAfterRollback": 200,
+    "readyAfterRollback": 200
+  },
+  "sourceLifecycleArtifact": {
+    "matrix": "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.json",
+    "proof": "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_proof.md",
+    "finalStatus": "BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK",
+    "blockedReason": "runtime_not_scoped_to_one_route"
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/scale/cacheOneRouteReadThroughCanaryRunner.test.ts tests/scale/cacheColdMissDeterministicProof.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts --runInBand",
+      "result": "3 suites passed, 22 tests passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expoLint": {
+      "status": "PASS",
+      "command": "npx expo lint",
+      "note": "Expo printed env variable names only, no values."
+    },
+    "npmTestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "695 suites passed, 1 skipped; 4086 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "result": "cache route scope unchanged; service bypass 0; cache_cold_miss_deterministic_proof pass"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": "pending_until_after_push",
+    "artifactJsonParse": {
+      "status": "PASS",
+      "command": "node -e JSON.parse(WAVE09 matrix, S_CACHE02 source matrix)"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_matrix.json",
+    "proof": "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_proof.md",
+    "sourceLifecycleMatrix": "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.json",
+    "sourceLifecycleProof": "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_proof.md"
+  },
+  "negativeConfirmations": {
+    "secondRoute": false,
+    "fiveOrTenPercentExpansion": false,
+    "rateLimitChanges": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "productionMutationCalls": false,
+    "loadTest": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false,
+    "urlsPrinted": false,
+    "rawCacheKeysPrinted": false,
+    "rawCacheValuesPrinted": false,
+    "rawPayloadsPrinted": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "tagsCreated": false,
+    "forcePush": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

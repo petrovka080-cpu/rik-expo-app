@@ -1,19 +1,19 @@
 # S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY Proof
 
-final_status: GREEN_CACHE_ONE_ROUTE_PASS_AND_ROLLED_BACK
+final_status: BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK
 
 ## Summary
 - route: marketplace.catalog.search
 - route_count: 1
 - canary_percent: 1
-- first_request_miss_read_through: true
-- second_request_hit: true
-- cache_shadow_diagnostic_green: true
-- first_miss_count_delta: 1
-- first_read_through_count_delta: 1
-- second_hit_count_delta: 1
-- response_contract_unchanged: true
-- blocked_reason: none
+- first_request_miss_read_through: false
+- second_request_hit: false
+- cache_shadow_diagnostic_green: false
+- first_miss_count_delta: not_run
+- first_read_through_count_delta: not_run
+- second_hit_count_delta: not_run
+- response_contract_unchanged: false
+- blocked_reason: runtime_not_scoped_to_one_route
 - rollback_triggered: true
 - rollback_succeeded: true
 
