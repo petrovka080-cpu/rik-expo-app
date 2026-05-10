@@ -1,0 +1,111 @@
+{
+  "wave": "S_DATA_01_QUERY_BOUNDS_TOP_30",
+  "final_status": "GREEN_QUERY_BOUNDS_TOP_30_REDUCED",
+  "started_from": {
+    "head": "765fa1f08ca024fabadfee7f17fdb46bcd586228",
+    "origin_main": "765fa1f08ca024fabadfee7f17fdb46bcd586228",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "scope": {
+    "selected_call_sites": 30,
+    "fixed_call_sites": 2,
+    "classified_call_sites": 28,
+    "production_calls": false,
+    "db_writes": false,
+    "migrations": false
+  },
+  "selected_files": [
+    "src/features/ai/assistantActions.transport.ts",
+    "docs/architecture/transport_ownership_map.md",
+    "tests/api/queryBoundsTop30.contract.test.ts",
+    "artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_inventory_delta.json",
+    "artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_matrix.json",
+    "artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_proof.md"
+  ],
+  "classified_reference_files": [
+    "src/lib/api/buyer.ts",
+    "src/features/auctions/auctions.data.ts",
+    "src/components/foreman/useCalcFields.ts",
+    "src/components/map/CatalogSearchModal.tsx",
+    "src/lib/api/requestCanonical.read.ts",
+    "src/lib/api/proposalAttachments.service.ts",
+    "src/lib/api/proposals.ts"
+  ],
+  "reason_selected": "The batch targets the supplied highest-risk priority files and scanner-like broad reads. Only two assistant by-id fallback reads needed code changes; the rest were resolved by explicit classification because current code already had page-through ceilings, range/limit, or single-scope maybeSingle semantics.",
+  "metrics": {
+    "before": {
+      "audit_select_calls": 295,
+      "audit_select_calls_in_scope": 288,
+      "audit_potentially_unbounded": 92
+    },
+    "after": {
+      "resolved_top30": 30,
+      "fixed": 2,
+      "classified": 28,
+      "remaining_unresolved_potentially_unbounded": 62
+    },
+    "delta": {
+      "resolved_top30": -30,
+      "remaining_unresolved_potentially_unbounded": -30
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "pass",
+      "command": "npm test -- --runInBand tests/api/queryBoundsTop30.contract.test.ts tests/api/topListPaginationBatch3.contract.test.ts tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts src/features/ai/assistantActions.fanout.test.ts tests/api/assistantStoreBffRouting.contract.test.ts tests/scale/assistantStoreBffReadonlyDbPort.test.ts",
+      "summary": "6 suites passed, 24 tests passed"
+    },
+    "typescript": {
+      "status": "pass",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "pass",
+      "command": "npx expo lint"
+    },
+    "full_jest": {
+      "status": "pass",
+      "command": "npm test -- --runInBand",
+      "summary": "685 suites passed, 1 skipped; 4049 tests passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "pass",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": "serviceBypassFindings=0, transportControlledFindings=173, totalFindings=220"
+    },
+    "git_diff_check": {
+      "status": "pass",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "pass",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_matrix.json','utf8')); JSON.parse(require('fs').readFileSync('artifacts/S_DATA_01_QUERY_BOUNDS_TOP_30_inventory_delta.json','utf8'));\""
+    },
+    "post_push_release_verify": {
+      "status": "pending",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load_test": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_build": true,
+    "no_production_calls": true,
+    "no_db_writes": true,
+    "no_migrations": true,
+    "no_cache_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -1,0 +1,312 @@
+{
+  "wave": "S_DATA_01_QUERY_BOUNDS_TOP_30",
+  "status": "GREEN_QUERY_BOUNDS_TOP_30_REDUCED",
+  "baseline": {
+    "source": "Owner audit state supplied for S_DATA_01",
+    "selectCalls": 295,
+    "selectCallsInScope": 288,
+    "potentiallyUnboundedSelects": 92
+  },
+  "selection": {
+    "selectedCount": 30,
+    "strategy": "Fix the safely bounded assistant by-id fallback reads, then classify the highest-risk priority-file and proposal/request broad-read call sites where the current code already has explicit range, page-through ceiling, direct limit, or single-scope semantics.",
+    "priorityFilesCovered": [
+      "src/lib/api/buyer.ts",
+      "src/features/auctions/auctions.data.ts",
+      "src/features/ai/assistantActions.transport.ts",
+      "src/components/foreman/useCalcFields.ts"
+    ],
+    "scannerListedSelectStarCovered": [
+      "src/lib/api/buyer.ts#enrichRejectedRows.selectStar",
+      "src/lib/api/buyer.ts#listBuyerInbox.fallback.requestItemsByCreatedAt.selectStar",
+      "src/lib/api/buyer.ts#listBuyerInbox.fallback.requestItemsById.selectStar"
+    ]
+  },
+  "result": {
+    "resolvedTop30Count": 30,
+    "fixedCallSites": 2,
+    "classifiedCallSites": 28,
+    "remainingUnresolvedPotentiallyUnboundedSelects": 62,
+    "towardTarget": "<=60 after a follow-up batch of at least 2 additional safe fixes/classifications"
+  },
+  "entries": [
+    {
+      "index": 1,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "loadLatestProposalLifecycleByRequestItem.proposalItems",
+      "selector": "proposal_items_view.select(proposal_id, request_item_id)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Wrapped by loadPagedBuyerApiRows -> loadPagedRowsWithCeiling with maxRows 5000 and stable request_item_id/proposal_id ordering."
+    },
+    {
+      "index": 2,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "loadLatestProposalLifecycleByRequestItem.proposals",
+      "selector": "v_proposals_summary.select(proposal_id, status, sent_to_accountant_at, submitted_at)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Wrapped by loadPagedBuyerApiRows -> loadPagedRowsWithCeiling with maxRows 5000 and proposal_id ordering."
+    },
+    {
+      "index": 3,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "enrichRejectedRows.rejectContext",
+      "selector": "proposal_items.select(*)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Scanner-listed select star is scoped by rejected request_item_id set and wrapped by loadPagedBuyerApiRows with id ordering and maxRows 5000."
+    },
+    {
+      "index": 4,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "filterInboxByRequestStatus.requests",
+      "selector": "requests.select(id, status)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Scoped by visible inbox request ids and wrapped by loadPagedBuyerApiRows with id ordering and maxRows 5000."
+    },
+    {
+      "index": 5,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "listBuyerInbox.fallback.requestItemsByCreatedAt",
+      "selector": "request_items.select(*)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Scanner-listed select star is inside compatibility fallback page-through helper with created_at/id ordering and maxRows 5000."
+    },
+    {
+      "index": 6,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "listBuyerInbox.fallback.requestItemsById",
+      "selector": "request_items.select(*)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Scanner-listed select star is inside compatibility fallback page-through helper with id ordering and maxRows 5000."
+    },
+    {
+      "index": 7,
+      "file": "src/lib/api/buyer.ts",
+      "callSite": "listBuyerProposalsByStatus",
+      "selector": "proposals.select(id, status, submitted_at)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Uses normalizePage and range(page.from, page.to) with submitted_at/id ordering."
+    },
+    {
+      "index": 8,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionSummaries.tenders",
+      "selector": "tenders.select(summary columns)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Top-level summary read has created_at ordering and limit(120)."
+    },
+    {
+      "index": 9,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionSummaries.tenderItems",
+      "selector": "tender_items.select(child columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Child list is wrapped by loadPagedAuctionRows -> loadPagedRowsWithCeiling with tender_id/created_at/id ordering."
+    },
+    {
+      "index": 10,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionSummaries.auctionsFallback",
+      "selector": "auctions.select(summary columns)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Legacy fallback summary read has created_at ordering and limit(120)."
+    },
+    {
+      "index": 11,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionDetail.tender",
+      "selector": "tenders.select(detail columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Point lookup by id with maybeSingle; not a list-read risk."
+    },
+    {
+      "index": 12,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionDetail.tenderItems",
+      "selector": "tender_items.select(child columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Detail child list is wrapped by loadPagedAuctionRows with created_at/id ordering and ceiling."
+    },
+    {
+      "index": 13,
+      "file": "src/features/auctions/auctions.data.ts",
+      "callSite": "loadAuctionDetail.auction",
+      "selector": "auctions.select(detail columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Point lookup by id with maybeSingle; not a list-read risk."
+    },
+    {
+      "index": 14,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantActorReadScope.profile",
+      "selector": "user_profiles.select(full_name)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Single-scope lookup by user_id with maybeSingle."
+    },
+    {
+      "index": 15,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantActorReadScope.membership",
+      "selector": "company_members.select(company_id)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Single actor lookup has limit(1) and maybeSingle."
+    },
+    {
+      "index": 16,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantActorReadScope.ownedCompany",
+      "selector": "companies.select(id)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Single-scope lookup by owner_user_id with maybeSingle."
+    },
+    {
+      "index": 17,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantActorReadScope.listingCompany",
+      "selector": "market_listings.select(company_id)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Single actor lookup has created_at ordering, limit(1), and maybeSingle."
+    },
+    {
+      "index": 18,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantMarketListingRows",
+      "selector": "market_listings.select(active listing columns)",
+      "classification": "already directly bounded",
+      "status": "classified",
+      "proof": "Uses normalizePage with ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS, stable created_at/id ordering, and range."
+    },
+    {
+      "index": 19,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantCompanyRowsByIds",
+      "selector": "companies.select(id,name).in(id)",
+      "classification": "true unbounded risk",
+      "status": "fixed",
+      "proof": "Now normalizes unique ids, enforces reference maxRows 5000, uses stable id ordering, and wraps fallback in loadPagedRowsWithCeiling."
+    },
+    {
+      "index": 20,
+      "file": "src/features/ai/assistantActions.transport.ts",
+      "callSite": "loadAssistantProfileRowsByUserIds",
+      "selector": "user_profiles.select(user_id,full_name).in(user_id)",
+      "classification": "true unbounded risk",
+      "status": "fixed",
+      "proof": "Now normalizes unique ids, enforces reference maxRows 5000, uses stable user_id ordering, and wraps fallback in loadPagedRowsWithCeiling."
+    },
+    {
+      "index": 21,
+      "file": "src/components/foreman/useCalcFields.ts",
+      "callSite": "fetchCalcFieldRows",
+      "selector": "v_reno_calc_fields_ui*.select(calc field columns)",
+      "classification": "dictionary lookup with explicit ceiling needed",
+      "status": "classified",
+      "proof": "Already uses CALC_FIELDS_PAGE_DEFAULTS and loadPagedRowsWithCeiling with sort_order/basis_key ordering."
+    },
+    {
+      "index": 22,
+      "file": "src/components/foreman/useCalcFields.ts",
+      "callSite": "workType family lookup",
+      "selector": "v_work_types_picker.select(family_code)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Point lookup by work type code with maybeSingle; not a list-read risk."
+    },
+    {
+      "index": 23,
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "callSite": "runSearch",
+      "selector": "catalog_items search preview",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Screen delegates to loadCatalogItemsSearchPreviewRows; catalog transport applies preview page range and stable ordering."
+    },
+    {
+      "index": 24,
+      "file": "src/lib/api/requestCanonical.read.ts",
+      "callSite": "loadCanonicalRequestItemCountsByRequestIds",
+      "selector": "request_items.select(request_id, qty, status)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Request item fanout is page-through with CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS and request_id/id ordering."
+    },
+    {
+      "index": 25,
+      "file": "src/lib/api/requestCanonical.read.ts",
+      "callSite": "loadCanonicalRequestsByIds",
+      "selector": "requests.select(selectedColumns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Request lookup by ids is page-through with CANONICAL_REQUEST_REFERENCE_PAGE_DEFAULTS and id ordering."
+    },
+    {
+      "index": 26,
+      "file": "src/lib/api/requestCanonical.read.ts",
+      "callSite": "loadCanonicalRequestItemsByRequestId",
+      "selector": "request_items.select(item columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Request detail items use loadPagedRowsWithCeiling with canonical reference defaults."
+    },
+    {
+      "index": 27,
+      "file": "src/lib/api/proposalAttachments.service.ts",
+      "callSite": "loadCompatibilityRows",
+      "selector": "proposal_attachments.select(attachment columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Compatibility fallback is wrapped in loadPagedRowsWithCeiling with proposal attachment page defaults and created_at/id ordering."
+    },
+    {
+      "index": 28,
+      "file": "src/lib/api/proposals.ts",
+      "callSite": "selectProposalItemsSnapshot",
+      "selector": "proposal_snapshot_items.select(item columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Proposal snapshot item read is page-through with PROPOSAL_REFERENCE_PAGE_DEFAULTS and id ordering."
+    },
+    {
+      "index": 29,
+      "file": "src/lib/api/proposals.ts",
+      "callSite": "selectProposalItemsView",
+      "selector": "proposal_items_view.select(item columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Proposal item view read is page-through with PROPOSAL_REFERENCE_PAGE_DEFAULTS and id ordering."
+    },
+    {
+      "index": 30,
+      "file": "src/lib/api/proposals.ts",
+      "callSite": "selectProposalItemsTable",
+      "selector": "proposal_items.select(item columns)",
+      "classification": "already bounded indirectly",
+      "status": "classified",
+      "proof": "Proposal item table fallback is page-through with PROPOSAL_REFERENCE_PAGE_DEFAULTS and id ordering."
+    }
+  ],
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "businessBehaviorChanged": false,
+    "secretsPrinted": false
+  }
+}

@@ -1,7 +1,15 @@
 import { supabase } from "../../lib/supabaseClient";
-import { normalizePage } from "../../lib/api/_core";
+import {
+  createGuardedPagedQuery,
+  isRecordRow,
+  loadPagedRowsWithCeiling,
+  normalizePage,
+  parseErr,
+  type PagedQueryProvider,
+} from "../../lib/api/_core";
 import type { DbJson } from "../../lib/dbContract.types";
 import {
+  ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS,
   ASSISTANT_STORE_READ_BFF_MARKET_PAGE_DEFAULTS,
   type AssistantStoreReadBffReadErrorDto,
   type AssistantStoreReadBffReadResultDto,
@@ -76,6 +84,40 @@ const loadAssistantRowsViaBff = async <T,>(
   return await fallback();
 };
 
+const toAssistantReadError = (error: unknown): { message?: string } | null =>
+  error ? { message: parseErr(error) } : null;
+
+const normalizeBoundedAssistantIds = (
+  ids: string[],
+): { ids: string[]; error: { message?: string } | null } => {
+  const uniqueIds = Array.from(
+    new Set(ids.map((id) => String(id ?? "").trim()).filter(Boolean)),
+  );
+  if (uniqueIds.length > ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS.maxRows) {
+    return {
+      ids: [],
+      error: {
+        message: `Assistant reference id read exceeded max row ceiling (${ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS.maxRows})`,
+      },
+    };
+  }
+  return { ids: uniqueIds, error: null };
+};
+
+const isAssistantCompanyReadRow = (
+  value: unknown,
+): value is AssistantCompanyReadRow =>
+  isRecordRow(value) &&
+  (value.id == null || typeof value.id === "string") &&
+  (value.name == null || typeof value.name === "string");
+
+const isAssistantProfileReadRow = (
+  value: unknown,
+): value is AssistantProfileReadRow =>
+  isRecordRow(value) &&
+  (value.user_id == null || typeof value.user_id === "string") &&
+  (value.full_name == null || typeof value.full_name === "string");
+
 export async function loadAssistantActorReadScope(
   userId: string,
 ): Promise<AssistantReadResult<AssistantActorReadScopeRow>> {
@@ -143,17 +185,31 @@ export async function loadAssistantMarketListingRows(): Promise<
 export async function loadAssistantCompanyRowsByIds(
   ids: string[],
 ): Promise<AssistantReadResult<AssistantCompanyReadRow>> {
-  if (!ids.length) return { data: [], error: null };
+  const bounded = normalizeBoundedAssistantIds(ids);
+  if (bounded.error) return { data: null, error: bounded.error };
+  if (!bounded.ids.length) return { data: [], error: null };
   return await loadAssistantRowsViaBff<AssistantCompanyReadRow>(
     {
       operation: "assistant.market.companies_by_ids",
-      args: { ids },
+      args: { ids: bounded.ids },
     },
     async () => {
-      const result = await supabase.from("companies").select("id,name").in("id", ids);
+      const result = await loadPagedRowsWithCeiling<AssistantCompanyReadRow>(
+        () =>
+          createGuardedPagedQuery(
+            supabase
+              .from("companies")
+              .select("id,name")
+              .in("id", bounded.ids)
+              .order("id", { ascending: true }) as PagedQueryProvider,
+            isAssistantCompanyReadRow,
+            "assistant.market.companies_by_ids",
+          ),
+        ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS,
+      );
       return {
         data: Array.isArray(result.data) ? result.data : [],
-        error: result.error,
+        error: toAssistantReadError(result.error),
       };
     },
   );
@@ -162,17 +218,31 @@ export async function loadAssistantCompanyRowsByIds(
 export async function loadAssistantProfileRowsByUserIds(
   ids: string[],
 ): Promise<AssistantReadResult<AssistantProfileReadRow>> {
-  if (!ids.length) return { data: [], error: null };
+  const bounded = normalizeBoundedAssistantIds(ids);
+  if (bounded.error) return { data: null, error: bounded.error };
+  if (!bounded.ids.length) return { data: [], error: null };
   return await loadAssistantRowsViaBff<AssistantProfileReadRow>(
     {
       operation: "assistant.market.profiles_by_user_ids",
-      args: { ids },
+      args: { ids: bounded.ids },
     },
     async () => {
-      const result = await supabase.from("user_profiles").select("user_id,full_name").in("user_id", ids);
+      const result = await loadPagedRowsWithCeiling<AssistantProfileReadRow>(
+        () =>
+          createGuardedPagedQuery(
+            supabase
+              .from("user_profiles")
+              .select("user_id,full_name")
+              .in("user_id", bounded.ids)
+              .order("user_id", { ascending: true }) as PagedQueryProvider,
+            isAssistantProfileReadRow,
+            "assistant.market.profiles_by_user_ids",
+          ),
+        ASSISTANT_STORE_READ_BFF_REFERENCE_PAGE_DEFAULTS,
+      );
       return {
         data: Array.isArray(result.data) ? result.data : [],
-        error: result.error,
+        error: toAssistantReadError(result.error),
       };
     },
   );
