@@ -214,6 +214,9 @@ describe("performance budget — bundle module count", () => {
     const sNightUi13DirectorReportsModalStyleBoundaryFiles = [
       path.join(SRC, "screens", "director", "DirectorReportsModal.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi14ForemanAiQuickModalStyleBoundaryFiles = [
+      path.join(SRC, "screens", "foreman", "ForemanAiQuickModal.styles.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditNightBattle123MapScreenModelBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.model.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -668,6 +671,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sNightUi13DirectorReportsModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi14ForemanAiQuickModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle123MapScreenModelBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
@@ -783,6 +787,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle42DirectorMetricsTransportFiles -
         sAuditBattle45MapScreenStyleBoundaryFiles -
         sNightUi13DirectorReportsModalStyleBoundaryFiles -
+        sNightUi14ForemanAiQuickModalStyleBoundaryFiles -
         sAuditNightBattle123MapScreenModelBoundaryFiles -
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
