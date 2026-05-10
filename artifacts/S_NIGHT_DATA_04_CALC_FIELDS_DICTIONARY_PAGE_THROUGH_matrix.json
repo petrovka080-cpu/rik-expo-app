@@ -122,7 +122,31 @@
     },
     "releaseVerifyPostPush": {
       "command": "npm run release:verify -- --json",
-      "status": "pending"
+      "status": "pass",
+      "verifiedCommitSha": "51424ed4fab46088826bbe44c824699d40bb573b",
+      "headMatchesOriginMain": true,
+      "ahead": 0,
+      "behind": 0,
+      "worktreeClean": true,
+      "readiness": "pass",
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easBuildTriggered": false,
+      "easSubmitTriggered": false,
+      "secretsPrinted": false,
+      "attempts": [
+        {
+          "status": "fail",
+          "failedGate": "jest",
+          "readiness": "fail",
+          "note": "Immediate retry of standalone parallel Jest passed; release verify was rerun."
+        },
+        {
+          "status": "pass",
+          "readiness": "pass"
+        }
+      ],
+      "finalArtifactCommitRequiresRepeatVerify": true
     }
   },
   "negativeConfirmations": {
@@ -148,6 +172,18 @@
   "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
   "postPushReleaseVerify": {
     "command": "npm run release:verify -- --json",
-    "status": "pending"
+    "status": "pass",
+    "verifiedCommitSha": "51424ed4fab46088826bbe44c824699d40bb573b",
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktreeClean": true,
+    "readiness": "pass",
+    "otaDisposition": "allow",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "secretsPrinted": false,
+    "finalArtifactCommitRequiresRepeatVerify": true
   }
 }
