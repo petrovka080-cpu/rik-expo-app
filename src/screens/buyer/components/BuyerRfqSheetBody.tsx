@@ -27,7 +27,7 @@ const PAYMENT_TERMS_OPTIONS: readonly { key: PaymentTermsType; label: string }[]
   { key: "deferred", label: "Отсрочка" },
 ];
 
-export function BuyerRfqSheetBody({
+function BuyerRfqSheetBodyInner({
   s,
   rfqBusy,
   closeSheet,
@@ -462,6 +462,8 @@ export function BuyerRfqSheetBody({
     </View>
   );
 }
+
+export const BuyerRfqSheetBody = React.memo(BuyerRfqSheetBodyInner);
 
 const styles = StyleSheet.create({
   root: {

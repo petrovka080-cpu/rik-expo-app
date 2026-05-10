@@ -1,7 +1,7 @@
 import React from "react";
 import { Text, View } from "react-native";
 
-export default function ToastOverlay({ toast }: { toast: string | null }) {
+function ToastOverlay({ toast }: { toast: string | null }) {
   if (!toast) return null;
 
   return (
@@ -39,3 +39,5 @@ export default function ToastOverlay({ toast }: { toast: string | null }) {
     </View>
   );
 }
+
+export default React.memo(ToastOverlay);

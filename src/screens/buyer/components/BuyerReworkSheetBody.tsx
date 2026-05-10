@@ -18,7 +18,7 @@ type ReworkItem = {
   supplier?: string;
   note?: string;
 };
-export function BuyerReworkSheetBody({
+function BuyerReworkSheetBodyInner({
   s,
 
   rwBusy,
@@ -297,7 +297,10 @@ export function BuyerReworkSheetBody({
     />
   );
 }
-export function SheetFooterActions({
+
+export const BuyerReworkSheetBody = React.memo(BuyerReworkSheetBodyInner);
+
+function SheetFooterActionsInner({
   s,
   left,
   center,
@@ -360,7 +363,9 @@ export function SheetFooterActions({
   );
 }
 
-export function BuyerAttachmentsSticky({
+export const SheetFooterActions = React.memo(SheetFooterActionsInner);
+
+function BuyerAttachmentsStickyInner({
   s,
   creating,
   kbOpen,
@@ -512,3 +517,5 @@ export function BuyerAttachmentsSticky({
     </View>
   );
 }
+
+export const BuyerAttachmentsSticky = React.memo(BuyerAttachmentsStickyInner);

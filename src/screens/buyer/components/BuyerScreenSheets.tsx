@@ -26,6 +26,8 @@ type BuyerPropDetailsSheetBodyProps = React.ComponentProps<typeof BuyerPropDetai
 type BuyerReworkSheetBodyProps = React.ComponentProps<typeof BuyerReworkSheetBody>;
 type BuyerRfqSheetBodyProps = React.ComponentProps<typeof BuyerRfqSheetBody>;
 
+const EMPTY_PROPOSAL_ATTACHMENTS: BuyerPropDetailsSheetBodyProps["attachments"] = [];
+
 type BuyerScreenSheetsInboxProps = Omit<
   BuyerInboxSheetBodyProps,
   "s" | "footer" | "sheetGroup"
@@ -101,7 +103,18 @@ function BuyerScreenSheetsInner({
 }: BuyerScreenSheetsProps) {
   const proposalDetailsState = proposalDetails.state;
   const propViewId = proposalDetailsState.propViewId;
-  const inboxFooter = inbox.showFooter ? (
+  const { attachFileToProposal, loadProposalAttachments } = proposalDetails;
+  const proposalAttachmentError = propViewId ? (proposalDetails.propAttErrByPid[propViewId] || "") : "";
+  const proposalAttachments = propViewId
+    ? (proposalDetails.propAttByPid[propViewId] || EMPTY_PROPOSAL_ATTACHMENTS)
+    : EMPTY_PROPOSAL_ATTACHMENTS;
+  const reloadProposalAttachments = React.useCallback(() => {
+    if (propViewId) void loadProposalAttachments(propViewId);
+  }, [propViewId, loadProposalAttachments]);
+  const attachProposalFile = React.useCallback(() => {
+    if (propViewId) void attachFileToProposal(propViewId, "extra");
+  }, [propViewId, attachFileToProposal]);
+  const inboxFooter = React.useMemo(() => inbox.showFooter ? (
     <SheetFooterActions
       s={s}
       left={
@@ -144,7 +157,18 @@ function BuyerScreenSheetsInner({
         </View>
       }
     />
-  ) : null;
+  ) : null, [
+    inbox.clearPick,
+    inbox.creating,
+    inbox.disableClear,
+    inbox.disableRfq,
+    inbox.disableSend,
+    inbox.handleCreateProposalsBySupplier,
+    inbox.needAttachWarn,
+    inbox.openRfqSheet,
+    inbox.showFooter,
+    s,
+  ]);
 
   return (
     <>
@@ -172,14 +196,10 @@ function BuyerScreenSheetsInner({
               isReqContextNote={proposalDetails.isReqContextNote}
               extractReqContextLines={proposalDetails.extractReqContextLines}
               propAttBusy={proposalDetails.propAttBusy}
-              propAttErr={propViewId ? (proposalDetails.propAttErrByPid[propViewId] || "") : ""}
-              attachments={propViewId ? (proposalDetails.propAttByPid[propViewId] || []) : []}
-              onReloadAttachments={() => {
-                if (propViewId) proposalDetails.loadProposalAttachments(propViewId);
-              }}
-              onAttachFile={() => {
-                if (propViewId) proposalDetails.attachFileToProposal(propViewId, "extra");
-              }}
+              propAttErr={proposalAttachmentError}
+              attachments={proposalAttachments}
+              onReloadAttachments={reloadProposalAttachments}
+              onAttachFile={attachProposalFile}
               onOpenAttachment={proposalDetails.openPropAttachment}
               onOpenPdf={proposalDetails.openProposalPdfFromDetails}
               onOpenAccounting={proposalDetails.openAccountingModal}

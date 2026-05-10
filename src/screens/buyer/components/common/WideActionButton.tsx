@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, Text } from "react-native";
 
-export const WideActionButton = ({
+export const WideActionButton = React.memo(function WideActionButton({
   label,
   onPress,
   disabled = false,
@@ -13,7 +13,7 @@ export const WideActionButton = ({
   disabled?: boolean;
   loading?: boolean;
   variant?: "neutral" | "blue" | "green";
-}) => {
+}) {
   const isDisabled = disabled || loading;
 
   const tone =
@@ -46,4 +46,4 @@ export const WideActionButton = ({
       </Text>
     </Pressable>
   );
-};
+});

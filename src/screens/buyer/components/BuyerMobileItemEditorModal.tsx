@@ -33,7 +33,7 @@ type BuyerMobileItemEditorModalProps = {
   onClose: () => void;
 };
 
-export function BuyerMobileItemEditorModal(props: BuyerMobileItemEditorModalProps) {
+function BuyerMobileItemEditorModalInner(props: BuyerMobileItemEditorModalProps) {
   const {
     it,
     m,
@@ -282,6 +282,8 @@ export function BuyerMobileItemEditorModal(props: BuyerMobileItemEditorModalProp
     </Modal>
   );
 }
+
+export const BuyerMobileItemEditorModal = React.memo(BuyerMobileItemEditorModalInner);
 
 const P = P_SHEET;
 

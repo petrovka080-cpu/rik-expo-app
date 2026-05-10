@@ -1,0 +1,143 @@
+{
+  "wave": "S_RUNTIME_02_BUYER_SCREEN_RENDER_BARRIERS",
+  "final_status": "GREEN_BUYER_SCREEN_RENDER_BARRIERS_ADDED",
+  "started_from": {
+    "fetched": "git fetch origin main",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true,
+    "start_sha": "6a25891528c233d27c47b72b53add6948b7da234"
+  },
+  "selected_files": [
+    "src/screens/buyer/ToastOverlay.tsx",
+    "src/screens/buyer/components/BuyerAccountingSheetBody.tsx",
+    "src/screens/buyer/components/BuyerCardSkeleton.tsx",
+    "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+    "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+    "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+    "src/screens/buyer/components/BuyerScreenSheets.tsx",
+    "src/screens/buyer/components/common/WideActionButton.tsx",
+    "tests/buyer/buyerScreenRenderBarriers.contract.test.ts",
+    "artifacts/S_RUNTIME_02_BUYER_SCREEN_RENDER_BARRIERS_matrix.json",
+    "artifacts/S_RUNTIME_02_BUYER_SCREEN_RENDER_BARRIERS_proof.md"
+  ],
+  "reason_selected": {
+    "sheet_bodies": "Accounting, RFQ, and rework sheets are render-heavy BuyerScreen children with explicit props and no direct transport ownership.",
+    "attachment_footer": "Attachment sticky and footer actions are repeated sheet subtrees whose inputs are explicit primitives, arrays, callbacks, and style bag references.",
+    "mobile_editor": "Mobile editor modal is a contained child with local draft state and item/meta props that already resync on item identity changes.",
+    "static_children": "Toast, skeleton, and wide action button are low-risk render-only surfaces with primitive or stable callback props.",
+    "BuyerScreenSheets.tsx": "Stabilizes footer nodes and proposal attachment callbacks before passing props into memoized children."
+  },
+  "before_after_metrics": {
+    "buyer_react_memo_boundaries": {
+      "before_origin_main": 13,
+      "after_worktree": 22,
+      "delta": 9,
+      "target_met": true
+    },
+    "buyer_screen_hook_call_sites": {
+      "before_origin_main": 32,
+      "after_worktree": 32,
+      "delta": 0
+    }
+  },
+  "memoized_components": [
+    "BuyerAccountingSheetBody",
+    "BuyerRfqSheetBody",
+    "BuyerReworkSheetBody",
+    "SheetFooterActions",
+    "BuyerAttachmentsSticky",
+    "BuyerMobileItemEditorModal",
+    "BuyerCardSkeleton",
+    "WideActionButton",
+    "ToastOverlay"
+  ],
+  "stabilized_props": [
+    "BuyerScreenSheets inboxFooter uses React.useMemo before passing footer into BuyerInboxSheetBody.",
+    "BuyerScreenSheets reloadProposalAttachments uses React.useCallback before passing onReloadAttachments.",
+    "BuyerScreenSheets attachProposalFile uses React.useCallback before passing onAttachFile.",
+    "BuyerScreenSheets uses EMPTY_PROPOSAL_ATTACHMENTS to avoid a new empty array fallback."
+  ],
+  "business_behavior_proof": [
+    "No direct Supabase or catalog_api imports were added to memoized render-barrier components.",
+    "No navigation, network, data-fetch, mutation, BFF, cache, or rate-limit code was changed.",
+    "Focused contract asserts the memoized component list and the stabilized sheet props.",
+    "S-LOAD hotspot contract remains green after avoiding protected BuyerPropDetailsSheetBody changes."
+  ],
+  "gates": {
+    "focused_render_barrier_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/buyer/buyerScreenRenderBarriers.contract.test.ts tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "result": "2 suites passed, 7 tests passed"
+    },
+    "focused_buyer_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/buyer/buyerScreenRenderBarriers.contract.test.ts tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts src/screens/buyer/components/BuyerScreenHeader.test.tsx src/screens/buyer/components/BuyerPropDetailsSheetBody.test.tsx",
+      "result": "4 suites passed, 11 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "direct_supabase_service_bypass_findings": 0,
+      "service_bypass_files": 0,
+      "unclassified_current_findings": 0
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "full_jest": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "677 suites passed, 1 skipped, 4016 tests passed, 1 skipped"
+    },
+    "forbidden_patterns_touched_surface": {
+      "status": "PASS",
+      "patterns": [
+        "@ts-ignore",
+        "as any",
+        "catch {}"
+      ],
+      "matches": 0
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "Get-Content -Raw artifacts/S_RUNTIME_02_BUYER_SCREEN_RENDER_BARRIERS_matrix.json | ConvertFrom-Json"
+    },
+    "post_push_release_verify_json": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_or_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_cache_route_expansion_or_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "architecture_baseline": {
+    "direct_supabase_service_bypass": "CLOSED / 0",
+    "transport_boundary": "CLOSED",
+    "root_supabase_client": "allowed only in supabaseClient.ts",
+    "supabase_realtime": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+  }
+}

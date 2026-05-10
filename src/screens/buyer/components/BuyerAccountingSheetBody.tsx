@@ -16,7 +16,7 @@ type AccountingSupplier = {
 
 type InvoiceFile = Attachment["file"] | null;
 
-export function BuyerAccountingSheetBody({
+function BuyerAccountingSheetBodyInner({
   s,
   isWeb,
   acctProposalId,
@@ -189,3 +189,5 @@ export function BuyerAccountingSheetBody({
     </ScrollView>
   );
 }
+
+export const BuyerAccountingSheetBody = React.memo(BuyerAccountingSheetBodyInner);

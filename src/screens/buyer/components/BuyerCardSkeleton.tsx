@@ -2,7 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import type { StylesBag } from "./component.types";
 
-export const BuyerCardSkeleton = ({ s }: { s: StylesBag }) => {
+export const BuyerCardSkeleton = React.memo(function BuyerCardSkeleton({ s }: { s: StylesBag }) {
     return (
         <View style={[s.proposalCard, { opacity: 0.5, borderStyle: 'dashed' }]}>
             <View style={{ gap: 12 }}>
@@ -20,4 +20,4 @@ export const BuyerCardSkeleton = ({ s }: { s: StylesBag }) => {
             </View>
         </View>
     );
-};
+});
