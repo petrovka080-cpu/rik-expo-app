@@ -1,0 +1,78 @@
+{
+  "wave": "S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF",
+  "final_status": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+  "generatedAt": "2026-05-11T00:08:20.3104392+06:00",
+  "mode": "repo-only deterministic fixture proof",
+  "route": "marketplace.catalog.search",
+  "cacheEnablement": {
+    "productionCacheEnabled": false,
+    "broadCacheEnabled": false,
+    "routeAllowlist": ["marketplace.catalog.search"],
+    "routeExpansion": false,
+    "globalTtlChanged": false
+  },
+  "deterministicKeyStrategy": {
+    "uniqueNamespace": true,
+    "namespace": "present_redacted",
+    "nonceQueryInput": "present_redacted",
+    "cacheKey": "present_redacted",
+    "knownEmptyBeforeFirstRequest": true,
+    "utf8InputSafe": true
+  },
+  "marketplaceCatalogSearch": {
+    "healthBefore": 200,
+    "readyBefore": 200,
+    "firstRequest": {
+      "status": 200,
+      "cacheHit": false,
+      "providerFallbackHappened": true,
+      "providerCallsDelta": 1,
+      "missCountDelta": 1,
+      "readThroughCountDelta": 1,
+      "cacheWriteCountDelta": 1
+    },
+    "secondSameRequest": {
+      "status": 200,
+      "cacheHit": true,
+      "providerCallsDelta": 0,
+      "hitCountDelta": 1
+    },
+    "healthAfter": 200,
+    "readyAfter": 200,
+    "providerCallsTotal": 1,
+    "redisCommandSequenceForProofKey": ["GET", "GET", "SET", "SADD", "SADD", "SADD", "GET", "DEL", "GET"],
+    "rollbackDeletedEntries": 1,
+    "postRollbackReadNull": true
+  },
+  "monitorMetrics": {
+    "observedDecisionCount": 2,
+    "shadowReadAttemptedCount": 2,
+    "hitCount": 1,
+    "missCount": 1,
+    "readThroughCount": 1,
+    "errorCount": 0,
+    "routeMetricsRedactionSafe": true,
+    "rawKeysStored": false,
+    "rawKeysPrinted": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false,
+    "containsRedisUrl": false,
+    "containsToken": false,
+    "containsSecret": false,
+    "containsRawKey": false,
+    "containsNonce": false,
+    "containsUtf8Query": false
+  },
+  "otherRoutes": [
+    {
+      "route": "request.proposal.list",
+      "requests": 2,
+      "providerCalls": 2,
+      "cacheCommands": 0,
+      "cacheHits": 0,
+      "skippedCount": 2,
+      "providerFallbackPreserved": true,
+      "routeMetricsRedacted": true
+    }
+  ]
+}

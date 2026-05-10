@@ -1,0 +1,119 @@
+{
+  "wave": "S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF",
+  "status": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+  "final_status": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+  "generatedAt": "2026-05-11T00:08:20.3104392+06:00",
+  "selectedFiles": [
+    "tests/scale/cacheColdMissDeterministicProof.test.ts",
+    "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_matrix.json",
+    "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_proof.md",
+    "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_metrics.json"
+  ],
+  "reasonSelected": "WAVE 08 closes the cold-miss blocker with deterministic repo-only proof for marketplace.catalog.search: unique namespace/key, first-call provider fallback plus cache write, second-call cache hit, UTF-8 safety, redacted metrics, and non-marketplace route fallback without broad cache enablement.",
+  "baseline": {
+    "headAtStart": "8c7965778e60eb0fed7ae6c7516da1c83c0cb498",
+    "originMainAtStart": "8c7965778e60eb0fed7ae6c7516da1c83c0cb498",
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": {
+      "ahead": 0,
+      "behind": 0
+    },
+    "worktreeAtStart": "clean"
+  },
+  "beforeMetrics": {
+    "blockingStatus": "BLOCKED_CACHE_COLD_MISS_PROOF_REQUIRED",
+    "wave08MetricsArtifactPresent": false,
+    "explicitCacheWriteAfterFirstRequestProof": false,
+    "otherRouteProviderFallbackProof": false,
+    "deterministicColdMissSecondHitProof": "partial_from_S_CACHE_01"
+  },
+  "afterMetrics": {
+    "blockingStatus": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+    "wave08MetricsArtifactPresent": true,
+    "explicitCacheWriteAfterFirstRequestProof": true,
+    "otherRouteProviderFallbackProof": true,
+    "deterministicColdMissSecondHitProof": true,
+    "observedDecisionCount": 2,
+    "shadowReadAttemptedCount": 2,
+    "missCount": 1,
+    "hitCount": 1,
+    "readThroughCount": 1,
+    "providerCalls": 1,
+    "cacheWriteCount": 1,
+    "nonMarketplaceProviderCalls": 2,
+    "nonMarketplaceCacheCommands": 0
+  },
+  "proof": {
+    "route": "marketplace.catalog.search",
+    "uniqueNamespace": true,
+    "uniqueKey": true,
+    "firstRequestColdMiss": true,
+    "providerFallbackHappens": true,
+    "cacheWriteHappens": true,
+    "secondSameRequestCacheHit": true,
+    "hitMissMetricsRedacted": true,
+    "utf8PathSafe": true,
+    "otherRoutesSkipCacheAndFallbackProvider": true,
+    "routeScopeUnchanged": true,
+    "cacheLeftEnabled": false
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/scale/cacheColdMissDeterministicProof.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts --runInBand",
+      "result": "2 suites passed, 21 tests passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expoLint": {
+      "status": "PASS",
+      "command": "npx expo lint",
+      "note": "Expo printed env variable names only, no values."
+    },
+    "npmTestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "695 suites passed, 1 skipped; 4086 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "result": "cache_cold_miss_deterministic_proof pass; cache route scope unchanged; service bypass 0"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": "pending_until_after_push",
+    "artifactJsonParse": {
+      "status": "PASS",
+      "command": "node -e JSON.parse(matrix,metrics)"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_matrix.json",
+    "proof": "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_proof.md",
+    "metrics": "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_metrics.json"
+  },
+  "negativeConfirmations": {
+    "broadCache": false,
+    "multiRouteCache": false,
+    "globalTtlChange": false,
+    "redisUrlTokenOrKeyPayloadPrinted": false,
+    "productionWideEnablement": false,
+    "productionMutation": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "rateLimitChange": false,
+    "loadTest": false,
+    "secretsPrinted": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "tagsCreated": false,
+    "forcePush": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

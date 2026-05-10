@@ -27,6 +27,7 @@ import {
 } from "../../scripts/server/stagingBffServerBoundary";
 
 const MARKETPLACE_OPERATION: BffReadOperation = "marketplace.catalog.search";
+const ROUTE_SCOPE_SKIP_OPERATION: BffReadOperation = "request.proposal.list";
 const PROOF_NAMESPACE = "rik-s-cache-01-cold-proof";
 const PROOF_NONCE = "s-cache-01-cold-miss-proof-v1";
 const UTF8_QUERY = "\u0446\u0435\u043c\u0435\u043d\u0442 \u0411\u0438\u0448\u043a\u0435\u043a s-cache-01-cold-miss-proof-v1";
@@ -81,7 +82,7 @@ const waitFor = async (predicate: () => boolean): Promise<void> => {
   expect(predicate()).toBe(true);
 };
 
-const createIsolatedRedisCacheAdapterFixture = () => {
+const createIsolatedRedisCacheAdapterFixture = (namespace = PROOF_NAMESPACE) => {
   let now = 0;
   const values = new Map<string, RedisEntry>();
   const sets = new Map<string, RedisSetEntry>();
@@ -154,7 +155,7 @@ const createIsolatedRedisCacheAdapterFixture = () => {
   return {
     adapter: new RedisUrlCacheAdapter({
       redisUrl: "rediss://red-render-kv.example.invalid:6379",
-      namespace: PROOF_NAMESPACE,
+      namespace,
       commandImpl,
     }),
     advance: (ms: number) => {
@@ -179,6 +180,21 @@ const deterministicMarketplaceInput = (): Record<string, unknown> => ({
     proofNonce: PROOF_NONCE,
   },
 });
+
+const routeScopeSkipInput = (): Record<string, unknown> => ({
+  companyId: "company-s-night-cache-08-route-skip",
+  actorIdHash: "actor-s-night-cache-08-route-skip",
+  role: "buyer",
+  page: 1,
+  pageSize: 5,
+  filters: {
+    status: "submitted",
+    scope: "proof",
+  },
+});
+
+const redisCommandNames = (commands: readonly RedisCommand[]): readonly string[] =>
+  commands.map((command) => String(command[0]).toUpperCase());
 
 describe("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF", () => {
   it("proves a deterministic isolated cold miss followed by a second-call hit without enabling production cache", async () => {
@@ -213,11 +229,16 @@ describe("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF", () => {
 
     expect(await redis.adapter.get(proofKey)).toBeNull();
 
+    const healthBefore = await handleBffStagingServerRequest(
+      { method: "GET", path: "/health" },
+      deps,
+    );
     const readinessBefore = await handleBffStagingServerRequest(
       { method: "GET", path: "/ready" },
       deps,
     );
     const first = await handleBffStagingServerRequest(request, deps);
+    const commandNamesAfterFirst = redisCommandNames(redis.commands);
     const second = await handleBffStagingServerRequest(request, deps);
     const monitorResponse = await handleBffStagingServerRequest(
       { method: BFF_STAGING_CACHE_SHADOW_MONITOR_ROUTE.method, path: BFF_STAGING_CACHE_SHADOW_MONITOR_ROUTE.path },
@@ -229,9 +250,15 @@ describe("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF", () => {
       { method: "GET", path: "/ready" },
       deps,
     );
+    const healthAfter = await handleBffStagingServerRequest(
+      { method: "GET", path: "/health" },
+      deps,
+    );
 
+    expect(healthBefore.status).toBe(200);
     expect(readinessBefore.status).toBe(200);
     expect(readinessAfter.status).toBe(200);
+    expect(healthAfter.status).toBe(200);
     expect(first.status).toBe(200);
     expect(second.status).toBe(200);
     expect(first.body).toEqual(
@@ -261,6 +288,8 @@ describe("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF", () => {
       }),
     );
     expect(searchCatalog).toHaveBeenCalledTimes(1);
+    expect(commandNamesAfterFirst).toEqual(expect.arrayContaining(["GET", "SET", "SADD", "PEXPIRE"]));
+    expect(commandNamesAfterFirst.filter((name) => name === "SET")).toHaveLength(1);
 
     await waitFor(() => monitor.snapshot().missCount === 1 && monitor.snapshot().hitCount === 1);
     expect(monitor.snapshot()).toEqual(
@@ -330,6 +359,69 @@ describe("S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF", () => {
     expect(metricsOutput).not.toContain(UTF8_QUERY);
     expect(metricsOutput).not.toContain("token");
     expect(metricsOutput).not.toContain("secret");
+  });
+
+  it("proves non-marketplace routes skip cache and keep provider fallback under read-through config", async () => {
+    const redis = createIsolatedRedisCacheAdapterFixture("rik-s-night-cache-08-route-skip");
+    const config = resolveCacheShadowRuntimeConfig({
+      SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
+      SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: MARKETPLACE_OPERATION,
+      SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
+    });
+    const monitor = createCacheShadowMonitor();
+    const fixture = createBffShadowFixturePorts();
+    let providerVersion = 0;
+    const listRequestProposals = jest.fn(async () => {
+      providerVersion += 1;
+      return [{ id: `proposal-provider-${providerVersion}` }];
+    });
+    const readPorts = {
+      ...fixture.read,
+      requestProposal: { listRequestProposals },
+    };
+    const request = readRequest(ROUTE_SCOPE_SKIP_OPERATION, routeScopeSkipInput());
+    const deps = {
+      readPorts,
+      cacheShadow: { adapter: redis.adapter, config, monitor },
+    };
+
+    const first = await handleBffStagingServerRequest(request, deps);
+    const second = await handleBffStagingServerRequest(request, deps);
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(first.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: [expect.objectContaining({ id: "proposal-provider-1" })],
+        serverTiming: expect.objectContaining({ cacheHit: false }),
+      }),
+    );
+    expect(second.body).toEqual(
+      expect.objectContaining({
+        ok: true,
+        data: [expect.objectContaining({ id: "proposal-provider-2" })],
+        serverTiming: expect.objectContaining({ cacheHit: false }),
+      }),
+    );
+    expect(listRequestProposals).toHaveBeenCalledTimes(2);
+    expect(redis.commands).toHaveLength(0);
+
+    await waitFor(() => monitor.snapshot().skippedCount === 2);
+    expect(monitor.snapshot().routeMetrics).toEqual([
+      expect.objectContaining({
+        route: ROUTE_SCOPE_SKIP_OPERATION,
+        observedDecisionCount: 2,
+        shadowReadAttemptedCount: 0,
+        hitCount: 0,
+        missCount: 0,
+        readThroughCount: 0,
+        skippedCount: 2,
+        redacted: true,
+      }),
+    ]);
   });
 
   it("keeps read-through route scope unchanged and all cache defaults disabled", () => {
