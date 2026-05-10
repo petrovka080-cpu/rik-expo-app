@@ -6,16 +6,30 @@ describe("foreman subcontract controller decomposition audit", () => {
     join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractController.tsx"),
     "utf8",
   );
+  const uiStateSource = readFileSync(
+    join(
+      process.cwd(),
+      "src",
+      "screens",
+      "foreman",
+      "hooks",
+      "useForemanSubcontractControllerUiState.ts",
+    ),
+    "utf8",
+  );
+
+  const countHookCallSites = (source: string) =>
+    (source.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) || []).length;
 
   it("keeps the controller wired through extracted owner-boundary modules", () => {
     expect(controllerSource).toContain("foreman.subcontractController.model");
     expect(controllerSource).toContain("foreman.subcontractController.guards");
     expect(controllerSource).toContain("foreman.subcontractController.effects");
     expect(controllerSource).toContain("foreman.subcontractController.telemetry");
-    expect(controllerSource).toContain("deriveSubcontractControllerModel");
     expect(controllerSource).toContain("guardSendToDirector");
     expect(controllerSource).toContain("planSelectedSubcontractHydration");
     expect(controllerSource).toContain("getForemanSubcontractErrorMessage");
+    expect(controllerSource).toContain("useForemanSubcontractControllerUiState");
   });
 
   it("removes legacy inline helpers and silent catch from the controller owner", () => {
@@ -23,6 +37,27 @@ describe("foreman subcontract controller decomposition audit", () => {
     expect(controllerSource).not.toContain("void patch");
     expect(controllerSource).not.toContain("getErrorMessage(");
     expect(controllerSource).not.toContain("resolveCodeFromDict(");
-    expect(controllerSource).not.toContain("catch {");
+    expect(controllerSource).not.toMatch(/catch\s*\{/);
+  });
+
+  it("moves UI state, selectors, and pure derived model hooks behind one typed boundary", () => {
+    expect(uiStateSource).toContain("useForemanSubcontractUiStore");
+    expect(uiStateSource).toContain("useForemanHistory");
+    expect(uiStateSource).toContain("useSafeAreaInsets");
+    expect(uiStateSource).toContain("useRouter");
+    expect(uiStateSource).toContain("deriveSubcontractControllerModel");
+    expect(uiStateSource).toContain("buildDraftScopeKey");
+    expect(uiStateSource).toContain("modalHeaderTopPad");
+    expect(controllerSource).not.toContain("useForemanSubcontractUiStore(");
+    expect(controllerSource).not.toContain("useSafeAreaInsets(");
+    expect(controllerSource).not.toContain("useRouter(");
+    expect(controllerSource).not.toContain("useState(");
+    expect(controllerSource).not.toContain("useState<");
+    expect(controllerSource).not.toContain("useRef(");
+    expect(controllerSource).not.toContain("deriveSubcontractControllerModel(");
+  });
+
+  it("keeps the owner hook at or below the reduced source hook budget", () => {
+    expect(countHookCallSites(controllerSource)).toBeLessThanOrEqual(25);
   });
 });

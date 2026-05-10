@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Platform, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useCallback, useEffect } from "react";
+import { Alert, View } from "react-native";
 import { supabase } from "../../../lib/supabaseClient";
 import { type PickedRow as CatalogPickedRow } from "../../../components/foreman/CatalogModal";
 import {
@@ -15,7 +14,6 @@ import {
   type ForemanDraftSyncMutationKind,
   type RequestDraftSyncLineInput,
 } from "../foreman.draftSync.repository";
-import { useRouter } from "expo-router";
 import { buildPdfFileName } from "../../../lib/documents/pdfDocument";
 import { prepareAndPreviewGeneratedPdfFromDescriptorFactory } from "../../../lib/pdf/pdf.runner";
 import {
@@ -34,14 +32,10 @@ import {
   findLatestDraftRequestByLink,
 } from "../foreman.requests";
 import { readForemanProfileName } from "../foreman.dicts.repo";
-import { useForemanHistory } from "./useForemanHistory";
-import { useForemanSubcontractUiStore, type SubcontractFlowScreen } from "../foremanSubcontractUi.store";
+import type { SubcontractFlowScreen } from "../foremanSubcontractUi.store";
 import { buildForemanRequestPdfDescriptor } from "../foreman.requestPdf.service";
 import {
-  EMPTY_FORM,
   appendLineInputsToDraftItems,
-  buildDraftScopeKey,
-  deriveSubcontractControllerModel,
   filterActiveDraftItems,
   type CalcPickedRow,
   type DictOption,
@@ -71,6 +65,7 @@ import {
   loadCurrentForemanAuthIdentity,
   loadCurrentForemanAuthUserId,
 } from "../foreman.auth.transport";
+import { useForemanSubcontractControllerUiState } from "./useForemanSubcontractControllerUiState";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -95,45 +90,47 @@ export function useForemanSubcontractController({
   onScroll,
   dicts,
 }: ForemanSubcontractTabProps) {
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const modalHeaderTopPad = Platform.OS === "web" ? 16 : (insets.top + 10);
   const {
+    router,
+    modalHeaderTopPad,
     historyRequests,
-    historyLoading: requestHistoryLoading,
-    historyVisible: requestHistoryVisible,
-    fetchHistory: fetchRequestHistory,
-    closeHistory: closeRequestHistory,
-  } = useForemanHistory();
-  const [userId, setUserId] = useState("");
-  const [foremanName, setForemanName] = useState("");
-
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [displayNo, setDisplayNo] = useState("");
-
-  const [saving, setSaving] = useState(false);
-  const [sending, setSending] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [history, setHistory] = useState<Subcontract[]>([]);
-
-  const historyOpen = useForemanSubcontractUiStore((state) => state.historyOpen);
-  const setHistoryOpen = useForemanSubcontractUiStore((state) => state.setHistoryOpen);
-  const subcontractFlowOpen = useForemanSubcontractUiStore((state) => state.subcontractFlowOpen);
-  const setSubcontractFlowOpen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowOpen);
-  const subcontractFlowScreen = useForemanSubcontractUiStore((state) => state.subcontractFlowScreen);
-  const setSubcontractFlowScreen = useForemanSubcontractUiStore((state) => state.setSubcontractFlowScreen);
-  const selectedWorkType = useForemanSubcontractUiStore((state) => state.selectedWorkType);
-  const setSelectedWorkType = useForemanSubcontractUiStore((state) => state.setSelectedWorkType);
-  const [draftItems, setDraftItems] = useState<ReqItemRow[]>([]);
-  const dateTarget = useForemanSubcontractUiStore((state) => state.dateTarget);
-  const setDateTarget = useForemanSubcontractUiStore((state) => state.setDateTarget);
-  const selectedTemplateId = useForemanSubcontractUiStore((state) => state.selectedTemplateId);
-  const setSelectedTemplateId = useForemanSubcontractUiStore((state) => state.setSelectedTemplateId);
-  const closeSubcontractFlowUi = useForemanSubcontractUiStore((state) => state.closeSubcontractFlow);
-  const [requestId, setRequestId] = useState("");
-  const draftItemsLoadSeqRef = useRef(0);
-
-  const {
+    requestHistoryLoading,
+    requestHistoryVisible,
+    fetchRequestHistory,
+    closeRequestHistory,
+    userId,
+    setUserId,
+    foremanName,
+    setForemanName,
+    form,
+    setForm,
+    displayNo,
+    setDisplayNo,
+    saving,
+    setSaving,
+    sending,
+    setSending,
+    historyLoading,
+    setHistoryLoading,
+    history,
+    setHistory,
+    historyOpen,
+    setHistoryOpen,
+    setSubcontractFlowOpen,
+    setSubcontractFlowScreen,
+    selectedWorkType,
+    setSelectedWorkType,
+    draftItems,
+    setDraftItems,
+    dateTarget,
+    setDateTarget,
+    selectedTemplateId,
+    setSelectedTemplateId,
+    closeSubcontractFlowUi,
+    requestId,
+    setRequestId,
+    draftItemsLoadSeqRef,
+    draftScopeKey,
     templateContract,
     objectName,
     levelName,
@@ -154,19 +151,7 @@ export function useForemanSubcontractController({
     contractorName,
     phoneName,
     volumeText,
-  } = useMemo(
-    () =>
-      deriveSubcontractControllerModel({
-        history,
-        selectedTemplateId,
-        dicts,
-        form,
-        subcontractFlowOpen,
-        subcontractFlowScreen,
-        foremanName,
-      }),
-    [history, selectedTemplateId, dicts, form, subcontractFlowOpen, subcontractFlowScreen, foremanName],
-  );
+  } = useForemanSubcontractControllerUiState({ dicts });
 
   const ensureTemplateContractStrict = useCallback((): string | null => {
     const result = guardTemplateContract(templateContract);
@@ -183,7 +168,7 @@ export function useForemanSubcontractController({
 
   const setField = useCallback(<K extends keyof FormState>(k: K, v: FormState[K]) => {
     setForm((prev) => ({ ...prev, [k]: v }));
-  }, []);
+  }, [setForm]);
 
   const openSubcontractFlow = useCallback((screen: SubcontractFlowScreen = "details") => {
     setSubcontractFlowScreen(screen);
@@ -198,7 +183,7 @@ export function useForemanSubcontractController({
     const priceSync = planSubcontractTotalPriceSync(form);
     if (!priceSync.shouldUpdate) return;
     setForm((prev) => ({ ...prev, totalPrice: priceSync.nextTotalPrice }));
-  }, [form]);
+  }, [form, setForm]);
 
   const loadHistory = useCallback(async (uid = userId) => {
     let nextUserId = String(uid || "").trim();
@@ -218,7 +203,7 @@ export function useForemanSubcontractController({
     } finally {
       setHistoryLoading(false);
     }
-  }, [userId]);
+  }, [setHistory, setHistoryLoading, userId]);
 
   const loadDraftItems = useCallback(async (rid: string) => {
     const requestSeq = ++draftItemsLoadSeqRef.current;
@@ -236,7 +221,7 @@ export function useForemanSubcontractController({
       logForemanSubcontractDebug("loadDraftItems failed", e);
       setDraftItems([]);
     }
-  }, []);
+  }, [draftItemsLoadSeqRef, setDraftItems]);
 
   const resetSubcontractDraftContext = useCallback((options?: { clearForm?: boolean }) => {
     const resetPlan = planSubcontractDraftReset(options);
@@ -247,7 +232,7 @@ export function useForemanSubcontractController({
     if (resetPlan.nextForm) {
       setForm(resetPlan.nextForm);
     }
-  }, []);
+  }, [draftItemsLoadSeqRef, setDisplayNo, setDraftItems, setForm, setRequestId]);
 
   useEffect(() => {
     (async () => {
@@ -270,9 +255,7 @@ export function useForemanSubcontractController({
 
       await loadHistory(uid);
     })();
-  }, [loadHistory]);
-
-  const draftScopeKey = useMemo(() => buildDraftScopeKey(form, selectedTemplateId), [form, selectedTemplateId]);
+  }, [loadHistory, setForemanName, setUserId]);
 
   const saveDraftAtomic = useCallback(
     async (
@@ -365,6 +348,11 @@ export function useForemanSubcontractController({
       templateSystemName,
       form.zoneText,
       draftScopeKey,
+      setDisplayNo,
+      setDraftItems,
+      setRequestId,
+      setSaving,
+      setSending,
     ]
   );
 
@@ -405,7 +393,7 @@ export function useForemanSubcontractController({
     return () => {
       cancelled = true;
     };
-  }, [requestId]);
+  }, [requestId, setDisplayNo]);
 
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;
@@ -608,6 +596,9 @@ export function useForemanSubcontractController({
       loadDraftItems,
       openSubcontractFlow,
       resetSubcontractDraftContext,
+      setDisplayNo,
+      setForm,
+      setRequestId,
       setSelectedTemplateId,
     ],
   );

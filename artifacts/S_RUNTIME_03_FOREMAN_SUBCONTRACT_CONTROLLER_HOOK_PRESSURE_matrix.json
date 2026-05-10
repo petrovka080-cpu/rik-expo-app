@@ -1,0 +1,120 @@
+{
+  "wave": "S_RUNTIME_03_FOREMAN_SUBCONTRACT_CONTROLLER_HOOK_PRESSURE",
+  "final_status": "GREEN_FOREMAN_SUBCONTRACT_CONTROLLER_HOOK_PRESSURE_REDUCED",
+  "started_from": {
+    "head": "53e5a87c497779ca45f1da99f723c603738ab2c0",
+    "origin_main": "53e5a87c497779ca45f1da99f723c603738ab2c0",
+    "ahead_behind": "0/0",
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+    "src/screens/foreman/hooks/useForemanSubcontractControllerUiState.ts",
+    "tests/foreman/foreman.subcontractController.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "Fresh architecture scanner showed useForemanSubcontractController.tsx as the top hook-pressure owner at 50 hook call-sites and 740 lines.",
+  "change_summary": [
+    "Extracted Foreman subcontract UI state, store selectors, router/insets, request history hook, and pure derived model memoization into useForemanSubcontractControllerUiState.",
+    "Kept save/send/PDF/hydration/network/Supabase/BFF behavior in the existing owner hook.",
+    "Added source-contract proof for the new boundary and the reduced owner hook budget.",
+    "Accounted for the new permanent boundary in performance module-count budget."
+  ],
+  "before_after_metrics": {
+    "controller_before": {
+      "hook_call_sites": 50,
+      "imports": 25,
+      "lines": 740,
+      "size_kb": 25
+    },
+    "controller_after": {
+      "hook_call_sites": 25,
+      "imports": 23,
+      "lines": 731,
+      "size_kb": 24
+    },
+    "new_boundary": {
+      "hook_call_sites": 27,
+      "imports": 9,
+      "lines": 127,
+      "size_kb": 4
+    },
+    "delta": {
+      "controller_hook_call_sites": -25,
+      "controller_imports": -2,
+      "controller_lines": -9,
+      "controller_size_kb": -1
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/foreman/foreman.subcontractController.decomposition.test.ts tests/foreman/ForemanSubcontractController.test.tsx src/screens/foreman/ForemanSubcontractTab.controller.test.tsx tests/perf/performance-budget.test.ts",
+      "result": "4 suites passed, 22 tests passed"
+    },
+    "typescript": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_jest": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "677 suites passed, 1 skipped; 4018 tests passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+      "direct_supabase_service_bypasses": 0,
+      "direct_supabase_exception_unclassified": 0,
+      "production_raw_loop_unapproved": 0,
+      "cache_allowed_route": "marketplace.catalog.search",
+      "cache_route_scoped": true,
+      "rate_limit_canary_route": "marketplace.catalog.search",
+      "rate_limit_canary_percent": 1
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "forbidden_pattern_sweep": {
+      "status": "PASS",
+      "patterns": [
+        "@ts-ignore",
+        "as any",
+        "catch {}"
+      ]
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_03_FOREMAN_SUBCONTRACT_CONTROLLER_HOOK_PRESSURE_matrix.json','utf8'))\""
+    },
+    "post_push_release_verify": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load_test": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_cache_route_expansion": true,
+    "no_cache_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
