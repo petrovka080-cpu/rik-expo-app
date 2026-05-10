@@ -1,0 +1,56 @@
+{
+  "wave": "S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20",
+  "final_status": "GREEN_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20",
+  "generatedAt": "2026-05-10T23:38:09.7400605+06:00",
+  "sourceInventory": {
+    "path": "artifacts/S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY_inventory.json",
+    "final_status": "GREEN_UNBOUNDED_SELECTS_EXACT_INVENTORY_READY",
+    "totalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0
+  },
+  "currentScannerBefore": {
+    "command": "npx tsx scripts/data/unboundedSelectInventory.ts --json",
+    "totalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "selectStarCount": 0
+  },
+  "currentScannerAfter": {
+    "totalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "selectStarCount": 0
+  },
+  "eligibleEntries": [],
+  "fixedEntries": [],
+  "allowlistEntries": [],
+  "delta": {
+    "requestedFixNowEntries": 20,
+    "legalFixNowEntriesAvailableFromWave01": 0,
+    "unresolvedUnboundedSelects": 0,
+    "fixNowCount": 0,
+    "needsRpcChangeCount": 0,
+    "runtimeFilesChanged": 0
+  },
+  "decision": {
+    "codeChangeMade": false,
+    "reason": "No WAVE 01 inventory entries have action/status fix_now, and current unresolved unbounded selects are already zero. Applying arbitrary limits to non-fix_now entries would violate the wave selection rule and risk semantic drift."
+  },
+  "safety": {
+    "productionMutation": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "secretsPrinted": false
+  }
+}

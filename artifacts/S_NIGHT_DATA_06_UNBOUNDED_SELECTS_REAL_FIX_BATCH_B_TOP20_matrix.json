@@ -1,0 +1,110 @@
+{
+  "wave": "S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20",
+  "final_status": "GREEN_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20",
+  "generatedAt": "2026-05-10T23:38:09.7400605+06:00",
+  "selectedFiles": [
+    "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20_matrix.json",
+    "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_proof.md",
+    "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_delta.json"
+  ],
+  "reasonSelected": "WAVE 06 is constrained to entries from WAVE 01 with action/status fix_now. WAVE 01 inventory has fixNowCount=0 and current scanner has fixNowCount=0, so no runtime files are legal candidates for this wave.",
+  "baseline": {
+    "headAtStart": "1721782f798b840e2a00c3988248c202250b6e09",
+    "originMainAtStart": "1721782f798b840e2a00c3988248c202250b6e09",
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": {
+      "ahead": 0,
+      "behind": 0
+    },
+    "worktreeAtStart": "clean"
+  },
+  "beforeMetrics": {
+    "sourceInventory": "artifacts/S_NIGHT_DATA_01_UNBOUNDED_SELECTS_EXACT_INVENTORY_inventory.json",
+    "sourceInventoryTotalSelectCalls": 284,
+    "sourceInventoryUnresolvedUnboundedSelects": 0,
+    "sourceInventoryFixNowCount": 0,
+    "sourceInventoryNeedsRpcChangeCount": 0,
+    "currentTotalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "currentFixNowCount": 0,
+    "currentNeedsRpcChangeCount": 0,
+    "currentSelectStarCount": 0
+  },
+  "afterMetrics": {
+    "currentTotalSelectCalls": 284,
+    "currentUnresolvedUnboundedSelects": 0,
+    "currentFixNowCount": 0,
+    "currentNeedsRpcChangeCount": 0,
+    "currentSelectStarCount": 0,
+    "eligibleFixNowEntriesFixed": 0,
+    "legalCandidateCount": 0
+  },
+  "target": {
+    "requestedFixNowEntries": 20,
+    "legalFixNowEntriesAvailableFromWave01": 0,
+    "unresolvedUnboundedSelectsDelta": 0,
+    "targetAlreadyAtZero": true,
+    "runtimeCodeChanged": false
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/data/unboundedSelectInventory.test.ts tests/api/selectStarProductionCloseout.contract.test.ts --runInBand",
+      "result": "2 suites passed, 8 tests passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expoLint": {
+      "status": "PASS",
+      "command": "npx expo lint",
+      "note": "Expo printed env variable names only, no values."
+    },
+    "npmTestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "695 suites passed, 1 skipped; 4082 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "result": "serviceBypassFindings=0; directSupabase.totalFindings=215"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": "pending_until_after_push",
+    "artifactJsonParse": {
+      "status": "PASS",
+      "command": "node -e JSON.parse(matrix); JSON.parse(delta)"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_TOP20_matrix.json",
+    "proof": "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_proof.md",
+    "delta": "artifacts/S_NIGHT_DATA_06_UNBOUNDED_SELECTS_REAL_FIX_BATCH_B_delta.json"
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "broadRewrite": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "dbWrites": false,
+    "migrations": false,
+    "runtimeCodeChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
