@@ -1,0 +1,120 @@
+{
+  "wave": "S_NIGHT_UI_15_OFFICE_HUB_SCREEN_DECOMPOSITION_A",
+  "final_status": "GREEN_OFFICE_HUB_SCREEN_DECOMPOSITION_A",
+  "selected_files": [
+    "src/screens/office/OfficeHubScreen.tsx",
+    "src/screens/office/useOfficeHubScreenController.tsx",
+    "tests/office/officeHubScreenDecompositionA.contract.test.ts",
+    "tests/office/officeOwnerSplit.decomposition.test.ts",
+    "tests/api/uiUnsafeCastBatchA.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "OfficeHubScreen.tsx was the next explicitly requested high-hook screen. The root component mixed lifecycle loading, error view model, action handlers, navigation, and shell composition.",
+  "start_state": {
+    "fetch": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_before_wave": true,
+    "base_commit": "4eda2da276e3f8b2f436b72a18335626f8d47880"
+  },
+  "scope": {
+    "screen": "OfficeHubScreen",
+    "target_reduction": {
+      "hooks": 15,
+      "lines": 100
+    },
+    "business_behavior_changed": false,
+    "auth_or_transport_changed": false,
+    "navigation_changed": false,
+    "production_config_changed": false
+  },
+  "before_metrics": {
+    "src/screens/office/OfficeHubScreen.tsx": {
+      "lines": 557,
+      "hook_calls": 26,
+      "imports": 19,
+      "controller_files": 0
+    }
+  },
+  "after_metrics": {
+    "src/screens/office/OfficeHubScreen.tsx": {
+      "lines": 12,
+      "hook_calls": 1,
+      "imports": 4,
+      "role": "composition shell"
+    },
+    "src/screens/office/useOfficeHubScreenController.tsx": {
+      "lines": 553,
+      "hook_call_matches": 27,
+      "role": "typed controller boundary"
+    }
+  },
+  "delta_metrics": {
+    "root_lines_delta": -545,
+    "root_hook_calls_delta": -25,
+    "root_imports_delta": -15,
+    "target_hooks_reduced_by_at_least_15": true,
+    "target_lines_reduced_by_at_least_100": true
+  },
+  "implementation": {
+    "controller_boundary": "useOfficeHubScreenController owns existing lifecycle, tab/section state, loading/error view model, action handlers, and OfficeShellContent model assembly.",
+    "root_boundary": "OfficeHubScreen now calls the controller and renders OfficeShellContent.",
+    "render_only_sections": "Existing OfficeShellContent and office section modules remain render-only boundaries.",
+    "access_business_logic": "Preserved through existing useOfficeHubRoleAccess, loadOfficeAccessScreenData, and office model helpers."
+  },
+  "focused_tests": {
+    "command": "npx jest tests/office/officeHubScreenDecompositionA.contract.test.ts tests/office/officeOwnerSplit.decomposition.test.ts tests/api/uiUnsafeCastBatchA.contract.test.ts tests/perf/performance-budget.test.ts src/screens/office/OfficeHubScreen.test.tsx --runInBand",
+    "status": "PASS",
+    "suites": 5,
+    "tests": 41
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_run_in_band": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING_POST_PUSH"
+  },
+  "full_test_summary": {
+    "command": "npm test -- --runInBand",
+    "status": "PASS",
+    "test_suites": {
+      "passed": 703,
+      "skipped": 1,
+      "total": 704
+    },
+    "tests": {
+      "passed": 4109,
+      "skipped": 1,
+      "total": 4110
+    }
+  },
+  "architecture_summary": {
+    "status": "PASS",
+    "direct_supabase_service_bypass_findings": 0,
+    "transport_boundary": "CLOSED",
+    "unresolved_unbounded_selects": 0,
+    "select_star_findings": 0,
+    "component_debt_mode": "report_only"
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_typescript_ignore_directives": true,
+    "no_unsafe_any_casts": true,
+    "no_empty_catch_blocks": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_native_or_ota_builds": true,
+    "no_production_mutation_route_enablement": true,
+    "no_cache_or_rate_limit_changes": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

@@ -35,14 +35,19 @@ describe("OFFICE_OWNER_SPLIT decomposition audit", () => {
     );
   });
 
-  it("keeps orchestration in OfficeHubScreen while moving shell UI into the presenter", () => {
+  it("keeps orchestration in the OfficeHub controller while root and presenter stay split", () => {
     const officeHubSource = readRepoFile("src/screens/office/OfficeHubScreen.tsx");
+    const controllerSource = readRepoFile("src/screens/office/useOfficeHubScreenController.tsx");
 
-    expect(officeHubSource).toContain("buildOfficeShellContentModel");
-    expect(officeHubSource).toContain("resolveOfficeHubFocusRefreshPlan");
+    expect(officeHubSource).toContain("useOfficeHubScreenController");
     expect(officeHubSource).toContain("<OfficeShellContent");
+    expect(officeHubSource).not.toContain("buildOfficeShellContentModel");
+    expect(officeHubSource).not.toContain("resolveOfficeHubFocusRefreshPlan");
     expect(officeHubSource).not.toContain("RoleScreenLayout");
     expect(officeHubSource).not.toContain("showsVerticalScrollIndicator");
     expect(officeHubSource).not.toContain("OfficeCompanySummarySection");
+    expect(controllerSource).toContain("buildOfficeShellContentModel");
+    expect(controllerSource).toContain("resolveOfficeHubFocusRefreshPlan");
+    expect(controllerSource).toContain("router.push(card.route);");
   });
 });

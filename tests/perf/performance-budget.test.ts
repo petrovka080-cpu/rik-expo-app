@@ -239,6 +239,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle48OfficeInviteHandoffBoundaryFiles = [
       path.join(SRC, "screens", "office", "officeHub.inviteHandoffSection.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi15OfficeHubScreenControllerFiles = [
+      path.join(SRC, "screens", "office", "useOfficeHubScreenController.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sNightUi16OfficeHubCollaborationSectionFiles = [
       path.join(SRC, "screens", "office", "officeHub.collaborationSections.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -692,6 +695,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle48OfficeInviteHandoffBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi15OfficeHubScreenControllerFiles).toBeLessThanOrEqual(1);
     expect(sNightUi16OfficeHubCollaborationSectionFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle49ActivePaymentFormStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle50CalcModalContentStyleBoundaryFiles).toBeLessThanOrEqual(1);
@@ -812,6 +816,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -
         sAuditBattle48OfficeInviteHandoffBoundaryFiles -
+        sNightUi15OfficeHubScreenControllerFiles -
         sNightUi16OfficeHubCollaborationSectionFiles -
         sAuditBattle49ActivePaymentFormStyleBoundaryFiles -
         sAuditBattle50CalcModalContentStyleBoundaryFiles -

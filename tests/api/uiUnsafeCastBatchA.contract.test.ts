@@ -16,6 +16,7 @@ const UI_BATCH_A_FILES = [
   "src/screens/accountant/useAccountantKeyboard.ts",
   "src/screens/accountant/helpers.tsx",
   "src/screens/office/OfficeHubScreen.tsx",
+  "src/screens/office/useOfficeHubScreenController.tsx",
   "src/screens/office/officeAccess.model.ts",
   "src/features/market/MarketHomeScreen.tsx",
   "src/screens/contractor/ContractorScreen.tsx",
@@ -35,6 +36,7 @@ describe("UI unsafe cast batch A contract", () => {
     const accountantKeyboard = read("src/screens/accountant/useAccountantKeyboard.ts");
     const contractorScreen = read("src/screens/contractor/ContractorScreen.tsx");
     const officeScreen = read("src/screens/office/OfficeHubScreen.tsx");
+    const officeController = read("src/screens/office/useOfficeHubScreenController.tsx");
     const officeModel = read("src/screens/office/officeAccess.model.ts");
 
     expect(accountantScreen).toContain("useAccountantScreenComposition");
@@ -47,8 +49,10 @@ describe("UI unsafe cast batch A contract", () => {
     expect(contractorScreen).toContain("getContractorErrorMessage");
     expect(contractorScreen).not.toContain("(e: any)");
     expect(officeModel).toContain("route: Href | null");
-    expect(officeScreen).toContain("router.push(card.route);");
+    expect(officeScreen).toContain("useOfficeHubScreenController");
+    expect(officeController).toContain("router.push(card.route);");
     expect(officeScreen).not.toContain("router.push(card.route as");
+    expect(officeController).not.toContain("router.push(card.route as");
   });
 
   it("preserves typed UI error text semantics without untyped callback casts", () => {
