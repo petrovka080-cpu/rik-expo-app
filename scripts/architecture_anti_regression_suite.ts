@@ -7,6 +7,12 @@ import {
   validateProductionBusinessReadonlyCanaryMetricLog,
   validateProductionBusinessReadonlyCanaryRegistry,
 } from "./load/productionBusinessReadonlyCanary";
+import {
+  collectSelectInventory,
+  collectSelectInventoryFromSource,
+  type SelectInventoryAction,
+  type SelectInventoryEntry,
+} from "./data/unboundedSelectInventory";
 import { resolveCacheShadowRuntimeConfig } from "../src/shared/scale/cacheShadowRuntime";
 
 export type GuardrailStatus = "pass" | "fail" | "report_only";
@@ -114,6 +120,36 @@ export type ProductionRawLoopFinding = {
   reason: string | null;
   owner: string | null;
   testCoverage: string | null;
+};
+
+export type UnboundedSelectAllowlistEntry = {
+  file: string;
+  line: number;
+  queryString: string;
+  action: "export_allowlist";
+  owner: string;
+  reason: string;
+  migrationPath: string;
+};
+
+export type UnboundedSelectRatchetFinding = SelectInventoryEntry & {
+  allowlisted: boolean;
+  owner: string | null;
+  allowlistReason: string | null;
+  migrationPath: string | null;
+  expected: string;
+};
+
+export type UnboundedSelectRatchetSummary = {
+  unboundedSelectBudget: 0;
+  selectStarBudget: 0;
+  totalSelectCalls: number;
+  unresolvedUnboundedSelects: number;
+  selectStarFindings: number;
+  exportAllowlistFindings: number;
+  documentedExportAllowlistFindings: number;
+  allowlistEntries: number;
+  topFiles: readonly { file: string; count: number }[];
 };
 
 export type UnsafeCastPattern =
@@ -258,6 +294,7 @@ export type ArchitectureAntiRegressionReport = {
     allowlistEntries: number;
     topFiles: readonly { file: string; count: number }[];
   };
+  unboundedSelectRatchet: UnboundedSelectRatchetSummary;
   unsafeCastRatchet: UnsafeCastRatchetSummary;
   componentDebt: {
     reportOnly: true;
@@ -318,6 +355,75 @@ const PRODUCTION_RAW_LOOP_BUDGET = 0;
 const PRODUCTION_RAW_LOOP_EXPECTED_OWNER =
   "cancellable worker loop primitive or explicit allowlist with reason, owner, and test coverage";
 const PRODUCTION_RAW_LOOP_ALLOWLIST: readonly ProductionRawLoopAllowlistEntry[] = [];
+const UNBOUNDED_SELECT_BUDGET = 0;
+const SELECT_STAR_BUDGET = 0;
+const UNBOUNDED_SELECT_EXPECTED =
+  "lookup uses single/maybeSingle; existence uses select(\"id\").limit(1); list/reference uses range/limit/page-through; export allowlist has owner, reason, and migration path";
+const UNBOUNDED_SELECT_EXPORT_ALLOWLIST: readonly UnboundedSelectAllowlistEntry[] = [
+  {
+    file: "src/lib/api/director_reports.naming.ts",
+    line: 493,
+    queryString: "selectCols",
+    action: "export_allowlist",
+    owner: "director reports export owner",
+    reason: "Dynamic report naming export selects the complete chosen report column set for output completeness.",
+    migrationPath: "Move report naming exports behind a typed RPC/view contract with an explicit projection manifest.",
+  },
+  {
+    file: "src/lib/api/pdf_proposal.ts",
+    line: 186,
+    queryString: "id, request_item_id, name_human, uom, qty, app_code, rik_code, price, supplier, note",
+    action: "export_allowlist",
+    owner: "proposal PDF export owner",
+    reason: "Proposal PDF line export needs the full selected item projection to preserve rendered document contents.",
+    migrationPath: "Move proposal PDF item reads behind a typed PDF-source RPC or view with a versioned output contract.",
+  },
+  {
+    file: "src/lib/api/pdf_proposal.ts",
+    line: 198,
+    queryString: "id, request_id, name_human, uom, qty, app_code, rik_code",
+    action: "export_allowlist",
+    owner: "proposal PDF export owner",
+    reason: "Proposal PDF request-item fallback needs the selected item projection to preserve rendered document contents.",
+    migrationPath: "Move proposal PDF request-item reads behind a typed PDF-source RPC or view with a versioned output contract.",
+  },
+  {
+    file: "src/lib/api/pdf_proposal.ts",
+    line: 292,
+    queryString: "app_code,name_human",
+    action: "export_allowlist",
+    owner: "proposal PDF export owner",
+    reason: "Proposal PDF app-name lookup preserves legacy document labeling for exported proposal rows.",
+    migrationPath: "Fold app-name lookup into the typed proposal PDF-source RPC/view contract.",
+  },
+  {
+    file: "src/lib/pdf/pdf.builder.ts",
+    line: 304,
+    queryString: "id, display_no",
+    action: "export_allowlist",
+    owner: "PDF builder export owner",
+    reason: "PDF builder needs request display identity for generated document metadata.",
+    migrationPath: "Move request display identity into the typed PDF builder source contract.",
+  },
+  {
+    file: "src/screens/contractor/contractor.pdfService.ts",
+    line: 205,
+    queryString: "mat_code, uom_mat, qty_fact",
+    action: "export_allowlist",
+    owner: "contractor PDF export owner",
+    reason: "Contractor PDF material rows preserve rendered work-progress document contents.",
+    migrationPath: "Move contractor PDF material rows behind a typed PDF-source RPC/view contract.",
+  },
+  {
+    file: "src/screens/contractor/contractor.pdfService.ts",
+    line: 216,
+    queryString: "rik_code, name_human_ru, name_human, uom_code",
+    action: "export_allowlist",
+    owner: "contractor PDF export owner",
+    reason: "Contractor PDF catalog lookup preserves legacy material labels for exported progress rows.",
+    migrationPath: "Fold contractor PDF catalog labels into the typed PDF-source RPC/view contract.",
+  },
+];
 const UNSAFE_CAST_SCAN_ROOTS = ["src", "app", "tests"] as const;
 const UNSAFE_CAST_EXPECTED =
   "typed DTO, runtime guard, typed adapter, or documented allowlist with file, line, reason, owner, and expiration/migration wave";
@@ -1421,6 +1527,197 @@ export function evaluateProductionRawLoopGuardrail(params: {
   };
 }
 
+const unboundedSelectRatchetActions: readonly SelectInventoryAction[] = [
+  "fix_now",
+  "needs_rpc_change",
+];
+
+const unboundedSelectAllowlistKey = (
+  value: {
+    file: string;
+    line: number;
+    queryString: string;
+    action: SelectInventoryAction;
+  },
+): string =>
+  `${normalizePath(value.file)}:${value.line}:${value.action}:${value.queryString}`;
+
+const findUnboundedSelectAllowlistEntry = (
+  allowlist: readonly UnboundedSelectAllowlistEntry[],
+  entry: SelectInventoryEntry,
+): UnboundedSelectAllowlistEntry | undefined =>
+  allowlist.find(
+    (candidate) =>
+      unboundedSelectAllowlistKey(candidate) ===
+      unboundedSelectAllowlistKey({
+        file: entry.file,
+        line: entry.line,
+        queryString: entry.queryString,
+        action: entry.action,
+      }),
+  );
+
+const enrichUnboundedSelectFinding = (
+  entry: SelectInventoryEntry,
+  allowlist: readonly UnboundedSelectAllowlistEntry[],
+): UnboundedSelectRatchetFinding => {
+  const allowlistEntry = findUnboundedSelectAllowlistEntry(allowlist, entry);
+  return {
+    ...entry,
+    allowlisted: Boolean(allowlistEntry),
+    owner: allowlistEntry?.owner ?? null,
+    allowlistReason: allowlistEntry?.reason ?? null,
+    migrationPath: allowlistEntry?.migrationPath ?? null,
+    expected: UNBOUNDED_SELECT_EXPECTED,
+  };
+};
+
+export function scanUnboundedSelectRatchetSource(params: {
+  file: string;
+  source: string;
+  allowlist?: readonly UnboundedSelectAllowlistEntry[];
+}): UnboundedSelectRatchetFinding[] {
+  const allowlist = params.allowlist ?? UNBOUNDED_SELECT_EXPORT_ALLOWLIST;
+  return collectSelectInventoryFromSource({
+    file: normalizePath(params.file),
+    text: params.source,
+  }).entries.map((entry) => enrichUnboundedSelectFinding(entry, allowlist));
+}
+
+export function scanUnboundedSelectRatchet(
+  projectRoot: string,
+  allowlist: readonly UnboundedSelectAllowlistEntry[] = UNBOUNDED_SELECT_EXPORT_ALLOWLIST,
+): UnboundedSelectRatchetFinding[] {
+  const { inventory } = collectSelectInventory(projectRoot);
+  return inventory.map((entry) => enrichUnboundedSelectFinding(entry, allowlist));
+}
+
+const formatUnboundedSelectFailure = (
+  finding: UnboundedSelectRatchetFinding,
+): string =>
+  [
+    "unbounded_select",
+    `file=${finding.file}`,
+    `line=${finding.line}`,
+    `action=${finding.action}`,
+    `query_type=${finding.queryType}`,
+    `query=${finding.queryString}`,
+    `expected=${finding.expected}`,
+  ].join(":");
+
+const formatSelectStarFailure = (
+  finding: UnboundedSelectRatchetFinding,
+): string =>
+  [
+    "select_star",
+    `file=${finding.file}`,
+    `line=${finding.line}`,
+    `action=${finding.action}`,
+    `query_type=${finding.queryType}`,
+    `expected=explicit columns or documented export migration path`,
+  ].join(":");
+
+const validateUnboundedSelectAllowlist = (
+  allowlist: readonly UnboundedSelectAllowlistEntry[],
+  findings: readonly UnboundedSelectRatchetFinding[],
+): string[] => {
+  const findingKeys = new Set(
+    findings
+      .filter((finding) => finding.action === "export_allowlist")
+      .map((finding) =>
+        unboundedSelectAllowlistKey({
+          file: finding.file,
+          line: finding.line,
+          queryString: finding.queryString,
+          action: "export_allowlist",
+        }),
+      ),
+  );
+  return allowlist.flatMap((entry) => {
+    const file = normalizePath(entry.file);
+    const key = unboundedSelectAllowlistKey({ ...entry, file });
+    const missingMetadata =
+      !file.trim() ||
+      !Number.isInteger(entry.line) ||
+      entry.line <= 0 ||
+      !entry.queryString.trim() ||
+      entry.action !== "export_allowlist" ||
+      !entry.owner.trim() ||
+      !entry.reason.trim() ||
+      !entry.migrationPath.trim();
+    return [
+      ...(missingMetadata
+        ? [`unbounded_select_allowlist_missing_metadata:file=${file}:line=${entry.line}:action=${entry.action}`]
+        : []),
+      ...(findingKeys.has(key)
+        ? []
+        : [`unbounded_select_allowlist_unused:file=${file}:line=${entry.line}:action=${entry.action}:query=${entry.queryString}`]),
+    ];
+  });
+};
+
+export function evaluateUnboundedSelectRatchetGuardrail(params: {
+  findings: readonly UnboundedSelectRatchetFinding[];
+  allowlist?: readonly UnboundedSelectAllowlistEntry[];
+  unboundedSelectBudget?: 0;
+  selectStarBudget?: 0;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: UnboundedSelectRatchetSummary;
+} {
+  const allowlist = params.allowlist ?? UNBOUNDED_SELECT_EXPORT_ALLOWLIST;
+  const unboundedSelectBudget = params.unboundedSelectBudget ?? UNBOUNDED_SELECT_BUDGET;
+  const selectStarBudget = params.selectStarBudget ?? SELECT_STAR_BUDGET;
+  const unresolvedUnbounded = params.findings.filter((finding) =>
+    unboundedSelectRatchetActions.includes(finding.action),
+  );
+  const selectStarFindings = params.findings.filter((finding) => finding.selectStar);
+  const exportAllowlistFindings = params.findings.filter((finding) => finding.action === "export_allowlist");
+  const undocumentedExportAllowlistFindings = exportAllowlistFindings.filter((finding) => !finding.allowlisted);
+  const countsByFile = new Map<string, number>();
+  for (const finding of [...unresolvedUnbounded, ...selectStarFindings, ...undocumentedExportAllowlistFindings]) {
+    countsByFile.set(finding.file, (countsByFile.get(finding.file) ?? 0) + 1);
+  }
+  const topFiles = Array.from(countsByFile.entries())
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 10)
+    .map(([file, count]) => ({ file, count }));
+  const errors = [
+    ...unresolvedUnbounded.map(formatUnboundedSelectFailure),
+    ...selectStarFindings.map(formatSelectStarFailure),
+    ...undocumentedExportAllowlistFindings.map(
+      (finding) =>
+        `unbounded_select_export_allowlist_undocumented:file=${finding.file}:line=${finding.line}:query=${finding.queryString}`,
+    ),
+    ...(unresolvedUnbounded.length > unboundedSelectBudget
+      ? [`unbounded_select_budget_exceeded:${unresolvedUnbounded.length}>${unboundedSelectBudget}`]
+      : []),
+    ...(selectStarFindings.length > selectStarBudget
+      ? [`select_star_budget_exceeded:${selectStarFindings.length}>${selectStarBudget}`]
+      : []),
+    ...validateUnboundedSelectAllowlist(allowlist, params.findings),
+  ];
+
+  return {
+    check: {
+      name: "unbounded_select_ratchet",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      unboundedSelectBudget,
+      selectStarBudget,
+      totalSelectCalls: params.findings.length,
+      unresolvedUnboundedSelects: unresolvedUnbounded.length,
+      selectStarFindings: selectStarFindings.length,
+      exportAllowlistFindings: exportAllowlistFindings.length,
+      documentedExportAllowlistFindings: exportAllowlistFindings.length - undocumentedExportAllowlistFindings.length,
+      allowlistEntries: allowlist.length,
+      topFiles,
+    },
+  };
+}
+
 const unsafeCastPatterns: readonly {
   pattern: UnsafeCastPattern;
   regex: RegExp;
@@ -1794,6 +2091,9 @@ export function runArchitectureAntiRegressionSuite(
   const cacheRateScope = evaluateCacheRateScopeGuardrail({ projectRoot });
   const cacheColdMissProof = evaluateCacheColdMissProofGuardrail({ projectRoot });
   const rateLimitMarketplaceCanaryProof = evaluateRateLimitMarketplaceCanaryProofGuardrail({ projectRoot });
+  const unboundedSelectRatchet = evaluateUnboundedSelectRatchetGuardrail({
+    findings: scanUnboundedSelectRatchet(projectRoot),
+  });
   const productionRawLoops = evaluateProductionRawLoopGuardrail({
     findings: scanProductionRawLoops(projectRoot),
   });
@@ -1813,6 +2113,7 @@ export function runArchitectureAntiRegressionSuite(
     cacheRateScope.check,
     cacheColdMissProof.check,
     rateLimitMarketplaceCanaryProof.check,
+    unboundedSelectRatchet.check,
     productionRawLoops.check,
     unsafeCastRatchet.check,
     componentDebtCheck,
@@ -1829,6 +2130,7 @@ export function runArchitectureAntiRegressionSuite(
     cacheRateScope: cacheRateScope.summary,
     cacheColdMissProof: cacheColdMissProof.summary,
     rateLimitMarketplaceCanaryProof: rateLimitMarketplaceCanaryProof.summary,
+    unboundedSelectRatchet: unboundedSelectRatchet.summary,
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
     componentDebt,
@@ -1858,6 +2160,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   );
   console.info(`cache_cold_miss_deterministic_proof: ${report.cacheColdMissProof.deterministicProofReady}`);
   console.info(`rate_limit_marketplace_canary_proof: ${report.rateLimitMarketplaceCanaryProof.routeScoped}`);
+  console.info(`unbounded_select_ratchet_unresolved: ${report.unboundedSelectRatchet.unresolvedUnboundedSelects}`);
+  console.info(`unbounded_select_ratchet_select_star: ${report.unboundedSelectRatchet.selectStarFindings}`);
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);

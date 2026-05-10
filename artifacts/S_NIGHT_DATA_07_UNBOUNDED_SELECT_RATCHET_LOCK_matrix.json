@@ -1,0 +1,108 @@
+{
+  "wave": "S_NIGHT_DATA_07_UNBOUNDED_SELECT_RATCHET_LOCK",
+  "final_status": "GREEN_UNBOUNDED_SELECT_RATCHET_LOCKED",
+  "generatedAt": "2026-05-10T23:53:05.2190014+06:00",
+  "selectedFiles": [
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "artifacts/S_NIGHT_DATA_07_UNBOUNDED_SELECT_RATCHET_LOCK_matrix.json",
+    "artifacts/S_NIGHT_DATA_07_UNBOUNDED_SELECT_RATCHET_LOCK_proof.md"
+  ],
+  "reasonSelected": "WAVE 07 locks the current fixed state in the architecture scanner: unresolved unbounded select budget is 0, select-star budget is 0, and export allowlist entries require owner, reason, and migration path metadata.",
+  "baseline": {
+    "headAtStart": "c1ed8906a79295da81d0d44f0ac96b644cd8b1ae",
+    "originMainAtStart": "c1ed8906a79295da81d0d44f0ac96b644cd8b1ae",
+    "headEqualsOriginMainAtStart": true,
+    "aheadBehindAtStart": {
+      "ahead": 0,
+      "behind": 0
+    },
+    "worktreeAtStart": "clean"
+  },
+  "beforeMetrics": {
+    "totalSelectCalls": 284,
+    "unboundedSelectBudget": 0,
+    "selectStarBudget": 0,
+    "currentUnresolvedUnboundedSelects": 0,
+    "currentSelectStarCount": 0,
+    "exportAllowlistFindings": 7,
+    "documentedExportAllowlistFindings": 0,
+    "architectureCheckPresent": false
+  },
+  "afterMetrics": {
+    "totalSelectCalls": 284,
+    "unboundedSelectBudget": 0,
+    "selectStarBudget": 0,
+    "currentUnresolvedUnboundedSelects": 0,
+    "currentSelectStarCount": 0,
+    "exportAllowlistFindings": 7,
+    "documentedExportAllowlistFindings": 7,
+    "architectureCheckPresent": true
+  },
+  "ratchet": {
+    "newUnboundedSelectFails": true,
+    "newSelectStarFails": true,
+    "documentedExportAllowlistPasses": true,
+    "allowlistRequiresOwnerReasonMigrationPath": true,
+    "checkName": "unbounded_select_ratchet"
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/architecture/architectureAntiRegressionSuite.test.ts tests/data/unboundedSelectInventory.test.ts tests/api/selectStarProductionCloseout.contract.test.ts --runInBand",
+      "result": "3 suites passed, 26 tests passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expoLint": {
+      "status": "PASS",
+      "command": "npx expo lint",
+      "note": "Expo printed env variable names only, no values."
+    },
+    "npmTestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "result": "695 suites passed, 1 skipped; 4085 tests passed, 1 skipped"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "result": "unbounded_select_ratchet pass; unresolved=0; selectStar=0; documentedExportAllowlistFindings=7"
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": "pending_until_after_push",
+    "artifactJsonParse": {
+      "status": "PASS",
+      "command": "node -e JSON.parse(matrix)"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_DATA_07_UNBOUNDED_SELECT_RATCHET_LOCK_matrix.json",
+    "proof": "artifacts/S_NIGHT_DATA_07_UNBOUNDED_SELECT_RATCHET_LOCK_proof.md"
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "broadRewrite": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeLoadRun": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "dbWrites": false,
+    "migrations": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

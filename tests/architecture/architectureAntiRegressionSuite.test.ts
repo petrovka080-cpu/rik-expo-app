@@ -8,13 +8,16 @@ import {
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   evaluateRateLimitMarketplaceCanaryProofGuardrail,
+  evaluateUnboundedSelectRatchetGuardrail,
   evaluateUnsafeCastRatchetGuardrail,
   formatDirectSupabaseServiceBypassFailure,
   scanComponentDebtSource,
   scanDirectSupabaseSource,
   scanProductionRawLoopSource,
   scanProductionRawLoops,
+  scanUnboundedSelectRatchetSource,
   scanUnsafeCastSource,
+  type UnboundedSelectAllowlistEntry,
   type UnsafeCastPattern,
 } from "../../scripts/architecture_anti_regression_suite";
 
@@ -543,6 +546,107 @@ describe("architecture anti-regression suite", () => {
       allowlistEntries: 0,
     });
     expect(guardrail.check.status).toBe("pass");
+  });
+
+  it("fails on new unbounded runtime list selects", () => {
+    const findings = scanUnboundedSelectRatchetSource({
+      file: "src/lib/api/example.transport.ts",
+      source: 'await supabase.from("requests").select("id, title").order("created_at");',
+      allowlist: [],
+    });
+    const guardrail = evaluateUnboundedSelectRatchetGuardrail({ findings, allowlist: [] });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        file: "src/lib/api/example.transport.ts",
+        queryType: "list",
+        action: "fix_now",
+        selectStar: false,
+      }),
+    ]);
+    expect(guardrail.check).toEqual(
+      expect.objectContaining({
+        name: "unbounded_select_ratchet",
+        status: "fail",
+      }),
+    );
+    expect(guardrail.check.errors).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("unbounded_select:file=src/lib/api/example.transport.ts:line=1:action=fix_now"),
+        "unbounded_select_budget_exceeded:1>0",
+      ]),
+    );
+  });
+
+  it("allows documented export allowlist entries and rejects missing metadata", () => {
+    const allowlist: UnboundedSelectAllowlistEntry[] = [
+      {
+        file: "src/lib/pdf/exampleReport.ts",
+        line: 1,
+        queryString: "id, title",
+        action: "export_allowlist",
+        owner: "report export owner",
+        reason: "Report export needs the selected rows to preserve document output.",
+        migrationPath: "Move the report export behind a typed RPC/view contract.",
+      },
+    ];
+    const findings = scanUnboundedSelectRatchetSource({
+      file: "src/lib/pdf/exampleReport.ts",
+      source: 'await supabase.from("requests").select("id, title").order("created_at");',
+      allowlist,
+    });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        action: "export_allowlist",
+        allowlisted: true,
+        owner: "report export owner",
+        migrationPath: "Move the report export behind a typed RPC/view contract.",
+      }),
+    ]);
+    expect(evaluateUnboundedSelectRatchetGuardrail({ findings, allowlist }).check).toEqual({
+      name: "unbounded_select_ratchet",
+      status: "pass",
+      errors: [],
+    });
+
+    const invalidAllowlist = [{ ...allowlist[0], owner: "" }];
+    const invalidFindings = scanUnboundedSelectRatchetSource({
+      file: "src/lib/pdf/exampleReport.ts",
+      source: 'await supabase.from("requests").select("id, title").order("created_at");',
+      allowlist: invalidAllowlist,
+    });
+
+    expect(evaluateUnboundedSelectRatchetGuardrail({
+      findings: invalidFindings,
+      allowlist: invalidAllowlist,
+    }).check.errors).toEqual(
+      expect.arrayContaining([
+        "unbounded_select_allowlist_missing_metadata:file=src/lib/pdf/exampleReport.ts:line=1:action=export_allowlist",
+      ]),
+    );
+  });
+
+  it("fails on undocumented select-star projections even when otherwise bounded", () => {
+    const findings = scanUnboundedSelectRatchetSource({
+      file: "src/lib/api/example.transport.ts",
+      source: 'await supabase.from("requests").select("*").limit(1);',
+      allowlist: [],
+    });
+    const guardrail = evaluateUnboundedSelectRatchetGuardrail({ findings, allowlist: [] });
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        action: "already_bounded",
+        selectStar: true,
+      }),
+    ]);
+    expect(guardrail.check.errors).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining("select_star:file=src/lib/api/example.transport.ts:line=1:action=already_bounded"),
+        "select_star_budget_exceeded:1>0",
+      ]),
+    );
   });
 
   it("blocks unsafe casts with readable ratchet and critical-folder failures", () => {
