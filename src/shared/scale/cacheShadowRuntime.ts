@@ -10,12 +10,14 @@ export type CacheShadowRuntimeEnv = Record<string, string | undefined>;
 export type CacheShadowRuntimeConfig = {
   enabled: boolean;
   mode: CacheShadowMode;
+  readThroughV1Enabled: boolean;
   routeAllowlist: readonly CachePolicyRoute[];
   percent: number;
   productionEnabledFlagTruthy: boolean;
   envKeyPresence: {
     productionEnabled: boolean;
     mode: boolean;
+    readThroughV1Enabled: boolean;
     routeAllowlist: boolean;
     percent: boolean;
     url: boolean;
@@ -139,6 +141,7 @@ const DEFAULT_CACHE_SHADOW_ROUTE: CachePolicyRoute = "marketplace.catalog.search
 const DEFAULT_CACHE_SHADOW_PERCENT = 0;
 const MAX_CACHE_SHADOW_PERCENT = 100;
 const SYNTHETIC_CANARY_TTL_MS = 30_000;
+export const CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME = "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED";
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
@@ -309,15 +312,18 @@ export function resolveCacheShadowRuntimeConfig(
 ): CacheShadowRuntimeConfig {
   const productionEnabledFlagTruthy = parseTruthy(env.SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED);
   const mode = productionEnabledFlagTruthy ? parseMode(env.SCALE_REDIS_CACHE_SHADOW_MODE) : "disabled";
+  const readThroughV1Enabled = parseTruthy(env[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]);
   return {
     enabled: productionEnabledFlagTruthy && mode !== "disabled",
     mode,
+    readThroughV1Enabled,
     routeAllowlist: parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST),
     percent: parsePercent(env.SCALE_REDIS_CACHE_SHADOW_PERCENT),
     productionEnabledFlagTruthy,
     envKeyPresence: {
       productionEnabled: hasEnvKey(env, "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED"),
       mode: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_MODE"),
+      readThroughV1Enabled: hasEnvKey(env, CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME),
       routeAllowlist: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST"),
       percent: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_PERCENT"),
       url: hasEnvKey(env, "SCALE_REDIS_CACHE_URL") || hasEnvKey(env, "REDIS_URL"),

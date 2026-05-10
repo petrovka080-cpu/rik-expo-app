@@ -221,11 +221,13 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
             enabled: true,
             productionEnabledFlagTruthy: true,
             mode: "shadow_readonly",
+            readThroughV1Enabled: false,
             percent: 0,
             routeAllowlistCount: 1,
             envKeyPresence: {
               productionEnabled: true,
               mode: true,
+              readThroughV1Enabled: false,
               routeAllowlist: true,
               percent: true,
               url: false,
@@ -363,6 +365,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });
@@ -448,6 +451,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });
@@ -514,6 +518,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });
@@ -564,6 +569,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "marketplace.catalog.search",
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });
@@ -663,6 +669,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: "request.proposal.list",
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });

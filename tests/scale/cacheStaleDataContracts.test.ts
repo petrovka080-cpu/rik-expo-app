@@ -239,6 +239,7 @@ describe("S-AUDIT-NIGHT-BATTLE-140 cache stale data contracts", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: MARKETPLACE_OPERATION,
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });
@@ -325,6 +326,7 @@ describe("S-AUDIT-NIGHT-BATTLE-140 cache stale data contracts", () => {
     const config = resolveCacheShadowRuntimeConfig({
       SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+      SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
       SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: NON_PUBLIC_READ_OPERATIONS.join(","),
       SCALE_REDIS_CACHE_SHADOW_PERCENT: "100",
     });

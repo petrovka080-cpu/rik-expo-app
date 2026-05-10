@@ -25,6 +25,7 @@ describe("S-50K provider runtime env conventions", () => {
         "REDIS_URL",
         "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
         "SCALE_REDIS_CACHE_SHADOW_MODE",
+        "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
         "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
         "SCALE_REDIS_CACHE_SHADOW_PERCENT",
       ],

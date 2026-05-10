@@ -922,6 +922,7 @@ export function evaluateCacheRateScopeGuardrail(params: {
   const cacheConfig = resolveCacheShadowRuntimeConfig({
     SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
     SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
+    SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
     SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: CACHE_RATE_ALLOWED_ROUTE,
     SCALE_REDIS_CACHE_SHADOW_PERCENT: "1",
   });
@@ -930,8 +931,10 @@ export function evaluateCacheRateScopeGuardrail(params: {
   const rateLimitPercent = Number(rateLimitPercentText);
   const cacheCanaryRouteScoped =
     cacheSource.includes("SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST") &&
+    cacheSource.includes("SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED") &&
     cacheSource.includes("parseRouteAllowlist") &&
     cacheSource.includes("routeAllowed") &&
+    cacheConfig.readThroughV1Enabled === true &&
     cacheConfig.routeAllowlist.length === 1 &&
     cacheConfig.routeAllowlist[0] === CACHE_RATE_ALLOWED_ROUTE;
   const errors = [

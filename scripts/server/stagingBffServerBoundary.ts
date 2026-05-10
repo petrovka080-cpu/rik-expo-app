@@ -309,6 +309,7 @@ export type BffStagingCacheShadowRuntimeState = {
   enabled: boolean;
   productionEnabledFlagTruthy: boolean;
   mode: CacheShadowRuntimeConfig["mode"];
+  readThroughV1Enabled: boolean;
   percent: number;
   routeAllowlistCount: number;
   envKeyPresence: CacheShadowRuntimeConfig["envKeyPresence"];
@@ -751,6 +752,7 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   "BFF_RATE_LIMIT_METADATA_ENABLED",
   "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
   "SCALE_REDIS_CACHE_SHADOW_MODE",
+  "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
   "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
   "SCALE_REDIS_CACHE_SHADOW_PERCENT",
 ]);
@@ -1042,6 +1044,16 @@ async function invokeReadRouteWithCacheReadThrough(params: {
     }));
     return params.invoke();
   }
+  if (!config.readThroughV1Enabled) {
+    observe(buildCacheReadThroughDecision({
+      status: "disabled",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "cache_read_through_v1_flag_disabled",
+    }));
+    return params.invoke();
+  }
   if (policy.payloadClass !== "public_catalog") {
     observe(buildCacheReadThroughDecision({
       status: "skipped",
@@ -1097,44 +1109,56 @@ async function invokeReadRouteWithCacheReadThrough(params: {
     return params.invoke();
   }
 
+  let cached: unknown | null = null;
   try {
-    const cached = await cacheShadow.adapter.get<unknown>(keyResult.key);
-    if (isBffStagingResponseEnvelope(cached) && cached.ok === true) {
-      observe(buildCacheReadThroughDecision({
-        status: "hit",
-        route,
-        cacheHit: true,
-        shadowReadAttempted: true,
-        reason: "cache_read_through_hit",
-      }));
-      return withCacheHitTiming(cached, true);
-    }
-
-    const body = await params.invoke();
-    observe(buildCacheReadThroughDecision({
-      status: "miss",
-      route,
-      cacheHit: false,
-      shadowReadAttempted: true,
-      reason: "cache_read_through_miss",
-    }));
-    if (body.ok === true) {
-      await cacheShadow.adapter.set(keyResult.key, withCacheHitTiming(body, false), {
-        ttlMs: policy.ttlMs,
-        tags: policy.tags,
-      });
-    }
-    return withCacheHitTiming(body, false);
-  } catch {
+    cached = await cacheShadow.adapter.get<unknown>(keyResult.key);
+  } catch (_error: unknown) {
     observe(buildCacheReadThroughDecision({
       status: "error",
       route,
       cacheHit: false,
-      shadowReadAttempted: false,
+      shadowReadAttempted: true,
       reason: "cache_read_through_error",
     }));
     return params.invoke();
   }
+
+  if (isBffStagingResponseEnvelope(cached) && cached.ok === true) {
+    observe(buildCacheReadThroughDecision({
+      status: "hit",
+      route,
+      cacheHit: true,
+      shadowReadAttempted: true,
+      reason: "cache_read_through_hit",
+    }));
+    return withCacheHitTiming(cached, true);
+  }
+
+  const body = await params.invoke();
+  observe(buildCacheReadThroughDecision({
+    status: "miss",
+    route,
+    cacheHit: false,
+    shadowReadAttempted: true,
+    reason: "cache_read_through_miss",
+  }));
+  if (body.ok === true) {
+    try {
+      await cacheShadow.adapter.set(keyResult.key, withCacheHitTiming(body, false), {
+        ttlMs: policy.ttlMs,
+        tags: policy.tags,
+      });
+    } catch (_error: unknown) {
+      observe(buildCacheReadThroughDecision({
+        status: "error",
+        route,
+        cacheHit: false,
+        shadowReadAttempted: true,
+        reason: "cache_read_through_error",
+      }));
+    }
+  }
+  return withCacheHitTiming(body, false);
 }
 
 const buildRateLimitShadowMonitorEnvelope = (
@@ -1192,11 +1216,13 @@ export const buildCacheShadowRuntimeState = (
     enabled: config?.enabled ?? false,
     productionEnabledFlagTruthy: config?.productionEnabledFlagTruthy ?? false,
     mode: config?.mode ?? "disabled",
+    readThroughV1Enabled: config?.readThroughV1Enabled ?? false,
     percent: config?.percent ?? 0,
     routeAllowlistCount: config?.routeAllowlist.length ?? 0,
     envKeyPresence: config?.envKeyPresence ?? {
       productionEnabled: false,
       mode: false,
+      readThroughV1Enabled: false,
       routeAllowlist: false,
       percent: false,
       url: false,

@@ -1,0 +1,149 @@
+{
+  "wave": 141,
+  "slug": "CACHE_READ_THROUGH_CANARY_CODEPATH",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Add a safe read-through cache codepath for one low-risk candidate behind a local versioned feature flag defaulting off.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "353a94e90b7c04a52ac67ba6075a3345fd4bd245"
+  },
+  "selectedCandidate": {
+    "route": "marketplace.catalog.search",
+    "sourceWave": 138,
+    "rank": 1,
+    "payloadClass": "public_catalog",
+    "risk": "low",
+    "reason": [
+      "public catalog payload class",
+      "deterministic cache key policy",
+      "bounded 120 second TTL",
+      "low cross-role leak risk",
+      "existing route-scoped canary guardrail"
+    ]
+  },
+  "featureFlag": {
+    "name": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+    "version": 1,
+    "default": "off",
+    "remoteEnvChanged": false,
+    "requiredForServingCache": true
+  },
+  "cacheContract": {
+    "flagOffBehavior": "provider path only; no cache adapter commands; cacheHit remains false",
+    "flagOnBehavior": "first selected marketplace read populates cache; second identical read can serve cached envelope",
+    "deterministicKey": "buildSafeCacheKey with marketplace.catalog.search policy",
+    "ttlControlledByPolicyMs": 120000,
+    "scope": {
+      "companyId": "hashed in key",
+      "queryHash": "derived from query",
+      "category": "included",
+      "page": "included",
+      "pageSize": "included",
+      "filtersHash": "derived from filters",
+      "locale": "included",
+      "roleRequired": false
+    },
+    "fallback": [
+      "provider errors preserve the original BFF error envelope",
+      "cache read errors fall back to the provider",
+      "cache write errors do not fail a successful provider response",
+      "non-public payload classes stay on provider path"
+    ]
+  },
+  "changedFiles": [
+    "src/shared/scale/cacheShadowRuntime.ts",
+    "scripts/server/stagingBffServerBoundary.ts",
+    "src/shared/scale/providerRuntimeConfig.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/scale/cacheReadThroughCanaryCodepath.test.ts",
+    "tests/scale/bffStagingServerBoundary.test.ts",
+    "tests/scale/cacheMarketplaceShadowCanaryContract.test.ts",
+    "tests/scale/cacheStaleDataContracts.test.ts",
+    "tests/scale/cacheIntegrationBoundary.test.ts",
+    "tests/scale/providerRuntimeConfig.test.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_141_CACHE_READ_THROUGH_CANARY_CODEPATH_matrix.json",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_141_CACHE_READ_THROUGH_CANARY_CODEPATH_proof.md"
+  ],
+  "freshScans": {
+    "commands": [
+      "rg -n \"cache\" src scripts tests artifacts docs",
+      "rg -n \"canary\" src scripts tests artifacts docs",
+      "rg -n \"ttl|TTL\" src scripts tests artifacts docs",
+      "rg -n \"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED|readThroughV1Enabled|cache_read_through_v1_flag_disabled\" src/shared/scale scripts/server tests/scale tests/architecture scripts/architecture_anti_regression_suite.ts"
+    ],
+    "summary": {
+      "candidateFromWave138Confirmed": true,
+      "existingReadThroughCodepathFound": true,
+      "newVersionedFlagAdded": true,
+      "productionCacheEnabled": false
+    }
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheReadThroughCanaryCodepath.test.ts tests/scale/cacheMarketplaceShadowCanaryContract.test.ts tests/scale/cacheStaleDataContracts.test.ts tests/scale/bffStagingServerBoundary.test.ts tests/scale/cacheIntegrationBoundary.test.ts tests/scale/providerRuntimeConfig.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts",
+      "summary": "7 suites, 83 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "676 passed, 1 skipped, 677 total suites; 4011 passed, 1 skipped, 4012 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": {
+        "serviceBypassFindings": 0,
+        "serviceBypassFiles": 0,
+        "transportControlledFindings": 175,
+        "unclassifiedCurrentFindings": 0,
+        "cacheCanaryRouteScoped": true,
+        "cacheAllowedRoute": "marketplace.catalog.search",
+        "rateLimitCanaryRoute": "marketplace.catalog.search",
+        "rateLimitCanaryPercent": 1
+      }
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "productionCacheEnabled": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

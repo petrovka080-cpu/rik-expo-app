@@ -200,6 +200,7 @@ describe("architecture anti-regression suite", () => {
               "const routeAllowed = () => config.routeAllowlist.includes(route);",
               "parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST);",
               "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+              "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
             ].join("\n"),
     });
 
