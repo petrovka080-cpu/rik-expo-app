@@ -52,9 +52,38 @@ type RouteCallResult = {
   ok: boolean;
   status: number | null;
   statusClass: string;
+  bodyOk: boolean | null;
   cacheHit: boolean | null;
+  responseBytesBucket: string;
   contractShape: string;
   errorCategory: string;
+};
+
+type MonitorCounts = {
+  status: number | null;
+  observedDecisionCount: number | null;
+  shadowReadAttemptedCount: number | null;
+  hitCount: number | null;
+  missCount: number | null;
+  readThroughCount: number | null;
+  skippedCount: number | null;
+  unsafeKeyCount: number | null;
+  errorCount: number | null;
+  routeMetricsRedactionSafe: boolean | null;
+  outputRedactionSafe: boolean;
+};
+
+type CacheDiagnosticResult = {
+  status: number | null;
+  canaryStatus: string;
+  reason: string;
+  commandProbeStatus: string;
+  commandSetOk: boolean | null;
+  commandGetOk: boolean | null;
+  commandValueMatched: boolean | null;
+  commandDeleteOk: boolean | null;
+  cleanupOk: boolean | null;
+  redactionSafe: boolean;
 };
 
 const WAVE = "S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY";
@@ -139,7 +168,12 @@ function writeArtifacts(matrix: Matrix): void {
       `- canary_percent: ${String(matrix.canary_percent ?? "not_run")}`,
       `- first_request_miss_read_through: ${String(matrix.first_request_miss_read_through ?? false)}`,
       `- second_request_hit: ${String(matrix.second_request_hit ?? false)}`,
+      `- cache_shadow_diagnostic_green: ${String(matrix.cache_shadow_diagnostic_green ?? false)}`,
+      `- first_miss_count_delta: ${String(matrix.first_miss_count_delta ?? "not_run")}`,
+      `- first_read_through_count_delta: ${String(matrix.first_read_through_count_delta ?? "not_run")}`,
+      `- second_hit_count_delta: ${String(matrix.second_hit_count_delta ?? "not_run")}`,
       `- response_contract_unchanged: ${String(matrix.response_contract_unchanged ?? false)}`,
+      `- blocked_reason: ${String(matrix.blocked_reason ?? "none")}`,
       `- rollback_triggered: ${String(matrix.rollback_triggered ?? false)}`,
       `- rollback_succeeded: ${String(matrix.rollback_succeeded ?? false)}`,
       "",
@@ -282,6 +316,97 @@ function cacheHitFromBody(body: unknown): boolean | null {
   if (!timing || typeof timing !== "object") return null;
   const cacheHit = (timing as Record<string, unknown>).cacheHit;
   return typeof cacheHit === "boolean" ? cacheHit : null;
+}
+
+function bodyOkFromEnvelope(body: unknown): boolean | null {
+  if (!body || typeof body !== "object") return null;
+  const ok = (body as Record<string, unknown>).ok;
+  return typeof ok === "boolean" ? ok : null;
+}
+
+function recordFromData(body: unknown): Record<string, unknown> {
+  if (!body || typeof body !== "object") return {};
+  const data = (body as Record<string, unknown>).data;
+  return data && typeof data === "object" && !Array.isArray(data) ? (data as Record<string, unknown>) : {};
+}
+
+function numericField(record: Record<string, unknown>, key: string): number | null {
+  const value = record[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function booleanField(record: Record<string, unknown>, key: string): boolean | null {
+  const value = record[key];
+  return typeof value === "boolean" ? value : null;
+}
+
+function stringField(record: Record<string, unknown>, key: string, fallback: string): string {
+  const value = record[key];
+  return typeof value === "string" && value.length > 0 ? value : fallback;
+}
+
+function byteSizeBucket(text: string): string {
+  const bytes = Buffer.byteLength(text, "utf8");
+  if (bytes <= 16 * 1024) return "le_16kb";
+  if (bytes <= 64 * 1024) return "le_64kb";
+  if (bytes <= 128 * 1024) return "le_128kb";
+  if (bytes <= 256 * 1024) return "le_256kb";
+  return "gt_256kb";
+}
+
+function outputRedactionSafe(value: unknown): boolean {
+  const output = JSON.stringify(value ?? null);
+  return (
+    !output.includes("cache:v1:") &&
+    !output.includes(CANARY_COMPANY_CLASS) &&
+    !output.includes(UTF8_QUERY_PREFIX) &&
+    !output.includes("s-cache-02-one-route") &&
+    !output.toLowerCase().includes("token") &&
+    !output.toLowerCase().includes("secret")
+  );
+}
+
+function monitorCounts(response: { status: number | null; body: unknown } | null): MonitorCounts {
+  const data = recordFromData(response?.body);
+  return {
+    status: response?.status ?? null,
+    observedDecisionCount: numericField(data, "observedDecisionCount"),
+    shadowReadAttemptedCount: numericField(data, "shadowReadAttemptedCount"),
+    hitCount: numericField(data, "hitCount"),
+    missCount: numericField(data, "missCount"),
+    readThroughCount: numericField(data, "readThroughCount"),
+    skippedCount: numericField(data, "skippedCount"),
+    unsafeKeyCount: numericField(data, "unsafeKeyCount"),
+    errorCount: numericField(data, "errorCount"),
+    routeMetricsRedactionSafe: booleanField(data, "routeMetricsRedactionSafe"),
+    outputRedactionSafe: outputRedactionSafe(response?.body),
+  };
+}
+
+function countDelta(
+  before: MonitorCounts | null,
+  after: MonitorCounts | null,
+  key: keyof Pick<MonitorCounts, "hitCount" | "missCount" | "readThroughCount" | "skippedCount" | "errorCount">,
+): number | null {
+  const left = before?.[key];
+  const right = after?.[key];
+  return typeof left === "number" && typeof right === "number" ? right - left : null;
+}
+
+function diagnosticResult(response: { status: number | null; body: unknown } | null): CacheDiagnosticResult {
+  const data = recordFromData(response?.body);
+  return {
+    status: response?.status ?? null,
+    canaryStatus: stringField(data, "status", "not_run"),
+    reason: stringField(data, "reason", "not_run"),
+    commandProbeStatus: stringField(data, "commandProbeStatus", "not_run"),
+    commandSetOk: booleanField(data, "commandSetOk"),
+    commandGetOk: booleanField(data, "commandGetOk"),
+    commandValueMatched: booleanField(data, "commandValueMatched"),
+    commandDeleteOk: booleanField(data, "commandDeleteOk"),
+    cleanupOk: booleanField(data, "cleanupOk"),
+    redactionSafe: outputRedactionSafe(response?.body),
+  };
 }
 
 async function readBffErrorCategory(response: Response, bodyText: string): Promise<string> {
@@ -489,7 +614,9 @@ async function main(): Promise<void> {
         ok: false,
         status: null,
         statusClass: "error",
+        bodyOk: null,
         cacheHit: null,
+        responseBytesBucket: "not_run",
         contractShape: "auth_missing",
         errorCategory: "auth_category",
       };
@@ -514,7 +641,9 @@ async function main(): Promise<void> {
         ok: response.ok,
         status: response.status,
         statusClass: statusClass(response.status),
+        bodyOk: bodyOkFromEnvelope(parsed.body),
         cacheHit: cacheHitFromBody(parsed.body),
+        responseBytesBucket: byteSizeBucket(parsed.text),
         contractShape: contractShapeOf(parsed.body),
         errorCategory: await readBffErrorCategory(response, parsed.text),
       };
@@ -523,7 +652,9 @@ async function main(): Promise<void> {
         ok: false,
         status: null,
         statusClass: "error",
+        bodyOk: null,
         cacheHit: null,
+        responseBytesBucket: "not_run",
         contractShape: "request_error",
         errorCategory: "transport_error",
       };
@@ -661,47 +792,101 @@ async function main(): Promise<void> {
 
   let firstRead: RouteCallResult | null = null;
   let secondRead: RouteCallResult | null = null;
-  let monitorAfter: { status: number | null; body: unknown } | null = null;
+  let diagnosticResponse: { status: number | null; body: unknown } | null = null;
+  let monitorBeforeRoute: { status: number | null; body: unknown } | null = null;
+  let monitorAfterFirst: { status: number | null; body: unknown } | null = null;
+  let monitorAfterSecond: { status: number | null; body: unknown } | null = null;
   let redactionSafe = false;
   if (live.live && healthAfterDeploy.status === 200 && readyAfterDeploy.status === 200 && runtimeScoped) {
+    diagnosticResponse = await fetchJson("/api/staging-bff/diagnostics/cache-shadow-canary", {
+      method: "POST",
+      headers: auth.secret ? { authorization: `Bearer ${auth.secret}` } : {},
+    });
+    monitorBeforeRoute = await fetchJson("/api/staging-bff/monitor/cache-shadow", {
+      method: "GET",
+      headers: auth.secret ? { authorization: `Bearer ${auth.secret}` } : {},
+    });
     firstRead = await callReadRoute();
     await sleep(500);
+    monitorAfterFirst = await fetchJson("/api/staging-bff/monitor/cache-shadow", {
+      method: "GET",
+      headers: auth.secret ? { authorization: `Bearer ${auth.secret}` } : {},
+    });
     secondRead = await callReadRoute();
     for (let attempt = 0; attempt < 12; attempt += 1) {
-      monitorAfter = await fetchJson("/api/staging-bff/monitor/cache-shadow", {
+      monitorAfterSecond = await fetchJson("/api/staging-bff/monitor/cache-shadow", {
         method: "GET",
         headers: auth.secret ? { authorization: `Bearer ${auth.secret}` } : {},
       });
-      const output = JSON.stringify(monitorAfter.body);
+      const output = JSON.stringify(monitorAfterSecond.body);
       const hasCounts =
         output.includes('"hitCount"') &&
         output.includes('"missCount"') &&
         output.includes('"readThroughCount"');
-      if (monitorAfter.status === 200 && hasCounts) break;
+      if (monitorAfterSecond.status === 200 && hasCounts) break;
       await sleep(500);
     }
-    const monitorOutput = JSON.stringify(monitorAfter?.body ?? null);
     redactionSafe =
-      monitorAfter?.status === 200 &&
-      !monitorOutput.includes("cache:v1:") &&
-      !monitorOutput.includes(CANARY_COMPANY_CLASS) &&
-      !monitorOutput.includes(UTF8_QUERY_PREFIX) &&
-      !monitorOutput.includes("s-cache-02-one-route") &&
-      !monitorOutput.toLowerCase().includes("token") &&
-      !monitorOutput.toLowerCase().includes("secret");
+      outputRedactionSafe(diagnosticResponse.body) &&
+      outputRedactionSafe(monitorBeforeRoute.body) &&
+      outputRedactionSafe(monitorAfterFirst.body) &&
+      outputRedactionSafe(monitorAfterSecond?.body);
   }
 
-  const firstRequestMiss = firstRead?.ok === true && firstRead.cacheHit === false;
-  const secondRequestHit = secondRead?.ok === true && secondRead.cacheHit === true;
+  const diagnostic = diagnosticResult(diagnosticResponse);
+  const monitorBeforeRouteCounts = monitorCounts(monitorBeforeRoute);
+  const monitorAfterFirstCounts = monitorCounts(monitorAfterFirst);
+  const monitorAfterSecondCounts = monitorCounts(monitorAfterSecond);
+  const firstMissDelta = countDelta(monitorBeforeRouteCounts, monitorAfterFirstCounts, "missCount");
+  const firstReadThroughDelta = countDelta(monitorBeforeRouteCounts, monitorAfterFirstCounts, "readThroughCount");
+  const secondHitDelta = countDelta(monitorAfterFirstCounts, monitorAfterSecondCounts, "hitCount");
+  const firstRequestMiss =
+    firstRead?.ok === true &&
+    firstRead.bodyOk === true &&
+    firstRead.cacheHit === false &&
+    firstMissDelta !== null &&
+    firstMissDelta > 0 &&
+    firstReadThroughDelta !== null &&
+    firstReadThroughDelta > 0;
+  const secondRequestHit =
+    secondRead?.ok === true &&
+    secondRead.bodyOk === true &&
+    secondRead.cacheHit === true &&
+    secondHitDelta !== null &&
+    secondHitDelta > 0;
   const responseContractUnchanged =
     Boolean(firstRead && secondRead) &&
     baselineRead.contractShape === firstRead?.contractShape &&
     firstRead.contractShape === secondRead?.contractShape;
+  const diagnosticGreen =
+    diagnostic.status === 200 &&
+    diagnostic.canaryStatus === "ready" &&
+    diagnostic.commandProbeStatus === "ready" &&
+    diagnostic.commandSetOk === true &&
+    diagnostic.commandGetOk === true &&
+    diagnostic.commandValueMatched === true &&
+    diagnostic.commandDeleteOk === true &&
+    diagnostic.cleanupOk === true &&
+    diagnostic.redactionSafe;
+  const blockedReason = !runtimeScoped
+    ? "runtime_not_scoped_to_one_route"
+    : !diagnosticGreen
+      ? "cache_shadow_diagnostic_not_ready"
+      : !firstRequestMiss
+        ? "first_request_miss_read_through_not_proven"
+        : !secondRequestHit
+          ? "second_request_hit_false_after_metric_verified_miss"
+          : !responseContractUnchanged
+            ? "response_contract_changed"
+            : !redactionSafe
+              ? "metrics_redaction_failed"
+              : "none";
   const canaryPassed =
     live.live &&
     healthAfterDeploy.status === 200 &&
     readyAfterDeploy.status === 200 &&
     runtimeScoped &&
+    diagnosticGreen &&
     firstRequestMiss &&
     secondRequestHit &&
     responseContractUnchanged &&
@@ -727,7 +912,9 @@ async function main(): Promise<void> {
       env_api_read_ok: envResult.ok,
       render_auto_deploy_safe: autoDeploySafe,
       baseline_read_status_class: baselineRead.statusClass,
+      baseline_body_ok: baselineRead.bodyOk,
       baseline_cache_hit: baselineRead.cacheHit,
+      baseline_response_bytes_bucket: baselineRead.responseBytesBucket,
       cache_env_written: true,
       approved_cache_env_keys_written_count: Object.keys(CACHE_ENV_WRITE_VALUES).length,
       deploy_triggered: deployResult.ok,
@@ -741,14 +928,29 @@ async function main(): Promise<void> {
       runtime_percent: runtime?.percent ?? "unknown",
       runtime_route_allowlist_count: runtime?.routeAllowlistCount ?? "unknown",
       runtime_scoped_only: runtimeScoped,
+      cache_shadow_diagnostic: diagnostic,
+      cache_shadow_diagnostic_green: diagnosticGreen,
+      monitor_before_route: monitorBeforeRouteCounts,
+      monitor_after_first: monitorAfterFirstCounts,
+      monitor_after_second: monitorAfterSecondCounts,
+      first_miss_count_delta: firstMissDelta,
+      first_read_through_count_delta: firstReadThroughDelta,
+      second_hit_count_delta: secondHitDelta,
       first_read_status_class: firstRead?.statusClass ?? "not_run",
+      first_body_ok: firstRead?.bodyOk ?? "not_run",
+      first_cache_hit: firstRead?.cacheHit ?? "not_run",
+      first_response_bytes_bucket: firstRead?.responseBytesBucket ?? "not_run",
       second_read_status_class: secondRead?.statusClass ?? "not_run",
+      second_body_ok: secondRead?.bodyOk ?? "not_run",
+      second_cache_hit: secondRead?.cacheHit ?? "not_run",
+      second_response_bytes_bucket: secondRead?.responseBytesBucket ?? "not_run",
       first_request_miss_read_through: firstRequestMiss,
       second_request_hit: secondRequestHit,
       response_contract_unchanged: responseContractUnchanged,
       utf8_safe: canarySelection.utf8Used,
-      monitor_status: monitorAfter?.status ?? "not_run",
+      monitor_status: monitorAfterSecond?.status ?? "not_run",
       metrics_redacted: redactionSafe,
+      blocked_reason: blockedReason,
       rollback_required: true,
       rollback_triggered: rollback.attempted,
       rollback_succeeded: rollbackStable,

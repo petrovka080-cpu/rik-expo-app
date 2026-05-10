@@ -23,6 +23,12 @@ describe("S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY runner", () => {
     expect(source).toContain("findPercentSelectedCanaryInput");
     expect(source).toContain("redactedSnapshot");
     expect(source).toContain("restoreEnv");
+    expect(source).toContain("cache_shadow_diagnostic_green");
+    expect(source).toContain("first_miss_count_delta");
+    expect(source).toContain("second_hit_count_delta");
+    expect(source).toContain("second_request_hit_false_after_metric_verified_miss");
+    expect(source).toContain("/api/staging-bff/diagnostics/cache-shadow-canary");
+    expect(source).toContain("/api/staging-bff/monitor/cache-shadow");
     expect(source).toContain("canary_retained: false");
     expect(source).toContain("total_production_mutation_requests: 0");
 
