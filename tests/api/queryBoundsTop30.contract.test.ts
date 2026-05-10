@@ -43,7 +43,7 @@ describe("S_DATA_01_QUERY_BOUNDS_TOP_30", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
     expect(auctions).toContain("AUCTION_CHILD_LIST_PAGE_DEFAULTS");
     expect(auctions).toContain("loadPagedAuctionRows");
-    expect(auctions).toContain(".limit(120)");
+    expect(auctions).toContain(".limit(AUCTION_LIST_PAGE_SIZE)");
     expect(auctions).toContain('.from("tender_items")');
     expect(auctions).toContain('.order("tender_id", { ascending: true })');
     expect(auctions).toContain(".maybeSingle()");

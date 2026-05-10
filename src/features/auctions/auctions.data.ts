@@ -13,12 +13,41 @@ import type {
   UnifiedAuctionSummary,
 } from "./auctions.types";
 
+const AUCTION_LIST_PAGE_SIZE = 120;
 const AUCTION_CHILD_LIST_PAGE_DEFAULTS = { pageSize: 100, maxPageSize: 100, maxRows: 5000 };
+const AUCTION_TENDER_ITEM_TENDER_ID_MAX = AUCTION_LIST_PAGE_SIZE;
+const TENDER_ROW_SELECT =
+  "id, city, status, deadline_at, created_at, note, contact_phone, contact_whatsapp, contact_email";
+const TENDER_ITEM_ROW_SELECT =
+  "id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at";
+const AUCTION_ROW_SELECT = "id, display_no, object_name, status, need_by, created_at, items";
+
+class AuctionTenderIdCeilingError extends Error {
+  constructor(count: number) {
+    super(`auction tender item read exceeded tender id ceiling (${count})`);
+    this.name = "AuctionTenderIdCeilingError";
+  }
+}
 
 async function loadPagedAuctionRows<T>(
   queryFactory: () => PagedQuery<T>,
 ): Promise<{ data: T[] | null; error: unknown | null }> {
   return loadPagedRowsWithCeiling(queryFactory, AUCTION_CHILD_LIST_PAGE_DEFAULTS);
+}
+
+function normalizeAuctionTenderIds(values: readonly string[]): string[] {
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const id = String(value || "").trim();
+    if (!id || seen.has(id)) continue;
+    ids.push(id);
+    seen.add(id);
+    if (ids.length > AUCTION_TENDER_ITEM_TENDER_ID_MAX) {
+      throw new AuctionTenderIdCeilingError(ids.length);
+    }
+  }
+  return ids;
 }
 
 function toMaybeNumber(value: unknown): number | null {
@@ -148,9 +177,10 @@ function toAuctionSummary(row: AuctionRow, items: UnifiedAuctionItem[]): Unified
 export async function loadAuctionSummaries(tab: AuctionListTab): Promise<UnifiedAuctionSummary[]> {
   const tenderResult = await supabase
     .from("tenders")
-    .select("id, city, status, deadline_at, created_at, note, contact_phone, contact_whatsapp, contact_email")
+    .select(TENDER_ROW_SELECT)
     .order("created_at", { ascending: false })
-    .limit(120);
+    .order("id", { ascending: false })
+    .limit(AUCTION_LIST_PAGE_SIZE);
 
   if (tenderResult.error) {
     throw tenderResult.error;
@@ -158,24 +188,26 @@ export async function loadAuctionSummaries(tab: AuctionListTab): Promise<Unified
 
   const tenders = (tenderResult.data ?? []) as TenderRow[];
   if (tenders.length > 0) {
-    const tenderIds = tenders.map((row) => row.id);
-    const itemsResult = await loadPagedAuctionRows<TenderItemRow>(() =>
-      supabase
-        .from("tender_items")
-        .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
-        .in("tender_id", tenderIds)
-        .order("tender_id", { ascending: true })
-        .order("created_at", { ascending: true })
-        .order("id", { ascending: true }) as unknown as PagedQuery<TenderItemRow>,
-    );
-
-    if (itemsResult.error) throw itemsResult.error;
-
     const itemsByTender = new Map<string, UnifiedAuctionItem[]>();
-    for (const row of (itemsResult.data ?? []) as TenderItemRow[]) {
-      const nextItems = itemsByTender.get(row.tender_id) || [];
-      nextItems.push(...mapTenderItems([row]));
-      itemsByTender.set(row.tender_id, nextItems);
+    const tenderIds = normalizeAuctionTenderIds(tenders.map((row) => row.id));
+    if (tenderIds.length > 0) {
+      const itemsResult = await loadPagedAuctionRows<TenderItemRow>(() =>
+        supabase
+          .from("tender_items")
+          .select(TENDER_ITEM_ROW_SELECT)
+          .in("tender_id", tenderIds)
+          .order("tender_id", { ascending: true })
+          .order("created_at", { ascending: true })
+          .order("id", { ascending: true }) as unknown as PagedQuery<TenderItemRow>,
+      );
+
+      if (itemsResult.error) throw itemsResult.error;
+
+      for (const row of (itemsResult.data ?? []) as TenderItemRow[]) {
+        const nextItems = itemsByTender.get(row.tender_id) || [];
+        nextItems.push(...mapTenderItems([row]));
+        itemsByTender.set(row.tender_id, nextItems);
+      }
     }
 
     return tenders
@@ -185,9 +217,10 @@ export async function loadAuctionSummaries(tab: AuctionListTab): Promise<Unified
 
   const auctionsResult = await supabase
     .from("auctions")
-    .select("id, display_no, object_name, status, need_by, created_at, items")
+    .select(AUCTION_ROW_SELECT)
     .order("created_at", { ascending: false })
-    .limit(120);
+    .order("id", { ascending: false })
+    .limit(AUCTION_LIST_PAGE_SIZE);
 
   if (auctionsResult.error) throw auctionsResult.error;
 
@@ -199,7 +232,7 @@ export async function loadAuctionSummaries(tab: AuctionListTab): Promise<Unified
 export async function loadAuctionDetail(id: string): Promise<UnifiedAuctionDetail | null> {
   const tenderResult = await supabase
     .from("tenders")
-    .select("id, city, status, deadline_at, created_at, note, contact_phone, contact_whatsapp, contact_email")
+    .select(TENDER_ROW_SELECT)
     .eq("id", id)
     .maybeSingle();
 
@@ -209,7 +242,7 @@ export async function loadAuctionDetail(id: string): Promise<UnifiedAuctionDetai
     const itemResult = await loadPagedAuctionRows<TenderItemRow>(() =>
       supabase
         .from("tender_items")
-        .select("id, tender_id, rik_code, name_human, qty, uom, request_item_id, created_at")
+        .select(TENDER_ITEM_ROW_SELECT)
         .eq("tender_id", id)
         .order("created_at", { ascending: true })
         .order("id", { ascending: true }) as unknown as PagedQuery<TenderItemRow>,
@@ -227,7 +260,7 @@ export async function loadAuctionDetail(id: string): Promise<UnifiedAuctionDetai
 
   const auctionResult = await supabase
     .from("auctions")
-    .select("id, display_no, object_name, status, need_by, created_at, items")
+    .select(AUCTION_ROW_SELECT)
     .eq("id", id)
     .maybeSingle();
 

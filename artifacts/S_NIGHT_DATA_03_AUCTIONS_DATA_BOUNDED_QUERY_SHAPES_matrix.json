@@ -1,0 +1,170 @@
+{
+  "wave": "S_NIGHT_DATA_03_AUCTIONS_DATA_BOUNDED_QUERY_SHAPES",
+  "final_status": "GREEN_AUCTIONS_DATA_BOUNDED_QUERY_SHAPES",
+  "generatedAt": "2026-05-10T16:31:00.000Z",
+  "selectedFiles": [
+    "src/features/auctions/auctions.data.ts",
+    "tests/api/auctionsDataBoundedQueryShapes.contract.test.ts",
+    "tests/api/queryBoundsTop30.contract.test.ts",
+    "artifacts/S_NIGHT_DATA_03_AUCTIONS_DATA_BOUNDED_QUERY_SHAPES_matrix.json",
+    "artifacts/S_NIGHT_DATA_03_AUCTIONS_DATA_BOUNDED_QUERY_SHAPES_proof.md"
+  ],
+  "reasonSelected": "User requested WAVE 03 for auctions.data.ts after the audit risk around all tender items and all auction rows. The file had six Supabase select calls: two top-level list reads, two detail reads, and two tender-item child reads.",
+  "classification": [
+    {
+      "function": "loadAuctionSummaries",
+      "table": "tenders",
+      "queryType": "list",
+      "bound": "limit(AUCTION_LIST_PAGE_SIZE)",
+      "stableOrder": "created_at desc, id desc",
+      "status": "bounded"
+    },
+    {
+      "function": "loadAuctionSummaries",
+      "table": "tender_items",
+      "queryType": "tender_items",
+      "bound": "loadPagedRowsWithCeiling(AUCTION_CHILD_LIST_PAGE_DEFAULTS)",
+      "scope": "in(tender_id, tenderIds) after normalizeAuctionTenderIds",
+      "status": "bounded"
+    },
+    {
+      "function": "loadAuctionSummaries",
+      "table": "auctions",
+      "queryType": "list",
+      "bound": "limit(AUCTION_LIST_PAGE_SIZE)",
+      "stableOrder": "created_at desc, id desc",
+      "status": "bounded"
+    },
+    {
+      "function": "loadAuctionDetail",
+      "table": "tenders",
+      "queryType": "detail/status_lookup",
+      "bound": "eq(id, id).maybeSingle()",
+      "status": "bounded"
+    },
+    {
+      "function": "loadAuctionDetail",
+      "table": "tender_items",
+      "queryType": "tender_items",
+      "bound": "loadPagedRowsWithCeiling(AUCTION_CHILD_LIST_PAGE_DEFAULTS)",
+      "scope": "eq(tender_id, id)",
+      "status": "bounded"
+    },
+    {
+      "function": "loadAuctionDetail",
+      "table": "auctions",
+      "queryType": "detail/status_lookup",
+      "bound": "eq(id, id).maybeSingle()",
+      "status": "bounded"
+    },
+    {
+      "function": null,
+      "table": null,
+      "queryType": "aggregation",
+      "bound": "not present in auctions.data.ts",
+      "status": "not_applicable"
+    }
+  ],
+  "metrics": {
+    "before": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 28,
+      "auctionsSelectCalls": 6,
+      "auctionsAlreadyBoundedSelectCalls": 6,
+      "auctionsListStableOrderProof": false,
+      "auctionsTenderIdInputCeilingProof": false,
+      "auctionsUnboundedListSelects": 0
+    },
+    "after": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 28,
+      "auctionsSelectCalls": 6,
+      "auctionsAlreadyBoundedSelectCalls": 6,
+      "auctionsListStableOrderProof": true,
+      "auctionsTenderIdInputCeilingProof": true,
+      "auctionsUnboundedListSelects": 0
+    },
+    "delta": {
+      "globalUnresolvedUnboundedSelects": 0,
+      "globalSelectStarCount": 0,
+      "auctionsUnboundedListSelects": 0,
+      "auctionsListStableOrderProof": true,
+      "auctionsTenderIdInputCeilingProof": true
+    }
+  },
+  "gates": {
+    "baseline": {
+      "command": "git fetch origin main && git status --short --branch && git rev-list --left-right --count HEAD...origin/main",
+      "status": "pass",
+      "headAtStart": "97981f63e401663abf7b03d646316377130c7b79",
+      "ahead": 0,
+      "behind": 0,
+      "worktreeClean": true
+    },
+    "focusedTests": {
+      "command": "npx jest tests/api/auctionsDataBoundedQueryShapes.contract.test.ts tests/api/queryBoundsTop30.contract.test.ts tests/api/remainingSafeListPaginationBatch8.contract.test.ts --runInBand",
+      "status": "pass"
+    },
+    "existingAuctionsTests": {
+      "command": "npx jest tests/api/queryBoundsTop30.contract.test.ts tests/api/remainingSafeListPaginationBatch8.contract.test.ts --runInBand",
+      "status": "pass"
+    },
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "pass"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "pass"
+    },
+    "npmTestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "pass"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "pass",
+      "serviceBypassFindings": 0,
+      "productionCalls": false,
+      "dbWrites": false,
+      "migrations": false,
+      "supabaseProjectChanges": false,
+      "secretsPrinted": false
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "pass"
+    },
+    "artifactJsonParse": {
+      "command": "node JSON.parse artifacts/S_NIGHT_DATA_03_AUCTIONS_DATA_BOUNDED_QUERY_SHAPES_matrix.json",
+      "status": "pass"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "pending_post_push"
+    }
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "broadRewrite": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtime50k60kLoad": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "dbWrites": false,
+    "migrations": false,
+    "productionDataTouched": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
