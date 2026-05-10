@@ -1,0 +1,120 @@
+{
+  "wave": "S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A",
+  "final_status": "GREEN_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A",
+  "generatedAt": "2026-05-10T16:03:18.042Z",
+  "selectedFiles": [
+    "src/screens/subcontracts/subcontracts.shared.ts",
+    "tests/api/subcontractsSelectStarBatchA.contract.test.ts",
+    "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_matrix.json",
+    "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_proof.md",
+    "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_delta.json"
+  ],
+  "reasonSelected": "Current repeatable scanner showed high/fix_now = 0; this file had the densest remaining real runtime select-star cluster with 5 select-star calls and 1 medium domain-bounded entry.",
+  "routeScopeChanged": false,
+  "paginationChanged": false,
+  "pdfExportFlowChanged": false,
+  "businessSemanticsChanged": false,
+  "metrics": {
+    "before": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 33,
+      "subcontractsSelectCalls": 6,
+      "subcontractsSelectStarCount": 5,
+      "subcontractsMediumRiskEntries": 1,
+      "subcontractsTargetedLiteralShapesRemaining": 5
+    },
+    "after": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 28,
+      "subcontractsSelectCalls": 6,
+      "subcontractsSelectStarCount": 0,
+      "subcontractsMediumRiskEntries": 0,
+      "subcontractsTargetedLiteralShapesRemaining": 0
+    },
+    "delta": {
+      "globalUnresolvedUnboundedSelects": 0,
+      "globalSelectStarCount": -5,
+      "subcontractsSelectStarCount": -5,
+      "subcontractsMediumRiskEntries": -1,
+      "subcontractsTargetedLiteralShapesRemaining": -5
+    }
+  },
+  "gates": {
+    "baseline": {
+      "command": "git fetch origin main && git status --short --branch && git rev-list --left-right --count HEAD...origin/main",
+      "status": "pass",
+      "headBeforeCommit": "dc2e9ede6fc978272ceecb5fab89cfbb552dd6eb",
+      "originMain": "dc2e9ede6fc978272ceecb5fab89cfbb552dd6eb",
+      "ahead": 0,
+      "behind": 0,
+      "worktreeCleanAtWaveStart": true
+    },
+    "focusedTests": {
+      "command": "npx jest tests/api/subcontractsSelectStarBatchA.contract.test.ts src/screens/subcontracts/subcontracts.shared.test.ts tests/strict-null/subcontracts.shared.phase2.test.ts --runInBand",
+      "status": "pass"
+    },
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "pass"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "pass"
+    },
+    "npmTestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "pass"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "pass",
+      "serviceBypassFindings": 0,
+      "productionCalls": false,
+      "dbWrites": false,
+      "migrations": false,
+      "supabaseProjectChanges": false,
+      "secretsPrinted": false
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "pass"
+    },
+    "artifactJsonParse": {
+      "command": "node JSON.parse for artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_matrix.json and artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_delta.json",
+      "status": "pass"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "pending_post_push"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_matrix.json",
+    "proof": "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_proof.md",
+    "delta": "artifacts/S_NIGHT_DATA_03_SUBCONTRACTS_SELECT_STAR_REAL_FIX_BATCH_A_delta.json"
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "broadRewrite": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtime50k60kLoad": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "dbWrites": false,
+    "migrations": false,
+    "pdfExportFlowChanged": false,
+    "paginationChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

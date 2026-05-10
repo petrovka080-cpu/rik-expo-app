@@ -172,6 +172,10 @@ export const SUBCONTRACT_COLLECT_ALL_MAX_ROWS = 5000;
 export const SUBCONTRACT_COLLECT_ALL_MAX_PAGES = Math.ceil(
   SUBCONTRACT_COLLECT_ALL_MAX_ROWS / SUBCONTRACT_MAX_PAGE_SIZE,
 );
+const SUBCONTRACT_ROW_SELECT =
+  "id, display_no, year, seq, created_at, created_by, status, foreman_name, contractor_org, contractor_inn, contractor_rep, contractor_phone, contract_number, contract_date, object_name, work_zone, work_type, qty_planned, uom, date_start, date_end, work_mode, price_per_unit, total_price, price_type, foreman_comment, director_comment, submitted_at, approved_at, rejected_at";
+const SUBCONTRACT_ITEM_ROW_SELECT =
+  "id, created_at, subcontract_id, created_by, source, rik_code, name, qty, uom, status";
 
 export type NewSubcontractItem = {
   source: SubcontractItemSource;
@@ -682,7 +686,7 @@ export async function listForemanSubcontractsPage(
   const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontracts")
-    .select("*")
+    .select(SUBCONTRACT_ROW_SELECT)
     .eq("created_by", uid)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -703,7 +707,7 @@ export async function listDirectorSubcontractsPage(params?: {
   const page = normalizePageRequest(params);
   let query = supabase
     .from("subcontracts")
-    .select("*")
+    .select(SUBCONTRACT_ROW_SELECT)
     .not("status", "eq", "draft");
   if (params?.status) {
     query = query.eq("status", params.status);
@@ -739,7 +743,7 @@ export async function listAccountantSubcontractsPage(
   const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontracts")
-    .select("*")
+    .select(SUBCONTRACT_ROW_SELECT)
     .eq("status", "approved")
     .order("approved_at", { ascending: false })
     .order("id", { ascending: false })
@@ -839,7 +843,7 @@ export async function listSubcontractItemsPage(
   const page = normalizePageRequest(request);
   const { data, error } = await supabase
     .from("subcontract_items")
-    .select("*")
+    .select(SUBCONTRACT_ITEM_ROW_SELECT)
     .eq("subcontract_id", sid)
     .eq("status", "draft")
     .order("created_at", { ascending: false })
@@ -875,7 +879,7 @@ export async function appendSubcontractItems(
   const { data, error } = await supabase
     .from("subcontract_items")
     .insert(payload)
-    .select("*");
+    .select(SUBCONTRACT_ITEM_ROW_SELECT);
   if (error) throw error;
   return Array.isArray(data) ? data.map(normalizeSubcontractItemRow) : [];
 }
