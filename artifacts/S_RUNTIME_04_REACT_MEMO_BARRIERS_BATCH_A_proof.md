@@ -74,7 +74,9 @@ Avoided broader screen rewrites and components whose memo value would depend on 
   - no @ts-ignore, no as any, no empty catch in selected paths
 - artifact JSON parse: PASS
   - node -e "JSON.parse(require('fs').readFileSync('artifacts/S_RUNTIME_04_REACT_MEMO_BARRIERS_BATCH_A_matrix.json','utf8'));"
-- post-push release verify: pending until after commit/push
+- post-push release verify: PASS
+  - npm run release:verify -- --json
+  - Release guard passed with HEAD == origin/main, ahead/behind 0/0, clean worktree, tsc, expo lint, architecture scanner, jest --runInBand, jest, and git diff --check.
 
 ## Negative Confirmations
 
