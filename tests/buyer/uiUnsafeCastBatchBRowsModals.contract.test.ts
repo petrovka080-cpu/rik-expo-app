@@ -9,6 +9,7 @@ const readRepoFile = (relativePath: string): string =>
 const selectedSourceFiles = [
   "src/screens/buyer/components/BuyerItemRow.tsx",
   "src/screens/buyer/BuyerSubcontractTab.tsx",
+  "src/screens/buyer/BuyerSubcontractTab.view.tsx",
   "src/screens/buyer/buyerSubcontractForm.model.ts",
   "src/components/foreman/CalcModal.tsx",
   "src/components/foreman/useCalcFields.ts",

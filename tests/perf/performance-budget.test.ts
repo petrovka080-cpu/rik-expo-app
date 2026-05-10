@@ -219,6 +219,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle41BuyerSubcontractFormModelFiles = [
       path.join(SRC, "screens", "buyer", "buyerSubcontractForm.model.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi19BuyerSubcontractViewFiles = [
+      path.join(SRC, "screens", "buyer", "BuyerSubcontractTab.view.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle42DirectorMetricsTransportFiles = [
       path.join(SRC, "screens", "director", "director.metrics.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -676,6 +679,7 @@ describe("performance budget — bundle module count", () => {
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
     // S_RUNTIME_07 adds one permanent CalcModal controller boundary.
     // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
+    // S_NIGHT_UI_19 adds one permanent BuyerSubcontractTab render view boundary.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -703,6 +707,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle14ProfileContentLoadStateBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi19BuyerSubcontractViewFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sNightUi13DirectorReportsModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
@@ -827,6 +832,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle13AiAssistantStyleBoundaryFiles -
         sAuditBattle14ProfileContentLoadStateBoundaryFiles -
         sAuditBattle41BuyerSubcontractFormModelFiles -
+        sNightUi19BuyerSubcontractViewFiles -
         sAuditBattle42DirectorMetricsTransportFiles -
         sAuditBattle45MapScreenStyleBoundaryFiles -
         sNightUi13DirectorReportsModalStyleBoundaryFiles -
