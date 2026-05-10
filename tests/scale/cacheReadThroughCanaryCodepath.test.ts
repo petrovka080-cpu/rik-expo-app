@@ -2,7 +2,9 @@ import type { CacheAdapter, CacheAdapterStatus, RedisCommand, RedisCommandExecut
 import { RedisUrlCacheAdapter } from "../../src/shared/scale/cacheAdapters";
 import { getCachePolicy, type CachePolicy, type CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import {
+  CACHE_READ_THROUGH_V1_ALLOWED_ROUTES,
   createCacheShadowMonitor,
+  isCacheReadThroughV1RouteAllowed,
   resolveCacheShadowRuntimeConfig,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import { createBffShadowFixturePorts } from "../../src/shared/scale/bffShadowFixtures";
@@ -156,6 +158,13 @@ const createThrowingReadCacheAdapter = (): CacheAdapter => ({
 });
 
 describe("S-AUDIT-NIGHT-BATTLE-141 cache read-through canary codepath", () => {
+  it("locks read-through v1 serving to the marketplace catalog route", () => {
+    expect(CACHE_READ_THROUGH_V1_ALLOWED_ROUTES).toEqual([MARKETPLACE_OPERATION]);
+    expect(isCacheReadThroughV1RouteAllowed(MARKETPLACE_OPERATION)).toBe(true);
+    expect(isCacheReadThroughV1RouteAllowed("request.proposal.list")).toBe(false);
+    expect(isCacheReadThroughV1RouteAllowed("director.pending.list")).toBe(false);
+  });
+
   it("keeps exact provider behavior when read-through mode is set but the v1 flag is off", async () => {
     const redis = createRedisCacheAdapterFixture();
     const monitor = createCacheShadowMonitor();

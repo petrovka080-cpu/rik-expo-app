@@ -3,6 +3,7 @@ import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
 import {
   evaluateCacheShadowRead,
+  isCacheReadThroughV1RouteAllowed,
   runCacheSyntheticShadowCanary,
   validateCacheShadowRouteMetricsOutput,
   type CacheShadowDecision,
@@ -1051,6 +1052,16 @@ async function invokeReadRouteWithCacheReadThrough(params: {
       cacheHit: false,
       shadowReadAttempted: false,
       reason: "cache_read_through_v1_flag_disabled",
+    }));
+    return params.invoke();
+  }
+  if (!isCacheReadThroughV1RouteAllowed(route)) {
+    observe(buildCacheReadThroughDecision({
+      status: "skipped",
+      route,
+      cacheHit: false,
+      shadowReadAttempted: false,
+      reason: "route_not_approved_for_read_through_v1",
     }));
     return params.invoke();
   }

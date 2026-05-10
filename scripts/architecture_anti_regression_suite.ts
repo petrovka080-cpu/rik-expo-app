@@ -932,6 +932,8 @@ export function evaluateCacheRateScopeGuardrail(params: {
   const cacheCanaryRouteScoped =
     cacheSource.includes("SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST") &&
     cacheSource.includes("SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED") &&
+    cacheSource.includes("CACHE_READ_THROUGH_V1_ALLOWED_ROUTES") &&
+    cacheSource.includes("isCacheReadThroughV1RouteAllowed") &&
     cacheSource.includes("parseRouteAllowlist") &&
     cacheSource.includes("routeAllowed") &&
     cacheConfig.readThroughV1Enabled === true &&

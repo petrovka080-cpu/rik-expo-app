@@ -1,0 +1,113 @@
+{
+  "wave": 142,
+  "slug": "CACHE_READ_THROUGH_ROUTE_RATCHET",
+  "status": "GREEN_READY_FOR_PUSH",
+  "date": "2026-05-10",
+  "goal": "Prevent read-through v1 serving from broadening beyond the single approved low-risk marketplace route.",
+  "startGitState": {
+    "worktreeClean": true,
+    "headEqualsOriginMain": true,
+    "aheadBehind": "0/0",
+    "head": "58bd034599d1979320f993220b6c727f2e011045"
+  },
+  "selectedScope": {
+    "route": "marketplace.catalog.search",
+    "reason": [
+      "wave 141 introduced the versioned read-through flag",
+      "serving cache should remain locked to one approved public catalog route",
+      "future public catalog routes must require an explicit code/test update"
+    ]
+  },
+  "ratchet": {
+    "constant": "CACHE_READ_THROUGH_V1_ALLOWED_ROUTES",
+    "allowedRoutes": ["marketplace.catalog.search"],
+    "servingGate": "isCacheReadThroughV1RouteAllowed",
+    "flagStillRequired": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+    "defaultProductionEnablement": false,
+    "remoteEnvChanged": false
+  },
+  "changedFiles": [
+    "src/shared/scale/cacheShadowRuntime.ts",
+    "scripts/server/stagingBffServerBoundary.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "tests/scale/cacheReadThroughCanaryCodepath.test.ts",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_142_CACHE_READ_THROUGH_ROUTE_RATCHET_matrix.json",
+    "artifacts/S_AUDIT_NIGHT_BATTLE_142_CACHE_READ_THROUGH_ROUTE_RATCHET_proof.md"
+  ],
+  "freshScans": {
+    "commands": [
+      "rg -n \"read_through|readThroughV1|CACHE_READ_THROUGH|marketplace.catalog.search|payloadClass|cache_read_through\" src/shared/scale scripts/server tests/scale tests/architecture scripts/architecture_anti_regression_suite.ts"
+    ],
+    "summary": {
+      "existingReadThroughFlagFound": true,
+      "marketplaceCandidateConfirmed": true,
+      "explicitRouteRatchetAdded": true,
+      "architectureScannerRatchetAdded": true
+    }
+  },
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/scale/cacheReadThroughCanaryCodepath.test.ts tests/architecture/architectureAntiRegressionSuite.test.ts tests/scale/cacheMarketplaceShadowCanaryContract.test.ts",
+      "summary": "3 suites, 23 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "fullJestRunInBand": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "676 passed, 1 skipped, 677 total suites; 4012 passed, 1 skipped, 4013 total tests"
+    },
+    "architectureScanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": {
+        "serviceBypassFindings": 0,
+        "serviceBypassFiles": 0,
+        "transportControlledFindings": 175,
+        "unclassifiedCurrentFindings": 0,
+        "cacheCanaryRouteScoped": true,
+        "cacheAllowedRoute": "marketplace.catalog.search",
+        "rateLimitCanaryRoute": "marketplace.catalog.search",
+        "rateLimitCanaryPercent": 1
+      }
+    },
+    "gitDiffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "releaseVerifyPostPush": {
+      "status": "PENDING",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "remoteEnvWrites": false,
+    "deployOrOta": false,
+    "liveLoadTests": false,
+    "productionCacheEnabled": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtimeCapacityWork": false,
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "emptyCatchBlocksAdded": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "scannerWeakened": false,
+    "testsDeleted": false,
+    "businessSemanticsChanged": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

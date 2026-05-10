@@ -142,6 +142,12 @@ const DEFAULT_CACHE_SHADOW_PERCENT = 0;
 const MAX_CACHE_SHADOW_PERCENT = 100;
 const SYNTHETIC_CANARY_TTL_MS = 30_000;
 export const CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME = "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED";
+export const CACHE_READ_THROUGH_V1_ALLOWED_ROUTES: readonly CachePolicyRoute[] = Object.freeze([
+  "marketplace.catalog.search",
+]);
+
+export const isCacheReadThroughV1RouteAllowed = (route: CachePolicyRoute): boolean =>
+  CACHE_READ_THROUGH_V1_ALLOWED_ROUTES.includes(route);
 
 const normalizeText = (value: unknown): string => String(value ?? "").trim();
 
