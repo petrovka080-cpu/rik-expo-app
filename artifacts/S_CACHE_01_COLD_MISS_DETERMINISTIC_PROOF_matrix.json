@@ -1,0 +1,107 @@
+{
+  "wave": "S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF",
+  "status": "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY",
+  "mode": "repo-only deterministic cache proof strategy",
+  "goal": "Prove a deterministic cold miss followed by a second-call hit without enabling production cache.",
+  "baseline": {
+    "previousBlocker": "BLOCKED_CACHE_COLD_MISS_PROOF_REQUIRED",
+    "deterministicColdMissProofAlreadyGreen": false,
+    "productionCacheEnabled": false,
+    "readThroughV1DefaultEnabled": false,
+    "cachePoliciesDefaultEnabled": false
+  },
+  "proofStrategy": {
+    "isolatedNamespace": "present_redacted",
+    "nonceKeyInput": "present_redacted",
+    "knownEmptyBeforeFirstRequest": true,
+    "firstRequest": {
+      "cacheHit": false,
+      "missCountDelta": 1,
+      "readThroughCountDelta": 1,
+      "providerCallsDelta": 1
+    },
+    "secondRequest": {
+      "cacheHit": true,
+      "hitCountDelta": 1,
+      "providerCallsDelta": 0
+    },
+    "utf8Safe": true,
+    "metricsRedacted": true,
+    "routeMetricsRedactionSafe": true,
+    "rawCacheKeyReturned": false,
+    "rawPayloadLogged": false,
+    "piiLogged": false
+  },
+  "routeScope": {
+    "readThroughAllowedRoutes": ["marketplace.catalog.search"],
+    "publicCatalogReadThroughRoutes": ["marketplace.catalog.search"],
+    "routeExpansion": false,
+    "readRoutesCacheDefaultEnabled": false,
+    "productionMutationRouteBroadEnablement": false
+  },
+  "rollbackAndInvalidation": {
+    "cacheInvalidationExecutionEnabledByDefault": false,
+    "rollbackMethod": "isolated cache tag invalidation in mocked adapter",
+    "rollbackDeletedEntries": 1,
+    "postRollbackReadNull": true,
+    "dbWrites": false,
+    "productionMutation": false
+  },
+  "beforeAfterMetrics": {
+    "before": {
+      "deterministicColdMissProof": false,
+      "knownEmptyKeyProof": false,
+      "firstMissSecondHitProof": false,
+      "utf8SafeProof": "partial",
+      "metricsRedactionProof": true,
+      "routeScopeUnchangedProof": true,
+      "rollbackSafeProof": false
+    },
+    "after": {
+      "deterministicColdMissProof": true,
+      "knownEmptyKeyProof": true,
+      "firstMissSecondHitProof": true,
+      "utf8SafeProof": true,
+      "metricsRedactionProof": true,
+      "routeScopeUnchangedProof": true,
+      "rollbackSafeProof": true,
+      "observedDecisionCount": 2,
+      "shadowReadAttemptedCount": 2,
+      "missCount": 1,
+      "hitCount": 1,
+      "readThroughCount": 1,
+      "providerCalls": 1
+    }
+  },
+  "tests": {
+    "focused": [
+      "tests/scale/cacheColdMissDeterministicProof.test.ts"
+    ],
+    "assertions": [
+      "known empty proof key before first request",
+      "first request miss/read-through",
+      "second identical request hit",
+      "UTF-8 query and cached payload round trip",
+      "redacted monitor metrics",
+      "read-through route scope unchanged",
+      "cache defaults remain disabled",
+      "invalidation execution remains disabled",
+      "isolated rollback removes proof entry"
+    ]
+  },
+  "safety": {
+    "productionCacheEnabled": false,
+    "cacheLeftEnabled": false,
+    "broadCacheConfigChange": false,
+    "productionMutation": false,
+    "rateLimitChange": false,
+    "loadTest": false,
+    "dbWrites": false,
+    "supabaseProjectChanges": false,
+    "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+    "secretsPrinted": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "tagsCreated": false,
+    "forcePush": false
+  }
+}
