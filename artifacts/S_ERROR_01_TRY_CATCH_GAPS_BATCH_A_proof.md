@@ -69,7 +69,7 @@ These were left for later batches because they already have broader lifecycle/ca
 - architecture scanner: PASS (`serviceBypassFindings=0`, `transportControlledFindings=173`, `totalFindings=220`)
 - git diff check: PASS
 - artifact JSON parse: PASS
-- post-push release verify: pending
+- post-push release verify: PASS (`npm run release:verify -- --json`)
 
 ## Negative Confirmations
 

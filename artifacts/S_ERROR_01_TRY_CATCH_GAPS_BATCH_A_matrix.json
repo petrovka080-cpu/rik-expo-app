@@ -82,8 +82,9 @@
       "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_ERROR_01_TRY_CATCH_GAPS_BATCH_A_matrix.json','utf8')); JSON.parse(require('fs').readFileSync('artifacts/S_ERROR_01_TRY_CATCH_GAPS_BATCH_A_inventory_delta.json','utf8'));\""
     },
     "post_push_release_verify": {
-      "status": "pending",
-      "command": "npm run release:verify -- --json"
+      "status": "pass",
+      "command": "npm run release:verify -- --json",
+      "summary": "post-push verify passed with headMatchesOriginMain=true and ahead/behind 0/0"
     }
   },
   "negative_confirmations": {
