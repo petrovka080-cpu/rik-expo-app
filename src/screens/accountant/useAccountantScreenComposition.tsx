@@ -1,15 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ScrollView,
-  Platform,
-  Animated,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useBusyAction } from "../../lib/useBusyAction";
-import { useRevealSection } from "../../lib/useRevealSection";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
 import { type AccountantInboxRow } from "../../lib/catalog_api";
 import { UI } from "./ui";
@@ -19,7 +10,6 @@ import { safeAlert, toRpcDateOrNull, getAccountantErrorText } from "./helpers";
 import ListRow from "./components/ListRow";
 import { HistoryHeader, HistoryRowCard } from "./components/HistorySection";
 import { useAccountantPersistedFields } from "./accountant.storage";
-import { useAccountantKeyboard } from "./useAccountantKeyboard";
 import { useAccountantNotifications } from "./useAccountantNotifications";
 import { useAccountantRealtimeLifecycle } from "./accountant.realtime.lifecycle";
 import { useAccountantAttachments } from "./useAccountantAttachments";
@@ -30,9 +20,9 @@ import { useAccountantPostPaymentSync } from "./useAccountantPostPaymentSync";
 import { useAccountantPayActions } from "./useAccountantPayActions";
 import { useAccountantReturnAction } from "./useAccountantReturnAction";
 import { useAccountantScreenController } from "./useAccountantScreenController";
-import { useAccountantHeaderAnimation } from "./useAccountantHeaderAnimation";
 import { useAccountantInvoiceForm } from "./useAccountantInvoiceForm";
 import { useAccountantHistoryFlow } from "./useAccountantHistoryFlow";
+import { useAccountantScreenChromeModel } from "./useAccountantScreenChromeModel";
 import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";
 
 const TAB_PAY: Tab = TABS[0];
@@ -42,7 +32,6 @@ const TAB_REWORK: Tab = TABS[3];
 const TAB_HISTORY: Tab = TABS[4];
 
 export function useAccountantScreenComposition() {
-  const insets = useSafeAreaInsets();
   const gbusy = useGlobalBusy();
   const { busyKey, run: runAction } = useBusyAction({
     timeoutMs: 30000,
@@ -69,35 +58,22 @@ export function useAccountantScreenComposition() {
     freezeWhileOpen,
     setFreezeWhileOpen,
   } = useAccountantScreenViewModel();
-  const cardScrollY = useRef(new Animated.Value(0)).current;
-  const payFormReveal = useRevealSection(24);
-  const cardScrollRef = useRef<ScrollView | null>(null);
-
   const {
-    scrollY,
+    insets,
+    cardScrollRef,
+    payFormReveal,
     headerHeight,
     headerShadow,
     titleSize,
     subOpacity,
     HEADER_MAX,
-  } = useAccountantHeaderAnimation();
-
-  const listScrollEvent = useMemo(
-    () => Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false }),
-    [scrollY],
-  );
-  const cardScrollEvent = useMemo(
-    () => Animated.event([{ nativeEvent: { contentOffset: { y: cardScrollY } } }], { useNativeDriver: false }),
-    [cardScrollY],
-  );
-
-  const onListScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    listScrollEvent(event);
-  }, [listScrollEvent]);
-
-  const onCardScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    cardScrollEvent(event);
-  }, [cardScrollEvent]);
+    onListScroll,
+    onCardScroll,
+    kbTypeNum,
+    kbOpen,
+    kbdH,
+    scrollInputIntoView,
+  } = useAccountantScreenChromeModel();
 
   const histSearch = React.useDeferredValue(histSearchUi);
   const [current, setCurrent] = useState<AccountantInboxUiRow | null>(null);
@@ -132,11 +108,8 @@ export function useAccountantScreenComposition() {
     ? { borderColor: "rgba(34,197,94,0.55)", backgroundColor: "rgba(34,197,94,0.06)" }
     : null;
 
-  const kbTypeNum: "default" | "numeric" = Platform.OS === "web" ? "default" : "numeric";
-  const amountNum = useMemo(() => {
-    const v = Number(String(amount || "").replace(",", "."));
-    return Number.isFinite(v) ? v : 0;
-  }, [amount]);
+  const parsedAmount = Number(String(amount || "").replace(",", "."));
+  const amountNum = Number.isFinite(parsedAmount) ? parsedAmount : 0;
 
   const canPayUi = !isReadOnlyTab && !!current?.proposal_id && amountNum > 0 && !busyKey;
 
@@ -144,8 +117,6 @@ export function useAccountantScreenComposition() {
     if (cardOpen || !freezeWhileOpen) return;
     setFreezeWhileOpen(false);
   }, [cardOpen, freezeWhileOpen, setFreezeWhileOpen]);
-
-  const { kbOpen, kbdH, scrollInputIntoView } = useAccountantKeyboard(cardScrollRef);
 
   const {
     focusedRef,

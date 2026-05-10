@@ -9,6 +9,7 @@ const read = (relativePath: string) =>
 describe("S_NIGHT_UI_14 AccountantScreen decomposition A", () => {
   const screenSource = read("src/screens/accountant/AccountantScreen.tsx");
   const compositionSource = read("src/screens/accountant/useAccountantScreenComposition.tsx");
+  const chromeSource = read("src/screens/accountant/useAccountantScreenChromeModel.ts");
   const viewSource = read("src/screens/accountant/components/AccountantScreenView.tsx");
 
   it("keeps AccountantScreen as a small composition shell", () => {
@@ -30,6 +31,7 @@ describe("S_NIGHT_UI_14 AccountantScreen decomposition A", () => {
     expect(viewSource).toContain("export function AccountantScreenView");
 
     expect(compositionSource).toContain("useAccountantScreenViewModel");
+    expect(compositionSource).toContain("useAccountantScreenChromeModel");
     expect(compositionSource).toContain("useAccountantInvoiceForm");
     expect(compositionSource).toContain("useAccountantScreenController");
     expect(compositionSource).toContain("useAccountantPayActions");
@@ -37,6 +39,20 @@ describe("S_NIGHT_UI_14 AccountantScreen decomposition A", () => {
     expect(viewSource).toContain("<AccountantListBlock");
     expect(viewSource).toContain("<CardModal");
     expect(viewSource).toContain("<ActivePaymentForm");
+  });
+
+  it("keeps chrome state behind a typed UI-only hook boundary", () => {
+    const compositionHookCalls = compositionSource.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
+    const chromeHookCalls = chromeSource.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(/g) ?? [];
+
+    expect(compositionHookCalls.length).toBeLessThanOrEqual(24);
+    expect(chromeHookCalls.length).toBeLessThanOrEqual(10);
+    expect(chromeSource).toContain("useAccountantHeaderAnimation");
+    expect(chromeSource).toContain("useAccountantKeyboard");
+    expect(chromeSource).toContain("useRevealSection");
+    expect(chromeSource).not.toContain("supabase");
+    expect(chromeSource).not.toContain("fetch(");
+    expect(chromeSource).not.toContain("listAccountantInbox");
   });
 
   it("does not introduce transport, cache, or rate-limit work in the new view boundary", () => {

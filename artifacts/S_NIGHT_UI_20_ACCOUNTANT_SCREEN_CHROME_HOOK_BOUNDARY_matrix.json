@@ -1,0 +1,134 @@
+{
+  "wave": "S_NIGHT_UI_20_ACCOUNTANT_SCREEN_CHROME_HOOK_BOUNDARY",
+  "final_status": "GREEN_ACCOUNTANT_SCREEN_CHROME_HOOK_BOUNDARY",
+  "timestamp": "2026-05-10T23:07:28.881Z",
+  "selected_files": [
+    "src/screens/accountant/useAccountantScreenComposition.tsx",
+    "src/screens/accountant/useAccountantScreenChromeModel.ts",
+    "tests/accountant/accountantScreenDecompositionA.contract.test.ts",
+    "tests/api/uiUnsafeCastBatchA.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "Fresh architecture scanner showed AccountantScreen composition as the top UI hook-pressure file at 33 hooks; a UI-only chrome hook boundary reduces hook pressure without touching payments, documents, realtime, transport, DB, env, cache, or rate-limit behavior.",
+  "before_metrics": {
+    "src/screens/accountant/useAccountantScreenComposition.tsx": {
+      "lines": 514,
+      "hooks": 33,
+      "imports": 29
+    },
+    "component_debt": {
+      "godComponentCount": 25,
+      "hookPressureComponentCount": 2,
+      "accountantCompositionHooks": 33,
+      "accountantCompositionLines": 514
+    }
+  },
+  "after_metrics": {
+    "src/screens/accountant/useAccountantScreenComposition.tsx": {
+      "lines": 485,
+      "hooks": 24,
+      "imports": 25
+    },
+    "src/screens/accountant/useAccountantScreenChromeModel.ts": {
+      "lines": 67,
+      "hooks": 10,
+      "imports": 6
+    },
+    "component_debt": {
+      "godComponentCount": 24,
+      "hookPressureComponentCount": 1,
+      "accountantCompositionHooks": 24,
+      "accountantCompositionLines": 485
+    }
+  },
+  "delta": {
+    "composition_lines": -29,
+    "composition_hooks": -9,
+    "composition_imports": -4,
+    "new_hook_boundaries": 1,
+    "hook_pressure_component_count": "2 -> 1"
+  },
+  "implementation": {
+    "composition_role": "Keeps accountant orchestration, payments, documents, realtime lifecycle, attachments, and screen controller wiring.",
+    "chrome_role": "Owns UI-only safe-area, header animation, card/list scroll events, reveal section, keyboard scroll helpers, and numeric keyboard type.",
+    "behavior_scope": "No navigation, payment, document, realtime, list loading, or business semantic changes intended."
+  },
+  "gates": {
+    "preflight_fetch_origin_main": "PASS",
+    "preflight_head_equals_origin_main": true,
+    "preflight_ahead_behind": "0/0",
+    "preflight_worktree_clean": true,
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npx jest tests/accountant/accountantScreenDecompositionA.contract.test.ts src/screens/accountant/accountant.screen.boundaries.test.ts src/screens/accountant/useAccountantScreenViewModel.test.ts tests/perf/performance-budget.test.ts tests/api/uiUnsafeCastBatchA.contract.test.ts --runInBand",
+      "suites": "5 passed",
+      "tests": "24 passed"
+    },
+    "tsc": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "npm_test_run_in_band": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "suites": "705 passed, 1 skipped, 706 total",
+      "tests": "4121 passed, 1 skipped, 4122 total"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+      "service_bypass_budget": 0,
+      "current_service_bypass_findings": 0,
+      "unbounded_select_budget": 0,
+      "unresolved_unbounded_selects": 0,
+      "select_star_findings": 0,
+      "component_debt_hook_pressure": "2 -> 1"
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_NIGHT_UI_20_ACCOUNTANT_SCREEN_CHROME_HOOK_BOUNDARY_matrix.json','utf8'))\""
+    },
+    "release_verify_post_push": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "safety": {
+    "production_calls": false,
+    "db_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "env_changes": false,
+    "secrets_printed": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "realtime_load": false
+  },
+  "negative_confirmations": [
+    "NO force push",
+    "NO tags",
+    "NO secrets printed",
+    "NO @ts-ignore",
+    "NO as any",
+    "NO catch {}",
+    "NO broad rewrite",
+    "NO Supabase project changes",
+    "NO spend cap changes",
+    "NO Realtime 50K/60K load",
+    "NO destructive/unbounded DML",
+    "NO OTA/EAS/TestFlight/native builds",
+    "NO production mutation broad enablement",
+    "NO broad cache enablement",
+    "NO broad rate-limit enablement"
+  ],
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

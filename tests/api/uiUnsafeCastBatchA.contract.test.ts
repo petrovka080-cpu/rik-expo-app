@@ -13,6 +13,7 @@ const UI_BATCH_A_FILES = [
   "src/screens/buyer/BuyerScreen.tsx",
   "src/screens/accountant/AccountantScreen.tsx",
   "src/screens/accountant/useAccountantScreenComposition.tsx",
+  "src/screens/accountant/useAccountantScreenChromeModel.ts",
   "src/screens/accountant/useAccountantKeyboard.ts",
   "src/screens/accountant/helpers.tsx",
   "src/screens/office/OfficeHubScreen.tsx",
@@ -36,6 +37,7 @@ describe("UI unsafe cast batch A contract", () => {
   it("locks the typed adapters that replaced previous UI casts", () => {
     const accountantScreen = read("src/screens/accountant/AccountantScreen.tsx");
     const accountantComposition = read("src/screens/accountant/useAccountantScreenComposition.tsx");
+    const accountantChrome = read("src/screens/accountant/useAccountantScreenChromeModel.ts");
     const accountantKeyboard = read("src/screens/accountant/useAccountantKeyboard.ts");
     const contractorScreen = read("src/screens/contractor/ContractorScreen.tsx");
     const contractorController = read("src/screens/contractor/useContractorScreenController.tsx");
@@ -50,6 +52,7 @@ describe("UI unsafe cast batch A contract", () => {
     expect(accountantComposition).not.toContain("e as { message");
     expect(accountantScreen).not.toContain("cardScrollRef as");
     expect(accountantComposition).not.toContain("cardScrollRef as");
+    expect(accountantChrome).not.toContain("cardScrollRef as");
     expect(accountantKeyboard).toContain("RefObject<ScrollView | null>");
     expect(contractorScreen).toContain("ContractorScreenContainer");
     expect(contractorController).toContain("getContractorErrorMessage");
