@@ -1,0 +1,115 @@
+{
+  "wave": "S_NIGHT_UI_16_OFFICE_HUB_COLLABORATION_SECTIONS_SPLIT",
+  "final_status": "GREEN_OFFICE_HUB_COLLABORATION_SECTIONS_SPLIT",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/screens/office/officeHub.sections.tsx",
+    "src/screens/office/officeHub.collaborationSections.tsx",
+    "tests/office/officeHubCollaborationSections.decomposition.test.ts",
+    "tests/office/officeInviteHandoffSection.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "officeHub.sections.tsx was the highest remaining transport-free presentational UI debt file by line count, and invite/members/modal collaboration sections could be split without changing OfficeHub business logic or route behavior.",
+  "target_interpretation": {
+    "chosen_priority": "Reduce current UI line-count debt through a durable presentational section extraction.",
+    "public_contract": "officeHub.sections.tsx remains the stable import facade and re-exports OfficeInvitesSection, OfficeMembersSection, and OfficeInviteModalSection.",
+    "business_logic_scope": "No OfficeHub controller, hooks, transport, DB, cache, rate-limit, environment, or production behavior changed."
+  },
+  "route_scope": {
+    "changed": false,
+    "cache_changed": false,
+    "rate_limit_changed": false,
+    "transport_changed": false,
+    "supabase_changed": false,
+    "db_or_env_changed": false
+  },
+  "before_metrics": {
+    "office_hub_sections_lines": 706,
+    "office_hub_sections_hook_calls": 0,
+    "office_hub_sections_imports": 14,
+    "office_hub_collaboration_section_files": 0,
+    "component_debt_god_component_count": 27,
+    "scanner_top_by_lines_included_office_hub_sections": true
+  },
+  "after_metrics": {
+    "office_hub_sections_lines": 416,
+    "office_hub_sections_hook_calls": 0,
+    "office_hub_sections_imports": 11,
+    "office_hub_collaboration_sections_lines": 320,
+    "office_hub_collaboration_sections_hook_calls": 0,
+    "office_hub_collaboration_sections_imports": 11,
+    "office_hub_collaboration_section_files": 1,
+    "component_debt_god_component_count": 26,
+    "scanner_top_by_lines_included_office_hub_sections": false
+  },
+  "delta_metrics": {
+    "office_hub_sections_lines": -290,
+    "office_hub_sections_hook_calls": 0,
+    "office_hub_sections_imports": -3,
+    "office_hub_collaboration_section_files": 1,
+    "component_debt_god_component_count": -1
+  },
+  "focused_tests": {
+    "command": "npx jest tests/office/officeHubCollaborationSections.decomposition.test.ts tests/office/officeInviteHandoffSection.decomposition.test.ts tests/office/officeHub.extraction.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "test_suites": 4,
+    "tests": 32
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING"
+  },
+  "full_test_summary": {
+    "test_suites_passed": 702,
+    "test_suites_skipped": 1,
+    "test_suites_total": 703,
+    "tests_passed": 4106,
+    "tests_skipped": 1,
+    "tests_total": 4107
+  },
+  "architecture_scanner_summary": {
+    "status": "PASS",
+    "direct_supabase_service_bypass": 0,
+    "unresolved_unbounded_selects": 0,
+    "select_star_findings": 0,
+    "component_debt_report_only": true,
+    "component_debt_god_component_count": 26
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_business_logic_change": true,
+    "no_temporary_hooks": true,
+    "no_transport_changes": true,
+    "no_db_env_or_prod_calls": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_16_OFFICE_HUB_COLLABORATION_SECTIONS_SPLIT_matrix.json",
+    "artifacts/S_NIGHT_UI_16_OFFICE_HUB_COLLABORATION_SECTIONS_SPLIT_proof.md"
+  ]
+}

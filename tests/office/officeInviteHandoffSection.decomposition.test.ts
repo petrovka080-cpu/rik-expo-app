@@ -14,7 +14,7 @@ describe("Office invite handoff decomposition", () => {
 
   it("keeps OfficeInvitesSection as the section shell for handoff rendering", () => {
     const sectionsSource = readRepoFile(
-      "src/screens/office/officeHub.sections.tsx",
+      "src/screens/office/officeHub.collaborationSections.tsx",
     );
 
     expect(sectionsSource).toContain("OfficeInviteHandoffSection");
