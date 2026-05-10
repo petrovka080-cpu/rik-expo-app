@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
+  evaluateRateLimitMarketplaceCanaryProofGuardrail,
   evaluateUnsafeCastRatchetGuardrail,
   formatDirectSupabaseServiceBypassFailure,
   scanComponentDebtSource,
@@ -223,6 +224,113 @@ describe("architecture anti-regression suite", () => {
         "cache_canary_not_route_scoped",
         "rate_limit_canary_route_changed:proposal.submit",
         "rate_limit_canary_percent_changed:25",
+      ]),
+    );
+  });
+
+  it("ratchets S_RATE_01 marketplace 1 percent canary proof artifacts", () => {
+    const passingMatrix = {
+      final_status: "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+      env_snapshot_captured: true,
+      env_snapshot_redacted: Object.fromEntries(
+        [
+          "SCALE_RATE_ENFORCEMENT_MODE",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+          "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
+          "SCALE_RATE_LIMIT_STORE_URL",
+          "SCALE_RATE_LIMIT_NAMESPACE",
+          "BFF_RATE_LIMIT_METADATA_ENABLED",
+        ].map((key) => [key, { present: true, valueClass: "present_redacted" }]),
+      ),
+      route: "marketplace.catalog.search",
+      canary_route_class: "marketplace.catalog.search",
+      route_allowlist_count: 1,
+      route_scoped_enforcement: true,
+      global_real_user_enforcement: false,
+      canary_percent: 1,
+      broad_mutation_route_enforcement: false,
+      second_route_enabled: false,
+      selected_subject_proof: "selected_redacted",
+      selected_canary_request_status_class: "2xx",
+      selected_error_category: "none",
+      non_selected_subject_proof: "non_selected_redacted",
+      non_selected_allow_request_status_class: "2xx",
+      non_selected_error_category: "none",
+      private_in_service_smoke_green: true,
+      synthetic_private_smoke_status_class: "2xx",
+      synthetic_private_smoke_error_category: "none",
+      synthetic_throttle_still_works: true,
+      health_ready_stable: true,
+      production_health_before: 200,
+      production_ready_before: 200,
+      production_health_after_deploy: 200,
+      production_ready_after_deploy: 200,
+      production_health_after_canary: 200,
+      production_ready_after_canary: 200,
+      redaction_enabled: true,
+      raw_keys_printed: false,
+      jwt_printed: false,
+      ip_user_company_printed: false,
+      secrets_printed: false,
+      urls_printed: false,
+      raw_payloads_printed: false,
+      raw_db_rows_printed: false,
+      business_rows_printed: false,
+      db_writes: false,
+      migrations_applied: false,
+      cache_changes: false,
+      canary_retained: true,
+      rollback_triggered: false,
+      rollback_succeeded: false,
+    };
+    const passingProof = [
+      "final_status: GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+      "- route: marketplace.catalog.search",
+      "- canary_percent: 1",
+      "- selected_subject_proof: selected_redacted",
+      "- non_selected_subject_proof: non_selected_redacted",
+      "- private_smoke_green: true",
+    ].join("\n");
+    const passing = evaluateRateLimitMarketplaceCanaryProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) =>
+        relativePath.endsWith("_matrix.json") ? JSON.stringify(passingMatrix) : passingProof,
+    });
+
+    expect(passing.check).toEqual({
+      name: "rate_limit_marketplace_1_percent_canary_proof",
+      status: "pass",
+      errors: [],
+    });
+    expect(passing.summary.routeScoped).toBe(true);
+    expect(passing.summary.selectedSubjectProof).toBe(true);
+    expect(passing.summary.nonSelectedSubjectProof).toBe(true);
+    expect(passing.summary.privateSmokeProof).toBe(true);
+
+    const failing = evaluateRateLimitMarketplaceCanaryProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) =>
+        relativePath.endsWith("_matrix.json")
+          ? JSON.stringify({
+              ...passingMatrix,
+              route_allowlist_count: 2,
+              canary_percent: 5,
+              selected_subject_proof: "raw_subject_leaked",
+              private_in_service_smoke_green: false,
+              secrets_printed: true,
+            })
+          : "stale proof",
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "rate_limit_marketplace_canary_proof_missing_or_stale",
+        "rate_limit_marketplace_canary_scope_not_locked",
+        "rate_limit_marketplace_selected_subject_not_proven",
+        "rate_limit_marketplace_private_smoke_not_green",
+        "rate_limit_marketplace_redaction_or_safety_not_proven",
       ]),
     );
   });

@@ -1,0 +1,60 @@
+{
+  "wave": "S_RATE_02_MARKETPLACE_SEARCH_1_PERCENT_RATCHET",
+  "final_status": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_RATCHET_READY",
+  "source_wave": "S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY",
+  "source_final_status": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+  "selected_files": [
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "artifacts/S_RATE_02_MARKETPLACE_SEARCH_1_PERCENT_RATCHET_matrix.json",
+    "artifacts/S_RATE_02_MARKETPLACE_SEARCH_1_PERCENT_RATCHET_proof.md"
+  ],
+  "reason_selected": "Add a scanner ratchet for the already-completed S_RATE_01 one-route 1 percent marketplace rate-limit canary proof without changing runtime behavior.",
+  "before_metrics": {
+    "s_rate_01_matrix_status": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+    "s_rate_01_route": "marketplace.catalog.search",
+    "s_rate_01_route_allowlist_count": 1,
+    "s_rate_01_canary_percent": 1,
+    "scanner_rate_limit_marketplace_canary_proof_check_present": false
+  },
+  "after_metrics": {
+    "scanner_rate_limit_marketplace_canary_proof_check_present": true,
+    "scanner_rate_limit_marketplace_canary_proof_check_status": "pass",
+    "matrix_artifact_present": true,
+    "proof_artifact_present": true,
+    "route_scoped": true,
+    "selected_subject_proof": true,
+    "non_selected_subject_proof": true,
+    "private_smoke_proof": true,
+    "health_ready_stable": true,
+    "redacted_proof": true,
+    "canary_retained": true
+  },
+  "local_gates": {
+    "focused_architecture_test": "PASS",
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_scanner_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS"
+  },
+  "post_push_gates": {
+    "release_verify_json": "pending_until_after_push"
+  },
+  "safety": {
+    "production_calls": false,
+    "rate_limit_env_changes": false,
+    "cache_changes": false,
+    "db_writes": false,
+    "migrations": false,
+    "load_test": false,
+    "supabase_project_changes": false,
+    "production_mutation_calls": false,
+    "secrets_printed": false,
+    "force_push": false,
+    "tags": false,
+    "ota_eas_testflight_native_builds": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

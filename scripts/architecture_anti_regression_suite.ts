@@ -238,6 +238,18 @@ export type ArchitectureAntiRegressionReport = {
     rollbackSafeProof: boolean;
     productionCacheStillDisabled: boolean;
   };
+  rateLimitMarketplaceCanaryProof: {
+    matrixArtifactPresent: boolean;
+    proofArtifactPresent: boolean;
+    matrixStatus: string;
+    routeScoped: boolean;
+    selectedSubjectProof: boolean;
+    nonSelectedSubjectProof: boolean;
+    privateSmokeProof: boolean;
+    healthReadyStable: boolean;
+    redactedProof: boolean;
+    canaryRetained: boolean;
+  };
   productionRawLoops: {
     rawLoopBudget: 0;
     totalFindings: number;
@@ -292,6 +304,11 @@ const CACHE_COLD_MISS_PROOF_TEST_PATH = "tests/scale/cacheColdMissDeterministicP
 const CACHE_COLD_MISS_MATRIX_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_matrix.json";
 const CACHE_COLD_MISS_PROOF_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_proof.md";
 const CACHE_COLD_MISS_READY_STATUS = "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY";
+const RATE_LIMIT_MARKETPLACE_CANARY_MATRIX_PATH =
+  "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_matrix.json";
+const RATE_LIMIT_MARKETPLACE_CANARY_PROOF_PATH =
+  "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_proof.md";
+const RATE_LIMIT_MARKETPLACE_CANARY_PASS_STATUS = "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS";
 const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
@@ -1148,6 +1165,122 @@ export function evaluateCacheColdMissProofGuardrail(params: {
   };
 }
 
+export function evaluateRateLimitMarketplaceCanaryProofGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: ArchitectureAntiRegressionReport["rateLimitMarketplaceCanaryProof"];
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const matrixSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_CANARY_MATRIX_PATH });
+  const proofSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_CANARY_PROOF_PATH });
+  const matrix = parseJsonRecord(matrixSource);
+  const envSnapshot = recordChild(matrix, "env_snapshot_redacted");
+  const route = recordString(matrix, "route") || recordString(matrix, "canary_route_class");
+  const matrixStatus = recordString(matrix, "final_status");
+  const routeScoped =
+    matrixStatus === RATE_LIMIT_MARKETPLACE_CANARY_PASS_STATUS &&
+    route === CACHE_RATE_ALLOWED_ROUTE &&
+    recordNumber(matrix, "route_allowlist_count") === 1 &&
+    recordBoolean(matrix, "route_scoped_enforcement") === true &&
+    recordBoolean(matrix, "global_real_user_enforcement") === false &&
+    recordNumber(matrix, "canary_percent") === RATE_LIMIT_ALLOWED_PERCENT &&
+    recordBoolean(matrix, "broad_mutation_route_enforcement") === false &&
+    recordBoolean(matrix, "second_route_enabled") === false;
+  const selectedSubjectProof =
+    recordString(matrix, "selected_subject_proof") === "selected_redacted" &&
+    recordString(matrix, "selected_canary_request_status_class") === "2xx" &&
+    recordString(matrix, "selected_error_category") === "none";
+  const nonSelectedSubjectProof =
+    recordString(matrix, "non_selected_subject_proof") === "non_selected_redacted" &&
+    recordString(matrix, "non_selected_allow_request_status_class") === "2xx" &&
+    recordString(matrix, "non_selected_error_category") === "none";
+  const privateSmokeProof =
+    recordBoolean(matrix, "private_in_service_smoke_green") === true &&
+    recordString(matrix, "synthetic_private_smoke_status_class") === "2xx" &&
+    recordString(matrix, "synthetic_private_smoke_error_category") === "none" &&
+    recordBoolean(matrix, "synthetic_throttle_still_works") === true;
+  const healthReadyStable =
+    recordBoolean(matrix, "health_ready_stable") === true &&
+    recordNumber(matrix, "production_health_before") === 200 &&
+    recordNumber(matrix, "production_ready_before") === 200 &&
+    recordNumber(matrix, "production_health_after_deploy") === 200 &&
+    recordNumber(matrix, "production_ready_after_deploy") === 200 &&
+    recordNumber(matrix, "production_health_after_canary") === 200 &&
+    recordNumber(matrix, "production_ready_after_canary") === 200;
+  const envSnapshotRedacted =
+    envSnapshot !== null &&
+    [
+      "SCALE_RATE_ENFORCEMENT_MODE",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+      "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
+      "SCALE_RATE_LIMIT_STORE_URL",
+      "SCALE_RATE_LIMIT_NAMESPACE",
+      "BFF_RATE_LIMIT_METADATA_ENABLED",
+    ].every((key) => recordString(recordChild(envSnapshot, key), "valueClass") === "present_redacted");
+  const redactedProof =
+    recordBoolean(matrix, "env_snapshot_captured") === true &&
+    envSnapshotRedacted &&
+    recordBoolean(matrix, "redaction_enabled") === true &&
+    recordBoolean(matrix, "raw_keys_printed") === false &&
+    recordBoolean(matrix, "jwt_printed") === false &&
+    recordBoolean(matrix, "ip_user_company_printed") === false &&
+    recordBoolean(matrix, "secrets_printed") === false &&
+    recordBoolean(matrix, "urls_printed") === false &&
+    recordBoolean(matrix, "raw_payloads_printed") === false &&
+    recordBoolean(matrix, "raw_db_rows_printed") === false &&
+    recordBoolean(matrix, "business_rows_printed") === false &&
+    recordBoolean(matrix, "db_writes") === false &&
+    recordBoolean(matrix, "migrations_applied") === false &&
+    recordBoolean(matrix, "cache_changes") === false;
+  const canaryRetained =
+    recordBoolean(matrix, "canary_retained") === true &&
+    recordBoolean(matrix, "rollback_triggered") === false &&
+    recordBoolean(matrix, "rollback_succeeded") === false;
+  const matrixArtifactPresent = matrix !== null;
+  const proofArtifactPresent =
+    proofSource !== null &&
+    proofSource.includes(RATE_LIMIT_MARKETPLACE_CANARY_PASS_STATUS) &&
+    proofSource.includes("- route: marketplace.catalog.search") &&
+    proofSource.includes("- canary_percent: 1") &&
+    proofSource.includes("- selected_subject_proof: selected_redacted") &&
+    proofSource.includes("- non_selected_subject_proof: non_selected_redacted") &&
+    proofSource.includes("- private_smoke_green: true");
+  const errors = [
+    ...(matrixArtifactPresent ? [] : ["rate_limit_marketplace_canary_matrix_missing"]),
+    ...(proofArtifactPresent ? [] : ["rate_limit_marketplace_canary_proof_missing_or_stale"]),
+    ...(routeScoped ? [] : ["rate_limit_marketplace_canary_scope_not_locked"]),
+    ...(selectedSubjectProof ? [] : ["rate_limit_marketplace_selected_subject_not_proven"]),
+    ...(nonSelectedSubjectProof ? [] : ["rate_limit_marketplace_non_selected_subject_not_proven"]),
+    ...(privateSmokeProof ? [] : ["rate_limit_marketplace_private_smoke_not_green"]),
+    ...(healthReadyStable ? [] : ["rate_limit_marketplace_health_ready_not_stable"]),
+    ...(redactedProof ? [] : ["rate_limit_marketplace_redaction_or_safety_not_proven"]),
+    ...(canaryRetained ? [] : ["rate_limit_marketplace_canary_retention_not_recorded"]),
+  ];
+
+  return {
+    check: {
+      name: "rate_limit_marketplace_1_percent_canary_proof",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      matrixArtifactPresent,
+      proofArtifactPresent,
+      matrixStatus,
+      routeScoped,
+      selectedSubjectProof,
+      nonSelectedSubjectProof,
+      privateSmokeProof,
+      healthReadyStable,
+      redactedProof,
+      canaryRetained,
+    },
+  };
+}
+
 const findProductionRawLoopAllowlistEntry = (
   allowlist: readonly ProductionRawLoopAllowlistEntry[],
   finding: Pick<ProductionRawLoopFinding, "file" | "line" | "pattern">,
@@ -1660,6 +1793,7 @@ export function runArchitectureAntiRegressionSuite(
   const productionReadonlyCanary = evaluateProductionReadonlyCanaryGuardrail();
   const cacheRateScope = evaluateCacheRateScopeGuardrail({ projectRoot });
   const cacheColdMissProof = evaluateCacheColdMissProofGuardrail({ projectRoot });
+  const rateLimitMarketplaceCanaryProof = evaluateRateLimitMarketplaceCanaryProofGuardrail({ projectRoot });
   const productionRawLoops = evaluateProductionRawLoopGuardrail({
     findings: scanProductionRawLoops(projectRoot),
   });
@@ -1678,6 +1812,7 @@ export function runArchitectureAntiRegressionSuite(
     productionReadonlyCanary.check,
     cacheRateScope.check,
     cacheColdMissProof.check,
+    rateLimitMarketplaceCanaryProof.check,
     productionRawLoops.check,
     unsafeCastRatchet.check,
     componentDebtCheck,
@@ -1693,6 +1828,7 @@ export function runArchitectureAntiRegressionSuite(
     productionReadonlyCanary: productionReadonlyCanary.summary,
     cacheRateScope: cacheRateScope.summary,
     cacheColdMissProof: cacheColdMissProof.summary,
+    rateLimitMarketplaceCanaryProof: rateLimitMarketplaceCanaryProof.summary,
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
     componentDebt,
@@ -1721,6 +1857,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
     `direct_supabase_exception_unclassified: ${report.directSupabaseExceptionContainment.unclassifiedCurrentFindings}`,
   );
   console.info(`cache_cold_miss_deterministic_proof: ${report.cacheColdMissProof.deterministicProofReady}`);
+  console.info(`rate_limit_marketplace_canary_proof: ${report.rateLimitMarketplaceCanaryProof.routeScoped}`);
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
