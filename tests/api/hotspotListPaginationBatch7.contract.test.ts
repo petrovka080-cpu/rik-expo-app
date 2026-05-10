@@ -225,6 +225,16 @@ const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: stri
     "tests/scripts/foremanWarehouseAndroidRuntimeLoopBoundary.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch = (file: string) =>
+  [
+    "artifacts/S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_matrix.json",
+    "artifacts/S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_proof.md",
+    "src/screens/director/DirectorReportsModal.tsx",
+    "src/screens/director/DirectorReportsModal.styles.ts",
+    "tests/director/directorReportsModalStyleBoundary.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -309,6 +319,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle123BuyerRepoStorageTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle126SupplierFilesStorageTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
+        !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

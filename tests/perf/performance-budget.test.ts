@@ -211,6 +211,9 @@ describe("performance budget — bundle module count", () => {
     const sAuditBattle45MapScreenStyleBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi13DirectorReportsModalStyleBoundaryFiles = [
+      path.join(SRC, "screens", "director", "DirectorReportsModal.styles.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditNightBattle123MapScreenModelBoundaryFiles = [
       path.join(SRC, "components", "map", "MapScreen.model.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -633,6 +636,7 @@ describe("performance budget — bundle module count", () => {
     // S_AUDIT_BATTLE_116_SINGLE_CALL_LOW_RISK_BYPASS_SWEEP_A adds one permanent
     // warehouse receive apply RPC transport boundary plus a focused src-owned contract test.
     // S_NIGHT_UI_12 adds one permanent BuyerScreen controller hook boundary.
+    // S_NIGHT_UI_13 adds one permanent DirectorReportsModal style boundary.
     // S_RUNTIME_01 adds two permanent BuyerScreen hook-pressure view-model boundaries.
     // S_RUNTIME_03 adds one permanent Foreman subcontract hook-pressure view-model boundary.
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
@@ -663,6 +667,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle41BuyerSubcontractFormModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle42DirectorMetricsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle45MapScreenStyleBoundaryFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi13DirectorReportsModalStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditNightBattle123MapScreenModelBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle46ContractorWorkModalTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle47BuyerSubcontractStyleBoundaryFiles).toBeLessThanOrEqual(1);
@@ -777,6 +782,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle41BuyerSubcontractFormModelFiles -
         sAuditBattle42DirectorMetricsTransportFiles -
         sAuditBattle45MapScreenStyleBoundaryFiles -
+        sNightUi13DirectorReportsModalStyleBoundaryFiles -
         sAuditNightBattle123MapScreenModelBoundaryFiles -
         sAuditBattle46ContractorWorkModalTransportFiles -
         sAuditBattle47BuyerSubcontractStyleBoundaryFiles -

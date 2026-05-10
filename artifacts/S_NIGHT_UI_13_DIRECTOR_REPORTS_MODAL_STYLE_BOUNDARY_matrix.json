@@ -1,0 +1,131 @@
+{
+  "wave_id": "S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY",
+  "final_status": "GREEN_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_SPLIT",
+  "base_commit": "f1ba80e2be632316574403918dc9129f81c72c76",
+  "preflight": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_at_start": true
+  },
+  "selected_files": [
+    {
+      "path": "src/screens/director/DirectorReportsModal.tsx",
+      "reason": "Highest report-only UI line-count bottleneck after BuyerScreen; safe style-boundary extraction leaves rendering and state logic unchanged."
+    },
+    {
+      "path": "src/screens/director/DirectorReportsModal.styles.ts",
+      "reason": "Permanent style module for the extracted DirectorReportsModal StyleSheet."
+    },
+    {
+      "path": "tests/director/directorReportsModalStyleBoundary.decomposition.test.ts",
+      "reason": "Focused contract for style boundary, critical test IDs, PDF actions, and post-split size budget."
+    },
+    {
+      "path": "tests/perf/performance-budget.test.ts",
+      "reason": "Account for exactly one permanent DirectorReportsModal style module without raising the global module budget."
+    },
+    {
+      "path": "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "reason": "Narrow wave-guard allowlist for this non-pagination report-named UI style split."
+    },
+    {
+      "path": "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+      "reason": "Narrow wave-guard allowlist for this non-pagination report-named UI style split."
+    },
+    {
+      "path": "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+      "reason": "Narrow wave-guard allowlist for this non-pagination report-named UI style split."
+    },
+    {
+      "path": "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "reason": "Narrow wave-guard allowlist for this non-load report-named UI style split."
+    }
+  ],
+  "reason_selected": "The architecture scanner reported DirectorReportsModal as the largest remaining UI modal; style extraction was the smallest production-safe reduction with no business, network, cache, rate-limit, or navigation change.",
+  "before_after_metrics": {
+    "director_reports_modal_lines": {
+      "before": 753,
+      "after": 570,
+      "delta": -183
+    },
+    "director_reports_modal_hook_calls": {
+      "before": 20,
+      "after": 20,
+      "delta": 0
+    },
+    "director_reports_modal_stylesheet_create_calls": {
+      "before": 1,
+      "after": 0,
+      "delta": -1
+    },
+    "style_boundary_lines": 187,
+    "style_boundary_stylesheet_create_calls": 1
+  },
+  "scope_confirmations": {
+    "permanent_style_boundary_created": true,
+    "temporary_hooks_added": false,
+    "runtime_hooks_added": false,
+    "business_logic_changed": false,
+    "render_branch_changed": false,
+    "network_behavior_changed": false,
+    "navigation_behavior_changed": false,
+    "bff_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "database_writes": false,
+    "migrations": false,
+    "production_mutations": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "secrets_printed": false
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npx jest tests/api/hotspotListPaginationBatch7.contract.test.ts tests/api/remainingSafeListPaginationBatch8.contract.test.ts tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts tests/load/sLoadFix1Hotspots.contract.test.ts tests/director/directorReportsModalStyleBoundary.decomposition.test.ts tests/perf/performance-budget.test.ts --runInBand",
+      "suites": "6 passed",
+      "tests": "31 passed"
+    },
+    "typescript": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "expo_lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "suites": "697 passed, 1 skipped",
+      "tests": "4090 passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "direct_supabase_service_bypass_budget": 0,
+      "unresolved_unbounded_selects": 0,
+      "select_star_findings": 0,
+      "production_raw_loops": 0,
+      "critical_folder_violations": 0
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "command": "node -e \"const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_matrix.json','utf8')); console.log('artifact_json_parse=PASS')\""
+    },
+    "post_push_release_verify": {
+      "status": "PENDING"
+    }
+  },
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_matrix.json",
+    "artifacts/S_NIGHT_UI_13_DIRECTOR_REPORTS_MODAL_STYLE_BOUNDARY_proof.md"
+  ],
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
