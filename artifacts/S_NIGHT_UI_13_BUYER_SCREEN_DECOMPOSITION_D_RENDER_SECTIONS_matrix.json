@@ -1,0 +1,97 @@
+{
+  "wave": "S_NIGHT_UI_13_BUYER_SCREEN_DECOMPOSITION_D_RENDER_SECTIONS",
+  "final_status": "GREEN_BUYER_SCREEN_DECOMPOSITION_D_RENDER_SECTIONS",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true
+  },
+  "selected_files": [
+    "src/screens/buyer/BuyerScreen.tsx",
+    "src/screens/buyer/components/BuyerScreenContent.tsx",
+    "src/screens/buyer/components/BuyerScreenRenderSections.tsx",
+    "tests/buyer/buyerScreenRenderSections.decomposition.test.ts",
+    "tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": "BuyerScreen.tsx was already a tiny controller shell on current main, so this wave targeted the remaining render cascade inside BuyerScreenContent with memoized presentational section boundaries.",
+  "target_interpretation": {
+    "buyer_screen_root_already_decomposed": true,
+    "root_metric_comment": "Current BuyerScreen root was 10 lines and 1 hook at wave start. Additional root reduction by 6 hooks or 80 lines is not physically meaningful without deleting the existing controller shell.",
+    "render_cascade_target": "BuyerScreenContent render JSX split into memoized layout, header, search, list, and sheet boundaries."
+  },
+  "route_scope": {
+    "changed": false,
+    "cache_changed": false,
+    "rate_limit_changed": false,
+    "transport_changed": false,
+    "supabase_changed": false
+  },
+  "before_metrics": {
+    "buyer_screen_lines": 10,
+    "buyer_screen_hook_calls": 1,
+    "buyer_screen_content_lines": 537,
+    "buyer_render_section_files": 0,
+    "memoized_child_boundaries": 0
+  },
+  "after_metrics": {
+    "buyer_screen_lines": 10,
+    "buyer_screen_hook_calls": 1,
+    "buyer_screen_content_lines": 533,
+    "buyer_screen_render_sections_lines": 114,
+    "buyer_render_section_files": 1,
+    "memoized_child_boundaries": 5
+  },
+  "delta_metrics": {
+    "buyer_screen_lines": 0,
+    "buyer_screen_hook_calls": 0,
+    "buyer_screen_content_lines": -4,
+    "buyer_render_section_files": 1,
+    "memoized_child_boundaries": 5
+  },
+  "focused_tests": {
+    "command": "npx jest tests/buyer/buyerScreenRenderSections.decomposition.test.ts tests/buyer/buyerScreenOwnerSplit.decomposition.test.ts tests/buyer/buyerSubcontractTab.decomposition.test.ts tests/perf/performance-budget.test.ts --runInBand",
+    "status": "PASS",
+    "test_suites": 4,
+    "tests": 24
+  },
+  "required_gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "post_push_release_verify_json": "PENDING"
+  },
+  "full_test_summary": {
+    "test_suites_passed": 699,
+    "test_suites_skipped": 1,
+    "tests_passed": 4096,
+    "tests_skipped": 1
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_ts_ignore_added": true,
+    "no_as_any_added": true,
+    "no_empty_catch_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_50k_60k_load": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_builds": true,
+    "no_production_mutation_route_broad_enablement": true,
+    "no_broad_cache_enablement": true,
+    "no_broad_rate_limit_enablement": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "artifacts": [
+    "artifacts/S_NIGHT_UI_13_BUYER_SCREEN_DECOMPOSITION_D_RENDER_SECTIONS_matrix.json",
+    "artifacts/S_NIGHT_UI_13_BUYER_SCREEN_DECOMPOSITION_D_RENDER_SECTIONS_proof.md"
+  ]
+}

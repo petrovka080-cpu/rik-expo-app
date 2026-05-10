@@ -1,17 +1,19 @@
 import React, { useCallback, useMemo } from "react";
 import { Animated, StyleSheet } from "react-native";
 
-import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import { UI } from "../buyerUi";
 import type { BuyerTab } from "../buyer.types";
-import BuyerSubcontractTab from "../BuyerSubcontractTab";
-import { BuyerMainList, BuyerStickyHeader } from "../buyer.components";
-import { BuyerScreenSheets, type BuyerScreenSheetsProps } from "./BuyerScreenSheets";
-import { BuyerSearchBar } from "./BuyerSearchBar";
+import type { BuyerScreenSheetsProps } from "./BuyerScreenSheets";
+import {
+  BuyerScreenContentListSection,
+  BuyerScreenHeaderSection,
+  BuyerScreenLayoutSection,
+  BuyerScreenSearchHostSection,
+  BuyerScreenSheetHostSection,
+  type BuyerMainListProps,
+  type BuyerStickyHeaderProps,
+} from "./BuyerScreenRenderSections";
 import type { StylesBag } from "./component.types";
-
-type BuyerStickyHeaderProps = React.ComponentProps<typeof BuyerStickyHeader>;
-type BuyerMainListProps = React.ComponentProps<typeof BuyerMainList>;
 
 export type BuyerScreenContentProps = {
   s: StylesBag;
@@ -73,38 +75,32 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
   const rootStyle = useMemo(() => [s.screen, styles.root], [s.screen]);
 
   return (
-    <RoleScreenLayout style={rootStyle}>
-      <BuyerStickyHeader {...stickyHeader} />
+    <BuyerScreenLayoutSection style={rootStyle}>
+      <BuyerScreenHeaderSection stickyHeader={stickyHeader} />
 
-      <Animated.View style={searchBarHostStyle}>
-        <BuyerSearchBar
-          s={s}
-          searchQuery={searchQuery}
-          onChangeSearchQuery={onChangeSearchQuery}
-          showWebRefreshButton={showWebRefreshButton}
-          onRefresh={onRefresh}
-          refreshAccessibilityLabel={refreshAccessibilityLabel}
-        />
-      </Animated.View>
+      <BuyerScreenSearchHostSection
+        s={s}
+        searchBarHostStyle={searchBarHostStyle}
+        searchQuery={searchQuery}
+        onChangeSearchQuery={onChangeSearchQuery}
+        showWebRefreshButton={showWebRefreshButton}
+        onRefresh={onRefresh}
+        refreshAccessibilityLabel={refreshAccessibilityLabel}
+      />
 
-      {tab === "subcontracts" ? (
-        <BuyerSubcontractTab
-          contentTopPad={measuredHeaderMax}
-          onScroll={subcontractScrollHandler}
-          buyerFio={buyerFio}
-        />
-      ) : (
-        <BuyerMainList
-          {...mainList}
-          s={s}
-          tab={tab}
-          measuredHeaderMax={mainListHeaderPad}
-          scrollY={scrollY}
-        />
-      )}
+      <BuyerScreenContentListSection
+        s={s}
+        tab={tab}
+        buyerFio={buyerFio}
+        measuredHeaderMax={measuredHeaderMax}
+        scrollY={scrollY}
+        subcontractScrollHandler={subcontractScrollHandler}
+        mainListHeaderPad={mainListHeaderPad}
+        mainList={mainList}
+      />
 
-      <BuyerScreenSheets {...sheets} s={s} isWeb={isWeb} />
-    </RoleScreenLayout>
+      <BuyerScreenSheetHostSection sheets={sheets} s={s} isWeb={isWeb} />
+    </BuyerScreenLayoutSection>
   );
 });
 

@@ -108,6 +108,7 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     expect(sideEffectsSource).toContain("buildBuyerScreenLoadingState");
     expect(controllerSource).toContain("useBuyerScreenContentProps");
     expect(contentSource).toContain("export function useBuyerScreenContentProps");
+    expect(contentSource).toContain("BuyerScreenLayoutSection");
     expect(source).not.toContain("TextInput");
     expect(source).not.toContain("RoleScreenLayout");
     expect(source).not.toContain("Ionicons");
@@ -131,13 +132,15 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
 
   it("keeps the search host static style in BuyerScreenContent", () => {
     const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
+    const sectionsSource = readRepoFile("src/screens/buyer/components/BuyerScreenRenderSections.tsx");
 
     expect(contentSource).toContain("const styles = StyleSheet.create");
     expect(contentSource).toContain("const rootStyle = useMemo");
-    expect(contentSource).toContain("<RoleScreenLayout style={rootStyle}>");
+    expect(contentSource).toContain("<BuyerScreenLayoutSection style={rootStyle}>");
     expect(contentSource).toContain("const searchBarHostStyle = useMemo");
-    expect(contentSource).toContain("style={searchBarHostStyle}");
+    expect(contentSource).toContain("searchBarHostStyle={searchBarHostStyle}");
     expect(contentSource).toContain("top: stickyHeader.headerHeight");
+    expect(sectionsSource).toContain("<Animated.View style={searchBarHostStyle}>");
   });
 
   it("keeps BuyerScreenContent props stable when parent recreates the params object", () => {
