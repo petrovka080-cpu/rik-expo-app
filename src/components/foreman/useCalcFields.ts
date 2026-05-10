@@ -148,7 +148,7 @@ export function useCalcFields(workTypeCode?: string | null) {
             .eq("code", rawWorkTypeCode)
             .maybeSingle();
           familyCode = String(familyRes.data?.family_code ?? "").trim() || null;
-        } catch {
+        } catch (_familyCodeError) {
           familyCode = null;
         }
 
@@ -189,7 +189,7 @@ export function useCalcFields(workTypeCode?: string | null) {
         if (!cancelled) {
           setFields(list.filter((f) => f.hiddenInUi !== true));
         }
-      } catch {
+      } catch (_calcFieldsError) {
         if (!cancelled) {
           setFields([]);
           setError("Не удалось загрузить поля калькулятора");

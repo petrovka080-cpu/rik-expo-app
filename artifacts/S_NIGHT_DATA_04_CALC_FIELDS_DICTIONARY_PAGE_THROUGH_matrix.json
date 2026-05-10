@@ -1,0 +1,153 @@
+{
+  "wave": "S_NIGHT_DATA_04_CALC_FIELDS_DICTIONARY_PAGE_THROUGH",
+  "final_status": "GREEN_CALC_FIELDS_DICTIONARY_PAGE_THROUGH",
+  "generatedAt": "2026-05-10T16:40:06.626Z",
+  "selectedFiles": [
+    "src/components/foreman/useCalcFields.ts",
+    "tests/api/calcFieldsDictionaryPageThrough.contract.test.ts",
+    "artifacts/S_NIGHT_DATA_04_CALC_FIELDS_DICTIONARY_PAGE_THROUGH_matrix.json",
+    "artifacts/S_NIGHT_DATA_04_CALC_FIELDS_DICTIONARY_PAGE_THROUGH_proof.md"
+  ],
+  "reasonSelected": "User requested WAVE 04 for useCalcFields.ts after the audit risk around all work types. The current read shape already used guarded page-through; this wave locks the source contract and removes empty catch blocks in the target file without changing query semantics.",
+  "preWaveBaseline": {
+    "commands": [
+      "git fetch origin main",
+      "git status --short --branch",
+      "git rev-list --left-right --count HEAD...origin/main"
+    ],
+    "head": "64bd975acb7f49c68b2d144c1c3289249d602dc2",
+    "originMain": "64bd975acb7f49c68b2d144c1c3289249d602dc2",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "classification": [
+    {
+      "function": "fetchCalcFieldRows",
+      "view": "v_reno_calc_fields_ui_clean | v_reno_calc_fields_ui",
+      "queryType": "list/reference",
+      "bound": "loadPagedRowsWithCeiling(CALC_FIELDS_PAGE_DEFAULTS)",
+      "pageSize": 100,
+      "maxPageSize": 100,
+      "maxRows": 5000,
+      "scope": "eq(work_type_code, workTypeCode)",
+      "stableOrder": "sort_order asc, basis_key asc",
+      "status": "already_bounded"
+    },
+    {
+      "function": "load",
+      "view": "v_work_types_picker",
+      "queryType": "lookup",
+      "bound": "eq(code, rawWorkTypeCode).maybeSingle()",
+      "select": "family_code",
+      "status": "already_bounded"
+    }
+  ],
+  "metrics": {
+    "before": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 28,
+      "calcFieldsSelectCalls": 2,
+      "calcFieldsAlreadyBoundedSelectCalls": 2,
+      "calcFieldsUnboundedListSelects": 0,
+      "calcFieldsPageThroughProof": true,
+      "calcFieldsStableOrderProof": true,
+      "calcFieldsEmptyCatchCount": 2
+    },
+    "after": {
+      "totalSelectCalls": 284,
+      "currentUnresolvedUnboundedSelects": 0,
+      "selectStarCount": 28,
+      "calcFieldsSelectCalls": 2,
+      "calcFieldsAlreadyBoundedSelectCalls": 2,
+      "calcFieldsUnboundedListSelects": 0,
+      "calcFieldsPageThroughProof": true,
+      "calcFieldsStableOrderProof": true,
+      "calcFieldsEmptyCatchCount": 0
+    },
+    "delta": {
+      "globalUnresolvedUnboundedSelects": 0,
+      "globalSelectStarCount": 0,
+      "calcFieldsUnboundedListSelects": 0,
+      "calcFieldsPageThroughProof": 0,
+      "calcFieldsStableOrderProof": 0,
+      "calcFieldsEmptyCatchCount": -2
+    }
+  },
+  "gates": {
+    "baseline": {
+      "command": "git fetch origin main && git status --short --branch && git rev-list --left-right --count HEAD...origin/main",
+      "status": "pass",
+      "headAtStart": "64bd975acb7f49c68b2d144c1c3289249d602dc2",
+      "ahead": 0,
+      "behind": 0,
+      "worktreeClean": true
+    },
+    "focusedTests": {
+      "command": "npx jest tests/api/calcFieldsDictionaryPageThrough.contract.test.ts tests/api/referenceListPageCeiling.contract.test.ts tests/api/queryBoundsTop30.contract.test.ts tests/api/topListPaginationBatch6.contract.test.ts --runInBand",
+      "status": "pass"
+    },
+    "tsc": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "pass"
+    },
+    "lint": {
+      "command": "npx expo lint",
+      "status": "pass"
+    },
+    "npmTestRunInBand": {
+      "command": "npm test -- --runInBand",
+      "status": "pass",
+      "suites": "694 passed, 1 skipped, 695 total",
+      "tests": "4080 passed, 1 skipped, 4081 total"
+    },
+    "architectureScanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "pass",
+      "serviceBypassFindings": 0,
+      "productionCalls": false,
+      "dbWrites": false,
+      "migrations": false,
+      "supabaseProjectChanges": false,
+      "secretsPrinted": false
+    },
+    "gitDiffCheck": {
+      "command": "git diff --check",
+      "status": "pass"
+    },
+    "artifactJsonParse": {
+      "command": "node JSON.parse artifacts/S_NIGHT_DATA_04_CALC_FIELDS_DICTIONARY_PAGE_THROUGH_matrix.json",
+      "status": "pass"
+    },
+    "releaseVerifyPostPush": {
+      "command": "npm run release:verify -- --json",
+      "status": "pending"
+    }
+  },
+  "negativeConfirmations": {
+    "forcePush": false,
+    "tags": false,
+    "secretsPrinted": false,
+    "tsIgnoreAdded": false,
+    "asAnyAdded": false,
+    "emptyCatchAdded": false,
+    "broadRewrite": false,
+    "supabaseProjectChanges": false,
+    "spendCapChanges": false,
+    "realtime50k60kLoad": false,
+    "destructiveOrUnboundedDml": false,
+    "otaEasTestFlightNativeBuilds": false,
+    "productionMutationBroadEnablement": false,
+    "broadCacheEnablement": false,
+    "broadRateLimitEnablement": false,
+    "dbWrites": false,
+    "migrations": false,
+    "productionDataTouched": false
+  },
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "postPushReleaseVerify": {
+    "command": "npm run release:verify -- --json",
+    "status": "pending"
+  }
+}
