@@ -87,7 +87,19 @@
     },
     "releaseVerifyPostPush": {
       "command": "npm run release:verify -- --json",
-      "status": "pending_post_push"
+      "status": "pass",
+      "verifiedCommitSha": "65e21b3d61f4f9a3a56c3334ef6f7ec70966d4ea",
+      "headMatchesOriginMain": true,
+      "ahead": 0,
+      "behind": 0,
+      "worktreeClean": true,
+      "readiness": "pass",
+      "otaDisposition": "allow",
+      "otaPublished": false,
+      "easBuildTriggered": false,
+      "easSubmitTriggered": false,
+      "secretsPrinted": false,
+      "finalArtifactCommitRequiresRepeatVerify": true
     }
   },
   "artifacts": {
@@ -116,5 +128,22 @@
     "pdfExportFlowChanged": false,
     "paginationChanged": false
   },
-  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+  "supabaseRealtimeStatus": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "postPushReleaseVerify": {
+    "command": "npm run release:verify -- --json",
+    "status": "pass",
+    "verifiedCommitSha": "65e21b3d61f4f9a3a56c3334ef6f7ec70966d4ea",
+    "headMatchesOriginMain": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktreeClean": true,
+    "readiness": "pass",
+    "otaDisposition": "allow",
+    "otaPublished": false,
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "secretsPrinted": false,
+    "finalArtifactCommitRequiresRepeatVerify": true
+  },
+  "updatedAt": "2026-05-10T16:09:18.773Z"
 }
