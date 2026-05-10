@@ -26,6 +26,27 @@ import {
 import { hasCurrentContractorSessionUser } from "../contractor.screenData.auth.transport";
 import { logger } from "../../../lib/logger";
 
+const getContractorScreenDataErrorClass = (error: unknown) =>
+  error instanceof Error && error.name ? error.name : "unknown_error";
+
+const recordContractorLoadWorksFailure = (error: unknown) => {
+  recordPlatformObservability({
+    screen: "contractor",
+    surface: "works_list",
+    category: "fetch",
+    event: "contractor_load_works_failed",
+    result: "error",
+    sourceKind: "contractor:works_list",
+    fallbackUsed: true,
+    errorStage: "load_works",
+    errorClass: getContractorScreenDataErrorClass(error),
+    extra: {
+      owner: "useContractorScreenData",
+      fallback: "empty_rows_screen_contract",
+    },
+  });
+};
+
 type Params = {
   supabaseClient: any;
   focusedRef: MutableRefObject<boolean>;
@@ -215,7 +236,7 @@ export function useContractorScreenData(params: Params) {
       });
     } catch (error) {
       if (reqSeq !== loadWorksSeqRef.current) return;
-      if (__DEV__) console.error("loadWorks exception:", error);
+      recordContractorLoadWorksFailure(error);
       setRows([]);
       setSubcontractCards([]);
       setInboxRows(loadEmptyInboxRows());

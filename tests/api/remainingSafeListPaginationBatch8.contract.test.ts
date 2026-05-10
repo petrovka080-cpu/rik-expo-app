@@ -13,6 +13,22 @@ const changedFiles = () =>
     .map((line) => line.trim())
     .filter(Boolean);
 
+const normalizePath = (file: string) => file.replace(/\\/g, "/");
+
+const tryCatchGapsBatchAFiles = [
+  "src/screens/accountant/accountant.actions.ts",
+  "src/screens/contractor/hooks/useContractorScreenData.ts",
+  "src/screens/foreman/foreman.dicts.repo.ts",
+];
+
+const isCurrentTryCatchGapsBatchA = (changed: string[]) =>
+  tryCatchGapsBatchAFiles.every((expectedFile) =>
+    changed.map(normalizePath).includes(expectedFile),
+  );
+
+const isApprovedTryCatchGapsBatchAPatch = (file: string) =>
+  normalizePath(file) === "src/screens/warehouse/warehouse.reports.ts";
+
 const sLoadFix6WarehouseIssueExplainPatch =
   "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
 
@@ -251,7 +267,10 @@ describe("S-PAG-8 remaining safe list pagination", () => {
     const detailEnd = auctions.indexOf("export function buildAuctionAssistantPrompt");
     expect(auctions.slice(detailStart, detailEnd)).toContain("loadPagedAuctionRows");
 
-    const forbiddenChanged = changedFiles().filter((file) =>
+    const changed = changedFiles();
+    const tryCatchGapsBatchA = isCurrentTryCatchGapsBatchA(changed);
+    const forbiddenChanged = changed.filter((file) =>
+      !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
       !isApprovedLaterRpcValidationPatch(file) &&
       !isApprovedPdfInstantFirstOpenPatch(file) &&

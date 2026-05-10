@@ -26,6 +26,22 @@ const dirtyPaths = () => {
     .map((line) => line.slice(3).replace(/^"|"$/g, ""));
 };
 
+const normalizePath = (file: string) => file.replace(/\\/g, "/");
+
+const tryCatchGapsBatchAFiles = [
+  "src/screens/accountant/accountant.actions.ts",
+  "src/screens/contractor/hooks/useContractorScreenData.ts",
+  "src/screens/foreman/foreman.dicts.repo.ts",
+];
+
+const isCurrentTryCatchGapsBatchA = (changed: string[]) =>
+  tryCatchGapsBatchAFiles.every((expectedFile) =>
+    changed.map(normalizePath).includes(expectedFile),
+  );
+
+const isApprovedTryCatchGapsBatchAPatch = (file: string) =>
+  normalizePath(file) === "src/screens/warehouse/warehouse.reports.ts";
+
 const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   [
     "supabase/migrations/20260430133000_s_load_fix_6_warehouse_issue_queue_visible_truth_pushdown.sql",
@@ -246,8 +262,10 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
 
   it("keeps the wave inside allowed code and artifact boundaries", () => {
     const changed = dirtyPaths();
+    const tryCatchGapsBatchA = isCurrentTryCatchGapsBatchA(changed);
     const forbidden = changed.filter(
       (file) =>
+        !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&

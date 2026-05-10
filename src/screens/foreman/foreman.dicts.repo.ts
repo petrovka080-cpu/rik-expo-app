@@ -1,5 +1,6 @@
 import { supabase } from "../../lib/supabaseClient";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../../lib/api/_core";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import type { ForemanRefObjectTypeRow } from "../../types/contracts/foreman";
 import type { AppOption, RefOption } from "./foreman.types";
 import {
@@ -58,6 +59,28 @@ const FOREMAN_DICT_LIST_PAGE_DEFAULTS = {
   pageSize: 100,
   maxPageSize: 100,
   maxRows: 5000,
+};
+
+const getForemanDictErrorClass = (error: unknown) =>
+  error instanceof Error && error.name ? error.name : "unknown_error";
+
+const recordForemanDictFallback = (source: string, error: unknown) => {
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "dicts_repo",
+    category: "fetch",
+    event: "foreman_dict_read_failed",
+    result: "error",
+    sourceKind: `foreman:${source}`,
+    fallbackUsed: true,
+    errorStage: "dict_read",
+    errorClass: getForemanDictErrorClass(error),
+    extra: {
+      owner: "foreman.dicts.repo",
+      source,
+      fallback: "empty_options",
+    },
+  });
 };
 
 const dictSnapshotCache: CacheEntry<DictsSnapshot> = {
@@ -264,21 +287,29 @@ const loadForemanDictsSnapshot = async (): Promise<DictsSnapshot> => {
     const all = toRefOptions(obj.data, false);
     snapshot.objAllOptions = all;
     snapshot.objOptions = getForemanObjectOptions(all);
+  } else if (obj.error) {
+    recordForemanDictFallback("ref_object_types", obj.error);
   }
   if (!lvl.error && Array.isArray(lvl.data)) {
     const all = toRefOptions(lvl.data, true);
     snapshot.lvlAllOptions = all;
     snapshot.lvlOptions = getForemanLevelOptions(all);
+  } else if (lvl.error) {
+    recordForemanDictFallback("ref_levels", lvl.error);
   }
   if (!sys.error && Array.isArray(sys.data)) {
     const all = toRefOptions(sys.data, true);
     snapshot.sysAllOptions = all;
     snapshot.sysOptions = getForemanSystemOptions(all);
+  } else if (sys.error) {
+    recordForemanDictFallback("ref_systems", sys.error);
   }
   if (!zone.error && Array.isArray(zone.data)) {
     const all = toRefOptions(zone.data, true);
     snapshot.zoneAllOptions = all;
     snapshot.zoneOptions = getForemanZoneOptions(all);
+  } else if (zone.error) {
+    recordForemanDictFallback("ref_zones", zone.error);
   }
 
   return snapshot;
@@ -305,6 +336,9 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
           (row.name_human && String(row.name_human).trim()) || row.app_code,
       }));
   }
+  if (apps.error) {
+    recordForemanDictFallback("rik_apps", apps.error);
+  }
 
   const fallback = await loadPagedForemanRows<ItemAppRow>(
     () =>
@@ -327,6 +361,9 @@ const loadForemanAppOptions = async (): Promise<AppOption[]> => {
       ),
     );
     return uniq.map((code) => ({ code: String(code), label: String(code) }));
+  }
+  if (fallback.error) {
+    recordForemanDictFallback("rik_item_apps", fallback.error);
   }
 
   return [];

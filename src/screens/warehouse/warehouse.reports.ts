@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { apiFetchIncomingLines } from "./warehouse.stock.read";
 import { fetchWarehouseIssueLines } from "./warehouse.reports.repo";
 import {
@@ -16,6 +17,32 @@ import {
 
 type BusyLike = unknown;
 type SupabaseLike = SupabaseClient;
+type WarehouseReportLineKind = "issue" | "incoming";
+
+const getWarehouseReportErrorClass = (error: unknown) =>
+  error instanceof Error && error.name ? error.name : "unknown_error";
+
+const recordWarehouseReportLineLoadFailure = (
+  lineKind: WarehouseReportLineKind,
+  error: unknown,
+) => {
+  recordPlatformObservability({
+    screen: "warehouse",
+    surface: "reports",
+    category: "fetch",
+    event: `warehouse_${lineKind}_lines_load_failed`,
+    result: "error",
+    sourceKind: `warehouse:${lineKind}_lines`,
+    fallbackUsed: false,
+    errorStage: "line_load",
+    errorClass: getWarehouseReportErrorClass(error),
+    extra: {
+      owner: "warehouse.reports",
+      lineKind,
+      propagation: "rethrow",
+    },
+  });
+};
 
 export function useWarehouseReports(args: {
   busy: BusyLike;
@@ -140,6 +167,9 @@ export function useWarehouseReports(args: {
         if (!isWarehouseScreenActive(screenActiveRef)) return lines;
         setIssueLinesById((prev) => ({ ...(prev || {}), [key]: lines }));
         return lines;
+      } catch (error) {
+        recordWarehouseReportLineLoadFailure("issue", error);
+        throw error;
       } finally {
         if (isWarehouseScreenActive(screenActiveRef)) {
           setIssueLinesLoadingId(null);
@@ -170,6 +200,9 @@ export function useWarehouseReports(args: {
           [incomingId]: lines,
         }));
         return lines;
+      } catch (error) {
+        recordWarehouseReportLineLoadFailure("incoming", error);
+        throw error;
       } finally {
         if (isWarehouseScreenActive(screenActiveRef)) {
           setIncomingLinesLoadingId(null);

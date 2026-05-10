@@ -1,0 +1,96 @@
+{
+  "wave": "S_ERROR_01_TRY_CATCH_GAPS_BATCH_A",
+  "final_status": "GREEN_TRY_CATCH_GAPS_BATCH_A_CLOSED",
+  "baseline": {
+    "auditTargetFiles": 8,
+    "batchLimit": 4,
+    "source": "user-supplied try/catch gaps audit target list"
+  },
+  "selection": {
+    "selectedCount": 4,
+    "selectedFiles": [
+      "src/screens/accountant/accountant.actions.ts",
+      "src/screens/warehouse/warehouse.reports.ts",
+      "src/screens/foreman/foreman.dicts.repo.ts",
+      "src/screens/contractor/hooks/useContractorScreenData.ts"
+    ],
+    "reason": "Selected local, low-blast-radius handlers first: manual/realtime refresh, warehouse report line reads, foreman dictionary fallback reads, and contractor loadWorks degraded fallback."
+  },
+  "result": {
+    "closedFiles": 4,
+    "deferredFiles": 4,
+    "remainingAuditTargetFiles": 4,
+    "behaviorChanged": false,
+    "fallbackBehaviorPreserved": true,
+    "errorsSwallowedWithoutSignal": false,
+    "redactedObservabilityAdded": true
+  },
+  "entries": [
+    {
+      "file": "src/screens/accountant/accountant.actions.ts",
+      "status": "fixed",
+      "classification": "rethrowing async refresh gap",
+      "change": "Records fixed-field refresh failure observability, then rethrows the original load failure while preserving refreshing cleanup."
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.reports.ts",
+      "status": "fixed",
+      "classification": "rethrowing report line fetch gap",
+      "change": "Records fixed-field report line load failure observability, then rethrows while preserving loading-id cleanup."
+    },
+    {
+      "file": "src/screens/foreman/foreman.dicts.repo.ts",
+      "status": "fixed",
+      "classification": "intentional degraded dictionary fallback",
+      "change": "Records fixed-field dictionary fallback observability before keeping existing empty-option fallback behavior."
+    },
+    {
+      "file": "src/screens/contractor/hooks/useContractorScreenData.ts",
+      "status": "fixed",
+      "classification": "intentional degraded loadWorks fallback",
+      "change": "Replaces raw dev error console with fixed-field fallback observability while preserving empty rows and screen-contract error state."
+    },
+    {
+      "file": "src/lib/api/director_reports.naming.ts",
+      "status": "deferred",
+      "classification": "already has catch signal; redaction review remains for later batch",
+      "reason": "Lower priority than the four local UI/data gaps selected for Batch A."
+    },
+    {
+      "file": "src/lib/documents/pdfDocumentActions.ts",
+      "status": "deferred",
+      "classification": "PDF lifecycle has existing boundary handling",
+      "reason": "High blast radius; keep for a dedicated PDF error-handling wave."
+    },
+    {
+      "file": "src/lib/pdfRunner.ts",
+      "status": "deferred",
+      "classification": "PDF runner has existing lifecycle/catch discipline",
+      "reason": "High blast radius; keep for a dedicated PDF runner wave."
+    },
+    {
+      "file": "src/screens/contractor/hooks/useContractorProgressReliability.ts",
+      "status": "deferred",
+      "classification": "offline queue flow needs behavior-level tests",
+      "reason": "Higher interaction risk than selected local fallbacks; leave for Batch B."
+    }
+  ],
+  "redactionContract": {
+    "logsSecretValues": false,
+    "logsTokens": false,
+    "logsUrls": false,
+    "logsPayloadsOrBodies": false,
+    "logsUserOrCompanyData": false,
+    "observabilityErrorMessageIncluded": false,
+    "observabilityUsesFixedFieldsOnly": true
+  },
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "envChanges": false,
+    "cacheEnablement": false,
+    "rateLimitChanges": false
+  }
+}
