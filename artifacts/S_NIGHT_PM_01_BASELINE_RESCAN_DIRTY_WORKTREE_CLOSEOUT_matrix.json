@@ -1,0 +1,17 @@
+{
+  "wave": "WAVE_01_PM_BASELINE_RESCAN_DIRTY_WORKTREE_CLOSEOUT",
+  "final_status": "GREEN_PM_BASELINE_CLEAN_AND_SYNCED",
+  "generated_at": "2026-05-11T08:11:13.422Z",
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean": true,
+  "dirty_files": [],
+  "dirty_classification": "none_current_pm_audit_stale",
+  "release_verify": "PASS",
+  "stash_used": false,
+  "force_push": false,
+  "deploy": false,
+  "env_writes": false,
+  "db_writes": false
+}

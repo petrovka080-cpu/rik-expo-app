@@ -1,0 +1,18 @@
+{
+  "cache_hit_delta": 3,
+  "cache_miss_delta": 3,
+  "read_through_delta": 3,
+  "cache_write_inferred_count": 3,
+  "provider_fallback_delta": 2,
+  "cache_error_delta": 0,
+  "shadow_read_attempt_delta": 6,
+  "p50_ms": 1918,
+  "p95_ms": 4257,
+  "p99_ms": 4257,
+  "sample_calls": 8,
+  "route_call_miss_proof_count": 3,
+  "route_call_hit_proof_count": 3,
+  "route_call_read_through_write_proof_count": 3,
+  "unapproved_route_cache_commands": 0,
+  "redaction_safe": true
+}

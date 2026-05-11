@@ -1,0 +1,35 @@
+{
+  "wave": "WAVE_04_RATE_LIMIT_10PCT_MARKETPLACE_RAMP",
+  "final_status": "BLOCKED_RATE_LIMIT_10PCT_MARKETPLACE_RAMP_APPROVAL_NOT_TRUTHY",
+  "generated_at": "2026-05-11T08:11:13.422Z",
+  "prerequisite": {
+    "required": "GREEN_RATE_LIMIT_5PCT_RATCHET_LOCKED",
+    "actual": "GREEN_RATE_LIMIT_5PCT_RATCHET_LOCKED",
+    "green": true
+  },
+  "route": "marketplace.catalog.search",
+  "target_percent": 10,
+  "approval": {
+    "RATE_LIMIT_10_PERCENT_APPROVED": {
+      "present": true,
+      "truthy": false
+    }
+  },
+  "preflight": {
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean": true
+  },
+  "rate_limit_config_change": false,
+  "render_env_written": false,
+  "deploy_triggered": false,
+  "rollback_triggered": false,
+  "cache_changes": false,
+  "all_routes": false,
+  "percent_25_50_100": false,
+  "db_writes": false,
+  "production_mutations": false,
+  "raw_subject_user_token_values_printed": false,
+  "blocked_reason": "RATE_LIMIT_10_PERCENT_APPROVED present but not truthy true"
+}
