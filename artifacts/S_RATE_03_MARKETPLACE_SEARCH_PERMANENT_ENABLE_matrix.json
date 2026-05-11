@@ -1,0 +1,119 @@
+{
+  "wave": "S_RATE_03_MARKETPLACE_SEARCH_PERMANENT_ONE_ROUTE_ENABLE",
+  "generated_at": "2026-05-11T18:56:59.929Z",
+  "route": "marketplace.catalog.search",
+  "no_5_percent_expansion": true,
+  "no_10_percent_expansion": true,
+  "cache_changes": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "supabase_project_changes": false,
+  "hook_work": false,
+  "ui_decomposition": false,
+  "fake_pass": false,
+  "android_build": false,
+  "ota": false,
+  "secrets_printed": false,
+  "env_values_printed": false,
+  "raw_subjects_stored": false,
+  "raw_keys_stored": false,
+  "raw_payloads_stored": false,
+  "raw_db_rows_stored": false,
+  "head": "b29900c78b6425ce65e698d25e0ecff7f8c25cd2",
+  "origin_main": "b29900c78b6425ce65e698d25e0ecff7f8c25cd2",
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean_ignoring_untracked": true,
+  "prerequisites": {
+    "S_RATE_01": {
+      "path": "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_matrix.json",
+      "status": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+      "green": true
+    },
+    "S_RATE_02": {
+      "path": "artifacts/S_RATE_02_MARKETPLACE_SEARCH_1_PERCENT_RATCHET_matrix.json",
+      "status": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_RATCHET_READY",
+      "green": true
+    },
+    "S_CACHE_RATE_01": {
+      "path": "artifacts/S_CACHE_RATE_01_FLAG_INVENTORY_matrix.json",
+      "status": "GREEN_CACHE_RATE_FLAG_INVENTORY_READY",
+      "green": true
+    }
+  },
+  "prerequisites_green": true,
+  "render_config_present": true,
+  "auth_source": "render_api_in_memory",
+  "auth_resolution_status": "present",
+  "final_status": "GREEN_RATE_LIMIT_MARKETPLACE_SEARCH_PERMANENTLY_ENABLED",
+  "health_before": 200,
+  "ready_before": 200,
+  "health_after": 200,
+  "ready_after": 200,
+  "baseline_status_class": "2xx",
+  "baseline_body_ok": true,
+  "deploy_triggered": true,
+  "latest_deploy_live": true,
+  "latest_deploy_status": "live",
+  "deploy_commit_matches_head": true,
+  "rate_limit_mode": "enforce_production_real_user_route_canary_only",
+  "route_count": 1,
+  "route_allowlist": [
+    "marketplace.catalog.search"
+  ],
+  "rate_limit_percent": 1,
+  "runtime_scoped_to_one_route": true,
+  "retained": true,
+  "rollback_triggered": false,
+  "rollback_succeeded": "not_needed",
+  "env_snapshot_redacted": {
+    "SCALE_RATE_ENFORCEMENT_MODE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_PRODUCTION_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_STORE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_RATE_LIMIT_NAMESPACE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "BFF_RATE_LIMIT_METADATA_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    }
+  },
+  "rate_limit_env_keys_written_count": 3,
+  "selected_subject_proof": true,
+  "selected_subject_attempts": 99,
+  "selected_subject_status_class": "2xx",
+  "selected_subject_error_category": "none",
+  "non_selected_subject_proof": true,
+  "non_selected_subject_attempts": 1,
+  "non_selected_subject_status_class": "2xx",
+  "non_selected_subject_error_category": "none",
+  "private_smoke": true,
+  "private_smoke_status": 200,
+  "second_route_enabled": false,
+  "no_second_route": true,
+  "non_allowed_route": "warehouse.ledger.list",
+  "non_allowed_route_status_class": "2xx",
+  "non_allowed_route_error_category": "none",
+  "credentials_in_cli_args": false,
+  "credentials_in_artifacts": false,
+  "artifacts_redacted": true
+}
