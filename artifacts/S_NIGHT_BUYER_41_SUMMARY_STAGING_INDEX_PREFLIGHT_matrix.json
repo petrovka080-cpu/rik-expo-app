@@ -1,0 +1,88 @@
+{
+  "wave": "WAVE_41_BUYER_SUMMARY_STAGING_MIGRATION_PREFLIGHT",
+  "status": "GREEN_BUYER_SUMMARY_STAGING_INDEX_PREFLIGHT_READY",
+  "generated_at": "2026-05-11T07:43:00.488Z",
+  "target_migration": "20260511093000_buyer_summary_inbox_page25_index_plan.sql",
+  "target_version": "20260511093000",
+  "loaded_env_file_class": ".env.agent.staging.local",
+  "environment_checks": {
+    "app_env_class": "staging_class",
+    "expo_public_app_env_class": "staging_class",
+    "staging_target_only": true,
+    "staging_db_env_name": "STAGING_SUPABASE_DB_URL",
+    "staging_db_url_present": true,
+    "staging_db_equals_production_candidate": false,
+    "production_db_env_candidates_present": [
+      "PROD_DATABASE_READONLY_URL"
+    ],
+    "production_db_used": false,
+    "raw_values_printed": false
+  },
+  "bff_staging_snapshot": {
+    "base_url_env_name": "STAGING_BFF_BASE_URL",
+    "base_url_class": "staging_class",
+    "health_status": 200,
+    "ready_status": 200,
+    "health_ok": true,
+    "ready_ok": true,
+    "raw_url_printed": false
+  },
+  "bounded_runner": {
+    "available": true,
+    "plan_status": "PASS",
+    "execute_mode_used": false,
+    "migration_apply_performed": false,
+    "migrations_dir": "docs/migration-plans",
+    "allowlist": [
+      "20260511093000_buyer_summary_inbox_page25_index_plan.sql"
+    ],
+    "selected_migration_count": 1
+  },
+  "staging_migration_history_snapshot": {
+    "ok": true,
+    "env_name": "STAGING_SUPABASE_DB_URL",
+    "row_count": 164,
+    "sampled_count": 164,
+    "latest_version_hash": "549d0126080a",
+    "target_migration_present": false,
+    "raw_rows_printed": false
+  },
+  "rollback_sql": {
+    "exists": true,
+    "statements": [
+      "drop index concurrently if exists public.idx_buyer_summary_inbox_pi_req_item_text_proposal_w39;",
+      "drop index concurrently if exists public.idx_buyer_summary_inbox_pi_req_item_text_context_w39;"
+    ]
+  },
+  "approvals": {
+    "S_STAGING_DB_MIGRATION_APPLY_APPROVED": {
+      "present": true,
+      "truthy_true": true
+    },
+    "S_STAGING_DB_WRITE_APPROVED": {
+      "present": true,
+      "truthy_true": true
+    },
+    "S_ADDITIVE_STAGING_MIGRATIONS_APPROVED": {
+      "present": true,
+      "truthy_true": true
+    },
+    "S_AGENT_ALLOW_ADDITIVE_STAGING_MIGRATIONS": {
+      "present": true,
+      "truthy_true": true
+    },
+    "STAGING_MIGRATIONS_ALLOWED": {
+      "present": true,
+      "truthy_true": true
+    }
+  },
+  "safety": {
+    "production_db_used": false,
+    "migration_applied": false,
+    "db_writes_performed": false,
+    "production_load": false,
+    "realtime_load": false,
+    "env_writes_performed": false,
+    "raw_secrets_printed": false
+  }
+}

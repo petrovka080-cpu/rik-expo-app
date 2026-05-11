@@ -1,0 +1,47 @@
+{
+  "wave": "WAVE_43_BUYER_SUMMARY_QUERY_PLAN_VERIFY_AFTER_INDEX",
+  "status": "BLOCKED_BUYER_SUMMARY_INDEX_NOT_USED",
+  "generated_at": "2026-05-11T07:46:39.132Z",
+  "target_rpc": "public.buyer_summary_inbox_scope_v1",
+  "target_rpc_args": {
+    "p_offset": 0,
+    "p_limit": 25,
+    "p_search": null,
+    "p_company_id": null
+  },
+  "staging_only": true,
+  "readonly_query_plan_check": true,
+  "production_query": false,
+  "db_writes": false,
+  "target_indexes": [
+    "idx_buyer_summary_inbox_pi_req_item_text_proposal_w39",
+    "idx_buyer_summary_inbox_pi_req_item_text_context_w39"
+  ],
+  "plan_summary": {
+    "ok": true,
+    "exact_rpc_explain_available": true,
+    "rpc_entry_node_types": [
+      "Function Scan"
+    ],
+    "rpc_entry_opaque_function_scan": true,
+    "source_body_explain_available": true,
+    "target_indexes_used": [],
+    "target_index_used": false,
+    "other_index_names_sample": [
+      "buyer_summary_inbox_search_v1_document_trgm_idx"
+    ],
+    "top_estimated_rows": 1,
+    "join_nodes_count": 16,
+    "sort_materialization_count": 8,
+    "planning_bucket": "le_10ms",
+    "execution_bucket": "le_100ms",
+    "raw_rows_printed": false
+  },
+  "safety": {
+    "production_calls": false,
+    "db_writes": false,
+    "data_dump": false,
+    "raw_row_data_printed": false,
+    "raw_secrets_printed": false
+  }
+}

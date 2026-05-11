@@ -1,0 +1,51 @@
+{
+  "wave": "WAVE_42_BUYER_SUMMARY_STAGING_INDEX_APPLY",
+  "status": "GREEN_BUYER_SUMMARY_STAGING_INDEX_APPLIED",
+  "generated_at": "2026-05-11T07:44:06.753Z",
+  "target_migration": "20260511093000_buyer_summary_inbox_page25_index_plan.sql",
+  "apply_runner": {
+    "bounded_runner_used": true,
+    "execute_mode_used": true,
+    "migrations_dir": "docs/migration-plans",
+    "allowlist": [
+      "20260511093000_buyer_summary_inbox_page25_index_plan.sql"
+    ],
+    "selected_migration_count": 1,
+    "applied_migration_count": 1,
+    "production_db_used": false
+  },
+  "verification": {
+    "migration_history_recorded": true,
+    "history_record_hash": "a5ee3406d5db",
+    "indexes_exist": true,
+    "indexes_expected": [
+      "idx_buyer_summary_inbox_pi_req_item_text_proposal_w39",
+      "idx_buyer_summary_inbox_pi_req_item_text_context_w39"
+    ],
+    "indexes_found": [
+      "idx_buyer_summary_inbox_pi_req_item_text_context_w39",
+      "idx_buyer_summary_inbox_pi_req_item_text_proposal_w39"
+    ],
+    "health_after_status": 200,
+    "ready_after_status": 200,
+    "health_after_ok": true,
+    "ready_after_ok": true
+  },
+  "rollback_package": {
+    "ready": true,
+    "statements": [
+      "drop index concurrently if exists public.idx_buyer_summary_inbox_pi_req_item_text_proposal_w39;",
+      "drop index concurrently if exists public.idx_buyer_summary_inbox_pi_req_item_text_context_w39;"
+    ],
+    "apply_only_if_rollback_needed": true
+  },
+  "safety": {
+    "production_apply": false,
+    "destructive_dml": false,
+    "unbounded_dml": false,
+    "realtime_load": false,
+    "cache_or_rate_changes": false,
+    "raw_db_rows_printed": false,
+    "raw_secrets_printed": false
+  }
+}

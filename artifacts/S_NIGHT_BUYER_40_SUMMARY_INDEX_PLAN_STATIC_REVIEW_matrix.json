@@ -1,0 +1,62 @@
+{
+  "wave": "WAVE_40_BUYER_SUMMARY_INDEX_PLAN_STATIC_REVIEW",
+  "status": "GREEN_BUYER_SUMMARY_INDEX_PLAN_STATIC_REVIEWED",
+  "generated_at": "2026-05-11T07:40:01.303Z",
+  "plan_file": "docs/migration-plans/20260511093000_buyer_summary_inbox_page25_index_plan.sql",
+  "contract_test_file": "tests/load/buyerSummaryInboxPage25IndexPlan.contract.test.ts",
+  "target_rpc": "public.buyer_summary_inbox_scope_v1",
+  "target_rpc_args": {
+    "p_offset": 0,
+    "p_limit": 25,
+    "p_search": null,
+    "p_company_id": null
+  },
+  "proposed_indexes": [
+    {
+      "name": "idx_buyer_summary_inbox_pi_req_item_text_proposal_w39",
+      "table": "public.proposal_items",
+      "columns_or_expressions": [
+        "request_item_id::text",
+        "proposal_id::text"
+      ],
+      "target_query": "public.buyer_summary_inbox_scope_v1(p_offset := 0, p_limit := 25, p_search := null, p_company_id := null)",
+      "rollback_drop_index_statement_present": true,
+      "exact_shape_present": true
+    },
+    {
+      "name": "idx_buyer_summary_inbox_pi_req_item_text_context_w39",
+      "table": "public.proposal_items",
+      "columns_or_expressions": [
+        "request_item_id::text",
+        "coalesce(updated_at, created_at) desc nulls last",
+        "id desc"
+      ],
+      "target_query": "public.buyer_summary_inbox_scope_v1(p_offset := 0, p_limit := 25, p_search := null, p_company_id := null)",
+      "rollback_drop_index_statement_present": true,
+      "exact_shape_present": true
+    }
+  ],
+  "checks": {
+    "explicit_index_names": true,
+    "exact_tables": true,
+    "exact_columns_or_expressions": true,
+    "target_query_documented": true,
+    "rollback_drop_index_statements_present": true,
+    "request_item_id_text_expression_index_verified": true,
+    "no_destructive_dml_or_ddl": true,
+    "no_table_rewrite_statement": true,
+    "no_production_apply_commands": true,
+    "contract_test_rejects_drop_table": true,
+    "contract_test_rejects_delete": true,
+    "contract_test_rejects_update": true,
+    "contract_test_rejects_destructive_alter_table": true,
+    "contract_test_rejects_unbounded_mutation": true
+  },
+  "safety": {
+    "db_writes_performed": false,
+    "migration_applied": false,
+    "production_calls_performed": false,
+    "env_writes_performed": false,
+    "raw_secrets_printed": false
+  }
+}

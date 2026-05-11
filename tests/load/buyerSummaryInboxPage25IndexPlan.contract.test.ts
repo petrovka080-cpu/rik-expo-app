@@ -26,12 +26,12 @@ describe("W39 buyer summary inbox page 25 index plan package", () => {
   });
 
   it("targets only buyer inbox proposal item joins used by the page 25 source shape", () => {
-    expect(source).toContain("idx_buyer_summary_inbox_pi_req_item_text_proposal_w39");
-    expect(source).toContain("idx_buyer_summary_inbox_pi_req_item_text_context_w39");
-    expect(source).toContain("on public.proposal_items");
-    expect(source).toContain("(request_item_id::text)");
-    expect(source).toContain("(proposal_id::text)");
-    expect(source).toContain("(coalesce(updated_at, created_at)) desc nulls last");
+    expect(source).toMatch(
+      /create index if not exists idx_buyer_summary_inbox_pi_req_item_text_proposal_w39\s+on public\.proposal_items\s*\(\s*\(request_item_id::text\),\s*\(proposal_id::text\)\s*\);/s,
+    );
+    expect(source).toMatch(
+      /create index if not exists idx_buyer_summary_inbox_pi_req_item_text_context_w39\s+on public\.proposal_items\s*\(\s*\(request_item_id::text\),\s*\(coalesce\(updated_at, created_at\)\) desc nulls last,\s*id desc\s*\)/s,
+    );
     expect(source).toContain("include (");
     expect(source).toContain("director_comment");
     expect(source).toContain("supplier");
@@ -57,8 +57,41 @@ describe("W39 buyer summary inbox page 25 index plan package", () => {
     expect(lowerExecutableSource).not.toMatch(/\btruncate\b/);
     expect(lowerExecutableSource).not.toMatch(/\bupdate\s+public\./);
     expect(lowerExecutableSource).not.toMatch(/\binsert\s+into\b/);
+    expect(lowerExecutableSource).not.toMatch(/\balter\s+table\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bcreate\s+table\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bcopy\s+public\./);
+    expect(lowerExecutableSource).not.toMatch(/\bmerge\s+into\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bvacuum\s+full\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bcluster\s+public\./);
+    expect(lowerExecutableSource).not.toMatch(/\breindex\b/);
     expect(lowerSource).not.toContain("service_role");
     expect(lowerSource).not.toContain("raw payload");
+  });
+
+  it("contains no production apply commands or environment-specific connection strings", () => {
+    expect(lowerExecutableSource).not.toMatch(/\bpsql\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bsupabase\s+db\s+(push|reset|remote|pull)\b/);
+    expect(lowerExecutableSource).not.toMatch(/\bDATABASE_URL\b/i);
+    expect(lowerExecutableSource).not.toMatch(/\bPROD(?:UCTION)?_/i);
+    expect(lowerExecutableSource).not.toMatch(/postgres(?:ql)?:\/\//i);
+    expect(lowerExecutableSource).not.toMatch(/https:\/\/.*supabase/i);
+  });
+
+  it("rejects destructive alter-table and unbounded data mutation patterns", () => {
+    const forbiddenPatterns = [
+      "drop table public.proposal_items",
+      "delete from public.proposal_items",
+      "update public.proposal_items set note = null",
+      "alter table public.proposal_items drop column note",
+      "alter table public.proposal_items alter column note type text",
+      "insert into public.proposal_items select * from public.proposal_items",
+      "merge into public.proposal_items using public.requests on true",
+      "truncate public.proposal_items",
+    ];
+
+    for (const pattern of forbiddenPatterns) {
+      expect(lowerExecutableSource).not.toContain(pattern);
+    }
   });
 
   it("passes bounded migration runner planning without executing SQL", () => {
