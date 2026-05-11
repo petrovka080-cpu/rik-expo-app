@@ -17,6 +17,7 @@ describe("auth stable e2e test IDs", () => {
     expect(loginSource).toContain('testID="auth.login.submit"');
     expect(loginSource).toContain('testID="auth.login.error"');
     expect(loginSource).toContain('testID="auth.login.loading"');
+    expect(loginSource).toContain("collapsable={false}");
   });
 
   it("keeps the existing auth behavior and does not add an e2e bypass", () => {

@@ -212,6 +212,7 @@ export default function LoginScreen() {
   return (
     <KeyboardAvoidingView
       testID="auth.login.screen"
+      collapsable={false}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
     >
