@@ -1,0 +1,26 @@
+{
+  "wave": "S_AI_TOOLS_03_TOOL_PLAN_POLICY",
+  "final_status": "GREEN_AI_TOOL_PLAN_POLICY_READY",
+  "source_files": [
+    "src/features/ai/tools/aiToolPlanPolicy.ts",
+    "scripts/architecture_anti_regression_suite.ts"
+  ],
+  "test_files": [
+    "tests/ai/aiToolPlanPolicy.contract.test.ts",
+    "tests/architecture/aiToolPlanPolicyArchitecture.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "artifact_files": [
+    "artifacts/S_AI_TOOLS_03_TOOL_PLAN_POLICY_inventory.json",
+    "artifacts/S_AI_TOOLS_03_TOOL_PLAN_POLICY_matrix.json",
+    "artifacts/S_AI_TOOLS_03_TOOL_PLAN_POLICY_proof.md"
+  ],
+  "registered_tool_count": 9,
+  "runtime_execution_added": false,
+  "provider_calls_added": false,
+  "db_access_added": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "supabase_project_changes": false,
+  "artifacts_redacted": true
+}

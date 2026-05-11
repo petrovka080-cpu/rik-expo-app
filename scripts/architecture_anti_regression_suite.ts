@@ -324,6 +324,21 @@ export type AiToolReadBindingsArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiToolPlanPolicyArchitectureSummary = {
+  policyPresent: boolean;
+  plansAllRegisteredTools: boolean;
+  blocksUnknownTools: boolean;
+  requiresSafeReadBindings: boolean;
+  directExecutionDisabled: boolean;
+  mutationDisabled: boolean;
+  providerCallsDisabled: boolean;
+  dbAccessDisabled: boolean;
+  noLiveExecutionBoundary: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -485,6 +500,7 @@ export type ArchitectureAntiRegressionReport = {
   aiAppKnowledgeRegistry: AiAppKnowledgeRegistrySummary;
   aiToolRegistryArchitecture: AiToolRegistryArchitectureSummary;
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
+  aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
@@ -580,6 +596,7 @@ const AI_TOOL_REGISTRY_PATH = "src/features/ai/tools/aiToolRegistry.ts";
 const AI_TOOL_TYPES_PATH = "src/features/ai/tools/aiToolTypes.ts";
 const AI_TOOL_SCHEMAS_PATH = "src/features/ai/schemas/aiToolSchemas.ts";
 const AI_TOOL_READ_BINDINGS_PATH = "src/features/ai/tools/aiToolReadBindings.ts";
+const AI_TOOL_PLAN_POLICY_PATH = "src/features/ai/tools/aiToolPlanPolicy.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
   "compare_suppliers",
@@ -2033,6 +2050,78 @@ export function evaluateAiToolReadBindingsArchitectureGuardrail(params: {
       noProviderImports,
       noSupabaseImports,
       noMutationTerms,
+      findings,
+    },
+  };
+}
+
+const aiToolPlanPolicyLiveExecutionPattern =
+  /\bhandler\b|\bexecuteTool\b|\brunTool\b|\btoolExecutor\b|\binvokeTool\b|\bfetch\s*\(|\bXMLHttpRequest\b|\.(?:from|rpc|insert|update|delete)\s*\(/i;
+const aiToolPlanPolicyProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i;
+const aiToolPlanPolicySupabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+
+export function evaluateAiToolPlanPolicyArchitectureGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiToolPlanPolicyArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const policySource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_PLAN_POLICY_PATH });
+  const plansAllRegisteredTools =
+    Boolean(policySource?.includes("AI_TOOL_NAMES")) &&
+    Boolean(policySource?.includes("getAiToolDefinition"));
+  const blocksUnknownTools =
+    Boolean(policySource?.includes("isAiToolName")) &&
+    Boolean(policySource?.includes("tool_not_registered"));
+  const requiresSafeReadBindings =
+    Boolean(policySource?.includes("getAiSafeReadToolBinding")) &&
+    Boolean(policySource?.includes("safe_read_binding_missing"));
+  const directExecutionDisabled = Boolean(policySource?.includes("directExecutionEnabled: false"));
+  const mutationDisabled = Boolean(policySource?.includes("mutationAllowed: false"));
+  const providerCallsDisabled = Boolean(policySource?.includes("providerCallAllowed: false"));
+  const dbAccessDisabled = Boolean(policySource?.includes("dbAccessAllowed: false"));
+  const noLiveExecutionBoundary = !aiToolPlanPolicyLiveExecutionPattern.test(policySource ?? "");
+  const noProviderImports = !aiToolPlanPolicyProviderPattern.test(policySource ?? "");
+  const noSupabaseImports = !aiToolPlanPolicySupabasePattern.test(policySource ?? "");
+  const findings = [
+    ...(noLiveExecutionBoundary ? [] : ["ai_tool_plan_policy_live_execution_boundary_detected"]),
+    ...(noProviderImports ? [] : ["ai_tool_plan_policy_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["ai_tool_plan_policy_supabase_boundary_detected"]),
+  ];
+  const errors = [
+    ...(policySource ? [] : [`missing_file:${AI_TOOL_PLAN_POLICY_PATH}`]),
+    ...(plansAllRegisteredTools ? [] : ["ai_tool_plan_policy_registry_coverage_missing"]),
+    ...(blocksUnknownTools ? [] : ["ai_tool_plan_policy_unknown_tool_block_missing"]),
+    ...(requiresSafeReadBindings ? [] : ["ai_tool_plan_policy_safe_read_binding_gate_missing"]),
+    ...(directExecutionDisabled ? [] : ["ai_tool_plan_policy_direct_execution_enabled"]),
+    ...(mutationDisabled ? [] : ["ai_tool_plan_policy_mutation_enabled"]),
+    ...(providerCallsDisabled ? [] : ["ai_tool_plan_policy_provider_calls_enabled"]),
+    ...(dbAccessDisabled ? [] : ["ai_tool_plan_policy_db_access_enabled"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_tool_plan_policy_architecture",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      policyPresent: Boolean(policySource),
+      plansAllRegisteredTools,
+      blocksUnknownTools,
+      requiresSafeReadBindings,
+      directExecutionDisabled,
+      mutationDisabled,
+      providerCallsDisabled,
+      dbAccessDisabled,
+      noLiveExecutionBoundary,
+      noProviderImports,
+      noSupabaseImports,
       findings,
     },
   };
@@ -3675,6 +3764,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiAppKnowledgeRegistry = evaluateAiAppKnowledgeRegistryGuardrail({ projectRoot });
   const aiToolRegistryArchitecture = evaluateAiToolRegistryArchitectureGuardrail({ projectRoot });
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
+  const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
@@ -3703,6 +3793,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppKnowledgeRegistry.check,
     aiToolRegistryArchitecture.check,
     aiToolReadBindingsArchitecture.check,
+    aiToolPlanPolicyArchitecture.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     androidEmulatorIosBuildSubmitGate.check,
@@ -3732,6 +3823,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppKnowledgeRegistry: aiAppKnowledgeRegistry.summary,
     aiToolRegistryArchitecture: aiToolRegistryArchitecture.summary,
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
+    aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
@@ -3779,6 +3871,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_registry_no_live_execution: ${report.aiToolRegistryArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_tool_read_bindings_safe_read_bound: ${report.aiToolReadBindingsArchitecture.allSafeReadToolsBound}`);
   console.info(`ai_tool_read_bindings_no_live_execution: ${report.aiToolReadBindingsArchitecture.noLiveExecutionBoundary}`);
+  console.info(`ai_tool_plan_policy_blocks_unknown: ${report.aiToolPlanPolicyArchitecture.blocksUnknownTools}`);
+  console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
