@@ -2,9 +2,9 @@
   "wave": "S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER",
   "final_status": "GREEN_FLATLIST_TUNING_REGRESSION_SCANNER",
   "date": "2026-05-11",
-  "commit_sha": "PENDING_FINAL_COMMIT",
-  "head_equals_origin_main": "PENDING_POST_PUSH",
-  "ahead_behind": "PENDING_POST_PUSH",
+  "commit_sha": "be66a2b1e2eba7ba8fff769b165ca975357e82ec",
+  "head_equals_origin_main": true,
+  "ahead_behind": "0/0",
   "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
   "preflight": {
     "git_fetch_origin_main": "PASS",
@@ -118,8 +118,11 @@
       ]
     },
     "post_push_release_verify": {
-      "status": "PENDING_POST_PUSH",
-      "command": "npm run release:verify -- --json"
+      "status": "PASS",
+      "command": "npm run release:verify -- --json",
+      "verified_commit_sha": "be66a2b1e2eba7ba8fff769b165ca975357e82ec",
+      "release_guard_head_equals_origin_main": true,
+      "release_guard_ahead_behind": "0/0"
     }
   },
   "negative_confirmations": {

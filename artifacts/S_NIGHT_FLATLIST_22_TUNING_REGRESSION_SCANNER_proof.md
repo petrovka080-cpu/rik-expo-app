@@ -2,6 +2,8 @@
 
 final_status: GREEN_FLATLIST_TUNING_REGRESSION_SCANNER
 
+Verified code commit: `be66a2b1e2eba7ba8fff769b165ca975357e82ec`
+
 Supabase Realtime status: WAITING_FOR_SUPABASE_SUPPORT_RESPONSE
 
 ## Scope
@@ -76,7 +78,7 @@ Required gates:
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json`: PASS, including `flatlist_tuning_regression` with `violations: 0`
 - `git diff --check`: PASS
 - Artifact JSON parse: PASS
-- Post-push `npm run release:verify -- --json`: PENDING_POST_PUSH
+- Post-push `npm run release:verify -- --json`: PASS against `be66a2b1e2eba7ba8fff769b165ca975357e82ec`
 
 ## Negative Confirmations
 
