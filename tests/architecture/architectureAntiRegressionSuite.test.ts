@@ -10,6 +10,7 @@ import {
   evaluateAndroidEmulatorIosBuildSubmitGateGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateAiRoleScreenEmulatorGateGuardrail,
+  evaluatePostInstallReleaseSignoffGateGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   evaluateRateLimitMarketplace5PctCanaryProofGuardrail,
@@ -950,6 +951,95 @@ describe("architecture anti-regression suite", () => {
         "ios_simulator_submit_not_blocked",
         "production_ota_not_blocked",
         "release_credentials_cli_args_not_blocked",
+      ]),
+    );
+  });
+
+  it("ratchets the post-install release signoff gate", () => {
+    const matrix = {
+      android: {
+        apk_installed_on_emulator: true,
+        runtime_smoke: "PASS",
+        google_play_submit: false,
+      },
+      ios: {
+        submit_started: true,
+        submit_status_captured: true,
+      },
+      ai_role_screen_e2e: {
+        auth_admin_used: false,
+        service_role_used: false,
+        list_users_used: false,
+      },
+      ota: {
+        used: false,
+        production_ota_used: false,
+      },
+      secrets: {
+        credentials_in_cli_args: false,
+        credentials_printed: false,
+        artifacts_redacted: true,
+      },
+    };
+    const passing = evaluatePostInstallReleaseSignoffGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "scripts/release/verifyAndroidInstalledBuildRuntime.ts") {
+          return 'verifyAndroidInstalledBuildRuntime ensureAndroidEmulatorReady "pm", "path" "monkey" fake_emulator_pass: false';
+        }
+        if (relativePath === "scripts/release/verifyIosBuildSubmitStatus.ts") {
+          return 'verifyIosBuildSubmitStatus "eas", "build:view" simulator_build_used_for_submit post_build_commits_non_runtime_only fake_submit_pass: false';
+        }
+        if (relativePath.endsWith("_matrix.json")) return JSON.stringify(matrix);
+        if (relativePath.endsWith("_android.json")) {
+          return JSON.stringify({ apk_installed_on_emulator: true, runtime_smoke: "PASS", fake_emulator_pass: false });
+        }
+        if (relativePath.endsWith("_ios.json")) {
+          return JSON.stringify({ submit_started: true, submit_status_captured: true, fake_submit_pass: false });
+        }
+        if (relativePath.endsWith("_ai_e2e.json")) {
+          return JSON.stringify({ auth_admin_used: false, service_role_used: false, list_users_used: false });
+        }
+        if (relativePath.endsWith("_inventory.json")) return "{}";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "post_install_release_signoff_gate",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluatePostInstallReleaseSignoffGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("_matrix.json")) {
+          return JSON.stringify({
+            ...matrix,
+            android: { apk_installed_on_emulator: false, runtime_smoke: "BLOCKED", google_play_submit: true },
+            ios: { submit_started: false, submit_status_captured: false },
+            ota: { used: true, production_ota_used: true },
+            secrets: { credentials_in_cli_args: true, credentials_printed: true, artifacts_redacted: false },
+          });
+        }
+        if (relativePath.endsWith("_android.json")) {
+          return JSON.stringify({ apk_installed_on_emulator: false, runtime_smoke: "BLOCKED", fake_emulator_pass: true });
+        }
+        if (relativePath.endsWith("_ios.json")) {
+          return JSON.stringify({ submit_started: false, submit_status_captured: false, fake_submit_pass: true });
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "android_post_install_runtime_smoke_not_proven",
+        "ios_submit_status_not_proven",
+        "credentials_cli_args_not_blocked",
+        "production_ota_not_blocked",
       ]),
     );
   });

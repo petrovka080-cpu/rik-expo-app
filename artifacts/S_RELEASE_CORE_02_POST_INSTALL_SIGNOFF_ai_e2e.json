@@ -1,0 +1,12 @@
+{
+  "status": "BLOCKED_NO_E2E_ROLE_SECRETS",
+  "auth_source": "missing",
+  "auth_admin_used": false,
+  "service_role_used": false,
+  "list_users_used": false,
+  "mutations_created": 0,
+  "role_leakage_observed": false,
+  "approval_required_observed": false,
+  "fake_ai_answer": false,
+  "exact_reason": "Explicit E2E role secrets are missing; AI role-screen E2E was not run."
+}

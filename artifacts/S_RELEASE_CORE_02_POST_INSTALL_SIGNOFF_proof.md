@@ -1,0 +1,29 @@
+# S_RELEASE_CORE_02 Post Install Runtime And AI Signoff Proof
+
+- Final status: GREEN_POST_INSTALL_RUNTIME_AND_AI_SIGNOFF_GATE
+- Android APK installed on emulator: true
+- Android runtime smoke: PASS
+- Android physical device required: false
+- Android Google Play submit: false
+- Android build id: be51d49f-8a5d-4168-8654-c853eb1d8b91
+- iOS build id: f335fefc-0ab1-4939-947f-0f11c6d1bdda
+- iOS build status: FINISHED
+- iOS simulator build submitted: false
+- iOS submit status captured: true
+- iOS runtime version: be945428a984869a2cd7eac50f188296f9ed7cbc
+- AI role-screen E2E: BLOCKED_NO_E2E_ROLE_SECRETS
+- AI auth source: missing
+- Auth Admin/listUsers/service_role used: false
+- Mutations created: 0
+- Role leakage observed: false
+- OTA used: false
+- Credentials in CLI args: false
+- Credentials printed: false
+- Focused sign-off tests: PASS
+- tsc: PASS
+- lint: PASS
+- full Jest: PASS
+- architecture scanner: PASS
+- git diff check: PASS
+- artifact JSON parse: PASS
+- release verify: PASS

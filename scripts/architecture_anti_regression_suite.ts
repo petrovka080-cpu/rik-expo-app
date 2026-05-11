@@ -338,6 +338,21 @@ export type AndroidEmulatorIosBuildSubmitGateSummary = {
   findings: readonly string[];
 };
 
+export type PostInstallReleaseSignoffGateSummary = {
+  androidVerifierPresent: boolean;
+  iosVerifierPresent: boolean;
+  signoffArtifactsPresent: boolean;
+  androidRuntimeSmokeProven: boolean;
+  iosSubmitStatusProven: boolean;
+  aiRoleE2eExplicitSecretsOnly: boolean;
+  credentialsNotInCliArgs: boolean;
+  secretsNotInArtifacts: boolean;
+  productionOtaAbsent: boolean;
+  androidPlaySubmitAbsent: boolean;
+  fakePassClaimsAbsent: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -443,6 +458,7 @@ export type ArchitectureAntiRegressionReport = {
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
+  postInstallReleaseSignoffGate: PostInstallReleaseSignoffGateSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -625,6 +641,13 @@ const RELEASE_CORE_01_IOS_PATH =
   "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_ios.json";
 const RELEASE_CORE_01_INVENTORY_PATH =
   "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_inventory.json";
+const POST_INSTALL_ANDROID_VERIFIER_PATH = "scripts/release/verifyAndroidInstalledBuildRuntime.ts";
+const POST_INSTALL_IOS_VERIFIER_PATH = "scripts/release/verifyIosBuildSubmitStatus.ts";
+const POST_INSTALL_MATRIX_PATH = "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_matrix.json";
+const POST_INSTALL_ANDROID_PATH = "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_android.json";
+const POST_INSTALL_IOS_PATH = "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_ios.json";
+const POST_INSTALL_AI_E2E_PATH = "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_ai_e2e.json";
+const POST_INSTALL_INVENTORY_PATH = "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_inventory.json";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
@@ -2109,6 +2132,126 @@ export function evaluateAndroidEmulatorIosBuildSubmitGateGuardrail(params: {
   };
 }
 
+export function evaluatePostInstallReleaseSignoffGateGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: PostInstallReleaseSignoffGateSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const androidVerifierSource = safeReadProjectFile({ readFile, relativePath: POST_INSTALL_ANDROID_VERIFIER_PATH });
+  const iosVerifierSource = safeReadProjectFile({ readFile, relativePath: POST_INSTALL_IOS_VERIFIER_PATH });
+  const matrix = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: POST_INSTALL_MATRIX_PATH }));
+  const android = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: POST_INSTALL_ANDROID_PATH }));
+  const ios = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: POST_INSTALL_IOS_PATH }));
+  const aiE2e = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: POST_INSTALL_AI_E2E_PATH }));
+  const inventory = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: POST_INSTALL_INVENTORY_PATH }));
+  const matrixAndroid = recordChild(matrix, "android");
+  const matrixIos = recordChild(matrix, "ios");
+  const matrixAi = recordChild(matrix, "ai_role_screen_e2e");
+  const matrixSecrets = recordChild(matrix, "secrets");
+  const matrixOta = recordChild(matrix, "ota");
+
+  const androidVerifierPresent =
+    Boolean(androidVerifierSource?.includes("verifyAndroidInstalledBuildRuntime")) &&
+    Boolean(androidVerifierSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(androidVerifierSource?.includes('"pm", "path"')) &&
+    Boolean(androidVerifierSource?.includes('"monkey"')) &&
+    Boolean(androidVerifierSource?.includes("fake_emulator_pass: false"));
+  const iosVerifierPresent =
+    Boolean(iosVerifierSource?.includes("verifyIosBuildSubmitStatus")) &&
+    Boolean(iosVerifierSource?.includes('"eas", "build:view"')) &&
+    Boolean(iosVerifierSource?.includes("simulator_build_used_for_submit")) &&
+    Boolean(iosVerifierSource?.includes("post_build_commits_non_runtime_only")) &&
+    Boolean(iosVerifierSource?.includes("fake_submit_pass: false"));
+  const signoffArtifactsPresent = Boolean(matrix && android && ios && aiE2e && inventory);
+  const androidRuntimeSmokeProven =
+    recordBoolean(android, "apk_installed_on_emulator") === true &&
+    recordString(android, "runtime_smoke") === "PASS" &&
+    recordBoolean(android, "fake_emulator_pass") === false &&
+    recordBoolean(matrixAndroid, "apk_installed_on_emulator") === true;
+  const iosSubmitStatusProven =
+    recordBoolean(ios, "submit_started") === true &&
+    recordBoolean(ios, "submit_status_captured") === true &&
+    recordBoolean(ios, "fake_submit_pass") === false &&
+    recordBoolean(matrixIos, "submit_status_captured") === true;
+  const aiRoleE2eExplicitSecretsOnly =
+    recordBoolean(aiE2e, "auth_admin_used") === false &&
+    recordBoolean(aiE2e, "service_role_used") === false &&
+    recordBoolean(aiE2e, "list_users_used") === false &&
+    recordBoolean(matrixAi, "auth_admin_used") === false &&
+    recordBoolean(matrixAi, "service_role_used") === false &&
+    recordBoolean(matrixAi, "list_users_used") === false;
+  const credentialsNotInCliArgs =
+    recordBoolean(matrixSecrets, "credentials_in_cli_args") === false &&
+    !Boolean(androidVerifierSource?.includes('"--env"')) &&
+    !Boolean(androidVerifierSource?.includes('"-e"')) &&
+    !Boolean(iosVerifierSource?.includes('"--env"')) &&
+    !Boolean(iosVerifierSource?.includes('"-e"'));
+  const secretsNotInArtifacts =
+    recordBoolean(matrixSecrets, "credentials_printed") === false &&
+    recordBoolean(matrixSecrets, "artifacts_redacted") === true;
+  const productionOtaAbsent =
+    recordBoolean(matrixOta, "used") === false &&
+    recordBoolean(matrixOta, "production_ota_used") === false &&
+    !Boolean(androidVerifierSource?.includes("eas update")) &&
+    !Boolean(iosVerifierSource?.includes("eas update"));
+  const androidPlaySubmitAbsent =
+    recordBoolean(matrixAndroid, "google_play_submit") === false &&
+    !Boolean(androidVerifierSource?.includes("submit --platform android")) &&
+    !Boolean(iosVerifierSource?.includes("submit --platform android"));
+  const fakePassClaimsAbsent =
+    recordBoolean(android, "fake_emulator_pass") === false &&
+    recordBoolean(ios, "fake_submit_pass") === false &&
+    !Boolean(androidVerifierSource?.includes("fake_emulator_pass: true")) &&
+    !Boolean(iosVerifierSource?.includes("fake_submit_pass: true"));
+
+  const findings = [
+    ...(recordBoolean(android, "fake_emulator_pass") === true ? ["android_fake_emulator_pass_claimed"] : []),
+    ...(recordBoolean(ios, "fake_submit_pass") === true ? ["ios_fake_submit_pass_claimed"] : []),
+    ...(recordBoolean(matrixAndroid, "google_play_submit") === true ? ["android_play_submit_claimed"] : []),
+    ...(recordBoolean(matrixOta, "production_ota_used") === true ? ["production_ota_used"] : []),
+    ...(recordBoolean(matrixSecrets, "credentials_in_cli_args") === true ? ["credentials_in_cli_args"] : []),
+  ];
+  const errors = [
+    ...(androidVerifierPresent ? [] : [`missing_or_incomplete_verifier:${POST_INSTALL_ANDROID_VERIFIER_PATH}`]),
+    ...(iosVerifierPresent ? [] : [`missing_or_incomplete_verifier:${POST_INSTALL_IOS_VERIFIER_PATH}`]),
+    ...(signoffArtifactsPresent ? [] : ["post_install_signoff_artifacts_missing"]),
+    ...(androidRuntimeSmokeProven ? [] : ["android_post_install_runtime_smoke_not_proven"]),
+    ...(iosSubmitStatusProven ? [] : ["ios_submit_status_not_proven"]),
+    ...(aiRoleE2eExplicitSecretsOnly ? [] : ["ai_role_e2e_explicit_secret_boundary_not_preserved"]),
+    ...(credentialsNotInCliArgs ? [] : ["credentials_cli_args_not_blocked"]),
+    ...(secretsNotInArtifacts ? [] : ["artifact_secret_redaction_not_proven"]),
+    ...(productionOtaAbsent ? [] : ["production_ota_not_blocked"]),
+    ...(androidPlaySubmitAbsent ? [] : ["android_play_submit_not_blocked"]),
+    ...(fakePassClaimsAbsent ? [] : ["fake_pass_claim_possible"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "post_install_release_signoff_gate",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      androidVerifierPresent,
+      iosVerifierPresent,
+      signoffArtifactsPresent,
+      androidRuntimeSmokeProven,
+      iosSubmitStatusProven,
+      aiRoleE2eExplicitSecretsOnly,
+      credentialsNotInCliArgs,
+      secretsNotInArtifacts,
+      productionOtaAbsent,
+      androidPlaySubmitAbsent,
+      fakePassClaimsAbsent,
+      findings,
+    },
+  };
+}
+
 export function evaluateCacheRateScopeGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -3286,6 +3429,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
+  const postInstallReleaseSignoffGate = evaluatePostInstallReleaseSignoffGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -3311,6 +3455,7 @@ export function runArchitectureAntiRegressionSuite(
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     androidEmulatorIosBuildSubmitGate.check,
+    postInstallReleaseSignoffGate.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -3337,6 +3482,7 @@ export function runArchitectureAntiRegressionSuite(
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
+    postInstallReleaseSignoffGate: postInstallReleaseSignoffGate.summary,
     componentDebt,
     checks,
     safety: {
@@ -3382,6 +3528,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_explicit_role_secrets_e2e_gate_no_discovery: ${report.aiExplicitRoleSecretsE2eGate.noAuthDiscoveryGreenPath}`);
   console.info(`android_emulator_ios_build_submit_gate_runner: ${report.androidEmulatorIosBuildSubmitGate.releaseRunnerPresent}`);
   console.info(`android_emulator_ios_build_submit_gate_ios_submit_profile: ${report.androidEmulatorIosBuildSubmitGate.iosSubmitProfileUsed}`);
+  console.info(`post_install_release_signoff_gate_android: ${report.postInstallReleaseSignoffGate.androidRuntimeSmokeProven}`);
+  console.info(`post_install_release_signoff_gate_ios: ${report.postInstallReleaseSignoffGate.iosSubmitStatusProven}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

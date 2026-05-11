@@ -1,0 +1,61 @@
+{
+  "final_status": "GREEN_POST_INSTALL_RUNTIME_AND_AI_SIGNOFF_GATE",
+  "android": {
+    "apk_installed_on_emulator": true,
+    "runtime_smoke": "PASS",
+    "physical_device_required": false,
+    "google_play_submit": false,
+    "fake_emulator_pass": false,
+    "emulator_boot_completed": true,
+    "build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
+    "build_profile": "preview",
+    "version_code": "7",
+    "version_name": "1.0.0"
+  },
+  "ios": {
+    "new_build_created": true,
+    "build_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
+    "build_status": "FINISHED",
+    "build_profile": "production",
+    "submit_profile": "production",
+    "simulator_build_used_for_submit": false,
+    "submit_started": true,
+    "submit_finished": true,
+    "submit_status_captured": true,
+    "fake_submit_pass": false,
+    "runtime_version": "be945428a984869a2cd7eac50f188296f9ed7cbc",
+    "app_build_version": "40",
+    "post_build_commits_non_runtime_only": true
+  },
+  "ai_role_screen_e2e": {
+    "status": "BLOCKED_NO_E2E_ROLE_SECRETS",
+    "auth_source": "missing",
+    "auth_admin_used": false,
+    "service_role_used": false,
+    "list_users_used": false,
+    "mutations_created": 0,
+    "role_leakage_observed": false
+  },
+  "ota": {
+    "used": false,
+    "production_ota_used": false
+  },
+  "secrets": {
+    "credentials_in_cli_args": false,
+    "credentials_printed": false,
+    "artifacts_redacted": true
+  },
+  "gates": {
+    "focused_tests": "PASS",
+    "android_runtime_signoff": "PASS",
+    "ios_submit_signoff": "PASS",
+    "ai_role_screen_e2e": "BLOCKED_NO_E2E_ROLE_SECRETS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jest": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "release_verify": "PASS"
+  }
+}

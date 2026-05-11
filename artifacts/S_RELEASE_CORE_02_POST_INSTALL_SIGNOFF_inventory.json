@@ -1,0 +1,21 @@
+{
+  "wave": "S_RELEASE_CORE_02_POST_INSTALL_RUNTIME_AND_AI_SIGNOFF_GATE",
+  "core01_artifacts_present": true,
+  "android": {
+    "source_build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
+    "profile": "preview",
+    "emulator_only": true,
+    "physical_device_required": false,
+    "google_play_submit": false
+  },
+  "ios": {
+    "source_build_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
+    "profile": "production",
+    "submit_profile": "production",
+    "simulator_build_used_for_submit": false
+  },
+  "ai_role_screen_e2e": {
+    "requires_explicit_role_secrets": true,
+    "auth_discovery_allowed": false
+  }
+}
