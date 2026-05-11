@@ -1,0 +1,48 @@
+{
+  "wave": "S_AI_DRAFT_02_DRAFT_REPORT_TOOL",
+  "scope": "production_safe_draft_only_ai_report_tool",
+  "files_created": [
+    "src/features/ai/tools/draftReportTool.ts",
+    "tests/ai/draftReportTool.contract.test.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_proof.md"
+  ],
+  "files_updated": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "runtime_boundaries": {
+    "tool": "draft_report",
+    "risk_level": "DRAFT_ONLY",
+    "policy_gate": "planAiToolUse",
+    "live_execution": false,
+    "model_provider_import": false,
+    "direct_supabase": false,
+    "db_write": false,
+    "ui_or_hook_work": false
+  },
+  "inputs": [
+    "object_id",
+    "report_kind",
+    "period_start",
+    "period_end",
+    "notes",
+    "source_evidence_refs"
+  ],
+  "outputs": [
+    "draft_preview",
+    "report_kind",
+    "sections_normalized",
+    "missing_fields",
+    "risk_flags",
+    "requires_approval",
+    "next_action",
+    "evidence_refs"
+  ],
+  "tests": [
+    "tests/ai/draftReportTool.contract.test.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts"
+  ]
+}

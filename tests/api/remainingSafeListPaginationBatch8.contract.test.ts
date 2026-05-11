@@ -226,6 +226,16 @@ const isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch = (file: string)
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiDraftReportToolPatch = (file: string) =>
+  [
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_proof.md",
+    "src/features/ai/tools/draftReportTool.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts",
+    "tests/ai/draftReportTool.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -305,6 +315,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAuditBattle127SupplierFilesMetadataTransportBoundaryPatch(file) &&
       !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
       !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
+      !isApprovedAiDraftReportToolPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

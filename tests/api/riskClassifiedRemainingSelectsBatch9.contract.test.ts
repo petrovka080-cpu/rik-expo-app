@@ -212,6 +212,16 @@ const isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch = (file: string)
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiDraftReportToolPatch = (file: string) =>
+  [
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_proof.md",
+    "src/features/ai/tools/draftReportTool.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts",
+    "tests/ai/draftReportTool.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -280,6 +290,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
+        !isApprovedAiDraftReportToolPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

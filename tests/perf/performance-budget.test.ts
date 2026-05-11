@@ -195,6 +195,9 @@ describe("performance budget — bundle module count", () => {
     const sAiDraftRequestToolFiles = [
       path.join(SRC, "features", "ai", "tools", "draftRequestTool.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiDraftReportToolFiles = [
+      path.join(SRC, "features", "ai", "tools", "draftReportTool.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -789,6 +792,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_CORE_03 adds nine permanent AI app knowledge registry and bridge files.
     // S_AI_TOOLS_06 adds one permanent finance summary SAFE_READ tool module.
     // S_AI_DRAFT_01 adds one permanent draft_request DRAFT_ONLY tool module.
+    // S_AI_DRAFT_02 adds one permanent draft_report DRAFT_ONLY tool module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -930,6 +934,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiToolsGetWarehouseStatusToolFiles).toBeLessThanOrEqual(1);
     expect(sAiToolsGetFinanceSummaryToolFiles).toBeLessThanOrEqual(1);
     expect(sAiDraftRequestToolFiles).toBeLessThanOrEqual(1);
+    expect(sAiDraftReportToolFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -949,6 +954,7 @@ describe("performance budget — bundle module count", () => {
         sAiToolsGetWarehouseStatusToolFiles -
         sAiToolsGetFinanceSummaryToolFiles -
         sAiDraftRequestToolFiles -
+        sAiDraftReportToolFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

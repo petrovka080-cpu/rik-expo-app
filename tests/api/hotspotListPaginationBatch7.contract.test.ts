@@ -219,6 +219,16 @@ const isApprovedAuditBattle126SupplierFilesStorageTransportBoundaryPatch = (file
     "tests/api/supplierFilesStorageTransport.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiDraftReportToolPatch = (file: string) =>
+  [
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_TOOL_proof.md",
+    "src/features/ai/tools/draftReportTool.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts",
+    "tests/ai/draftReportTool.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
   [
     "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
@@ -318,6 +328,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle123BuyerRepoStorageTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle126SupplierFilesStorageTransportBoundaryPatch(file) &&
+        !isApprovedAiDraftReportToolPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
