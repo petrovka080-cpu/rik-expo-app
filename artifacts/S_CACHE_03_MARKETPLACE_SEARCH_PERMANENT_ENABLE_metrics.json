@@ -1,0 +1,22 @@
+{
+  "route": "marketplace.catalog.search",
+  "route_count": 1,
+  "retained": true,
+  "baseline_cacheHit": false,
+  "first_call_cacheHit": false,
+  "second_call_cacheHit": true,
+  "cacheHit_second_call": true,
+  "first_miss_delta": 1,
+  "first_read_through_delta": 1,
+  "second_hit_delta": 1,
+  "non_allowed_route": "warehouse.ledger.list",
+  "non_allowed_route_cache_commands": 0,
+  "non_allowed_route_skipped_delta": 1,
+  "cache_error_delta": 0,
+  "diagnostic_green": true,
+  "p50_ms": 1946,
+  "p95_ms": 4161,
+  "p99_ms": 4161,
+  "sample_calls": 4,
+  "metrics_redacted": true
+}

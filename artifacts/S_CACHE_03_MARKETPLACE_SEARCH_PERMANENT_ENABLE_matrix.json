@@ -1,0 +1,129 @@
+{
+  "wave": "S_CACHE_03_MARKETPLACE_SEARCH_PERMANENT_ONE_ROUTE_ENABLE",
+  "generated_at": "2026-05-11T18:32:46.918Z",
+  "route": "marketplace.catalog.search",
+  "android_build": false,
+  "ota": false,
+  "rate_limit_changes": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "supabase_project_changes": false,
+  "production_mutation_calls": false,
+  "hook_work": false,
+  "ui_decomposition": false,
+  "fake_pass": false,
+  "secrets_printed": false,
+  "env_values_printed": false,
+  "raw_cache_keys_printed": false,
+  "raw_payloads_printed": false,
+  "raw_db_rows_printed": false,
+  "head": "29ed142fcaa21a5cda261301394bd8f7b4016b7c",
+  "origin_main": "29ed142fcaa21a5cda261301394bd8f7b4016b7c",
+  "head_equals_origin_main": true,
+  "ahead": 0,
+  "behind": 0,
+  "worktree_clean_ignoring_untracked": true,
+  "prerequisites": {
+    "S_CACHE_01": {
+      "path": "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_matrix.json",
+      "status": "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY",
+      "green": true
+    },
+    "S_CACHE_02": {
+      "path": "artifacts/S_CACHE_02_COLD_MISS_PROOF_RATCHET_matrix.json",
+      "status": "GREEN_CACHE_COLD_MISS_PROOF_RATCHET_READY",
+      "green": true
+    },
+    "S_NIGHT_CACHE_08": {
+      "path": "artifacts/S_NIGHT_CACHE_08_COLD_MISS_SECOND_HIT_PROOF_matrix.json",
+      "status": "GREEN_CACHE_COLD_MISS_SECOND_HIT_PROOF",
+      "green": true
+    },
+    "S_CACHE_RATE_01": {
+      "path": "artifacts/S_CACHE_RATE_01_FLAG_INVENTORY_matrix.json",
+      "status": "GREEN_CACHE_RATE_FLAG_INVENTORY_READY",
+      "green": true
+    }
+  },
+  "prerequisites_green": true,
+  "render_config_present": true,
+  "auth_source": "render_api_in_memory",
+  "auth_resolution_status": "present",
+  "final_status": "GREEN_CACHE_MARKETPLACE_SEARCH_PERMANENTLY_ENABLED",
+  "health_before": 200,
+  "ready_before": 200,
+  "health_after": 200,
+  "ready_after": 200,
+  "baseline_status_class": "2xx",
+  "baseline_body_ok": true,
+  "baseline_cacheHit": false,
+  "deploy_triggered": true,
+  "latest_deploy_live": true,
+  "latest_deploy_status": "live",
+  "deploy_commit_matches_head": true,
+  "runtime_commit_short": "29ed142fcaa2",
+  "runtime_commit_matches_head": true,
+  "runtime_status": "configured",
+  "runtime_enabled": true,
+  "runtime_mode": "read_through",
+  "runtime_percent": 1,
+  "read_through_v1_enabled": true,
+  "route_count": 1,
+  "route_name": "marketplace.catalog.search",
+  "runtime_scoped_to_one_route": true,
+  "env_snapshot_redacted": {
+    "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_MODE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_SHADOW_PERCENT": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_NAMESPACE": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "SCALE_REDIS_CACHE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "REDIS_URL": {
+      "present": false,
+      "valueClass": "absent"
+    },
+    "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS": {
+      "present": true,
+      "valueClass": "present_redacted"
+    }
+  },
+  "cache_env_keys_written_count": 5,
+  "retained": true,
+  "rollback_triggered": false,
+  "rollback_succeeded": "not_needed",
+  "first_request_cold_miss": true,
+  "cache_write_inferred": true,
+  "cacheHit_second_call": true,
+  "non_allowed_route": "warehouse.ledger.list",
+  "non_allowed_route_cache_commands": 0,
+  "non_allowed_route_provider_fallback": true,
+  "response_contract_unchanged": true,
+  "cache_shadow_diagnostic_green": true,
+  "metrics_redacted": true,
+  "raw_cache_keys_stored": false,
+  "raw_payloads_stored": false,
+  "credentials_in_cli_args": false,
+  "credentials_in_artifacts": false
+}
