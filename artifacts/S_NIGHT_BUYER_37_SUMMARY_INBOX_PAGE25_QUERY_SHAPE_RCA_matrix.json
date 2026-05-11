@@ -1,0 +1,117 @@
+{
+  "wave": "S_NIGHT_BUYER_37_SUMMARY_INBOX_PAGE25_QUERY_SHAPE_RCA",
+  "status": "GREEN_BUYER_SUMMARY_INBOX_PAGE25_QUERY_SHAPE_RCA",
+  "final_status": "GREEN_BUYER_SUMMARY_INBOX_PAGE25_QUERY_SHAPE_RCA",
+  "route": "buyer_summary_inbox_page_25",
+  "rpcName": "buyer_summary_inbox_scope_v1",
+  "production_calls": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "load_expansion": false,
+  "threshold_relaxation": false,
+  "exact_route_path": [
+    "scripts/load/stagingLoadCore.ts readonly target buyer_summary_inbox_page_25",
+    "Supabase RPC buyer_summary_inbox_scope_v1",
+    "public buyer_summary_inbox_scope_v1 wrapper from S-LOAD-FIX-3",
+    "private buyer_summary_inbox_scope_v1_source_before_sloadfix3 source body",
+    "base_seed reads public.list_buyer_inbox(p_company_id)",
+    "request status/proposal/reject context enrichment CTEs",
+    "grouped_rows -> filtered_groups -> ordered_groups -> page_groups -> paged_rows JSON envelope"
+  ],
+  "invocation": {
+    "p_offset": 0,
+    "p_limit": 25,
+    "p_search": null,
+    "p_company_id": null,
+    "repeatedRuns": 3,
+    "expectedMaxRows": 25
+  },
+  "query_shape": {
+    "rpc_name": "buyer_summary_inbox_scope_v1",
+    "table_reads_or_sources": [
+      "public.list_buyer_inbox(p_company_id)",
+      "public.requests by id",
+      "public.proposal_items_view by request_item_id::text",
+      "public.v_proposals_summary by proposal_id::text",
+      "public.proposal_items by request_item_id::text",
+      "public.buyer_summary_inbox_search_v1 only when p_search is not null/stale projection check"
+    ],
+    "joins": [
+      "left join request_status_rows on request_id",
+      "join v_proposals_summary for latest proposal lifecycle of rejected candidates",
+      "left join reject_context_latest for rejected item context",
+      "left join buyer_summary_inbox_search_v1 for search projection when p_search is present",
+      "join page_groups on request_id after global grouping/order"
+    ],
+    "filters": [
+      "non-empty request_id and request_item_id",
+      "status gating request_ready/item_ready/rejected_like/latest_rework",
+      "optional search text, null for page25 load route",
+      "optional p_company_id, null for load route"
+    ],
+    "pagination": "group offset pagination using row_number() group_index; page25 is offset 0 limit 25",
+    "order_by": [
+      "ordered_groups: request_id_old desc nulls last, latest_created_at desc nulls last, request_id desc",
+      "paged row_rank: created_at desc nulls last, request_item_id asc"
+    ],
+    "count_mode": [
+      "exact count ordered_groups as total_group_count",
+      "exact count page_groups as returned_group_count",
+      "exact count paged_rows as returned_row_count",
+      "exact count gated_rows as gated_row_count"
+    ],
+    "expected_indexes": [
+      "requests primary key on id",
+      "buyer_summary_inbox_search_v1 request_id index and trigram search index for filtered path",
+      "missing/proposed: proposal_items request_item_id::text + proposal_id::text",
+      "missing/proposed: proposal_items request_item_id::text + coalesce(updated_at, created_at) desc + id desc include reject context columns"
+    ]
+  },
+  "latency_evidence_from_existing_artifacts": {
+    "wave29_100": {
+      "requestCount": 20,
+      "p50": 851,
+      "p95": 1322,
+      "p99": 1322,
+      "maxRows": 25,
+      "payloadBytes": 14210
+    },
+    "wave29_250": {
+      "requestCount": 50,
+      "p50": 2231,
+      "p95": 2552,
+      "p99": 2564,
+      "maxRows": 25,
+      "payloadBytes": 14210,
+      "slowestRoute": true
+    },
+    "wave30_100": {
+      "requestCount": 20,
+      "p50": 899,
+      "p95": 976,
+      "p99": 987,
+      "maxRows": 25,
+      "payloadBytes": 14210,
+      "slowestRoute": true
+    },
+    "wave30_250": {
+      "requestCount": 50,
+      "p50": 2015,
+      "p95": 2278,
+      "p99": 2296,
+      "maxRows": 25,
+      "payloadBytes": 14210,
+      "slowestRoute": true
+    }
+  },
+  "root_cause_classification": {
+    "offset_pagination": "not_primary_for_page25_offset0; deeper pages remain a risk",
+    "missing_index": "likely_on_proposal_items_request_item_text_paths",
+    "count_star": "contributor_exact_total_group_count_and_gated_row_count_force_full_materialization",
+    "join_fanout": "likely_for_rejected_candidates_lifecycle_and_context_enrichment",
+    "n_plus_one": "not_in_route_path; single RPC invocation per load target sample",
+    "wide_select": "not_primary; payload around 14KB and explicit JSON fields",
+    "cold_cache": "not_primary; repeated wave29/wave30 250 samples stay high with errors=0"
+  },
+  "conclusion": "The page25 bottleneck is server-side query-shape CPU/plan pressure: first-page route still builds and counts the full gated/grouped inbox, then enriches rejected rows through proposal joins before returning 25 rows."
+}

@@ -1,0 +1,23 @@
+{
+  "wave": "S_NIGHT_BUYER_38_SUMMARY_INBOX_PAGE25_SOURCE_OPTIMIZATION",
+  "status": "BLOCKED_BUYER_SUMMARY_REQUIRES_DB_INDEX_MIGRATION",
+  "final_status": "BLOCKED_BUYER_SUMMARY_REQUIRES_DB_INDEX_MIGRATION",
+  "prerequisite": "GREEN_BUYER_SUMMARY_INBOX_PAGE25_QUERY_SHAPE_RCA",
+  "route": "buyer_summary_inbox_page_25",
+  "rpcName": "buyer_summary_inbox_scope_v1",
+  "code_level_fix_attempted": false,
+  "db_writes": false,
+  "migration_applied": false,
+  "production_load": false,
+  "reason": "No safe client/source-only optimization changes the direct RPC hotspot. UI page is already bounded/deduped; load target calls RPC p_limit=25 directly; SQL exact counts and rejected proposal joins need DB index/function migration planning.",
+  "evaluated_fixes": {
+    "replace_wide_select": "not_applicable_explicit_json_fields_payload_small",
+    "avoid_count": "blocked_total_group_count_contract_used_for_hasMore_and_ui_total",
+    "reduce_page_size": "blocked_staging_hotspot_is_direct_rpc_p_limit25_and_ui_already_uses_12",
+    "stable_order_bounded_range": "already_stable_order_but_global_row_number_requires_full_group_sort",
+    "split_heavy_details": "requires_rpc_function_contract_or_db_change",
+    "avoid_duplicate_calls": "already_react_query_deduped_and_single_rpc_in_load_target",
+    "per_page_ceiling": "already_client_and_public_wrapper_clamp_to_limit_max100"
+  },
+  "next": "W39 index plan package prepared without live DB apply"
+}

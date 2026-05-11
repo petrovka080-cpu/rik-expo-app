@@ -1,0 +1,53 @@
+{
+  "wave": "S_NIGHT_BUYER_39_SUMMARY_INBOX_READONLY_INDEX_PLAN_PACKAGE",
+  "status": "GREEN_BUYER_SUMMARY_INBOX_INDEX_PLAN_READY",
+  "final_status": "GREEN_BUYER_SUMMARY_INBOX_INDEX_PLAN_READY",
+  "prerequisite": "BLOCKED_BUYER_SUMMARY_REQUIRES_DB_INDEX_MIGRATION",
+  "route": "buyer_summary_inbox_page_25",
+  "rpcName": "buyer_summary_inbox_scope_v1",
+  "proposal_path": "docs/migration-plans/20260511093000_buyer_summary_inbox_page25_index_plan.sql",
+  "live_migration_path_created": false,
+  "db_apply": false,
+  "production_calls": false,
+  "dry_run_validation_test": "tests/load/buyerSummaryInboxPage25IndexPlan.contract.test.ts",
+  "bounded_runner_plan_status": "PASS",
+  "indexes": [
+    {
+      "name": "idx_buyer_summary_inbox_pi_req_item_text_proposal_w39",
+      "table": "public.proposal_items",
+      "columns": [
+        "request_item_id::text",
+        "proposal_id::text"
+      ],
+      "helps": "proposal_links request_item_id::text -> proposal_id lookup behind proposal_items_view shape"
+    },
+    {
+      "name": "idx_buyer_summary_inbox_pi_req_item_text_context_w39",
+      "table": "public.proposal_items",
+      "columns": [
+        "request_item_id::text",
+        "coalesce(updated_at, created_at) desc nulls last",
+        "id desc"
+      ],
+      "include": [
+        "proposal_id",
+        "director_comment",
+        "supplier",
+        "price",
+        "note",
+        "updated_at",
+        "created_at"
+      ],
+      "helps": "reject_context_ranked latest context by request_item_id with order by updated/created/id"
+    }
+  ],
+  "rollback_sql_documented": true,
+  "negative_confirmations": {
+    "live_db_apply": false,
+    "db_writes": false,
+    "production_calls": false,
+    "load_expansion": false,
+    "threshold_relaxation": false,
+    "supabase_migrations_file_created": false
+  }
+}
