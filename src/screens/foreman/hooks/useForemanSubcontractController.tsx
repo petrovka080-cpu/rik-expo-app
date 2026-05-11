@@ -4,8 +4,6 @@ import { supabase } from "../../../lib/supabaseClient";
 import { type PickedRow as CatalogPickedRow } from "../../../components/foreman/CatalogModal";
 import {
   rikQuickSearch,
-  updateRequestMeta,
-  listRequestItems,
   type ReqItemRow,
 } from "../../../lib/catalog_api";
 import {
@@ -24,7 +22,6 @@ import {
   type Subcontract,
 } from "../../subcontracts/subcontracts.shared";
 import {
-  fetchForemanRequestDisplayLabel,
   findLatestDraftRequestByLink,
 } from "../foreman.requests";
 import { readForemanProfileName } from "../foreman.dicts.repo";
@@ -63,6 +60,7 @@ import {
 import { ForemanSubcontractControllerView } from "./ForemanSubcontractControllerView";
 import { useForemanSubcontractControllerUiState } from "./useForemanSubcontractControllerUiState";
 import { useForemanSubcontractDraftActions } from "./useForemanSubcontractDraftActions";
+import { useForemanSubcontractRequestDraftLifecycle } from "./useForemanSubcontractRequestDraftLifecycle";
 
 export type ForemanSubcontractTabProps = {
   contentTopPad: number;
@@ -202,24 +200,6 @@ export function useForemanSubcontractController({
     }
   }, [setHistory, setHistoryLoading, userId]);
 
-  const loadDraftItems = useCallback(async (rid: string) => {
-    const requestSeq = ++draftItemsLoadSeqRef.current;
-    const id = String(rid || "").trim();
-    if (!id) {
-      setDraftItems([]);
-      return;
-    }
-    try {
-      const rows = await listRequestItems(id);
-      if (requestSeq !== draftItemsLoadSeqRef.current) return;
-      setDraftItems(filterActiveDraftItems(rows || []));
-    } catch (e) {
-      if (requestSeq !== draftItemsLoadSeqRef.current) return;
-      logForemanSubcontractDebug("loadDraftItems failed", e);
-      setDraftItems([]);
-    }
-  }, [draftItemsLoadSeqRef, setDraftItems]);
-
   const resetSubcontractDraftContext = useCallback((options?: { clearForm?: boolean }) => {
     const resetPlan = planSubcontractDraftReset(options);
     draftItemsLoadSeqRef.current += 1;
@@ -353,44 +333,14 @@ export function useForemanSubcontractController({
     ]
   );
 
-  useEffect(() => {
-    void loadDraftItems(requestId);
-  }, [requestId, loadDraftItems]);
-
-  useEffect(() => {
-    if (!requestId) return;
-    const rid = String(requestId || "").trim();
-    if (!rid) return;
-    let cancelled = false;
-    void (async () => {
-      const ok = await updateRequestMeta(rid, requestMetaPersistPatch);
-      if (!ok || cancelled) return;
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [
+  const { loadDraftItems } = useForemanSubcontractRequestDraftLifecycle({
     requestId,
     requestMetaPersistPatch,
-  ]);
-
-  useEffect(() => {
-    if (!requestId) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const label = await fetchForemanRequestDisplayLabel(requestId);
-        if (cancelled || !label) return;
-        if (label) setDisplayNo(label);
-      } catch (error) {
-        if (cancelled) return;
-        logForemanSubcontractDebug("request label refresh failed", error);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [requestId, setDisplayNo]);
+    draftItemsLoadSeqRef,
+    setDraftItems,
+    setDisplayNo,
+    logDebugError: logForemanSubcontractDebug,
+  });
 
   const appendCatalogRows = useCallback(async (rows: CatalogPickedRow[]) => {
     if (!rows?.length) return;

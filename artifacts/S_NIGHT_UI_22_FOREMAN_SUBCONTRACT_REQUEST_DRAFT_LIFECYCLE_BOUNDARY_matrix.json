@@ -1,0 +1,141 @@
+{
+  "wave": "S_NIGHT_UI_22_FOREMAN_SUBCONTRACT_REQUEST_DRAFT_LIFECYCLE_BOUNDARY",
+  "final_status": "GREEN_FOREMAN_SUBCONTRACT_REQUEST_DRAFT_LIFECYCLE_BOUNDARY",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "base_commit": "9aa5311b14846fc4618a8519374955ddfdcdf2b9",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true
+  },
+  "scope": {
+    "target": "Foreman subcontract controller hook and line pressure",
+    "production_mutations": false,
+    "transport_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "db_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "pdf_export_changes": false
+  },
+  "selected_files": [
+    "src/screens/foreman/hooks/useForemanSubcontractController.tsx",
+    "src/screens/foreman/hooks/useForemanSubcontractRequestDraftLifecycle.ts",
+    "tests/foreman/foreman.subcontractController.decomposition.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "reason_selected": {
+    "primary": "The latest architecture scanner still listed the Foreman subcontract controller among the highest combined line and hook pressure files.",
+    "boundary": "Draft item loading, request meta persistence, and request label refresh were an isolated request lifecycle slice already driven by requestId and existing setters.",
+    "risk_control": "PDF/export, Supabase client import, draft mutation semantics, navigation, and UI rendering were left in their existing boundaries."
+  },
+  "before_after_metrics": {
+    "foreman_subcontract_controller": {
+      "before_lines": 687,
+      "after_lines": 637,
+      "delta_lines": -50,
+      "before_hook_matches": 24,
+      "after_hook_matches": 21,
+      "delta_hook_matches": -3,
+      "before_inline_request_lifecycle_effects": 3,
+      "after_inline_request_lifecycle_effects": 0,
+      "before_inline_load_draft_items_callback": true,
+      "after_inline_load_draft_items_callback": false
+    },
+    "new_boundary": {
+      "path": "src/screens/foreman/hooks/useForemanSubcontractRequestDraftLifecycle.ts",
+      "lines": 95,
+      "hook_matches": 5,
+      "keeps_draft_load_sequence_guard": true,
+      "keeps_request_meta_persist": true,
+      "keeps_display_label_refresh": true,
+      "keeps_debug_error_surface": true
+    },
+    "architecture_scanner_after": {
+      "foreman_subcontract_controller_line_count": 638,
+      "foreman_subcontract_controller_hook_count": 21,
+      "direct_supabase_service_bypass_findings": 0,
+      "cache_route_scope": "marketplace.catalog.search",
+      "unresolved_unbounded_selects": 0,
+      "select_star_findings": 0,
+      "safety_db_writes": false,
+      "safety_migrations": false,
+      "safety_supabase_project_changes": false,
+      "safety_env_changes": false
+    },
+    "performance_budget": {
+      "documented_new_source_modules": 1,
+      "effective_source_module_budget": "retained by subtracting the one documented S_NIGHT_UI_22 request draft lifecycle hook boundary"
+    }
+  },
+  "proof_points": {
+    "draft_item_loading_extracted_from_controller": "PASS",
+    "request_meta_persist_extracted_from_controller": "PASS",
+    "request_label_refresh_extracted_from_controller": "PASS",
+    "stale_request_sequence_guard_preserved": "PASS",
+    "controller_hook_budget_reduced": "PASS",
+    "no_pdf_export_change": "PASS",
+    "no_direct_provider_expansion": "PASS",
+    "no_route_scope_change": "PASS"
+  },
+  "gates": {
+    "focused_tests": {
+      "command": "npm test -- --runInBand tests/foreman/foreman.subcontractController.decomposition.test.ts tests/foreman/ForemanSubcontractController.test.tsx tests/perf/performance-budget.test.ts",
+      "status": "PASS",
+      "summary": "3 test suites passed, 22 tests passed"
+    },
+    "typescript": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "expo_lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "full_tests": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "summary": "Test Suites: 708 passed, 1 skipped, 709 total; Tests: 4137 passed, 1 skipped, 4138 total"
+    },
+    "architecture_scanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "direct_supabase_service_bypass": 0
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "artifact_json_parse": {
+      "command": "node -e \"const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_22_FOREMAN_SUBCONTRACT_REQUEST_DRAFT_LIFECYCLE_BOUNDARY_matrix.json','utf8')); console.log('artifact_json_parse=PASS')\"",
+      "status": "PASS"
+    },
+    "post_push_release_verify": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  },
+  "commits": {
+    "base_commit": "9aa5311b14846fc4618a8519374955ddfdcdf2b9",
+    "code_commit": "PENDING_COMMIT"
+  },
+  "negative_confirmations": {
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "ts_ignore_added": false,
+    "as_any_added": false,
+    "empty_catch_added": false,
+    "broad_rewrite": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_50k_60k_load": false,
+    "destructive_unbounded_dml": false,
+    "ota_eas_testflight_native_builds": false,
+    "production_mutation_route_broad_enablement": false,
+    "broad_cache_enablement": false,
+    "broad_rate_limit_enablement": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

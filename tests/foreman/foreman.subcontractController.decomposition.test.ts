@@ -25,6 +25,17 @@ describe("foreman subcontract controller decomposition audit", () => {
     join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractDraftActions.ts"),
     "utf8",
   );
+  const requestDraftLifecycleSource = readFileSync(
+    join(
+      process.cwd(),
+      "src",
+      "screens",
+      "foreman",
+      "hooks",
+      "useForemanSubcontractRequestDraftLifecycle.ts",
+    ),
+    "utf8",
+  );
 
   const countHookCallSites = (source: string) =>
     (source.match(/\buse[A-Z][A-Za-z0-9_]*\s*\(|React\.use[A-Z][A-Za-z0-9_]*\s*\(/g) || []).length;
@@ -40,6 +51,7 @@ describe("foreman subcontract controller decomposition audit", () => {
     expect(controllerSource).toContain("useForemanSubcontractControllerUiState");
     expect(controllerSource).toContain("ForemanSubcontractControllerView");
     expect(controllerSource).toContain("useForemanSubcontractDraftActions");
+    expect(controllerSource).toContain("useForemanSubcontractRequestDraftLifecycle");
   });
 
   it("removes legacy inline helpers and silent catch from the controller owner", () => {
@@ -77,7 +89,19 @@ describe("foreman subcontract controller decomposition audit", () => {
     expect(controllerSource).not.toContain("const clearDraft = useCallback");
   });
 
+  it("moves request draft loading and refresh side effects behind one typed lifecycle boundary", () => {
+    expect(requestDraftLifecycleSource).toContain("export function useForemanSubcontractRequestDraftLifecycle");
+    expect(requestDraftLifecycleSource).toContain("listRequestItems");
+    expect(requestDraftLifecycleSource).toContain("filterActiveDraftItems");
+    expect(requestDraftLifecycleSource).toContain("updateRequestMeta");
+    expect(requestDraftLifecycleSource).toContain("fetchForemanRequestDisplayLabel");
+    expect(requestDraftLifecycleSource).toContain("requestSeq !== draftItemsLoadSeqRef.current");
+    expect(controllerSource).not.toContain("const loadDraftItems = useCallback");
+    expect(controllerSource).not.toContain("const ok = await updateRequestMeta");
+    expect(controllerSource).not.toContain("fetchForemanRequestDisplayLabel(requestId)");
+  });
+
   it("keeps the owner hook at or below the reduced source hook budget", () => {
-    expect(countHookCallSites(controllerSource)).toBeLessThanOrEqual(24);
+    expect(countHookCallSites(controllerSource)).toBeLessThanOrEqual(21);
   });
 });
