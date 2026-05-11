@@ -1,4 +1,4 @@
-import { CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME } from "./cacheShadowRuntime";
+import { CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES } from "./cacheShadowRuntime";
 
 export type ScaleProviderKind =
   | "redis_cache"
@@ -38,16 +38,16 @@ type ProviderRuntimeEnv = Record<string, string | undefined>;
 export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScaleProviderEnvNames> = Object.freeze({
   redis_cache: {
     enabled: "SCALE_REDIS_CACHE_STAGING_ENABLED",
-    productionEnabled: "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+    productionEnabled: CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.productionEnabled,
     required: ["SCALE_REDIS_CACHE_NAMESPACE"],
     optional: [
       "SCALE_REDIS_CACHE_URL",
       "REDIS_URL",
       "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
-      "SCALE_REDIS_CACHE_SHADOW_MODE",
-      CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
-      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
-      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+      CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.mode,
+      CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled,
+      CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.routeAllowlist,
+      CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.percent,
     ],
   },
   queue: {

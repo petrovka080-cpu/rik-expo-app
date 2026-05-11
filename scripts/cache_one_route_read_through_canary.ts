@@ -3,7 +3,12 @@ import { execFileSync } from "child_process";
 
 import { buildSafeCacheKey } from "../src/shared/scale/cacheKeySafety";
 import { getCachePolicy } from "../src/shared/scale/cachePolicies";
-import { CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME } from "../src/shared/scale/cacheShadowRuntime";
+import {
+  CACHE_READ_THROUGH_ONE_ROUTE,
+  CACHE_READ_THROUGH_ONE_ROUTE_PERCENT,
+  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+  buildCacheReadThroughOneRouteApplyEnv,
+} from "../src/shared/scale/cacheShadowRuntime";
 import {
   classifyProductionBusinessReadonlyCanaryErrorCode,
   resolveProductionBusinessReadonlyCanaryServerAuthSecret,
@@ -92,9 +97,9 @@ const MATRIX_PATH = "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.j
 const PROOF_PATH = "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_proof.md";
 const ENV_FILE = ".env.agent.staging.local";
 
-const CANARY_ROUTE = "marketplace.catalog.search";
+const CANARY_ROUTE = CACHE_READ_THROUGH_ONE_ROUTE;
 const CANARY_PATH = "/api/staging-bff/read/marketplace-catalog-search";
-const CANARY_PERCENT = "1";
+const CANARY_PERCENT = CACHE_READ_THROUGH_ONE_ROUTE_PERCENT;
 const UTF8_QUERY_PREFIX = "\u0446\u0435\u043c\u0435\u043d\u0442 \u0411\u0438\u0448\u043a\u0435\u043a";
 const CANARY_COMPANY_CLASS = "company-cache-s02-one-route";
 
@@ -106,13 +111,7 @@ const REQUIRED_APPROVALS = [
   "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_ROLLBACK_APPROVED",
 ] as const;
 
-const CACHE_ENV_WRITE_VALUES: Readonly<Record<string, string>> = Object.freeze({
-  SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
-  SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
-  [CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]: "true",
-  SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: CANARY_ROUTE,
-  SCALE_REDIS_CACHE_SHADOW_PERCENT: CANARY_PERCENT,
-});
+const CACHE_ENV_WRITE_VALUES = buildCacheReadThroughOneRouteApplyEnv("canary");
 
 const CACHE_ENV_SNAPSHOT_KEYS = [
   ...Object.keys(CACHE_ENV_WRITE_VALUES),
@@ -941,6 +940,8 @@ async function main(): Promise<void> {
         runtimeReadinessDiagnostics
           ? booleanField(runtimeReadinessDiagnostics, "readThroughV1EnabledFlagPresent")
           : "unknown",
+      runtime_readiness_enabled_flag_present:
+        runtimeReadinessDiagnostics ? booleanField(runtimeReadinessDiagnostics, "enabledFlagPresent") : "unknown",
       runtime_readiness_route_name:
         runtimeReadinessDiagnostics ? stringField(runtimeReadinessDiagnostics, "routeName", "unknown") : "unknown",
       runtime_readiness_mode:

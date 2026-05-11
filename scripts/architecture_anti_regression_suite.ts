@@ -23,7 +23,14 @@ import {
   type SelectInventoryAction,
   type SelectInventoryEntry,
 } from "./data/unboundedSelectInventory";
-import { resolveCacheShadowRuntimeConfig } from "../src/shared/scale/cacheShadowRuntime";
+import {
+  CACHE_READ_THROUGH_ONE_ROUTE,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES,
+  CACHE_READ_THROUGH_ONE_ROUTE_MODE,
+  buildCacheReadThroughOneRouteApplyEnv,
+  isCacheReadThroughOneRouteApplyConfigReady,
+  resolveCacheShadowRuntimeConfig,
+} from "../src/shared/scale/cacheShadowRuntime";
 
 export type GuardrailStatus = "pass" | "fail" | "report_only";
 
@@ -269,6 +276,8 @@ export type ArchitectureAntiRegressionReport = {
     cacheAllowedRoute: string;
     rateLimitCanaryRoute: string;
     rateLimitCanaryPercent: number;
+    persistentReadinessContractLocked: boolean;
+    persistentReadinessKeyCanonical: boolean;
   };
   cacheColdMissProof: {
     proofTestPresent: boolean;
@@ -1121,19 +1130,39 @@ export function evaluateCacheRateScopeGuardrail(params: {
 } {
   const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
   const cacheSource = readFile("src/shared/scale/cacheShadowRuntime.ts");
+  const cacheReadinessContractSource = cacheSource;
+  const cacheCanarySource = readFile("scripts/cache_one_route_read_through_canary.ts");
+  const stagingBffSource = readFile("scripts/server/stagingBffServerBoundary.ts");
+  const providerSource = readFile("src/shared/scale/providerRuntimeConfig.ts");
   const rateCanarySource = readFile("scripts/rate_limit_real_user_canary.ts");
-  const cacheConfig = resolveCacheShadowRuntimeConfig({
-    SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
-    SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
-    SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
-    SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: CACHE_RATE_ALLOWED_ROUTE,
-    SCALE_REDIS_CACHE_SHADOW_PERCENT: "1",
-  });
+  const cacheConfig = resolveCacheShadowRuntimeConfig(buildCacheReadThroughOneRouteApplyEnv("canary"));
+  const persistentApplyEnv = buildCacheReadThroughOneRouteApplyEnv("persistent");
+  const persistentApplyConfig = resolveCacheShadowRuntimeConfig(persistentApplyEnv);
   const rateLimitRoute = extractConstString(rateCanarySource, "CANARY_ROUTE") ?? "";
   const rateLimitPercentText = extractConstString(rateCanarySource, "CANARY_PERCENT") ?? "";
   const rateLimitPercent = Number(rateLimitPercentText);
+  const canonicalReadThroughKey =
+    CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled === "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED" &&
+    Object.prototype.hasOwnProperty.call(
+      persistentApplyEnv,
+      CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled,
+    ) &&
+    persistentApplyConfig.readThroughV1Enabled === true;
+  const persistentReadinessContractLocked =
+    canonicalReadThroughKey &&
+    isCacheReadThroughOneRouteApplyConfigReady(persistentApplyConfig) &&
+    persistentApplyConfig.routeAllowlist.length === 1 &&
+    persistentApplyConfig.routeAllowlist[0] === CACHE_READ_THROUGH_ONE_ROUTE &&
+    persistentApplyConfig.mode === CACHE_READ_THROUGH_ONE_ROUTE_MODE &&
+    cacheReadinessContractSource.includes('"persistent"') &&
+    cacheReadinessContractSource.includes("buildCacheReadThroughOneRouteApplyEnv") &&
+    cacheReadinessContractSource.includes("CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled") &&
+    cacheCanarySource.includes('buildCacheReadThroughOneRouteApplyEnv("canary")') &&
+    stagingBffSource.includes("buildCacheReadThroughReadinessDiagnostics") &&
+    stagingBffSource.includes("CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled") &&
+    providerSource.includes("CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled");
   const cacheCanaryRouteScoped =
-    cacheSource.includes("SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST") &&
+    cacheSource.includes("CACHE_SHADOW_RUNTIME_ENV_NAMES") &&
     cacheSource.includes("SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED") &&
     cacheSource.includes("CACHE_READ_THROUGH_V1_ALLOWED_ROUTES") &&
     cacheSource.includes("isCacheReadThroughV1RouteAllowed") &&
@@ -1144,6 +1173,8 @@ export function evaluateCacheRateScopeGuardrail(params: {
     cacheConfig.routeAllowlist[0] === CACHE_RATE_ALLOWED_ROUTE;
   const errors = [
     ...(cacheCanaryRouteScoped ? [] : ["cache_canary_not_route_scoped"]),
+    ...(persistentReadinessContractLocked ? [] : ["cache_persistent_readiness_contract_drifted"]),
+    ...(canonicalReadThroughKey ? [] : ["cache_persistent_readiness_key_not_canonical"]),
     ...(rateLimitRoute === CACHE_RATE_ALLOWED_ROUTE
       ? []
       : [`rate_limit_canary_route_changed:${rateLimitRoute || "missing"}`]),
@@ -1163,6 +1194,8 @@ export function evaluateCacheRateScopeGuardrail(params: {
       cacheAllowedRoute: cacheConfig.routeAllowlist[0] ?? "",
       rateLimitCanaryRoute: rateLimitRoute,
       rateLimitCanaryPercent: Number.isFinite(rateLimitPercent) ? rateLimitPercent : -1,
+      persistentReadinessContractLocked,
+      persistentReadinessKeyCanonical: canonicalReadThroughKey,
     },
   };
 }

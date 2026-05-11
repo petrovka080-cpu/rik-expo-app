@@ -5,6 +5,7 @@ import type { CacheAdapter, CacheSetOptions } from "../../src/shared/scale/cache
 import {
   CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
   CACHE_SHADOW_RUNTIME_ENV_NAMES,
+  buildCacheReadThroughOneRouteApplyEnv,
   resolveCacheShadowRuntimeConfig,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import { SCALE_PROVIDER_RUNTIME_ENV_NAMES } from "../../src/shared/scale/providerRuntimeConfig";
@@ -50,22 +51,28 @@ describe("WAVE 23 cache runtime readiness flag RCA", () => {
     const runtimeSource = readProjectFile("src/shared/scale/cacheShadowRuntime.ts");
     const readinessSource = readProjectFile("scripts/server/stagingBffServerBoundary.ts");
     const providerSource = readProjectFile("src/shared/scale/providerRuntimeConfig.ts");
+    const contractSource = runtimeSource;
 
     expect(CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME).toBe("SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED");
     expect(CACHE_SHADOW_RUNTIME_ENV_NAMES.readThroughV1Enabled).toBe(CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME);
     expect(BFF_STAGING_SERVER_ENV_NAMES).toContain(CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME);
     expect(SCALE_PROVIDER_RUNTIME_ENV_NAMES.redis_cache.optional).toContain(CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME);
+    expect(buildCacheReadThroughOneRouteApplyEnv("canary")).toEqual(
+      buildCacheReadThroughOneRouteApplyEnv("persistent"),
+    );
 
     expect(runnerSource).toContain("CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME");
-    expect(runnerSource).toContain('[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]: "true"');
+    expect(runnerSource).toContain('buildCacheReadThroughOneRouteApplyEnv("canary")');
     expect(runnerSource).toContain("CACHE_ENV_SNAPSHOT_KEYS");
     expect(runnerSource).not.toContain('SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true"');
 
     expect(runtimeSource).toContain("CACHE_SHADOW_RUNTIME_ENV_NAMES");
     expect(runtimeSource).toContain("env[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]");
-    expect(readinessSource).toContain("CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME");
-    expect(readinessSource).toContain("readThroughV1EnabledFlagPresent");
-    expect(providerSource).toContain("CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME");
+    expect(readinessSource).toContain("buildCacheReadThroughReadinessDiagnostics");
+    expect(contractSource).toContain("readThroughV1EnabledFlagPresent");
+    expect(providerSource).toContain("CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES");
+    expect(contractSource).toContain("CACHE_READ_THROUGH_APPLY_PATHS");
+    expect(contractSource).toContain('"persistent"');
   });
 
   it("reports redacted readiness diagnostics for the enabled flag presence and one-route scope", async () => {
@@ -96,6 +103,7 @@ describe("WAVE 23 cache runtime readiness flag RCA", () => {
         percent: 1,
         mode: "read_through",
         readinessDiagnostics: {
+          enabledFlagPresent: true,
           readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
           readThroughV1EnabledFlagPresent: true,
           routeAllowlistCount: 1,

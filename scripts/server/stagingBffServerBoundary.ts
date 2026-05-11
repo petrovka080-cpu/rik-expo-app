@@ -2,16 +2,18 @@ import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
 import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
 import {
-  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES,
   evaluateCacheShadowRead,
   isCacheReadThroughV1RouteAllowed,
   runCacheSyntheticShadowCanary,
   validateCacheShadowRouteMetricsOutput,
+  buildCacheReadThroughReadinessDiagnostics,
   type CacheShadowDecision,
   type CacheShadowMonitor,
   type CacheShadowMonitorSnapshot,
   type CacheShadowRuntimeConfig,
   type CacheSyntheticShadowCanaryResult,
+  type CacheReadThroughReadinessDiagnostics,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import type { CacheAdapter } from "../../src/shared/scale/cacheAdapters";
 import { buildSafeCacheKey } from "../../src/shared/scale/cacheKeySafety";
@@ -306,17 +308,7 @@ export type BffStagingCacheShadowDeps = {
   monitor: CacheShadowMonitor;
 };
 
-export type BffStagingCacheShadowReadinessDiagnostics = {
-  readThroughV1EnabledFlagName: typeof CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME;
-  readThroughV1EnabledFlagPresent: boolean;
-  routeAllowlistCount: number;
-  routeName: CachePolicyRoute | "none" | "multiple" | "not_configured";
-  percent: number;
-  mode: CacheShadowRuntimeConfig["mode"];
-  redacted: true;
-  secretsExposed: false;
-  envValuesExposed: false;
-};
+export type BffStagingCacheShadowReadinessDiagnostics = CacheReadThroughReadinessDiagnostics;
 
 export type BffStagingCacheShadowRuntimeState = {
   status: "configured" | "disabled" | "adapter_unavailable";
@@ -765,11 +757,11 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   BFF_MUTATION_ROUTE_ALLOWLIST_ENV_NAME,
   "BFF_IDEMPOTENCY_METADATA_ENABLED",
   "BFF_RATE_LIMIT_METADATA_ENABLED",
-  "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
-  "SCALE_REDIS_CACHE_SHADOW_MODE",
-  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
-  "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
-  "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.productionEnabled,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.mode,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.routeAllowlist,
+  CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.percent,
 ]);
 
 const RESPONSE_HEADERS = Object.freeze({
@@ -1238,25 +1230,7 @@ export const buildCacheShadowRuntimeState = (
 ): BffStagingCacheShadowRuntimeState => {
   const adapterStatus = adapter?.getStatus();
   const routeAllowlistCount = config?.routeAllowlist.length ?? 0;
-  const routeName =
-    !config
-      ? "not_configured"
-      : routeAllowlistCount === 0
-        ? "none"
-        : routeAllowlistCount === 1
-          ? config.routeAllowlist[0]
-          : "multiple";
-  const readinessDiagnostics: BffStagingCacheShadowReadinessDiagnostics = {
-    readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
-    readThroughV1EnabledFlagPresent: config?.envKeyPresence.readThroughV1Enabled ?? false,
-    routeAllowlistCount,
-    routeName,
-    percent: config?.percent ?? 0,
-    mode: config?.mode ?? "disabled",
-    redacted: true,
-    secretsExposed: false,
-    envValuesExposed: false,
-  };
+  const readinessDiagnostics = buildCacheReadThroughReadinessDiagnostics(config);
   const base = {
     enabled: config?.enabled ?? false,
     productionEnabledFlagTruthy: config?.productionEnabledFlagTruthy ?? false,

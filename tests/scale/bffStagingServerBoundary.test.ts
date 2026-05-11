@@ -236,6 +236,7 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
               commandTimeout: false,
             },
             readinessDiagnostics: {
+              enabledFlagPresent: true,
               readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
               readThroughV1EnabledFlagPresent: false,
               routeAllowlistCount: 1,

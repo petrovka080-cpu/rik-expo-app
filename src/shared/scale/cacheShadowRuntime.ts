@@ -7,6 +7,27 @@ export type CacheShadowMode = "disabled" | "shadow_readonly" | "synthetic_canary
 
 export type CacheShadowRuntimeEnv = Record<string, string | undefined>;
 
+export type CacheReadThroughApplyPath = "canary" | "persistent";
+
+export type CacheReadThroughReadinessRouteName =
+  | CachePolicyRoute
+  | "none"
+  | "multiple"
+  | "not_configured";
+
+export type CacheReadThroughReadinessDiagnostics = {
+  enabledFlagPresent: boolean;
+  readThroughV1EnabledFlagName: string;
+  readThroughV1EnabledFlagPresent: boolean;
+  routeAllowlistCount: number;
+  routeName: CacheReadThroughReadinessRouteName;
+  percent: number;
+  mode: CacheShadowMode;
+  redacted: true;
+  secretsExposed: false;
+  envValuesExposed: false;
+};
+
 export type CacheShadowRuntimeConfig = {
   enabled: boolean;
   mode: CacheShadowMode;
@@ -150,6 +171,20 @@ export const CACHE_SHADOW_RUNTIME_ENV_NAMES = Object.freeze({
 } as const);
 export const CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME =
   CACHE_SHADOW_RUNTIME_ENV_NAMES.readThroughV1Enabled;
+export const CACHE_READ_THROUGH_ONE_ROUTE = "marketplace.catalog.search" as const satisfies CachePolicyRoute;
+export const CACHE_READ_THROUGH_ONE_ROUTE_PERCENT = "1";
+export const CACHE_READ_THROUGH_ONE_ROUTE_MODE = "read_through" as const satisfies CacheShadowMode;
+export const CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES = Object.freeze({
+  productionEnabled: CACHE_SHADOW_RUNTIME_ENV_NAMES.productionEnabled,
+  mode: CACHE_SHADOW_RUNTIME_ENV_NAMES.mode,
+  readThroughV1Enabled: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+  routeAllowlist: CACHE_SHADOW_RUNTIME_ENV_NAMES.routeAllowlist,
+  percent: CACHE_SHADOW_RUNTIME_ENV_NAMES.percent,
+} as const);
+export const CACHE_READ_THROUGH_APPLY_PATHS = Object.freeze([
+  "canary",
+  "persistent",
+] as const satisfies readonly CacheReadThroughApplyPath[]);
 export const CACHE_READ_THROUGH_V1_ALLOWED_ROUTES: readonly CachePolicyRoute[] = Object.freeze([
   "marketplace.catalog.search",
 ]);
@@ -346,6 +381,64 @@ export function resolveCacheShadowRuntimeConfig(
     },
   };
 }
+
+export const buildCacheReadThroughOneRouteApplyEnv = (
+  _path: CacheReadThroughApplyPath,
+): Readonly<Record<string, string>> =>
+  Object.freeze({
+    [CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.productionEnabled]: "true",
+    [CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.mode]: CACHE_READ_THROUGH_ONE_ROUTE_MODE,
+    [CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled]: "true",
+    [CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.routeAllowlist]: CACHE_READ_THROUGH_ONE_ROUTE,
+    [CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.percent]: CACHE_READ_THROUGH_ONE_ROUTE_PERCENT,
+  });
+
+export const resolveCacheReadThroughOneRouteApplyConfig = (
+  path: CacheReadThroughApplyPath,
+): CacheShadowRuntimeConfig => resolveCacheShadowRuntimeConfig(buildCacheReadThroughOneRouteApplyEnv(path));
+
+export const isCacheReadThroughOneRouteApplyConfigReady = (
+  config: CacheShadowRuntimeConfig,
+): boolean =>
+  config.enabled &&
+  config.mode === CACHE_READ_THROUGH_ONE_ROUTE_MODE &&
+  config.readThroughV1Enabled &&
+  config.routeAllowlist.length === 1 &&
+  config.routeAllowlist[0] === CACHE_READ_THROUGH_ONE_ROUTE &&
+  config.percent === Number(CACHE_READ_THROUGH_ONE_ROUTE_PERCENT);
+
+export const assertCacheReadThroughOneRouteApplyEnv = (
+  env: CacheShadowRuntimeEnv,
+): void => {
+  const config = resolveCacheShadowRuntimeConfig(env);
+  if (!isCacheReadThroughOneRouteApplyConfigReady(config)) {
+    throw new Error("cache_read_through_one_route_apply_env_not_ready");
+  }
+};
+
+const readinessRouteName = (
+  config: CacheShadowRuntimeConfig | null | undefined,
+): CacheReadThroughReadinessRouteName => {
+  if (!config) return "not_configured";
+  if (config.routeAllowlist.length === 0) return "none";
+  if (config.routeAllowlist.length === 1) return config.routeAllowlist[0];
+  return "multiple";
+};
+
+export const buildCacheReadThroughReadinessDiagnostics = (
+  config: CacheShadowRuntimeConfig | null | undefined,
+): CacheReadThroughReadinessDiagnostics => ({
+  enabledFlagPresent: config?.envKeyPresence.productionEnabled ?? false,
+  readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+  readThroughV1EnabledFlagPresent: config?.envKeyPresence.readThroughV1Enabled ?? false,
+  routeAllowlistCount: config?.routeAllowlist.length ?? 0,
+  routeName: readinessRouteName(config),
+  percent: config?.percent ?? 0,
+  mode: config?.mode ?? "disabled",
+  redacted: true,
+  secretsExposed: false,
+  envValuesExposed: false,
+});
 
 export function createCacheShadowMonitor(): CacheShadowMonitor {
   const snapshot: CacheShadowMonitorSnapshot = {

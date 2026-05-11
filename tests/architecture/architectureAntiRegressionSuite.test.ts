@@ -197,18 +197,36 @@ describe("architecture anti-regression suite", () => {
   it("fails if cache or rate-limit canary scope broadens", () => {
     const passing = evaluateCacheRateScopeGuardrail({
       projectRoot: process.cwd(),
-      readFile: (relativePath) =>
-        relativePath === "scripts/rate_limit_real_user_canary.ts"
-          ? 'const CANARY_ROUTE = "marketplace.catalog.search" as const;\nconst CANARY_PERCENT = "1";\n'
-          : [
+      readFile: (relativePath) => {
+        if (relativePath === "scripts/rate_limit_real_user_canary.ts") {
+          return 'const CANARY_ROUTE = "marketplace.catalog.search" as const;\nconst CANARY_PERCENT = "1";\n';
+        }
+        if (relativePath === "scripts/cache_one_route_read_through_canary.ts") {
+          return 'const CACHE_ENV_WRITE_VALUES = buildCacheReadThroughOneRouteApplyEnv("canary");';
+        }
+        if (relativePath === "scripts/server/stagingBffServerBoundary.ts") {
+          return [
+            "buildCacheReadThroughReadinessDiagnostics(config)",
+            "CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled",
+          ].join("\n");
+        }
+        if (relativePath === "src/shared/scale/providerRuntimeConfig.ts") {
+          return "CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled";
+        }
+        return [
               'const DEFAULT_CACHE_SHADOW_ROUTE: CachePolicyRoute = "marketplace.catalog.search";',
+              "CACHE_SHADOW_RUNTIME_ENV_NAMES",
+              'export const CACHE_READ_THROUGH_APPLY_PATHS = ["canary", "persistent"] as const;',
+              "export const buildCacheReadThroughOneRouteApplyEnv = () => ({})",
+              "CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled",
               "const routeAllowed = () => config.routeAllowlist.includes(route);",
               "parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST);",
               "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
               "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
               "CACHE_READ_THROUGH_V1_ALLOWED_ROUTES",
               "isCacheReadThroughV1RouteAllowed",
-            ].join("\n"),
+            ].join("\n");
+      },
     });
 
     expect(passing.check.status).toBe("pass");
@@ -225,6 +243,7 @@ describe("architecture anti-regression suite", () => {
     expect(failing.check.errors).toEqual(
       expect.arrayContaining([
         "cache_canary_not_route_scoped",
+        "cache_persistent_readiness_contract_drifted",
         "rate_limit_canary_route_changed:proposal.submit",
         "rate_limit_canary_percent_changed:25",
       ]),
