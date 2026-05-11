@@ -58,7 +58,15 @@ export const searchCatalogInputSchema: AiToolJsonObjectSchema = {
       minimum: 1,
       maximum: 20,
     },
-    objectId: {
+    category: {
+      type: "string",
+      enum: ["all", "material", "work", "service"],
+    },
+    location: {
+      type: "string",
+      minLength: 1,
+    },
+    cursor: {
       type: "string",
       minLength: 1,
     },
@@ -67,25 +75,55 @@ export const searchCatalogInputSchema: AiToolJsonObjectSchema = {
 
 export const searchCatalogOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["items", "evidenceRefs"],
+  required: ["items", "summary", "next_cursor", "evidence_refs"],
   additionalProperties: false,
   properties: {
     items: {
       type: "array",
       items: {
         type: "object",
-        required: ["catalogItemId", "name", "unit"],
+        required: ["catalog_item_id", "name", "unit", "evidence_ref"],
         additionalProperties: false,
         properties: {
-          catalogItemId: { type: "string", minLength: 1 },
+          catalog_item_id: { type: "string", minLength: 1 },
           name: { type: "string", minLength: 1 },
           unit: { type: "string", minLength: 1 },
+          category: { type: "string", minLength: 1 },
+          evidence_ref: { type: "string", minLength: 1 },
         },
       },
     },
-    evidenceRefs: {
+    summary: {
+      type: "string",
+      minLength: 1,
+    },
+    next_cursor: {
+      type: "string",
+      minLength: 1,
+    },
+    evidence_refs: {
       type: "array",
       items: evidenceRefSchema,
+    },
+    cacheStatus: {
+      type: "object",
+      required: ["scope", "retained", "route_count"],
+      additionalProperties: false,
+      properties: {
+        scope: { type: "string", enum: ["marketplace.catalog.search"] },
+        retained: { type: "boolean" },
+        route_count: { type: "number", minimum: 1, maximum: 1 },
+      },
+    },
+    rateLimitStatus: {
+      type: "object",
+      required: ["scope", "retained", "route_count"],
+      additionalProperties: false,
+      properties: {
+        scope: { type: "string", enum: ["marketplace.catalog.search"] },
+        retained: { type: "boolean" },
+        route_count: { type: "number", minimum: 1, maximum: 1 },
+      },
     },
   },
 };

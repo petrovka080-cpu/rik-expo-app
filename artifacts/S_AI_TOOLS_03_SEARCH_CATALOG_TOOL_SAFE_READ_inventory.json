@@ -1,0 +1,24 @@
+{
+  "wave": "S_AI_TOOLS_03_SEARCH_CATALOG_TOOL_SAFE_READ",
+  "files_created": [
+    "src/features/ai/tools/searchCatalogTool.ts",
+    "tests/ai/searchCatalogTool.contract.test.ts",
+    "tests/e2e/searchCatalogToolPreview.e2e.test.ts",
+    "artifacts/S_AI_TOOLS_03_SEARCH_CATALOG_TOOL_SAFE_READ_inventory.json",
+    "artifacts/S_AI_TOOLS_03_SEARCH_CATALOG_TOOL_SAFE_READ_matrix.json",
+    "artifacts/S_AI_TOOLS_03_SEARCH_CATALOG_TOOL_SAFE_READ_proof.md"
+  ],
+  "files_updated": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "existing_transport_used": [
+    "src/lib/catalog/catalog.search.service.ts",
+    "src/lib/catalog/catalog.transport.ts",
+    "src/lib/catalog/catalog.bff.contract.ts"
+  ],
+  "route_scope": "marketplace.catalog.search",
+  "max_limit": 20,
+  "mutation_count": 0,
+  "direct_supabase": 0
+}
