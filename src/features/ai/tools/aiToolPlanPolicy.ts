@@ -79,6 +79,18 @@ function getModeForRisk(riskLevel: AiRiskLevel): AiToolPlanMode {
   return "blocked";
 }
 
+function canPlanScopedWarehouseStatus(params: {
+  toolName: AiToolName;
+  role: AiUserRole;
+  capability: AiCapability | null;
+}): boolean {
+  return (
+    params.toolName === "get_warehouse_status" &&
+    params.capability === "read_context" &&
+    (params.role === "foreman" || params.role === "buyer")
+  );
+}
+
 function blockedPlan(params: {
   toolName: string;
   role: AiUserRole;
@@ -182,13 +194,14 @@ export function planAiToolUse(request: AiToolPlanRequest): AiToolPlan {
   }
 
   if (
-    !capability ||
-    !canUseAiCapability({
-      role: request.role,
-      domain: tool.domain,
-      capability,
-      viaApprovalGate: false,
-    })
+    !canPlanScopedWarehouseStatus({ toolName: tool.name, role: request.role, capability }) &&
+    (!capability ||
+      !canUseAiCapability({
+        role: request.role,
+        domain: tool.domain,
+        capability,
+        viaApprovalGate: false,
+      }))
   ) {
     return blockedPlan({
       toolName: tool.name,

@@ -16,16 +16,16 @@ const sourcePath = path.join(ROOT, "src/features/ai/tools/getWarehouseStatusTool
 
 const warehouseAuth = { userId: "warehouse-user", role: "warehouse" } as const;
 const directorAuth = { userId: "director-user", role: "director" } as const;
-const buyerAuth = { userId: "buyer-user", role: "buyer" } as const;
 
 describe("get_warehouse_status safe-read tool", () => {
-  it("keeps the permanent schema on warehouse stock filters, bounded limit, and evidence output", () => {
+  it("keeps the permanent schema on scoped warehouse input and exact role-safe output fields", () => {
     expect(getWarehouseStatusInputSchema).toMatchObject({
       required: [],
       additionalProperties: false,
       properties: {
         material_id: expect.objectContaining({ type: "string", minLength: 1 }),
         material_code: expect.objectContaining({ type: "string", minLength: 1 }),
+        project_id: expect.objectContaining({ type: "string", minLength: 1 }),
         warehouse_name: expect.objectContaining({ type: "string", minLength: 1 }),
         object_name: expect.objectContaining({ type: "string", minLength: 1 }),
         limit: expect.objectContaining({
@@ -40,29 +40,37 @@ describe("get_warehouse_status safe-read tool", () => {
     expect(getWarehouseStatusInputSchema.properties).not.toHaveProperty("objectId");
     expect(getWarehouseStatusOutputSchema).toMatchObject({
       required: [
-        "stock_items",
-        "summary",
-        "availability_summary",
-        "next_cursor",
+        "available",
+        "reserved",
+        "incoming",
+        "low_stock_flags",
+        "movement_summary",
+        "source_timestamp",
         "evidence_refs",
+        "next_cursor",
+        "role_scope",
+        "role_scoped",
         "bounded",
         "route_operation",
         "mutation_count",
+        "stock_mutation",
         "no_stock_mutation",
-        "no_issue_created",
-        "no_reservation_created",
       ],
       additionalProperties: false,
       properties: {
-        stock_items: expect.objectContaining({ type: "array" }),
-        availability_summary: expect.objectContaining({ type: "object" }),
+        available: expect.objectContaining({ type: "object" }),
+        reserved: expect.objectContaining({ type: "object" }),
+        incoming: expect.objectContaining({ type: "object" }),
+        low_stock_flags: expect.objectContaining({ type: "array" }),
+        movement_summary: expect.objectContaining({ type: "object" }),
+        source_timestamp: expect.objectContaining({ type: "string" }),
         evidence_refs: expect.objectContaining({ type: "array" }),
         route_operation: expect.objectContaining({ enum: [GET_WAREHOUSE_STATUS_ROUTE_OPERATION] }),
       },
     });
   });
 
-  it("runs only as a warehouse-visible SAFE_READ with bounded stock scope and redacted evidence refs", async () => {
+  it("returns available, reserved, incoming, low-stock, source timestamp, and evidence without stock mutation", async () => {
     const calls: { offset: number; limit: number }[] = [];
     const result = await runGetWarehouseStatusToolSafeRead({
       auth: warehouseAuth,
@@ -84,6 +92,7 @@ describe("get_warehouse_status safe-read tool", () => {
               qty_on_hand: 12,
               qty_reserved: 2,
               qty_available: 10,
+              qty_incoming: 4,
               warehouse_name: "Main Warehouse",
               object_name: "Object A",
               updated_at: "2026-05-12T00:00:00Z",
@@ -96,9 +105,10 @@ describe("get_warehouse_status safe-read tool", () => {
               qty_on_hand: 50,
               qty_reserved: 0,
               qty_available: 50,
+              qty_incoming: 0,
               warehouse_name: "Main Warehouse",
               object_name: "Object B",
-              updated_at: "2026-05-12T00:00:00Z",
+              updated_at: "2026-05-11T00:00:00Z",
             },
           ],
           totalRowCount: 30,
@@ -111,43 +121,48 @@ describe("get_warehouse_status safe-read tool", () => {
     expect(result).toMatchObject({
       ok: true,
       data: {
+        available: {
+          total_quantity: 10,
+          item_count: 1,
+          status: "reported",
+          evidence_refs: ["warehouse:stock_scope:item:1"],
+        },
+        reserved: {
+          total_quantity: 2,
+          item_count: 1,
+          status: "reported",
+          evidence_refs: ["warehouse:stock_scope:item:1"],
+        },
+        incoming: {
+          total_quantity: 4,
+          item_count: 1,
+          status: "reported",
+          evidence_refs: ["warehouse:stock_scope:item:1"],
+        },
+        low_stock_flags: ["no_low_stock_flags"],
+        source_timestamp: "2026-05-12T00:00:00Z",
+        evidence_refs: ["warehouse:stock_scope:item:1"],
+        next_cursor: "offset:40",
+        role_scope: "warehouse_access",
+        role_scoped: true,
         bounded: true,
         route_operation: GET_WAREHOUSE_STATUS_ROUTE_OPERATION,
         mutation_count: 0,
+        stock_mutation: 0,
         no_stock_mutation: true,
-        no_issue_created: true,
-        no_reservation_created: true,
-        next_cursor: "offset:40",
-        evidence_refs: ["warehouse:stock_scope:item:1"],
-        availability_summary: {
-          item_count: 1,
-          total_available_quantity: 10,
-          has_available_stock: true,
-        },
       },
     });
     if (!result.ok) throw new Error("expected get_warehouse_status success");
-    expect(result.data.stock_items).toEqual([
-      {
-        material_id: "mat-1",
-        material_code: "CEM-500",
-        name: "Cement M500",
-        unit: "bag",
-        warehouse_name: "Main Warehouse",
-        object_name: "Object A",
-        on_hand_quantity: 12,
-        reserved_quantity: 2,
-        available_quantity: 10,
-        updated_at: "2026-05-12T00:00:00Z",
-        evidence_ref: "warehouse:stock_scope:item:1",
-      },
-    ]);
-    expect(result.data.summary).toBe(
-      "Found 1 warehouse stock item(s) for the requested filter; total available quantity is 10.",
-    );
+    expect(result.data.movement_summary).toMatchObject({
+      item_count: 1,
+      scope: "warehouse_access",
+      available_total: 10,
+      reserved_total: 2,
+      incoming_total: 4,
+    });
   });
 
-  it("requires auth, role visibility, and object input before any warehouse read", async () => {
+  it("requires auth and object input before any warehouse read", async () => {
     const reads: string[] = [];
     const readWarehouseStatus = async () => {
       reads.push("read");
@@ -163,16 +178,6 @@ describe("get_warehouse_status safe-read tool", () => {
     ).resolves.toMatchObject({
       ok: false,
       error: { code: "GET_WAREHOUSE_STATUS_AUTH_REQUIRED" },
-    });
-    await expect(
-      runGetWarehouseStatusToolSafeRead({
-        auth: buyerAuth,
-        input: {},
-        readWarehouseStatus,
-      }),
-    ).resolves.toMatchObject({
-      ok: false,
-      error: { code: "GET_WAREHOUSE_STATUS_ROLE_NOT_ALLOWED" },
     });
     await expect(
       runGetWarehouseStatusToolSafeRead({

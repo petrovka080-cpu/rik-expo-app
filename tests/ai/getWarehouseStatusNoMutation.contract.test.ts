@@ -30,7 +30,7 @@ describe("get_warehouse_status no-mutation contract", () => {
     });
   });
 
-  it("returns stock status preview proof without issue, reserve, or warehouse mutation side effects", async () => {
+  it("returns warehouse status proof without issue, reserve, or stock mutation side effects", async () => {
     const result = await runGetWarehouseStatusToolSafeRead({
       auth: warehouseAuth,
       input: {
@@ -55,17 +55,29 @@ describe("get_warehouse_status no-mutation contract", () => {
     expect(result).toMatchObject({
       ok: true,
       data: {
+        available: {
+          total_quantity: 5,
+          item_count: 1,
+          status: "reported",
+          evidence_refs: ["warehouse:stock_scope:item:1"],
+        },
+        reserved: {
+          total_quantity: 3,
+          item_count: 1,
+          status: "reported",
+          evidence_refs: ["warehouse:stock_scope:item:1"],
+        },
+        incoming: {
+          total_quantity: 0,
+          item_count: 0,
+          status: "not_available_in_stock_scope",
+          evidence_refs: [],
+        },
         mutation_count: 0,
+        stock_mutation: 0,
         no_stock_mutation: true,
-        no_issue_created: true,
-        no_reservation_created: true,
         next_cursor: null,
         evidence_refs: ["warehouse:stock_scope:item:1"],
-        availability_summary: {
-          item_count: 1,
-          total_available_quantity: 5,
-          has_available_stock: true,
-        },
       },
     });
   });

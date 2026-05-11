@@ -70,7 +70,7 @@ export const AI_TOOL_REGISTRY: readonly AiToolDefinition[] = [
     riskLevel: "safe_read",
     inputSchema: getWarehouseStatusInputSchema,
     outputSchema: getWarehouseStatusOutputSchema,
-    requiredRoles: ["director", "control", "warehouse"],
+    requiredRoles: ["director", "control", "foreman", "buyer", "warehouse"],
     approvalRequired: false,
     idempotencyRequired: false,
     auditEvent: "ai.action.allowed",

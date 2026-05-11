@@ -3,24 +3,6 @@
   "tool": "get_warehouse_status",
   "risk_level": "SAFE_READ",
   "route_operation": "warehouse.api.stock.scope",
-  "input": {
-    "material_id_optional": true,
-    "material_code_optional": true,
-    "project_id_optional": true,
-    "warehouse_name_optional": true,
-    "object_name_optional": true,
-    "limit_max": 20,
-    "cursor_optional": true
-  },
-  "output": {
-    "available": true,
-    "reserved": true,
-    "incoming": true,
-    "low_stock_flags": true,
-    "movement_summary": true,
-    "source_timestamp": true,
-    "evidence_refs": true
-  },
   "role_scoped": true,
   "roles": {
     "director": "PASS_ALLOWED_FULL_ACCESS",
@@ -31,13 +13,19 @@
     "contractor": "PASS_DENIED",
     "accountant": "PASS_DENIED"
   },
-  "bounded": true,
-  "evidence_refs": true,
-  "mutation_count": 0,
+  "output": {
+    "available": true,
+    "reserved": true,
+    "incoming": true,
+    "low_stock_flags": true,
+    "movement_summary": true,
+    "source_timestamp": true,
+    "evidence_refs": true
+  },
   "stock_mutation": 0,
-  "no_stock_mutation": true,
-  "no_issue_created": true,
-  "no_reservation_created": true,
+  "mutation_count": 0,
+  "evidence_refs": true,
+  "bounded": true,
   "direct_supabase": 0,
   "auth_admin_used": false,
   "list_users_used": false,

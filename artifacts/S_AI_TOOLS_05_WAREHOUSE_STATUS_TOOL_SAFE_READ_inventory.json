@@ -26,9 +26,12 @@
     "low_stock_flags": true,
     "movement_summary": true,
     "source_timestamp": true,
-    "evidence_refs": true,
-    "route_operation": "warehouse.api.stock.scope"
+    "evidence_refs": true
   },
+  "read_boundaries": [
+    "warehouse.api.stock.scope",
+    "warehouse.api.reports.bundle"
+  ],
   "role_policy": {
     "director": "allowed_full_access",
     "control": "allowed_full_access",
@@ -38,17 +41,24 @@
     "contractor": "denied",
     "accountant": "denied"
   },
-  "read_boundaries": [
-    "warehouse.api.stock.scope",
-    "warehouse.api.reports.bundle"
-  ],
   "safety": {
     "safe_read": true,
     "direct_supabase": 0,
-    "mutation_count": 0,
     "stock_mutation": 0,
-    "issue_creation": false,
-    "reservation_creation": false,
-    "model_provider_import": false
+    "mutation_count": 0,
+    "auth_admin_used": false,
+    "list_users_used": false,
+    "service_role_used": false,
+    "db_seed_used": false,
+    "db_writes": false,
+    "migrations_applied": false,
+    "supabase_project_changes": false,
+    "model_provider_changed": false,
+    "openai_gpt_enabled": false,
+    "gemini_removed": false,
+    "credentials_in_source": false,
+    "credentials_in_cli_args": false,
+    "credentials_in_artifacts": false,
+    "secrets_printed": false
   }
 }
