@@ -8,6 +8,11 @@ import {
   validateProductionBusinessReadonlyCanaryRegistry,
 } from "./load/productionBusinessReadonlyCanary";
 import {
+  evaluateFlatListTuningRegressionGuardrail,
+  scanFlatListTuningRegression,
+  type FlatListTuningRegressionSummary,
+} from "./perf/flatListTuningRegression";
+import {
   collectSelectInventory,
   collectSelectInventoryFromSource,
   type SelectInventoryAction,
@@ -296,6 +301,7 @@ export type ArchitectureAntiRegressionReport = {
   };
   unboundedSelectRatchet: UnboundedSelectRatchetSummary;
   unsafeCastRatchet: UnsafeCastRatchetSummary;
+  flatListTuningRegression: FlatListTuningRegressionSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -2100,6 +2106,9 @@ export function runArchitectureAntiRegressionSuite(
   const unsafeCastRatchet = evaluateUnsafeCastRatchetGuardrail({
     findings: scanUnsafeCastRatchetFindings(projectRoot),
   });
+  const flatListTuningRegression = evaluateFlatListTuningRegressionGuardrail(
+    scanFlatListTuningRegression(projectRoot),
+  );
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2116,6 +2125,7 @@ export function runArchitectureAntiRegressionSuite(
     unboundedSelectRatchet.check,
     productionRawLoops.check,
     unsafeCastRatchet.check,
+    flatListTuningRegression.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2133,6 +2143,7 @@ export function runArchitectureAntiRegressionSuite(
     unboundedSelectRatchet: unboundedSelectRatchet.summary,
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
+    flatListTuningRegression: flatListTuningRegression.summary,
     componentDebt,
     checks,
     safety: {
@@ -2164,6 +2175,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`unbounded_select_ratchet_select_star: ${report.unboundedSelectRatchet.selectStarFindings}`);
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
+  console.info(`flatlist_tuning_regression_violations: ${report.flatListTuningRegression.violations}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

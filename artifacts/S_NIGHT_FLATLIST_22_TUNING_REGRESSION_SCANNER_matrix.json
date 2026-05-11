@@ -1,0 +1,142 @@
+{
+  "wave": "S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER",
+  "final_status": "GREEN_FLATLIST_TUNING_REGRESSION_SCANNER",
+  "date": "2026-05-11",
+  "commit_sha": "PENDING_FINAL_COMMIT",
+  "head_equals_origin_main": "PENDING_POST_PUSH",
+  "ahead_behind": "PENDING_POST_PUSH",
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "preflight": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true,
+    "start_head": "5cb2edbaa2d232dc4c68a54bb8988c05fbd80e63"
+  },
+  "scope": {
+    "goal": "Add a FlatList/FlashList tuning regression scanner so untuned heavy runtime lists cannot silently grow after WAVE 21.",
+    "selected_files": [
+      "scripts/perf/flatListTuningRegression.ts",
+      "scripts/architecture_anti_regression_suite.ts",
+      "tests/perf/flatListTuningRegressionScanner.contract.test.ts",
+      "artifacts/S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER_matrix.json",
+      "artifacts/S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER_proof.md"
+    ],
+    "reason_selected": "The scanner belongs in scripts for reuse by architecture gates; the architecture suite must expose the ratchet; the focused test proves missing tuning props, missing keyExtractor, and documented exception handling.",
+    "route_scope_unchanged": true,
+    "no_cache_change": true,
+    "no_rate_limit_change": true,
+    "no_db_or_env_change": true,
+    "no_runtime_ui_behavior_change": true
+  },
+  "before_after_metrics": {
+    "architecture_flatlist_regression_check": {
+      "before": "absent",
+      "after": "present"
+    },
+    "runtime_list_instances_scanned": {
+      "before": 0,
+      "after": 60
+    },
+    "flatList_instances_counted_separately": {
+      "before": 0,
+      "after": 6
+    },
+    "flashList_instances_counted_separately": {
+      "before": 0,
+      "after": 54
+    },
+    "tuned_instances": {
+      "before": 0,
+      "after": 27
+    },
+    "documented_allowlist_instances": {
+      "before": 0,
+      "after": 33
+    },
+    "editable_heavy_exceptions": {
+      "before": 0,
+      "after": 1
+    },
+    "undocumented_tuning_violations": {
+      "before": "not_scanned",
+      "after": 0
+    },
+    "stale_allowlist_entries": {
+      "before": "not_scanned",
+      "after": 0
+    },
+    "allowlist_metadata_errors": {
+      "before": "not_scanned",
+      "after": 0
+    }
+  },
+  "scanner_contract": {
+    "flatList_heavy_component_without_tuning_fails": true,
+    "flashList_tuning_counted_separately": true,
+    "stable_keyExtractor_required": true,
+    "allowlist_requires_owner_reason_layout_proof": true,
+    "nested_lists_inventory_required": true,
+    "detects_missing_windowSize": true,
+    "detects_missing_initialNumToRender": true,
+    "detects_missing_maxToRenderPerBatch": true,
+    "detects_missing_keyExtractor": true,
+    "allows_documented_exception": true
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand tests/perf/flatListTuningRegressionScanner.contract.test.ts tests/perf/flatListTuningExactCloseout.contract.test.ts"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "710 passed, 1 skipped test suite; 4161 passed, 1 skipped tests"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+      "flatlist_tuning_regression_violations": 0
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "files": [
+        "artifacts/S_NIGHT_FLATLIST_22_TUNING_REGRESSION_SCANNER_matrix.json"
+      ]
+    },
+    "post_push_release_verify": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "typescript_suppression_directives_added": false,
+    "untyped_escape_casts_added": false,
+    "empty_catch_blocks_added": false,
+    "broad_rewrite": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_50k_60k_load": false,
+    "destructive_or_unbounded_dml": false,
+    "ota_eas_testflight_native_builds": false,
+    "production_mutation_route_broad_enablement": false,
+    "broad_cache_enablement": false,
+    "broad_rate_limit_enablement": false
+  }
+}
