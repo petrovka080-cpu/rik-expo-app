@@ -55,6 +55,57 @@ const CHAT_THREAD_LIST_TUNING = {
 
 const chatMessageKeyExtractor = (item: ChatMessage) => item.id;
 
+type ChatMessageRowProps = {
+  currentUserId: string | null;
+  currentUserName: string | null;
+  item: ChatMessage;
+  onDeleteMessage: (messageId: string) => void | Promise<void>;
+};
+
+const ChatMessageRow = React.memo(function ChatMessageRow({
+  currentUserId,
+  currentUserName,
+  item,
+  onDeleteMessage,
+}: ChatMessageRowProps) {
+  const isOwn = currentUserId != null && item.user_id === currentUserId;
+  const authorName = isOwn
+    ? currentUserName || item.user?.name || "Р’С‹"
+    : item.user?.name || "РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ";
+  const messageRowStyle = useMemo(
+    () => [styles.messageRow, isOwn ? styles.messageRowOwn : null],
+    [isOwn],
+  );
+  const messageBubbleStyle = useMemo(
+    () => [styles.messageBubble, isOwn ? styles.messageBubbleOwn : null],
+    [isOwn],
+  );
+  const timeLabel = useMemo(
+    () =>
+      new Date(item.created_at).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    [item.created_at],
+  );
+  const handleLongPress = useCallback(() => {
+    void onDeleteMessage(item.id);
+  }, [item.id, onDeleteMessage]);
+
+  return (
+    <Pressable
+      style={messageRowStyle}
+      onLongPress={isOwn ? handleLongPress : undefined}
+    >
+      <View style={messageBubbleStyle}>
+        <Text style={styles.authorText}>{authorName}</Text>
+        {item.content ? <Text style={styles.messageText}>{item.content}</Text> : null}
+        <Text style={styles.timeText}>{timeLabel}</Text>
+      </View>
+    </Pressable>
+  );
+});
+
 export default function ChatScreen() {
   const params = useLocalSearchParams<{
     listingId?: string | string[];
@@ -185,29 +236,14 @@ export default function ChatScreen() {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: ChatMessage }) => {
-      const isOwn = currentUserId != null && item.user_id === currentUserId;
-      const authorName = isOwn
-        ? currentUserName || item.user?.name || "Вы"
-        : item.user?.name || "Пользователь";
-      return (
-        <Pressable
-          style={[styles.messageRow, isOwn ? styles.messageRowOwn : null]}
-          onLongPress={isOwn ? () => void handleDelete(item.id) : undefined}
-        >
-          <View style={[styles.messageBubble, isOwn ? styles.messageBubbleOwn : null]}>
-            <Text style={styles.authorText}>{authorName}</Text>
-            {item.content ? <Text style={styles.messageText}>{item.content}</Text> : null}
-            <Text style={styles.timeText}>
-              {new Date(item.created_at).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </Text>
-          </View>
-        </Pressable>
-      );
-    },
+    ({ item }: { item: ChatMessage }) => (
+      <ChatMessageRow
+        item={item}
+        currentUserId={currentUserId}
+        currentUserName={currentUserName}
+        onDeleteMessage={handleDelete}
+      />
+    ),
     [currentUserId, currentUserName, handleDelete],
   );
 

@@ -30,6 +30,9 @@ describe("S_RUNTIME_08 MarketHomeScreen controller boundary", () => {
     expect(controllerSource).toContain("useMarketHeaderProfile()");
     expect(controllerSource).toContain("useMarketUiStore((state) => state.activeCategory)");
     expect(controllerSource).toContain("useFocusEffect(");
+    expect(controllerSource).toContain("const handleRefreshFeed = useCallback");
+    expect(controllerSource).toContain("const handleEndReached = useCallback");
+    expect(controllerSource).toContain("const handleBannerItemPress = useCallback");
   });
 
   it("preserves marketplace behavior owners in the controller", () => {
@@ -51,8 +54,9 @@ describe("S_RUNTIME_08 MarketHomeScreen controller boundary", () => {
 
     expect(screenSource).toContain("MARKET_HOME_FEED_FLATLIST_TUNING");
     expect(screenSource).toContain("keyExtractor={marketHomeListingKeyExtractor}");
-    expect(screenSource).toContain("void loadFeedStage(\"refresh\");");
-    expect(screenSource).toContain("onEndReached={() => void loadMore()}");
+    expect(screenSource).toContain("onRefresh={handleRefreshFeed}");
+    expect(screenSource).toContain("onEndReached={handleEndReached}");
+    expect(screenSource).not.toContain("onEndReached={() => void loadMore()}");
     expect(screenSource).toContain("onEndReachedThreshold={0.35}");
   });
 

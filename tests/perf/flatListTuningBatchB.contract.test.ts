@@ -37,6 +37,7 @@ describe("S_RUNTIME_04_FLATLIST_TUNING_BATCH_B", () => {
 
   it("tunes MarketHomeScreen feed list while preserving refresh and pagination triggers", () => {
     const source = readRepoFile("src/features/market/MarketHomeScreen.tsx");
+    const controller = readRepoFile("src/features/market/useMarketHomeController.ts");
 
     expect(source).toContain("MARKET_HOME_FEED_FLATLIST_TUNING");
     expect(source).toContain("initialNumToRender: 6");
@@ -46,8 +47,10 @@ describe("S_RUNTIME_04_FLATLIST_TUNING_BATCH_B", () => {
     expect(source).toContain('removeClippedSubviews: Platform.OS !== "web"');
     expect(source).toContain("const marketHomeListingKeyExtractor = (item: MarketHomeListingCard) => item.id;");
     expect(source).toContain("keyExtractor={marketHomeListingKeyExtractor}");
-    expect(source).toContain("void loadFeedStage(\"refresh\");");
-    expect(source).toContain("onEndReached={() => void loadMore()}");
+    expect(source).toContain("onRefresh={handleRefreshFeed}");
+    expect(source).toContain("onEndReached={handleEndReached}");
+    expect(controller).toContain("void loadFeedStage(\"refresh\");");
+    expect(controller).toContain("const handleEndReached = useCallback");
     expect(source).toContain("onEndReachedThreshold={0.35}");
   });
 

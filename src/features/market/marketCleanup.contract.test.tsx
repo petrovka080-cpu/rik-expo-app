@@ -11,12 +11,13 @@ describe("market cleanup contracts", () => {
     const footerStart = source.indexOf("const footer = (");
     const headerChunk = source.slice(headerStart, footerStart);
     const footerChunk = source.slice(footerStart);
+    const feedCardCellSource = readSource("src", "features", "market", "components", "MarketHomeFeedCardCell.tsx");
 
     expect(headerChunk).not.toContain("<MarketHeroCarousel");
     expect(headerChunk).not.toContain("<MarketTenderBanner");
     expect(headerChunk).not.toContain("<MarketAssistantBanner");
     expect(headerChunk).not.toContain("Открыта карточка:");
-    expect(source).toContain('variant="market-primary"');
+    expect(feedCardCellSource).toContain('variant="market-primary"');
     expect(footerChunk).toContain("<MarketHeroCarousel");
     expect(footerChunk).toContain("<MarketTenderBanner");
     expect(footerChunk).toContain("<MarketAssistantBanner");

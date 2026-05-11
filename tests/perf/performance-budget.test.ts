@@ -283,6 +283,9 @@ describe("performance budget — bundle module count", () => {
     const sRuntime08MarketHomeControllerFiles = [
       path.join(SRC, "features", "market", "useMarketHomeController.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi20MarketHomeFeedCardCellFiles = [
+      path.join(SRC, "features", "market", "components", "MarketHomeFeedCardCell.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle51ProfileMembershipTransportFiles = [
       path.join(SRC, "screens", "profile", "profile.membership.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -737,6 +740,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle50CalcModalContentStyleBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sRuntime07CalcModalControllerFiles).toBeLessThanOrEqual(1);
     expect(sRuntime08MarketHomeControllerFiles).toBeLessThanOrEqual(1);
+    expect(sNightUi20MarketHomeFeedCardCellFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle51ProfileMembershipTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle51ProfileAuthTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle52CanonicalPdfAuthTransportFiles).toBeLessThanOrEqual(1);
@@ -864,6 +868,7 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle50CalcModalContentStyleBoundaryFiles -
         sRuntime07CalcModalControllerFiles -
         sRuntime08MarketHomeControllerFiles -
+        sNightUi20MarketHomeFeedCardCellFiles -
         sAuditBattle51ProfileMembershipTransportFiles -
         sAuditBattle51ProfileAuthTransportFiles -
         sAuditBattle52CanonicalPdfAuthTransportFiles -

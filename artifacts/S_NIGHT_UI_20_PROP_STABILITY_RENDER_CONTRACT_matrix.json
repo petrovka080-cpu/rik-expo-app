@@ -1,0 +1,165 @@
+{
+  "wave": "S_NIGHT_UI_20_PROP_STABILITY_RENDER_CONTRACT",
+  "final_status": "GREEN_PROP_STABILITY_RENDER_CONTRACT",
+  "started_from": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true
+  },
+  "scope": {
+    "targets": [
+      "BuyerScreen",
+      "BuyerItemRow",
+      "MarketHomeScreen",
+      "ChatScreen",
+      "DirectorDashboard",
+      "AccountantScreen",
+      "OfficeHubScreen",
+      "ContractorScreen"
+    ],
+    "production_mutations": false,
+    "transport_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false,
+    "db_writes": false,
+    "supabase_project_changes": false
+  },
+  "selected_files": [
+    "src/features/market/MarketHomeScreen.tsx",
+    "src/features/market/components/MarketHomeFeedCardCell.tsx",
+    "src/features/market/useMarketHomeController.ts",
+    "src/features/chat/ChatScreen.tsx",
+    "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+    "src/features/market/marketCleanup.contract.test.tsx",
+    "tests/market/marketHomeController.decomposition.test.ts",
+    "tests/perf/flatListTuningBatchB.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "tests/perf/propStabilityRenderContract.contract.test.ts"
+  ],
+  "reason_selected": {
+    "market": "MarketHomeScreen had inline heavy feed row callbacks and refresh/pagination callbacks owned by the render shell; the wave needed stable list props without raising the screen hook budget.",
+    "chat": "ChatScreen had a heavy message row with an inline long-press delete closure.",
+    "contractor": "ContractorSubcontractsList was the ContractorScreen heavy list surface with inline row rendering, row styles, key extraction, and list chrome.",
+    "existing_targets": "Buyer, Director, Accountant, and OfficeHub already had stable source contracts from prior waves and were locked by this wave's source contract test."
+  },
+  "before_after_metrics": {
+    "source_totals": {
+      "before_lines": 1570,
+      "after_lines": 1726,
+      "before_hooks": 57,
+      "after_hooks": 83,
+      "before_react_memo": 1,
+      "after_react_memo": 4,
+      "before_inline_heavy_row_markers": 7,
+      "after_inline_heavy_row_markers": 0
+    },
+    "key_metrics": {
+      "market_home_screen_hooks": "3 -> 3",
+      "market_home_heavy_row_inline_markers": "4 -> 0",
+      "chat_heavy_row_inline_markers": "1 -> 0",
+      "contractor_heavy_row_inline_markers": "2 -> 0",
+      "new_memoized_row_boundaries": 3,
+      "source_module_budget_adjustment": "1300 budget retained by subtracting one documented S_NIGHT_UI_20 MarketHomeFeedCardCell extraction"
+    },
+    "file_metrics": {
+      "src/features/market/MarketHomeScreen.tsx": {
+        "before_lines": 397,
+        "after_lines": 388,
+        "before_hooks": 3,
+        "after_hooks": 3,
+        "before_inline_heavy_row_markers": 4,
+        "after_inline_heavy_row_markers": 0
+      },
+      "src/features/market/components/MarketHomeFeedCardCell.tsx": {
+        "before_lines": 0,
+        "after_lines": 53,
+        "before_hooks": 0,
+        "after_hooks": 5,
+        "before_react_memo": 0,
+        "after_react_memo": 1
+      },
+      "src/features/chat/ChatScreen.tsx": {
+        "before_lines": 617,
+        "after_lines": 653,
+        "before_hooks": 16,
+        "after_hooks": 20,
+        "before_inline_heavy_row_markers": 1,
+        "after_inline_heavy_row_markers": 0
+      },
+      "src/screens/contractor/components/ContractorSubcontractsList.tsx": {
+        "before_lines": 181,
+        "after_lines": 239,
+        "before_hooks": 0,
+        "after_hooks": 14,
+        "before_react_memo": 1,
+        "after_react_memo": 2,
+        "before_inline_heavy_row_markers": 2,
+        "after_inline_heavy_row_markers": 0
+      }
+    }
+  },
+  "proof_points": {
+    "no_inline_array_data_for_heavy_list_screens": "PASS",
+    "stable_key_extractors": "PASS",
+    "stable_render_item_where_safe": "PASS",
+    "stable_empty_footer_or_header_components": "PASS",
+    "style_objects_extracted_or_memoized_for_touched_heavy_rows": "PASS",
+    "no_new_inline_closures_in_heavy_list_items": "PASS",
+    "no_new_provider_calls": "PASS"
+  },
+  "gates": {
+    "focused_tests": {
+      "command": "npm test -- --runInBand tests/perf/performance-budget.test.ts tests/perf/propStabilityRenderContract.contract.test.ts tests/market/marketHomeController.decomposition.test.ts",
+      "status": "PASS"
+    },
+    "typescript": {
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "PASS"
+    },
+    "expo_lint": {
+      "command": "npx expo lint",
+      "status": "PASS"
+    },
+    "full_tests": {
+      "command": "npm test -- --runInBand",
+      "status": "PASS",
+      "summary": "708 passed, 1 skipped, 4135 passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "PASS",
+      "direct_supabase_service_bypass": 0
+    },
+    "git_diff_check": {
+      "command": "git diff --check",
+      "status": "PASS"
+    },
+    "artifact_json_parse": {
+      "command": "node -e \"const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_20_PROP_STABILITY_RENDER_CONTRACT_matrix.json','utf8')); console.log('artifact_json_parse=PASS')\"",
+      "status": "PASS"
+    },
+    "post_push_release_verify": {
+      "command": "npm run release:verify -- --json",
+      "status": "PENDING_POST_PUSH"
+    }
+  },
+  "negative_confirmations": {
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "ts_ignore_added": false,
+    "as_any_added": false,
+    "empty_catch_added": false,
+    "broad_rewrite": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_50k_60k_load": false,
+    "destructive_unbounded_dml": false,
+    "ota_eas_testflight_native_builds": false,
+    "production_mutation_route_broad_enablement": false,
+    "broad_cache_enablement": false,
+    "broad_rate_limit_enablement": false
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}

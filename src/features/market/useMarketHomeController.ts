@@ -9,7 +9,7 @@ import {
 import { router, useFocusEffect } from "expo-router";
 
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
-import { getCategoryLabel } from "./marketHome.config";
+import { getCategoryLabel, MARKET_HOME_BANNERS } from "./marketHome.config";
 import {
   buildMarketAssistantPrompt,
   buildMarketMapParams,
@@ -52,6 +52,7 @@ const DEFAULT_FEED_STATE: FeedState = {
 };
 
 const MARKET_HOME_SURFACE = "home_feed";
+type MarketHomeBanner = (typeof MARKET_HOME_BANNERS)[number];
 
 export function useMarketHomeController() {
   const { width } = useWindowDimensions();
@@ -276,6 +277,11 @@ export function useMarketHomeController() {
     [feedAnchorOffset, pushSupplierMap],
   );
 
+  const handleBannerItemPress = useCallback(
+    (banner: MarketHomeBanner) => handleBannerPress(banner.action),
+    [handleBannerPress],
+  );
+
   const handleOpenAuctions = useCallback(() => {
     const route = auctionsSummary?.primaryCtaRoute ?? MARKET_AUCTIONS_ROUTE;
     recordPlatformObservability({
@@ -330,6 +336,15 @@ export function useMarketHomeController() {
     setFeedAnchorOffset(event.nativeEvent.layout.y);
   }, []);
 
+  const handleRefreshFeed = useCallback(() => {
+    void loadStage1();
+    void loadFeedStage("refresh");
+  }, [loadFeedStage, loadStage1]);
+
+  const handleEndReached = useCallback(() => {
+    void loadMore();
+  }, [loadMore]);
+
   const feedSubtitleText =
     feedPhase === "loading" && feed.listings.length === 0
       ? "Подбираем предложения для первой выдачи."
@@ -348,6 +363,7 @@ export function useMarketHomeController() {
     feedPhase,
     feedSubtitleText,
     filters,
+    handleBannerItemPress,
     handleBannerPress,
     handleCategorySelect,
     handleFeedHeaderLayout,
@@ -356,7 +372,9 @@ export function useMarketHomeController() {
     handleOpenListing,
     handleOpenMap,
     handleOpenProfile,
+    handleRefreshFeed,
     handleResetFeedFilters,
+    handleEndReached,
     headerProfile,
     listRef,
     loadFeedStage,

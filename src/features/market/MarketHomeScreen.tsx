@@ -13,8 +13,8 @@ import {
 import { FlashList } from "../../ui/FlashList";
 import MarketAssistantBanner from "./components/MarketAssistantBanner";
 import MarketCategoryRail from "./components/MarketCategoryRail";
-import MarketFeedCard from "./components/MarketFeedCard";
 import MarketHeaderBar from "./components/MarketHeaderBar";
+import { MarketHomeFeedCardCell } from "./components/MarketHomeFeedCardCell";
 import MarketHeroCarousel from "./components/MarketHeroCarousel";
 import MarketTenderBanner from "./components/MarketTenderBanner";
 import {
@@ -46,20 +46,19 @@ export default function MarketHomeScreen() {
     feedErrorText,
     feedPhase,
     feedSubtitleText,
-    handleBannerPress,
+    handleBannerItemPress,
     handleCategorySelect,
+    handleEndReached,
     handleFeedHeaderLayout,
     handleOpenAssistant,
     handleOpenAuctions,
     handleOpenListing,
     handleOpenMap,
     handleOpenProfile,
+    handleRefreshFeed,
     handleResetFeedFilters,
     headerProfile,
     listRef,
-    loadFeedStage,
-    loadMore,
-    loadStage1,
     loadingMore,
     numColumns,
     openPhone,
@@ -72,16 +71,14 @@ export default function MarketHomeScreen() {
 
   const renderCard = useCallback(
     ({ item }: ListRenderItemInfo<MarketHomeListingCard>) => (
-      <View style={[styles.feedCell, { width: columnWidth }]}>
-        <MarketFeedCard
-          variant="market-primary"
-          listing={item}
-          onOpen={() => handleOpenListing(item)}
-          onMapPress={() => pushSupplierMap(item)}
-          onPhonePress={item.phone ? () => void openPhone(item.phone) : undefined}
-          onWhatsAppPress={item.whatsapp ? () => void openWhatsApp(item.whatsapp) : undefined}
-        />
-      </View>
+      <MarketHomeFeedCardCell
+        item={item}
+        width={columnWidth}
+        onOpenListing={handleOpenListing}
+        onOpenPhone={openPhone}
+        onOpenWhatsApp={openWhatsApp}
+        onPushSupplierMap={pushSupplierMap}
+      />
     ),
     [
       columnWidth,
@@ -186,7 +183,7 @@ export default function MarketHomeScreen() {
 
       <MarketHeroCarousel
         banners={MARKET_HOME_BANNERS}
-        onPressBanner={(banner) => handleBannerPress(banner.action)}
+        onPressBanner={handleBannerItemPress}
       />
 
       <MarketTenderBanner
@@ -221,15 +218,12 @@ export default function MarketHomeScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => {
-              void loadStage1();
-              void loadFeedStage("refresh");
-            }}
+            onRefresh={handleRefreshFeed}
             tintColor={MARKET_HOME_COLORS.accent}
           />
         }
         showsVerticalScrollIndicator={false}
-        onEndReached={() => void loadMore()}
+        onEndReached={handleEndReached}
         onEndReachedThreshold={0.35}
       />
     </View>
@@ -302,9 +296,6 @@ const styles = StyleSheet.create({
   feedRow: {
     justifyContent: "space-between",
     paddingHorizontal: 20,
-  },
-  feedCell: {
-    marginBottom: 14,
   },
   footerLoader: {
     paddingBottom: 8,
