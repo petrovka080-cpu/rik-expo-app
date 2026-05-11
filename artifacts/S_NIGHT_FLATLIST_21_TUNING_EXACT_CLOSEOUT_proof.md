@@ -2,6 +2,8 @@
 
 final_status: GREEN_FLATLIST_TUNING_EXACT_CLOSEOUT
 
+Verified code commit: `5c01e118327b7d73641bb974318d86ccae8392d0`
+
 Supabase Realtime status: WAITING_FOR_SUPABASE_SUPPORT_RESPONSE
 
 ## Scope
@@ -83,7 +85,7 @@ Required gates:
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json`: PASS (`GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED`)
 - `git diff --check`: PASS
 - Artifact JSON parse: PASS
-- Post-push `npm run release:verify -- --json`: PENDING_POST_PUSH
+- Post-push `npm run release:verify -- --json`: PASS against `5c01e118327b7d73641bb974318d86ccae8392d0`
 
 ## Negative Confirmations
 
