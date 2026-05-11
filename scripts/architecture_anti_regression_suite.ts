@@ -339,6 +339,20 @@ export type AiToolPlanPolicyArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AgentBffRouteShellArchitectureSummary = {
+  shellPresent: boolean;
+  allRoutesPresent: boolean;
+  authRequired: boolean;
+  roleFilteredTools: boolean;
+  forbiddenToolsHidden: boolean;
+  mutationCountZero: boolean;
+  previewNeverMutates: boolean;
+  noLiveExecutionBoundary: boolean;
+  noProviderImports: boolean;
+  noDirectDatabaseAccess: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -501,6 +515,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolRegistryArchitecture: AiToolRegistryArchitectureSummary;
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
+  agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
@@ -597,6 +612,7 @@ const AI_TOOL_TYPES_PATH = "src/features/ai/tools/aiToolTypes.ts";
 const AI_TOOL_SCHEMAS_PATH = "src/features/ai/schemas/aiToolSchemas.ts";
 const AI_TOOL_READ_BINDINGS_PATH = "src/features/ai/tools/aiToolReadBindings.ts";
 const AI_TOOL_PLAN_POLICY_PATH = "src/features/ai/tools/aiToolPlanPolicy.ts";
+const AGENT_BFF_ROUTE_SHELL_PATH = "src/features/ai/agent/agentBffRouteShell.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
   "compare_suppliers",
@@ -2122,6 +2138,89 @@ export function evaluateAiToolPlanPolicyArchitectureGuardrail(params: {
       noLiveExecutionBoundary,
       noProviderImports,
       noSupabaseImports,
+      findings,
+    },
+  };
+}
+
+const agentBffRouteShellLiveExecutionPattern =
+  /\bexecuteTool\b|\brunTool\b|\btoolExecutor\b|\binvokeTool\b|\bfetch\s*\(|\bXMLHttpRequest\b|\.(?:from|rpc|insert|update|delete|upsert)\s*\(/i;
+const agentBffRouteShellProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i;
+const agentBffRouteShellDatabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+
+export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AgentBffRouteShellArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH });
+  const allRoutesPresent =
+    Boolean(shellSource?.includes("GET /agent/tools")) &&
+    Boolean(shellSource?.includes("POST /agent/tools/:name/validate")) &&
+    Boolean(shellSource?.includes("POST /agent/tools/:name/preview")) &&
+    Boolean(shellSource?.includes("GET /agent/action/:id/status"));
+  const authRequired =
+    Boolean(shellSource?.includes("AGENT_BFF_AUTH_REQUIRED")) &&
+    Boolean(shellSource?.includes("authRequired: true"));
+  const roleFilteredTools =
+    Boolean(shellSource?.includes("roleFilteredTools: true")) &&
+    Boolean(shellSource?.includes("planAiToolUse"));
+  const forbiddenToolsHidden = Boolean(shellSource?.includes("forbiddenToolsHidden: true"));
+  const mutationCountZero =
+    Boolean(shellSource?.includes("mutationCount: 0")) &&
+    !Boolean(shellSource?.includes("mutationCount: 1"));
+  const previewNeverMutates =
+    Boolean(shellSource?.includes("previewMutates: false")) &&
+    Boolean(shellSource?.includes("persisted: false")) &&
+    Boolean(shellSource?.includes("providerCalled: false")) &&
+    Boolean(shellSource?.includes("dbAccessed: false"));
+  const noLiveExecutionBoundary = !agentBffRouteShellLiveExecutionPattern.test(shellSource ?? "");
+  const noProviderImports = !agentBffRouteShellProviderPattern.test(shellSource ?? "");
+  const noDirectDatabaseAccess = !agentBffRouteShellDatabasePattern.test(shellSource ?? "");
+  const noForbiddenMutationTerms =
+    !Boolean(shellSource?.includes("create_order")) &&
+    !Boolean(shellSource?.includes("confirm_supplier")) &&
+    !Boolean(shellSource?.includes("change_payment_status")) &&
+    !Boolean(shellSource?.includes("change_warehouse_status"));
+  const findings = [
+    ...(noLiveExecutionBoundary ? [] : ["agent_bff_route_shell_live_execution_boundary_detected"]),
+    ...(noProviderImports ? [] : ["agent_bff_route_shell_provider_import_detected"]),
+    ...(noDirectDatabaseAccess ? [] : ["agent_bff_route_shell_direct_database_boundary_detected"]),
+    ...(noForbiddenMutationTerms ? [] : ["agent_bff_route_shell_forbidden_mutation_term_detected"]),
+  ];
+  const errors = [
+    ...(shellSource ? [] : [`missing_file:${AGENT_BFF_ROUTE_SHELL_PATH}`]),
+    ...(allRoutesPresent ? [] : ["agent_bff_route_shell_missing_endpoint"]),
+    ...(authRequired ? [] : ["agent_bff_route_shell_auth_not_required"]),
+    ...(roleFilteredTools ? [] : ["agent_bff_route_shell_role_filter_missing"]),
+    ...(forbiddenToolsHidden ? [] : ["agent_bff_route_shell_forbidden_tools_not_hidden"]),
+    ...(mutationCountZero ? [] : ["agent_bff_route_shell_mutation_count_not_zero"]),
+    ...(previewNeverMutates ? [] : ["agent_bff_route_shell_preview_mutates"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "agent_bff_route_shell_architecture",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      shellPresent: Boolean(shellSource),
+      allRoutesPresent,
+      authRequired,
+      roleFilteredTools,
+      forbiddenToolsHidden,
+      mutationCountZero,
+      previewNeverMutates,
+      noLiveExecutionBoundary,
+      noProviderImports,
+      noDirectDatabaseAccess,
       findings,
     },
   };
@@ -3765,6 +3864,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolRegistryArchitecture = evaluateAiToolRegistryArchitectureGuardrail({ projectRoot });
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
+  const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
@@ -3794,6 +3894,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRegistryArchitecture.check,
     aiToolReadBindingsArchitecture.check,
     aiToolPlanPolicyArchitecture.check,
+    agentBffRouteShellArchitecture.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     androidEmulatorIosBuildSubmitGate.check,
@@ -3824,6 +3925,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRegistryArchitecture: aiToolRegistryArchitecture.summary,
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
+    agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
@@ -3873,6 +3975,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_read_bindings_no_live_execution: ${report.aiToolReadBindingsArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_tool_plan_policy_blocks_unknown: ${report.aiToolPlanPolicyArchitecture.blocksUnknownTools}`);
   console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
+  console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
+  console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
