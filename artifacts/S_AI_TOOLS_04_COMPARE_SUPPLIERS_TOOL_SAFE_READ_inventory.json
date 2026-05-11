@@ -1,0 +1,42 @@
+{
+  "wave": "S_AI_TOOLS_04_COMPARE_SUPPLIERS_TOOL_SAFE_READ",
+  "tool": "compare_suppliers",
+  "scope": [
+    "src/features/ai/tools/compareSuppliersTool.ts",
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/ai/compareSuppliersTool.contract.test.ts",
+    "tests/ai/compareSuppliersNoMutation.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "input_contract": {
+    "material_ids": true,
+    "project_id_optional": true,
+    "location_optional": true,
+    "limit_max": 10
+  },
+  "output_contract": {
+    "supplier_cards": true,
+    "price_range": true,
+    "delivery_range": true,
+    "risk_flags": true,
+    "recommendation_summary": true,
+    "evidence_refs": true,
+    "next_action": "draft_request"
+  },
+  "read_boundaries": [
+    "catalog.suppliers.rpc",
+    "catalog.suppliers.table",
+    "supplier_showcase.company_by_id",
+    "supplier_showcase.listings_by_company_id"
+  ],
+  "safety": {
+    "safe_read": true,
+    "direct_supabase": 0,
+    "mutation_count": 0,
+    "supplier_confirmation": false,
+    "order_creation": false,
+    "rfq_send": false,
+    "warehouse_change": false,
+    "model_provider_import": false
+  }
+}

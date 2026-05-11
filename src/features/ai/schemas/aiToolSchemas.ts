@@ -130,53 +130,108 @@ export const searchCatalogOutputSchema: AiToolJsonObjectSchema = {
 
 export const compareSuppliersInputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["materialName"],
+  required: ["material_ids"],
   additionalProperties: false,
   properties: {
-    materialName: {
-      type: "string",
-      minLength: 1,
-    },
-    quantity: {
-      type: "number",
-      minimum: 0,
-    },
-    supplierIds: {
+    material_ids: {
       type: "array",
+      minItems: 1,
+      maxItems: 20,
       items: {
         type: "string",
         minLength: 1,
       },
+    },
+    project_id: {
+      type: "string",
+      minLength: 1,
+    },
+    location: {
+      type: "string",
+      minLength: 1,
+    },
+    limit: {
+      type: "number",
+      minimum: 1,
+      maximum: 10,
     },
   },
 };
 
 export const compareSuppliersOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["comparisons", "evidenceRefs", "approvalBoundary"],
+  required: [
+    "supplier_cards",
+    "price_range",
+    "delivery_range",
+    "risk_flags",
+    "recommendation_summary",
+    "evidence_refs",
+    "next_action",
+    "bounded",
+    "mutation_count",
+    "no_supplier_confirmation",
+    "no_order_created",
+    "no_rfq_sent",
+    "warehouse_unchanged",
+  ],
   additionalProperties: false,
   properties: {
-    comparisons: {
+    supplier_cards: {
       type: "array",
       items: {
         type: "object",
-        required: ["supplierId", "supplierName", "summary"],
+        required: ["supplier_id", "supplier_name", "summary", "risk_flags", "evidence_ref"],
         additionalProperties: false,
         properties: {
-          supplierId: { type: "string", minLength: 1 },
-          supplierName: { type: "string", minLength: 1 },
+          supplier_id: { type: "string", minLength: 1 },
+          supplier_name: { type: "string", minLength: 1 },
           summary: { type: "string", minLength: 1 },
+          risk_flags: {
+            type: "array",
+            items: { type: "string", minLength: 1 },
+          },
+          evidence_ref: { type: "string", minLength: 1 },
         },
       },
     },
-    evidenceRefs: {
-      type: "array",
-      items: evidenceRefSchema,
+    price_range: {
+      type: "object",
+      required: ["status", "summary"],
+      additionalProperties: false,
+      properties: {
+        status: { type: "string", enum: ["not_available_in_safe_read"] },
+        summary: { type: "string", minLength: 1 },
+      },
     },
-    approvalBoundary: {
+    delivery_range: {
+      type: "object",
+      required: ["status", "summary"],
+      additionalProperties: false,
+      properties: {
+        status: { type: "string", enum: ["not_available_in_safe_read"] },
+        summary: { type: "string", minLength: 1 },
+      },
+    },
+    risk_flags: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    recommendation_summary: {
       type: "string",
       minLength: 1,
     },
+    evidence_refs: {
+      type: "array",
+      items: evidenceRefSchema,
+    },
+    next_action: { type: "string", enum: ["draft_request"] },
+    bounded: { type: "boolean" },
+    mutation_count: { type: "number", minimum: 0, maximum: 0 },
+    no_supplier_confirmation: { type: "boolean" },
+    no_order_created: { type: "boolean" },
+    no_rfq_sent: { type: "boolean" },
+    warehouse_unchanged: { type: "boolean" },
   },
 };
 
