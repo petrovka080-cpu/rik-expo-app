@@ -1,0 +1,39 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: AI Role Screen Knowledge Contractor
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_CONTRACTOR_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_CONTRACTOR_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- openLink: "rik://ai?context=contractor&prompt=What%20do%20I%20need%20to%20close%3F&autoSend=1"
+- extendedWaitUntil:
+    visible: "AI APP KNOWLEDGE BLOCK"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: "own_records_only"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "prepare_act"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "pdf_exports"
+    timeout: 30000
+- assertNotVisible: "accounting_posting"
+- assertNotVisible: "internal_supplier_details"
+- assertNotVisible: "other_contractor_data"
+- stopApp

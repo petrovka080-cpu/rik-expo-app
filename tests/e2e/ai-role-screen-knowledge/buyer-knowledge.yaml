@@ -1,0 +1,40 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: AI Role Screen Knowledge Buyer
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_BUYER_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_BUYER_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- openLink: "rik://ai?context=buyer&prompt=Find%20suppliers%20and%20prepare%20a%20request&autoSend=1"
+- extendedWaitUntil:
+    visible: "AI APP KNOWLEDGE BLOCK"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: "supplier"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "compare"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "prepare_request"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "approval_required"
+    timeout: 30000
+- assertNotVisible: "final order created"
+- stopApp

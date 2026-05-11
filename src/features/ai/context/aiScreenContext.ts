@@ -18,7 +18,7 @@ export function resolveAiScreenIdForAssistantContext(context: AssistantContext):
     case "accountant":
       return "accountant.main";
     case "warehouse":
-      return "chat.main";
+      return "warehouse.main";
     case "contractor":
       return "contractor.main";
     case "foreman":
@@ -29,6 +29,10 @@ export function resolveAiScreenIdForAssistantContext(context: AssistantContext):
       return "map.main";
     case "reports":
       return "reports.modal";
+    case "profile":
+      return "office.hub";
+    case "request":
+      return "buyer.main";
     default:
       return "chat.main";
   }

@@ -155,6 +155,17 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "schemas", "aiActionSchemas.ts"),
       path.join(SRC, "features", "ai", "schemas", "aiRoleSchemas.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiCore03AppKnowledgeRegistryFiles = [
+      path.join(SRC, "features", "ai", "knowledge", "aiKnowledgeTypes.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiDomainKnowledgeRegistry.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiEntityRegistry.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiScreenKnowledgeRegistry.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiDocumentSourceRegistry.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiIntentRegistry.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiKnowledgeResolver.ts"),
+      path.join(SRC, "features", "ai", "knowledge", "aiKnowledgeRedaction.ts"),
+      path.join(SRC, "features", "ai", "controlPlane", "aiControlPlaneKnowledgeBridge.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -746,6 +757,7 @@ describe("performance budget — bundle module count", () => {
     // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
     // S_NIGHT_UI_19 adds one permanent BuyerSubcontractTab render view boundary.
     // S_NIGHT_UI_18 adds four permanent BuyerSubcontractTab model/controller boundaries.
+    // S_AI_CORE_03 adds nine permanent AI app knowledge registry and bridge files.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -878,6 +890,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle135SubcontractsSharedTransportFiles).toBeLessThanOrEqual(1);
     expect(sAiCore01ModelBoundaryFiles).toBeLessThanOrEqual(7);
     expect(sAiCore02RoleRiskApprovalControlPlaneFiles).toBeLessThanOrEqual(15);
+    expect(sAiCore03AppKnowledgeRegistryFiles).toBeLessThanOrEqual(9);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -887,6 +900,7 @@ describe("performance budget — bundle module count", () => {
         sAiWorkflow2DisabledPilotFiles -
         sAiCore01ModelBoundaryFiles -
         sAiCore02RoleRiskApprovalControlPlaneFiles -
+        sAiCore03AppKnowledgeRegistryFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

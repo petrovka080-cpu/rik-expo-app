@@ -1,0 +1,40 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+name: AI Role Screen Knowledge Accountant
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: "auth.login.email"
+    timeout: 15000
+- tapOn:
+    id: "auth.login.email"
+- inputText: ${E2E_ACCOUNTANT_EMAIL}
+- tapOn:
+    id: "auth.login.password"
+- inputText: ${E2E_ACCOUNTANT_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: "auth.login.submit"
+- extendedWaitUntil:
+    visible:
+      id: "profile-edit-open"
+    timeout: 30000
+- openLink: "rik://ai?context=accountant&prompt=Show%20debts%20and%20documents&autoSend=1"
+- extendedWaitUntil:
+    visible: "AI APP KNOWLEDGE BLOCK"
+    timeout: 60000
+- extendedWaitUntil:
+    visible: "company_debt"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "payment"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "finance_documents"
+    timeout: 30000
+- extendedWaitUntil:
+    visible: "approval_required"
+    timeout: 30000
+- assertNotVisible: "confirm_supplier:allowed"
+- stopApp

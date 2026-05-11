@@ -270,6 +270,32 @@ export type AiRoleRiskApprovalControlPlaneSummary = {
   findings: readonly string[];
 };
 
+export type AiAppKnowledgeRegistrySummary = {
+  aiKnowledgeTypesPresent: boolean;
+  domainRegistryPresent: boolean;
+  entityRegistryPresent: boolean;
+  screenKnowledgeRegistryPresent: boolean;
+  documentSourceRegistryPresent: boolean;
+  intentRegistryPresent: boolean;
+  knowledgeResolverPresent: boolean;
+  knowledgeRedactionPresent: boolean;
+  controlPlaneBridgePresent: boolean;
+  assistantContextUsesKnowledgeResolver: boolean;
+  assistantPromptsIncludeKnowledgePolicy: boolean;
+  requiredScreenIdsRegistered: boolean;
+  requiredDomainsRegistered: boolean;
+  requiredDocumentSourcesRegistered: boolean;
+  directorControlFullDomainKnowledgePresent: boolean;
+  unknownRoleDenyByDefault: boolean;
+  contractorOwnRecordsOnlyPresent: boolean;
+  financeContextScopedFromNonFinanceRoles: boolean;
+  noDirectHighRiskIntent: boolean;
+  registryProviderImports: number;
+  resolverNetworkOrDbQueries: number;
+  screenGatewayImports: number;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -371,6 +397,7 @@ export type ArchitectureAntiRegressionReport = {
   errorHandlingGapRatchet: ErrorHandlingGapRatchetSummary;
   aiModelBoundary: AiModelBoundarySummary;
   aiRoleRiskApprovalControlPlane: AiRoleRiskApprovalControlPlaneSummary;
+  aiAppKnowledgeRegistry: AiAppKnowledgeRegistrySummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -449,6 +476,74 @@ const AI_ASSISTANT_PROMPTS_PATH = "src/features/ai/assistantPrompts.ts";
 const AI_ASSISTANT_SCOPE_CONTEXT_PATH = "src/features/ai/assistantScopeContext.ts";
 const AI_CONTEXT_REDACTION_PATH = "src/features/ai/context/aiContextRedaction.ts";
 const AI_AUDIT_EVENT_TYPES_PATH = "src/features/ai/audit/aiActionAuditTypes.ts";
+const AI_KNOWLEDGE_TYPES_PATH = "src/features/ai/knowledge/aiKnowledgeTypes.ts";
+const AI_DOMAIN_KNOWLEDGE_REGISTRY_PATH = "src/features/ai/knowledge/aiDomainKnowledgeRegistry.ts";
+const AI_ENTITY_REGISTRY_PATH = "src/features/ai/knowledge/aiEntityRegistry.ts";
+const AI_SCREEN_KNOWLEDGE_REGISTRY_PATH = "src/features/ai/knowledge/aiScreenKnowledgeRegistry.ts";
+const AI_DOCUMENT_SOURCE_REGISTRY_PATH = "src/features/ai/knowledge/aiDocumentSourceRegistry.ts";
+const AI_INTENT_REGISTRY_PATH = "src/features/ai/knowledge/aiIntentRegistry.ts";
+const AI_KNOWLEDGE_RESOLVER_PATH = "src/features/ai/knowledge/aiKnowledgeResolver.ts";
+const AI_KNOWLEDGE_REDACTION_PATH = "src/features/ai/knowledge/aiKnowledgeRedaction.ts";
+const AI_CONTROL_PLANE_KNOWLEDGE_BRIDGE_PATH = "src/features/ai/controlPlane/aiControlPlaneKnowledgeBridge.ts";
+const REQUIRED_AI_APP_KNOWLEDGE_DOMAINS = [
+  "control",
+  "projects",
+  "procurement",
+  "marketplace",
+  "warehouse",
+  "finance",
+  "reports",
+  "documents",
+  "subcontracts",
+  "contractors",
+  "map",
+  "chat",
+  "office",
+] as const;
+const REQUIRED_AI_APP_KNOWLEDGE_SCREENS = [
+  "director.dashboard",
+  "director.reports_modal",
+  "buyer.main",
+  "buyer.subcontracts",
+  "market.home",
+  "accountant.main",
+  "foreman.main",
+  "foreman.ai.quick_modal",
+  "foreman.subcontract",
+  "contractor.main",
+  "office.hub",
+  "map.main",
+  "chat.main",
+  "reports.modal",
+  "warehouse.main",
+] as const;
+const REQUIRED_AI_APP_KNOWLEDGE_DOCUMENT_SOURCES = [
+  "director_reports",
+  "foreman_daily_reports",
+  "ai_reports",
+  "acts",
+  "subcontract_documents",
+  "request_documents",
+  "warehouse_documents",
+  "finance_documents",
+  "chat_attachments",
+  "pdf_exports",
+] as const;
+const REQUIRED_AI_APP_KNOWLEDGE_INTENTS = [
+  "find",
+  "summarize",
+  "compare",
+  "explain",
+  "draft",
+  "prepare_report",
+  "prepare_act",
+  "prepare_request",
+  "check_status",
+  "find_risk",
+  "submit_for_approval",
+  "approve",
+  "execute_approved",
+] as const;
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
@@ -1433,6 +1528,159 @@ export function evaluateAiRoleRiskApprovalControlPlaneGuardrail(params: {
       promptPolicyBuilderApplied,
       screenContextRedactionPresent,
       auditEventsPresent,
+      screenGatewayImports: screenGatewayImportFindings.length,
+      findings,
+    },
+  };
+}
+
+const knowledgeRegistryImportPattern =
+  /\bfrom\s+["'][^"']*(supabase|gemini|openai|features\/ai\/model|AiModelGateway)[^"']*["']|\bimport\s+\{[^}]*\bAiModelGateway\b[^}]*\}/i;
+const resolverNetworkOrDbPattern =
+  /\bfetch\s*\(|\bXMLHttpRequest\b|\bsupabase\b|\.(?:from|rpc)\s*\(/i;
+
+export function evaluateAiAppKnowledgeRegistryGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+  sourceFiles?: readonly string[];
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiAppKnowledgeRegistrySummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const sourceFiles = (params.sourceFiles ?? defaultAiModelBoundarySourceFiles(params.projectRoot))
+    .map(normalizePath);
+  const sourceEntries = sourceFiles.map((file) => ({
+    file,
+    source: safeReadProjectFile({ readFile, relativePath: file }) ?? "",
+  }));
+
+  const knowledgeTypesSource = safeReadProjectFile({ readFile, relativePath: AI_KNOWLEDGE_TYPES_PATH });
+  const domainRegistrySource = safeReadProjectFile({ readFile, relativePath: AI_DOMAIN_KNOWLEDGE_REGISTRY_PATH });
+  const entityRegistrySource = safeReadProjectFile({ readFile, relativePath: AI_ENTITY_REGISTRY_PATH });
+  const screenKnowledgeSource = safeReadProjectFile({ readFile, relativePath: AI_SCREEN_KNOWLEDGE_REGISTRY_PATH });
+  const documentSourceRegistrySource = safeReadProjectFile({ readFile, relativePath: AI_DOCUMENT_SOURCE_REGISTRY_PATH });
+  const intentRegistrySource = safeReadProjectFile({ readFile, relativePath: AI_INTENT_REGISTRY_PATH });
+  const knowledgeResolverSource = safeReadProjectFile({ readFile, relativePath: AI_KNOWLEDGE_RESOLVER_PATH });
+  const knowledgeRedactionSource = safeReadProjectFile({ readFile, relativePath: AI_KNOWLEDGE_REDACTION_PATH });
+  const controlPlaneBridgeSource = safeReadProjectFile({ readFile, relativePath: AI_CONTROL_PLANE_KNOWLEDGE_BRIDGE_PATH });
+  const assistantScopeContextSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCOPE_CONTEXT_PATH });
+  const assistantPromptsSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_PROMPTS_PATH });
+
+  const knowledgeRegistryEntries = [
+    { file: AI_KNOWLEDGE_TYPES_PATH, source: knowledgeTypesSource ?? "" },
+    { file: AI_DOMAIN_KNOWLEDGE_REGISTRY_PATH, source: domainRegistrySource ?? "" },
+    { file: AI_ENTITY_REGISTRY_PATH, source: entityRegistrySource ?? "" },
+    { file: AI_SCREEN_KNOWLEDGE_REGISTRY_PATH, source: screenKnowledgeSource ?? "" },
+    { file: AI_DOCUMENT_SOURCE_REGISTRY_PATH, source: documentSourceRegistrySource ?? "" },
+    { file: AI_INTENT_REGISTRY_PATH, source: intentRegistrySource ?? "" },
+    { file: AI_KNOWLEDGE_REDACTION_PATH, source: knowledgeRedactionSource ?? "" },
+  ];
+
+  const requiredDomainsRegistered = REQUIRED_AI_APP_KNOWLEDGE_DOMAINS.every((domain) =>
+    Boolean(domainRegistrySource?.includes(`"${domain}"`)),
+  );
+  const requiredScreenIdsRegistered = REQUIRED_AI_APP_KNOWLEDGE_SCREENS.every((screenId) =>
+    Boolean(screenKnowledgeSource?.includes(`"${screenId}"`)),
+  );
+  const requiredDocumentSourcesRegistered = REQUIRED_AI_APP_KNOWLEDGE_DOCUMENT_SOURCES.every((sourceId) =>
+    Boolean(documentSourceRegistrySource?.includes(`"${sourceId}"`)),
+  );
+  const requiredIntentsRegistered = REQUIRED_AI_APP_KNOWLEDGE_INTENTS.every((intent) =>
+    Boolean(intentRegistrySource?.includes(`"${intent}"`)),
+  );
+  const assistantContextUsesKnowledgeResolver =
+    Boolean(assistantScopeContextSource?.includes("buildAiKnowledgePromptBlock")) &&
+    Boolean(assistantScopeContextSource?.includes("ai_knowledge_registry"));
+  const assistantPromptsIncludeKnowledgePolicy =
+    Boolean(assistantPromptsSource?.includes("buildAiKnowledgePromptBlock")) &&
+    Boolean(knowledgeResolverSource?.includes("AI APP KNOWLEDGE BLOCK"));
+  const directorControlFullDomainKnowledgePresent =
+    Boolean(knowledgeResolverSource?.includes("hasDirectorFullAiAccess")) &&
+    Boolean(knowledgeResolverSource?.includes("AI_ENTITY_KNOWLEDGE_REGISTRY"));
+  const unknownRoleDenyByDefault =
+    Boolean(knowledgeResolverSource?.includes("Unknown AI role is denied by default")) &&
+    Boolean(knowledgeResolverSource?.includes('params.role === "unknown"'));
+  const contractorOwnRecordsOnlyPresent =
+    Boolean(screenKnowledgeSource?.includes("own_records_only")) &&
+    Boolean(entityRegistrySource?.includes("own_records_only"));
+  const financeContextScopedFromNonFinanceRoles =
+    Boolean(entityRegistrySource?.includes("accounting_posting")) &&
+    Boolean(entityRegistrySource?.includes("FINANCE_ROLES")) &&
+    Boolean(knowledgeRedactionSource?.includes("raw_finance_context_for_non_finance_role"));
+  const noDirectHighRiskIntent =
+    Boolean(intentRegistrySource?.includes('intent: "execute_approved"')) &&
+    Boolean(intentRegistrySource?.includes('executionBoundary: "aiApprovalGate"')) &&
+    !Boolean(intentRegistrySource?.includes('executionBoundary: "direct"'));
+  const registryProviderImportFindings = knowledgeRegistryEntries
+    .filter((entry) => knowledgeRegistryImportPattern.test(entry.source))
+    .map((entry) => `knowledge_registry_provider_import:file=${entry.file}`);
+  const resolverNetworkOrDbFindings =
+    knowledgeResolverSource && resolverNetworkOrDbPattern.test(knowledgeResolverSource)
+      ? [`knowledge_resolver_network_or_db_query:file=${AI_KNOWLEDGE_RESOLVER_PATH}`]
+      : [];
+  const screenGatewayImportFindings = sourceEntries
+    .filter((entry) => isAiScreenOrUiPath(entry.file))
+    .filter((entry) => aiScreenGatewayImportPattern.test(entry.source) || providerImplementationImportPattern.test(entry.source))
+    .map((entry) => `screen_ai_model_gateway_import:file=${entry.file}`);
+
+  const findings = [
+    ...registryProviderImportFindings,
+    ...resolverNetworkOrDbFindings,
+    ...screenGatewayImportFindings,
+  ];
+  const errors = [
+    ...(knowledgeTypesSource ? [] : [`missing_file:${AI_KNOWLEDGE_TYPES_PATH}`]),
+    ...(domainRegistrySource ? [] : [`missing_file:${AI_DOMAIN_KNOWLEDGE_REGISTRY_PATH}`]),
+    ...(entityRegistrySource ? [] : [`missing_file:${AI_ENTITY_REGISTRY_PATH}`]),
+    ...(screenKnowledgeSource ? [] : [`missing_file:${AI_SCREEN_KNOWLEDGE_REGISTRY_PATH}`]),
+    ...(documentSourceRegistrySource ? [] : [`missing_file:${AI_DOCUMENT_SOURCE_REGISTRY_PATH}`]),
+    ...(intentRegistrySource ? [] : [`missing_file:${AI_INTENT_REGISTRY_PATH}`]),
+    ...(knowledgeResolverSource ? [] : [`missing_file:${AI_KNOWLEDGE_RESOLVER_PATH}`]),
+    ...(knowledgeRedactionSource ? [] : [`missing_file:${AI_KNOWLEDGE_REDACTION_PATH}`]),
+    ...(controlPlaneBridgeSource ? [] : [`missing_file:${AI_CONTROL_PLANE_KNOWLEDGE_BRIDGE_PATH}`]),
+    ...(assistantContextUsesKnowledgeResolver ? [] : ["assistant_scope_context_not_using_knowledge_resolver"]),
+    ...(assistantPromptsIncludeKnowledgePolicy ? [] : ["assistant_prompts_missing_app_knowledge_policy"]),
+    ...(requiredScreenIdsRegistered ? [] : ["required_ai_screen_knowledge_ids_missing"]),
+    ...(requiredDomainsRegistered ? [] : ["required_ai_domains_missing"]),
+    ...(requiredDocumentSourcesRegistered ? [] : ["required_ai_document_sources_missing"]),
+    ...(requiredIntentsRegistered ? [] : ["required_ai_intents_missing"]),
+    ...(directorControlFullDomainKnowledgePresent ? [] : ["director_control_full_domain_knowledge_missing"]),
+    ...(unknownRoleDenyByDefault ? [] : ["unknown_role_not_deny_by_default"]),
+    ...(contractorOwnRecordsOnlyPresent ? [] : ["contractor_own_records_only_policy_missing"]),
+    ...(financeContextScopedFromNonFinanceRoles ? [] : ["finance_context_not_scoped_from_non_finance_roles"]),
+    ...(noDirectHighRiskIntent ? [] : ["direct_high_risk_intent_detected"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_app_knowledge_registry",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      aiKnowledgeTypesPresent: Boolean(knowledgeTypesSource),
+      domainRegistryPresent: Boolean(domainRegistrySource),
+      entityRegistryPresent: Boolean(entityRegistrySource),
+      screenKnowledgeRegistryPresent: Boolean(screenKnowledgeSource),
+      documentSourceRegistryPresent: Boolean(documentSourceRegistrySource),
+      intentRegistryPresent: Boolean(intentRegistrySource),
+      knowledgeResolverPresent: Boolean(knowledgeResolverSource),
+      knowledgeRedactionPresent: Boolean(knowledgeRedactionSource),
+      controlPlaneBridgePresent: Boolean(controlPlaneBridgeSource),
+      assistantContextUsesKnowledgeResolver,
+      assistantPromptsIncludeKnowledgePolicy,
+      requiredScreenIdsRegistered,
+      requiredDomainsRegistered,
+      requiredDocumentSourcesRegistered,
+      directorControlFullDomainKnowledgePresent,
+      unknownRoleDenyByDefault,
+      contractorOwnRecordsOnlyPresent,
+      financeContextScopedFromNonFinanceRoles,
+      noDirectHighRiskIntent,
+      registryProviderImports: registryProviderImportFindings.length,
+      resolverNetworkOrDbQueries: resolverNetworkOrDbFindings.length,
       screenGatewayImports: screenGatewayImportFindings.length,
       findings,
     },
@@ -2612,6 +2860,7 @@ export function runArchitectureAntiRegressionSuite(
   );
   const aiModelBoundary = evaluateAiModelBoundaryGuardrail({ projectRoot });
   const aiRoleRiskApprovalControlPlane = evaluateAiRoleRiskApprovalControlPlaneGuardrail({ projectRoot });
+  const aiAppKnowledgeRegistry = evaluateAiAppKnowledgeRegistryGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2633,6 +2882,7 @@ export function runArchitectureAntiRegressionSuite(
     errorHandlingGapRatchet.check,
     aiModelBoundary.check,
     aiRoleRiskApprovalControlPlane.check,
+    aiAppKnowledgeRegistry.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2655,6 +2905,7 @@ export function runArchitectureAntiRegressionSuite(
     errorHandlingGapRatchet: errorHandlingGapRatchet.summary,
     aiModelBoundary: aiModelBoundary.summary,
     aiRoleRiskApprovalControlPlane: aiRoleRiskApprovalControlPlane.summary,
+    aiAppKnowledgeRegistry: aiAppKnowledgeRegistry.summary,
     componentDebt,
     checks,
     safety: {
@@ -2692,6 +2943,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_model_direct_gemini_imports: ${report.aiModelBoundary.directGeminiImportsOutsideLegacyProvider}`);
   console.info(`ai_control_plane_direct_submit_blocked: ${report.aiRoleRiskApprovalControlPlane.assistantActionsDirectSubmitBlocked}`);
   console.info(`ai_control_plane_screen_gateway_imports: ${report.aiRoleRiskApprovalControlPlane.screenGatewayImports}`);
+  console.info(`ai_app_knowledge_registry_screens: ${report.aiAppKnowledgeRegistry.requiredScreenIdsRegistered}`);
+  console.info(`ai_app_knowledge_registry_direct_high_risk_intent: ${report.aiAppKnowledgeRegistry.noDirectHighRiskIntent}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

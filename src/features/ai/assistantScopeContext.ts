@@ -10,6 +10,7 @@ import { fetchDirectorPendingProposalWindow } from "../../screens/director/direc
 import type { AssistantContext, AssistantRole } from "./assistant.types";
 import { redactAiContextSummaryText } from "./context/aiContextRedaction";
 import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
+import { buildAiKnowledgePromptBlock } from "./knowledge/aiKnowledgeResolver";
 import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
 
 export type AssistantScopedFacts = {
@@ -66,6 +67,36 @@ const applyAssistantScopeRedaction = (
     screenId: resolveAiScreenIdForAssistantContext(context),
   }),
 });
+
+const buildAssistantKnowledgeScopedFacts = (
+  role: AssistantRole,
+  context: AssistantContext,
+): AssistantScopedFacts => {
+  const aiRole = normalizeAssistantRoleToAiUserRole(role);
+  const screenId = resolveAiScreenIdForAssistantContext(context);
+  return {
+    summary: buildAiKnowledgePromptBlock({
+      role: aiRole,
+      screenId,
+    }),
+    scopeKey: `ai_knowledge:${screenId}:${aiRole}`,
+    sourceKinds: ["ai_knowledge_registry"],
+    factCount: 1,
+  };
+};
+
+const mergeAssistantKnowledgeWithFacts = (
+  knowledgeFacts: AssistantScopedFacts,
+  facts: AssistantScopedFacts | null,
+): AssistantScopedFacts => {
+  if (!facts) return knowledgeFacts;
+  return {
+    summary: `${knowledgeFacts.summary}\n\nREAD_ONLY_FACTS\n${facts.summary}`,
+    scopeKey: `${knowledgeFacts.scopeKey}+${facts.scopeKey}`,
+    sourceKinds: [...knowledgeFacts.sourceKinds, ...facts.sourceKinds],
+    factCount: knowledgeFacts.factCount + facts.factCount,
+  };
+};
 
 const buildDirectorFinanceSupplierLine = (
   rows: {
@@ -240,6 +271,7 @@ export async function loadAssistantScopedFacts(params: {
 }): Promise<AssistantScopedFacts | null> {
   const role = params.role;
   const context = params.context;
+  const knowledgeFacts = buildAssistantKnowledgeScopedFacts(role, context);
 
   if (role === "buyer" || context === "buyer") {
     const facts = await loadBuyerScopedFacts().catch((error) => {
@@ -250,7 +282,10 @@ export async function loadAssistantScopedFacts(params: {
       });
       return null;
     });
-    return facts ? applyAssistantScopeRedaction(facts, role, context) : null;
+    return mergeAssistantKnowledgeWithFacts(
+      knowledgeFacts,
+      facts ? applyAssistantScopeRedaction(facts, role, context) : null,
+    );
   }
 
   if (role === "director" || context === "director" || context === "reports") {
@@ -262,8 +297,11 @@ export async function loadAssistantScopedFacts(params: {
       });
       return null;
     });
-    return facts ? applyAssistantScopeRedaction(facts, role, context) : null;
+    return mergeAssistantKnowledgeWithFacts(
+      knowledgeFacts,
+      facts ? applyAssistantScopeRedaction(facts, role, context) : null,
+    );
   }
 
-  return null;
+  return knowledgeFacts;
 }

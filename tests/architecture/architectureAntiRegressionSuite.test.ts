@@ -5,6 +5,7 @@ import {
   evaluateCacheRateScopeGuardrail,
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
+  evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiModelBoundaryGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateProductionRawLoopGuardrail,
@@ -335,6 +336,79 @@ describe("architecture anti-regression suite", () => {
         "screen_ai_model_gateway_import:file=src/screens/example/BadAiScreen.tsx",
       ]),
     );
+  });
+
+  it("ratchets the AI app knowledge registry", () => {
+    const passing = evaluateAiAppKnowledgeRegistryGuardrail({
+      projectRoot: process.cwd(),
+      sourceFiles: [
+        "src/features/ai/knowledge/aiKnowledgeTypes.ts",
+        "src/features/ai/knowledge/aiDomainKnowledgeRegistry.ts",
+        "src/features/ai/knowledge/aiEntityRegistry.ts",
+        "src/features/ai/knowledge/aiScreenKnowledgeRegistry.ts",
+        "src/features/ai/knowledge/aiDocumentSourceRegistry.ts",
+        "src/features/ai/knowledge/aiIntentRegistry.ts",
+        "src/features/ai/knowledge/aiKnowledgeResolver.ts",
+        "src/features/ai/knowledge/aiKnowledgeRedaction.ts",
+        "src/features/ai/controlPlane/aiControlPlaneKnowledgeBridge.ts",
+        "src/features/ai/assistantScopeContext.ts",
+        "src/features/ai/assistantPrompts.ts",
+      ],
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/knowledge/aiDomainKnowledgeRegistry.ts") {
+          return [
+            '"control"', '"projects"', '"procurement"', '"marketplace"', '"warehouse"', '"finance"',
+            '"reports"', '"documents"', '"subcontracts"', '"contractors"', '"map"', '"chat"', '"office"',
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/knowledge/aiScreenKnowledgeRegistry.ts") {
+          return [
+            '"director.dashboard"', '"director.reports_modal"', '"buyer.main"', '"buyer.subcontracts"',
+            '"market.home"', '"accountant.main"', '"foreman.main"', '"foreman.ai.quick_modal"',
+            '"foreman.subcontract"', '"contractor.main"', '"office.hub"', '"map.main"',
+            '"chat.main"', '"reports.modal"', '"warehouse.main"', "own_records_only",
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/knowledge/aiDocumentSourceRegistry.ts") {
+          return [
+            '"director_reports"', '"foreman_daily_reports"', '"ai_reports"', '"acts"',
+            '"subcontract_documents"', '"request_documents"', '"warehouse_documents"',
+            '"finance_documents"', '"chat_attachments"', '"pdf_exports"',
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/knowledge/aiIntentRegistry.ts") {
+          return [
+            '"find"', '"summarize"', '"compare"', '"explain"', '"draft"', '"prepare_report"',
+            '"prepare_act"', '"prepare_request"', '"check_status"', '"find_risk"',
+            '"submit_for_approval"', '"approve"', '"execute_approved"',
+            'intent: "execute_approved"',
+            'executionBoundary: "aiApprovalGate"',
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/knowledge/aiEntityRegistry.ts") {
+          return "accounting_posting FINANCE_ROLES own_records_only";
+        }
+        if (relativePath === "src/features/ai/knowledge/aiKnowledgeResolver.ts") {
+          return 'hasDirectorFullAiAccess AI_ENTITY_KNOWLEDGE_REGISTRY Unknown AI role is denied by default params.role === "unknown" AI APP KNOWLEDGE BLOCK';
+        }
+        if (relativePath === "src/features/ai/knowledge/aiKnowledgeRedaction.ts") {
+          return "raw_finance_context_for_non_finance_role";
+        }
+        if (relativePath === "src/features/ai/assistantScopeContext.ts") {
+          return "buildAiKnowledgePromptBlock ai_knowledge_registry";
+        }
+        if (relativePath === "src/features/ai/assistantPrompts.ts") {
+          return "buildAiKnowledgePromptBlock";
+        }
+        return "present";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_app_knowledge_registry",
+      status: "pass",
+      errors: [],
+    });
   });
 
   it("fails if cache or rate-limit canary scope broadens", () => {

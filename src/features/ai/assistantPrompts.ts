@@ -1,4 +1,6 @@
 import type { AssistantContext, AssistantQuickPrompt, AssistantRole } from "./assistant.types";
+import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
+import { buildAiKnowledgePromptBlock } from "./knowledge/aiKnowledgeResolver";
 import { buildAiProfessionalResponsePolicyPrompt } from "./policy/aiProfessionalResponsePolicy";
 import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
 
@@ -152,6 +154,10 @@ export function buildAssistantSystemPrompt(
   context: AssistantContext = "unknown",
 ): string {
   const aiRole = normalizeAssistantRoleToAiUserRole(role);
+  const aiKnowledgeBlock = buildAiKnowledgePromptBlock({
+    role: aiRole,
+    screenId: resolveAiScreenIdForAssistantContext(context),
+  });
   return [
     "Ты встроенный AI-ассистент приложения GOX/RIK для строительной компании.",
     "Отвечай на русском языке коротко и по делу.",
@@ -167,6 +173,7 @@ export function buildAssistantSystemPrompt(
     "Для роли director делай упор на отчеты, заявки, предложения и обзор по модулям.",
     "Для роли accountant делай упор на оплаты, документы и финансовые маршруты.",
     "Если пользователь просит найти товар или поставщика, помоги сформулировать поисковый запрос и подскажи открыть Маркет или Карту.",
+    aiKnowledgeBlock,
     buildAiProfessionalResponsePolicyPrompt({ role: aiRole }),
     "Не используй markdown-таблицы. Только обычный текст или короткие списки.",
   ].join("\n");
@@ -273,9 +280,22 @@ export function buildOfflineAssistantReply(
   context: AssistantContext = "unknown",
 ): string {
   const text = String(message || "").trim().toLowerCase();
+  const aiRole = normalizeAssistantRoleToAiUserRole(role);
+  const knowledgeBlock = buildAiKnowledgePromptBlock({
+    role: aiRole,
+    screenId: resolveAiScreenIdForAssistantContext(context),
+  });
 
   if (!text) {
     return getAssistantGreeting(role, null, context);
+  }
+
+  if (/(what can|can you do|available|allowed|capabilit|help on this screen)/i.test(text)) {
+    return [
+      "Short conclusion: I can help only within this role and screen knowledge policy.",
+      knowledgeBlock,
+      "High-risk actions are never executed silently. submit, approve, send, payment, supplier confirmation, order, and stock mutation require approval_required through aiApprovalGate.",
+    ].join("\n");
   }
 
   if (/(маркет|рынок|поставщик|цена|объявлен|listing|supplier)/i.test(text)) {
