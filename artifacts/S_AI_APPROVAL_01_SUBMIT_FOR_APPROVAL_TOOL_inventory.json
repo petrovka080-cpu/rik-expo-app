@@ -1,0 +1,54 @@
+{
+  "wave": "S_AI_APPROVAL_01_SUBMIT_FOR_APPROVAL_TOOL",
+  "scope": "production_safe_approval_gate_tool_without_final_execution",
+  "files_created": [
+    "src/features/ai/tools/submitForApprovalTool.ts",
+    "tests/ai/submitForApprovalTool.contract.test.ts",
+    "tests/ai/submitForApprovalNoExecution.contract.test.ts",
+    "artifacts/S_AI_APPROVAL_01_SUBMIT_FOR_APPROVAL_TOOL_inventory.json",
+    "artifacts/S_AI_APPROVAL_01_SUBMIT_FOR_APPROVAL_TOOL_matrix.json",
+    "artifacts/S_AI_APPROVAL_01_SUBMIT_FOR_APPROVAL_TOOL_proof.md"
+  ],
+  "files_updated": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "runtime_boundaries": {
+    "tool": "submit_for_approval",
+    "risk_level": "approval_required",
+    "policy_gate": "planAiToolUse",
+    "approval_gate": "submitAiActionForApproval",
+    "live_execution": false,
+    "persisted": false,
+    "model_provider_import": false,
+    "direct_supabase": false,
+    "db_write": false,
+    "ui_or_hook_work": false
+  },
+  "inputs": [
+    "draft_id",
+    "approval_target",
+    "screen_id",
+    "domain",
+    "summary",
+    "idempotency_key",
+    "evidence_refs",
+    "approval_reason"
+  ],
+  "outputs": [
+    "status",
+    "action_id",
+    "action_status",
+    "approval_required",
+    "audit_event",
+    "approval_target",
+    "action_type",
+    "screen_id",
+    "domain",
+    "evidence_refs"
+  ],
+  "tests": [
+    "tests/ai/submitForApprovalTool.contract.test.ts",
+    "tests/ai/submitForApprovalNoExecution.contract.test.ts"
+  ]
+}

@@ -780,27 +780,84 @@ export const draftActOutputSchema: AiToolJsonObjectSchema = {
 
 export const submitForApprovalInputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["draftId", "approvalTarget", "idempotencyKey"],
+  required: ["draft_id", "approval_target", "screen_id", "domain", "summary", "idempotency_key", "evidence_refs"],
   additionalProperties: false,
   properties: {
-    draftId: { type: "string", minLength: 1 },
-    approvalTarget: {
+    draft_id: { type: "string", minLength: 1 },
+    approval_target: {
       type: "string",
       enum: ["request", "report", "act", "supplier_selection", "payment_status_change"],
     },
-    idempotencyKey: { type: "string", minLength: 16 },
-    approvalReason: { type: "string", minLength: 1 },
+    screen_id: { type: "string", minLength: 1 },
+    domain: {
+      type: "string",
+      enum: ["control", "procurement", "warehouse", "finance", "reports", "documents", "subcontracts"],
+    },
+    summary: { type: "string", minLength: 1 },
+    idempotency_key: { type: "string", minLength: 16 },
+    evidence_refs: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      items: evidenceRefSchema,
+    },
+    approval_reason: { type: "string", minLength: 1 },
   },
 };
 
 export const submitForApprovalOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["status", "approvalRequired", "auditEvent"],
+  required: [
+    "status",
+    "action_id",
+    "action_status",
+    "approval_required",
+    "audit_event",
+    "approval_target",
+    "action_type",
+    "screen_id",
+    "domain",
+    "evidence_refs",
+    "risk_level",
+    "idempotency_key_present",
+    "persisted",
+    "local_gate_only",
+    "mutation_count",
+    "final_execution",
+    "provider_called",
+    "db_accessed",
+    "direct_execution_enabled",
+  ],
   additionalProperties: false,
   properties: {
     status: { type: "string", enum: ["approval_required"] },
-    approvalRequired: { type: "boolean" },
-    auditEvent: { type: "string", enum: ["ai.action.approval_required"] },
+    action_id: { type: "string", minLength: 1 },
+    action_status: { type: "string", enum: ["pending"] },
+    approval_required: { type: "boolean" },
+    audit_event: { type: "string", enum: ["ai.action.approval_required"] },
+    approval_target: {
+      type: "string",
+      enum: ["request", "report", "act", "supplier_selection", "payment_status_change"],
+    },
+    action_type: {
+      type: "string",
+      enum: ["submit_request", "send_document", "confirm_supplier", "change_payment_status"],
+    },
+    screen_id: { type: "string", minLength: 1 },
+    domain: {
+      type: "string",
+      enum: ["control", "procurement", "warehouse", "finance", "reports", "documents", "subcontracts"],
+    },
+    evidence_refs: { type: "array", items: evidenceRefSchema },
+    risk_level: { type: "string", enum: ["approval_required"] },
+    idempotency_key_present: { type: "boolean" },
+    persisted: { type: "boolean" },
+    local_gate_only: { type: "boolean" },
+    mutation_count: { type: "number", minimum: 0, maximum: 0 },
+    final_execution: { type: "number", minimum: 0, maximum: 0 },
+    provider_called: { type: "boolean" },
+    db_accessed: { type: "boolean" },
+    direct_execution_enabled: { type: "boolean" },
   },
 };
 

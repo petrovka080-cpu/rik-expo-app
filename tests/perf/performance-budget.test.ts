@@ -201,6 +201,9 @@ describe("performance budget — bundle module count", () => {
     const sAiDraftActToolFiles = [
       path.join(SRC, "features", "ai", "tools", "draftActTool.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiSubmitForApprovalToolFiles = [
+      path.join(SRC, "features", "ai", "tools", "submitForApprovalTool.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -797,6 +800,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_DRAFT_01 adds one permanent draft_request DRAFT_ONLY tool module.
     // S_AI_DRAFT_02 adds one permanent draft_report DRAFT_ONLY tool module.
     // S_AI_DRAFT_03 adds one permanent draft_act DRAFT_ONLY tool module.
+    // S_AI_APPROVAL_01 adds one permanent submit_for_approval approval-gate tool module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -940,6 +944,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiDraftRequestToolFiles).toBeLessThanOrEqual(1);
     expect(sAiDraftReportToolFiles).toBeLessThanOrEqual(1);
     expect(sAiDraftActToolFiles).toBeLessThanOrEqual(1);
+    expect(sAiSubmitForApprovalToolFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -961,6 +966,7 @@ describe("performance budget — bundle module count", () => {
         sAiDraftRequestToolFiles -
         sAiDraftReportToolFiles -
         sAiDraftActToolFiles -
+        sAiSubmitForApprovalToolFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -
