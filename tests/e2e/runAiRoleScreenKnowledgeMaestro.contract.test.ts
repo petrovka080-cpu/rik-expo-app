@@ -16,6 +16,15 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("...flowFiles");
   });
 
+  it("uses the already installed Android package before attempting any APK reinstall", () => {
+    const installedCheckIndex = source.indexOf("installedPathBefore");
+    const installIndex = source.indexOf('"install", "-r", releaseApk');
+
+    expect(installedCheckIndex).toBeGreaterThan(-1);
+    expect(installIndex).toBeGreaterThan(installedCheckIndex);
+    expect(source).toContain('installedPathBefore.includes("package:")');
+  });
+
   it("requires explicit role secrets and never uses discovery or DB-writing seed harnesses", () => {
     expect(source).toContain("resolveExplicitAiRoleAuthEnv");
     expect(source).toContain("BLOCKED_NO_E2E_ROLE_SECRETS");

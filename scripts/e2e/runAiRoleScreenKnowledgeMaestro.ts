@@ -216,14 +216,23 @@ function ensureFlowFilesExist(): void {
 }
 
 function ensureAppInstalledAndLaunchable(deviceId: string): void {
-  if (!fs.existsSync(releaseApk)) {
-    throw new Error(`Release APK not found at ${releaseApk}. Native build is not run by this closeout.`);
+  let installedPathBefore = "";
+  try {
+    installedPathBefore = adb(deviceId, ["shell", "pm", "path", appId], true);
+  } catch {
+    installedPathBefore = "";
   }
 
-  runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], true);
-  const installedPath = adb(deviceId, ["shell", "pm", "path", appId], true);
-  if (!installedPath.includes("package:")) {
-    throw new Error(`Failed to verify installation of ${appId} on ${deviceId}.`);
+  if (!installedPathBefore.includes("package:")) {
+    if (!fs.existsSync(releaseApk)) {
+      throw new Error(`Release APK not found at ${releaseApk}. Native build is not run by this closeout.`);
+    }
+
+    runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], true);
+    const installedPathAfterInstall = adb(deviceId, ["shell", "pm", "path", appId], true);
+    if (!installedPathAfterInstall.includes("package:")) {
+      throw new Error(`Failed to verify installation of ${appId} on ${deviceId}.`);
+    }
   }
 
   const activityOutput = adb(deviceId, ["shell", "cmd", "package", "resolve-activity", "--brief", appId], true);

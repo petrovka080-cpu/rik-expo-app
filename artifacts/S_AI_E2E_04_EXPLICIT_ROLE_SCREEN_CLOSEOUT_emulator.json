@@ -1,6 +1,6 @@
 {
   "wave": "S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_E2E_CLOSEOUT",
-  "final_status": "BLOCKED_NO_E2E_ROLE_SECRETS",
+  "final_status": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
   "android": {
     "adb_devices_initial": "emulator-5554 device",
     "package_name": "com.azisbek_dzhantaev.rikexpoapp",
@@ -19,9 +19,9 @@
   },
   "resolver": {
     "file": "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts",
-    "role_auth_source": "missing",
-    "all_role_credentials_resolved": false,
-    "missing_required_env_count": 10,
+    "role_auth_source": "explicit_env",
+    "all_role_credentials_resolved": true,
+    "missing_required_env_count": 0,
     "credentials_printed": false
   },
   "runner": {
@@ -29,20 +29,20 @@
     "framework": "maestro",
     "device": "android",
     "credential_transport": "child_process.env",
-    "blocked_before_login": true,
-    "blocked_before_maestro_flow_execution": true,
-    "exact_reason": "Explicit E2E role secrets are missing.",
+    "blocked_before_login": false,
+    "blocked_before_maestro_flow_execution": false,
+    "exact_reason": "All five Maestro role flows failed because id ai.assistant.input was not visible.",
     "credentials_in_cli_args": false,
     "credentials_printed": false,
     "stdout_redacted": true,
     "stderr_redacted": true
   },
   "flows": {
-    "director": "BLOCKED",
-    "foreman": "BLOCKED",
-    "buyer": "BLOCKED",
-    "accountant": "BLOCKED",
-    "contractor": "BLOCKED"
+    "director": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+    "foreman": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+    "buyer": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+    "accountant": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+    "contractor": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
   },
   "mutations_created": 0,
   "approval_required_observed": false,
