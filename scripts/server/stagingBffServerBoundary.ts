@@ -2,6 +2,7 @@ import type { BffResponseEnvelope } from "../../src/shared/scale/bffContracts";
 import type { CachePolicyRoute } from "../../src/shared/scale/cachePolicies";
 import { getInvalidationTagsForOperation } from "../../src/shared/scale/cacheInvalidation";
 import {
+  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
   evaluateCacheShadowRead,
   isCacheReadThroughV1RouteAllowed,
   runCacheSyntheticShadowCanary,
@@ -305,6 +306,18 @@ export type BffStagingCacheShadowDeps = {
   monitor: CacheShadowMonitor;
 };
 
+export type BffStagingCacheShadowReadinessDiagnostics = {
+  readThroughV1EnabledFlagName: typeof CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME;
+  readThroughV1EnabledFlagPresent: boolean;
+  routeAllowlistCount: number;
+  routeName: CachePolicyRoute | "none" | "multiple" | "not_configured";
+  percent: number;
+  mode: CacheShadowRuntimeConfig["mode"];
+  redacted: true;
+  secretsExposed: false;
+  envValuesExposed: false;
+};
+
 export type BffStagingCacheShadowRuntimeState = {
   status: "configured" | "disabled" | "adapter_unavailable";
   enabled: boolean;
@@ -314,6 +327,7 @@ export type BffStagingCacheShadowRuntimeState = {
   percent: number;
   routeAllowlistCount: number;
   envKeyPresence: CacheShadowRuntimeConfig["envKeyPresence"];
+  readinessDiagnostics: BffStagingCacheShadowReadinessDiagnostics;
   providerKind: ReturnType<CacheAdapter["getStatus"]>["kind"] | "not_configured";
   providerEnabled: boolean;
   externalNetworkEnabled: boolean;
@@ -753,7 +767,7 @@ export const BFF_STAGING_SERVER_ENV_NAMES = Object.freeze([
   "BFF_RATE_LIMIT_METADATA_ENABLED",
   "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
   "SCALE_REDIS_CACHE_SHADOW_MODE",
-  "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
   "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
   "SCALE_REDIS_CACHE_SHADOW_PERCENT",
 ]);
@@ -1223,13 +1237,33 @@ export const buildCacheShadowRuntimeState = (
   adapter?: CacheAdapter | null,
 ): BffStagingCacheShadowRuntimeState => {
   const adapterStatus = adapter?.getStatus();
+  const routeAllowlistCount = config?.routeAllowlist.length ?? 0;
+  const routeName =
+    !config
+      ? "not_configured"
+      : routeAllowlistCount === 0
+        ? "none"
+        : routeAllowlistCount === 1
+          ? config.routeAllowlist[0]
+          : "multiple";
+  const readinessDiagnostics: BffStagingCacheShadowReadinessDiagnostics = {
+    readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+    readThroughV1EnabledFlagPresent: config?.envKeyPresence.readThroughV1Enabled ?? false,
+    routeAllowlistCount,
+    routeName,
+    percent: config?.percent ?? 0,
+    mode: config?.mode ?? "disabled",
+    redacted: true,
+    secretsExposed: false,
+    envValuesExposed: false,
+  };
   const base = {
     enabled: config?.enabled ?? false,
     productionEnabledFlagTruthy: config?.productionEnabledFlagTruthy ?? false,
     mode: config?.mode ?? "disabled",
     readThroughV1Enabled: config?.readThroughV1Enabled ?? false,
     percent: config?.percent ?? 0,
-    routeAllowlistCount: config?.routeAllowlist.length ?? 0,
+    routeAllowlistCount,
     envKeyPresence: config?.envKeyPresence ?? {
       productionEnabled: false,
       mode: false,
@@ -1240,6 +1274,7 @@ export const buildCacheShadowRuntimeState = (
       namespace: false,
       commandTimeout: false,
     },
+    readinessDiagnostics,
     providerKind: adapterStatus?.kind ?? "not_configured",
     providerEnabled: adapterStatus?.enabled ?? false,
     externalNetworkEnabled: adapterStatus?.externalNetworkEnabled ?? false,

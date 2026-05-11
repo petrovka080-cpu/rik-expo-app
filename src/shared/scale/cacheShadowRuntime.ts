@@ -141,7 +141,15 @@ const DEFAULT_CACHE_SHADOW_ROUTE: CachePolicyRoute = "marketplace.catalog.search
 const DEFAULT_CACHE_SHADOW_PERCENT = 0;
 const MAX_CACHE_SHADOW_PERCENT = 100;
 const SYNTHETIC_CANARY_TTL_MS = 30_000;
-export const CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME = "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED";
+export const CACHE_SHADOW_RUNTIME_ENV_NAMES = Object.freeze({
+  productionEnabled: "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+  mode: "SCALE_REDIS_CACHE_SHADOW_MODE",
+  readThroughV1Enabled: "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+  routeAllowlist: "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+  percent: "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+} as const);
+export const CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME =
+  CACHE_SHADOW_RUNTIME_ENV_NAMES.readThroughV1Enabled;
 export const CACHE_READ_THROUGH_V1_ALLOWED_ROUTES: readonly CachePolicyRoute[] = Object.freeze([
   "marketplace.catalog.search",
 ]);
@@ -316,22 +324,22 @@ export function validateCacheShadowRouteMetricsOutput(value: unknown): {
 export function resolveCacheShadowRuntimeConfig(
   env: CacheShadowRuntimeEnv = typeof process !== "undefined" ? process.env : {},
 ): CacheShadowRuntimeConfig {
-  const productionEnabledFlagTruthy = parseTruthy(env.SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED);
-  const mode = productionEnabledFlagTruthy ? parseMode(env.SCALE_REDIS_CACHE_SHADOW_MODE) : "disabled";
+  const productionEnabledFlagTruthy = parseTruthy(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.productionEnabled]);
+  const mode = productionEnabledFlagTruthy ? parseMode(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.mode]) : "disabled";
   const readThroughV1Enabled = parseTruthy(env[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]);
   return {
     enabled: productionEnabledFlagTruthy && mode !== "disabled",
     mode,
     readThroughV1Enabled,
-    routeAllowlist: parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST),
-    percent: parsePercent(env.SCALE_REDIS_CACHE_SHADOW_PERCENT),
+    routeAllowlist: parseRouteAllowlist(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.routeAllowlist]),
+    percent: parsePercent(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.percent]),
     productionEnabledFlagTruthy,
     envKeyPresence: {
-      productionEnabled: hasEnvKey(env, "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED"),
-      mode: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_MODE"),
+      productionEnabled: hasEnvKey(env, CACHE_SHADOW_RUNTIME_ENV_NAMES.productionEnabled),
+      mode: hasEnvKey(env, CACHE_SHADOW_RUNTIME_ENV_NAMES.mode),
       readThroughV1Enabled: hasEnvKey(env, CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME),
-      routeAllowlist: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST"),
-      percent: hasEnvKey(env, "SCALE_REDIS_CACHE_SHADOW_PERCENT"),
+      routeAllowlist: hasEnvKey(env, CACHE_SHADOW_RUNTIME_ENV_NAMES.routeAllowlist),
+      percent: hasEnvKey(env, CACHE_SHADOW_RUNTIME_ENV_NAMES.percent),
       url: hasEnvKey(env, "SCALE_REDIS_CACHE_URL") || hasEnvKey(env, "REDIS_URL"),
       namespace: hasEnvKey(env, "SCALE_REDIS_CACHE_NAMESPACE"),
       commandTimeout: hasEnvKey(env, "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS"),

@@ -1,3 +1,5 @@
+import { CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME } from "./cacheShadowRuntime";
+
 export type ScaleProviderKind =
   | "redis_cache"
   | "queue"
@@ -43,7 +45,7 @@ export const SCALE_PROVIDER_RUNTIME_ENV_NAMES: Record<ScaleProviderKind, ScalePr
       "REDIS_URL",
       "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
       "SCALE_REDIS_CACHE_SHADOW_MODE",
-      "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+      CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
       "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
       "SCALE_REDIS_CACHE_SHADOW_PERCENT",
     ],

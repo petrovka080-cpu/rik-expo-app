@@ -9,6 +9,7 @@ import {
   type RedisCommandExecutor,
 } from "../../src/shared/scale/cacheAdapters";
 import {
+  CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
   createCacheShadowMonitor,
   resolveCacheShadowRuntimeConfig,
 } from "../../src/shared/scale/cacheShadowRuntime";
@@ -233,6 +234,17 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
               url: false,
               namespace: false,
               commandTimeout: false,
+            },
+            readinessDiagnostics: {
+              readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+              readThroughV1EnabledFlagPresent: false,
+              routeAllowlistCount: 1,
+              routeName: "marketplace.catalog.search",
+              percent: 0,
+              mode: "shadow_readonly",
+              redacted: true,
+              secretsExposed: false,
+              envValuesExposed: false,
             },
             providerKind: "redis_url",
             providerEnabled: true,

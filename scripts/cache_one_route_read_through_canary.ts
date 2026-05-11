@@ -3,6 +3,7 @@ import { execFileSync } from "child_process";
 
 import { buildSafeCacheKey } from "../src/shared/scale/cacheKeySafety";
 import { getCachePolicy } from "../src/shared/scale/cachePolicies";
+import { CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME } from "../src/shared/scale/cacheShadowRuntime";
 import {
   classifyProductionBusinessReadonlyCanaryErrorCode,
   resolveProductionBusinessReadonlyCanaryServerAuthSecret,
@@ -108,7 +109,7 @@ const REQUIRED_APPROVALS = [
 const CACHE_ENV_WRITE_VALUES: Readonly<Record<string, string>> = Object.freeze({
   SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED: "true",
   SCALE_REDIS_CACHE_SHADOW_MODE: "read_through",
-  SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true",
+  [CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]: "true",
   SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST: CANARY_ROUTE,
   SCALE_REDIS_CACHE_SHADOW_PERCENT: CANARY_PERCENT,
 });
@@ -166,6 +167,9 @@ function writeArtifacts(matrix: Matrix): void {
       `- route: ${CANARY_ROUTE}`,
       `- route_count: ${String(matrix.route_allowlist_count ?? 0)}`,
       `- canary_percent: ${String(matrix.canary_percent ?? "not_run")}`,
+      `- expected_read_through_v1_enabled_flag_name: ${CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME}`,
+      `- runtime_readiness_flag_name: ${String(matrix.runtime_readiness_flag_name ?? "unknown")}`,
+      `- runtime_readiness_flag_present: ${String(matrix.runtime_readiness_flag_present ?? "unknown")}`,
       `- first_request_miss_read_through: ${String(matrix.first_request_miss_read_through ?? false)}`,
       `- second_request_hit: ${String(matrix.second_request_hit ?? false)}`,
       `- cache_shadow_diagnostic_green: ${String(matrix.cache_shadow_diagnostic_green ?? false)}`,
@@ -782,6 +786,12 @@ async function main(): Promise<void> {
       ? (((readyAfterDeploy.body as Record<string, unknown>).data as Record<string, unknown> | undefined)
           ?.cacheShadowRuntime as Record<string, unknown> | undefined)
       : undefined;
+  const runtimeReadinessDiagnostics =
+    runtime?.readinessDiagnostics &&
+    typeof runtime.readinessDiagnostics === "object" &&
+    !Array.isArray(runtime.readinessDiagnostics)
+      ? (runtime.readinessDiagnostics as Record<string, unknown>)
+      : undefined;
   const runtimeScoped =
     runtime?.status === "configured" &&
     runtime?.enabled === true &&
@@ -922,6 +932,27 @@ async function main(): Promise<void> {
       live_deploy_contains_head_commit: live.containsHead,
       production_health_after_deploy: healthAfterDeploy.status,
       production_ready_after_deploy: readyAfterDeploy.status,
+      expected_read_through_v1_enabled_flag_name: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+      runtime_readiness_flag_name:
+        runtimeReadinessDiagnostics
+          ? stringField(runtimeReadinessDiagnostics, "readThroughV1EnabledFlagName", "unknown")
+          : "unknown",
+      runtime_readiness_flag_present:
+        runtimeReadinessDiagnostics
+          ? booleanField(runtimeReadinessDiagnostics, "readThroughV1EnabledFlagPresent")
+          : "unknown",
+      runtime_readiness_route_name:
+        runtimeReadinessDiagnostics ? stringField(runtimeReadinessDiagnostics, "routeName", "unknown") : "unknown",
+      runtime_readiness_mode:
+        runtimeReadinessDiagnostics ? stringField(runtimeReadinessDiagnostics, "mode", "unknown") : "unknown",
+      runtime_readiness_percent:
+        runtimeReadinessDiagnostics ? numericField(runtimeReadinessDiagnostics, "percent") : "unknown",
+      runtime_readiness_route_allowlist_count:
+        runtimeReadinessDiagnostics ? numericField(runtimeReadinessDiagnostics, "routeAllowlistCount") : "unknown",
+      runtime_readiness_env_values_exposed:
+        runtimeReadinessDiagnostics ? booleanField(runtimeReadinessDiagnostics, "envValuesExposed") : "unknown",
+      runtime_readiness_secrets_exposed:
+        runtimeReadinessDiagnostics ? booleanField(runtimeReadinessDiagnostics, "secretsExposed") : "unknown",
       runtime_status: runtime?.status ?? "unknown",
       runtime_mode: runtime?.mode ?? "unknown",
       runtime_read_through_v1_enabled: runtime?.readThroughV1Enabled ?? "unknown",

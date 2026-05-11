@@ -1,0 +1,112 @@
+{
+  "wave": "S_NIGHT_CACHE_23_RUNTIME_READINESS_FLAG_RCA",
+  "status": "GREEN_CACHE_RUNTIME_READINESS_FLAG_RCA",
+  "generatedAt": "2026-05-11T00:00:00+06:00",
+  "inputArtifactsRead": [
+    "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_matrix.json",
+    "artifacts/S_NIGHT_CACHE_09_ONE_ROUTE_CANARY_APPLY_proof.md",
+    "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.json",
+    "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_proof.md"
+  ],
+  "wave09Observed": {
+    "finalStatus": "BLOCKED_CACHE_CANARY_FAILED_ROLLED_BACK",
+    "blockedReason": "runtime_not_scoped_to_one_route",
+    "runtimeMode": "read_through",
+    "runtimeReadThroughV1Enabled": false,
+    "runtimeRouteAllowlistCount": 1,
+    "runtimePercent": 1,
+    "rollbackSucceeded": true
+  },
+  "canonical_read_through_v1_enabled_flag": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+  "flagNameTrace": {
+    "cacheCanaryRunner": {
+      "source": "scripts/cache_one_route_read_through_canary.ts",
+      "usesCanonicalConstant": true,
+      "writesCanonicalFlag": true,
+      "renderSnapshotReadsCanonicalFlag": true
+    },
+    "bffRuntimeReadiness": {
+      "source": "scripts/server/stagingBffServerBoundary.ts",
+      "usesCanonicalConstant": true,
+      "readinessExposesRedactedDiagnostics": true
+    },
+    "cacheShadowRuntime": {
+      "source": "src/shared/scale/cacheShadowRuntime.ts",
+      "ownsCanonicalConstant": true,
+      "resolvesCanonicalFlag": true
+    },
+    "stagingBffServerBoundary": {
+      "source": "scripts/server/stagingBffServerBoundary.ts",
+      "serverEnvInventoryUsesCanonicalFlag": true
+    },
+    "renderEnvSnapshotReader": {
+      "source": "scripts/cache_one_route_read_through_canary.ts",
+      "snapshotKeysIncludeCanonicalFlag": true,
+      "snapshotValuesRedacted": true
+    },
+    "providerRuntimeConfig": {
+      "source": "src/shared/scale/providerRuntimeConfig.ts",
+      "redisOptionalEnvUsesCanonicalFlag": true
+    }
+  },
+  "expectedVsActual": {
+    "expectedApplyFlagName": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+    "actualRuntimeResolverFlagName": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+    "flagNameMismatch": false,
+    "expectedRuntimeReadThroughEnabled": true,
+    "actualWave09RuntimeReadThroughEnabled": false,
+    "valueMismatch": true,
+    "wave09FlagPresenceCapturedInRunnerArtifact": false,
+    "rcaConclusion": "Wave 09 did not prove a source-level flag-name mismatch. It proved that the live runtime did not observe the canonical read-through v1 flag as enabled while mode, percent, and one-route allowlist were scoped. The missing evidence was redacted flag-key presence in readiness."
+  },
+  "sourceContractAdded": {
+    "test": "tests/scale/cacheRuntimeReadinessFlagRca.test.ts",
+    "provesCanaryApplyAndRuntimeReadinessUseSameCanonicalName": true,
+    "provesProviderInventoryUsesCanonicalName": true,
+    "provesRenderSnapshotReaderTracksCanonicalName": true
+  },
+  "readinessDiagnosticsAdded": {
+    "field": "cacheShadowRuntime.readinessDiagnostics",
+    "enabledFlagPresent": true,
+    "routeAllowlistCount": true,
+    "routeName": true,
+    "percent": true,
+    "mode": true,
+    "secretsExposed": false,
+    "envValuesExposed": false,
+    "rawEnvValuesPrinted": false
+  },
+  "negativeConfirmations": {
+    "cacheEnabled": false,
+    "cache_enabled": false,
+    "rateLimitTouched": false,
+    "rate_limit_touched": false,
+    "envFilesChanged": false,
+    "renderEnvMutated": false,
+    "dbWrites": false,
+    "migrations": false,
+    "secretsPrinted": false,
+    "envValuesPrinted": false
+  },
+  "cache_enabled": false,
+  "rate_limit_touched": false,
+  "gates": {
+    "focusedTests": {
+      "status": "PASS",
+      "command": "npx jest tests/scale/cacheRuntimeReadinessFlagRca.test.ts tests/scale/bffStagingServerBoundary.test.ts tests/scale/cacheOneRouteReadThroughCanaryRunner.test.ts --runInBand",
+      "result": "3 suites passed, 36 tests passed"
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "diffCheck": {
+      "status": "PASS",
+      "command": "git diff --check"
+    }
+  },
+  "artifacts": {
+    "matrix": "artifacts/S_NIGHT_CACHE_23_RUNTIME_READINESS_FLAG_RCA_matrix.json",
+    "proof": "artifacts/S_NIGHT_CACHE_23_RUNTIME_READINESS_FLAG_RCA_proof.md"
+  }
+}

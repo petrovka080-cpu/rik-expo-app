@@ -17,7 +17,8 @@ describe("S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY runner", () => {
     expect(source).toContain('const CANARY_ROUTE = "marketplace.catalog.search"');
     expect(source).toContain('const CANARY_PERCENT = "1"');
     expect(source).toContain("SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST");
-    expect(source).toContain("SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED");
+    expect(source).toContain("CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME");
+    expect(source).toContain('[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]: "true"');
     expect(source).toContain("CACHE_CANARY_APPROVED");
     expect(source).toContain("ROLLBACK_APPROVED");
     expect(source).toContain("findPercentSelectedCanaryInput");
