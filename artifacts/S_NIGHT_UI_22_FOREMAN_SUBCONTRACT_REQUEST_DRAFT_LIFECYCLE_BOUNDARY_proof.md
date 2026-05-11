@@ -79,7 +79,10 @@ Performance budget:
   - `git diff --check`
 - Artifact JSON parse: PASS
   - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_22_FOREMAN_SUBCONTRACT_REQUEST_DRAFT_LIFECYCLE_BOUNDARY_matrix.json','utf8')); console.log('artifact_json_parse=PASS')"`
-- Post-push release verify: pending until push.
+- Post-push release verify: PASS
+  - `npm run release:verify -- --json`
+  - Verified head commit: `51ca5019527d27e29cab8df79f076c571ab8c73a`
+  - Summary: tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, and git-diff-check passed; HEAD matched origin/main with ahead/behind 0/0.
 
 ## Negative Confirmations
 
