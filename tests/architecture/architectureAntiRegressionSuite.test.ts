@@ -414,8 +414,21 @@ describe("architecture anti-regression suite", () => {
 
   it("ratchets the AI role-screen emulator gate", () => {
     const greenArtifact = {
-      final_status: "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT",
-      fakePassClaimed: false,
+      final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
+      role_auth_source: "explicit_env",
+      all_role_credentials_resolved: true,
+      service_role_discovery_used_for_green: false,
+      auth_admin_list_users_used_for_green: false,
+      db_seed_used: false,
+      auth_users_created: 0,
+      auth_users_updated: 0,
+      auth_users_deleted: 0,
+      auth_users_invited: 0,
+      credentials_in_cli_args: false,
+      credentials_printed: false,
+      stdout_redacted: true,
+      stderr_redacted: true,
+      fake_pass_claimed: false,
       flows: {
         director: "PASS",
         foreman: "PASS",
@@ -423,9 +436,9 @@ describe("architecture anti-regression suite", () => {
         accountant: "PASS",
         contractor: "PASS",
       },
-      mutationsCreated: 0,
-      approvalRequiredObserved: true,
-      roleLeakageObserved: false,
+      mutations_created: 0,
+      approval_required_observed: true,
+      role_leakage_observed: false,
       exactReason: null,
     };
     const passing = evaluateAiRoleScreenEmulatorGateGuardrail({
@@ -435,7 +448,13 @@ describe("architecture anti-regression suite", () => {
           return "ensureAndroidEmulatorReady -list-avds sys.boot_completed fakePassClaimed: false";
         }
         if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
-          return "runAiRoleScreenKnowledgeMaestro ensureAndroidEmulatorReady mutationsCreated: 0 approvalRequiredObserved";
+          return "runAiRoleScreenKnowledgeMaestro ensureAndroidEmulatorReady resolveExplicitAiRoleAuthEnv redactE2eSecrets mutations_created: 0 approval_required_observed";
+        }
+        if (relativePath === "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts") {
+          return "resolveExplicitAiRoleAuthEnv BLOCKED_NO_E2E_ROLE_SECRETS E2E_DIRECTOR_EMAIL";
+        }
+        if (relativePath === "scripts/e2e/redactE2eSecrets.ts") {
+          return "redactE2eSecrets Authorization SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_SUPABASE_ANON_KEY";
         }
         if (relativePath.endsWith(".yaml")) return "role flow";
         if (relativePath.endsWith("_emulator.json")) return JSON.stringify(greenArtifact);
@@ -458,15 +477,33 @@ describe("architecture anti-regression suite", () => {
         if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
           return "runAiRoleScreenKnowledgeMaestro";
         }
+        if (relativePath === "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts") {
+          return "resolveExplicitAiRoleAuthEnv listUsers";
+        }
+        if (relativePath === "scripts/e2e/redactE2eSecrets.ts") {
+          return "";
+        }
         if (relativePath.endsWith(".yaml")) return "role flow";
         if (relativePath.endsWith("_emulator.json")) {
           return JSON.stringify({
-            final_status: "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT",
-            fakePassClaimed: true,
+            final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
+            role_auth_source: "service_role",
+            service_role_discovery_used_for_green: true,
+            auth_admin_list_users_used_for_green: true,
+            db_seed_used: true,
+            auth_users_created: 1,
+            auth_users_updated: 0,
+            auth_users_deleted: 0,
+            auth_users_invited: 0,
+            credentials_in_cli_args: true,
+            credentials_printed: true,
+            stdout_redacted: false,
+            stderr_redacted: false,
+            fake_pass_claimed: true,
             flows: { director: "PASS" },
-            mutationsCreated: 1,
-            approvalRequiredObserved: false,
-            roleLeakageObserved: true,
+            mutations_created: 1,
+            approval_required_observed: false,
+            role_leakage_observed: true,
           });
         }
         return "";
@@ -482,6 +519,12 @@ describe("architecture anti-regression suite", () => {
         "fake_emulator_pass_claimed",
         "emulator_mutation_count_nonzero",
         "emulator_role_leakage_observed",
+        "e2e_artifact_auth_discovery_or_seed_used",
+        "green_artifact_role_auth_source_not_explicit_env",
+        "e2e_credentials_cli_args_not_blocked",
+        "e2e_credentials_printing_not_false",
+        "e2e_stdout_stderr_redaction_not_proven",
+        "e2e_credentials_printing_claimed",
       ]),
     );
   });

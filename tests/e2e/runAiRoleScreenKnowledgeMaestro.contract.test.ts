@@ -16,19 +16,36 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("...flowFiles");
   });
 
-  it("does not use the DB-writing seed harness by default", () => {
-    expect(source).toContain("REQUIRED_ROLE_AUTH_ENV");
-    expect(source).toContain("BLOCKED_E2E_ROLE_AUTH_HARNESS_NOT_AVAILABLE");
-    expect(source).toContain("DB-writing seed harness was not used by this wave");
+  it("requires explicit role secrets and never uses discovery or DB-writing seed harnesses", () => {
+    expect(source).toContain("resolveExplicitAiRoleAuthEnv");
+    expect(source).toContain("BLOCKED_NO_E2E_ROLE_SECRETS");
+    expect(source).toContain('roleAuthResolution.source !== "explicit_env"');
     expect(source).not.toContain("createMaestroCriticalBusinessSeed");
     expect(source).not.toContain("createTempUser");
+    expect(source).not.toContain("resolveAiRoleScreenKnowledgeAuthEnv");
+    expect(source).not.toContain("listUsers");
+    expect(source).not.toContain("auth.admin");
+    expect(source).not.toContain("signInWithPassword");
+  });
+
+  it("passes role credentials to Maestro through process env with redacted failure output", () => {
+    expect(source).toContain("redactE2eSecrets");
+    expect(source).toContain("collectExplicitE2eSecrets");
+    expect(source).toContain("credentials_in_cli_args: false");
+    expect(source).toContain("credentials_printed: false");
+    expect(source).toContain("stdout_redacted: true");
+    expect(source).toContain("stderr_redacted: true");
+    expect(source).toContain("roleAuthResolution.env");
+    expect(source).not.toContain("...buildMaestroEnvArgs(roleAuthEnv)");
+    expect(source).not.toContain("...buildMaestroEnvArgs(roleAuthResolution.env)");
+    expect(source).not.toContain("-e E2E_");
   });
 
   it("writes a non-fake emulator artifact with mutation and role-leakage invariants", () => {
-    expect(source).toContain("fakePassClaimed: false");
-    expect(source).toContain("mutationsCreated: 0");
-    expect(source).toContain("approvalRequiredObserved: true");
-    expect(source).toContain("roleLeakageObserved: false");
-    expect(source).toContain("GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT");
+    expect(source).toContain("fake_pass_claimed: false");
+    expect(source).toContain("mutations_created: 0");
+    expect(source).toContain("approval_required_observed: true");
+    expect(source).toContain("role_leakage_observed: false");
+    expect(source).toContain("GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT");
   });
 });

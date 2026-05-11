@@ -1,24 +1,34 @@
-import { evaluateAiRoleScreenEmulatorGateGuardrail } from "../../scripts/architecture_anti_regression_suite";
+import { evaluateAiExplicitRoleSecretsE2eGateGuardrail } from "../../scripts/architecture_anti_regression_suite";
 
-describe("AI role-screen emulator gate architecture ratchet", () => {
-  it("passes for the committed runner, e2e suite, and honest local artifact", () => {
-    const result = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot: process.cwd() });
+describe("AI explicit role secrets e2e gate architecture ratchet", () => {
+  it("passes for explicit-only runner, redactor, e2e suite, and honest local artifact", () => {
+    const result = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot: process.cwd() });
     expect(result.check).toEqual({
-      name: "ai_role_screen_emulator_gate",
+      name: "ai_explicit_role_secrets_e2e_gate",
       status: "pass",
       errors: [],
     });
   });
 
-  it("fails if the emulator artifact claims fake green", () => {
-    const result = evaluateAiRoleScreenEmulatorGateGuardrail({
+  it("fails if discovery is used as a green path", () => {
+    const result = evaluateAiExplicitRoleSecretsE2eGateGuardrail({
       projectRoot: process.cwd(),
       readFile: (relativePath) => {
         if (relativePath === "scripts/e2e/ensureAndroidEmulatorReady.ts") {
           return "ensureAndroidEmulatorReady -list-avds sys.boot_completed fakePassClaimed: false";
         }
         if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
-          return "runAiRoleScreenKnowledgeMaestro ensureAndroidEmulatorReady resolveExplicitAiRoleAuthEnv redactE2eSecrets mutations_created: 0 approval_required_observed";
+          return [
+            "runAiRoleScreenKnowledgeMaestro",
+            "ensureAndroidEmulatorReady",
+            "resolveAiRoleScreenKnowledgeAuthEnv",
+            "resolveExplicitAiRoleAuthEnv",
+            "redactE2eSecrets",
+            "listUsers",
+            "auth.admin",
+            "mutations_created: 0",
+            "approval_required_observed",
+          ].join(" ");
         }
         if (relativePath === "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts") {
           return "resolveExplicitAiRoleAuthEnv BLOCKED_NO_E2E_ROLE_SECRETS E2E_DIRECTOR_EMAIL";
@@ -30,10 +40,10 @@ describe("AI role-screen emulator gate architecture ratchet", () => {
         if (relativePath.endsWith("_emulator.json")) {
           return JSON.stringify({
             final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
-            role_auth_source: "explicit_env",
+            role_auth_source: "existing_readonly_auth_discovery",
             all_role_credentials_resolved: true,
-            service_role_discovery_used_for_green: false,
-            auth_admin_list_users_used_for_green: false,
+            service_role_discovery_used_for_green: true,
+            auth_admin_list_users_used_for_green: true,
             db_seed_used: false,
             auth_users_created: 0,
             auth_users_updated: 0,
@@ -43,7 +53,7 @@ describe("AI role-screen emulator gate architecture ratchet", () => {
             credentials_printed: false,
             stdout_redacted: true,
             stderr_redacted: true,
-            fake_pass_claimed: true,
+            fake_pass_claimed: false,
             flows: {
               director: "PASS",
               foreman: "PASS",
@@ -61,6 +71,12 @@ describe("AI role-screen emulator gate architecture ratchet", () => {
     });
 
     expect(result.check.status).toBe("fail");
-    expect(result.check.errors).toEqual(expect.arrayContaining(["emulator_artifact_fake_pass_not_false"]));
+    expect(result.check.errors).toEqual(
+      expect.arrayContaining([
+        "e2e_runner_contains_auth_discovery_path",
+        "e2e_artifact_auth_discovery_or_seed_used",
+        "green_artifact_role_auth_source_not_explicit_env",
+      ]),
+    );
   });
 });

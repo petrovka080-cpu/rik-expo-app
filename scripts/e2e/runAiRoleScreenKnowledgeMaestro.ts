@@ -6,28 +6,49 @@ import {
   ensureAndroidEmulatorReady,
   type AndroidEmulatorReadyResult,
 } from "./ensureAndroidEmulatorReady";
+import {
+  resolveExplicitAiRoleAuthEnv,
+  type ExplicitAiRoleAuthSource,
+} from "./resolveExplicitAiRoleAuthEnv";
+import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 
 export type AiRoleScreenKnowledgeStatus =
-  | "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT"
-  | "BLOCKED_HOST_HAS_NO_ANDROID_SDK_OR_AVD"
-  | "BLOCKED_AI_KNOWLEDGE_NOT_EXPOSED_TO_RUNTIME_SURFACE"
-  | "BLOCKED_E2E_ROLE_AUTH_HARNESS_NOT_AVAILABLE";
+  | "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT"
+  | "BLOCKED_NO_E2E_ROLE_SECRETS"
+  | "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
+  | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
 type RoleFlowName = "director" | "foreman" | "buyer" | "accountant" | "contractor";
 type RoleFlowStatus = "PASS" | "FAIL" | "BLOCKED";
 
 type AiRoleScreenKnowledgeArtifact = {
   final_status: AiRoleScreenKnowledgeStatus;
+  role_auth_source: ExplicitAiRoleAuthSource;
+  all_role_credentials_resolved: boolean;
+  service_role_discovery_used_for_green: false;
+  auth_admin_list_users_used_for_green: false;
+  db_seed_used: false;
+  auth_users_created: 0;
+  auth_users_updated: 0;
+  auth_users_deleted: 0;
+  auth_users_invited: 0;
+  credentials_in_cli_args: false;
+  credentials_printed: false;
+  stdout_redacted: true;
+  stderr_redacted: true;
   framework: "maestro";
   device: "android";
   deviceBefore: "none" | "connected";
   bootAttempted: boolean;
   bootCompleted: boolean;
+  emulator_boot_completed: boolean;
+  anrDialogObserved: boolean;
+  anrDialogHandledByWait: boolean;
   flows: Record<RoleFlowName, RoleFlowStatus>;
-  mutationsCreated: 0;
-  approvalRequiredObserved: boolean;
-  roleLeakageObserved: boolean;
-  fakePassClaimed: false;
+  mutations_created: 0;
+  approval_required_observed: boolean;
+  role_leakage_observed: boolean;
+  fake_pass_claimed: false;
   exactReason: string | null;
 };
 
@@ -47,7 +68,7 @@ const reportFile = path.join(outputDir, "report.xml");
 const emulatorArtifactFile = path.join(
   projectRoot,
   "artifacts",
-  "S_AI_CORE_03A_EMULATOR_ROLE_SCREEN_KNOWLEDGE_emulator.json",
+  "S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
 );
 const defaultReleaseApk = path.join(
   projectRoot,
@@ -70,24 +91,12 @@ const maestroBinary =
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
 
-const REQUIRED_ROLE_AUTH_ENV = [
-  "E2E_DIRECTOR_EMAIL",
-  "E2E_DIRECTOR_PASSWORD",
-  "E2E_FOREMAN_EMAIL",
-  "E2E_FOREMAN_PASSWORD",
-  "E2E_BUYER_EMAIL",
-  "E2E_BUYER_PASSWORD",
-  "E2E_ACCOUNTANT_EMAIL",
-  "E2E_ACCOUNTANT_PASSWORD",
-  "E2E_CONTRACTOR_EMAIL",
-  "E2E_CONTRACTOR_PASSWORD",
-] as const;
-
 function runCommand(
   command: string,
   args: readonly string[],
-  capture = false,
+  capture = true,
   extraEnv: Record<string, string> = {},
+  secretValues: readonly string[] = [],
 ): string {
   const result = spawnSync(command, [...args], {
     cwd: projectRoot,
@@ -110,25 +119,14 @@ function runCommand(
     const details = capture
       ? `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim()
       : `exit ${result.status}`;
-    throw new Error(`Command failed: ${command} ${args.join(" ")}\n${details}`);
+    throw new Error(redactE2eSecrets(`Command failed: ${command} ${args.join(" ")}\n${details}`, secretValues));
   }
 
-  return (result.stdout ?? "").trim();
+  return redactE2eSecrets((result.stdout ?? "").trim(), secretValues);
 }
 
 function adb(deviceId: string, args: readonly string[], capture = true): string {
   return runCommand("adb", ["-s", deviceId, ...args], capture);
-}
-
-function buildMaestroEnvArgs(envMap: Record<string, string>): string[] {
-  const shouldQuoteForWindowsBatch =
-    process.platform === "win32" && maestroBinary.toLowerCase().endsWith(".bat");
-
-  return Object.entries(envMap).flatMap(([key, value]) => {
-    const entry = `${key}=${value}`;
-    if (!shouldQuoteForWindowsBatch) return ["-e", entry];
-    return ["-e", `"${entry.replace(/"/g, '""')}"`];
-  });
 }
 
 function allBlockedFlows(): Record<RoleFlowName, RoleFlowStatus> {
@@ -158,32 +156,41 @@ function writeEmulatorArtifact(artifact: AiRoleScreenKnowledgeArtifact): void {
 
 function buildBlockedArtifact(
   status: AiRoleScreenKnowledgeStatus,
-  bootstrap: AndroidEmulatorReadyResult,
+  bootstrap: AndroidEmulatorReadyResult | null,
   exactReason: string,
+  authSource: ExplicitAiRoleAuthSource,
+  allRoleCredentialsResolved: boolean,
 ): AiRoleScreenKnowledgeArtifact {
   return {
     final_status: status,
+    role_auth_source: authSource,
+    all_role_credentials_resolved: allRoleCredentialsResolved,
+    service_role_discovery_used_for_green: false,
+    auth_admin_list_users_used_for_green: false,
+    db_seed_used: false,
+    auth_users_created: 0,
+    auth_users_updated: 0,
+    auth_users_deleted: 0,
+    auth_users_invited: 0,
+    credentials_in_cli_args: false,
+    credentials_printed: false,
+    stdout_redacted: true,
+    stderr_redacted: true,
     framework: "maestro",
     device: "android",
-    deviceBefore: bootstrap.deviceBefore,
-    bootAttempted: bootstrap.bootAttempted,
-    bootCompleted: bootstrap.bootCompleted,
+    deviceBefore: bootstrap?.deviceBefore ?? "none",
+    bootAttempted: bootstrap?.bootAttempted ?? false,
+    bootCompleted: bootstrap?.bootCompleted ?? false,
+    emulator_boot_completed: bootstrap?.bootCompleted ?? false,
+    anrDialogObserved: false,
+    anrDialogHandledByWait: false,
     flows: allBlockedFlows(),
-    mutationsCreated: 0,
-    approvalRequiredObserved: false,
-    roleLeakageObserved: false,
-    fakePassClaimed: false,
+    mutations_created: 0,
+    approval_required_observed: false,
+    role_leakage_observed: false,
+    fake_pass_claimed: false,
     exactReason,
   };
-}
-
-function getRoleAuthEnv(): Record<string, string> | null {
-  const missing = REQUIRED_ROLE_AUTH_ENV.filter((key) => !process.env[key]);
-  if (missing.length > 0) return null;
-
-  return Object.fromEntries(
-    REQUIRED_ROLE_AUTH_ENV.map((key) => [key, process.env[key] ?? ""]),
-  );
 }
 
 function ensureFlowFilesExist(): void {
@@ -202,7 +209,7 @@ function ensureAppInstalledAndLaunchable(deviceId: string): void {
     throw new Error(`Release APK not found at ${releaseApk}. Native build is not run by this closeout.`);
   }
 
-  runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], false);
+  runCommand("adb", ["-s", deviceId, "install", "-r", releaseApk], true);
   const installedPath = adb(deviceId, ["shell", "pm", "path", appId], true);
   if (!installedPath.includes("package:")) {
     throw new Error(`Failed to verify installation of ${appId} on ${deviceId}.`);
@@ -222,7 +229,7 @@ function ensureAppInstalledAndLaunchable(deviceId: string): void {
   if (!launchOutput.includes("Status: ok")) {
     throw new Error(`Installed app did not launch cleanly on ${deviceId}.`);
   }
-  adb(deviceId, ["shell", "am", "force-stop", appId], false);
+  adb(deviceId, ["shell", "am", "force-stop", appId], true);
 }
 
 function ensureKnowledgeRuntimeSurfaceExists(): void {
@@ -237,12 +244,31 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
   ensureFlowFilesExist();
   ensureKnowledgeRuntimeSurfaceExists();
 
+  const roleAuthResolution = resolveExplicitAiRoleAuthEnv(process.env);
+  if (roleAuthResolution.source !== "explicit_env" || !roleAuthResolution.env) {
+    const artifact = buildBlockedArtifact(
+      "BLOCKED_NO_E2E_ROLE_SECRETS",
+      null,
+      roleAuthResolution.exactReason ?? "Explicit E2E role secrets are missing.",
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
+    );
+    writeEmulatorArtifact(artifact);
+    return artifact;
+  }
+
+  const secretValues = collectExplicitE2eSecrets({
+    ...process.env,
+    ...roleAuthResolution.env,
+  });
   const bootstrap = await ensureAndroidEmulatorReady({ projectRoot });
   if (bootstrap.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !bootstrap.deviceId) {
     const artifact = buildBlockedArtifact(
-      "BLOCKED_HOST_HAS_NO_ANDROID_SDK_OR_AVD",
+      "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
       bootstrap,
       bootstrap.blockedReason ?? "Android emulator/device was not ready.",
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
@@ -250,66 +276,102 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
 
   if (!fs.existsSync(maestroBinary)) {
     const artifact = buildBlockedArtifact(
-      "BLOCKED_HOST_HAS_NO_ANDROID_SDK_OR_AVD",
+      "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
       bootstrap,
       `Maestro CLI not found at expected path.`,
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
   }
 
-  ensureAppInstalledAndLaunchable(bootstrap.deviceId);
-
-  const roleAuthEnv = getRoleAuthEnv();
-  if (!roleAuthEnv) {
+  try {
+    ensureAppInstalledAndLaunchable(bootstrap.deviceId);
+  } catch (error) {
     const artifact = buildBlockedArtifact(
-      "BLOCKED_E2E_ROLE_AUTH_HARNESS_NOT_AVAILABLE",
+      "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
       bootstrap,
-      "Non-mutating E2E role credentials are not present in environment; DB-writing seed harness was not used by this wave.",
+      redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues),
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
   }
 
   fs.mkdirSync(outputDir, { recursive: true });
-  adb(bootstrap.deviceId, ["shell", "am", "force-stop", appId], false);
+  adb(bootstrap.deviceId, ["shell", "am", "force-stop", appId], true);
 
-  runCommand(
-    maestroBinary,
-    [
-      "test",
-      "--device",
-      bootstrap.deviceId,
-      "--platform",
-      "android",
-      "--format",
-      "junit",
-      "--output",
-      reportFile,
-      "--test-output-dir",
-      outputDir,
-      "--debug-output",
-      outputDir,
-      "--flatten-debug-output",
-      "--no-ansi",
-      ...buildMaestroEnvArgs(roleAuthEnv),
-      ...flowFiles,
-    ],
-    false,
-  );
+  try {
+    runCommand(
+      maestroBinary,
+      [
+        "test",
+        "--device",
+        bootstrap.deviceId,
+        "--platform",
+        "android",
+        "--format",
+        "junit",
+        "--output",
+        reportFile,
+        "--test-output-dir",
+        outputDir,
+        "--debug-output",
+        outputDir,
+        "--flatten-debug-output",
+        "--no-ansi",
+        ...flowFiles,
+      ],
+      true,
+      roleAuthResolution.env,
+      secretValues,
+    );
+  } catch (error) {
+    const errorMessage = redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues);
+    const status = errorMessage.includes("auth.login.email")
+      ? "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
+      : "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
+    const artifact = buildBlockedArtifact(
+      status,
+      bootstrap,
+      errorMessage,
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
+    );
+    writeEmulatorArtifact(artifact);
+    return artifact;
+  }
 
   const artifact: AiRoleScreenKnowledgeArtifact = {
-    final_status: "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT",
+    final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
+    role_auth_source: roleAuthResolution.source,
+    all_role_credentials_resolved: true,
+    service_role_discovery_used_for_green: false,
+    auth_admin_list_users_used_for_green: false,
+    db_seed_used: false,
+    auth_users_created: 0,
+    auth_users_updated: 0,
+    auth_users_deleted: 0,
+    auth_users_invited: 0,
+    credentials_in_cli_args: false,
+    credentials_printed: false,
+    stdout_redacted: true,
+    stderr_redacted: true,
     framework: "maestro",
     device: "android",
     deviceBefore: bootstrap.deviceBefore,
     bootAttempted: bootstrap.bootAttempted,
     bootCompleted: bootstrap.bootCompleted,
+    emulator_boot_completed: bootstrap.bootCompleted,
+    anrDialogObserved: false,
+    anrDialogHandledByWait: false,
     flows: allPassedFlows(),
-    mutationsCreated: 0,
-    approvalRequiredObserved: true,
-    roleLeakageObserved: false,
-    fakePassClaimed: false,
+    mutations_created: 0,
+    approval_required_observed: true,
+    role_leakage_observed: false,
+    fake_pass_claimed: false,
     exactReason: null,
   };
   writeEmulatorArtifact(artifact);
@@ -320,7 +382,7 @@ if (require.main === module) {
   void runAiRoleScreenKnowledgeMaestro()
     .then((artifact) => {
       console.info(JSON.stringify(artifact, null, 2));
-      if (artifact.final_status !== "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT") {
+      if (artifact.final_status !== "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT") {
         process.exitCode = 1;
       }
     })
