@@ -1,0 +1,300 @@
+{
+  "wave": "S_CACHE_RATE_01_RUNTIME_FLAG_INVENTORY_AND_SAFE_ENABLE_PLAN",
+  "final_status": "GREEN_CACHE_RATE_FLAG_INVENTORY_READY",
+  "target_operation": "marketplace.catalog.search",
+  "generated_at": "2026-05-11T17:56:31.401Z",
+  "env_mutated": false,
+  "actual_env_keys_discovered": true,
+  "invented_env_keys": 0,
+  "rollback_path_documented": true,
+  "source_files": [
+    "src/shared/scale/cachePolicies.ts",
+    "src/shared/scale/cacheAdapters.ts",
+    "src/shared/scale/cacheShadowRuntime.ts",
+    "src/shared/scale/providerRuntimeConfig.ts",
+    "src/shared/scale/rateLimitPolicies.ts",
+    "src/shared/scale/rateLimitAdapters.ts",
+    "scripts/cache_one_route_read_through_canary.ts",
+    "scripts/rate_limit_shadow_smoke_marketplace_search.ts",
+    "scripts/rate_limit_real_user_canary.ts",
+    "scripts/server/stagingBffServerBoundary.ts"
+  ],
+  "envKeys": {
+    "cacheRuntime": [
+      "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+      "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+      "SCALE_REDIS_CACHE_SHADOW_MODE",
+      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST"
+    ],
+    "cacheProvider": [
+      "REDIS_URL",
+      "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
+      "SCALE_REDIS_CACHE_NAMESPACE",
+      "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+      "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+      "SCALE_REDIS_CACHE_SHADOW_MODE",
+      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+      "SCALE_REDIS_CACHE_STAGING_ENABLED",
+      "SCALE_REDIS_CACHE_URL"
+    ],
+    "rateRuntime": [
+      "SCALE_RATE_ENFORCEMENT_MODE",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+      "SCALE_RATE_LIMIT_TEST_NAMESPACE"
+    ],
+    "rateProvider": [
+      "SCALE_RATE_ENFORCEMENT_MODE",
+      "SCALE_RATE_LIMIT_NAMESPACE",
+      "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+      "SCALE_RATE_LIMIT_STAGING_ENABLED",
+      "SCALE_RATE_LIMIT_STORE_URL",
+      "SCALE_RATE_LIMIT_TEST_NAMESPACE"
+    ],
+    "rateMetadata": [
+      "BFF_RATE_LIMIT_METADATA_ENABLED"
+    ],
+    "runtimeDetection": [
+      "EXPO_PUBLIC_APP_ENV",
+      "EXPO_PUBLIC_ENVIRONMENT",
+      "EXPO_PUBLIC_RELEASE_CHANNEL",
+      "APP_ENV",
+      "NODE_ENV"
+    ],
+    "runnerOperational": [
+      "RENDER_API_TOKEN",
+      "RENDER_PRODUCTION_BFF_SERVICE_ID",
+      "RENDER_SERVICE_ID",
+      "BFF_PRODUCTION_BASE_URL",
+      "RENDER_SERVICE_URL",
+      "BFF_SERVER_AUTH_SECRET"
+    ],
+    "approvalGates": [
+      "CACHE_CANARY_APPROVED",
+      "ROLLBACK_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_PREFLIGHT_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_APPLY_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_ROLLBACK_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_PREFLIGHT_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_ROLLBACK_APPROVED"
+    ],
+    "all": [
+      "APP_ENV",
+      "BFF_PRODUCTION_BASE_URL",
+      "BFF_RATE_LIMIT_METADATA_ENABLED",
+      "BFF_SERVER_AUTH_SECRET",
+      "CACHE_CANARY_APPROVED",
+      "EXPO_PUBLIC_APP_ENV",
+      "EXPO_PUBLIC_ENVIRONMENT",
+      "EXPO_PUBLIC_RELEASE_CHANNEL",
+      "NODE_ENV",
+      "REDIS_URL",
+      "RENDER_API_TOKEN",
+      "RENDER_PRODUCTION_BFF_SERVICE_ID",
+      "RENDER_SERVICE_ID",
+      "RENDER_SERVICE_URL",
+      "ROLLBACK_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_APPLY_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_PREFLIGHT_APPROVED",
+      "S_CACHE_PRODUCTION_READ_THROUGH_CANARY_ROLLBACK_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_CANARY_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_PREFLIGHT_APPROVED",
+      "S_RATE_LIMIT_PRODUCTION_REAL_USER_ENFORCEMENT_ROLLBACK_APPROVED",
+      "SCALE_RATE_ENFORCEMENT_MODE",
+      "SCALE_RATE_LIMIT_NAMESPACE",
+      "SCALE_RATE_LIMIT_PRODUCTION_ENABLED",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT",
+      "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+      "SCALE_RATE_LIMIT_STAGING_ENABLED",
+      "SCALE_RATE_LIMIT_STORE_URL",
+      "SCALE_RATE_LIMIT_TEST_NAMESPACE",
+      "SCALE_REDIS_CACHE_COMMAND_TIMEOUT_MS",
+      "SCALE_REDIS_CACHE_NAMESPACE",
+      "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+      "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+      "SCALE_REDIS_CACHE_SHADOW_MODE",
+      "SCALE_REDIS_CACHE_SHADOW_PERCENT",
+      "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+      "SCALE_REDIS_CACHE_STAGING_ENABLED",
+      "SCALE_REDIS_CACHE_URL"
+    ]
+  },
+  "routeAllowlists": {
+    "cacheReadThroughV1AllowedRoutes": [
+      "marketplace.catalog.search"
+    ],
+    "cacheReadRoutes": [
+      "request.proposal.list",
+      "marketplace.catalog.search",
+      "warehouse.ledger.list",
+      "accountant.invoice.list",
+      "director.pending.list"
+    ],
+    "rateBffReadOperations": [
+      "request.proposal.list",
+      "marketplace.catalog.search",
+      "warehouse.ledger.list",
+      "accountant.invoice.list",
+      "director.pending.list"
+    ],
+    "plannedCacheRoutes": [
+      "marketplace.catalog.search"
+    ],
+    "plannedRateLimitRoutes": [
+      "marketplace.catalog.search"
+    ]
+  },
+  "policies": {
+    "cache": {
+      "operation": "marketplace.catalog.search",
+      "present": true,
+      "defaultEnabled": false,
+      "ttlMs": 120000,
+      "staleWhileRevalidateMs": 300000,
+      "maxPayloadBytes": 262144,
+      "payloadClass": "public_catalog",
+      "piiSafe": true
+    },
+    "rateLimit": {
+      "operation": "marketplace.catalog.search",
+      "present": true,
+      "defaultEnabled": false,
+      "category": "read",
+      "scope": "ip_or_device",
+      "windowMs": 60000,
+      "maxRequests": 120,
+      "burst": 25,
+      "cooldownMs": 10000,
+      "enforcementEnabledByDefault": false,
+      "externalStoreRequiredForLiveEnforcement": true
+    }
+  },
+  "enablePlan": {
+    "cache": {
+      "route": "marketplace.catalog.search",
+      "routeAllowlist": [
+        "marketplace.catalog.search"
+      ],
+      "envWriteValues": {
+        "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED": "true",
+        "SCALE_REDIS_CACHE_SHADOW_MODE": "read_through",
+        "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED": "true",
+        "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST": "marketplace.catalog.search",
+        "SCALE_REDIS_CACHE_SHADOW_PERCENT": "1"
+      },
+      "readinessReason": "ready",
+      "prerequisites": [
+        "production approval gates are present",
+        "redis cache provider is configured with SCALE_REDIS_CACHE_NAMESPACE and SCALE_REDIS_CACHE_URL or REDIS_URL",
+        "Render auto-deploy is disabled before env mutation",
+        "production /health and /ready are 200 before apply"
+      ],
+      "proofRequirements": [
+        "ready payload reports cacheShadowRuntime.mode=read_through",
+        "ready payload reports cacheShadowRuntime.routeAllowlistCount=1",
+        "ready payload reports cacheShadowRuntime.percent=1",
+        "cache shadow diagnostic is ready",
+        "first marketplace.catalog.search read is miss/read-through",
+        "second marketplace.catalog.search read is cache hit",
+        "cache monitor output remains redacted"
+      ]
+    },
+    "rateLimit": {
+      "route": "marketplace.catalog.search",
+      "routeAllowlist": [
+        "marketplace.catalog.search"
+      ],
+      "envWriteValues": {
+        "SCALE_RATE_ENFORCEMENT_MODE": "enforce_production_real_user_route_canary_only",
+        "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST": "marketplace.catalog.search",
+        "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT": "1"
+      },
+      "mode": "enforce_production_real_user_route_canary_only",
+      "prerequisites": [
+        "production approval gates are present",
+        "rate-limit provider is configured with SCALE_RATE_LIMIT_STORE_URL and SCALE_RATE_LIMIT_NAMESPACE",
+        "SCALE_RATE_LIMIT_PRODUCTION_ENABLED is already approved for the provider",
+        "Render auto-deploy is disabled before env mutation",
+        "production /health and /ready are 200 before apply"
+      ],
+      "proofRequirements": [
+        "mode is enforce_production_real_user_route_canary_only",
+        "route allowlist count is 1 and route is marketplace.catalog.search",
+        "canary percent is 1",
+        "selected and non-selected marketplace catalog reads stay 2xx",
+        "private synthetic smoke proves allow and throttle",
+        "health and ready remain 200 after canary"
+      ]
+    },
+    "rollback": {
+      "documented": true,
+      "cache": {
+        "envKeysToRestoreOrDelete": [
+          "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED",
+          "SCALE_REDIS_CACHE_SHADOW_MODE",
+          "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+          "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
+          "SCALE_REDIS_CACHE_SHADOW_PERCENT"
+        ],
+        "renderApiOperations": [
+          "GET /services/{serviceId}/env-vars?limit=100 before apply",
+          "PUT or DELETE /services/{serviceId}/env-vars/{key} for each cache env key to restore previous state",
+          "POST /services/{serviceId}/deploys with current commitId"
+        ],
+        "emergencyDisableValues": {
+          "SCALE_REDIS_CACHE_PRODUCTION_SHADOW_ENABLED": "false",
+          "SCALE_REDIS_CACHE_SHADOW_MODE": "disabled",
+          "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED": "false",
+          "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST": "",
+          "SCALE_REDIS_CACHE_SHADOW_PERCENT": "0"
+        }
+      },
+      "rateLimit": {
+        "envKeysToRestoreOrDelete": [
+          "SCALE_RATE_ENFORCEMENT_MODE",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT"
+        ],
+        "renderApiOperations": [
+          "GET /services/{serviceId}/env-vars?limit=100 before apply",
+          "PUT or DELETE /services/{serviceId}/env-vars/{key} for each rate-limit env key to restore previous state",
+          "POST /services/{serviceId}/deploys with current commitId"
+        ],
+        "emergencyDisableValues": {
+          "SCALE_RATE_ENFORCEMENT_MODE": "disabled",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_ROUTE_ALLOWLIST": "",
+          "SCALE_RATE_LIMIT_REAL_USER_CANARY_PERCENT": "0"
+        }
+      },
+      "postRollbackProbes": [
+        "/health",
+        "/ready"
+      ]
+    },
+    "healthReadyProbes": [
+      "/health",
+      "/ready",
+      "/api/staging-bff/diagnostics/cache-shadow-canary",
+      "/api/staging-bff/monitor/cache-shadow",
+      "/api/staging-bff/diagnostics/rate-limit-private-smoke",
+      "/api/staging-bff/monitor/rate-limit-shadow",
+      "/api/staging-bff/read/marketplace-catalog-search"
+    ]
+  },
+  "safety": {
+    "productionEnvMutationPerformed": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "credentialsRead": false,
+    "credentialsPrinted": false,
+    "envValuesPrinted": false,
+    "rawPayloadStored": false,
+    "broadRewrite": false
+  }
+}
