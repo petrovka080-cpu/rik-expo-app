@@ -1,0 +1,46 @@
+{
+  "wave": "S_AI_DRAFT_01_DRAFT_REQUEST_TOOL",
+  "scope": "production_safe_draft_only_ai_tool",
+  "files_created": [
+    "src/features/ai/tools/draftRequestTool.ts",
+    "tests/ai/draftRequestTool.contract.test.ts",
+    "tests/ai/draftRequestNoFinalSubmit.contract.test.ts",
+    "artifacts/S_AI_DRAFT_01_DRAFT_REQUEST_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_01_DRAFT_REQUEST_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_01_DRAFT_REQUEST_TOOL_proof.md"
+  ],
+  "files_updated": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "runtime_boundaries": {
+    "tool": "draft_request",
+    "risk_level": "DRAFT_ONLY",
+    "policy_gate": "planAiToolUse",
+    "live_execution": false,
+    "model_provider_import": false,
+    "direct_supabase": false,
+    "db_write": false,
+    "ui_or_hook_work": false
+  },
+  "inputs": [
+    "project_id",
+    "items",
+    "preferred_supplier_id",
+    "delivery_window",
+    "notes"
+  ],
+  "outputs": [
+    "draft_preview",
+    "items_normalized",
+    "missing_fields",
+    "risk_flags",
+    "requires_approval",
+    "next_action",
+    "evidence_refs"
+  ],
+  "tests": [
+    "tests/ai/draftRequestTool.contract.test.ts",
+    "tests/ai/draftRequestNoFinalSubmit.contract.test.ts"
+  ]
+}

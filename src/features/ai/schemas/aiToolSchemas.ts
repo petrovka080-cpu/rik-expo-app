@@ -6,11 +6,19 @@ const evidenceRefSchema = {
   minLength: 1,
 } satisfies AiToolJsonObjectSchema["properties"][string];
 
-const draftMaterialSchema = {
+const draftRequestItemSchema = {
   type: "object",
-  required: ["name", "quantity", "unit"],
+  required: [],
   additionalProperties: false,
   properties: {
+    material_id: {
+      type: "string",
+      minLength: 1,
+    },
+    material_code: {
+      type: "string",
+      minLength: 1,
+    },
     name: {
       type: "string",
       minLength: 1,
@@ -20,6 +28,10 @@ const draftMaterialSchema = {
       minimum: 0,
     },
     unit: {
+      type: "string",
+      minLength: 1,
+    },
+    notes: {
       type: "string",
       minLength: 1,
     },
@@ -454,27 +466,101 @@ export const getFinanceSummaryOutputSchema: AiToolJsonObjectSchema = {
 
 export const draftRequestInputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["objectId", "materials"],
+  required: ["project_id", "items"],
   additionalProperties: false,
   properties: {
-    objectId: { type: "string", minLength: 1 },
-    materials: {
+    project_id: { type: "string", minLength: 1 },
+    items: {
       type: "array",
       minItems: 1,
-      items: draftMaterialSchema,
+      maxItems: 50,
+      items: draftRequestItemSchema,
     },
-    reason: { type: "string", minLength: 1 },
+    preferred_supplier_id: {
+      type: "string",
+      minLength: 1,
+    },
+    delivery_window: {
+      type: "string",
+      minLength: 1,
+    },
+    notes: {
+      type: "string",
+      minLength: 1,
+    },
   },
 };
 
 export const draftRequestOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["draftPreview", "approvalRequired", "evidenceRefs"],
+  required: [
+    "draft_preview",
+    "items_normalized",
+    "missing_fields",
+    "risk_flags",
+    "requires_approval",
+    "next_action",
+    "evidence_refs",
+    "risk_level",
+    "bounded",
+    "persisted",
+    "idempotency_required_if_persisted",
+    "mutation_count",
+    "final_submit",
+    "supplier_confirmation",
+    "order_created",
+    "warehouse_mutation",
+  ],
   additionalProperties: false,
   properties: {
-    draftPreview: { type: "string", minLength: 1 },
-    approvalRequired: { type: "boolean" },
-    evidenceRefs: { type: "array", items: evidenceRefSchema },
+    draft_preview: { type: "string", minLength: 1 },
+    items_normalized: {
+      type: "array",
+      items: {
+        type: "object",
+        required: [
+          "line",
+          "material_id",
+          "material_code",
+          "name",
+          "quantity",
+          "unit",
+          "notes",
+          "evidence_ref",
+        ],
+        additionalProperties: false,
+        properties: {
+          line: { type: "number", minimum: 1 },
+          material_id: { type: "string" },
+          material_code: { type: "string" },
+          name: { type: "string" },
+          quantity: { type: "number", minimum: 0 },
+          unit: { type: "string" },
+          notes: { type: "string" },
+          evidence_ref: { type: "string", minLength: 1 },
+        },
+      },
+    },
+    missing_fields: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    risk_flags: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    requires_approval: { type: "boolean" },
+    next_action: { type: "string", enum: ["submit_for_approval"] },
+    evidence_refs: { type: "array", items: evidenceRefSchema },
+    risk_level: { type: "string", enum: ["DRAFT_ONLY"] },
+    bounded: { type: "boolean" },
+    persisted: { type: "boolean" },
+    idempotency_required_if_persisted: { type: "boolean" },
+    mutation_count: { type: "number", minimum: 0, maximum: 0 },
+    final_submit: { type: "number", minimum: 0, maximum: 0 },
+    supplier_confirmation: { type: "number", minimum: 0, maximum: 0 },
+    order_created: { type: "number", minimum: 0, maximum: 0 },
+    warehouse_mutation: { type: "number", minimum: 0, maximum: 0 },
   },
 };
 
