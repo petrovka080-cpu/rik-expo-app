@@ -115,6 +115,7 @@ function runCommand(command: string, args: readonly string[], secrets: readonly 
   const result = spawnSync(command, [...args], {
     cwd: projectRoot,
     encoding: "utf8",
+    maxBuffer: 256 * 1024 * 1024,
     stdio: "pipe",
     shell: process.platform === "win32",
     env: {
