@@ -8,6 +8,9 @@ import {
 } from "../../screens/buyer/buyer.fetchers";
 import { fetchDirectorPendingProposalWindow } from "../../screens/director/director.proposals.repo";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
+import { redactAiContextSummaryText } from "./context/aiContextRedaction";
+import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
+import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
 
 export type AssistantScopedFacts = {
   summary: string;
@@ -51,6 +54,18 @@ const toLineList = (lines: (string | null | undefined)[]): string[] =>
 
 const formatOptionalDate = (value: string | null | undefined): string =>
   String(value ?? "").trim() ? String(value).slice(0, 10) : "default";
+
+const applyAssistantScopeRedaction = (
+  facts: AssistantScopedFacts,
+  role: AssistantRole,
+  context: AssistantContext,
+): AssistantScopedFacts => ({
+  ...facts,
+  summary: redactAiContextSummaryText(facts.summary, {
+    role: normalizeAssistantRoleToAiUserRole(role),
+    screenId: resolveAiScreenIdForAssistantContext(context),
+  }),
+});
 
 const buildDirectorFinanceSupplierLine = (
   rows: {
@@ -227,7 +242,7 @@ export async function loadAssistantScopedFacts(params: {
   const context = params.context;
 
   if (role === "buyer" || context === "buyer") {
-    return await loadBuyerScopedFacts().catch((error) => {
+    const facts = await loadBuyerScopedFacts().catch((error) => {
       recordAssistantScopeFallback("load_buyer_scoped_facts_failed", error, {
         action: "loadBuyerScopedFacts",
         scopeRole: role,
@@ -235,10 +250,11 @@ export async function loadAssistantScopedFacts(params: {
       });
       return null;
     });
+    return facts ? applyAssistantScopeRedaction(facts, role, context) : null;
   }
 
   if (role === "director" || context === "director" || context === "reports") {
-    return await loadDirectorScopedFactsGrounded().catch((error) => {
+    const facts = await loadDirectorScopedFactsGrounded().catch((error) => {
       recordAssistantScopeFallback("load_director_scoped_facts_failed", error, {
         action: "loadDirectorScopedFactsGrounded",
         scopeRole: role,
@@ -246,6 +262,7 @@ export async function loadAssistantScopedFacts(params: {
       });
       return null;
     });
+    return facts ? applyAssistantScopeRedaction(facts, role, context) : null;
   }
 
   return null;

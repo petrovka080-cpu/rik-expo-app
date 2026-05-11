@@ -10,7 +10,6 @@ import {
   rikQuickSearch,
   updateRequestMeta,
 } from "../../lib/catalog_api";
-import { submitRequestToDirector } from "../../lib/api/request.repository";
 import { requestItemAddOrIncAndPatchMeta } from "../../screens/foreman/foreman.helpers";
 import {
   resolveForemanQuickRequest,
@@ -30,6 +29,14 @@ import {
   type ForemanAssistantSession,
 } from "./assistantStorage";
 import type { AssistantContext, AssistantRole } from "./assistant.types";
+import {
+  assertNoDirectAiMutation,
+  submitAiActionForApproval,
+} from "./approval/aiApprovalGate";
+import { createAiActionAuditEvent } from "./audit/aiActionAudit";
+import type { AiDomain, AiUserRole } from "./policy/aiRolePolicy";
+import type { AiActionType } from "./policy/aiRiskPolicy";
+import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
 
 type AssistantActorContext = {
   userId: string;
@@ -41,6 +48,9 @@ const ASSISTANT_CATALOG_MATCH_CONCURRENCY_LIMIT = 5;
 const ASSISTANT_CATALOG_MATCH_ITEM_LIMIT = 40;
 const ASSISTANT_MARKET_SEARCH_QUERY_LIMIT = 3;
 const ASSISTANT_MARKET_SEARCH_CONCURRENCY_LIMIT = 2;
+const ASSISTANT_FOREMAN_SCREEN_ID = "foreman.ai.quick_modal";
+const ASSISTANT_BUYER_SCREEN_ID = "buyer.main";
+const ASSISTANT_MARKET_SCREEN_ID = "market.home";
 
 type AssistantActionResult = {
   handled: boolean;
@@ -101,8 +111,12 @@ const SEND_DRAFT_RE =
   /(отправ(ь|ить)?|подай|на утверждение|директору|пошли).{0,18}(черновик|заявк)?|\bотправь черновик\b/i;
 const MARKET_SEARCH_RE =
   /(найд(и|и мне)|ищ(и|и мне)|поиск|рынок|маркет|сколько стоит|цена|поставщик|сравн(и|ить)|предложени)/i;
+const MARKET_SEARCH_EN_RE =
+  /\b(find|search|market|supplier|price|compare|catalog|rfq)\b/i;
 const BUYER_PROPOSAL_RE =
   /(предложени|закупк|оформи заказ|создай заказ|сделай заказ|создай предложение)/i;
+const DIRECT_AI_MUTATION_RE =
+  /\b(submit|send|create|update|delete|approve|confirm|finali[sz]e|pay|payment)\b/i;
 const UNIT_RE =
   /(\d+(?:[.,]\d+)?)\s*(шт|штук|штука|мешок|мешка|мешков|м2|м²|м3|м³|м|метр(?:а|ов)?|кг|килограмм(?:а|ов)?|т|тонн(?:а|ы)?|л|литр(?:а|ов)?|комплект(?:а|ов)?)/i;
 const FILLER_RE =
@@ -462,7 +476,19 @@ async function createOrAppendForemanDraft(
   items: AssistantParsedItem[],
   sourceMessage: string,
   session: ForemanAssistantSession,
+  requestedByRole: AiUserRole,
 ): Promise<string> {
+  const draftDecision = assertNoDirectAiMutation({
+    actionType: "draft_request",
+    role: requestedByRole,
+    screenId: ASSISTANT_FOREMAN_SCREEN_ID,
+    domain: "procurement",
+    mutationPolicy: "draft_only",
+  });
+  if (!draftDecision.allowed) {
+    return `AI action blocked: ${draftDecision.reason}.`;
+  }
+
   const matchPlan = planFanoutBatch(items, {
     maxItems: ASSISTANT_CATALOG_MATCH_ITEM_LIMIT,
     getKey: (item) => buildAssistantCatalogMatchFanoutKey(item),
@@ -581,7 +607,11 @@ async function createOrAppendForemanDraft(
   return lines.join("\n\n");
 }
 
-async function submitForemanDraft(actor: AssistantActorContext, session: ForemanAssistantSession): Promise<string> {
+async function submitForemanDraft(
+  actor: AssistantActorContext,
+  session: ForemanAssistantSession,
+  requestedByRole: AiUserRole,
+): Promise<string> {
   const rid = String(session.draft_request_id || getLocalDraftId() || "").trim();
   if (!rid) {
     return "Сначала сформируй черновик. После этого я смогу отправить его на утверждение.";
@@ -600,38 +630,35 @@ async function submitForemanDraft(actor: AssistantActorContext, session: Foreman
     return "Не нашел активный черновик. Сначала сформируй его заново.";
   }
 
-  const submitted = await submitRequestToDirector({
-    requestId: rid,
-    sourcePath: "assistant.foreman.submitDraft",
-    draftScopeKey: rid,
-  }).catch((error) => {
-    recordAssistantActionFallback("submit_draft_to_director_failed", error, {
-      action: "submitForemanDraft",
-      requestId: rid,
-    });
-    return null;
+  const label = String(currentDraft.display_no || rid).trim() || rid;
+  return formatAiApprovalRequiredReply({
+    classification: {
+      actionType: "submit_request",
+      screenId: ASSISTANT_FOREMAN_SCREEN_ID,
+      domain: "procurement",
+      requestedByRole,
+      requiresApproval: true,
+      forbidden: false,
+    },
+    summary: `Submit foreman draft request ${label} for director approval`,
+    payload: {
+      draftRef: "foreman_draft_request",
+      displayNo: label,
+    },
   });
-  if (!submitted) {
-    return `Не удалось отправить черновик ${currentDraft.display_no || rid}. Проверь позиции и попробуй отправить из экрана прораба.`;
-  }
-
-  clearLocalDraftId();
-  await clearForemanAssistantSession(actor.userId);
-
-  const label = String(submitted.display_no || currentDraft.display_no || rid).trim() || rid;
-  return `Заявка ${label} отправлена на утверждение директору.`;
 }
 
-async function handleForemanAction(message: string): Promise<string> {
+async function handleForemanAction(message: string, requestedRole: AssistantRole): Promise<string> {
   const actor = await loadAssistantActorContext();
   if (!actor) {
     return "Чтобы создать AI-заявку, сначала войди в приложение под своим пользователем.";
   }
 
   const session = await loadForemanAssistantSession(actor.userId);
+  const requestedByRole = normalizeAssistantRoleToAiUserRole(requestedRole);
 
   if (SEND_DRAFT_RE.test(message) && !CREATE_REQUEST_RE.test(message)) {
-    return submitForemanDraft(actor, session);
+    return submitForemanDraft(actor, session, requestedByRole);
   }
 
   if (session.pending_items.length > 0) {
@@ -639,7 +666,7 @@ async function handleForemanAction(message: string): Promise<string> {
     if (resumed === "clarify") {
       return formatClarifyReply(session.pending_items);
     }
-    return createOrAppendForemanDraft(actor, resumed, message, session);
+    return createOrAppendForemanDraft(actor, resumed, message, session, requestedByRole);
   }
 
   const resolution = await resolveForemanItems(message);
@@ -651,7 +678,7 @@ async function handleForemanAction(message: string): Promise<string> {
     return formatClarifyReply(resolution.pending);
   }
 
-  return createOrAppendForemanDraft(actor, resolution.items, message, session);
+  return createOrAppendForemanDraft(actor, resolution.items, message, session, requestedByRole);
 }
 
 async function handleMarketSearchAction(message: string, buyerMode: boolean): Promise<string> {
@@ -680,6 +707,155 @@ function wantsBuyerProposalFlow(message: string): boolean {
   return BUYER_PROPOSAL_RE.test(message);
 }
 
+function wantsMarketSearch(message: string): boolean {
+  return MARKET_SEARCH_RE.test(message) || MARKET_SEARCH_EN_RE.test(message);
+}
+
+export type AssistantActionClassification = {
+  actionType: AiActionType;
+  screenId: string;
+  domain: AiDomain;
+  requestedByRole: AiUserRole;
+  requiresApproval: boolean;
+  forbidden: boolean;
+};
+
+export function classifyAssistantActionRequest(options: {
+  role: AssistantRole;
+  context: AssistantContext;
+  message: string;
+}): AssistantActionClassification | null {
+  const text = String(options.message || "").trim();
+  if (!text) return null;
+  const requestedByRole = normalizeAssistantRoleToAiUserRole(options.role);
+  const lower = text.toLowerCase();
+
+  if (/\b(delete|direct_supabase_query|raw_db_export|bypass approval|ignore approval)\b/i.test(lower)) {
+    return {
+      actionType: lower.includes("raw_db_export")
+        ? "raw_db_export"
+        : lower.includes("direct_supabase_query")
+          ? "direct_supabase_query"
+          : lower.includes("bypass approval") || lower.includes("ignore approval")
+            ? "bypass_approval"
+            : "delete_data",
+      screenId: "chat.main",
+      domain: "chat",
+      requestedByRole,
+      requiresApproval: false,
+      forbidden: true,
+    };
+  }
+
+  if (isForemanActionContext(options.role, options.context)) {
+    if (SEND_DRAFT_RE.test(text) || DIRECT_AI_MUTATION_RE.test(text)) {
+      return {
+        actionType: "submit_request",
+        screenId: ASSISTANT_FOREMAN_SCREEN_ID,
+        domain: "procurement",
+        requestedByRole,
+        requiresApproval: true,
+        forbidden: false,
+      };
+    }
+    if (isLikelyForemanMutation(text) || looksLikeQuantityReply(text)) {
+      return {
+        actionType: "draft_request",
+        screenId: ASSISTANT_FOREMAN_SCREEN_ID,
+        domain: "procurement",
+        requestedByRole,
+        requiresApproval: false,
+        forbidden: false,
+      };
+    }
+  }
+
+  if (isBuyerActionContext(options.role, options.context)) {
+    if (wantsBuyerProposalFlow(text) || DIRECT_AI_MUTATION_RE.test(text)) {
+      return {
+        actionType: "confirm_supplier",
+        screenId: ASSISTANT_BUYER_SCREEN_ID,
+        domain: "procurement",
+        requestedByRole,
+        requiresApproval: true,
+        forbidden: false,
+      };
+    }
+    if (wantsMarketSearch(text)) {
+      return {
+        actionType: "search_catalog",
+        screenId: ASSISTANT_MARKET_SCREEN_ID,
+        domain: "marketplace",
+        requestedByRole,
+        requiresApproval: false,
+        forbidden: false,
+      };
+    }
+  }
+
+  if (isMarketActionContext(options.context) && wantsMarketSearch(text)) {
+    return {
+      actionType: "search_catalog",
+      screenId: ASSISTANT_MARKET_SCREEN_ID,
+      domain: "marketplace",
+      requestedByRole,
+      requiresApproval: false,
+      forbidden: false,
+    };
+  }
+
+  return null;
+}
+
+function formatAiApprovalRequiredReply(params: {
+  classification: AssistantActionClassification;
+  summary: string;
+  payload: unknown;
+}): string {
+  const directDecision = assertNoDirectAiMutation({
+    actionType: params.classification.actionType,
+    role: params.classification.requestedByRole,
+    screenId: params.classification.screenId,
+    domain: params.classification.domain,
+    mutationPolicy: "approval_required",
+  });
+  const auditEvent = createAiActionAuditEvent({
+    eventType: directDecision.requiresApproval
+      ? "ai.action.approval_required"
+      : "ai.action.blocked_for_risk",
+    actionType: params.classification.actionType,
+    screenId: params.classification.screenId,
+    domain: params.classification.domain,
+    role: params.classification.requestedByRole,
+    riskLevel: directDecision.riskLevel,
+    decision: directDecision.requiresApproval ? "approval_required" : "blocked",
+    reason: directDecision.reason,
+  });
+
+  if (params.classification.forbidden || directDecision.riskLevel === "forbidden") {
+    return `AI action blocked: ${directDecision.reason}.`;
+  }
+
+  const action = submitAiActionForApproval({
+    actionType: params.classification.actionType,
+    screenId: params.classification.screenId,
+    domain: params.classification.domain,
+    requestedByRole: params.classification.requestedByRole,
+    summary: params.summary,
+    redactedPayload: params.payload,
+    evidenceRefs: ["assistant.chat"],
+    idempotencyKey: `assistant:${params.classification.screenId}:${params.classification.actionType}`,
+  });
+
+  return [
+    "approval_required: AI prepared this as an approval-controlled action.",
+    `Action: ${action.actionType}.`,
+    `Status: ${action.status}.`,
+    `Audit: ${auditEvent.eventType}.`,
+    "No final mutation was executed from chat.",
+  ].join("\n");
+}
+
 async function hasPendingForemanSession(): Promise<boolean> {
   const actor = await loadAssistantActorContext().catch((error) => {
     recordAssistantActionFallback("load_actor_context_failed", error, {
@@ -702,6 +878,18 @@ export async function tryRunAssistantAction(options: {
   if (!text) return { handled: false };
 
   try {
+    const classification = classifyAssistantActionRequest({ role, context, message: text });
+    if (classification?.forbidden) {
+      return {
+        handled: true,
+        reply: formatAiApprovalRequiredReply({
+          classification,
+          summary: "Forbidden AI-originated chat action",
+          payload: { request: "blocked_for_policy" },
+        }),
+      };
+    }
+
     if (
       isForemanActionContext(role, context)
       && (
@@ -711,10 +899,20 @@ export async function tryRunAssistantAction(options: {
         || await hasPendingForemanSession()
       )
     ) {
-      return { handled: true, reply: await handleForemanAction(text) };
+      return { handled: true, reply: await handleForemanAction(text, role) };
     }
 
-    if (isBuyerActionContext(role, context) && (MARKET_SEARCH_RE.test(text) || wantsBuyerProposalFlow(text))) {
+    if (isBuyerActionContext(role, context) && (wantsMarketSearch(text) || wantsBuyerProposalFlow(text))) {
+      if (classification?.requiresApproval) {
+        return {
+          handled: true,
+          reply: formatAiApprovalRequiredReply({
+            classification,
+            summary: "Buyer AI action requires controlled approval before supplier or order confirmation",
+            payload: { request: "buyer_approval_required" },
+          }),
+        };
+      }
       const reply = await handleMarketSearchAction(text, true);
       if (wantsBuyerProposalFlow(text)) {
         return {
@@ -725,7 +923,7 @@ export async function tryRunAssistantAction(options: {
       return { handled: true, reply };
     }
 
-    if (isMarketActionContext(context) && MARKET_SEARCH_RE.test(text)) {
+    if (isMarketActionContext(context) && wantsMarketSearch(text)) {
       return { handled: true, reply: await handleMarketSearchAction(text, false) };
     }
   } catch (error) {

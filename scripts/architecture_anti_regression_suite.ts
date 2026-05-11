@@ -251,6 +251,25 @@ export type AiModelBoundarySummary = {
   findings: readonly string[];
 };
 
+export type AiRoleRiskApprovalControlPlaneSummary = {
+  rolePolicyPresent: boolean;
+  riskPolicyPresent: boolean;
+  screenCapabilityRegistryPresent: boolean;
+  approvalGatePresent: boolean;
+  professionalResponsePolicyPresent: boolean;
+  assistantActionsUsesApprovalGate: boolean;
+  assistantActionsDirectSubmitBlocked: boolean;
+  directorFullAccessPolicyPresent: boolean;
+  nonDirectorScopePresent: boolean;
+  forbiddenActionsBlocked: boolean;
+  approvalRequiredCannotExecuteDirectly: boolean;
+  promptPolicyBuilderApplied: boolean;
+  screenContextRedactionPresent: boolean;
+  auditEventsPresent: boolean;
+  screenGatewayImports: number;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -351,6 +370,7 @@ export type ArchitectureAntiRegressionReport = {
   flatListTuningRegression: FlatListTuningRegressionSummary;
   errorHandlingGapRatchet: ErrorHandlingGapRatchetSummary;
   aiModelBoundary: AiModelBoundarySummary;
+  aiRoleRiskApprovalControlPlane: AiRoleRiskApprovalControlPlaneSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -419,6 +439,16 @@ const AI_DISABLED_PROVIDER_PATH = "src/features/ai/model/DisabledModelProvider.t
 const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelProvider.ts";
 const AI_ASSISTANT_CLIENT_PATH = "src/features/ai/assistantClient.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
+const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
+const AI_RISK_POLICY_PATH = "src/features/ai/policy/aiRiskPolicy.ts";
+const AI_SCREEN_REGISTRY_PATH = "src/features/ai/policy/aiScreenCapabilityRegistry.ts";
+const AI_APPROVAL_GATE_PATH = "src/features/ai/approval/aiApprovalGate.ts";
+const AI_PROFESSIONAL_RESPONSE_POLICY_PATH = "src/features/ai/policy/aiProfessionalResponsePolicy.ts";
+const AI_ASSISTANT_ACTIONS_PATH = "src/features/ai/assistantActions.ts";
+const AI_ASSISTANT_PROMPTS_PATH = "src/features/ai/assistantPrompts.ts";
+const AI_ASSISTANT_SCOPE_CONTEXT_PATH = "src/features/ai/assistantScopeContext.ts";
+const AI_CONTEXT_REDACTION_PATH = "src/features/ai/context/aiContextRedaction.ts";
+const AI_AUDIT_EVENT_TYPES_PATH = "src/features/ai/audit/aiActionAuditTypes.ts";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
@@ -1270,6 +1300,140 @@ export function evaluateAiModelBoundaryGuardrail(params: {
       openAiLiveCallFindings: openAiLiveCallFindings.length,
       apiKeyClientFindings: apiKeyClientFindings.length,
       aiReportsRedactionContractPresent,
+      findings,
+    },
+  };
+}
+
+const aiScreenGatewayImportPattern =
+  /(?:from\s+["'][^"']*AiModelGateway["']|import\s+\{[^}]*\bAiModelGateway\b[^}]*\}|from\s+["'][^"']*features\/ai\/model["'])/;
+
+const isAiScreenOrUiPath = (file: string): boolean =>
+  file.startsWith("src/screens/") ||
+  file.startsWith("app/") ||
+  file.includes("/components/");
+
+export function evaluateAiRoleRiskApprovalControlPlaneGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+  sourceFiles?: readonly string[];
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiRoleRiskApprovalControlPlaneSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const sourceFiles = (params.sourceFiles ?? defaultAiModelBoundarySourceFiles(params.projectRoot))
+    .map(normalizePath);
+  const sourceEntries = sourceFiles.map((file) => ({
+    file,
+    source: safeReadProjectFile({ readFile, relativePath: file }) ?? "",
+  }));
+
+  const rolePolicySource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_POLICY_PATH });
+  const riskPolicySource = safeReadProjectFile({ readFile, relativePath: AI_RISK_POLICY_PATH });
+  const screenRegistrySource = safeReadProjectFile({ readFile, relativePath: AI_SCREEN_REGISTRY_PATH });
+  const approvalGateSource = safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_GATE_PATH });
+  const responsePolicySource = safeReadProjectFile({ readFile, relativePath: AI_PROFESSIONAL_RESPONSE_POLICY_PATH });
+  const assistantActionsSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_ACTIONS_PATH });
+  const assistantPromptsSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_PROMPTS_PATH });
+  const assistantScopeContextSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCOPE_CONTEXT_PATH });
+  const contextRedactionSource = safeReadProjectFile({ readFile, relativePath: AI_CONTEXT_REDACTION_PATH });
+  const auditEventTypesSource = safeReadProjectFile({ readFile, relativePath: AI_AUDIT_EVENT_TYPES_PATH });
+
+  const screenGatewayImportFindings = sourceEntries
+    .filter((entry) => isAiScreenOrUiPath(entry.file))
+    .filter((entry) => aiScreenGatewayImportPattern.test(entry.source) || providerImplementationImportPattern.test(entry.source));
+
+  const assistantActionsUsesApprovalGate =
+    Boolean(assistantActionsSource?.includes("assertNoDirectAiMutation")) &&
+    Boolean(assistantActionsSource?.includes("submitAiActionForApproval"));
+  const assistantActionsDirectSubmitBlocked =
+    assistantActionsUsesApprovalGate &&
+    !Boolean(assistantActionsSource?.includes("submitRequestToDirector"));
+  const directorFullAccessPolicyPresent =
+    Boolean(rolePolicySource?.includes("director: AI_DOMAINS")) &&
+    Boolean(rolePolicySource?.includes("control: AI_DOMAINS")) &&
+    Boolean(rolePolicySource?.includes("execute_approved_action"));
+  const nonDirectorScopePresent =
+    Boolean(rolePolicySource?.includes("foreman: [")) &&
+    Boolean(rolePolicySource?.includes("buyer: [")) &&
+    Boolean(rolePolicySource?.includes("accountant: [")) &&
+    Boolean(rolePolicySource?.includes("contractor: [")) &&
+    Boolean(rolePolicySource?.includes("unknown: []"));
+  const forbiddenActionsBlocked =
+    Boolean(riskPolicySource?.includes("direct_supabase_query")) &&
+    Boolean(riskPolicySource?.includes("raw_db_export")) &&
+    Boolean(riskPolicySource?.includes("delete_data")) &&
+    Boolean(riskPolicySource?.includes("bypass_approval")) &&
+    Boolean(riskPolicySource?.includes("AI action is forbidden"));
+  const approvalRequiredCannotExecuteDirectly =
+    Boolean(approvalGateSource?.includes('action.status !== "approved"')) &&
+    Boolean(approvalGateSource?.includes("missing idempotency key")) &&
+    Boolean(approvalGateSource?.includes("missing audit event")) &&
+    Boolean(approvalGateSource?.includes("Direct AI mutation blocked"));
+  const promptPolicyBuilderApplied =
+    Boolean(responsePolicySource?.includes("buildAiProfessionalResponsePolicyPrompt")) &&
+    Boolean(assistantPromptsSource?.includes("buildAiProfessionalResponsePolicyPrompt"));
+  const screenContextRedactionPresent =
+    Boolean(contextRedactionSource?.includes("redactAiContextForModel")) &&
+    Boolean(assistantScopeContextSource?.includes("redactAiContextSummaryText"));
+  const auditEventsPresent =
+    Boolean(auditEventTypesSource?.includes("ai.policy.checked")) &&
+    Boolean(auditEventTypesSource?.includes("ai.action.approval_required")) &&
+    Boolean(auditEventTypesSource?.includes("ai.prompt.policy_applied"));
+
+  const promptBypassFindings = [
+    ...(assistantPromptsSource && /ignore approval/i.test(assistantPromptsSource)
+      ? ["ai_prompt_forbidden_ignore_approval"]
+      : []),
+    ...(assistantPromptsSource && /bypass approval/i.test(assistantPromptsSource)
+      ? ["ai_prompt_forbidden_bypass_approval"]
+      : []),
+  ];
+  const findings = [
+    ...screenGatewayImportFindings.map((entry) => `screen_ai_model_gateway_import:file=${entry.file}`),
+    ...promptBypassFindings,
+  ];
+  const errors = [
+    ...(rolePolicySource ? [] : [`missing_file:${AI_ROLE_POLICY_PATH}`]),
+    ...(riskPolicySource ? [] : [`missing_file:${AI_RISK_POLICY_PATH}`]),
+    ...(screenRegistrySource ? [] : [`missing_file:${AI_SCREEN_REGISTRY_PATH}`]),
+    ...(approvalGateSource ? [] : [`missing_file:${AI_APPROVAL_GATE_PATH}`]),
+    ...(responsePolicySource ? [] : [`missing_file:${AI_PROFESSIONAL_RESPONSE_POLICY_PATH}`]),
+    ...(assistantActionsUsesApprovalGate ? [] : ["assistant_actions_not_using_ai_approval_gate"]),
+    ...(assistantActionsDirectSubmitBlocked ? [] : ["assistant_actions_direct_submit_not_blocked"]),
+    ...(directorFullAccessPolicyPresent ? [] : ["director_full_access_policy_missing"]),
+    ...(nonDirectorScopePresent ? [] : ["non_director_scope_policy_missing"]),
+    ...(forbiddenActionsBlocked ? [] : ["forbidden_ai_actions_not_blocked"]),
+    ...(approvalRequiredCannotExecuteDirectly ? [] : ["approval_required_actions_can_execute_directly"]),
+    ...(promptPolicyBuilderApplied ? [] : ["ai_professional_prompt_policy_not_applied"]),
+    ...(screenContextRedactionPresent ? [] : ["ai_screen_context_redaction_missing"]),
+    ...(auditEventsPresent ? [] : ["ai_audit_event_types_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_role_risk_approval_control_plane",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      rolePolicyPresent: Boolean(rolePolicySource),
+      riskPolicyPresent: Boolean(riskPolicySource),
+      screenCapabilityRegistryPresent: Boolean(screenRegistrySource),
+      approvalGatePresent: Boolean(approvalGateSource),
+      professionalResponsePolicyPresent: Boolean(responsePolicySource),
+      assistantActionsUsesApprovalGate,
+      assistantActionsDirectSubmitBlocked,
+      directorFullAccessPolicyPresent,
+      nonDirectorScopePresent,
+      forbiddenActionsBlocked,
+      approvalRequiredCannotExecuteDirectly,
+      promptPolicyBuilderApplied,
+      screenContextRedactionPresent,
+      auditEventsPresent,
+      screenGatewayImports: screenGatewayImportFindings.length,
       findings,
     },
   };
@@ -2447,6 +2611,7 @@ export function runArchitectureAntiRegressionSuite(
     scanErrorHandlingGapRatchet(projectRoot),
   );
   const aiModelBoundary = evaluateAiModelBoundaryGuardrail({ projectRoot });
+  const aiRoleRiskApprovalControlPlane = evaluateAiRoleRiskApprovalControlPlaneGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2467,6 +2632,7 @@ export function runArchitectureAntiRegressionSuite(
     flatListTuningRegression.check,
     errorHandlingGapRatchet.check,
     aiModelBoundary.check,
+    aiRoleRiskApprovalControlPlane.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2488,6 +2654,7 @@ export function runArchitectureAntiRegressionSuite(
     flatListTuningRegression: flatListTuningRegression.summary,
     errorHandlingGapRatchet: errorHandlingGapRatchet.summary,
     aiModelBoundary: aiModelBoundary.summary,
+    aiRoleRiskApprovalControlPlane: aiRoleRiskApprovalControlPlane.summary,
     componentDebt,
     checks,
     safety: {
@@ -2523,6 +2690,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`flatlist_tuning_regression_violations: ${report.flatListTuningRegression.violations}`);
   console.info(`error_handling_gap_ratchet_silent_swallow: ${report.errorHandlingGapRatchet.silentSwallow}`);
   console.info(`ai_model_direct_gemini_imports: ${report.aiModelBoundary.directGeminiImportsOutsideLegacyProvider}`);
+  console.info(`ai_control_plane_direct_submit_blocked: ${report.aiRoleRiskApprovalControlPlane.assistantActionsDirectSubmitBlocked}`);
+  console.info(`ai_control_plane_screen_gateway_imports: ${report.aiRoleRiskApprovalControlPlane.screenGatewayImports}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

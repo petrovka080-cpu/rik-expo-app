@@ -138,6 +138,23 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "model", "aiModelProviderFlags.ts"),
       path.join(SRC, "features", "ai", "model", "index.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiCore02RoleRiskApprovalControlPlaneFiles = [
+      path.join(SRC, "features", "ai", "controlPlane", "AiControlPlane.ts"),
+      path.join(SRC, "features", "ai", "controlPlane", "AiControlPlaneTypes.ts"),
+      path.join(SRC, "features", "ai", "policy", "aiRolePolicy.ts"),
+      path.join(SRC, "features", "ai", "policy", "aiRiskPolicy.ts"),
+      path.join(SRC, "features", "ai", "policy", "aiScreenCapabilityRegistry.ts"),
+      path.join(SRC, "features", "ai", "policy", "aiProfessionalResponsePolicy.ts"),
+      path.join(SRC, "features", "ai", "approval", "aiApprovalAction.ts"),
+      path.join(SRC, "features", "ai", "approval", "aiApprovalGate.ts"),
+      path.join(SRC, "features", "ai", "approval", "aiApprovalTypes.ts"),
+      path.join(SRC, "features", "ai", "audit", "aiActionAudit.ts"),
+      path.join(SRC, "features", "ai", "audit", "aiActionAuditTypes.ts"),
+      path.join(SRC, "features", "ai", "context", "aiScreenContext.ts"),
+      path.join(SRC, "features", "ai", "context", "aiContextRedaction.ts"),
+      path.join(SRC, "features", "ai", "schemas", "aiActionSchemas.ts"),
+      path.join(SRC, "features", "ai", "schemas", "aiRoleSchemas.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -860,6 +877,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle133CatalogProposalCreationTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle135SubcontractsSharedTransportFiles).toBeLessThanOrEqual(1);
     expect(sAiCore01ModelBoundaryFiles).toBeLessThanOrEqual(7);
+    expect(sAiCore02RoleRiskApprovalControlPlaneFiles).toBeLessThanOrEqual(15);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -868,6 +886,7 @@ describe("performance budget — bundle module count", () => {
         s50kBffBoundaryScaffoldFiles -
         sAiWorkflow2DisabledPilotFiles -
         sAiCore01ModelBoundaryFiles -
+        sAiCore02RoleRiskApprovalControlPlaneFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

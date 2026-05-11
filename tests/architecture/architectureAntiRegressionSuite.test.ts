@@ -6,6 +6,7 @@ import {
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiModelBoundaryGuardrail,
+  evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   evaluateRateLimitMarketplace5PctCanaryProofGuardrail,
@@ -254,6 +255,84 @@ describe("architecture anti-regression suite", () => {
         "direct_gemini_import:file=src/screens/example/BadAiScreen.tsx",
         "ui_provider_implementation_import:file=src/screens/example/BadAiScreen.tsx",
         "openai_live_call:file=src/screens/example/BadAiScreen.tsx",
+      ]),
+    );
+  });
+
+  it("ratchets the AI role, risk, and approval control plane", () => {
+    const passing = evaluateAiRoleRiskApprovalControlPlaneGuardrail({
+      projectRoot: process.cwd(),
+      sourceFiles: [
+        "src/features/ai/policy/aiRolePolicy.ts",
+        "src/features/ai/policy/aiRiskPolicy.ts",
+        "src/features/ai/policy/aiScreenCapabilityRegistry.ts",
+        "src/features/ai/approval/aiApprovalGate.ts",
+        "src/features/ai/policy/aiProfessionalResponsePolicy.ts",
+        "src/features/ai/assistantActions.ts",
+        "src/features/ai/assistantPrompts.ts",
+        "src/features/ai/assistantScopeContext.ts",
+        "src/features/ai/context/aiContextRedaction.ts",
+        "src/features/ai/audit/aiActionAuditTypes.ts",
+      ],
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/policy/aiRolePolicy.ts") {
+          return "director: AI_DOMAINS\ncontrol: AI_DOMAINS\nexecute_approved_action\nforeman: [\nbuyer: [\naccountant: [\ncontractor: [\nunknown: []";
+        }
+        if (relativePath === "src/features/ai/policy/aiRiskPolicy.ts") {
+          return "direct_supabase_query raw_db_export delete_data bypass_approval AI action is forbidden";
+        }
+        if (relativePath === "src/features/ai/approval/aiApprovalGate.ts") {
+          return 'action.status !== "approved"\nmissing idempotency key\nmissing audit event\nDirect AI mutation blocked';
+        }
+        if (relativePath === "src/features/ai/policy/aiProfessionalResponsePolicy.ts") {
+          return "buildAiProfessionalResponsePolicyPrompt";
+        }
+        if (relativePath === "src/features/ai/assistantActions.ts") {
+          return "assertNoDirectAiMutation\nsubmitAiActionForApproval";
+        }
+        if (relativePath === "src/features/ai/assistantPrompts.ts") {
+          return "buildAiProfessionalResponsePolicyPrompt";
+        }
+        if (relativePath === "src/features/ai/assistantScopeContext.ts") {
+          return "redactAiContextSummaryText";
+        }
+        if (relativePath === "src/features/ai/context/aiContextRedaction.ts") {
+          return "redactAiContextForModel";
+        }
+        if (relativePath === "src/features/ai/audit/aiActionAuditTypes.ts") {
+          return "ai.policy.checked ai.action.approval_required ai.prompt.policy_applied";
+        }
+        return "present";
+      },
+    });
+    expect(passing.check).toEqual({
+      name: "ai_role_risk_approval_control_plane",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiRoleRiskApprovalControlPlaneGuardrail({
+      projectRoot: process.cwd(),
+      sourceFiles: [
+        "src/features/ai/assistantActions.ts",
+        "src/features/ai/assistantPrompts.ts",
+        "src/screens/example/BadAiScreen.tsx",
+      ],
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/assistantActions.ts") return "submitRequestToDirector";
+        if (relativePath === "src/features/ai/assistantPrompts.ts") return "ignore approval";
+        if (relativePath === "src/screens/example/BadAiScreen.tsx") return "import { AiModelGateway } from '../../features/ai/model';";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "assistant_actions_not_using_ai_approval_gate",
+        "assistant_actions_direct_submit_not_blocked",
+        "ai_prompt_forbidden_ignore_approval",
+        "screen_ai_model_gateway_import:file=src/screens/example/BadAiScreen.tsx",
       ]),
     );
   });

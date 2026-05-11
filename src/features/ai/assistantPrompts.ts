@@ -1,4 +1,6 @@
 import type { AssistantContext, AssistantQuickPrompt, AssistantRole } from "./assistant.types";
+import { buildAiProfessionalResponsePolicyPrompt } from "./policy/aiProfessionalResponsePolicy";
+import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
 
 export function normalizeAssistantRole(value: string | null | undefined): AssistantRole {
   switch (String(value || "").trim().toLowerCase()) {
@@ -149,6 +151,7 @@ export function buildAssistantSystemPrompt(
   role: AssistantRole,
   context: AssistantContext = "unknown",
 ): string {
+  const aiRole = normalizeAssistantRoleToAiUserRole(role);
   return [
     "Ты встроенный AI-ассистент приложения GOX/RIK для строительной компании.",
     "Отвечай на русском языке коротко и по делу.",
@@ -164,6 +167,7 @@ export function buildAssistantSystemPrompt(
     "Для роли director делай упор на отчеты, заявки, предложения и обзор по модулям.",
     "Для роли accountant делай упор на оплаты, документы и финансовые маршруты.",
     "Если пользователь просит найти товар или поставщика, помоги сформулировать поисковый запрос и подскажи открыть Маркет или Карту.",
+    buildAiProfessionalResponsePolicyPrompt({ role: aiRole }),
     "Не используй markdown-таблицы. Только обычный текст или короткие списки.",
   ].join("\n");
 }
