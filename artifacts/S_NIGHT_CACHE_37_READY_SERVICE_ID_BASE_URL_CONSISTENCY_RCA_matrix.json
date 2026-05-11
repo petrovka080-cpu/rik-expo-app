@@ -1,0 +1,51 @@
+{
+  "wave": "WAVE_37_CACHE_READY_SERVICE_ID_AND_BASE_URL_CONSISTENCY_RCA",
+  "final_status": "BLOCKED_CACHE_READY_HITS_DIFFERENT_SERVICE_OR_BASE_URL",
+  "head_commit": "272699765604b1cd238f9d580ec822d9ec125247",
+  "head_short": "2726997",
+  "redacted_config": {
+    "RENDER_PRODUCTION_BFF_SERVICE_ID": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "RENDER_SERVICE_ID": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "BFF_PRODUCTION_BASE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    },
+    "RENDER_SERVICE_URL": {
+      "present": true,
+      "valueClass": "present_redacted"
+    }
+  },
+  "selected_service_id_source": "RENDER_PRODUCTION_BFF_SERVICE_ID",
+  "selected_base_url_source": "BFF_PRODUCTION_BASE_URL",
+  "render_service_id_hash": "2b254dbe274c1098",
+  "bff_base_url_origin_hash": "ea5e01116e8d14a8",
+  "render_api_token_present": true,
+  "render_api_service_read_status_class": "2xx",
+  "render_api_deploys_read_status_class": "2xx",
+  "ready_status_class": "2xx",
+  "service_name_class": "present_redacted",
+  "service_slug_class": "present_redacted",
+  "service_url_origin_hash": "ea5e01116e8d14a8",
+  "service_url_matches_bff_base_url": true,
+  "render_service_id_belongs_to_same_url": true,
+  "deploy_commit": "ab187ae11bae0098daa847e29f13fc8e88c85737",
+  "deploy_commit_equals_head": false,
+  "ready_commit": "absent",
+  "ready_commit_equals_head": false,
+  "ready_runtime_service_id_class": "absent",
+  "ready_runtime_env_class": "absent",
+  "ready_app_env": "absent",
+  "env_values_printed": false,
+  "secrets_printed": false,
+  "raw_urls_printed": false,
+  "env_writes": false,
+  "deploy_triggered": false,
+  "cache_probes": false,
+  "blocked_reason": "deploy_commit_not_head_or_absent;ready_commit_not_head_or_absent"
+}

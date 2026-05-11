@@ -9,6 +9,25 @@ export type CacheShadowRuntimeEnv = Record<string, string | undefined>;
 
 export type CacheReadThroughApplyPath = "canary" | "persistent";
 
+export type CacheCanonicalEnvValueClass = "truthy" | "falsey" | "absent";
+
+export type CacheReadThroughV1FlagState = {
+  keyName: string;
+  keyNameHash: string;
+  present: boolean;
+  valueClass: CacheCanonicalEnvValueClass;
+  enabled: boolean;
+};
+
+export type CacheReadThroughOneRouteReadinessReason =
+  | "ready"
+  | "cache_disabled"
+  | "mode_not_read_through"
+  | "read_through_v1_missing_or_false"
+  | "route_allowlist_not_one_route"
+  | "route_not_approved_for_read_through_v1"
+  | "percent_not_one";
+
 export type CacheReadThroughReadinessRouteName =
   | CachePolicyRoute
   | "none"
@@ -19,10 +38,19 @@ export type CacheReadThroughReadinessDiagnostics = {
   enabledFlagPresent: boolean;
   readThroughV1EnabledFlagName: string;
   readThroughV1EnabledFlagPresent: boolean;
+  readThroughV1EnvRawPresent: boolean;
+  readThroughV1EnvValueClass: CacheCanonicalEnvValueClass;
+  cacheCanonicalKeyName: string;
+  cacheCanonicalKeyNameHash: string;
+  cacheCanonicalKeyPresence: boolean;
+  cacheCanonicalKeyValueClass: CacheCanonicalEnvValueClass;
+  cacheRuntimeSource: "process_env";
+  routeAllowlistSource: "process_env";
   routeAllowlistCount: number;
   routeName: CacheReadThroughReadinessRouteName;
   percent: number;
   mode: CacheShadowMode;
+  readinessReason: CacheReadThroughOneRouteReadinessReason;
   redacted: true;
   secretsExposed: false;
   envValuesExposed: false;
@@ -32,6 +60,7 @@ export type CacheShadowRuntimeConfig = {
   enabled: boolean;
   mode: CacheShadowMode;
   readThroughV1Enabled: boolean;
+  readThroughV1FlagState: CacheReadThroughV1FlagState;
   routeAllowlist: readonly CachePolicyRoute[];
   percent: number;
   productionEnabledFlagTruthy: boolean;
@@ -231,6 +260,32 @@ const fnv1a = (value: string): number => {
   return hash >>> 0;
 };
 
+const cacheCanonicalKeyNameHash = (keyName: string): string =>
+  fnv1a(keyName).toString(16).padStart(8, "0");
+
+const classifyCanonicalEnvValue = (
+  env: CacheShadowRuntimeEnv,
+  keyName: string,
+): CacheCanonicalEnvValueClass => {
+  if (!hasEnvKey(env, keyName)) return "absent";
+  return parseTruthy(env[keyName]) ? "truthy" : "falsey";
+};
+
+export const resolveCacheReadThroughV1FlagState = (
+  env: CacheShadowRuntimeEnv = typeof process !== "undefined" ? process.env : {},
+): CacheReadThroughV1FlagState => {
+  const keyName = CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME;
+  const present = hasEnvKey(env, keyName);
+  const valueClass = classifyCanonicalEnvValue(env, keyName);
+  return {
+    keyName,
+    keyNameHash: cacheCanonicalKeyNameHash(keyName),
+    present,
+    valueClass,
+    enabled: valueClass === "truthy",
+  };
+};
+
 const routeAllowed = (config: CacheShadowRuntimeConfig, route: CachePolicyRoute): boolean =>
   config.routeAllowlist.length === 0 || config.routeAllowlist.includes(route);
 
@@ -361,11 +416,12 @@ export function resolveCacheShadowRuntimeConfig(
 ): CacheShadowRuntimeConfig {
   const productionEnabledFlagTruthy = parseTruthy(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.productionEnabled]);
   const mode = productionEnabledFlagTruthy ? parseMode(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.mode]) : "disabled";
-  const readThroughV1Enabled = parseTruthy(env[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]);
+  const readThroughV1FlagState = resolveCacheReadThroughV1FlagState(env);
   return {
     enabled: productionEnabledFlagTruthy && mode !== "disabled",
     mode,
-    readThroughV1Enabled,
+    readThroughV1Enabled: readThroughV1FlagState.enabled,
+    readThroughV1FlagState,
     routeAllowlist: parseRouteAllowlist(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.routeAllowlist]),
     percent: parsePercent(env[CACHE_SHADOW_RUNTIME_ENV_NAMES.percent]),
     productionEnabledFlagTruthy,
@@ -399,13 +455,29 @@ export const resolveCacheReadThroughOneRouteApplyConfig = (
 
 export const isCacheReadThroughOneRouteApplyConfigReady = (
   config: CacheShadowRuntimeConfig,
-): boolean =>
-  config.enabled &&
-  config.mode === CACHE_READ_THROUGH_ONE_ROUTE_MODE &&
-  config.readThroughV1Enabled &&
-  config.routeAllowlist.length === 1 &&
-  config.routeAllowlist[0] === CACHE_READ_THROUGH_ONE_ROUTE &&
-  config.percent === Number(CACHE_READ_THROUGH_ONE_ROUTE_PERCENT);
+): boolean => explainCacheReadThroughOneRouteReadiness(config).ready;
+
+export const explainCacheReadThroughOneRouteReadiness = (
+  config: CacheShadowRuntimeConfig,
+): { ready: boolean; reason: CacheReadThroughOneRouteReadinessReason } => {
+  if (!config.enabled) return { ready: false, reason: "cache_disabled" };
+  if (config.mode !== CACHE_READ_THROUGH_ONE_ROUTE_MODE) {
+    return { ready: false, reason: "mode_not_read_through" };
+  }
+  if (!config.readThroughV1Enabled) {
+    return { ready: false, reason: "read_through_v1_missing_or_false" };
+  }
+  if (config.routeAllowlist.length !== 1) {
+    return { ready: false, reason: "route_allowlist_not_one_route" };
+  }
+  if (config.routeAllowlist[0] !== CACHE_READ_THROUGH_ONE_ROUTE) {
+    return { ready: false, reason: "route_not_approved_for_read_through_v1" };
+  }
+  if (config.percent !== Number(CACHE_READ_THROUGH_ONE_ROUTE_PERCENT)) {
+    return { ready: false, reason: "percent_not_one" };
+  }
+  return { ready: true, reason: "ready" };
+};
 
 export const assertCacheReadThroughOneRouteApplyEnv = (
   env: CacheShadowRuntimeEnv,
@@ -427,18 +499,36 @@ const readinessRouteName = (
 
 export const buildCacheReadThroughReadinessDiagnostics = (
   config: CacheShadowRuntimeConfig | null | undefined,
-): CacheReadThroughReadinessDiagnostics => ({
-  enabledFlagPresent: config?.envKeyPresence.productionEnabled ?? false,
-  readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
-  readThroughV1EnabledFlagPresent: config?.envKeyPresence.readThroughV1Enabled ?? false,
-  routeAllowlistCount: config?.routeAllowlist.length ?? 0,
-  routeName: readinessRouteName(config),
-  percent: config?.percent ?? 0,
-  mode: config?.mode ?? "disabled",
-  redacted: true,
-  secretsExposed: false,
-  envValuesExposed: false,
-});
+): CacheReadThroughReadinessDiagnostics => {
+  const flagState = config?.readThroughV1FlagState ?? {
+    keyName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+    keyNameHash: cacheCanonicalKeyNameHash(CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME),
+    present: false,
+    valueClass: "absent" as const,
+    enabled: false,
+  };
+  return {
+    enabledFlagPresent: config?.envKeyPresence.productionEnabled ?? false,
+    readThroughV1EnabledFlagName: flagState.keyName,
+    readThroughV1EnabledFlagPresent: flagState.present,
+    readThroughV1EnvRawPresent: flagState.present,
+    readThroughV1EnvValueClass: flagState.valueClass,
+    cacheCanonicalKeyName: flagState.keyName,
+    cacheCanonicalKeyNameHash: flagState.keyNameHash,
+    cacheCanonicalKeyPresence: flagState.present,
+    cacheCanonicalKeyValueClass: flagState.valueClass,
+    cacheRuntimeSource: "process_env",
+    routeAllowlistSource: "process_env",
+    routeAllowlistCount: config?.routeAllowlist.length ?? 0,
+    routeName: readinessRouteName(config),
+    percent: config?.percent ?? 0,
+    mode: config?.mode ?? "disabled",
+    readinessReason: config ? explainCacheReadThroughOneRouteReadiness(config).reason : "cache_disabled",
+    redacted: true,
+    secretsExposed: false,
+    envValuesExposed: false,
+  };
+};
 
 export function createCacheShadowMonitor(): CacheShadowMonitor {
   const snapshot: CacheShadowMonitorSnapshot = {

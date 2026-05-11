@@ -223,7 +223,7 @@ describe("architecture anti-regression suite", () => {
               "const routeAllowed = () => config.routeAllowlist.includes(route);",
               "parseRouteAllowlist(env.SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST);",
               "SCALE_REDIS_CACHE_SHADOW_ROUTE_ALLOWLIST",
-              "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+              '"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED"',
               "CACHE_READ_THROUGH_V1_ALLOWED_ROUTES",
               "isCacheReadThroughV1RouteAllowed",
             ].join("\n");
@@ -245,6 +245,7 @@ describe("architecture anti-regression suite", () => {
       expect.arrayContaining([
         "cache_canary_not_route_scoped",
         "cache_persistent_readiness_contract_drifted",
+        "cache_read_through_v1_literal_key_duplicated_outside_contract",
         "rate_limit_canary_route_changed:proposal.submit",
         "rate_limit_canary_percent_changed:25",
       ]),

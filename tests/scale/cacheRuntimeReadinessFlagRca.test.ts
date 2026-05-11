@@ -67,7 +67,7 @@ describe("WAVE 23 cache runtime readiness flag RCA", () => {
     expect(runnerSource).not.toContain('SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED: "true"');
 
     expect(runtimeSource).toContain("CACHE_SHADOW_RUNTIME_ENV_NAMES");
-    expect(runtimeSource).toContain("env[CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME]");
+    expect(runtimeSource).toContain("resolveCacheReadThroughV1FlagState");
     expect(readinessSource).toContain("buildCacheReadThroughReadinessDiagnostics");
     expect(contractSource).toContain("readThroughV1EnabledFlagPresent");
     expect(providerSource).toContain("CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES");
@@ -102,18 +102,26 @@ describe("WAVE 23 cache runtime readiness flag RCA", () => {
         routeAllowlistCount: 1,
         percent: 1,
         mode: "read_through",
-        readinessDiagnostics: {
+        readinessDiagnostics: expect.objectContaining({
           enabledFlagPresent: true,
           readThroughV1EnabledFlagName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
           readThroughV1EnabledFlagPresent: true,
+          readThroughV1EnvRawPresent: true,
+          readThroughV1EnvValueClass: "truthy",
+          cacheCanonicalKeyName: CACHE_READ_THROUGH_V1_ENABLED_ENV_NAME,
+          cacheCanonicalKeyPresence: true,
+          cacheCanonicalKeyValueClass: "truthy",
+          cacheRuntimeSource: "process_env",
+          routeAllowlistSource: "process_env",
           routeAllowlistCount: 1,
           routeName: "marketplace.catalog.search",
           percent: 1,
           mode: "read_through",
+          readinessReason: "ready",
           redacted: true,
           secretsExposed: false,
           envValuesExposed: false,
-        },
+        }),
       }),
     );
 

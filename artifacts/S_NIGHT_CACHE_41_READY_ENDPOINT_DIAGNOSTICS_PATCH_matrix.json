@@ -1,0 +1,43 @@
+{
+  "wave": "WAVE_41",
+  "final_status": "GREEN_CACHE_READY_ENDPOINT_DIAGNOSTICS_PATCHED",
+  "timestamp": "2026-05-11T07:21:56.649Z",
+  "route": "marketplace.catalog.search",
+  "source_files": [
+    "src/shared/scale/cacheShadowRuntime.ts",
+    "scripts/server/stagingBffServerBoundary.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/scale/cacheReadinessBooleanSourceContract.test.ts",
+    "tests/scale/cacheRuntimeReadinessFlagRca.test.ts",
+    "tests/scale/cachePersistentReadinessContract.test.ts",
+    "tests/scale/bffStagingServerBoundary.test.ts"
+  ],
+  "verification": {
+    "targeted_jest": "PASS",
+    "tsc_no_emit": "PASS",
+    "architecture_anti_regression_suite": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "safety": {
+    "cache_enablement": false,
+    "render_env_writes": false,
+    "deploy": false,
+    "probes": false,
+    "rate_limit_changes": false,
+    "db_writes": false,
+    "production_mutations": false,
+    "raw_env_values_printed": false,
+    "secrets_printed": false
+  },
+  "checks": {
+    "runtimeCommitShort_field": true,
+    "cacheCanonicalKeyPresence_field": true,
+    "cacheCanonicalKeyValueClass_field": true,
+    "cacheRuntimeSource": "process_env",
+    "routeAllowlistSource": "process_env",
+    "redaction_tests": true,
+    "raw_env_values_exposed": false,
+    "redis_url_token_key_exposed": false,
+    "live_apply": false
+  }
+}

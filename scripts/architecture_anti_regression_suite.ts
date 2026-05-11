@@ -278,6 +278,7 @@ export type ArchitectureAntiRegressionReport = {
     rateLimitCanaryPercent: number;
     persistentReadinessContractLocked: boolean;
     persistentReadinessKeyCanonical: boolean;
+    readThroughLiteralKeyUsageLocked: boolean;
   };
   cacheColdMissProof: {
     proofTestPresent: boolean;
@@ -1177,6 +1178,11 @@ export function evaluateCacheRateScopeGuardrail(params: {
       CACHE_READ_THROUGH_ONE_ROUTE_ENV_NAMES.readThroughV1Enabled,
     ) &&
     persistentApplyConfig.readThroughV1Enabled === true;
+  const readThroughLiteralKeyUsageLocked =
+    cacheSource.includes('"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED"') &&
+    !cacheCanarySource.includes('"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED"') &&
+    !stagingBffSource.includes('"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED"') &&
+    !providerSource.includes('"SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED"');
   const persistentReadinessContractLocked =
     canonicalReadThroughKey &&
     isCacheReadThroughOneRouteApplyConfigReady(persistentApplyConfig) &&
@@ -1204,6 +1210,7 @@ export function evaluateCacheRateScopeGuardrail(params: {
     ...(cacheCanaryRouteScoped ? [] : ["cache_canary_not_route_scoped"]),
     ...(persistentReadinessContractLocked ? [] : ["cache_persistent_readiness_contract_drifted"]),
     ...(canonicalReadThroughKey ? [] : ["cache_persistent_readiness_key_not_canonical"]),
+    ...(readThroughLiteralKeyUsageLocked ? [] : ["cache_read_through_v1_literal_key_duplicated_outside_contract"]),
     ...(rateLimitRoute === CACHE_RATE_ALLOWED_ROUTE
       ? []
       : [`rate_limit_canary_route_changed:${rateLimitRoute || "missing"}`]),
@@ -1225,6 +1232,7 @@ export function evaluateCacheRateScopeGuardrail(params: {
       rateLimitCanaryPercent: Number.isFinite(rateLimitPercent) ? rateLimitPercent : -1,
       persistentReadinessContractLocked,
       persistentReadinessKeyCanonical: canonicalReadThroughKey,
+      readThroughLiteralKeyUsageLocked,
     },
   };
 }

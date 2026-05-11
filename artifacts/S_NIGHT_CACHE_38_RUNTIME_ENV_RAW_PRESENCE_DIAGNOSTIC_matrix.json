@@ -1,0 +1,41 @@
+{
+  "wave": "WAVE_38",
+  "final_status": "GREEN_CACHE_RUNTIME_ENV_RAW_PRESENCE_DIAGNOSTIC_ADDED",
+  "timestamp": "2026-05-11T07:21:56.649Z",
+  "route": "marketplace.catalog.search",
+  "source_files": [
+    "src/shared/scale/cacheShadowRuntime.ts",
+    "scripts/server/stagingBffServerBoundary.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/scale/cacheReadinessBooleanSourceContract.test.ts",
+    "tests/scale/cacheRuntimeReadinessFlagRca.test.ts",
+    "tests/scale/cachePersistentReadinessContract.test.ts",
+    "tests/scale/bffStagingServerBoundary.test.ts"
+  ],
+  "verification": {
+    "targeted_jest": "PASS",
+    "tsc_no_emit": "PASS",
+    "architecture_anti_regression_suite": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "safety": {
+    "cache_enablement": false,
+    "render_env_writes": false,
+    "deploy": false,
+    "probes": false,
+    "rate_limit_changes": false,
+    "db_writes": false,
+    "production_mutations": false,
+    "raw_env_values_printed": false,
+    "secrets_printed": false
+  },
+  "checks": {
+    "readThroughV1EnvRawPresent_field": true,
+    "readThroughV1EnvValueClass_field": "truthy_falsey_absent",
+    "canonicalKeyName_or_hash_present": true,
+    "raw_env_values_exposed": false,
+    "cache_enabled": false,
+    "render_env_written": false,
+    "deploy_triggered": false
+  }
+}

@@ -8,12 +8,15 @@ import {
   runCacheSyntheticShadowCanary,
   validateCacheShadowRouteMetricsOutput,
   buildCacheReadThroughReadinessDiagnostics,
+  resolveCacheReadThroughV1FlagState,
   type CacheShadowDecision,
   type CacheShadowMonitor,
   type CacheShadowMonitorSnapshot,
   type CacheShadowRuntimeConfig,
   type CacheSyntheticShadowCanaryResult,
   type CacheReadThroughReadinessDiagnostics,
+  type CacheCanonicalEnvValueClass,
+  type CacheReadThroughV1FlagState,
 } from "../../src/shared/scale/cacheShadowRuntime";
 import type { CacheAdapter } from "../../src/shared/scale/cacheAdapters";
 import { buildSafeCacheKey } from "../../src/shared/scale/cacheKeySafety";
@@ -316,6 +319,11 @@ export type BffStagingCacheShadowRuntimeState = {
   productionEnabledFlagTruthy: boolean;
   mode: CacheShadowRuntimeConfig["mode"];
   readThroughV1Enabled: boolean;
+  readThroughV1FlagState: CacheReadThroughV1FlagState;
+  cacheCanonicalKeyPresence: boolean;
+  cacheCanonicalKeyValueClass: CacheCanonicalEnvValueClass;
+  cacheRuntimeSource: "process_env";
+  routeAllowlistSource: "process_env";
   percent: number;
   routeAllowlistCount: number;
   envKeyPresence: CacheShadowRuntimeConfig["envKeyPresence"];
@@ -334,6 +342,17 @@ export type BffStagingCacheShadowRuntimeState = {
   envValuesExposed: false;
 };
 
+export type BffStagingReadyRuntimeDiagnostics = {
+  runtimeCommitShort: string;
+  runtimeCommitPresent: boolean;
+  runtimeServiceIdClass: "present_redacted" | "absent";
+  runtimeEnvClass: "production" | "staging" | "development" | "test" | "unknown" | "absent";
+  appEnv: string;
+  redacted: true;
+  secretsExposed: false;
+  envValuesExposed: false;
+};
+
 export type BffStagingServerDeps = {
   readPorts?: BffReadPorts;
   directorFinanceRpcPort?: DirectorFinanceBffRpcPort;
@@ -345,6 +364,7 @@ export type BffStagingServerDeps = {
   cacheShadowRuntime?: BffStagingCacheShadowRuntimeState | null;
   rateLimitShadow?: BffStagingRateLimitShadowDeps | null;
   rateLimitPrivateSmoke?: RateLimitPrivateSmokeRunner | null;
+  runtimeDiagnostics?: BffStagingReadyRuntimeDiagnostics;
   config?: BffStagingServerConfig;
 };
 
@@ -1224,6 +1244,70 @@ const buildCacheShadowMonitorEnvelope = (
   piiLogged: false,
 });
 
+const normalizeRuntimeDiagnosticToken = (value: unknown): string => {
+  const normalized = String(value ?? "")
+    .trim()
+    .replace(/[^a-z0-9_.:-]/gi, "_")
+    .slice(0, 60);
+  return normalized || "absent";
+};
+
+const firstPresentEnvValue = (
+  env: Record<string, string | undefined>,
+  names: readonly string[],
+): string => {
+  for (const name of names) {
+    const value = env[name];
+    if (typeof value === "string" && value.trim().length > 0) return value.trim();
+  }
+  return "";
+};
+
+const runtimeEnvironmentClass = (
+  value: string,
+): BffStagingReadyRuntimeDiagnostics["runtimeEnvClass"] => {
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return "absent";
+  if (normalized.includes("prod")) return "production";
+  if (normalized.includes("stag")) return "staging";
+  if (normalized.includes("dev")) return "development";
+  if (normalized.includes("test")) return "test";
+  return "unknown";
+};
+
+export const buildBffReadyRuntimeDiagnostics = (
+  env: Record<string, string | undefined> = typeof process !== "undefined" ? process.env : {},
+): BffStagingReadyRuntimeDiagnostics => {
+  const commit = firstPresentEnvValue(env, [
+    "RENDER_GIT_COMMIT",
+    "RENDER_COMMIT",
+    "GIT_COMMIT",
+    "SOURCE_VERSION",
+    "COMMIT_SHA",
+  ]);
+  const runtimeEnv = firstPresentEnvValue(env, [
+    "APP_ENV",
+    "EXPO_PUBLIC_APP_ENV",
+    "EXPO_PUBLIC_ENVIRONMENT",
+    "NODE_ENV",
+  ]);
+  const serviceId = firstPresentEnvValue(env, [
+    "RENDER_PRODUCTION_BFF_SERVICE_ID",
+    "RENDER_SERVICE_ID",
+  ]);
+
+  return {
+    runtimeCommitShort: commit ? commit.slice(0, 12) : "absent",
+    runtimeCommitPresent: Boolean(commit),
+    runtimeServiceIdClass: serviceId ? "present_redacted" : "absent",
+    runtimeEnvClass: runtimeEnvironmentClass(runtimeEnv),
+    appEnv: normalizeRuntimeDiagnosticToken(runtimeEnv),
+    redacted: true,
+    secretsExposed: false,
+    envValuesExposed: false,
+  };
+};
+
 export const buildCacheShadowRuntimeState = (
   config: CacheShadowRuntimeConfig | null | undefined,
   adapter?: CacheAdapter | null,
@@ -1231,11 +1315,17 @@ export const buildCacheShadowRuntimeState = (
   const adapterStatus = adapter?.getStatus();
   const routeAllowlistCount = config?.routeAllowlist.length ?? 0;
   const readinessDiagnostics = buildCacheReadThroughReadinessDiagnostics(config);
+  const readThroughV1FlagState = config?.readThroughV1FlagState ?? resolveCacheReadThroughV1FlagState({});
   const base = {
     enabled: config?.enabled ?? false,
     productionEnabledFlagTruthy: config?.productionEnabledFlagTruthy ?? false,
     mode: config?.mode ?? "disabled",
     readThroughV1Enabled: config?.readThroughV1Enabled ?? false,
+    readThroughV1FlagState,
+    cacheCanonicalKeyPresence: readThroughV1FlagState.present,
+    cacheCanonicalKeyValueClass: readThroughV1FlagState.valueClass,
+    cacheRuntimeSource: "process_env",
+    routeAllowlistSource: "process_env",
     percent: config?.percent ?? 0,
     routeAllowlistCount,
     envKeyPresence: config?.envKeyPresence ?? {
@@ -1447,10 +1537,16 @@ export async function handleBffStagingServerRequest(
   if (route.kind === "readiness") {
     const cacheShadowRuntime =
       deps.cacheShadowRuntime ?? buildCacheShadowRuntimeState(deps.cacheShadow?.config, deps.cacheShadow?.adapter);
+    const runtimeDiagnostics = deps.runtimeDiagnostics ?? buildBffReadyRuntimeDiagnostics();
     return buildResponse(200, {
       ok: true,
       data: {
         status: "ready",
+        runtimeCommitShort: runtimeDiagnostics.runtimeCommitShort,
+        runtimeServiceIdClass: runtimeDiagnostics.runtimeServiceIdClass,
+        runtimeEnvClass: runtimeDiagnostics.runtimeEnvClass,
+        appEnv: runtimeDiagnostics.appEnv,
+        runtimeDiagnostics,
         readRoutes: BFF_STAGING_READ_ROUTES.length,
         readRpcRoutes: 4,
         mutationRoutes: BFF_STAGING_MUTATION_ROUTES.length,
