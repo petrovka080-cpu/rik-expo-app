@@ -1,0 +1,38 @@
+{
+  "wave": "S_AI_E2E_04A_AUTH_AND_AI_SURFACE_TESTIDS_CLOSEOUT",
+  "goal": "Close BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS by adding permanent stable testIDs to the real login screen and AI assistant surface.",
+  "runtime_surfaces": {
+    "auth_login_screen": "app/auth/login.tsx",
+    "ai_assistant_screen": "src/features/ai/AIAssistantScreen.tsx",
+    "ai_assistant_open_control": "src/features/ai/AssistantFab.tsx"
+  },
+  "maestro_flows": [
+    "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml"
+  ],
+  "contract_tests": [
+    "tests/e2e/authStableTestIds.contract.test.ts",
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts",
+    "tests/architecture/e2eStableTestIdsGate.contract.test.ts"
+  ],
+  "test_ids": {
+    "auth": [
+      "auth.login.screen",
+      "auth.login.email",
+      "auth.login.password",
+      "auth.login.submit",
+      "auth.login.error",
+      "auth.login.loading"
+    ],
+    "ai_assistant": [
+      "ai.assistant.open",
+      "ai.assistant.screen",
+      "ai.assistant.input",
+      "ai.assistant.send",
+      "ai.assistant.response"
+    ]
+  }
+}

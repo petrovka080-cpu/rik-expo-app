@@ -10,6 +10,10 @@ name: AI Role Screen Knowledge Contractor
       - tapOn: "Wait"
 - extendedWaitUntil:
     visible:
+      id: "auth.login.screen"
+    timeout: 15000
+- extendedWaitUntil:
+    visible:
       id: "auth.login.email"
     timeout: 15000
 - tapOn:
@@ -26,6 +30,22 @@ name: AI Role Screen Knowledge Contractor
       id: "profile-edit-open"
     timeout: 30000
 - openLink: "rik://ai?context=contractor&prompt=What%20do%20I%20need%20to%20close%3F&autoSend=1"
+- extendedWaitUntil:
+    visible:
+      id: "ai.assistant.screen"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "ai.assistant.input"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "ai.assistant.send"
+    timeout: 30000
+- extendedWaitUntil:
+    visible:
+      id: "ai.assistant.response"
+    timeout: 60000
 - extendedWaitUntil:
     visible: "AI APP KNOWLEDGE BLOCK"
     timeout: 60000

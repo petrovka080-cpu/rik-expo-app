@@ -317,7 +317,7 @@ export default function AIAssistantScreen() {
 
   if (booting) {
     return (
-      <SafeAreaView style={styles.bootContainer} edges={["top", "bottom"]}>
+      <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
         <ActivityIndicator size="large" color="#2563EB" />
         <Text style={styles.bootText}>Загружаем AI-ассистента...</Text>
       </SafeAreaView>
@@ -325,7 +325,7 @@ export default function AIAssistantScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+    <SafeAreaView testID="ai.assistant.screen" style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={styles.header}>
           <Pressable style={styles.headerIconButton} onPress={() => safeBack(router, backFallbackRoute)}>
@@ -421,6 +421,7 @@ export default function AIAssistantScreen() {
           {messages.map((message) => (
             <View
               key={message.id}
+              testID={message.role === "assistant" ? "ai.assistant.response" : undefined}
               style={[
                 styles.messageBubble,
                 message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
@@ -470,16 +471,16 @@ export default function AIAssistantScreen() {
             placeholderTextColor="#94A3B8"
             multiline
             style={styles.input}
-            accessibilityLabel="assistant_input"
-            testID="assistant_input"
+            accessibilityLabel="ai.assistant.input"
+            testID="ai.assistant.input"
           />
           <Pressable
             style={[styles.sendButton, !input.trim() && styles.sendButtonDisabled]}
             onPress={() => void send()}
             disabled={!input.trim() || loading}
             accessibilityRole="button"
-            accessibilityLabel="assistant_send_button"
-            testID="assistant_send_button"
+            accessibilityLabel="ai.assistant.send"
+            testID="ai.assistant.send"
           >
             <Ionicons name="send" size={18} color="#FFFFFF" />
           </Pressable>

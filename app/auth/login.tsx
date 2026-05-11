@@ -211,6 +211,7 @@ export default function LoginScreen() {
 
   return (
     <KeyboardAvoidingView
+      testID="auth.login.screen"
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.container}
     >
@@ -238,7 +239,7 @@ export default function LoginScreen() {
         />
 
         {error ? (
-          <Text testID="auth.error.message" style={styles.error}>
+          <Text testID="auth.login.error" style={styles.error}>
             {error}
           </Text>
         ) : null}
@@ -252,7 +253,7 @@ export default function LoginScreen() {
           accessibilityLabel={UI_COPY.submit}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator testID="auth.login.loading" color="#fff" />
           ) : (
             <Text style={styles.buttonText}>{UI_COPY.submit}</Text>
           )}

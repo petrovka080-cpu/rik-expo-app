@@ -14,7 +14,7 @@ export default function AssistantFab({ bottomOffset, onPress }: Props) {
         style={styles.button}
         onPress={onPress}
         accessibilityRole="button"
-        testID="assistant_fab"
+        testID="ai.assistant.open"
         accessibilityLabel="Открыть AI ассистента"
       >
         <Ionicons name="sparkles" size={18} color="#FFFFFF" />
