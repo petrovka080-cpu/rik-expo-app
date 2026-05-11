@@ -1,0 +1,60 @@
+{
+  "wave": "S_NIGHT_CACHE_24B_ONE_ROUTE_CANARY_RETRY_AFTER_CLEAN_BASELINE",
+  "status": "GREEN_CACHE_ONE_ROUTE_CANARY_PASS_AND_ROLLED_BACK",
+  "final_status": "GREEN_CACHE_ONE_ROUTE_CANARY_PASS_AND_ROLLED_BACK",
+  "generated_at": "2026-05-11T04:43:49.341Z",
+  "source_runner_artifact": "artifacts/S_CACHE_02_ONE_ROUTE_READ_THROUGH_CANARY_matrix.json",
+  "route": "marketplace.catalog.search",
+  "preflight": {
+    "head_equals_origin_main": true,
+    "ahead": 0,
+    "behind": 0,
+    "worktree_clean_before": true,
+    "release_verify": "PASS",
+    "health_before": 200,
+    "ready_before": 200,
+    "approvals_present": true,
+    "env_snapshot_captured": true,
+    "env_snapshot_redacted": true
+  },
+  "runtime_readiness": {
+    "read_through_v1_enabled": true,
+    "route_count": 1,
+    "route": "marketplace.catalog.search",
+    "percent": 1,
+    "mode": "read_through",
+    "runtime_scoped_only": true,
+    "flag_name": "SCALE_REDIS_CACHE_READ_THROUGH_V1_ENABLED",
+    "flag_present": true,
+    "env_values_exposed": false,
+    "secrets_exposed": false
+  },
+  "probes": {
+    "baseline_cache_hit": false,
+    "first_call_miss_read_through": true,
+    "second_call_hit": true,
+    "utf8_input_path": true,
+    "unapproved_route_provider_fallback": "not_run_by_runner",
+    "metrics_redacted": true,
+    "response_contract_unchanged": true,
+    "cache_shadow_diagnostic_green": true
+  },
+  "rollback": {
+    "rollback_required": true,
+    "rollback_triggered": true,
+    "rollback_succeeded": true,
+    "health_after_rollback": 200,
+    "ready_after_rollback": 200,
+    "canary_retained": false
+  },
+  "negative_confirmations": {
+    "no_second_route": true,
+    "no_broad_cache": true,
+    "no_5_or_10_percent_cache": true,
+    "no_rate_limit_changes": true,
+    "no_db_writes": true,
+    "no_migrations": true,
+    "no_production_mutations": true,
+    "no_raw_redis_keys_tokens_payloads": true
+  }
+}
