@@ -1,0 +1,40 @@
+{
+  "wave": "S_AI_TOOLS_05_GET_WAREHOUSE_STATUS_TOOL_SAFE_READ",
+  "tool": "get_warehouse_status",
+  "scope": [
+    "src/features/ai/tools/getWarehouseStatusTool.ts",
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/ai/getWarehouseStatusTool.contract.test.ts",
+    "tests/ai/getWarehouseStatusNoMutation.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "input_contract": {
+    "material_id_optional": true,
+    "material_code_optional": true,
+    "warehouse_name_optional": true,
+    "object_name_optional": true,
+    "limit_max": 20,
+    "cursor_optional": true
+  },
+  "output_contract": {
+    "stock_items": true,
+    "summary": true,
+    "availability_summary": true,
+    "next_cursor": true,
+    "evidence_refs": true,
+    "route_operation": "warehouse.api.stock.scope"
+  },
+  "read_boundaries": [
+    "warehouse.api.stock.scope",
+    "warehouse.api.reports.bundle"
+  ],
+  "safety": {
+    "safe_read": true,
+    "direct_supabase": 0,
+    "mutation_count": 0,
+    "stock_mutation": false,
+    "issue_creation": false,
+    "reservation_creation": false,
+    "model_provider_import": false
+  }
+}

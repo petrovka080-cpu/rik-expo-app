@@ -186,6 +186,9 @@ describe("performance budget — bundle module count", () => {
     const sAiToolsCompareSuppliersToolFiles = [
       path.join(SRC, "features", "ai", "tools", "compareSuppliersTool.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiToolsGetWarehouseStatusToolFiles = [
+      path.join(SRC, "features", "ai", "tools", "getWarehouseStatusTool.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -916,6 +919,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiTools04AgentBffRouteShellFiles).toBeLessThanOrEqual(1);
     expect(sAiToolsSearchCatalogToolFiles).toBeLessThanOrEqual(1);
     expect(sAiToolsCompareSuppliersToolFiles).toBeLessThanOrEqual(1);
+    expect(sAiToolsGetWarehouseStatusToolFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -932,6 +936,7 @@ describe("performance budget — bundle module count", () => {
         sAiTools04AgentBffRouteShellFiles -
         sAiToolsSearchCatalogToolFiles -
         sAiToolsCompareSuppliersToolFiles -
+        sAiToolsGetWarehouseStatusToolFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

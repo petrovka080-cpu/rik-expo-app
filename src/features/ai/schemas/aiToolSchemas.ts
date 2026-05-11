@@ -240,29 +240,97 @@ export const getWarehouseStatusInputSchema: AiToolJsonObjectSchema = {
   required: [],
   additionalProperties: false,
   properties: {
-    materialId: { type: "string", minLength: 1 },
-    warehouseId: { type: "string", minLength: 1 },
-    objectId: { type: "string", minLength: 1 },
+    material_id: { type: "string", minLength: 1 },
+    material_code: { type: "string", minLength: 1 },
+    warehouse_name: { type: "string", minLength: 1 },
+    object_name: { type: "string", minLength: 1 },
+    limit: { type: "number", minimum: 1, maximum: 20 },
+    cursor: { type: "string", minLength: 1 },
   },
 };
 
 export const getWarehouseStatusOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["summary", "evidenceRefs"],
+  required: [
+    "stock_items",
+    "summary",
+    "availability_summary",
+    "next_cursor",
+    "evidence_refs",
+    "bounded",
+    "route_operation",
+    "mutation_count",
+    "no_stock_mutation",
+    "no_issue_created",
+    "no_reservation_created",
+  ],
   additionalProperties: false,
   properties: {
+    stock_items: {
+      type: "array",
+      items: {
+        type: "object",
+        required: [
+          "material_id",
+          "material_code",
+          "name",
+          "unit",
+          "warehouse_name",
+          "object_name",
+          "on_hand_quantity",
+          "reserved_quantity",
+          "available_quantity",
+          "updated_at",
+          "evidence_ref",
+        ],
+        additionalProperties: false,
+        properties: {
+          material_id: { type: "string", minLength: 1 },
+          material_code: { type: "string", minLength: 1 },
+          name: { type: "string", minLength: 1 },
+          unit: { type: "string", minLength: 1 },
+          warehouse_name: { type: "string", minLength: 1 },
+          object_name: { type: "string", minLength: 1 },
+          on_hand_quantity: { type: "number", minimum: 0 },
+          reserved_quantity: { type: "number", minimum: 0 },
+          available_quantity: { type: "number", minimum: 0 },
+          updated_at: { type: "string", minLength: 1 },
+          evidence_ref: { type: "string", minLength: 1 },
+        },
+      },
+    },
     summary: {
       type: "string",
       minLength: 1,
     },
-    availableQuantity: {
-      type: "number",
-      minimum: 0,
+    availability_summary: {
+      type: "object",
+      required: ["item_count", "total_available_quantity", "has_available_stock"],
+      additionalProperties: false,
+      properties: {
+        item_count: { type: "number", minimum: 0 },
+        total_available_quantity: { type: "number", minimum: 0 },
+        has_available_stock: { type: "boolean" },
+      },
     },
-    evidenceRefs: {
+    next_cursor: {
+      type: "string",
+      minLength: 1,
+    },
+    evidence_refs: {
       type: "array",
       items: evidenceRefSchema,
     },
+    bounded: { type: "boolean" },
+    route_operation: { type: "string", enum: ["warehouse.api.stock.scope"] },
+    mutation_count: {
+      type: "number",
+      minimum: 0,
+      maximum: 0,
+    },
+    no_stock_mutation: { type: "boolean" },
+    no_issue_created: { type: "boolean" },
+    no_reservation_created: { type: "boolean" },
   },
 };
 
