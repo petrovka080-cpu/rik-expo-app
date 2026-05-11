@@ -141,7 +141,7 @@
     },
     "post_push_release_verify": {
       "command": "npm run release:verify -- --json",
-      "status": "PENDING_POST_PUSH"
+      "status": "PASS"
     }
   },
   "negative_confirmations": {

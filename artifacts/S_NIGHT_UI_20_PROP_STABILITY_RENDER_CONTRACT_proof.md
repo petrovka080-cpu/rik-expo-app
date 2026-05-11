@@ -72,7 +72,8 @@ Performance budget update:
 - Diff check: PASS
   - `git diff --check`
 - Artifact JSON parse: pending at artifact creation; run after this file is written.
-- Post-push release verify: pending post-push.
+- Post-push release verify: PASS
+  - `npm run release:verify -- --json`
 
 ## Negative Confirmations
 
