@@ -7,12 +7,6 @@ import {
 } from "expo-router";
 
 import {
-  clearDeveloperEffectiveRole,
-  DEVELOPER_OVERRIDE_ROLES,
-  setDeveloperEffectiveRole,
-  type DeveloperOverrideRole,
-} from "../../lib/developerOverride";
-import {
   formatOfficePostReturnProbe,
   getOfficePostReturnProbe,
   normalizeOfficePostReturnProbe,
@@ -64,6 +58,7 @@ import { buildOfficeShellContentModel } from "./office.layout.model";
 import { resolveOfficeHubFocusRefreshPlan } from "./office.reentry";
 import { useOfficeHubRoleAccess } from "./useOfficeHubRoleAccess";
 import { useOfficePostReturnTracing } from "./useOfficePostReturnTracing";
+import { useOfficeDeveloperOverrideActions } from "./useOfficeDeveloperOverrideActions";
 
 export function useOfficeHubScreenController({
   officeReturnReceipt = null,
@@ -98,10 +93,6 @@ export function useOfficeHubScreenController({
   );
   const [loading, setLoading] = useState(() => !initialBootstrapSnapshot);
   const [refreshing, setRefreshing] = useState(false);
-  const [developerRoleSaving, setDeveloperRoleSaving] = useState<string | null>(
-    null,
-  );
-
   const isMountedRef = useRef(true);
   const focusCycleRef = useRef(0);
   const ownerBootstrapCompletedRef = useRef(Boolean(initialBootstrapSnapshot));
@@ -465,51 +456,15 @@ export function useOfficeHubScreenController({
     loadScreen,
   });
 
-  const developerOverride = data.developerOverride;
-  const developerOverrideRoles = useMemo(
-    () =>
-      DEVELOPER_OVERRIDE_ROLES.filter((role) =>
-        developerOverride?.allowedRoles.includes(role),
-      ),
-    [developerOverride?.allowedRoles],
-  );
-  const handleDeveloperRoleSelect = useCallback(
-    async (role: DeveloperOverrideRole) => {
-      setDeveloperRoleSaving(role);
-      try {
-        await setDeveloperEffectiveRole(role);
-        await loadScreen({
-          mode: "refresh",
-          reason: "developer_override_role_selected",
-        });
-      } catch (error) {
-        Alert.alert(
-          "Dev override",
-          error instanceof Error ? error.message : String(error),
-        );
-      } finally {
-        setDeveloperRoleSaving(null);
-      }
-    },
-    [loadScreen],
-  );
-  const handleDeveloperRoleClear = useCallback(async () => {
-    setDeveloperRoleSaving("normal");
-    try {
-      await clearDeveloperEffectiveRole();
-      await loadScreen({
-        mode: "refresh",
-        reason: "developer_override_cleared",
-      });
-    } catch (error) {
-      Alert.alert(
-        "Dev override",
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setDeveloperRoleSaving(null);
-    }
-  }, [loadScreen]);
+  const {
+    developerRoleSaving,
+    developerOverrideRoles,
+    onDeveloperRoleSelect,
+    onDeveloperRoleClear,
+  } = useOfficeDeveloperOverrideActions({
+    developerOverride: data.developerOverride,
+    loadScreen,
+  });
 
   const shellModel = useMemo(
     () =>
@@ -540,8 +495,8 @@ export function useOfficeHubScreenController({
     developerOverrideRoles,
     onRefresh: handleRefresh,
     onOpenOfficeCard: handleOpenOfficeCard,
-    onDeveloperRoleSelect: (role: DeveloperOverrideRole) => void handleDeveloperRoleSelect(role),
-    onDeveloperRoleClear: () => void handleDeveloperRoleClear(),
+    onDeveloperRoleSelect,
+    onDeveloperRoleClear,
     onSectionLayout: handleSectionLayout,
     onSubtreeLayout: handleSubtreeLayout,
     onScrollLayout: handleScrollLayout,
