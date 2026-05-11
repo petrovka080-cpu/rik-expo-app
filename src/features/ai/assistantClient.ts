@@ -6,9 +6,11 @@ import type { AssistantContext, AssistantMessage, AssistantRole } from "./assist
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
-  isAiBackendAvailable,
-  requestAiGeneratedText,
-} from "../../lib/ai/aiRepository";
+  AiModelGateway,
+  isAiModelGatewayAvailable,
+  resolveLegacyRuntimeAiModelProviderId,
+  type AiModelMessage,
+} from "./model";
 
 const DEFAULT_MODEL = "gemini-2.5-flash";
 const assistantConfigCache = new Map<string, string | null>();
@@ -71,18 +73,18 @@ async function loadAssistantPromptConfig(role: AssistantRole, context: Assistant
   return null;
 }
 
-function messageToContent(message: AssistantMessage): {
-  role: "user" | "model";
-  parts: { text: string }[];
-} {
+function messageToAiModelMessage(message: AssistantMessage): AiModelMessage {
   return {
-    role: message.role === "assistant" ? "model" : "user",
-    parts: [{ text: message.content }],
+    role: message.role,
+    content: message.content,
   };
 }
 
 export function isAssistantConfigured(): boolean {
-  return isAiBackendAvailable();
+  return isAiModelGatewayAvailable({
+    providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
+    legacyGeminiModel: getAssistantModel(),
+  });
 }
 
 export async function sendAssistantMessage(options: {
@@ -107,7 +109,7 @@ export async function sendAssistantMessage(options: {
   } = options;
   const model = getAssistantModel();
 
-  if (!isAiBackendAvailable()) {
+  if (!isAssistantConfigured()) {
     return buildOfflineAssistantReply(role, message, context);
   }
 
@@ -126,22 +128,28 @@ export async function sendAssistantMessage(options: {
         : null,
     ].filter(Boolean).join("\n\n");
 
-    const text = await requestAiGeneratedText({
-      sourcePath: "assistant_chat",
-      request: {
-        model,
-        systemInstruction,
-        contents: [
-          ...history.slice(-10).map(messageToContent),
-          { role: "user", parts: [{ text: message }] },
-        ],
-        generationConfig: {
-          temperature: 0.5,
-          topP: 0.9,
-          maxOutputTokens: 700,
-        },
-      },
+    const gateway = new AiModelGateway({
+      providerId: resolveLegacyRuntimeAiModelProviderId(process.env),
+      legacyGeminiModel: model,
     });
+    const response = await gateway.generate({
+      taskType: "chat",
+      messages: [
+        { role: "system", content: systemInstruction },
+        ...history.slice(-10).map(messageToAiModelMessage),
+        { role: "user", content: message },
+      ],
+      maxOutputTokens: 700,
+      temperature: 0.5,
+      topP: 0.9,
+      timeoutMs: 30000,
+      redactionRequired: true,
+      traceLabel: "assistant_chat",
+    });
+    if (response.safety.blocked) {
+      throw new Error(response.safety.reason || "AI model provider blocked request.");
+    }
+    const text = response.text;
     const answer = text || buildOfflineAssistantReply(role, message, context);
     void saveAiReport({
       id: `assistant:${role}:${context}:${Date.now()}`,
@@ -151,7 +159,8 @@ export async function sendAssistantMessage(options: {
       title: `assistant_chat:${role}:${context}`,
       content: answer,
       metadata: {
-        model,
+        model: response.model,
+        provider: response.provider,
         scopeKey: scopeKey || null,
         contextPresent: Boolean(scopedFactsSummary),
         sourceKinds: Array.isArray(sourceKinds) ? sourceKinds : [],

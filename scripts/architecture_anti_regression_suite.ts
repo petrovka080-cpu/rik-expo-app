@@ -237,6 +237,20 @@ export type UnsafeCastRatchetSummary = {
   topFiles: readonly { file: string; count: number }[];
 };
 
+export type AiModelBoundarySummary = {
+  aiModelGatewayPresent: boolean;
+  aiModelTypesPresent: boolean;
+  aiDisabledProviderPresent: boolean;
+  aiLegacyGeminiProviderPresent: boolean;
+  assistantClientUsesGateway: boolean;
+  directGeminiImportsOutsideLegacyProvider: number;
+  providerImplementationImportsFromUi: number;
+  openAiLiveCallFindings: number;
+  apiKeyClientFindings: number;
+  aiReportsRedactionContractPresent: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -336,6 +350,7 @@ export type ArchitectureAntiRegressionReport = {
   unsafeCastRatchet: UnsafeCastRatchetSummary;
   flatListTuningRegression: FlatListTuningRegressionSummary;
   errorHandlingGapRatchet: ErrorHandlingGapRatchetSummary;
+  aiModelBoundary: AiModelBoundarySummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -398,6 +413,12 @@ const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_METRICS_PATH =
 const RATE_LIMIT_MARKETPLACE_5PCT_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MARKETPLACE_RAMP_STABLE";
 const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MONITOR_WINDOW_STABLE";
 const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
+const AI_MODEL_GATEWAY_PATH = "src/features/ai/model/AiModelGateway.ts";
+const AI_MODEL_TYPES_PATH = "src/features/ai/model/AiModelTypes.ts";
+const AI_DISABLED_PROVIDER_PATH = "src/features/ai/model/DisabledModelProvider.ts";
+const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelProvider.ts";
+const AI_ASSISTANT_CLIENT_PATH = "src/features/ai/assistantClient.ts";
+const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
@@ -1150,6 +1171,109 @@ const extractConstString = (source: string, constName: string): string | null =>
   const match = new RegExp(`const\\s+${escapedName}\\s*=\\s*\"([^\"]+)\"`).exec(source);
   return match?.[1] ?? null;
 };
+
+const directGeminiImportPattern =
+  /(?:from\s+["'][^"']*geminiGateway["']|require\(\s*["'][^"']*geminiGateway["']\s*\))/;
+const providerImplementationImportPattern =
+  /(?:import\s+\{[^}]*\b(?:DisabledModelProvider|LegacyGeminiModelProvider)\b[^}]*\}\s+from\s+["'][^"']*model|from\s+["'][^"']*(?:DisabledModelProvider|LegacyGeminiModelProvider)["'])/;
+const openAiLiveCallPattern =
+  /(?:api\.openai\.com|new\s+OpenAI\s*\(|\bOpenAI\s*\(\s*\{|chat\.completions\.create|responses\.create)/i;
+const aiClientSecretPattern =
+  /\b(?:OPENAI_API_KEY|GEMINI_API_KEY|ANTHROPIC_API_KEY|MODEL_API_KEY|AI_PROVIDER_API_KEY)\b|sk-[A-Za-z0-9]{16,}|AIza[A-Za-z0-9_-]{20,}/;
+
+const defaultAiModelBoundarySourceFiles = (projectRoot: string): string[] =>
+  SOURCE_ROOTS.flatMap((rootName) =>
+    listSourceFiles(path.join(projectRoot, rootName)).map((filePath) =>
+      relativeProjectPath(projectRoot, filePath),
+    ),
+  );
+
+const isAiUiProviderImportForbiddenPath = (file: string): boolean =>
+  file.startsWith("src/screens/") ||
+  file.startsWith("app/") ||
+  file.includes("/components/") ||
+  file === "src/features/ai/assistantActions.ts" ||
+  file === "src/features/ai/useAssistantVoiceInput.ts";
+
+export function evaluateAiModelBoundaryGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+  sourceFiles?: readonly string[];
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiModelBoundarySummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const sourceFiles = (params.sourceFiles ?? defaultAiModelBoundarySourceFiles(params.projectRoot))
+    .map(normalizePath);
+  const sourceEntries = sourceFiles.map((file) => ({
+    file,
+    source: safeReadProjectFile({ readFile, relativePath: file }) ?? "",
+  }));
+  const modelGatewaySource = safeReadProjectFile({ readFile, relativePath: AI_MODEL_GATEWAY_PATH });
+  const modelTypesSource = safeReadProjectFile({ readFile, relativePath: AI_MODEL_TYPES_PATH });
+  const disabledProviderSource = safeReadProjectFile({ readFile, relativePath: AI_DISABLED_PROVIDER_PATH });
+  const legacyGeminiProviderSource = safeReadProjectFile({ readFile, relativePath: AI_LEGACY_GEMINI_PROVIDER_PATH });
+  const assistantClientSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_CLIENT_PATH });
+  const aiReportsSource = safeReadProjectFile({ readFile, relativePath: AI_REPORTS_SERVICE_PATH });
+
+  const directGeminiImportFindings = sourceEntries
+    .filter((entry) => directGeminiImportPattern.test(entry.source))
+    .filter((entry) => entry.file !== AI_LEGACY_GEMINI_PROVIDER_PATH);
+  const uiProviderImportFindings = sourceEntries
+    .filter((entry) => isAiUiProviderImportForbiddenPath(entry.file))
+    .filter((entry) => providerImplementationImportPattern.test(entry.source));
+  const openAiLiveCallFindings = sourceEntries.filter((entry) => openAiLiveCallPattern.test(entry.source));
+  const apiKeyClientFindings = sourceEntries
+    .filter((entry) => entry.file.startsWith("src/features/ai/") || entry.file.startsWith("src/screens/") || entry.file.startsWith("app/"))
+    .filter((entry) => aiClientSecretPattern.test(entry.source));
+
+  const assistantClientUsesGateway =
+    Boolean(assistantClientSource?.includes("AiModelGateway")) &&
+    !Boolean(assistantClientSource?.includes("geminiGateway")) &&
+    !Boolean(assistantClientSource?.includes("requestAiGeneratedText"));
+  const aiReportsRedactionContractPresent =
+    Boolean(aiReportsSource?.includes("redactAiReportForStorage")) &&
+    Boolean(aiReportsSource?.includes("redactAiReportStorageText(input.content)")) &&
+    Boolean(aiReportsSource?.includes("rawprompt"));
+
+  const findings = [
+    ...directGeminiImportFindings.map((entry) => `direct_gemini_import:file=${entry.file}`),
+    ...uiProviderImportFindings.map((entry) => `ui_provider_implementation_import:file=${entry.file}`),
+    ...openAiLiveCallFindings.map((entry) => `openai_live_call:file=${entry.file}`),
+    ...apiKeyClientFindings.map((entry) => `ai_api_key_client_reference:file=${entry.file}`),
+  ];
+  const errors = [
+    ...(modelGatewaySource ? [] : [`missing_file:${AI_MODEL_GATEWAY_PATH}`]),
+    ...(modelTypesSource ? [] : [`missing_file:${AI_MODEL_TYPES_PATH}`]),
+    ...(disabledProviderSource ? [] : [`missing_file:${AI_DISABLED_PROVIDER_PATH}`]),
+    ...(legacyGeminiProviderSource ? [] : [`missing_file:${AI_LEGACY_GEMINI_PROVIDER_PATH}`]),
+    ...(assistantClientUsesGateway ? [] : ["assistant_client_not_using_ai_model_gateway"]),
+    ...(aiReportsRedactionContractPresent ? [] : ["ai_reports_redaction_contract_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_model_provider_boundary",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      aiModelGatewayPresent: Boolean(modelGatewaySource),
+      aiModelTypesPresent: Boolean(modelTypesSource),
+      aiDisabledProviderPresent: Boolean(disabledProviderSource),
+      aiLegacyGeminiProviderPresent: Boolean(legacyGeminiProviderSource),
+      assistantClientUsesGateway,
+      directGeminiImportsOutsideLegacyProvider: directGeminiImportFindings.length,
+      providerImplementationImportsFromUi: uiProviderImportFindings.length,
+      openAiLiveCallFindings: openAiLiveCallFindings.length,
+      apiKeyClientFindings: apiKeyClientFindings.length,
+      aiReportsRedactionContractPresent,
+      findings,
+    },
+  };
+}
 
 export function evaluateCacheRateScopeGuardrail(params: {
   projectRoot: string;
@@ -2322,6 +2446,7 @@ export function runArchitectureAntiRegressionSuite(
   const errorHandlingGapRatchet = evaluateErrorHandlingGapRatchet(
     scanErrorHandlingGapRatchet(projectRoot),
   );
+  const aiModelBoundary = evaluateAiModelBoundaryGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2341,6 +2466,7 @@ export function runArchitectureAntiRegressionSuite(
     unsafeCastRatchet.check,
     flatListTuningRegression.check,
     errorHandlingGapRatchet.check,
+    aiModelBoundary.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2361,6 +2487,7 @@ export function runArchitectureAntiRegressionSuite(
     unsafeCastRatchet: unsafeCastRatchet.summary,
     flatListTuningRegression: flatListTuningRegression.summary,
     errorHandlingGapRatchet: errorHandlingGapRatchet.summary,
+    aiModelBoundary: aiModelBoundary.summary,
     componentDebt,
     checks,
     safety: {
@@ -2395,6 +2522,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`flatlist_tuning_regression_violations: ${report.flatListTuningRegression.violations}`);
   console.info(`error_handling_gap_ratchet_silent_swallow: ${report.errorHandlingGapRatchet.silentSwallow}`);
+  console.info(`ai_model_direct_gemini_imports: ${report.aiModelBoundary.directGeminiImportsOutsideLegacyProvider}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

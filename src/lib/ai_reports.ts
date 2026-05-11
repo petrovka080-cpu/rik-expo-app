@@ -3,6 +3,10 @@ import {
   loadProposalHistoryRowsTransport,
   upsertAiReport,
 } from "./ai_reports.transport";
+import {
+  SENSITIVE_REDACTION_MARKER,
+  redactSensitiveText,
+} from "./security/redaction";
 
 type PriceHistoryItem = {
   date: string;
@@ -46,6 +50,29 @@ type ProposalHistoryRow = {
   createdAt: string;
 };
 
+const AI_REPORT_FULL_REDACT_KEYS = new Set([
+  "apikey",
+  "authorization",
+  "authorizationheader",
+  "companyid",
+  "jwt",
+  "providerpayload",
+  "rawcontext",
+  "rawprompt",
+  "rawproviderpayload",
+  "rawresponse",
+  "servicerole",
+  "supplierfinancialdetails",
+  "token",
+  "userid",
+]);
+
+const aiReportRawTextPattern =
+  /\b(raw\s+(?:prompt|context|response|provider\s+payload)|api[_\s-]?key|authorization\s+header|service\s+role|jwt|token|user_id|company_id|supplier\s+financial\s+details)\s*[:=]\s*[^\n;]+/gi;
+
+const normalizeMetadataKey = (key: string): string =>
+  key.replace(/[^a-zA-Z0-9]+/g, "").toLowerCase();
+
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -60,6 +87,48 @@ const toFiniteNumber = (value: unknown): number | null => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
+
+export function redactAiReportStorageText(value: string): string {
+  return redactSensitiveText(value).replace(aiReportRawTextPattern, (entry) => {
+    const separatorIndex = Math.max(entry.indexOf(":"), entry.indexOf("="));
+    const label = separatorIndex >= 0 ? entry.slice(0, separatorIndex) : entry;
+    return `${label}: ${SENSITIVE_REDACTION_MARKER}`;
+  });
+}
+
+const redactAiReportMetadataValue = (key: string, value: unknown): unknown => {
+  if (AI_REPORT_FULL_REDACT_KEYS.has(normalizeMetadataKey(key))) {
+    return SENSITIVE_REDACTION_MARKER;
+  }
+  if (value == null) return value;
+  if (typeof value === "string") return redactAiReportStorageText(value);
+  if (typeof value !== "object") return value;
+  if (Array.isArray(value)) {
+    return value.map((entry) => redactAiReportMetadataValue(key, entry));
+  }
+
+  const redacted: Record<string, unknown> = {};
+  for (const [nestedKey, nestedValue] of Object.entries(value)) {
+    redacted[nestedKey] = redactAiReportMetadataValue(nestedKey, nestedValue);
+  }
+  return redacted;
+};
+
+export function redactAiReportForStorage(input: SaveAiReportInput): SaveAiReportInput {
+  return {
+    ...input,
+    title: input.title ? redactAiReportStorageText(input.title) : input.title,
+    content: redactAiReportStorageText(input.content),
+    metadata: input.metadata
+      ? Object.fromEntries(
+          Object.entries(input.metadata).map(([key, value]) => [
+            key,
+            redactAiReportMetadataValue(key, value),
+          ]),
+        )
+      : input.metadata,
+  };
+}
 
 const normalizeProposalHistoryRows = (rows: unknown): ProposalHistoryRow[] => {
   if (!Array.isArray(rows)) return [];
@@ -95,7 +164,7 @@ export async function loadAiConfig(id = "procurement_system_prompt"): Promise<st
 }
 
 export async function saveAiReport(input: SaveAiReportInput): Promise<boolean> {
-  const { error } = await upsertAiReport(input);
+  const { error } = await upsertAiReport(redactAiReportForStorage(input));
 
   if (error) {
     if (__DEV__) console.warn("[saveAiReport]", error.message || error);

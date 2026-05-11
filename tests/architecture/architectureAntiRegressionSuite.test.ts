@@ -5,6 +5,7 @@ import {
   evaluateCacheRateScopeGuardrail,
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
+  evaluateAiModelBoundaryGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   evaluateRateLimitMarketplace5PctCanaryProofGuardrail,
@@ -193,6 +194,68 @@ describe("architecture anti-regression suite", () => {
     expect(result.summary.whitelistRouteCount).toBeGreaterThan(0);
     expect(result.summary.forbiddenMutationOperationCount).toBeGreaterThan(0);
     expect(result.summary.redactionForbiddenKeysEnforced).toBe(true);
+  });
+
+  it("ratchets the AI model provider boundary", () => {
+    const passing = evaluateAiModelBoundaryGuardrail({
+      projectRoot: process.cwd(),
+      sourceFiles: [
+        "src/features/ai/assistantClient.ts",
+        "src/features/ai/model/AiModelGateway.ts",
+        "src/features/ai/model/AiModelTypes.ts",
+        "src/features/ai/model/DisabledModelProvider.ts",
+        "src/features/ai/model/LegacyGeminiModelProvider.ts",
+        "src/lib/ai_reports.ts",
+      ],
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/assistantClient.ts") return "AiModelGateway";
+        if (relativePath === "src/lib/ai_reports.ts") {
+          return "redactAiReportForStorage redactAiReportStorageText(input.content) rawprompt";
+        }
+        return "present";
+      },
+    });
+    expect(passing.check).toEqual({
+      name: "ai_model_provider_boundary",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiModelBoundaryGuardrail({
+      projectRoot: process.cwd(),
+      sourceFiles: [
+        "src/features/ai/assistantClient.ts",
+        "src/features/ai/model/AiModelGateway.ts",
+        "src/features/ai/model/AiModelTypes.ts",
+        "src/features/ai/model/DisabledModelProvider.ts",
+        "src/features/ai/model/LegacyGeminiModelProvider.ts",
+        "src/lib/ai_reports.ts",
+        "src/screens/example/BadAiScreen.tsx",
+      ],
+      readFile: (relativePath) => {
+        if (relativePath === "src/screens/example/BadAiScreen.tsx") {
+          return [
+            'import { invokeGeminiGateway } from "../../lib/ai/geminiGateway";',
+            'import { DisabledModelProvider } from "../../features/ai/model";',
+            'fetch("https://api.openai.com/v1/chat/completions");',
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/assistantClient.ts") return "requestAiGeneratedText";
+        if (relativePath === "src/lib/ai_reports.ts") return "missing";
+        return "present";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "assistant_client_not_using_ai_model_gateway",
+        "ai_reports_redaction_contract_missing",
+        "direct_gemini_import:file=src/screens/example/BadAiScreen.tsx",
+        "ui_provider_implementation_import:file=src/screens/example/BadAiScreen.tsx",
+        "openai_live_call:file=src/screens/example/BadAiScreen.tsx",
+      ]),
+    );
   });
 
   it("fails if cache or rate-limit canary scope broadens", () => {

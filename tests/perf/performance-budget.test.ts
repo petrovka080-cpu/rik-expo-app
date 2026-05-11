@@ -129,6 +129,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "shared", "ai", "directorProposalRiskSummary.ts"),
       path.join(SRC, "components", "director", "DirectorProposalRiskSummaryCard.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiCore01ModelBoundaryFiles = [
+      path.join(SRC, "features", "ai", "model", "AiModelTypes.ts"),
+      path.join(SRC, "features", "ai", "model", "AiModelClient.ts"),
+      path.join(SRC, "features", "ai", "model", "DisabledModelProvider.ts"),
+      path.join(SRC, "features", "ai", "model", "LegacyGeminiModelProvider.ts"),
+      path.join(SRC, "features", "ai", "model", "AiModelGateway.ts"),
+      path.join(SRC, "features", "ai", "model", "aiModelProviderFlags.ts"),
+      path.join(SRC, "features", "ai", "model", "index.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -850,6 +859,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAuditBattle131BuyerAccountingFlagsTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle133CatalogProposalCreationTransportFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle135SubcontractsSharedTransportFiles).toBeLessThanOrEqual(1);
+    expect(sAiCore01ModelBoundaryFiles).toBeLessThanOrEqual(7);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -857,6 +867,7 @@ describe("performance budget — bundle module count", () => {
         v47CForemanFioBootstrapFlowFiles -
         s50kBffBoundaryScaffoldFiles -
         sAiWorkflow2DisabledPilotFiles -
+        sAiCore01ModelBoundaryFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -
