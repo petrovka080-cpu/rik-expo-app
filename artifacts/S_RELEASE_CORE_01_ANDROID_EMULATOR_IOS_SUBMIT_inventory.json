@@ -1,0 +1,20 @@
+{
+  "android": {
+    "physicalDeviceRequired": false,
+    "emulatorOnly": true,
+    "apkProfileFound": true,
+    "aabUsedForEmulator": false
+  },
+  "ios": {
+    "newBuildRequired": true,
+    "submitRequired": true,
+    "simulatorBuildUsedForSubmit": false,
+    "appStoreDistributionProfileFound": true
+  },
+  "ota": {
+    "used": false,
+    "reason": "new build/submit gate required"
+  },
+  "runtimeVersionConfigured": true,
+  "easJsonPresent": true
+}

@@ -319,6 +319,25 @@ export type AiRoleScreenEmulatorGateSummary = {
   findings: readonly string[];
 };
 
+export type AndroidEmulatorIosBuildSubmitGateSummary = {
+  androidApkProfilePresent: boolean;
+  iosAppStoreSubmitProfilePresent: boolean;
+  releaseRunnerPresent: boolean;
+  releaseRedactorPresent: boolean;
+  androidRuntimeSmokeFlowPresent: boolean;
+  releaseArtifactsPresent: boolean;
+  androidUsesApkForEmulator: boolean;
+  androidPlaySubmitAbsent: boolean;
+  iosSimulatorSubmitBlocked: boolean;
+  iosSubmitProfileUsed: boolean;
+  productionOtaAbsent: boolean;
+  credentialsNotInCliArgs: boolean;
+  secretsNotInArtifacts: boolean;
+  aiRoleE2eExplicitSecretsOnly: boolean;
+  fakePassClaimsAbsent: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -423,6 +442,7 @@ export type ArchitectureAntiRegressionReport = {
   aiAppKnowledgeRegistry: AiAppKnowledgeRegistrySummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
+  androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -594,6 +614,17 @@ const ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES = [
   "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS",
   "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
 ] as const;
+const RELEASE_ANDROID_IOS_RUNNER_PATH = "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts";
+const RELEASE_OUTPUT_REDACTOR_PATH = "scripts/release/redactReleaseOutput.ts";
+const RELEASE_ANDROID_RUNTIME_SMOKE_PATH = "maestro/flows/foundation/launch-and-login-screen.yaml";
+const RELEASE_CORE_01_MATRIX_PATH =
+  "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_matrix.json";
+const RELEASE_CORE_01_ANDROID_PATH =
+  "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_android.json";
+const RELEASE_CORE_01_IOS_PATH =
+  "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_ios.json";
+const RELEASE_CORE_01_INVENTORY_PATH =
+  "artifacts/S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT_inventory.json";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
 const DIRECT_SUPABASE_CALL_REGEX =
@@ -1941,6 +1972,143 @@ export function evaluateAiExplicitRoleSecretsE2eGateGuardrail(params: {
   };
 }
 
+export function evaluateAndroidEmulatorIosBuildSubmitGateGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AndroidEmulatorIosBuildSubmitGateSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const easSource = safeReadProjectFile({ readFile, relativePath: "eas.json" });
+  const runnerSource = safeReadProjectFile({ readFile, relativePath: RELEASE_ANDROID_IOS_RUNNER_PATH });
+  const redactorSource = safeReadProjectFile({ readFile, relativePath: RELEASE_OUTPUT_REDACTOR_PATH });
+  const smokeSource = safeReadProjectFile({ readFile, relativePath: RELEASE_ANDROID_RUNTIME_SMOKE_PATH });
+  const matrix = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: RELEASE_CORE_01_MATRIX_PATH }));
+  const android = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: RELEASE_CORE_01_ANDROID_PATH }));
+  const ios = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: RELEASE_CORE_01_IOS_PATH }));
+  const inventory = parseJsonRecord(safeReadProjectFile({ readFile, relativePath: RELEASE_CORE_01_INVENTORY_PATH }));
+  const matrixAndroid = recordChild(matrix, "android");
+  const matrixIos = recordChild(matrix, "ios");
+  const matrixOta = recordChild(matrix, "ota");
+  const secrets = recordChild(matrix, "secrets");
+  const aiRole = recordChild(matrix, "ai_role_screen_e2e");
+
+  const androidApkProfilePresent =
+    Boolean(easSource?.includes('"preview"')) &&
+    Boolean(easSource?.includes('"buildType": "apk"') || easSource?.includes('"buildType":"apk"')) &&
+    Boolean(easSource?.includes('"channel": "preview"') || easSource?.includes('"channel":"preview"'));
+  const iosAppStoreSubmitProfilePresent =
+    Boolean(easSource?.includes('"production"')) &&
+    Boolean(easSource?.includes('"distribution": "store"') || easSource?.includes('"distribution":"store"')) &&
+    Boolean(easSource?.includes('"simulator": false') || easSource?.includes('"simulator":false'));
+  const releaseRunnerPresent =
+    Boolean(runnerSource?.includes("runAndroidEmulatorAndIosSubmitGate")) &&
+    Boolean(runnerSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(runnerSource?.includes("preview")) &&
+    Boolean(runnerSource?.includes("production")) &&
+    Boolean(runnerSource?.includes("E2E_ALLOW_IOS_BUILD")) &&
+    Boolean(runnerSource?.includes("E2E_ALLOW_IOS_SUBMIT")) &&
+    Boolean(runnerSource?.includes("E2E_ALLOW_ANDROID_APK_BUILD"));
+  const releaseRedactorPresent =
+    Boolean(redactorSource?.includes("redactReleaseOutput")) &&
+    Boolean(redactorSource?.includes("EXPO_TOKEN")) &&
+    Boolean(redactorSource?.includes("EXPO_APPLE_APP_SPECIFIC_PASSWORD")) &&
+    Boolean(redactorSource?.includes("SUPABASE_SERVICE_ROLE_KEY"));
+  const androidRuntimeSmokeFlowPresent =
+    Boolean(smokeSource?.includes("appId: com.azisbek_dzhantaev.rikexpoapp")) &&
+    Boolean(smokeSource?.includes("launchApp"));
+  const releaseArtifactsPresent = Boolean(matrix && android && ios && inventory);
+  const androidUsesApkForEmulator =
+    recordBoolean(android, "aab_used_for_direct_install") === false &&
+    recordString(android, "build_profile") === "preview";
+  const androidPlaySubmitAbsent =
+    recordBoolean(android, "google_play_submit") === false &&
+    !Boolean(runnerSource?.includes("submit --platform android")) &&
+    !Boolean(runnerSource?.includes('"submit", "--platform", "android"'));
+  const iosSimulatorSubmitBlocked =
+    recordBoolean(ios, "simulator_build_used_for_submit") === false &&
+    !Boolean(runnerSource?.includes("simulator: true"));
+  const iosSubmitProfileUsed =
+    recordString(ios, "submit_profile") === "production" &&
+    Boolean(runnerSource?.includes("buildIosSubmitArgs"));
+  const productionOtaAbsent =
+    recordBoolean(matrixOta, "used") === false &&
+    recordBoolean(matrixOta, "production_ota_used") === false &&
+    !Boolean(runnerSource?.includes("eas update")) &&
+    !Boolean(runnerSource?.includes("production OTA"));
+  const credentialsNotInCliArgs =
+    recordBoolean(secrets, "credentials_in_cli_args") === false &&
+    !Boolean(runnerSource?.includes('"--env"')) &&
+    !Boolean(runnerSource?.includes('"-e"'));
+  const secretsNotInArtifacts =
+    recordBoolean(secrets, "credentials_printed") === false &&
+    recordBoolean(secrets, "artifacts_redacted") === true;
+  const aiRoleE2eExplicitSecretsOnly =
+    recordBoolean(aiRole, "auth_admin_used") === false &&
+    recordBoolean(aiRole, "service_role_used") === false &&
+    recordBoolean(aiRole, "list_users_used") === false &&
+    Boolean(runnerSource?.includes("resolveExplicitAiRoleAuthEnv"));
+  const fakePassClaimsAbsent =
+    recordBoolean(matrixAndroid, "aab_used_for_direct_install") === false &&
+    recordBoolean(matrixIos, "simulator_build_used_for_submit") === false &&
+    !Boolean(runnerSource?.includes("fake_submit_claimed: true")) &&
+    !Boolean(runnerSource?.includes("fake_emulator_pass"));
+
+  const findings = [
+    ...(recordBoolean(android, "aab_used_for_direct_install") === true ? ["android_aab_direct_install_claimed"] : []),
+    ...(recordBoolean(android, "google_play_submit") === true ? ["android_google_play_submit_claimed"] : []),
+    ...(recordBoolean(ios, "simulator_build_used_for_submit") === true ? ["ios_simulator_build_submit_claimed"] : []),
+    ...(recordBoolean(matrixOta, "production_ota_used") === true ? ["production_ota_used"] : []),
+    ...(recordBoolean(secrets, "credentials_in_cli_args") === true ? ["release_credentials_in_cli_args"] : []),
+    ...(recordBoolean(secrets, "credentials_printed") === true ? ["release_credentials_printed"] : []),
+  ];
+  const errors = [
+    ...(androidApkProfilePresent ? [] : ["android_emulator_apk_profile_missing"]),
+    ...(iosAppStoreSubmitProfilePresent ? [] : ["ios_appstore_submit_profile_missing"]),
+    ...(releaseRunnerPresent ? [] : [`missing_or_incomplete_runner:${RELEASE_ANDROID_IOS_RUNNER_PATH}`]),
+    ...(releaseRedactorPresent ? [] : [`missing_or_incomplete_runner:${RELEASE_OUTPUT_REDACTOR_PATH}`]),
+    ...(androidRuntimeSmokeFlowPresent ? [] : ["android_runtime_smoke_flow_missing"]),
+    ...(releaseArtifactsPresent ? [] : ["release_core_01_artifacts_missing"]),
+    ...(androidUsesApkForEmulator ? [] : ["android_emulator_apk_contract_not_proven"]),
+    ...(androidPlaySubmitAbsent ? [] : ["android_play_submit_not_blocked"]),
+    ...(iosSimulatorSubmitBlocked ? [] : ["ios_simulator_submit_not_blocked"]),
+    ...(iosSubmitProfileUsed ? [] : ["ios_submit_profile_not_proven"]),
+    ...(productionOtaAbsent ? [] : ["production_ota_not_blocked"]),
+    ...(credentialsNotInCliArgs ? [] : ["release_credentials_cli_args_not_blocked"]),
+    ...(secretsNotInArtifacts ? [] : ["release_artifact_secret_redaction_not_proven"]),
+    ...(aiRoleE2eExplicitSecretsOnly ? [] : ["ai_role_e2e_explicit_secrets_not_preserved"]),
+    ...(fakePassClaimsAbsent ? [] : ["release_fake_pass_claim_possible"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "android_emulator_ios_build_submit_gate",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      androidApkProfilePresent,
+      iosAppStoreSubmitProfilePresent,
+      releaseRunnerPresent,
+      releaseRedactorPresent,
+      androidRuntimeSmokeFlowPresent,
+      releaseArtifactsPresent,
+      androidUsesApkForEmulator,
+      androidPlaySubmitAbsent,
+      iosSimulatorSubmitBlocked,
+      iosSubmitProfileUsed,
+      productionOtaAbsent,
+      credentialsNotInCliArgs,
+      secretsNotInArtifacts,
+      aiRoleE2eExplicitSecretsOnly,
+      fakePassClaimsAbsent,
+      findings,
+    },
+  };
+}
+
 export function evaluateCacheRateScopeGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -3117,6 +3285,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiAppKnowledgeRegistry = evaluateAiAppKnowledgeRegistryGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
+  const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -3141,6 +3310,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppKnowledgeRegistry.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
+    androidEmulatorIosBuildSubmitGate.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -3166,6 +3336,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppKnowledgeRegistry: aiAppKnowledgeRegistry.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
+    androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
     componentDebt,
     checks,
     safety: {
@@ -3209,6 +3380,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_no_discovery: ${report.aiExplicitRoleSecretsE2eGate.noAuthDiscoveryGreenPath}`);
+  console.info(`android_emulator_ios_build_submit_gate_runner: ${report.androidEmulatorIosBuildSubmitGate.releaseRunnerPresent}`);
+  console.info(`android_emulator_ios_build_submit_gate_ios_submit_profile: ${report.androidEmulatorIosBuildSubmitGate.iosSubmitProfileUsed}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

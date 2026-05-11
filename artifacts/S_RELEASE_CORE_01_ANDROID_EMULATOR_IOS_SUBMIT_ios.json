@@ -1,0 +1,14 @@
+{
+  "status": "BLOCKED",
+  "build_profile": "production",
+  "submit_profile": "production",
+  "new_build_created": false,
+  "simulator_build_used_for_submit": false,
+  "eas_submit_started": false,
+  "eas_submit_finished": false,
+  "app_store_connect_submit_proof": false,
+  "testflight_or_processing_status_captured": false,
+  "build_id": null,
+  "submit_id": null,
+  "exact_reason": "Set E2E_ALLOW_IOS_BUILD=true to create a new iOS App Store build."
+}

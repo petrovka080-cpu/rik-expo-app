@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiModelBoundaryGuardrail,
+  evaluateAndroidEmulatorIosBuildSubmitGateGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateAiRoleScreenEmulatorGateGuardrail,
   evaluateProductionRawLoopGuardrail,
@@ -834,6 +835,121 @@ describe("architecture anti-regression suite", () => {
         "rate_limit_marketplace_5pct_false_positive_nonzero",
         "rate_limit_marketplace_5pct_redaction_or_safety_not_proven",
         "rate_limit_marketplace_5pct_monitor_not_stable",
+      ]),
+    );
+  });
+
+  it("ratchets the Android emulator and iOS build submit gate", () => {
+    const matrix = {
+      android: {
+        aab_used_for_direct_install: false,
+        google_play_submit: false,
+      },
+      ios: {
+        simulator_build_used_for_submit: false,
+      },
+      ota: {
+        used: false,
+        production_ota_used: false,
+      },
+      ai_role_screen_e2e: {
+        auth_admin_used: false,
+        service_role_used: false,
+        list_users_used: false,
+      },
+      secrets: {
+        credentials_in_cli_args: false,
+        credentials_printed: false,
+        artifacts_redacted: true,
+      },
+    };
+    const android = {
+      build_profile: "preview",
+      aab_used_for_direct_install: false,
+      google_play_submit: false,
+    };
+    const ios = {
+      submit_profile: "production",
+      simulator_build_used_for_submit: false,
+    };
+    const passing = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "eas.json") {
+          return JSON.stringify({
+            build: {
+              preview: { android: { buildType: "apk" }, channel: "preview" },
+              production: { distribution: "store", ios: { simulator: false } },
+            },
+            submit: { production: { ios: {} } },
+          });
+        }
+        if (relativePath === "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts") {
+          return [
+            "runAndroidEmulatorAndIosSubmitGate",
+            "ensureAndroidEmulatorReady",
+            "preview",
+            "production",
+            "E2E_ALLOW_IOS_BUILD",
+            "E2E_ALLOW_IOS_SUBMIT",
+            "E2E_ALLOW_ANDROID_APK_BUILD",
+            "buildIosSubmitArgs",
+            "resolveExplicitAiRoleAuthEnv",
+          ].join("\n");
+        }
+        if (relativePath === "scripts/release/redactReleaseOutput.ts") {
+          return "redactReleaseOutput EXPO_TOKEN EXPO_APPLE_APP_SPECIFIC_PASSWORD SUPABASE_SERVICE_ROLE_KEY";
+        }
+        if (relativePath === "maestro/flows/foundation/launch-and-login-screen.yaml") {
+          return "appId: com.azisbek_dzhantaev.rikexpoapp\nlaunchApp";
+        }
+        if (relativePath.endsWith("_matrix.json")) return JSON.stringify(matrix);
+        if (relativePath.endsWith("_android.json")) return JSON.stringify(android);
+        if (relativePath.endsWith("_ios.json")) return JSON.stringify(ios);
+        if (relativePath.endsWith("_inventory.json")) return "{}";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "android_emulator_ios_build_submit_gate",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("_matrix.json")) {
+          return JSON.stringify({
+            ...matrix,
+            ota: { used: true, production_ota_used: true },
+            secrets: { credentials_in_cli_args: true, credentials_printed: true, artifacts_redacted: false },
+          });
+        }
+        if (relativePath.endsWith("_android.json")) {
+          return JSON.stringify({ ...android, aab_used_for_direct_install: true, google_play_submit: true });
+        }
+        if (relativePath.endsWith("_ios.json")) {
+          return JSON.stringify({ ...ios, simulator_build_used_for_submit: true });
+        }
+        if (relativePath === "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts") {
+          return '"submit", "--platform", "android"\neas update';
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "android_emulator_apk_profile_missing",
+        "ios_appstore_submit_profile_missing",
+        "android_emulator_apk_contract_not_proven",
+        "android_play_submit_not_blocked",
+        "ios_simulator_submit_not_blocked",
+        "production_ota_not_blocked",
+        "release_credentials_cli_args_not_blocked",
       ]),
     );
   });

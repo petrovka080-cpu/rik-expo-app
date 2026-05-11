@@ -1,0 +1,17 @@
+{
+  "status": "BLOCKED",
+  "physical_device_required": false,
+  "emulator_only": true,
+  "build_profile": "preview",
+  "apk_built": false,
+  "apk_installed_on_emulator": false,
+  "aab_used_for_direct_install": false,
+  "runtime_smoke": "BLOCKED",
+  "google_play_submit": false,
+  "emulator_boot_completed": false,
+  "anrDialogObserved": false,
+  "anrDialogHandledByWait": false,
+  "build_id": null,
+  "artifact_path": null,
+  "exact_reason": "Set E2E_ALLOW_ANDROID_APK_BUILD=true to create the Android emulator APK."
+}

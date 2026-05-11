@@ -1,0 +1,63 @@
+{
+  "final_status": "BLOCKED_IOS_BUILD_CREDENTIALS_MISSING",
+  "android": {
+    "status": "BLOCKED",
+    "physical_device_required": false,
+    "emulator_only": true,
+    "build_profile": "preview",
+    "apk_built": false,
+    "apk_installed_on_emulator": false,
+    "aab_used_for_direct_install": false,
+    "runtime_smoke": "BLOCKED",
+    "google_play_submit": false,
+    "emulator_boot_completed": false,
+    "anrDialogObserved": false,
+    "anrDialogHandledByWait": false,
+    "build_id": null,
+    "artifact_path": null,
+    "exact_reason": "Set E2E_ALLOW_ANDROID_APK_BUILD=true to create the Android emulator APK."
+  },
+  "ios": {
+    "status": "BLOCKED",
+    "build_profile": "production",
+    "submit_profile": "production",
+    "new_build_created": false,
+    "simulator_build_used_for_submit": false,
+    "eas_submit_started": false,
+    "eas_submit_finished": false,
+    "app_store_connect_submit_proof": false,
+    "testflight_or_processing_status_captured": false,
+    "build_id": null,
+    "submit_id": null,
+    "exact_reason": "Set E2E_ALLOW_IOS_BUILD=true to create a new iOS App Store build."
+  },
+  "ota": {
+    "used": false,
+    "production_ota_used": false
+  },
+  "ai_role_screen_e2e": {
+    "status": "BLOCKED_NO_E2E_ROLE_SECRETS",
+    "auth_source": "missing",
+    "auth_admin_used": false,
+    "service_role_used": false,
+    "list_users_used": false
+  },
+  "secrets": {
+    "credentials_in_cli_args": false,
+    "credentials_printed": false,
+    "artifacts_redacted": true
+  },
+  "gates": {
+    "focused_tests": "PASS",
+    "android_emulator_smoke": "BLOCKED",
+    "ios_build": "BLOCKED",
+    "ios_submit": "BLOCKED",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jest": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "release_verify": "PASS"
+  }
+}
