@@ -5,19 +5,24 @@ const controllerSource = readFileSync(
   join(process.cwd(), "src/screens/foreman/hooks/useForemanSubcontractController.tsx"),
   "utf8",
 );
+const pdfActionsSource = readFileSync(
+  join(process.cwd(), "src/screens/foreman/hooks/useForemanSubcontractPdfActions.ts"),
+  "utf8",
+);
 
 function sliceBetween(start: string, end: string) {
-  const startIndex = controllerSource.indexOf(start);
-  const endIndex = controllerSource.indexOf(end, startIndex);
+  const startIndex = pdfActionsSource.indexOf(start);
+  const endIndex = pdfActionsSource.indexOf(end, startIndex);
   expect(startIndex).toBeGreaterThanOrEqual(0);
   expect(endIndex).toBeGreaterThan(startIndex);
-  return controllerSource.slice(startIndex, endIndex);
+  return pdfActionsSource.slice(startIndex, endIndex);
 }
 
 describe("Foreman subcontract PDF preview guard wiring", () => {
   it("uses the lazy preview descriptor factory instead of the eager generated preview path", () => {
-    expect(controllerSource).toContain("prepareAndPreviewGeneratedPdfFromDescriptorFactory");
-    expect(controllerSource).not.toContain("await prepareAndPreviewGeneratedPdf({");
+    expect(controllerSource).toContain("useForemanSubcontractPdfActions");
+    expect(pdfActionsSource).toContain("prepareAndPreviewGeneratedPdfFromDescriptorFactory");
+    expect(pdfActionsSource).not.toContain("await prepareAndPreviewGeneratedPdf({");
   });
 
   it("routes subcontract draft PDF descriptor creation through the lazy preview factory", () => {
@@ -52,10 +57,11 @@ describe("Foreman subcontract PDF preview guard wiring", () => {
   });
 
   it("keeps subcontract PDF and export copy readable", () => {
-    expect(controllerSource).toContain("title: displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`");
+    expect(pdfActionsSource).toContain("title: displayNo ? `Черновик ${displayNo}` : `Черновик ${rid}`");
+    expect(pdfActionsSource).toContain("title: `Заявка ${rid}`");
     expect(controllerSource).toContain("Экспорт Excel для подрядов будет добавлен.");
-    expect(controllerSource).not.toContain("Р§РµСЂРЅРѕРІРёРє");
-    expect(controllerSource).not.toContain("Р—Р°СЏРІРєР°");
-    expect(controllerSource).not.toContain("Р­РєСЃРїРѕСЂС‚");
+    expect(pdfActionsSource).not.toContain("Р В§Р ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”");
+    expect(pdfActionsSource).not.toContain("Р вЂ”Р В°РЎРЏР Р†Р С”Р В°");
+    expect(controllerSource).not.toContain("Р В­Р С”РЎРѓР С—Р С•РЎР‚РЎвЂљ");
   });
 });

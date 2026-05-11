@@ -34,7 +34,10 @@ describe("S_NIGHT_UI_14 AccountantScreen decomposition A", () => {
     expect(compositionSource).toContain("useAccountantScreenChromeModel");
     expect(compositionSource).toContain("useAccountantInvoiceForm");
     expect(compositionSource).toContain("useAccountantScreenController");
-    expect(compositionSource).toContain("useAccountantPayActions");
+    expect(compositionSource).toContain("useAccountantCompositionActions");
+    expect(compositionSource).toContain("useAccountantCompositionCardDocuments");
+    expect(compositionSource).toContain("useAccountantCompositionSelection");
+    expect(compositionSource).toContain("useAccountantCompositionVisibility");
     expect(viewSource).toContain("<AccountantHeader");
     expect(viewSource).toContain("<AccountantListBlock");
     expect(viewSource).toContain("<CardModal");

@@ -68,7 +68,7 @@ describe("useAccountantScreenViewModel", () => {
     expect(screenSource).toContain('import { useAccountantScreenComposition } from "./useAccountantScreenComposition";');
     expect(compositionSource).toContain('import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";');
     expect(screenSource).not.toContain("useAccountantUiStore(");
-    expect(compositionSource).toContain("} = useAccountantScreenViewModel();");
+    expect(compositionSource).toContain("const viewModel = useAccountantScreenViewModel();");
     expect(screenHookCalls).toEqual(["useAccountantScreenComposition("]);
 
     expect(viewModelSource).toContain("export type AccountantScreenViewModel");

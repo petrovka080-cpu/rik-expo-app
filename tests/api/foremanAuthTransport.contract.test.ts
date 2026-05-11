@@ -15,6 +15,9 @@ describe("foreman auth transport boundary", () => {
     const requestHistorySource = read("src/screens/foreman/hooks/useForemanHistory.ts");
     const subcontractHistorySource = read("src/screens/foreman/hooks/useForemanSubcontractHistory.ts");
     const subcontractControllerSource = read("src/screens/foreman/hooks/useForemanSubcontractController.tsx");
+    const subcontractHistoryControllerSource = read(
+      "src/screens/foreman/hooks/useForemanSubcontractHistoryController.ts",
+    );
     const fioBootstrapSource = read("src/screens/foreman/hooks/useForemanFioBootstrapFlow.ts");
     const transportSource = read("src/screens/foreman/foreman.auth.transport.ts");
 
@@ -24,8 +27,9 @@ describe("foreman auth transport boundary", () => {
     expect(subcontractHistorySource).toContain("foreman.auth.transport");
     expect(subcontractHistorySource).not.toContain("supabase.auth.getUser");
     expect(subcontractHistorySource).not.toContain("../../../lib/supabaseClient");
-    expect(subcontractControllerSource).toContain("foreman.auth.transport");
+    expect(subcontractHistoryControllerSource).toContain("foreman.auth.transport");
     expect(subcontractControllerSource).not.toContain("supabase.auth.getUser");
+    expect(subcontractControllerSource).not.toContain("foreman.auth.transport");
     expect(fioBootstrapSource).toContain("foreman.auth.transport");
     expect(fioBootstrapSource).not.toContain("supabase.auth.getUser");
     expect(fioBootstrapSource).not.toContain("../../../lib/supabaseClient");

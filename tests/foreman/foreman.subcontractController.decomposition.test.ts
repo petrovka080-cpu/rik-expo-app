@@ -25,6 +25,22 @@ describe("foreman subcontract controller decomposition audit", () => {
     join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractDraftActions.ts"),
     "utf8",
   );
+  const historyControllerSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractHistoryController.ts"),
+    "utf8",
+  );
+  const saveDraftAtomicSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractSaveDraftAtomic.ts"),
+    "utf8",
+  );
+  const hydrationSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractHydration.ts"),
+    "utf8",
+  );
+  const requestDraftStateSource = readFileSync(
+    join(process.cwd(), "src", "screens", "foreman", "hooks", "useForemanSubcontractRequestDraftState.ts"),
+    "utf8",
+  );
   const requestDraftLifecycleSource = readFileSync(
     join(
       process.cwd(),
@@ -42,16 +58,19 @@ describe("foreman subcontract controller decomposition audit", () => {
 
   it("keeps the controller wired through extracted owner-boundary modules", () => {
     expect(controllerSource).toContain("foreman.subcontractController.model");
-    expect(controllerSource).toContain("foreman.subcontractController.guards");
-    expect(controllerSource).toContain("foreman.subcontractController.effects");
     expect(controllerSource).toContain("foreman.subcontractController.telemetry");
+    expect(saveDraftAtomicSource).toContain("foreman.subcontractController.guards");
+    expect(hydrationSource).toContain("foreman.subcontractController.effects");
+    expect(requestDraftStateSource).toContain("foreman.subcontractController.effects");
     expect(draftActionsSource).toContain("guardSendToDirector");
-    expect(controllerSource).toContain("planSelectedSubcontractHydration");
-    expect(controllerSource).toContain("getForemanSubcontractErrorMessage");
+    expect(hydrationSource).toContain("planSelectedSubcontractHydration");
+    expect(saveDraftAtomicSource).toContain("getForemanSubcontractErrorMessage");
+    expect(historyControllerSource).toContain("getForemanSubcontractErrorMessage");
     expect(controllerSource).toContain("useForemanSubcontractControllerUiState");
     expect(controllerSource).toContain("ForemanSubcontractControllerView");
     expect(controllerSource).toContain("useForemanSubcontractDraftActions");
-    expect(controllerSource).toContain("useForemanSubcontractRequestDraftLifecycle");
+    expect(controllerSource).toContain("useForemanSubcontractRequestDraftState");
+    expect(requestDraftStateSource).toContain("useForemanSubcontractRequestDraftLifecycle");
   });
 
   it("removes legacy inline helpers and silent catch from the controller owner", () => {

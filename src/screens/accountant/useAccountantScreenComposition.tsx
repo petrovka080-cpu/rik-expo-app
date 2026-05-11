@@ -1,28 +1,21 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 
 import { useBusyAction } from "../../lib/useBusyAction";
 import { useGlobalBusy } from "../../ui/GlobalBusy";
-import { type AccountantInboxRow } from "../../lib/catalog_api";
-import { UI } from "./ui";
-import type { AccountantInboxUiRow, Tab, HistoryRow } from "./types";
-import { TABS } from "./types";
-import { safeAlert, toRpcDateOrNull, getAccountantErrorText } from "./helpers";
-import ListRow from "./components/ListRow";
-import { HistoryHeader, HistoryRowCard } from "./components/HistorySection";
 import { useAccountantPersistedFields } from "./accountant.storage";
-import { useAccountantNotifications } from "./useAccountantNotifications";
 import { useAccountantRealtimeLifecycle } from "./accountant.realtime.lifecycle";
-import { useAccountantAttachments } from "./useAccountantAttachments";
-import { useAccountantCardFlow } from "./useAccountantCardFlow";
-import { useAccountantDocuments } from "./useAccountantDocuments";
-import { useAccountantFioConfirm } from "./useAccountantFioConfirm";
-import { useAccountantPostPaymentSync } from "./useAccountantPostPaymentSync";
-import { useAccountantPayActions } from "./useAccountantPayActions";
-import { useAccountantReturnAction } from "./useAccountantReturnAction";
-import { useAccountantScreenController } from "./useAccountantScreenController";
+import { buildAccountantCompositionMetrics } from "./accountant.compositionMetrics";
+import { safeAlert, toRpcDateOrNull, getAccountantErrorText } from "./helpers";
+import type { Tab } from "./types";
+import { TABS } from "./types";
+import { useAccountantCompositionActions } from "./useAccountantCompositionActions";
+import { useAccountantCompositionCardDocuments } from "./useAccountantCompositionCardDocuments";
+import { useAccountantCompositionRenderModels } from "./useAccountantCompositionRenderModels";
+import { useAccountantCompositionSelection } from "./useAccountantCompositionSelection";
+import { useAccountantCompositionVisibility } from "./useAccountantCompositionVisibility";
 import { useAccountantInvoiceForm } from "./useAccountantInvoiceForm";
-import { useAccountantHistoryFlow } from "./useAccountantHistoryFlow";
 import { useAccountantScreenChromeModel } from "./useAccountantScreenChromeModel";
+import { useAccountantScreenController } from "./useAccountantScreenController";
 import { useAccountantScreenViewModel } from "./useAccountantScreenViewModel";
 
 const TAB_PAY: Tab = TABS[0];
@@ -37,447 +30,257 @@ export function useAccountantScreenComposition() {
     timeoutMs: 30000,
     onError: (e) => safeAlert("Ошибка", String(e?.message ?? e)),
   });
+  const viewModel = useAccountantScreenViewModel();
+  const chrome = useAccountantScreenChromeModel();
+  const selected = useAccountantCompositionSelection({
+    cardOpen: viewModel.cardOpen,
+    freezeWhileOpen: viewModel.freezeWhileOpen,
+    setFreezeWhileOpen: viewModel.setFreezeWhileOpen,
+    currentPaymentId: viewModel.currentPaymentId,
+    setCurrentPaymentId: viewModel.setCurrentPaymentId,
+  });
 
-  const {
-    tab,
-    setTab,
-    histSearchUi,
-    setHistSearchUi,
-    dateFrom,
-    setDateFrom,
-    dateTo,
-    setDateTo,
-    periodOpen,
-    setPeriodOpen,
-    cardOpen,
-    setCardOpen,
-    currentPaymentId,
-    setCurrentPaymentId,
-    accountantFio,
-    setAccountantFio,
-    freezeWhileOpen,
-    setFreezeWhileOpen,
-  } = useAccountantScreenViewModel();
-  const {
-    insets,
-    cardScrollRef,
-    payFormReveal,
-    headerHeight,
-    headerShadow,
-    titleSize,
-    subOpacity,
-    HEADER_MAX,
-    onListScroll,
-    onCardScroll,
-    kbTypeNum,
-    kbOpen,
-    kbdH,
-    scrollInputIntoView,
-  } = useAccountantScreenChromeModel();
-
-  const histSearch = React.useDeferredValue(histSearchUi);
-  const [current, setCurrent] = useState<AccountantInboxUiRow | null>(null);
-
-  const {
-    invoiceNo, setInvoiceNo,
-    invoiceDate, setInvoiceDate,
-    supplierName, setSupplierName,
-    purposePrefix,
-    amount, setAmount,
-    note, setNote,
-    allocRows, setAllocRows,
-    allocOk, setAllocOk,
-    setAllocSum,
-    bankName, setBankName,
-    bik, setBik,
-    rs, setRs,
-    inn, setInn,
-    kpp, setKpp,
-    INV_PREFIX,
-    invMM, setInvMM,
-    invDD, setInvDD,
-    mmRef, ddRef,
-    clamp2,
-    payKind, setPayKind,
-  } = useAccountantInvoiceForm({ current, toRpcDateOrNull });
-
-  const isReadOnlyTab = tab === TAB_HISTORY || tab === TAB_PAID || tab === TAB_REWORK;
-  const isPayActiveTab = tab === TAB_PAY || tab === TAB_PART;
-
-  const payAccent = isPayActiveTab && !isReadOnlyTab
-    ? { borderColor: "rgba(34,197,94,0.55)", backgroundColor: "rgba(34,197,94,0.06)" }
-    : null;
-
-  const parsedAmount = Number(String(amount || "").replace(",", "."));
-  const amountNum = Number.isFinite(parsedAmount) ? parsedAmount : 0;
-
-  const canPayUi = !isReadOnlyTab && !!current?.proposal_id && amountNum > 0 && !busyKey;
-
-  useEffect(() => {
-    if (cardOpen || !freezeWhileOpen) return;
-    setFreezeWhileOpen(false);
-  }, [cardOpen, freezeWhileOpen, setFreezeWhileOpen]);
-
-  const {
-    focusedRef,
-    rows,
-    setRows,
-    loading,
-    refreshing,
-    inboxLoadingMore,
-    inboxHasMore,
-    inboxTotalCount,
-    historyRows,
-    historyLoading,
-    historyRefreshing,
-    historyLoadingMore,
-    historyHasMore,
-    historyTotalCount,
-    historyTotalAmount,
-    historyCurrency,
-    load,
-    loadMoreInbox,
-    loadHistory,
-    loadMoreHistory,
-    onRefresh,
-    onRefreshHistory,
-    refreshCurrentVisibleScope,
-    isRealtimeRefreshInFlight,
-    setTabWithCachePreview,
-  } = useAccountantScreenController({
-    tab,
-    setTab,
+  const histSearch = React.useDeferredValue(viewModel.histSearchUi);
+  const invoice = useAccountantInvoiceForm({
+    current: selected.current,
+    toRpcDateOrNull,
+  });
+  const metrics = buildAccountantCompositionMetrics({
+    tab: viewModel.tab,
+    tabs: { pay: TAB_PAY, part: TAB_PART, paid: TAB_PAID, rework: TAB_REWORK, history: TAB_HISTORY },
+    amount: invoice.amount,
+    current: selected.current,
+    busyKey,
+  });
+  const controller = useAccountantScreenController({
+    tab: viewModel.tab,
+    setTab: viewModel.setTab,
     tabHistory: TAB_HISTORY,
-    freezeWhileOpen,
-    dateFrom,
-    dateTo,
+    freezeWhileOpen: viewModel.freezeWhileOpen,
+    dateFrom: viewModel.dateFrom,
+    dateTo: viewModel.dateTo,
     histSearch,
     toRpcDateOrNull,
   });
 
   useAccountantPersistedFields({
-    accountantFio,
-    bankName,
-    bik,
-    rs,
-    inn,
-    kpp,
-    setAccountantFio,
-    setHistSearchUi,
-    setDateFrom,
-    setDateTo,
-    setBankName,
-    setBik,
-    setRs,
-    setInn,
-    setKpp,
+    accountantFio: viewModel.accountantFio,
+    bankName: invoice.bankName,
+    bik: invoice.bik,
+    rs: invoice.rs,
+    inn: invoice.inn,
+    kpp: invoice.kpp,
+    setAccountantFio: viewModel.setAccountantFio,
+    setHistSearchUi: viewModel.setHistSearchUi,
+    setDateFrom: viewModel.setDateFrom,
+    setDateTo: viewModel.setDateTo,
+    setBankName: invoice.setBankName,
+    setBik: invoice.setBik,
+    setRs: invoice.setRs,
+    setInn: invoice.setInn,
+    setKpp: invoice.setKpp,
   });
 
-  const {
-    bellOpen,
-    setBellOpen,
-    notifs,
-    unread,
-    loadNotifs,
-    markAllRead,
-    handleRealtimeNotification,
-  } = useAccountantNotifications({
-    focusedRef,
+  const visibility = useAccountantCompositionVisibility({
+    focusedRef: controller.focusedRef,
+    setAccountantFio: viewModel.setAccountantFio,
   });
-
   useAccountantRealtimeLifecycle({
-    focusedRef,
-    freezeWhileOpen,
-    currentTab: tab,
+    focusedRef: controller.focusedRef,
+    freezeWhileOpen: viewModel.freezeWhileOpen,
+    currentTab: viewModel.tab,
     historyTab: TAB_HISTORY,
-    refreshCurrentVisibleScope,
-    isRefreshInFlight: isRealtimeRefreshInFlight,
-    onRealtimeNotification: handleRealtimeNotification,
+    refreshCurrentVisibleScope: controller.refreshCurrentVisibleScope,
+    isRefreshInFlight: controller.isRealtimeRefreshInFlight,
+    onRealtimeNotification: visibility.handleRealtimeNotification,
   });
 
-  const {
-    accountantHistory,
-    isFioConfirmVisible,
-    isFioLoading,
-    setIsFioConfirmVisible,
-    handleFioConfirm,
-  } = useAccountantFioConfirm({ setAccountantFio });
-
-  const {
-    attRows,
-    attState,
-    attMessage,
-    setAttRows,
-    setAttState,
-    setAttMessage,
-    attPidRef,
-    attCacheRef,
-    onOpenAttachments,
-    openOneAttachment,
-  } = useAccountantAttachments({
-    current,
+  const cardDocuments = useAccountantCompositionCardDocuments({
+    current: selected.current,
+    currentPaymentId: selected.currentPaymentId,
+    setCurrentPaymentId: selected.setCurrentPaymentId,
     runAction,
-    safeAlert,
-    reloadList: () => load(true),
-  });
-
-  const { openCard, closeCard } = useAccountantCardFlow({
-    load: () => load(),
-    onOpenAttachments,
-    attPidRef,
-    attCacheRef,
-    setAttRows,
-    setAttState,
-    setAttMessage,
-    setCurrent,
-    setCardOpen,
-    setCurrentPaymentId,
-    setFreezeWhileOpen,
-    setInvoiceNo,
-    setInvoiceDate,
-    setSupplierName,
-    setAmount,
-    setNote,
-    setAllocRows,
-    setAllocOk,
-    setAllocSum,
-    setPayKind,
-    setAccountantFio,
-  });
-
-  const {
-    onOpenProposalPdf,
-    onOpenInvoiceDoc,
-    onOpenPaymentReport,
-  } = useAccountantDocuments({
-    current,
-    currentPaymentId,
-    setCurrentPaymentId,
-    supplierName,
-    invoiceNo,
-    invoiceDate,
-    bankName,
-    bik,
-    rs,
-    inn,
-    kpp,
+    load: controller.load,
+    setCurrent: selected.setCurrent,
+    setCardOpen: viewModel.setCardOpen,
+    setFreezeWhileOpen: viewModel.setFreezeWhileOpen,
+    setInvoiceNo: invoice.setInvoiceNo,
+    setInvoiceDate: invoice.setInvoiceDate,
+    setSupplierName: invoice.setSupplierName,
+    setAmount: invoice.setAmount,
+    setNote: invoice.setNote,
+    setAllocRows: invoice.setAllocRows,
+    setAllocOk: invoice.setAllocOk,
+    setAllocSum: invoice.setAllocSum,
+    setPayKind: invoice.setPayKind,
+    setAccountantFio: viewModel.setAccountantFio,
+    supplierName: invoice.supplierName,
+    invoiceNo: invoice.invoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    bankName: invoice.bankName,
+    bik: invoice.bik,
+    rs: invoice.rs,
+    inn: invoice.inn,
+    kpp: invoice.kpp,
     gbusy,
     safeAlert,
     getErrorText: getAccountantErrorText,
-    onBeforeNavigate: closeCard,
   });
-
-  const afterPaymentSync = useAccountantPostPaymentSync({
-    current,
-    setTab,
-    load,
+  const actions = useAccountantCompositionActions({
+    current: selected.current,
+    amount: invoice.amount,
+    accountantFio: viewModel.accountantFio,
+    payKind: invoice.payKind,
+    note: invoice.note,
+    allocRows: invoice.allocRows,
+    allocOk: invoice.allocOk,
+    purposePrefix: invoice.purposePrefix,
+    invoiceNo: invoice.invoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    setTab: viewModel.setTab,
+    load: controller.load,
+    closeCard: cardDocuments.closeCard,
+    setCurrentPaymentId: selected.setCurrentPaymentId,
+    setRows: controller.setRows,
+    setAccountantFio: viewModel.setAccountantFio,
+    openCard: cardDocuments.openCard,
+    safeAlert,
     tabs: { pay: TAB_PAY, part: TAB_PART, paid: TAB_PAID, rework: TAB_REWORK },
   });
-
-  const errText = useCallback((e: unknown) => getAccountantErrorText(e), []);
-
-  const { onPayConfirm } = useAccountantPayActions({
-    canAct: true,
-    current,
-    amount,
-    accountantFio,
-    payKind,
-    note,
-    allocRows,
-    allocOk,
-    purposePrefix,
-    afterPaymentSync,
-    closeCard,
-    setCurrentPaymentId,
-    setRows,
-    safeAlert,
-    errText,
-    invoiceNumber: invoiceNo,
-    invoiceDate,
-    invoiceCurrency: current?.invoice_currency ?? "KGS",
+  const renderModels = useAccountantCompositionRenderModels({
+    openCard: cardDocuments.openCard,
+    onOpenHistoryRow: actions.onOpenHistoryRow,
+    historyTotalCount: controller.historyTotalCount,
+    historyTotalAmount: controller.historyTotalAmount,
+    historyCurrency: controller.historyCurrency,
+    dateFrom: viewModel.dateFrom,
+    dateTo: viewModel.dateTo,
+    histSearchUi: viewModel.histSearchUi,
+    setHistSearchUi: viewModel.setHistSearchUi,
+    setPeriodOpen: viewModel.setPeriodOpen,
+    loadHistory: controller.loadHistory,
   });
-
-  const onReturnToBuyer = useAccountantReturnAction({
-    canAct: true,
-    current,
-    note,
-    closeCard,
-    load: () => load(true),
-    setRows,
-    safeAlert,
-    errText,
-  });
-
-  const { onOpenHistoryRow } = useAccountantHistoryFlow({
-    setCurrentPaymentId,
-    setAccountantFio,
-    openCard,
-    safeAlert,
-    errText,
-  });
-
-  const renderInboxRow = useCallback(
-    (item: AccountantInboxRow) => <ListRow item={item} onPress={() => openCard(item)} />,
-    [openCard]
-  );
-
-  const historyHeader = useMemo(
-    () => (
-      <HistoryHeader
-        totalCount={historyTotalCount}
-        totalAmount={historyTotalAmount}
-        totalCurrency={historyCurrency}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        searchValue={histSearchUi}
-        setSearchValue={setHistSearchUi}
-        onOpenPeriod={() => setPeriodOpen(true)}
-        onRefresh={() => void loadHistory(true)}
-        ui={{ text: UI.text, sub: UI.sub, cardBg: UI.cardBg }}
-      />
-    ),
-    [
-      historyTotalCount,
-      historyTotalAmount,
-      historyCurrency,
-      dateFrom,
-      dateTo,
-      histSearchUi,
-      loadHistory,
-      setHistSearchUi,
-      setPeriodOpen,
-    ]
-  );
-
-  const renderHistoryRow = useCallback(
-    (item: HistoryRow) => (
-      <HistoryRowCard item={item} onOpen={onOpenHistoryRow} ui={{ cardBg: UI.cardBg, text: UI.text, sub: UI.sub }} />
-    ),
-    [onOpenHistoryRow]
-  );
-
-  const isHistoryTab = tab === TAB_HISTORY;
 
   return {
-    insets,
+    insets: chrome.insets,
     busyKey,
     runAction,
-    tab,
-    setTabWithCachePreview,
-    histSearchUi,
-    setHistSearchUi,
-    dateFrom,
-    setDateFrom,
-    dateTo,
-    setDateTo,
-    periodOpen,
-    setPeriodOpen,
-    cardOpen,
-    currentPaymentId,
-    setCurrentPaymentId,
-    accountantFio,
-    setAccountantFio,
-    cardScrollRef,
-    payFormReveal,
-    headerHeight,
-    headerShadow,
-    titleSize,
-    subOpacity,
-    HEADER_MAX,
-    onListScroll,
-    onCardScroll,
-    current,
-    setCurrent,
-    invoiceNo,
-    setInvoiceNo,
-    invoiceDate,
-    setInvoiceDate,
-    supplierName,
-    setSupplierName,
-    purposePrefix,
-    amount,
-    setAmount,
-    note,
-    setNote,
-    allocRows,
-    setAllocRows,
-    allocOk,
-    setAllocOk,
-    setAllocSum,
-    bankName,
-    setBankName,
-    bik,
-    setBik,
-    rs,
-    setRs,
-    inn,
-    setInn,
-    kpp,
-    setKpp,
-    INV_PREFIX,
-    invMM,
-    setInvMM,
-    invDD,
-    setInvDD,
-    mmRef,
-    ddRef,
-    clamp2,
-    payKind,
-    setPayKind,
-    isReadOnlyTab,
-    isPayActiveTab,
-    payAccent,
-    kbTypeNum,
-    canPayUi,
-    kbOpen,
-    kbdH,
-    scrollInputIntoView,
-    rows,
-    loading,
-    refreshing,
-    inboxLoadingMore,
-    inboxHasMore,
-    inboxTotalCount,
-    historyRows,
-    historyLoading,
-    historyRefreshing,
-    historyLoadingMore,
-    historyHasMore,
-    historyTotalCount,
-    historyTotalAmount,
-    historyCurrency,
-    loadHistory,
-    loadMoreInbox,
-    loadMoreHistory,
-    onRefresh,
-    onRefreshHistory,
-    bellOpen,
-    setBellOpen,
-    notifs,
-    unread,
-    loadNotifs,
-    markAllRead,
-    accountantHistory,
-    isFioConfirmVisible,
-    isFioLoading,
-    setIsFioConfirmVisible,
-    handleFioConfirm,
-    attRows,
-    attState,
-    attMessage,
-    onOpenAttachments,
-    openOneAttachment,
-    closeCard,
-    onOpenProposalPdf,
-    onOpenInvoiceDoc,
-    onOpenPaymentReport,
-    onPayConfirm,
-    onReturnToBuyer,
-    onOpenHistoryRow,
-    renderInboxRow,
-    historyHeader,
-    renderHistoryRow,
-    isHistoryTab,
+    tab: viewModel.tab,
+    setTabWithCachePreview: controller.setTabWithCachePreview,
+    histSearchUi: viewModel.histSearchUi,
+    setHistSearchUi: viewModel.setHistSearchUi,
+    dateFrom: viewModel.dateFrom,
+    setDateFrom: viewModel.setDateFrom,
+    dateTo: viewModel.dateTo,
+    setDateTo: viewModel.setDateTo,
+    periodOpen: viewModel.periodOpen,
+    setPeriodOpen: viewModel.setPeriodOpen,
+    cardOpen: viewModel.cardOpen,
+    currentPaymentId: selected.currentPaymentId,
+    setCurrentPaymentId: selected.setCurrentPaymentId,
+    accountantFio: viewModel.accountantFio,
+    setAccountantFio: viewModel.setAccountantFio,
+    cardScrollRef: chrome.cardScrollRef,
+    payFormReveal: chrome.payFormReveal,
+    headerHeight: chrome.headerHeight,
+    headerShadow: chrome.headerShadow,
+    titleSize: chrome.titleSize,
+    subOpacity: chrome.subOpacity,
+    HEADER_MAX: chrome.HEADER_MAX,
+    onListScroll: chrome.onListScroll,
+    onCardScroll: chrome.onCardScroll,
+    current: selected.current,
+    setCurrent: selected.setCurrent,
+    invoiceNo: invoice.invoiceNo,
+    setInvoiceNo: invoice.setInvoiceNo,
+    invoiceDate: invoice.invoiceDate,
+    setInvoiceDate: invoice.setInvoiceDate,
+    supplierName: invoice.supplierName,
+    setSupplierName: invoice.setSupplierName,
+    purposePrefix: invoice.purposePrefix,
+    amount: invoice.amount,
+    setAmount: invoice.setAmount,
+    note: invoice.note,
+    setNote: invoice.setNote,
+    allocRows: invoice.allocRows,
+    setAllocRows: invoice.setAllocRows,
+    allocOk: invoice.allocOk,
+    setAllocOk: invoice.setAllocOk,
+    setAllocSum: invoice.setAllocSum,
+    bankName: invoice.bankName,
+    setBankName: invoice.setBankName,
+    bik: invoice.bik,
+    setBik: invoice.setBik,
+    rs: invoice.rs,
+    setRs: invoice.setRs,
+    inn: invoice.inn,
+    setInn: invoice.setInn,
+    kpp: invoice.kpp,
+    setKpp: invoice.setKpp,
+    INV_PREFIX: invoice.INV_PREFIX,
+    invMM: invoice.invMM,
+    setInvMM: invoice.setInvMM,
+    invDD: invoice.invDD,
+    setInvDD: invoice.setInvDD,
+    mmRef: invoice.mmRef,
+    ddRef: invoice.ddRef,
+    clamp2: invoice.clamp2,
+    payKind: invoice.payKind,
+    setPayKind: invoice.setPayKind,
+    isReadOnlyTab: metrics.isReadOnlyTab,
+    isPayActiveTab: metrics.isPayActiveTab,
+    payAccent: metrics.payAccent,
+    kbTypeNum: chrome.kbTypeNum,
+    canPayUi: metrics.canPayUi,
+    kbOpen: chrome.kbOpen,
+    kbdH: chrome.kbdH,
+    scrollInputIntoView: chrome.scrollInputIntoView,
+    rows: controller.rows,
+    loading: controller.loading,
+    refreshing: controller.refreshing,
+    inboxLoadingMore: controller.inboxLoadingMore,
+    inboxHasMore: controller.inboxHasMore,
+    inboxTotalCount: controller.inboxTotalCount,
+    historyRows: controller.historyRows,
+    historyLoading: controller.historyLoading,
+    historyRefreshing: controller.historyRefreshing,
+    historyLoadingMore: controller.historyLoadingMore,
+    historyHasMore: controller.historyHasMore,
+    historyTotalCount: controller.historyTotalCount,
+    historyTotalAmount: controller.historyTotalAmount,
+    historyCurrency: controller.historyCurrency,
+    loadHistory: controller.loadHistory,
+    loadMoreInbox: controller.loadMoreInbox,
+    loadMoreHistory: controller.loadMoreHistory,
+    onRefresh: controller.onRefresh,
+    onRefreshHistory: controller.onRefreshHistory,
+    bellOpen: visibility.bellOpen,
+    setBellOpen: visibility.setBellOpen,
+    notifs: visibility.notifs,
+    unread: visibility.unread,
+    loadNotifs: visibility.loadNotifs,
+    markAllRead: visibility.markAllRead,
+    accountantHistory: visibility.accountantHistory,
+    isFioConfirmVisible: visibility.isFioConfirmVisible,
+    isFioLoading: visibility.isFioLoading,
+    setIsFioConfirmVisible: visibility.setIsFioConfirmVisible,
+    handleFioConfirm: visibility.handleFioConfirm,
+    attRows: cardDocuments.attRows,
+    attState: cardDocuments.attState,
+    attMessage: cardDocuments.attMessage,
+    onOpenAttachments: cardDocuments.onOpenAttachments,
+    openOneAttachment: cardDocuments.openOneAttachment,
+    closeCard: cardDocuments.closeCard,
+    onOpenProposalPdf: cardDocuments.onOpenProposalPdf,
+    onOpenInvoiceDoc: cardDocuments.onOpenInvoiceDoc,
+    onOpenPaymentReport: cardDocuments.onOpenPaymentReport,
+    onPayConfirm: actions.onPayConfirm,
+    onReturnToBuyer: actions.onReturnToBuyer,
+    onOpenHistoryRow: actions.onOpenHistoryRow,
+    renderInboxRow: renderModels.renderInboxRow,
+    historyHeader: renderModels.historyHeader,
+    renderHistoryRow: renderModels.renderHistoryRow,
+    isHistoryTab: metrics.isHistoryTab,
   };
 }
 

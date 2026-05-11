@@ -181,6 +181,14 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "accountant", "useAccountantScreenComposition.tsx"),
       path.join(SRC, "screens", "accountant", "components", "AccountantScreenView.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi35AccountantCompositionBatchBFiles = [
+      path.join(SRC, "screens", "accountant", "accountant.compositionMetrics.ts"),
+      path.join(SRC, "screens", "accountant", "useAccountantCompositionActions.ts"),
+      path.join(SRC, "screens", "accountant", "useAccountantCompositionCardDocuments.ts"),
+      path.join(SRC, "screens", "accountant", "useAccountantCompositionRenderModels.tsx"),
+      path.join(SRC, "screens", "accountant", "useAccountantCompositionSelection.ts"),
+      path.join(SRC, "screens", "accountant", "useAccountantCompositionVisibility.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sNightUi20AccountantScreenChromeModelFiles = [
       path.join(SRC, "screens", "accountant", "useAccountantScreenChromeModel.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -207,6 +215,16 @@ describe("performance budget — bundle module count", () => {
     const sNightUi18ForemanSubcontractControllerSplitFiles = [
       path.join(SRC, "screens", "foreman", "hooks", "ForemanSubcontractControllerView.tsx"),
       path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractDraftActions.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sNightUi36ForemanSubcontractControllerCloseoutFiles = [
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractDraftLineActions.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractFormController.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractHistoryController.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractHydration.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractModalVisibility.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractPdfActions.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractRequestDraftState.ts"),
+      path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractSaveDraftAtomic.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sNightUi22ForemanRequestDraftLifecycleFiles = [
       path.join(SRC, "screens", "foreman", "hooks", "useForemanSubcontractRequestDraftLifecycle.ts"),
@@ -695,6 +713,8 @@ describe("performance budget — bundle module count", () => {
     // S_RUNTIME_03 adds one permanent Foreman subcontract hook-pressure view-model boundary.
     // S_NIGHT_UI_18 adds two permanent Foreman subcontract controller split boundaries.
     // S_NIGHT_UI_20 adds one permanent AccountantScreen chrome hook-pressure boundary.
+    // WAVE 35 adds six permanent Accountant composition hook-pressure boundaries.
+    // WAVE 36 adds eight permanent Foreman subcontract controller closeout boundaries.
     // S_RUNTIME_06 adds one permanent BuyerItemRow editor view-model boundary.
     // S_RUNTIME_07 adds one permanent CalcModal controller boundary.
     // S_RUNTIME_08 adds one permanent MarketHomeScreen controller boundary.
@@ -716,6 +736,7 @@ describe("performance budget — bundle module count", () => {
     expect(sBuyerScreenSideEffectBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sAuditBattle11AccountantScreenViewModelFiles).toBeLessThanOrEqual(2);
     expect(sNightUi14AccountantScreenDecompositionAFiles).toBeLessThanOrEqual(2);
+    expect(sNightUi35AccountantCompositionBatchBFiles).toBeLessThanOrEqual(6);
     expect(sNightUi20AccountantScreenChromeModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle12BuyerScreenStoreViewModelFiles).toBeLessThanOrEqual(2);
     expect(sNightUi12BuyerScreenControllerFiles).toBeLessThanOrEqual(1);
@@ -724,6 +745,7 @@ describe("performance budget — bundle module count", () => {
     expect(sRuntime01BuyerScreenHookPressureBoundaryFiles).toBeLessThanOrEqual(2);
     expect(sRuntime03ForemanSubcontractHookPressureBoundaryFiles).toBeLessThanOrEqual(1);
     expect(sNightUi18ForemanSubcontractControllerSplitFiles).toBeLessThanOrEqual(2);
+    expect(sNightUi36ForemanSubcontractControllerCloseoutFiles).toBeLessThanOrEqual(8);
     expect(sNightUi22ForemanRequestDraftLifecycleFiles).toBeLessThanOrEqual(1);
     expect(sRuntime06BuyerItemEditorModelFiles).toBeLessThanOrEqual(1);
     expect(sAuditBattle13AiAssistantStyleBoundaryFiles).toBeLessThanOrEqual(2);
@@ -846,6 +868,7 @@ describe("performance budget — bundle module count", () => {
         sBuyerScreenSideEffectBoundaryFiles -
         sAuditBattle11AccountantScreenViewModelFiles -
         sNightUi14AccountantScreenDecompositionAFiles -
+        sNightUi35AccountantCompositionBatchBFiles -
         sNightUi20AccountantScreenChromeModelFiles -
         sAuditBattle12BuyerScreenStoreViewModelFiles -
         sNightUi12BuyerScreenControllerFiles -
@@ -854,6 +877,7 @@ describe("performance budget — bundle module count", () => {
         sRuntime01BuyerScreenHookPressureBoundaryFiles -
         sRuntime03ForemanSubcontractHookPressureBoundaryFiles -
         sNightUi18ForemanSubcontractControllerSplitFiles -
+        sNightUi36ForemanSubcontractControllerCloseoutFiles -
         sNightUi22ForemanRequestDraftLifecycleFiles -
         sRuntime06BuyerItemEditorModelFiles -
         sAuditBattle13AiAssistantStyleBoundaryFiles -
