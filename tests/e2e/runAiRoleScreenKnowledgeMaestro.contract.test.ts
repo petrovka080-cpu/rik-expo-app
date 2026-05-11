@@ -36,6 +36,8 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("stdout_redacted: true");
     expect(source).toContain("stderr_redacted: true");
     expect(source).toContain("roleAuthResolution.env");
+    expect(source).toContain("buildMaestroPrefixedRoleEnv");
+    expect(source).toContain("maestroRoleEnv");
     expect(source).not.toContain("...buildMaestroEnvArgs(roleAuthEnv)");
     expect(source).not.toContain("...buildMaestroEnvArgs(roleAuthResolution.env)");
     expect(source).not.toContain("-e E2E_");

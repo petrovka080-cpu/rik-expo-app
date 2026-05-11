@@ -54,7 +54,7 @@ describe("e2e stable test IDs architecture gate", () => {
 
     expect(flows.length).toBeGreaterThanOrEqual(5);
     for (const flow of flows) {
-      expect(flow).toContain("${E2E_");
+      expect(flow).toContain("${MAESTRO_E2E_");
       expect(flow).not.toMatch(/E2E_[A-Z_]+=(?!\$\{)/);
       expect(flow).not.toMatch(/@[^{}\s]+/);
       expect(flow).not.toMatch(/password\s*[:=]\s*[^${\s]/i);

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { spawnSync } from "node:child_process";
 
 import {
@@ -8,6 +9,7 @@ import {
 } from "./ensureAndroidEmulatorReady";
 import {
   resolveExplicitAiRoleAuthEnv,
+  type ExplicitAiRoleSecretKey,
   type ExplicitAiRoleAuthSource,
 } from "./resolveExplicitAiRoleAuthEnv";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
@@ -16,6 +18,7 @@ export type AiRoleScreenKnowledgeStatus =
   | "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT"
   | "BLOCKED_NO_E2E_ROLE_SECRETS"
   | "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
+  | "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
   | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
 type RoleFlowName = "director" | "foreman" | "buyer" | "accountant" | "contractor";
@@ -149,6 +152,14 @@ function allPassedFlows(): Record<RoleFlowName, RoleFlowStatus> {
   };
 }
 
+function buildMaestroPrefixedRoleEnv(
+  env: Record<ExplicitAiRoleSecretKey, string>,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(env).map(([key, value]) => [`MAESTRO_${key}`, value]),
+  );
+}
+
 function writeEmulatorArtifact(artifact: AiRoleScreenKnowledgeArtifact): void {
   fs.mkdirSync(path.dirname(emulatorArtifactFile), { recursive: true });
   fs.writeFileSync(emulatorArtifactFile, `${JSON.stringify(artifact, null, 2)}\n`);
@@ -261,6 +272,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     ...process.env,
     ...roleAuthResolution.env,
   });
+  const maestroRoleEnv = buildMaestroPrefixedRoleEnv(roleAuthResolution.env);
   const bootstrap = await ensureAndroidEmulatorReady({ projectRoot });
   if (bootstrap.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !bootstrap.deviceId) {
     const artifact = buildBlockedArtifact(
@@ -300,8 +312,14 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     return artifact;
   }
 
+  fs.rmSync(outputDir, { recursive: true, force: true });
   fs.mkdirSync(outputDir, { recursive: true });
   adb(bootstrap.deviceId, ["shell", "am", "force-stop", appId], true);
+
+  const debugOutputDir = path.join(
+    os.tmpdir(),
+    `rik-ai-role-screen-maestro-${process.pid}-${Date.now()}`,
+  );
 
   try {
     runCommand(
@@ -316,23 +334,23 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
         "junit",
         "--output",
         reportFile,
-        "--test-output-dir",
-        outputDir,
         "--debug-output",
-        outputDir,
+        debugOutputDir,
         "--flatten-debug-output",
         "--no-ansi",
         ...flowFiles,
       ],
       true,
-      roleAuthResolution.env,
+      maestroRoleEnv,
       secretValues,
     );
   } catch (error) {
     const errorMessage = redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues);
-    const status = errorMessage.includes("auth.login.email")
+    const status = errorMessage.includes("auth.login.")
       ? "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
-      : "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
+      : errorMessage.includes("ai.assistant.")
+        ? "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
+        : "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
     const artifact = buildBlockedArtifact(
       status,
       bootstrap,
@@ -342,6 +360,8 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     );
     writeEmulatorArtifact(artifact);
     return artifact;
+  } finally {
+    fs.rmSync(debugOutputDir, { recursive: true, force: true });
   }
 
   const artifact: AiRoleScreenKnowledgeArtifact = {

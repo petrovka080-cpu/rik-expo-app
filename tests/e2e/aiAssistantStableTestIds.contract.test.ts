@@ -46,7 +46,7 @@ describe("AI assistant stable e2e test IDs", () => {
       expect(flow).toContain('id: "ai.assistant.input"');
       expect(flow).toContain('id: "ai.assistant.send"');
       expect(flow).toContain('id: "ai.assistant.response"');
-      expect(flow).toContain("${E2E_");
+      expect(flow).toContain("${MAESTRO_E2E_");
       expect(flow).not.toMatch(/@example\.com|password\s*[:=]|service_role/i);
     }
   });

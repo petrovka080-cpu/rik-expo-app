@@ -18,10 +18,10 @@ name: AI Role Screen Knowledge Contractor
     timeout: 15000
 - tapOn:
     id: "auth.login.email"
-- inputText: ${E2E_CONTRACTOR_EMAIL}
+- inputText: ${MAESTRO_E2E_CONTRACTOR_EMAIL}
 - tapOn:
     id: "auth.login.password"
-- inputText: ${E2E_CONTRACTOR_PASSWORD}
+- inputText: ${MAESTRO_E2E_CONTRACTOR_PASSWORD}
 - hideKeyboard
 - tapOn:
     id: "auth.login.submit"

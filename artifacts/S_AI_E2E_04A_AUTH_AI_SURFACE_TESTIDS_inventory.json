@@ -4,8 +4,11 @@
   "runtime_surfaces": {
     "auth_login_screen": "app/auth/login.tsx",
     "ai_assistant_screen": "src/features/ai/AIAssistantScreen.tsx",
-    "ai_assistant_open_control": "src/features/ai/AssistantFab.tsx"
+    "ai_assistant_open_control": "src/features/ai/AssistantFab.tsx",
+    "ai_assistant_styles": "src/features/ai/AIAssistantScreen.styles.ts"
   },
+  "maestro_runner": "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+  "maestro_role_env_bridge": "E2E_* explicit process env values are mirrored to MAESTRO_E2E_* child_process.env keys because Maestro reads MAESTRO_* shell variables without CLI -e args.",
   "maestro_flows": [
     "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
     "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
@@ -16,6 +19,8 @@
   "contract_tests": [
     "tests/e2e/authStableTestIds.contract.test.ts",
     "tests/e2e/aiAssistantStableTestIds.contract.test.ts",
+    "tests/e2e/secretSafeMaestroEnv.contract.test.ts",
+    "tests/e2e/runAiRoleScreenKnowledgeMaestro.contract.test.ts",
     "tests/architecture/e2eStableTestIdsGate.contract.test.ts"
   ],
   "test_ids": {
@@ -34,5 +39,6 @@
       "ai.assistant.send",
       "ai.assistant.response"
     ]
-  }
+  },
+  "runtime_blocker": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
 }
