@@ -53,6 +53,16 @@ const EMPTY_PAYLOAD: SupplierShowcasePayload = {
   },
 };
 
+const SUPPLIER_SHOWCASE_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 6,
+  maxToRenderPerBatch: 6,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
+const supplierShowcaseListingKeyExtractor = (item: MarketHomeListingCard) => item.id;
+
 function initialForName(value: string | null | undefined): string {
   const trimmed = String(value ?? "").trim();
   return trimmed ? trimmed.charAt(0).toUpperCase() : "G";
@@ -334,10 +344,11 @@ export default function SupplierShowcaseScreen() {
       <FlashList
         data={payload.listings}
         key={numColumns}
-        keyExtractor={(item) => item.id}
+        keyExtractor={supplierShowcaseListingKeyExtractor}
         renderItem={renderCard}
         numColumns={numColumns}
         estimatedItemSize={numColumns > 1 ? 420 : 520}
+        {...SUPPLIER_SHOWCASE_LIST_FLATLIST_TUNING}
         drawDistance={860}
         getItemType={() => "showcase-card"}
         ListHeaderComponent={header}

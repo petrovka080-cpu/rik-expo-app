@@ -19,6 +19,14 @@ import {
 } from "../warehouse.tab.empty";
 import type { StockRow } from "../warehouse.types";
 
+const WAREHOUSE_STOCK_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 10,
+  maxToRenderPerBatch: 10,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
 type Props = {
   stockSupported: boolean | null;
   data: StockRow[];
@@ -70,6 +78,7 @@ export default function WarehouseStockTab({
         renderItem={renderItem}
         ListHeaderComponent={header}
         estimatedItemSize={88}
+        {...WAREHOUSE_STOCK_LIST_FLATLIST_TUNING}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.45}
         ListEmptyComponent={

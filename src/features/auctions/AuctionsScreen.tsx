@@ -29,6 +29,16 @@ type State = {
   rows: UnifiedAuctionSummary[];
 };
 
+const AUCTIONS_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
+const auctionListKeyExtractor = (item: UnifiedAuctionSummary) => item.id;
+
 function createState(): State {
   return {
     loading: true,
@@ -203,9 +213,10 @@ export default function AuctionsScreen() {
       ) : (
         <FlashList
           data={state.rows}
-          keyExtractor={(item) => item.id}
+          keyExtractor={auctionListKeyExtractor}
           renderItem={renderItem}
           estimatedItemSize={228}
+          {...AUCTIONS_LIST_FLATLIST_TUNING}
           drawDistance={640}
           getItemType={() => "auction-card"}
           contentContainerStyle={styles.listContent}

@@ -17,6 +17,14 @@ import {
   type AccountantListItem,
 } from "../accountant.listModel";
 
+const ACCOUNTANT_LIST_SECTION_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
 export const AccountantEmptyState = React.memo(function AccountantEmptyState({
   title,
   hint,
@@ -127,6 +135,7 @@ export function AccountantListBlock<TInbox extends AccountantInboxListRowBase>({
       style={{ flex: 1 }}
       data={data}
       estimatedItemSize={getAccountantListEstimatedItemSize(isHistory)}
+      {...ACCOUNTANT_LIST_SECTION_FLATLIST_TUNING}
       keyExtractor={keyExtractor}
       ListHeaderComponent={isHistory ? historyHeader : null}
       renderItem={renderItem}

@@ -25,6 +25,16 @@ type Props = {
   contentTopPad: number;
 };
 
+const ACCOUNTANT_SUBCONTRACT_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
+const accountantSubcontractKeyExtractor = (item: Subcontract) => item.id;
+
 const ru = (value: unknown, fallback = "—") => {
   const normalized = String(normalizeRuText(String(value ?? fallback)) ?? "").trim();
   return normalized || fallback;
@@ -145,7 +155,8 @@ export default function AccountantSubcontractTab({ contentTopPad }: Props) {
         data={items}
         estimatedItemSize={124}
         renderItem={renderCard}
-        keyExtractor={(item) => item.id}
+        keyExtractor={accountantSubcontractKeyExtractor}
+        {...ACCOUNTANT_SUBCONTRACT_LIST_FLATLIST_TUNING}
         contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
         onEndReachedThreshold={0.45}

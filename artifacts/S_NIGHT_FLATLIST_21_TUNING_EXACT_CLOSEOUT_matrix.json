@@ -1,0 +1,132 @@
+{
+  "wave": "S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT",
+  "final_status": "GREEN_FLATLIST_TUNING_EXACT_CLOSEOUT",
+  "date": "2026-05-11",
+  "commit_sha": "PENDING_FINAL_COMMIT",
+  "head_equals_origin_main": "PENDING_POST_PUSH",
+  "ahead_behind": "PENDING_POST_PUSH",
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE",
+  "preflight": {
+    "git_fetch_origin_main": "PASS",
+    "head_equals_origin_main": true,
+    "ahead_behind": "0/0",
+    "worktree_clean_at_start": true,
+    "start_head": "34a6f367eff47a33eca628272454bca580d3c05f"
+  },
+  "scope": {
+    "goal": "Close remaining FlatList/FlashList tuning while preserving production-safe source boundaries.",
+    "selected_files": [
+      "src/components/AppCombo.tsx",
+      "src/screens/buyer/components/BuyerMainList.tsx",
+      "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+      "src/screens/accountant/components/AccountantListSection.tsx",
+      "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+      "src/screens/contractor/components/ContractorOtherWorksList.tsx",
+      "src/features/auctions/AuctionsScreen.tsx",
+      "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "src/screens/director/DirectorSubcontractTab.tsx",
+      "src/screens/warehouse/components/WarehouseStockTab.tsx",
+      "src/screens/warehouse/components/WarehouseIncomingTab.tsx",
+      "src/screens/warehouse/components/WarehouseIssueTab.tsx",
+      "tests/perf/flatListTuningExactCloseout.contract.test.ts",
+      "artifacts/S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT_inventory.json",
+      "artifacts/S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT_matrix.json",
+      "artifacts/S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT_proof.md"
+    ],
+    "reason_selected": "These were the remaining root/heavy or post-decomposition runtime list surfaces with missing full tuning props and stable key-source contracts. Report surfaces and nested modal/picker lists were inventoried but left unchanged unless they were already tuned.",
+    "route_scope_unchanged": true,
+    "no_cache_change": true,
+    "no_rate_limit_change": true,
+    "no_db_or_env_change": true
+  },
+  "before_after_metrics": {
+    "raw_regex_hits": {
+      "before": 77,
+      "after": 77
+    },
+    "normalized_runtime_jsx_instances": {
+      "before": 60,
+      "after": 60
+    },
+    "selected_heavy_untuned_candidates": {
+      "before": 14,
+      "after": 1
+    },
+    "newly_tuned_runtime_instances": {
+      "before": 0,
+      "after": 13
+    },
+    "untuned_flatlist_heavy_components": {
+      "before": 14,
+      "after": 1
+    },
+    "getItemLayout_added": {
+      "before": 0,
+      "after": 0
+    },
+    "report_surface_source_files_changed_in_final_diff": {
+      "before": 0,
+      "after": 0
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "PASS",
+      "commands": [
+        "npm test -- --runInBand tests/perf/flatListTuningExactCloseout.contract.test.ts tests/perf/flatListTuningBatchA.contract.test.ts tests/perf/flatListTuningBatchB.contract.test.ts tests/perf/flatListTuningBatchC.contract.test.ts tests/perf/performance-budget.test.ts tests/market/marketHomeController.decomposition.test.ts tests/buyer/buyerSubcontractTab.decomposition.test.ts tests/contractor/contractorScreenDecompositionA.contract.test.ts tests/map/mapScreenControllerDecompositionA.contract.test.ts",
+        "npm test -- --runInBand tests/perf/flatListTuningExactCloseout.contract.test.ts"
+      ]
+    },
+    "typecheck": {
+      "status": "PASS",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "PASS",
+      "command": "npx expo lint"
+    },
+    "full_tests": {
+      "status": "PASS",
+      "command": "npm test -- --runInBand",
+      "summary": "709 passed, 1 skipped test suite; 4154 passed, 1 skipped tests"
+    },
+    "architecture_scanner": {
+      "status": "PASS",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
+    },
+    "git_diff_check": {
+      "status": "PASS",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "PASS",
+      "files": [
+        "artifacts/S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT_matrix.json",
+        "artifacts/S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT_inventory.json"
+      ]
+    },
+    "post_push_release_verify": {
+      "status": "PENDING_POST_PUSH",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "force_push": false,
+    "tags": false,
+    "secrets_printed": false,
+    "typescript_suppression_directives_added": false,
+    "untyped_escape_casts_added": false,
+    "empty_catch_blocks_added": false,
+    "broad_rewrite": false,
+    "supabase_project_changes": false,
+    "spend_cap_changes": false,
+    "realtime_50k_60k_load": false,
+    "destructive_or_unbounded_dml": false,
+    "ota_eas_testflight_native_builds": false,
+    "production_mutation_route_broad_enablement": false,
+    "broad_cache_enablement": false,
+    "broad_rate_limit_enablement": false
+  }
+}

@@ -21,6 +21,16 @@ type Props = {
   styles: any;
 };
 
+const CONTRACTOR_OTHER_WORKS_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
+const contractorOtherWorkKeyExtractor = (item: WorkRowLite) => `other:${String(item.progress_id)}`;
+
 export default function ContractorOtherWorksList(props: Props) {
   const { data, refreshing, loadingWorks, onRefresh, onOpenWork, toHumanWork, toHumanObject, styles } = props;
   return (
@@ -28,8 +38,9 @@ export default function ContractorOtherWorksList(props: Props) {
       style={{ flex: 1, marginTop: 12 }}
       contentContainerStyle={{ paddingTop: 8, paddingBottom: 8 }}
       data={data}
-      keyExtractor={(item) => `other:${String(item.progress_id)}`}
+      keyExtractor={contractorOtherWorkKeyExtractor}
       estimatedItemSize={92}
+      {...CONTRACTOR_OTHER_WORKS_LIST_FLATLIST_TUNING}
       refreshControl={<RefreshControl refreshing={refreshing || loadingWorks} onRefresh={onRefresh} />}
       ListEmptyComponent={
         <View style={[styles.card, styles.cardDark, styles.cardSeparated]}>

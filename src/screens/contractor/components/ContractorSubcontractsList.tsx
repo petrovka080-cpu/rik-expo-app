@@ -79,6 +79,13 @@ const OBJECT_BADGE_STYLE = {
 } as const;
 const OBJECT_BADGE_TEXT_STYLE = { color: "#60A5FA", fontSize: 11, fontWeight: "900" } as const;
 const OBJECT_TEXT_STYLE = { marginTop: 0, flex: 1 } as const;
+const CONTRACTOR_SUBCONTRACTS_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
 
 const contractorWorkCardKeyExtractor = (item: ContractorWorkCardModel) => String(item.workId);
 
@@ -227,6 +234,7 @@ function ContractorSubcontractsList(props: Props) {
       data={data}
       keyExtractor={contractorWorkCardKeyExtractor}
       estimatedItemSize={120}
+      {...CONTRACTOR_SUBCONTRACTS_LIST_FLATLIST_TUNING}
       refreshControl={refreshControl}
       ListHeaderComponent={headerComponent}
       ListEmptyComponent={emptyComponent}

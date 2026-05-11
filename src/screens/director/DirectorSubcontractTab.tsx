@@ -40,6 +40,14 @@ const FILTER_TABS: { key: StatusFilter; label: string }[] = [
   { key: 'closed', label: 'Закрыто' },
 ];
 
+const DIRECTOR_SUBCONTRACT_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
 const errText = (e: unknown, fallback: string) =>
   e instanceof Error && e.message.trim() ? e.message.trim() : fallback;
 
@@ -344,6 +352,7 @@ export default function DirectorSubcontractTab({ contentTopPad, onScroll }: Prop
         data={filtered}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
+        {...DIRECTOR_SUBCONTRACT_LIST_FLATLIST_TUNING}
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentContainerStyle={{ paddingTop: contentTopPad, paddingHorizontal: 16, paddingBottom: 24 }}

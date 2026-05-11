@@ -64,6 +64,15 @@ type BuyerSubcontractTabViewProps = {
 };
 
 const dropdownUi = { text: B_UI.text };
+const BUYER_SUBCONTRACT_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
+const buyerSubcontractKeyExtractor = (item: Subcontract) => item.id;
 
 function BuyerSubcontractCard({
   item,
@@ -376,8 +385,9 @@ export function BuyerSubcontractTabView({
           renderItem={({ item }) => (
             <BuyerSubcontractCard item={item} onOpenEditableItem={onOpenEditableItem} />
           )}
-          keyExtractor={(item) => item.id}
+          keyExtractor={buyerSubcontractKeyExtractor}
           estimatedItemSize={118}
+          {...BUYER_SUBCONTRACT_LIST_FLATLIST_TUNING}
           contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
           onScroll={onScroll}
           scrollEventThrottle={16}

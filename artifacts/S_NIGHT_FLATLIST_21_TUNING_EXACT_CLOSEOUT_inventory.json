@@ -1,0 +1,481 @@
+{
+  "wave": "S_NIGHT_FLATLIST_21_TUNING_EXACT_CLOSEOUT",
+  "final_status": "GREEN_FLATLIST_TUNING_EXACT_CLOSEOUT",
+  "inventory_date": "2026-05-11",
+  "scanner": {
+    "raw_regex_hits": {
+      "count": 77,
+      "flatList": 19,
+      "flashList": 58,
+      "scope": "repo files excluding node_modules/artifacts/build outputs; includes diagnostics, scripts, tests, wrapper, and type references"
+    },
+    "normalized_runtime_jsx_hits": {
+      "count": 60,
+      "flatList": 6,
+      "flashList": 54,
+      "scope": "src production JSX runtime instances, excluding src/ui/FlashList.tsx wrapper and type-reference false positives"
+    },
+    "wrapper_checked": {
+      "file": "src/ui/FlashList.tsx",
+      "status": "checked_wrapper_forwarding",
+      "proof": "Native FlashList and FlatList fallback both forward rest props; no per-call tuning is needed in the generic wrapper."
+    }
+  },
+  "summary": {
+    "selected_heavy_untuned_candidates_before": 14,
+    "selected_heavy_untuned_candidates_after": 1,
+    "newly_tuned_runtime_instances": 13,
+    "newly_tuned_components": 13,
+    "untuned_flatlist_heavy_components_after": 1,
+    "report_surface_files_changed_in_final_diff": 0,
+    "getItemLayout_added": 0,
+    "nested_lists_inventory_checked": true,
+    "target_met": true
+  },
+  "remaining_heavy_exception": [
+    {
+      "file": "src/components/WorkMaterialsEditor.tsx",
+      "line": 207,
+      "kind": "FlashList",
+      "status": "untuned_heavy_remaining",
+      "reason": "Editable local material rows currently use index-key semantics to avoid preserving row-local editor state across reorder/delete flows. Left as the single allowed heavy remainder for WAVE 21; should be handled by the WAVE 22 scanner allowlist or a model-level stable-row-id fix."
+    }
+  ],
+  "runtime_entries": [
+    {
+      "file": "src/components/AppCombo.tsx",
+      "line": 99,
+      "kind": "FlatList",
+      "status": "tuned_this_wave",
+      "classification": "generic combo dropdown",
+      "proof": "APP_COMBO_FLATLIST_TUNING plus stable appComboKeyExtractor"
+    },
+    {
+      "file": "src/components/foreman/CalcModalContent.tsx",
+      "line": 447,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "calc modal nested results"
+    },
+    {
+      "file": "src/components/foreman/CatalogModal.tsx",
+      "line": 317,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "catalog modal list"
+    },
+    {
+      "file": "src/components/map/CatalogSearchModal.tsx",
+      "line": 158,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "map catalog search modal"
+    },
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "line": 289,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "map results bottom sheet"
+    },
+    {
+      "file": "src/components/WorkMaterialsEditor.tsx",
+      "line": 207,
+      "kind": "FlashList",
+      "status": "untuned_heavy_remaining",
+      "classification": "editable local material rows"
+    },
+    {
+      "file": "src/features/auctions/AuctionsScreen.tsx",
+      "line": 214,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "auctions root list",
+      "proof": "AUCTIONS_LIST_FLATLIST_TUNING plus stable auctionListKeyExtractor"
+    },
+    {
+      "file": "src/features/chat/ChatScreen.tsx",
+      "line": 402,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "chat message thread"
+    },
+    {
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "line": 204,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "market home feed"
+    },
+    {
+      "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "line": 344,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "supplier showcase root list",
+      "proof": "SUPPLIER_SHOWCASE_LIST_FLATLIST_TUNING plus stable supplierShowcaseListingKeyExtractor"
+    },
+    {
+      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "line": 153,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "accountant subcontract tab",
+      "proof": "ACCOUNTANT_SUBCONTRACT_LIST_FLATLIST_TUNING plus stable accountantSubcontractKeyExtractor"
+    },
+    {
+      "file": "src/screens/accountant/components/AccountantListSection.tsx",
+      "line": 134,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "accountant list section",
+      "proof": "ACCOUNTANT_LIST_SECTION_FLATLIST_TUNING plus stable keyExtractor"
+    },
+    {
+      "file": "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+      "line": 383,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "buyer subcontract tab",
+      "proof": "BUYER_SUBCONTRACT_LIST_FLATLIST_TUNING plus stable buyerSubcontractKeyExtractor"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+      "line": 209,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "buyer inbox sheet"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+      "line": 243,
+      "kind": "FlatList",
+      "status": "previously_tuned",
+      "classification": "buyer item row nested attachments"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+      "line": 319,
+      "kind": "FlatList",
+      "status": "previously_tuned",
+      "classification": "buyer item row nested links"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMainList.tsx",
+      "line": 215,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "buyer main screen list",
+      "proof": "BUYER_MAIN_LIST_FLATLIST_TUNING plus stable keyExtractor"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "line": 185,
+      "kind": "FlatList",
+      "status": "previously_tuned",
+      "classification": "buyer mobile editor modal"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "line": 229,
+      "kind": "FlatList",
+      "status": "previously_tuned",
+      "classification": "buyer mobile editor modal"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+      "line": 381,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "buyer proposal details sheet"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+      "line": 282,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "buyer rework sheet"
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "line": 189,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "buyer rfq sheet"
+    },
+    {
+      "file": "src/screens/contractor/components/ActBuilderModal.tsx",
+      "line": 243,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "contractor act builder modal"
+    },
+    {
+      "file": "src/screens/contractor/components/ContractorOtherWorksList.tsx",
+      "line": 37,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "contractor other works list",
+      "proof": "CONTRACTOR_OTHER_WORKS_LIST_FLATLIST_TUNING plus stable contractorOtherWorkKeyExtractor"
+    },
+    {
+      "file": "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+      "line": 231,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "contractor subcontracts list",
+      "proof": "CONTRACTOR_SUBCONTRACTS_LIST_FLATLIST_TUNING plus stable contractorWorkCardKeyExtractor"
+    },
+    {
+      "file": "src/screens/contractor/components/EstimateMaterialsModal.tsx",
+      "line": 91,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "contractor estimate materials modal"
+    },
+    {
+      "file": "src/screens/contractor/components/WorkStagePickerModal.tsx",
+      "line": 54,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "contractor work stage picker"
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "line": 272,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "director request groups"
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "line": 451,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "director proposal heads"
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "line": 469,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "director proposal heads"
+    },
+    {
+      "file": "src/screens/director/DirectorDashboard.tsx",
+      "line": 499,
+      "kind": "FlashList",
+      "status": "previously_tuned",
+      "classification": "director finance cards"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceDebtModal.tsx",
+      "line": 206,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director finance debt modal"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceKindSuppliersModal.tsx",
+      "line": 68,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director finance kind suppliers modal"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceSpendModal.tsx",
+      "line": 194,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director finance spend modal"
+    },
+    {
+      "file": "src/screens/director/DirectorFinanceSupplierModal.tsx",
+      "line": 119,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director finance supplier modal"
+    },
+    {
+      "file": "src/screens/director/DirectorProposalSheet.tsx",
+      "line": 284,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director proposal sheet"
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "line": 379,
+      "kind": "FlashList",
+      "status": "checked_nested_report_surface",
+      "classification": "director reports modal"
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "line": 404,
+      "kind": "FlashList",
+      "status": "checked_nested_report_surface",
+      "classification": "director reports modal"
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "line": 426,
+      "kind": "FlashList",
+      "status": "checked_nested_report_surface",
+      "classification": "director reports modal"
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "line": 523,
+      "kind": "FlashList",
+      "status": "checked_nested_report_surface",
+      "classification": "director reports modal"
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "line": 536,
+      "kind": "FlashList",
+      "status": "checked_nested_report_surface",
+      "classification": "director reports modal"
+    },
+    {
+      "file": "src/screens/director/DirectorRequestSheet.tsx",
+      "line": 68,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "director request sheet"
+    },
+    {
+      "file": "src/screens/director/DirectorSubcontractTab.tsx",
+      "line": 351,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "director subcontract tab",
+      "proof": "DIRECTOR_SUBCONTRACT_LIST_FLATLIST_TUNING plus existing stable keyExtractor"
+    },
+    {
+      "file": "src/screens/foreman/ForemanDraftModal.tsx",
+      "line": 242,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "foreman draft modal"
+    },
+    {
+      "file": "src/screens/foreman/ForemanDropdown.tsx",
+      "line": 177,
+      "kind": "FlatList",
+      "status": "previously_tuned",
+      "classification": "foreman dropdown with stable layout"
+    },
+    {
+      "file": "src/screens/foreman/ForemanHistoryModal.tsx",
+      "line": 237,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "foreman history modal"
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractDraftSections.tsx",
+      "line": 262,
+      "kind": "FlashList",
+      "status": "checked_layout_proof",
+      "classification": "foreman subcontract draft section rows"
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractHistoryModal.tsx",
+      "line": 109,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "foreman subcontract history modal"
+    },
+    {
+      "file": "src/screens/foreman/ForemanSubcontractTab.sections.tsx",
+      "line": 137,
+      "kind": "FlashList",
+      "status": "checked_layout_proof",
+      "classification": "foreman approved contracts section"
+    },
+    {
+      "file": "src/screens/warehouse/components/IncomingDetailsSheet.tsx",
+      "line": 121,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse incoming details sheet"
+    },
+    {
+      "file": "src/screens/warehouse/components/IncomingItemsSheet.tsx",
+      "line": 181,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse incoming items sheet"
+    },
+    {
+      "file": "src/screens/warehouse/components/IssueDetailsSheet.tsx",
+      "line": 119,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse issue details sheet"
+    },
+    {
+      "file": "src/screens/warehouse/components/PickOptionSheet.tsx",
+      "line": 89,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse pick option sheet"
+    },
+    {
+      "file": "src/screens/warehouse/components/ReqIssueModal.tsx",
+      "line": 349,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse request issue modal"
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseIncomingTab.tsx",
+      "line": 54,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "warehouse incoming tab",
+      "proof": "WAREHOUSE_INCOMING_LIST_FLATLIST_TUNING plus stable selectWarehouseIncomingKey"
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseIssueTab.tsx",
+      "line": 67,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "warehouse issue tab",
+      "proof": "WAREHOUSE_ISSUE_LIST_FLATLIST_TUNING plus stable selectWarehouseReqHeadKey"
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseRecipientModal.tsx",
+      "line": 100,
+      "kind": "FlashList",
+      "status": "checked_nested_not_heavy",
+      "classification": "warehouse recipient modal"
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+      "line": 392,
+      "kind": "FlashList",
+      "status": "checked_report_surface_exclusion",
+      "classification": "warehouse reports active-day nested list",
+      "proof": "Left untouched because existing pagination/load contracts forbid report-surface source changes."
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+      "line": 416,
+      "kind": "FlashList",
+      "status": "checked_report_surface_exclusion",
+      "classification": "warehouse reports day-group list",
+      "proof": "Left untouched because existing pagination/load contracts forbid report-surface source changes."
+    },
+    {
+      "file": "src/screens/warehouse/components/WarehouseStockTab.tsx",
+      "line": 72,
+      "kind": "FlashList",
+      "status": "tuned_this_wave",
+      "classification": "warehouse stock tab",
+      "proof": "WAREHOUSE_STOCK_LIST_FLATLIST_TUNING plus stable selectWarehouseStockKey"
+    }
+  ]
+}

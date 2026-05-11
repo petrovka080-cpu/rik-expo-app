@@ -16,6 +16,14 @@ import {
 import { selectWarehouseIncomingEmptyText } from "../warehouse.tab.empty";
 import type { IncomingRow } from "../warehouse.types";
 
+const WAREHOUSE_INCOMING_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 10,
+  maxToRenderPerBatch: 10,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
 type Props = {
   data: IncomingRow[];
   contentContainerStyle: { paddingTop: number; paddingBottom: number };
@@ -52,6 +60,7 @@ export default function WarehouseIncomingTab({
         ListHeaderComponent={null}
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
+        {...WAREHOUSE_INCOMING_LIST_FLATLIST_TUNING}
         ListFooterComponent={
           loadingMore ? (
             <ActivityIndicator style={{ paddingVertical: 16 }} />

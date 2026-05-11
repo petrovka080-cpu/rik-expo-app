@@ -30,6 +30,13 @@ const SKELETON_ITEM_SIZE = 180;
 const INBOX_ITEM_SIZE = 192;
 const PROPOSAL_ITEM_SIZE = 176;
 const END_REACHED_THRESHOLD = 0.45;
+const BUYER_MAIN_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 8,
+  maxToRenderPerBatch: 8,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
 
 function getRowLayerStyle(index: number) {
   const rowZ = Math.max(1, 1000 - Math.max(0, index));
@@ -222,7 +229,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       onScrollBeginDrag={handleScrollBeginDrag}
-      removeClippedSubviews={false}
+      {...BUYER_MAIN_LIST_FLATLIST_TUNING}
     />
   );
 });

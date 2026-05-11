@@ -20,6 +20,14 @@ import type {
   WarehouseReqHeadsListState,
 } from "../warehouse.types";
 
+const WAREHOUSE_ISSUE_LIST_FLATLIST_TUNING = {
+  initialNumToRender: 10,
+  maxToRenderPerBatch: 10,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 7,
+  removeClippedSubviews: false,
+} as const;
+
 type Props = {
   data: ReqHeadRow[];
   contentContainerStyle: { paddingTop: number; paddingBottom: number };
@@ -65,6 +73,7 @@ export default function WarehouseIssueTab({
         onEndReached={onEndReached}
         onEndReachedThreshold={0.5}
         refreshControl={refreshControl}
+        {...WAREHOUSE_ISSUE_LIST_FLATLIST_TUNING}
         ListFooterComponent={
           loadingMore ? (
             <ActivityIndicator style={{ paddingVertical: 16 }} />

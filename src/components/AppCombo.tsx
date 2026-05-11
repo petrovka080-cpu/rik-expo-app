@@ -3,6 +3,16 @@ import { View, Text, Pressable, Modal, FlatList, TextInput } from 'react-native'
 
 export type AppOption = { code: string; label: string };
 
+const APP_COMBO_FLATLIST_TUNING = {
+  initialNumToRender: 12,
+  maxToRenderPerBatch: 12,
+  updateCellsBatchingPeriod: 32,
+  windowSize: 5,
+  removeClippedSubviews: false,
+} as const;
+
+const appComboKeyExtractor = (item: AppOption) => item.code + '|' + item.label;
+
 function norm(s: string) {
   return (s || '').trim().replace(/\s+/g, ' ');
 }
@@ -88,7 +98,8 @@ export default function AppCombo({
 
           <FlatList
             data={filtered}
-            keyExtractor={(item) => item.code + '|' + item.label}
+            keyExtractor={appComboKeyExtractor}
+            {...APP_COMBO_FLATLIST_TUNING}
             renderItem={({ item }) => (
               <Pressable onPress={() => pick(item)} style={{ paddingVertical: 10 }}>
                 <Text style={{ fontSize: 16 }}>{item.label}</Text>
