@@ -38,6 +38,30 @@ const draftRequestItemSchema = {
   },
 } satisfies AiToolJsonObjectSchema["properties"][string];
 
+const draftActWorkItemSchema = {
+  type: "object",
+  required: [],
+  additionalProperties: false,
+  properties: {
+    name: {
+      type: "string",
+      minLength: 1,
+    },
+    quantity: {
+      type: "number",
+      minimum: 0,
+    },
+    unit: {
+      type: "string",
+      minLength: 1,
+    },
+    notes: {
+      type: "string",
+      minLength: 1,
+    },
+  },
+} satisfies AiToolJsonObjectSchema["properties"][string];
+
 export const searchCatalogInputSchema: AiToolJsonObjectSchema = {
   type: "object",
   required: ["query"],
@@ -647,23 +671,110 @@ export const draftReportOutputSchema: AiToolJsonObjectSchema = {
 
 export const draftActInputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["subcontractId", "workSummary"],
+  required: ["subcontract_id", "act_kind", "work_summary"],
   additionalProperties: false,
   properties: {
-    subcontractId: { type: "string", minLength: 1 },
-    workSummary: { type: "string", minLength: 1 },
-    documentId: { type: "string", minLength: 1 },
+    subcontract_id: { type: "string", minLength: 1 },
+    act_kind: {
+      type: "string",
+      enum: ["work_completion", "materials_handover", "subcontract_progress"],
+    },
+    work_summary: { type: "string", minLength: 1 },
+    work_items: {
+      type: "array",
+      minItems: 1,
+      maxItems: 50,
+      items: draftActWorkItemSchema,
+    },
+    period_start: { type: "string", minLength: 10 },
+    period_end: { type: "string", minLength: 10 },
+    source_evidence_refs: {
+      type: "array",
+      minItems: 1,
+      maxItems: 20,
+      items: evidenceRefSchema,
+    },
+    notes: { type: "string", minLength: 1 },
   },
 };
 
 export const draftActOutputSchema: AiToolJsonObjectSchema = {
   type: "object",
-  required: ["draftPreview", "approvalRequired", "evidenceRefs"],
+  required: [
+    "draft_preview",
+    "act_kind",
+    "work_items_normalized",
+    "missing_fields",
+    "risk_flags",
+    "requires_approval",
+    "next_action",
+    "evidence_refs",
+    "risk_level",
+    "role_scope",
+    "role_scoped",
+    "bounded",
+    "persisted",
+    "idempotency_required_if_persisted",
+    "mutation_count",
+    "final_submit",
+    "act_signed",
+    "contractor_confirmation",
+    "payment_mutation",
+    "warehouse_mutation",
+  ],
   additionalProperties: false,
   properties: {
-    draftPreview: { type: "string", minLength: 1 },
-    approvalRequired: { type: "boolean" },
-    evidenceRefs: { type: "array", items: evidenceRefSchema },
+    draft_preview: { type: "string", minLength: 1 },
+    act_kind: {
+      type: "string",
+      enum: ["work_completion", "materials_handover", "subcontract_progress"],
+    },
+    work_items_normalized: {
+      type: "array",
+      items: {
+        type: "object",
+        required: ["line", "name", "quantity", "unit", "notes", "evidence_ref"],
+        additionalProperties: false,
+        properties: {
+          line: { type: "number", minimum: 1 },
+          name: { type: "string" },
+          quantity: { type: "number", minimum: 0 },
+          unit: { type: "string" },
+          notes: { type: "string" },
+          evidence_ref: { type: "string", minLength: 1 },
+        },
+      },
+    },
+    missing_fields: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    risk_flags: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    requires_approval: { type: "boolean" },
+    next_action: { type: "string", enum: ["submit_for_approval"] },
+    evidence_refs: { type: "array", items: evidenceRefSchema },
+    risk_level: { type: "string", enum: ["DRAFT_ONLY"] },
+    role_scope: {
+      type: "string",
+      enum: [
+        "director_control_subcontract_scope",
+        "foreman_subcontract_scope",
+        "contractor_own_subcontract_scope",
+      ],
+    },
+    role_scoped: { type: "boolean" },
+    bounded: { type: "boolean" },
+    persisted: { type: "boolean" },
+    idempotency_required_if_persisted: { type: "boolean" },
+    mutation_count: { type: "number", minimum: 0, maximum: 0 },
+    final_submit: { type: "number", minimum: 0, maximum: 0 },
+    act_signed: { type: "number", minimum: 0, maximum: 0 },
+    contractor_confirmation: { type: "number", minimum: 0, maximum: 0 },
+    payment_mutation: { type: "number", minimum: 0, maximum: 0 },
+    warehouse_mutation: { type: "number", minimum: 0, maximum: 0 },
   },
 };
 

@@ -1,0 +1,51 @@
+{
+  "wave": "S_AI_DRAFT_03_DRAFT_ACT_TOOL",
+  "scope": "production_safe_draft_only_ai_act_tool",
+  "files_created": [
+    "src/features/ai/tools/draftActTool.ts",
+    "tests/ai/draftActTool.contract.test.ts",
+    "tests/ai/draftActNoFinalSubmit.contract.test.ts",
+    "artifacts/S_AI_DRAFT_03_DRAFT_ACT_TOOL_inventory.json",
+    "artifacts/S_AI_DRAFT_03_DRAFT_ACT_TOOL_matrix.json",
+    "artifacts/S_AI_DRAFT_03_DRAFT_ACT_TOOL_proof.md"
+  ],
+  "files_updated": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "runtime_boundaries": {
+    "tool": "draft_act",
+    "risk_level": "DRAFT_ONLY",
+    "policy_gate": "planAiToolUse",
+    "live_execution": false,
+    "model_provider_import": false,
+    "direct_supabase": false,
+    "db_write": false,
+    "ui_or_hook_work": false
+  },
+  "inputs": [
+    "subcontract_id",
+    "act_kind",
+    "work_summary",
+    "work_items",
+    "period_start",
+    "period_end",
+    "source_evidence_refs",
+    "notes"
+  ],
+  "outputs": [
+    "draft_preview",
+    "act_kind",
+    "work_items_normalized",
+    "missing_fields",
+    "risk_flags",
+    "requires_approval",
+    "next_action",
+    "evidence_refs",
+    "role_scope"
+  ],
+  "tests": [
+    "tests/ai/draftActTool.contract.test.ts",
+    "tests/ai/draftActNoFinalSubmit.contract.test.ts"
+  ]
+}
