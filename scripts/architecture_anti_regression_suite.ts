@@ -305,6 +305,24 @@ export type ArchitectureAntiRegressionReport = {
     redactedProof: boolean;
     canaryRetained: boolean;
   };
+  rateLimitMarketplace5PctCanaryProof: {
+    matrixArtifactPresent: boolean;
+    monitorArtifactPresent: boolean;
+    metricsArtifactPresent: boolean;
+    proofArtifactPresent: boolean;
+    matrixStatus: string;
+    monitorStatus: string;
+    routeScoped: boolean;
+    selectedSubjectProof: boolean;
+    nonSelectedSubjectProof: boolean;
+    privateSmokeProof: boolean;
+    wouldAllowProof: boolean;
+    wouldThrottleProof: boolean;
+    falsePositiveCountZero: boolean;
+    healthStable: boolean;
+    redactedProof: boolean;
+    monitorStable: boolean;
+  };
   productionRawLoops: {
     rawLoopBudget: 0;
     totalFindings: number;
@@ -358,6 +376,7 @@ const GOD_COMPONENT_LINE_THRESHOLD = 500;
 const HOOK_PRESSURE_THRESHOLD = 25;
 const CACHE_RATE_ALLOWED_ROUTE = "marketplace.catalog.search";
 const RATE_LIMIT_ALLOWED_PERCENT = 1;
+const RATE_LIMIT_5PCT_ALLOWED_PERCENT = 5;
 const CACHE_COLD_MISS_PROOF_TEST_PATH = "tests/scale/cacheColdMissDeterministicProof.test.ts";
 const CACHE_COLD_MISS_MATRIX_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_matrix.json";
 const CACHE_COLD_MISS_PROOF_PATH = "artifacts/S_CACHE_01_COLD_MISS_DETERMINISTIC_PROOF_proof.md";
@@ -367,6 +386,16 @@ const RATE_LIMIT_MARKETPLACE_CANARY_MATRIX_PATH =
 const RATE_LIMIT_MARKETPLACE_CANARY_PROOF_PATH =
   "artifacts/S_RATE_01_MARKETPLACE_SEARCH_1_PERCENT_CANARY_proof.md";
 const RATE_LIMIT_MARKETPLACE_CANARY_PASS_STATUS = "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS";
+const RATE_LIMIT_MARKETPLACE_5PCT_MATRIX_PATH =
+  "artifacts/S_NIGHT_RATE_27B_5PCT_MARKETPLACE_RAMP_RETRY_matrix.json";
+const RATE_LIMIT_MARKETPLACE_5PCT_PROOF_PATH =
+  "artifacts/S_NIGHT_RATE_27B_5PCT_MARKETPLACE_RAMP_RETRY_proof.md";
+const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_MATRIX_PATH =
+  "artifacts/S_NIGHT_RATE_28_5PCT_MONITOR_WINDOW_matrix.json";
+const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_METRICS_PATH =
+  "artifacts/S_NIGHT_RATE_28_5PCT_MONITOR_WINDOW_metrics.json";
+const RATE_LIMIT_MARKETPLACE_5PCT_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MARKETPLACE_RAMP_STABLE";
+const RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_PASS_STATUS = "GREEN_RATE_LIMIT_5PCT_MONITOR_WINDOW_STABLE";
 const ROOT_SUPABASE_CLIENT_PATH = "src/lib/supabaseClient.ts";
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
@@ -1432,6 +1461,139 @@ export function evaluateRateLimitMarketplaceCanaryProofGuardrail(params: {
   };
 }
 
+export function evaluateRateLimitMarketplace5PctCanaryProofGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: ArchitectureAntiRegressionReport["rateLimitMarketplace5PctCanaryProof"];
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const matrixSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_5PCT_MATRIX_PATH });
+  const proofSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_5PCT_PROOF_PATH });
+  const monitorSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_MATRIX_PATH });
+  const metricsSource = safeReadProjectFile({ readFile, relativePath: RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_METRICS_PATH });
+  const matrix = parseJsonRecord(matrixSource);
+  const monitor = parseJsonRecord(monitorSource);
+  const metrics = parseJsonRecord(metricsSource);
+  const verification = recordChild(matrix, "verification");
+  const healthReady = recordChild(matrix, "health_ready");
+  const healthBefore = recordChild(healthReady, "before");
+  const healthAfterDeploy = recordChild(healthReady, "after_deploy");
+  const healthAfter = recordChild(healthReady, "after");
+  const negative = recordChild(matrix, "negative_confirmations");
+  const monitorNegative = recordChild(monitor, "negative_confirmations");
+  const matrixStatus = recordString(matrix, "final_status");
+  const monitorStatus = recordString(monitor, "final_status");
+  const matrixArtifactPresent = matrix !== null;
+  const monitorArtifactPresent = monitor !== null;
+  const metricsArtifactPresent = metrics !== null;
+  const routeScoped =
+    matrixStatus === RATE_LIMIT_MARKETPLACE_5PCT_PASS_STATUS &&
+    recordString(matrix, "route") === CACHE_RATE_ALLOWED_ROUTE &&
+    recordNumber(matrix, "percent") === RATE_LIMIT_5PCT_ALLOWED_PERCENT &&
+    recordNumber(matrix, "route_allowlist_count") === 1 &&
+    recordBoolean(matrix, "retained") === true &&
+    recordBoolean(negative, "all_routes") === false &&
+    recordBoolean(negative, "ten_percent") === false &&
+    recordBoolean(negative, "cache_changes") === false;
+  const selectedSubjectProof =
+    recordString(verification, "selected_subject_proof") === "selected_redacted" &&
+    recordString(verification, "selected_status_class") === "2xx";
+  const nonSelectedSubjectProof =
+    recordString(verification, "non_selected_subject_proof") === "non_selected_redacted" &&
+    recordString(verification, "non_selected_status_class") === "2xx";
+  const privateSmokeProof =
+    recordBoolean(verification, "private_smoke_2xx") === true &&
+    recordString(metrics, "private_smoke_status_class") === "2xx";
+  const wouldAllowProof = recordBoolean(verification, "wouldAllow") === true && recordBoolean(metrics, "wouldAllow") === true;
+  const wouldThrottleProof =
+    recordBoolean(verification, "wouldThrottle") === true && recordBoolean(metrics, "wouldThrottle") === true;
+  const falsePositiveCountZero =
+    recordNumber(verification, "false_positive_count") === 0 &&
+    recordNumber(metrics, "false_positive_count") === 0 &&
+    recordNumber(metrics, "non_selected_blocked_count") === 0;
+  const healthStable =
+    recordNumber(healthBefore, "health") === 200 &&
+    recordNumber(healthBefore, "ready") === 200 &&
+    recordNumber(healthAfterDeploy, "health") === 200 &&
+    recordNumber(healthAfterDeploy, "ready") === 200 &&
+    recordNumber(healthAfter, "health") === 200 &&
+    recordNumber(healthAfter, "ready") === 200 &&
+    recordNumber(verification, "health_after") === 200 &&
+    recordNumber(verification, "ready_after") === 200 &&
+    recordNumber(monitor, "health_after") === 200 &&
+    recordNumber(monitor, "ready_after") === 200;
+  const redactedProof =
+    recordBoolean(verification, "metrics_redacted") === true &&
+    recordBoolean(monitor, "metrics_redacted") === true &&
+    recordBoolean(negative, "raw_subject_user_token_values_printed") === false &&
+    recordBoolean(monitorNegative, "raw_subject_user_token_values_printed") === false &&
+    recordBoolean(negative, "db_writes") === false &&
+    recordBoolean(negative, "production_mutations") === false &&
+    recordBoolean(monitorNegative, "db_writes") === false &&
+    recordBoolean(monitorNegative, "production_mutations") === false;
+  const monitorStable =
+    monitorStatus === RATE_LIMIT_MARKETPLACE_5PCT_MONITOR_PASS_STATUS &&
+    recordString(monitor, "route") === CACHE_RATE_ALLOWED_ROUTE &&
+    recordNumber(monitor, "route_count") === 1 &&
+    recordNumber(monitor, "percent") === RATE_LIMIT_5PCT_ALLOWED_PERCENT &&
+    recordBoolean(monitor, "non_selected_blocked") === false &&
+    recordBoolean(monitor, "private_smoke_2xx") === true &&
+    recordBoolean(monitorNegative, "cache_changes") === false &&
+    recordNumber(metrics, "sample_size") === 10 &&
+    recordNumber(metrics, "allowed_count") === 10 &&
+    recordNumber(metrics, "throttled_count") === 0;
+  const proofArtifactPresent =
+    proofSource !== null &&
+    proofSource.includes(RATE_LIMIT_MARKETPLACE_5PCT_PASS_STATUS) &&
+    proofSource.includes("- route: marketplace.catalog.search") &&
+    proofSource.includes("- percent: 5") &&
+    proofSource.includes("- false_positive_count: 0");
+  const errors = [
+    ...(matrixArtifactPresent ? [] : ["rate_limit_marketplace_5pct_matrix_missing"]),
+    ...(monitorArtifactPresent ? [] : ["rate_limit_marketplace_5pct_monitor_missing"]),
+    ...(metricsArtifactPresent ? [] : ["rate_limit_marketplace_5pct_metrics_missing"]),
+    ...(proofArtifactPresent ? [] : ["rate_limit_marketplace_5pct_proof_missing_or_stale"]),
+    ...(routeScoped ? [] : ["rate_limit_marketplace_5pct_scope_not_locked"]),
+    ...(selectedSubjectProof ? [] : ["rate_limit_marketplace_5pct_selected_subject_not_proven"]),
+    ...(nonSelectedSubjectProof ? [] : ["rate_limit_marketplace_5pct_non_selected_subject_not_proven"]),
+    ...(privateSmokeProof ? [] : ["rate_limit_marketplace_5pct_private_smoke_not_green"]),
+    ...(wouldAllowProof ? [] : ["rate_limit_marketplace_5pct_would_allow_not_proven"]),
+    ...(wouldThrottleProof ? [] : ["rate_limit_marketplace_5pct_would_throttle_not_proven"]),
+    ...(falsePositiveCountZero ? [] : ["rate_limit_marketplace_5pct_false_positive_nonzero"]),
+    ...(healthStable ? [] : ["rate_limit_marketplace_5pct_health_not_stable"]),
+    ...(redactedProof ? [] : ["rate_limit_marketplace_5pct_redaction_or_safety_not_proven"]),
+    ...(monitorStable ? [] : ["rate_limit_marketplace_5pct_monitor_not_stable"]),
+  ];
+
+  return {
+    check: {
+      name: "rate_limit_marketplace_5pct_canary_proof",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      matrixArtifactPresent,
+      monitorArtifactPresent,
+      metricsArtifactPresent,
+      proofArtifactPresent,
+      matrixStatus,
+      monitorStatus,
+      routeScoped,
+      selectedSubjectProof,
+      nonSelectedSubjectProof,
+      privateSmokeProof,
+      wouldAllowProof,
+      wouldThrottleProof,
+      falsePositiveCountZero,
+      healthStable,
+      redactedProof,
+      monitorStable,
+    },
+  };
+}
+
 const findProductionRawLoopAllowlistEntry = (
   allowlist: readonly ProductionRawLoopAllowlistEntry[],
   finding: Pick<ProductionRawLoopFinding, "file" | "line" | "pattern">,
@@ -2136,6 +2298,7 @@ export function runArchitectureAntiRegressionSuite(
   const cacheRateScope = evaluateCacheRateScopeGuardrail({ projectRoot });
   const cacheColdMissProof = evaluateCacheColdMissProofGuardrail({ projectRoot });
   const rateLimitMarketplaceCanaryProof = evaluateRateLimitMarketplaceCanaryProofGuardrail({ projectRoot });
+  const rateLimitMarketplace5PctCanaryProof = evaluateRateLimitMarketplace5PctCanaryProofGuardrail({ projectRoot });
   const unboundedSelectRatchet = evaluateUnboundedSelectRatchetGuardrail({
     findings: scanUnboundedSelectRatchet(projectRoot),
   });
@@ -2164,6 +2327,7 @@ export function runArchitectureAntiRegressionSuite(
     cacheRateScope.check,
     cacheColdMissProof.check,
     rateLimitMarketplaceCanaryProof.check,
+    rateLimitMarketplace5PctCanaryProof.check,
     unboundedSelectRatchet.check,
     productionRawLoops.check,
     unsafeCastRatchet.check,
@@ -2183,6 +2347,7 @@ export function runArchitectureAntiRegressionSuite(
     cacheRateScope: cacheRateScope.summary,
     cacheColdMissProof: cacheColdMissProof.summary,
     rateLimitMarketplaceCanaryProof: rateLimitMarketplaceCanaryProof.summary,
+    rateLimitMarketplace5PctCanaryProof: rateLimitMarketplace5PctCanaryProof.summary,
     unboundedSelectRatchet: unboundedSelectRatchet.summary,
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
@@ -2215,6 +2380,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   );
   console.info(`cache_cold_miss_deterministic_proof: ${report.cacheColdMissProof.deterministicProofReady}`);
   console.info(`rate_limit_marketplace_canary_proof: ${report.rateLimitMarketplaceCanaryProof.routeScoped}`);
+  console.info(`rate_limit_marketplace_5pct_canary_proof: ${report.rateLimitMarketplace5PctCanaryProof.routeScoped}`);
   console.info(`unbounded_select_ratchet_unresolved: ${report.unboundedSelectRatchet.unresolvedUnboundedSelects}`);
   console.info(`unbounded_select_ratchet_select_star: ${report.unboundedSelectRatchet.selectStarFindings}`);
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);

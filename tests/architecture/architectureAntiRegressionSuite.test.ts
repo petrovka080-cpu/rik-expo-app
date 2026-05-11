@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
+  evaluateRateLimitMarketplace5PctCanaryProofGuardrail,
   evaluateRateLimitMarketplaceCanaryProofGuardrail,
   evaluateUnboundedSelectRatchetGuardrail,
   evaluateUnsafeCastRatchetGuardrail,
@@ -353,6 +354,151 @@ describe("architecture anti-regression suite", () => {
         "rate_limit_marketplace_selected_subject_not_proven",
         "rate_limit_marketplace_private_smoke_not_green",
         "rate_limit_marketplace_redaction_or_safety_not_proven",
+      ]),
+    );
+  });
+
+  it("ratchets Wave 27B and 28 marketplace 5 percent proof artifacts", () => {
+    const passingMatrix = {
+      final_status: "GREEN_RATE_LIMIT_5PCT_MARKETPLACE_RAMP_STABLE",
+      route: "marketplace.catalog.search",
+      percent: 5,
+      route_allowlist_count: 1,
+      retained: true,
+      negative_confirmations: {
+        all_routes: false,
+        ten_percent: false,
+        cache_changes: false,
+        db_writes: false,
+        production_mutations: false,
+        raw_subject_user_token_values_printed: false,
+      },
+      health_ready: {
+        before: { health: 200, ready: 200 },
+        after_deploy: { health: 200, ready: 200 },
+        after: { health: 200, ready: 200 },
+      },
+      verification: {
+        selected_subject_proof: "selected_redacted",
+        non_selected_subject_proof: "non_selected_redacted",
+        selected_status_class: "2xx",
+        non_selected_status_class: "2xx",
+        private_smoke_2xx: true,
+        wouldAllow: true,
+        wouldThrottle: true,
+        false_positive_count: 0,
+        health_after: 200,
+        ready_after: 200,
+        metrics_redacted: true,
+      },
+    };
+    const passingMonitor = {
+      final_status: "GREEN_RATE_LIMIT_5PCT_MONITOR_WINDOW_STABLE",
+      route: "marketplace.catalog.search",
+      route_count: 1,
+      percent: 5,
+      health_after: 200,
+      ready_after: 200,
+      metrics_redacted: true,
+      non_selected_blocked: false,
+      private_smoke_2xx: true,
+      negative_confirmations: {
+        cache_changes: false,
+        db_writes: false,
+        production_mutations: false,
+        raw_subject_user_token_values_printed: false,
+      },
+    };
+    const passingMetrics = {
+      sample_size: 10,
+      allowed_count: 10,
+      throttled_count: 0,
+      selected_subject_count: 5,
+      non_selected_subject_count: 5,
+      selected_blocked_count: 0,
+      non_selected_blocked_count: 0,
+      false_positive_count: 0,
+      private_smoke_status_class: "2xx",
+      wouldAllow: true,
+      wouldThrottle: true,
+    };
+    const passingProof = [
+      "final_status: GREEN_RATE_LIMIT_5PCT_MARKETPLACE_RAMP_STABLE",
+      "- route: marketplace.catalog.search",
+      "- percent: 5",
+      "- false_positive_count: 0",
+    ].join("\n");
+    const passing = evaluateRateLimitMarketplace5PctCanaryProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("RAMP_RETRY_matrix.json")) return JSON.stringify(passingMatrix);
+        if (relativePath.endsWith("MONITOR_WINDOW_matrix.json")) return JSON.stringify(passingMonitor);
+        if (relativePath.endsWith("MONITOR_WINDOW_metrics.json")) return JSON.stringify(passingMetrics);
+        return passingProof;
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "rate_limit_marketplace_5pct_canary_proof",
+      status: "pass",
+      errors: [],
+    });
+    expect(passing.summary.routeScoped).toBe(true);
+    expect(passing.summary.falsePositiveCountZero).toBe(true);
+    expect(passing.summary.monitorStable).toBe(true);
+
+    const failing = evaluateRateLimitMarketplace5PctCanaryProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("RAMP_RETRY_matrix.json")) {
+          return JSON.stringify({
+            ...passingMatrix,
+            percent: 10,
+            route_allowlist_count: 2,
+            retained: false,
+            negative_confirmations: {
+              ...passingMatrix.negative_confirmations,
+              ten_percent: true,
+              raw_subject_user_token_values_printed: true,
+            },
+            verification: {
+              ...passingMatrix.verification,
+              selected_subject_proof: "raw_subject_leaked",
+              false_positive_count: 1,
+              private_smoke_2xx: false,
+            },
+          });
+        }
+        if (relativePath.endsWith("MONITOR_WINDOW_matrix.json")) {
+          return JSON.stringify({
+            ...passingMonitor,
+            non_selected_blocked: true,
+            negative_confirmations: {
+              ...passingMonitor.negative_confirmations,
+              cache_changes: true,
+            },
+          });
+        }
+        if (relativePath.endsWith("MONITOR_WINDOW_metrics.json")) {
+          return JSON.stringify({
+            ...passingMetrics,
+            false_positive_count: 1,
+            non_selected_blocked_count: 1,
+          });
+        }
+        return "stale proof";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "rate_limit_marketplace_5pct_proof_missing_or_stale",
+        "rate_limit_marketplace_5pct_scope_not_locked",
+        "rate_limit_marketplace_5pct_selected_subject_not_proven",
+        "rate_limit_marketplace_5pct_false_positive_nonzero",
+        "rate_limit_marketplace_5pct_redaction_or_safety_not_proven",
+        "rate_limit_marketplace_5pct_monitor_not_stable",
       ]),
     );
   });
