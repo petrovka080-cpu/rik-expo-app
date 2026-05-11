@@ -171,6 +171,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "tools", "aiToolTypes.ts"),
       path.join(SRC, "features", "ai", "schemas", "aiToolSchemas.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiTools02SafeReadBindingsFiles = [
+      path.join(SRC, "features", "ai", "tools", "aiToolReadBindings.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -896,6 +899,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiCore01ModelBoundaryFiles).toBeLessThanOrEqual(7);
     expect(sAiCore02RoleRiskApprovalControlPlaneFiles).toBeLessThanOrEqual(15);
     expect(sAiCore03AppKnowledgeRegistryFiles).toBeLessThanOrEqual(9);
+    expect(sAiTools02SafeReadBindingsFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -907,6 +911,7 @@ describe("performance budget — bundle module count", () => {
         sAiCore02RoleRiskApprovalControlPlaneFiles -
         sAiCore03AppKnowledgeRegistryFiles -
         sAiTools01ToolRegistryFiles -
+        sAiTools02SafeReadBindingsFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

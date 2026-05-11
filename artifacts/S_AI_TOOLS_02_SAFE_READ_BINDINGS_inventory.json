@@ -1,0 +1,26 @@
+{
+  "wave": "S_AI_TOOLS_02_SAFE_READ_TOOL_BINDINGS",
+  "final_status": "GREEN_AI_SAFE_READ_TOOL_BINDINGS_READY",
+  "source_files": [
+    "src/features/ai/tools/aiToolReadBindings.ts",
+    "scripts/architecture_anti_regression_suite.ts"
+  ],
+  "test_files": [
+    "tests/ai/aiToolReadBindings.contract.test.ts",
+    "tests/architecture/aiToolReadBindingsArchitecture.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "artifact_files": [
+    "artifacts/S_AI_TOOLS_02_SAFE_READ_BINDINGS_inventory.json",
+    "artifacts/S_AI_TOOLS_02_SAFE_READ_BINDINGS_matrix.json",
+    "artifacts/S_AI_TOOLS_02_SAFE_READ_BINDINGS_proof.md"
+  ],
+  "safe_read_tool_count": 5,
+  "live_execution_enabled": false,
+  "tool_handlers_added": false,
+  "runtime_env_changed": false,
+  "db_writes": false,
+  "migrations_applied": false,
+  "supabase_project_changes": false,
+  "artifacts_redacted": true
+}
