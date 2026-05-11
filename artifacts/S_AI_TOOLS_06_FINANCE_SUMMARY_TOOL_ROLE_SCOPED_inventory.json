@@ -1,0 +1,67 @@
+{
+  "wave": "S_AI_TOOLS_06_FINANCE_SUMMARY_TOOL_ROLE_SCOPED",
+  "tool": "get_finance_summary",
+  "scope": [
+    "src/features/ai/tools/getFinanceSummaryTool.ts",
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/ai/getFinanceSummaryTool.contract.test.ts",
+    "tests/ai/financeRoleScopeRedaction.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "input_contract": {
+    "scope_required": true,
+    "scope_values": ["company", "project", "supplier"],
+    "entityId_required_for_project": true,
+    "entityId_required_for_supplier": true,
+    "periodStart_optional": true,
+    "periodEnd_optional": true
+  },
+  "output_contract": {
+    "totals": true,
+    "debt_buckets": true,
+    "overdue_count": true,
+    "document_gaps": true,
+    "risk_flags": true,
+    "redacted_breakdown": true,
+    "evidence_refs": true
+  },
+  "read_boundaries": [
+    "director.finance.rpc.scope",
+    "director.finance.summary.v2",
+    "director.finance.supplier_scope.v2"
+  ],
+  "role_policy": {
+    "director": "allowed",
+    "control": "allowed",
+    "accountant": "allowed",
+    "foreman": "denied",
+    "buyer": "denied",
+    "warehouse": "denied",
+    "contractor": "denied",
+    "unknown": "denied"
+  },
+  "safety": {
+    "safe_read": true,
+    "direct_supabase": 0,
+    "payment_mutation": 0,
+    "status_mutation": 0,
+    "mutation_count": 0,
+    "raw_finance_rows_exposed": false,
+    "bank_details_exposed": false,
+    "tokens_exposed": false,
+    "auth_admin_used": false,
+    "list_users_used": false,
+    "service_role_used": false,
+    "db_seed_used": false,
+    "db_writes": false,
+    "migrations_applied": false,
+    "supabase_project_changes": false,
+    "model_provider_changed": false,
+    "openai_gpt_enabled": false,
+    "gemini_removed": false,
+    "credentials_in_source": false,
+    "credentials_in_cli_args": false,
+    "credentials_in_artifacts": false,
+    "secrets_printed": false
+  }
+}

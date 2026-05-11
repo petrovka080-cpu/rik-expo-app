@@ -189,6 +189,9 @@ describe("performance budget — bundle module count", () => {
     const sAiToolsGetWarehouseStatusToolFiles = [
       path.join(SRC, "features", "ai", "tools", "getWarehouseStatusTool.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiToolsGetFinanceSummaryToolFiles = [
+      path.join(SRC, "features", "ai", "tools", "getFinanceSummaryTool.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -781,6 +784,7 @@ describe("performance budget — bundle module count", () => {
     // S_NIGHT_UI_19 adds one permanent BuyerSubcontractTab render view boundary.
     // S_NIGHT_UI_18 adds four permanent BuyerSubcontractTab model/controller boundaries.
     // S_AI_CORE_03 adds nine permanent AI app knowledge registry and bridge files.
+    // S_AI_TOOLS_06 adds one permanent finance summary SAFE_READ tool module.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -920,6 +924,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiToolsSearchCatalogToolFiles).toBeLessThanOrEqual(1);
     expect(sAiToolsCompareSuppliersToolFiles).toBeLessThanOrEqual(1);
     expect(sAiToolsGetWarehouseStatusToolFiles).toBeLessThanOrEqual(1);
+    expect(sAiToolsGetFinanceSummaryToolFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -937,6 +942,7 @@ describe("performance budget — bundle module count", () => {
         sAiToolsSearchCatalogToolFiles -
         sAiToolsCompareSuppliersToolFiles -
         sAiToolsGetWarehouseStatusToolFiles -
+        sAiToolsGetFinanceSummaryToolFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

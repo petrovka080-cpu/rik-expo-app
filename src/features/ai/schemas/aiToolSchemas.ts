@@ -6,23 +6,6 @@ const evidenceRefSchema = {
   minLength: 1,
 } satisfies AiToolJsonObjectSchema["properties"][string];
 
-const moneySummarySchema = {
-  type: "object",
-  required: ["amount", "currency"],
-  additionalProperties: false,
-  properties: {
-    amount: {
-      type: "number",
-      description: "Aggregated amount only.",
-      minimum: 0,
-    },
-    currency: {
-      type: "string",
-      minLength: 3,
-    },
-  },
-} satisfies AiToolJsonObjectSchema["properties"][string];
-
 const draftMaterialSchema = {
   type: "object",
   required: ["name", "quantity", "unit"],
@@ -383,16 +366,89 @@ export const getFinanceSummaryInputSchema: AiToolJsonObjectSchema = {
   },
 };
 
-export const getFinanceSummaryOutputSchema: AiToolJsonObjectSchema = {
+const financeSummaryTotalsSchema = {
   type: "object",
-  required: ["summary", "debt", "payments", "documents", "evidenceRefs"],
+  required: ["payable", "paid", "debt", "overdue", "currency"],
   additionalProperties: false,
   properties: {
-    summary: { type: "string", minLength: 1 },
-    debt: moneySummarySchema,
-    payments: moneySummarySchema,
-    documents: { type: "number", minimum: 0 },
-    evidenceRefs: { type: "array", items: evidenceRefSchema },
+    payable: { type: "number", minimum: 0 },
+    paid: { type: "number", minimum: 0 },
+    debt: { type: "number", minimum: 0 },
+    overdue: { type: "number", minimum: 0 },
+    currency: { type: "string", enum: ["KGS"] },
+  },
+} satisfies AiToolJsonObjectSchema["properties"][string];
+
+const financeSummaryDebtBucketsSchema = {
+  type: "object",
+  required: ["current", "overdue", "critical"],
+  additionalProperties: false,
+  properties: {
+    current: { type: "number", minimum: 0 },
+    overdue: { type: "number", minimum: 0 },
+    critical: { type: "number", minimum: 0 },
+  },
+} satisfies AiToolJsonObjectSchema["properties"][string];
+
+export const getFinanceSummaryOutputSchema: AiToolJsonObjectSchema = {
+  type: "object",
+  required: [
+    "totals",
+    "debt_buckets",
+    "overdue_count",
+    "document_gaps",
+    "risk_flags",
+    "redacted_breakdown",
+    "evidence_refs",
+    "route_operation",
+    "bounded",
+    "mutation_count",
+    "payment_mutation",
+    "status_mutation",
+    "raw_finance_rows_exposed",
+  ],
+  additionalProperties: false,
+  properties: {
+    totals: financeSummaryTotalsSchema,
+    debt_buckets: financeSummaryDebtBucketsSchema,
+    overdue_count: { type: "number", minimum: 0 },
+    document_gaps: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    risk_flags: {
+      type: "array",
+      items: { type: "string", minLength: 1 },
+    },
+    redacted_breakdown: {
+      type: "object",
+      required: [
+        "scope",
+        "supplier_count",
+        "document_count",
+        "supplier_names_redacted",
+        "bank_details_redacted",
+        "tokens_redacted",
+        "raw_rows_exposed",
+      ],
+      additionalProperties: false,
+      properties: {
+        scope: { type: "string", enum: ["company", "project", "supplier"] },
+        supplier_count: { type: "number", minimum: 0 },
+        document_count: { type: "number", minimum: 0 },
+        supplier_names_redacted: { type: "boolean" },
+        bank_details_redacted: { type: "boolean" },
+        tokens_redacted: { type: "boolean" },
+        raw_rows_exposed: { type: "boolean" },
+      },
+    },
+    evidence_refs: { type: "array", items: evidenceRefSchema },
+    route_operation: { type: "string", enum: ["director.finance.rpc.scope"] },
+    bounded: { type: "boolean" },
+    mutation_count: { type: "number", minimum: 0, maximum: 0 },
+    payment_mutation: { type: "number", minimum: 0, maximum: 0 },
+    status_mutation: { type: "number", minimum: 0, maximum: 0 },
+    raw_finance_rows_exposed: { type: "boolean" },
   },
 };
 
