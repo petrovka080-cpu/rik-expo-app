@@ -296,6 +296,21 @@ export type AiAppKnowledgeRegistrySummary = {
   findings: readonly string[];
 };
 
+export type AiToolRegistryArchitectureSummary = {
+  registryPresent: boolean;
+  typesPresent: boolean;
+  schemasPresent: boolean;
+  allRequiredToolsRegistered: boolean;
+  forbiddenToolsExcluded: boolean;
+  allToolsHaveSchema: boolean;
+  allToolsHaveRiskPolicy: boolean;
+  allToolsHaveAuditMetadata: boolean;
+  noLiveExecutionBoundary: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -455,6 +470,7 @@ export type ArchitectureAntiRegressionReport = {
   aiModelBoundary: AiModelBoundarySummary;
   aiRoleRiskApprovalControlPlane: AiRoleRiskApprovalControlPlaneSummary;
   aiAppKnowledgeRegistry: AiAppKnowledgeRegistrySummary;
+  aiToolRegistryArchitecture: AiToolRegistryArchitectureSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
@@ -546,6 +562,46 @@ const AI_INTENT_REGISTRY_PATH = "src/features/ai/knowledge/aiIntentRegistry.ts";
 const AI_KNOWLEDGE_RESOLVER_PATH = "src/features/ai/knowledge/aiKnowledgeResolver.ts";
 const AI_KNOWLEDGE_REDACTION_PATH = "src/features/ai/knowledge/aiKnowledgeRedaction.ts";
 const AI_CONTROL_PLANE_KNOWLEDGE_BRIDGE_PATH = "src/features/ai/controlPlane/aiControlPlaneKnowledgeBridge.ts";
+const AI_TOOL_REGISTRY_PATH = "src/features/ai/tools/aiToolRegistry.ts";
+const AI_TOOL_TYPES_PATH = "src/features/ai/tools/aiToolTypes.ts";
+const AI_TOOL_SCHEMAS_PATH = "src/features/ai/schemas/aiToolSchemas.ts";
+const REQUIRED_AI_TOOL_NAMES = [
+  "search_catalog",
+  "compare_suppliers",
+  "get_warehouse_status",
+  "get_finance_summary",
+  "draft_request",
+  "draft_report",
+  "draft_act",
+  "submit_for_approval",
+  "get_action_status",
+] as const;
+const FORBIDDEN_AI_TOOL_NAMES = [
+  "create_order",
+  "confirm_supplier",
+  "change_warehouse_status",
+  "change_payment_status",
+  "direct_supabase_query",
+  "raw_db_export",
+  "delete_data",
+  "bypass_approval",
+  "expose_secrets",
+] as const;
+const REQUIRED_AI_TOOL_METADATA_KEYS = [
+  "name",
+  "description",
+  "domain",
+  "riskLevel",
+  "inputSchema",
+  "outputSchema",
+  "requiredRoles",
+  "approvalRequired",
+  "idempotencyRequired",
+  "auditEvent",
+  "rateLimitScope",
+  "cacheAllowed",
+  "evidenceRequired",
+] as const;
 const REQUIRED_AI_APP_KNOWLEDGE_DOMAINS = [
   "control",
   "projects",
@@ -1790,6 +1846,94 @@ export function evaluateAiAppKnowledgeRegistryGuardrail(params: {
       findings,
     },
   };
+}
+
+const aiToolRegistryLiveExecutionPattern =
+  /\bhandler\b|\bexecuteTool\b|\brunTool\b|\btoolExecutor\b|\binvokeTool\b|\bfetch\s*\(|\bXMLHttpRequest\b|\.(?:from|rpc)\s*\(/i;
+const aiToolRegistryProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i;
+const aiToolRegistrySupabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+
+export function evaluateAiToolRegistryArchitectureGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiToolRegistryArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const registrySource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_REGISTRY_PATH });
+  const typesSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_TYPES_PATH });
+  const schemasSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_SCHEMAS_PATH });
+  const combined = [registrySource ?? "", typesSource ?? "", schemasSource ?? ""].join("\n");
+
+  const allRequiredToolsRegistered = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+    Boolean(registrySource?.includes(`"${toolName}"`)),
+  );
+  const forbiddenToolsExcluded = FORBIDDEN_AI_TOOL_NAMES.every((toolName) =>
+    !Boolean(registrySource?.includes(`"${toolName}"`)),
+  );
+  const allToolsHaveSchema =
+    Boolean(registrySource?.includes("AI_TOOL_REGISTRY")) &&
+    REQUIRED_AI_TOOL_METADATA_KEYS.every((key) => Boolean(registrySource?.includes(key))) &&
+    REQUIRED_AI_TOOL_NAMES.every((toolName) => Boolean(schemasSource?.includes(`${toCamelIdentifier(toolName)}InputSchema`)));
+  const allToolsHaveRiskPolicy =
+    Boolean(registrySource?.includes('riskLevel: "safe_read"')) &&
+    Boolean(registrySource?.includes('riskLevel: "draft_only"')) &&
+    Boolean(registrySource?.includes('riskLevel: "approval_required"')) &&
+    Boolean(registrySource?.includes("approvalRequired")) &&
+    Boolean(registrySource?.includes("idempotencyRequired"));
+  const allToolsHaveAuditMetadata =
+    Boolean(registrySource?.includes("auditEvent")) &&
+    Boolean(registrySource?.includes("rateLimitScope")) &&
+    Boolean(registrySource?.includes("evidenceRequired")) &&
+    Boolean(typesSource?.includes("AiActionAuditEventType"));
+  const noLiveExecutionBoundary = !aiToolRegistryLiveExecutionPattern.test(combined);
+  const noProviderImports = !aiToolRegistryProviderPattern.test(combined);
+  const noSupabaseImports = !aiToolRegistrySupabasePattern.test(combined);
+  const findings = [
+    ...(noLiveExecutionBoundary ? [] : ["ai_tool_registry_live_execution_boundary_detected"]),
+    ...(noProviderImports ? [] : ["ai_tool_registry_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["ai_tool_registry_supabase_boundary_detected"]),
+  ];
+  const errors = [
+    ...(registrySource ? [] : [`missing_file:${AI_TOOL_REGISTRY_PATH}`]),
+    ...(typesSource ? [] : [`missing_file:${AI_TOOL_TYPES_PATH}`]),
+    ...(schemasSource ? [] : [`missing_file:${AI_TOOL_SCHEMAS_PATH}`]),
+    ...(allRequiredToolsRegistered ? [] : ["required_ai_tools_missing"]),
+    ...(forbiddenToolsExcluded ? [] : ["forbidden_ai_tools_registered"]),
+    ...(allToolsHaveSchema ? [] : ["ai_tools_missing_schema_metadata"]),
+    ...(allToolsHaveRiskPolicy ? [] : ["ai_tools_missing_risk_policy_metadata"]),
+    ...(allToolsHaveAuditMetadata ? [] : ["ai_tools_missing_audit_metadata"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_tool_registry_architecture",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      registryPresent: Boolean(registrySource),
+      typesPresent: Boolean(typesSource),
+      schemasPresent: Boolean(schemasSource),
+      allRequiredToolsRegistered,
+      forbiddenToolsExcluded,
+      allToolsHaveSchema,
+      allToolsHaveRiskPolicy,
+      allToolsHaveAuditMetadata,
+      noLiveExecutionBoundary,
+      noProviderImports,
+      noSupabaseImports,
+      findings,
+    },
+  };
+}
+
+function toCamelIdentifier(value: string): string {
+  return value.replace(/_([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }
 
 export function evaluateAiRoleScreenEmulatorGateGuardrail(params: {
@@ -3427,6 +3571,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiModelBoundary = evaluateAiModelBoundaryGuardrail({ projectRoot });
   const aiRoleRiskApprovalControlPlane = evaluateAiRoleRiskApprovalControlPlaneGuardrail({ projectRoot });
   const aiAppKnowledgeRegistry = evaluateAiAppKnowledgeRegistryGuardrail({ projectRoot });
+  const aiToolRegistryArchitecture = evaluateAiToolRegistryArchitectureGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
@@ -3453,6 +3598,7 @@ export function runArchitectureAntiRegressionSuite(
     aiModelBoundary.check,
     aiRoleRiskApprovalControlPlane.check,
     aiAppKnowledgeRegistry.check,
+    aiToolRegistryArchitecture.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     androidEmulatorIosBuildSubmitGate.check,
@@ -3480,6 +3626,7 @@ export function runArchitectureAntiRegressionSuite(
     aiModelBoundary: aiModelBoundary.summary,
     aiRoleRiskApprovalControlPlane: aiRoleRiskApprovalControlPlane.summary,
     aiAppKnowledgeRegistry: aiAppKnowledgeRegistry.summary,
+    aiToolRegistryArchitecture: aiToolRegistryArchitecture.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
@@ -3523,6 +3670,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_control_plane_screen_gateway_imports: ${report.aiRoleRiskApprovalControlPlane.screenGatewayImports}`);
   console.info(`ai_app_knowledge_registry_screens: ${report.aiAppKnowledgeRegistry.requiredScreenIdsRegistered}`);
   console.info(`ai_app_knowledge_registry_direct_high_risk_intent: ${report.aiAppKnowledgeRegistry.noDirectHighRiskIntent}`);
+  console.info(`ai_tool_registry_required_tools: ${report.aiToolRegistryArchitecture.allRequiredToolsRegistered}`);
+  console.info(`ai_tool_registry_no_live_execution: ${report.aiToolRegistryArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

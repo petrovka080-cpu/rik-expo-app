@@ -166,6 +166,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "knowledge", "aiKnowledgeRedaction.ts"),
       path.join(SRC, "features", "ai", "controlPlane", "aiControlPlaneKnowledgeBridge.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiTools01ToolRegistryFiles = [
+      path.join(SRC, "features", "ai", "tools", "aiToolRegistry.ts"),
+      path.join(SRC, "features", "ai", "tools", "aiToolTypes.ts"),
+      path.join(SRC, "features", "ai", "schemas", "aiToolSchemas.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -901,6 +906,7 @@ describe("performance budget — bundle module count", () => {
         sAiCore01ModelBoundaryFiles -
         sAiCore02RoleRiskApprovalControlPlaneFiles -
         sAiCore03AppKnowledgeRegistryFiles -
+        sAiTools01ToolRegistryFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -
