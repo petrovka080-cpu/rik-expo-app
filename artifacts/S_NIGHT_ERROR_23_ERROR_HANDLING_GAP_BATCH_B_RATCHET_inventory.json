@@ -1,0 +1,159 @@
+{
+  "wave": "S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET",
+  "final_status": "GREEN_ERROR_HANDLING_GAP_BATCH_B_RATCHET",
+  "source": {
+    "batch_a_inventory": "artifacts/S_ERROR_01_TRY_CATCH_GAPS_BATCH_A_inventory_delta.json",
+    "scanner": "scripts/error/errorHandlingGapRatchet.ts",
+    "architecture_integration": "scripts/architecture_anti_regression_suite.ts"
+  },
+  "summary": {
+    "before": {
+      "deferred_batch_a_files": 4,
+      "targeted_ratchet_present": false,
+      "targeted_try_finally_classified": 0,
+      "targeted_silent_swallow": "unknown_from_batch_a"
+    },
+    "after": {
+      "target_files": 4,
+      "try_finally_only": 9,
+      "documented_try_finally_only": 9,
+      "undocumented_try_finally_only": 0,
+      "catch_blocks": 15,
+      "catch_blocks_missing_signal": 0,
+      "empty_catch_blocks": 0,
+      "raw_diagnostic_sink_findings": 0,
+      "silent_swallow": 0,
+      "allowlist_entries": 9,
+      "matched_allowlist_entries": 9,
+      "stale_allowlist_entries": 0,
+      "allowlist_metadata_errors": 0
+    }
+  },
+  "entries": [
+    {
+      "file": "src/lib/api/director_reports.naming.ts",
+      "status": "closed_by_existing_observability_and_source_contract",
+      "classification": "deferred Batch A naming boundary with existing catch signal plus finally cleanup",
+      "try_finally_only": [
+        {
+          "line": 108,
+          "ordinal": 1,
+          "classification": "finally_cleanup",
+          "owner": "director reports naming owner",
+          "reason": "Object-name lookup in-flight cache cleanup releases the key while failures propagate.",
+          "migration_path": "Move lookup cache lifecycle into a typed director naming repository boundary."
+        },
+        {
+          "line": 185,
+          "ordinal": 2,
+          "classification": "finally_cleanup",
+          "owner": "director reports naming owner",
+          "reason": "Code lookup in-flight cleanup releases the key while failures propagate.",
+          "migration_path": "Move code lookup cache lifecycle into a typed director naming repository boundary."
+        },
+        {
+          "line": 549,
+          "ordinal": 3,
+          "classification": "finally_cleanup",
+          "owner": "director reports naming owner",
+          "reason": "Material-name resolution in-flight cleanup releases the key while preserving caller-visible results.",
+          "migration_path": "Move material-name lookup lifecycle into a typed director naming repository boundary."
+        }
+      ],
+      "catch_blocks": 2,
+      "catch_blocks_missing_signal": 0,
+      "redaction_change": "No runtime code change in this file; existing platform observability redaction remains in force and older pagination/load guardrails keep this skipped surface untouched."
+    },
+    {
+      "file": "src/lib/documents/pdfDocumentActions.ts",
+      "status": "closed_by_source_contract",
+      "classification": "PDF lifecycle propagation and cleanup boundary",
+      "try_finally_only": [
+        {
+          "line": 435,
+          "ordinal": 1,
+          "classification": "intentional_propagation",
+          "owner": "pdf document owner",
+          "reason": "Busy orchestration lets prepare/viewer errors propagate after nested terminal failure recording.",
+          "migration_path": "Keep split prepare/viewer boundary until PDF state machine owns cleanup explicitly."
+        },
+        {
+          "line": 460,
+          "ordinal": 2,
+          "classification": "finally_cleanup",
+          "owner": "pdf document owner",
+          "reason": "Manual busy cleanup hides busy state while preserving PDF errors.",
+          "migration_path": "Move manual busy cleanup to typed visibility busy plan if the flow is split again."
+        }
+      ],
+      "catch_blocks": 2,
+      "catch_blocks_missing_signal": 0
+    },
+    {
+      "file": "src/lib/pdfRunner.ts",
+      "status": "closed_by_source_contract",
+      "classification": "PDF runner timeout/manual busy cleanup with existing catch discipline",
+      "try_finally_only": [
+        {
+          "line": 91,
+          "ordinal": 1,
+          "classification": "finally_cleanup",
+          "owner": "pdf runner owner",
+          "reason": "Timeout cleanup clears timer without wrapping the original error.",
+          "migration_path": "Move timeout handling to shared cancellable helper if reused."
+        },
+        {
+          "line": 840,
+          "ordinal": 2,
+          "classification": "finally_cleanup",
+          "owner": "pdf runner owner",
+          "reason": "Manual busy cleanup hides native busy state while preserving prepare/open error propagation.",
+          "migration_path": "Move manual busy cleanup into typed PDF runner execution plan."
+        }
+      ],
+      "catch_blocks": 11,
+      "catch_blocks_missing_signal": 0
+    },
+    {
+      "file": "src/screens/contractor/hooks/useContractorProgressReliability.ts",
+      "status": "closed_by_source_contract",
+      "classification": "offline progress submit/retry propagation with saving-state cleanup",
+      "try_finally_only": [
+        {
+          "line": 440,
+          "ordinal": 1,
+          "classification": "intentional_propagation",
+          "owner": "contractor progress owner",
+          "reason": "Submit cleanup resets saving state while preserving queue/draft failure propagation.",
+          "migration_path": "Move submit lifecycle into typed contractor progress controller boundary."
+        },
+        {
+          "line": 482,
+          "ordinal": 2,
+          "classification": "intentional_propagation",
+          "owner": "contractor progress owner",
+          "reason": "Manual retry cleanup resets saving state while preserving queue/draft failure propagation.",
+          "migration_path": "Move retry lifecycle into typed contractor progress controller boundary."
+        }
+      ],
+      "catch_blocks": 0,
+      "catch_blocks_missing_signal": 0
+    }
+  ],
+  "redaction_contract": {
+    "raw_tokens_printed": false,
+    "raw_urls_printed": false,
+    "raw_payloads_printed": false,
+    "raw_bodies_printed": false,
+    "director_naming_runtime_code_untouched": true
+  },
+  "safety": {
+    "production_calls": false,
+    "db_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "env_changes": false,
+    "cache_changes": false,
+    "rate_limit_changes": false
+  }
+}

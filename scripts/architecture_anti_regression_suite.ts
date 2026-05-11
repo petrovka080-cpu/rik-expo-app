@@ -13,6 +13,11 @@ import {
   type FlatListTuningRegressionSummary,
 } from "./perf/flatListTuningRegression";
 import {
+  evaluateErrorHandlingGapRatchet,
+  scanErrorHandlingGapRatchet,
+  type ErrorHandlingGapRatchetSummary,
+} from "./error/errorHandlingGapRatchet";
+import {
   collectSelectInventory,
   collectSelectInventoryFromSource,
   type SelectInventoryAction,
@@ -302,6 +307,7 @@ export type ArchitectureAntiRegressionReport = {
   unboundedSelectRatchet: UnboundedSelectRatchetSummary;
   unsafeCastRatchet: UnsafeCastRatchetSummary;
   flatListTuningRegression: FlatListTuningRegressionSummary;
+  errorHandlingGapRatchet: ErrorHandlingGapRatchetSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -2109,6 +2115,9 @@ export function runArchitectureAntiRegressionSuite(
   const flatListTuningRegression = evaluateFlatListTuningRegressionGuardrail(
     scanFlatListTuningRegression(projectRoot),
   );
+  const errorHandlingGapRatchet = evaluateErrorHandlingGapRatchet(
+    scanErrorHandlingGapRatchet(projectRoot),
+  );
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2126,6 +2135,7 @@ export function runArchitectureAntiRegressionSuite(
     productionRawLoops.check,
     unsafeCastRatchet.check,
     flatListTuningRegression.check,
+    errorHandlingGapRatchet.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2144,6 +2154,7 @@ export function runArchitectureAntiRegressionSuite(
     productionRawLoops: productionRawLoops.summary,
     unsafeCastRatchet: unsafeCastRatchet.summary,
     flatListTuningRegression: flatListTuningRegression.summary,
+    errorHandlingGapRatchet: errorHandlingGapRatchet.summary,
     componentDebt,
     checks,
     safety: {
@@ -2176,6 +2187,7 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`production_raw_loop_unapproved: ${report.productionRawLoops.unapprovedFindings}`);
   console.info(`unsafe_cast_ratchet_total: ${report.unsafeCastRatchet.current.total}`);
   console.info(`flatlist_tuning_regression_violations: ${report.flatListTuningRegression.violations}`);
+  console.info(`error_handling_gap_ratchet_silent_swallow: ${report.errorHandlingGapRatchet.silentSwallow}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

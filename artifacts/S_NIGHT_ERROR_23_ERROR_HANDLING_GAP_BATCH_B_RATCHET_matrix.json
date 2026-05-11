@@ -1,0 +1,114 @@
+{
+  "wave": "S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET",
+  "final_status": "GREEN_ERROR_HANDLING_GAP_BATCH_B_RATCHET",
+  "started_from": {
+    "head": "829a38f79a7b5151993a18643210d7cc51d70cfd",
+    "origin_main": "829a38f79a7b5151993a18643210d7cc51d70cfd",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "clean"
+  },
+  "selected_files": [
+    "scripts/error/errorHandlingGapRatchet.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/error/errorHandlingGapRatchet.contract.test.ts",
+    "artifacts/S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET_inventory.json",
+    "artifacts/S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET_matrix.json",
+    "artifacts/S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET_proof.md"
+  ],
+  "reason_selected": "Batch A explicitly deferred the four remaining error-handling gap files; this wave closed them with a targeted ratchet and source contracts without changing business behavior.",
+  "scope": {
+    "target_files": 4,
+    "business_logic_changed": false,
+    "director_reports_naming_runtime_changed": false,
+    "pdf_lifecycle_changed": false,
+    "contractor_offline_semantics_changed": false,
+    "transport_changed": false,
+    "production_calls": false
+  },
+  "metrics": {
+    "before": {
+      "deferred_batch_a_files": 4,
+      "targeted_ratchet_present": false,
+      "documented_try_finally_only": 0,
+      "silent_swallow": "unknown_from_batch_a"
+    },
+    "after": {
+      "deferred_batch_a_files": 0,
+      "target_files_closed_or_allowlisted": 4,
+      "try_finally_only": 9,
+      "documented_try_finally_only": 9,
+      "undocumented_try_finally_only": 0,
+      "catch_blocks": 15,
+      "catch_blocks_missing_signal": 0,
+      "empty_catch_blocks": 0,
+      "raw_diagnostic_sink_findings": 0,
+      "silent_swallow": 0,
+      "allowlist_entries": 9,
+      "matched_allowlist_entries": 9,
+      "stale_allowlist_entries": 0
+    },
+    "delta": {
+      "remaining_deferred_batch_a_files": -4,
+      "targeted_silent_swallow": "unknown_to_0",
+      "new_architecture_checks": 1
+    }
+  },
+  "gates": {
+    "focused_tests": {
+      "status": "pass",
+      "command": "npm test -- --runInBand tests/error/errorHandlingGapRatchet.contract.test.ts tests/error/tryCatchGapsBatchA.contract.test.ts tests/observability/noSilentRuntimeCatch.test.ts",
+      "summary": "3 suites passed, 15 tests passed"
+    },
+    "typescript": {
+      "status": "pass",
+      "command": "npx tsc --noEmit --pretty false"
+    },
+    "lint": {
+      "status": "pass",
+      "command": "npx expo lint"
+    },
+    "full_jest": {
+      "status": "pass",
+      "command": "npm test -- --runInBand",
+      "summary": "711 suites passed, 1 skipped; 4166 tests passed, 1 skipped"
+    },
+    "architecture_scanner": {
+      "status": "pass",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "summary": "errorHandlingGapRatchet pass; silentSwallow=0"
+    },
+    "git_diff_check": {
+      "status": "pass",
+      "command": "git diff --check"
+    },
+    "artifact_json_parse": {
+      "status": "pass",
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('artifacts/S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET_matrix.json','utf8')); JSON.parse(require('fs').readFileSync('artifacts/S_NIGHT_ERROR_23_ERROR_HANDLING_GAP_BATCH_B_RATCHET_inventory.json','utf8'));\""
+    },
+    "post_push_release_verify": {
+      "status": "pending_post_push",
+      "command": "npm run release:verify -- --json"
+    }
+  },
+  "negative_confirmations": {
+    "no_force_push": true,
+    "no_tags": true,
+    "no_secrets_printed": true,
+    "no_type_suppression_comments_added": true,
+    "no_unsafe_any_casts_added": true,
+    "no_empty_catch_blocks_added": true,
+    "no_broad_rewrite": true,
+    "no_supabase_project_changes": true,
+    "no_spend_cap_changes": true,
+    "no_realtime_load_test": true,
+    "no_destructive_or_unbounded_dml": true,
+    "no_ota_eas_testflight_native_build": true,
+    "no_production_calls": true,
+    "no_db_writes": true,
+    "no_migrations": true,
+    "no_cache_enablement": true,
+    "no_rate_limit_changes": true
+  },
+  "supabase_realtime_status": "WAITING_FOR_SUPABASE_SUPPORT_RESPONSE"
+}
