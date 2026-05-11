@@ -1,12 +1,14 @@
 # S_RELEASE_CORE_01 Android Emulator And iOS Submit Proof
 
-- Final status: BLOCKED_IOS_BUILD_CREDENTIALS_MISSING
-- Android status: BLOCKED
-- Android APK built: false
-- Android emulator smoke: BLOCKED
-- iOS status: BLOCKED
-- iOS build id: none
-- iOS submit finished: false
+- Final status: GREEN_ANDROID_EMULATOR_AND_IOS_BUILD_SUBMIT_GATE
+- Android status: PASS
+- Android APK built: true
+- Android build id: be51d49f-8a5d-4168-8654-c853eb1d8b91
+- Android APK installed on emulator: true
+- Android emulator smoke: PASS
+- iOS status: PASS
+- iOS build id: f335fefc-0ab1-4939-947f-0f11c6d1bdda
+- iOS submit finished: true
 - AI role-screen e2e: BLOCKED_NO_E2E_ROLE_SECRETS
 - OTA used: false
 - Credentials in CLI args: false
@@ -18,4 +20,3 @@
 - architecture scanner: PASS
 - git diff check: PASS
 - artifact JSON parse: PASS
-- release verify: PASS after committing this release-gate code

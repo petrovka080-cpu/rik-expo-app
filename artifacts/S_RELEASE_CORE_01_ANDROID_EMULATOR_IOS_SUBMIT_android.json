@@ -1,17 +1,17 @@
 {
-  "status": "BLOCKED",
+  "status": "PASS",
   "physical_device_required": false,
   "emulator_only": true,
   "build_profile": "preview",
-  "apk_built": false,
-  "apk_installed_on_emulator": false,
+  "apk_built": true,
+  "apk_installed_on_emulator": true,
   "aab_used_for_direct_install": false,
-  "runtime_smoke": "BLOCKED",
+  "runtime_smoke": "PASS",
   "google_play_submit": false,
-  "emulator_boot_completed": false,
+  "emulator_boot_completed": true,
   "anrDialogObserved": false,
   "anrDialogHandledByWait": false,
-  "build_id": null,
-  "artifact_path": null,
-  "exact_reason": "Set E2E_ALLOW_ANDROID_APK_BUILD=true to create the Android emulator APK."
+  "build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
+  "artifact_path": "artifacts/release/android-emulator.apk",
+  "exact_reason": null
 }

@@ -1,14 +1,14 @@
 {
-  "status": "BLOCKED",
+  "status": "PASS",
   "build_profile": "production",
   "submit_profile": "production",
-  "new_build_created": false,
+  "new_build_created": true,
   "simulator_build_used_for_submit": false,
-  "eas_submit_started": false,
-  "eas_submit_finished": false,
-  "app_store_connect_submit_proof": false,
-  "testflight_or_processing_status_captured": false,
-  "build_id": null,
-  "submit_id": null,
-  "exact_reason": "Set E2E_ALLOW_IOS_BUILD=true to create a new iOS App Store build."
+  "eas_submit_started": true,
+  "eas_submit_finished": true,
+  "app_store_connect_submit_proof": true,
+  "testflight_or_processing_status_captured": true,
+  "build_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
+  "submit_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
+  "exact_reason": null
 }

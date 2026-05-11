@@ -134,6 +134,34 @@ function runCommand(command: string, args: readonly string[], secrets: readonly 
   return stdout.trim();
 }
 
+function runCommandStatus(command: string, args: readonly string[], secrets: readonly string[]): {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+} {
+  const result = spawnSync(command, [...args], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    maxBuffer: 256 * 1024 * 1024,
+    stdio: "pipe",
+    shell: process.platform === "win32",
+    env: {
+      ...process.env,
+      MAESTRO_CLI_NO_ANALYTICS: "1",
+      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
+    },
+  });
+
+  const stdout = redactReleaseOutput(result.stdout ?? "", secrets);
+  const stderr = redactReleaseOutput(result.stderr ?? "", secrets);
+  if (result.error) throw result.error;
+  return {
+    status: result.status,
+    stdout: stdout.trim(),
+    stderr: stderr.trim(),
+  };
+}
+
 function verifyReleasePreflight(secrets: readonly string[]): string | null {
   const status = runCommand("git", ["status", "--short", "--branch"], secrets);
   const revList = runCommand("git", ["rev-list", "--left-right", "--count", "HEAD...origin/main"], secrets);
@@ -315,6 +343,7 @@ async function runAndroidTrack(secrets: readonly string[]): Promise<AndroidTrack
   }
 
   try {
+    runCommandStatus("adb", ["-s", emulator.deviceId, "uninstall", androidAppId], secrets);
     runCommand("adb", ["-s", emulator.deviceId, "install", "-r", androidApkPath], secrets);
     runCommand("adb", ["-s", emulator.deviceId, "shell", "monkey", "-p", androidAppId, "1"], secrets);
     const maestroBinary = findMaestroBinary();
