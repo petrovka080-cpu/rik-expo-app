@@ -296,6 +296,21 @@ export type AiAppKnowledgeRegistrySummary = {
   findings: readonly string[];
 };
 
+export type AiRoleScreenEmulatorGateSummary = {
+  ensureAndroidEmulatorReadyPresent: boolean;
+  maestroRunnerPresent: boolean;
+  e2eSuitePresent: boolean;
+  emulatorArtifactPresent: boolean;
+  fakePassClaimedFalse: boolean;
+  allRequiredRoleFlowsRepresented: boolean;
+  greenAllFlowsPassed: boolean;
+  mutationsCreatedZero: boolean;
+  approvalRequiredObserved: boolean;
+  roleLeakageNotObserved: boolean;
+  blockedStatusHasExactReason: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -398,6 +413,7 @@ export type ArchitectureAntiRegressionReport = {
   aiModelBoundary: AiModelBoundarySummary;
   aiRoleRiskApprovalControlPlane: AiRoleRiskApprovalControlPlaneSummary;
   aiAppKnowledgeRegistry: AiAppKnowledgeRegistrySummary;
+  aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -543,6 +559,29 @@ const REQUIRED_AI_APP_KNOWLEDGE_INTENTS = [
   "submit_for_approval",
   "approve",
   "execute_approved",
+] as const;
+const AI_EMULATOR_BOOTSTRAP_RUNNER_PATH = "scripts/e2e/ensureAndroidEmulatorReady.ts";
+const AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH = "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts";
+const AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH =
+  "artifacts/S_AI_CORE_03A_EMULATOR_ROLE_SCREEN_KNOWLEDGE_emulator.json";
+const REQUIRED_AI_ROLE_SCREEN_FLOW_FILES = [
+  "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+  "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+  "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+  "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+  "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml",
+] as const;
+const REQUIRED_AI_ROLE_SCREEN_FLOW_KEYS = [
+  "director",
+  "foreman",
+  "buyer",
+  "accountant",
+  "contractor",
+] as const;
+const ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES = [
+  "BLOCKED_HOST_HAS_NO_ANDROID_SDK_OR_AVD",
+  "BLOCKED_AI_KNOWLEDGE_NOT_EXPOSED_TO_RUNTIME_SURFACE",
+  "BLOCKED_E2E_ROLE_AUTH_HARNESS_NOT_AVAILABLE",
 ] as const;
 const DIRECT_SUPABASE_EXPECTED_TRANSPORT_OWNER =
   "src/lib/supabaseClient.ts root client or transport-owned file (*.transport.*, *.bff.*, /server/)";
@@ -1682,6 +1721,103 @@ export function evaluateAiAppKnowledgeRegistryGuardrail(params: {
       registryProviderImports: registryProviderImportFindings.length,
       resolverNetworkOrDbQueries: resolverNetworkOrDbFindings.length,
       screenGatewayImports: screenGatewayImportFindings.length,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiRoleScreenEmulatorGateGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiRoleScreenEmulatorGateSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const ensureRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_EMULATOR_BOOTSTRAP_RUNNER_PATH });
+  const maestroRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH });
+  const flowSources = REQUIRED_AI_ROLE_SCREEN_FLOW_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }),
+  );
+  const artifactSource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH });
+  const artifact = parseJsonRecord(artifactSource);
+  const flows = recordChild(artifact, "flows");
+  const finalStatus = recordString(artifact, "final_status");
+  const fakePassClaimed = recordValue(artifact, "fakePassClaimed");
+  const mutationsCreated = recordValue(artifact, "mutationsCreated");
+  const approvalRequiredObservedValue = recordValue(artifact, "approvalRequiredObserved");
+  const roleLeakageObservedValue = recordValue(artifact, "roleLeakageObserved");
+  const exactReason = recordString(artifact, "exactReason");
+
+  const ensureAndroidEmulatorReadyPresent =
+    Boolean(ensureRunnerSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(ensureRunnerSource?.includes("emulator -list-avds") || ensureRunnerSource?.includes("-list-avds")) &&
+    Boolean(ensureRunnerSource?.includes("sys.boot_completed")) &&
+    Boolean(ensureRunnerSource?.includes("fakePassClaimed: false"));
+  const maestroRunnerPresent =
+    Boolean(maestroRunnerSource?.includes("runAiRoleScreenKnowledgeMaestro")) &&
+    Boolean(maestroRunnerSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(maestroRunnerSource?.includes("mutationsCreated: 0")) &&
+    Boolean(maestroRunnerSource?.includes("approvalRequiredObserved"));
+  const e2eSuitePresent = flowSources.every(Boolean);
+  const emulatorArtifactPresent = Boolean(artifact);
+  const fakePassClaimedFalse = fakePassClaimed === false;
+  const allRequiredRoleFlowsRepresented = REQUIRED_AI_ROLE_SCREEN_FLOW_KEYS.every((role) =>
+    typeof recordValue(flows, role) === "string",
+  );
+  const greenAllFlowsPassed =
+    finalStatus === "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT" &&
+    REQUIRED_AI_ROLE_SCREEN_FLOW_KEYS.every((role) => recordValue(flows, role) === "PASS");
+  const mutationsCreatedZero = mutationsCreated === 0;
+  const approvalRequiredObserved = approvalRequiredObservedValue === true;
+  const roleLeakageNotObserved = roleLeakageObservedValue === false;
+  const blockedStatusAllowed = ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES.some(
+    (status) => status === finalStatus,
+  );
+  const blockedStatusHasExactReason =
+    blockedStatusAllowed && exactReason.length > 0 && fakePassClaimedFalse && allRequiredRoleFlowsRepresented;
+  const artifactStatusAccepted =
+    finalStatus === "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT"
+      ? greenAllFlowsPassed && mutationsCreatedZero && approvalRequiredObserved && roleLeakageNotObserved
+      : blockedStatusHasExactReason;
+
+  const findings = [
+    ...(finalStatus === "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT" && !greenAllFlowsPassed
+      ? ["green_artifact_missing_role_flow_pass"]
+      : []),
+    ...(fakePassClaimed === true ? ["fake_emulator_pass_claimed"] : []),
+    ...(mutationsCreated !== undefined && mutationsCreated !== 0 ? ["emulator_mutation_count_nonzero"] : []),
+    ...(roleLeakageObservedValue === true ? ["emulator_role_leakage_observed"] : []),
+  ];
+  const errors = [
+    ...(ensureAndroidEmulatorReadyPresent ? [] : [`missing_or_incomplete_runner:${AI_EMULATOR_BOOTSTRAP_RUNNER_PATH}`]),
+    ...(maestroRunnerPresent ? [] : [`missing_or_incomplete_runner:${AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH}`]),
+    ...(e2eSuitePresent ? [] : ["ai_role_screen_e2e_suite_missing"]),
+    ...(emulatorArtifactPresent ? [] : [`missing_artifact:${AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH}`]),
+    ...(fakePassClaimedFalse ? [] : ["emulator_artifact_fake_pass_not_false"]),
+    ...(allRequiredRoleFlowsRepresented ? [] : ["emulator_artifact_role_flow_missing"]),
+    ...(artifactStatusAccepted ? [] : ["emulator_artifact_status_not_accepted"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_role_screen_emulator_gate",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      ensureAndroidEmulatorReadyPresent,
+      maestroRunnerPresent,
+      e2eSuitePresent,
+      emulatorArtifactPresent,
+      fakePassClaimedFalse,
+      allRequiredRoleFlowsRepresented,
+      greenAllFlowsPassed,
+      mutationsCreatedZero,
+      approvalRequiredObserved,
+      roleLeakageNotObserved,
+      blockedStatusHasExactReason,
       findings,
     },
   };
@@ -2861,6 +2997,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiModelBoundary = evaluateAiModelBoundaryGuardrail({ projectRoot });
   const aiRoleRiskApprovalControlPlane = evaluateAiRoleRiskApprovalControlPlaneGuardrail({ projectRoot });
   const aiAppKnowledgeRegistry = evaluateAiAppKnowledgeRegistryGuardrail({ projectRoot });
+  const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -2883,6 +3020,7 @@ export function runArchitectureAntiRegressionSuite(
     aiModelBoundary.check,
     aiRoleRiskApprovalControlPlane.check,
     aiAppKnowledgeRegistry.check,
+    aiRoleScreenEmulatorGate.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -2906,6 +3044,7 @@ export function runArchitectureAntiRegressionSuite(
     aiModelBoundary: aiModelBoundary.summary,
     aiRoleRiskApprovalControlPlane: aiRoleRiskApprovalControlPlane.summary,
     aiAppKnowledgeRegistry: aiAppKnowledgeRegistry.summary,
+    aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     componentDebt,
     checks,
     safety: {
@@ -2945,6 +3084,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_control_plane_screen_gateway_imports: ${report.aiRoleRiskApprovalControlPlane.screenGatewayImports}`);
   console.info(`ai_app_knowledge_registry_screens: ${report.aiAppKnowledgeRegistry.requiredScreenIdsRegistered}`);
   console.info(`ai_app_knowledge_registry_direct_high_risk_intent: ${report.aiAppKnowledgeRegistry.noDirectHighRiskIntent}`);
+  console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
+  console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 

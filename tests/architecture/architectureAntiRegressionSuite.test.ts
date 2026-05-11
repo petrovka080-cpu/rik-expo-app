@@ -8,6 +8,7 @@ import {
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiModelBoundaryGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
+  evaluateAiRoleScreenEmulatorGateGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
   evaluateRateLimitMarketplace5PctCanaryProofGuardrail,
@@ -409,6 +410,80 @@ describe("architecture anti-regression suite", () => {
       status: "pass",
       errors: [],
     });
+  });
+
+  it("ratchets the AI role-screen emulator gate", () => {
+    const greenArtifact = {
+      final_status: "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT",
+      fakePassClaimed: false,
+      flows: {
+        director: "PASS",
+        foreman: "PASS",
+        buyer: "PASS",
+        accountant: "PASS",
+        contractor: "PASS",
+      },
+      mutationsCreated: 0,
+      approvalRequiredObserved: true,
+      roleLeakageObserved: false,
+      exactReason: null,
+    };
+    const passing = evaluateAiRoleScreenEmulatorGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "scripts/e2e/ensureAndroidEmulatorReady.ts") {
+          return "ensureAndroidEmulatorReady -list-avds sys.boot_completed fakePassClaimed: false";
+        }
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return "runAiRoleScreenKnowledgeMaestro ensureAndroidEmulatorReady mutationsCreated: 0 approvalRequiredObserved";
+        }
+        if (relativePath.endsWith(".yaml")) return "role flow";
+        if (relativePath.endsWith("_emulator.json")) return JSON.stringify(greenArtifact);
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_role_screen_emulator_gate",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiRoleScreenEmulatorGateGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "scripts/e2e/ensureAndroidEmulatorReady.ts") {
+          return "ensureAndroidEmulatorReady";
+        }
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return "runAiRoleScreenKnowledgeMaestro";
+        }
+        if (relativePath.endsWith(".yaml")) return "role flow";
+        if (relativePath.endsWith("_emulator.json")) {
+          return JSON.stringify({
+            final_status: "GREEN_AI_ROLE_SCREEN_KNOWLEDGE_EMULATOR_CLOSEOUT",
+            fakePassClaimed: true,
+            flows: { director: "PASS" },
+            mutationsCreated: 1,
+            approvalRequiredObserved: false,
+            roleLeakageObserved: true,
+          });
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "emulator_artifact_fake_pass_not_false",
+        "emulator_artifact_role_flow_missing",
+        "emulator_artifact_status_not_accepted",
+        "fake_emulator_pass_claimed",
+        "emulator_mutation_count_nonzero",
+        "emulator_role_leakage_observed",
+      ]),
+    );
   });
 
   it("fails if cache or rate-limit canary scope broadens", () => {
