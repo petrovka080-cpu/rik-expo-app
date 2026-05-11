@@ -106,13 +106,14 @@
     },
     "post_push_release_verify": {
       "command": "npm run release:verify -- --json",
-      "status": "PENDING_POST_PUSH"
+      "status": "PASS",
+      "verified_head_commit": "e5a7b22cdfc8b4d9dd167fa7a28d7480740b9ee2",
+      "summary": "tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, and git-diff-check passed; HEAD matched origin/main with ahead/behind 0/0."
     }
   },
   "commits": {
     "base_commit": "e21f82b5d9d9bda4c5c8f6474d98f31e6487e479",
-    "code_commit": "PENDING_COMMIT",
-    "artifact_finalization_commit": "PENDING_POST_PUSH_VERIFY"
+    "code_commit": "e5a7b22cdfc8b4d9dd167fa7a28d7480740b9ee2"
   },
   "negative_confirmations": {
     "force_push": false,

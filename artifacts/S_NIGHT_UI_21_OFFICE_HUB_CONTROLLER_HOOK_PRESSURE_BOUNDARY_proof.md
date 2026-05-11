@@ -76,7 +76,10 @@ Performance budget:
   - `git diff --check`
 - Artifact JSON parse: PASS
   - `node -e "const fs=require('fs'); JSON.parse(fs.readFileSync('artifacts/S_NIGHT_UI_21_OFFICE_HUB_CONTROLLER_HOOK_PRESSURE_BOUNDARY_matrix.json','utf8')); console.log('artifact_json_parse=PASS')"`
-- Post-push release verify: pending until push.
+- Post-push release verify: PASS
+  - `npm run release:verify -- --json`
+  - Verified head commit: `e5a7b22cdfc8b4d9dd167fa7a28d7480740b9ee2`
+  - Summary: tsc, expo-lint, architecture-anti-regression, jest-run-in-band, jest, and git-diff-check passed; HEAD matched origin/main with ahead/behind 0/0.
 
 ## Negative Confirmations
 
