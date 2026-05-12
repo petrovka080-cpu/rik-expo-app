@@ -1,0 +1,47 @@
+{
+  "wave": "S_AI_TASK_01_ROLE_SCOPED_TASK_STREAM_BFF",
+  "inventory_status": "GREEN_AI_ROLE_SCOPED_TASK_STREAM_BFF_READY",
+  "source_files": [
+    "src/features/ai/agent/agentBffRouteShell.ts"
+  ],
+  "test_files": [
+    "tests/ai/taskStreamBff.contract.test.ts",
+    "tests/ai/taskStreamRoleScope.contract.test.ts"
+  ],
+  "endpoint": {
+    "method": "GET",
+    "path": "/agent/task-stream",
+    "auth_required": true,
+    "read_only": true,
+    "paginated": true,
+    "role_scoped": true,
+    "evidence_backed": true,
+    "mutation_count": 0
+  },
+  "card_types": [
+    "approval_pending",
+    "supplier_price_change",
+    "warehouse_low_stock",
+    "draft_ready",
+    "report_ready",
+    "finance_risk",
+    "missing_document",
+    "recommended_next_action"
+  ],
+  "role_scope": {
+    "director_control_cross_domain": true,
+    "contractor_own_records_only": true,
+    "functional_roles_domain_scoped": true,
+    "unknown_role_denied": true
+  },
+  "w13_dependency": {
+    "approval_persistence_green": false,
+    "approval_persistence_status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+    "task_stream_mode": "read_only_without_execution"
+  },
+  "redaction": {
+    "credentials_in_artifacts": false,
+    "raw_prompt_payload_stored": false,
+    "raw_db_rows_stored": false
+  }
+}
