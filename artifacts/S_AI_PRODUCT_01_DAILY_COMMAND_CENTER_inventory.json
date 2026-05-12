@@ -1,0 +1,67 @@
+{
+  "wave": "S_AI_PRODUCT_01_DAILY_COMMAND_CENTER_TASK_STREAM",
+  "product_layer": "AI Command Center / Daily Task Stream",
+  "status": "STATIC_GREEN_RUNTIME_BLOCKED",
+  "runtime_blocker": "BLOCKED_TASK_STREAM_RUNTIME_NOT_EXPOSED",
+  "source_files": [
+    "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+    "src/features/ai/commandCenter/AiCommandCenterTypes.ts",
+    "src/features/ai/commandCenter/AiCommandCenterCards.tsx",
+    "src/features/ai/commandCenter/AiCommandCenterActions.tsx",
+    "src/features/ai/commandCenter/useAiCommandCenterData.ts",
+    "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts"
+  ],
+  "route_files": [
+    "app/(tabs)/ai.tsx"
+  ],
+  "test_files": [
+    "tests/ai/aiCommandCenter.fixture.ts",
+    "tests/ai/aiCommandCenterViewModel.contract.test.ts",
+    "tests/ai/aiCommandCenterRoleScope.contract.test.ts",
+    "tests/ai/aiCommandCenterActionSafety.contract.test.ts",
+    "tests/ai/aiCommandCenterEvidence.contract.test.ts",
+    "tests/e2e/aiCommandCenterRuntime.e2e.test.ts",
+    "tests/architecture/aiCommandCenterArchitecture.contract.test.ts"
+  ],
+  "runtime_runner": "scripts/e2e/runAiCommandCenterRuntimeMaestro.ts",
+  "artifacts": [
+    "artifacts/S_AI_PRODUCT_01_DAILY_COMMAND_CENTER_inventory.json",
+    "artifacts/S_AI_PRODUCT_01_DAILY_COMMAND_CENTER_matrix.json",
+    "artifacts/S_AI_PRODUCT_01_DAILY_COMMAND_CENTER_emulator.json",
+    "artifacts/S_AI_PRODUCT_01_DAILY_COMMAND_CENTER_proof.md"
+  ],
+  "safe_sources": [
+    "GET /agent/task-stream",
+    "search_catalog",
+    "compare_suppliers",
+    "get_warehouse_status",
+    "draft_request",
+    "draft_report",
+    "draft_act",
+    "submit_for_approval",
+    "get_action_status"
+  ],
+  "forbidden_surfaces": {
+    "direct_supabase_from_command_center_ui": false,
+    "direct_model_provider_from_command_center_ui": false,
+    "direct_mutation_from_card": false,
+    "silent_submit": false,
+    "db_seed": false,
+    "db_writes": false,
+    "migrations": false,
+    "raw_prompt_stored": false,
+    "raw_context_stored": false,
+    "raw_provider_payload_stored": false,
+    "raw_db_rows_exposed": false
+  },
+  "test_gates": {
+    "typescript": "PASS",
+    "expo_lint": "PASS",
+    "targeted_command_center_contracts": "PASS",
+    "full_jest": "PASS",
+    "architecture_anti_regression_suite": "PASS",
+    "git_diff_check": "PASS",
+    "android_installed_build_runtime": "PASS",
+    "command_center_runtime_maestro": "BLOCKED_TASK_STREAM_RUNTIME_NOT_EXPOSED"
+  }
+}

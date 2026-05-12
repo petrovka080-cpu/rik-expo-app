@@ -1,0 +1,19 @@
+{
+  "final_status": "BLOCKED_TASK_STREAM_RUNTIME_NOT_EXPOSED",
+  "product_static_status": "GREEN_AI_DAILY_COMMAND_CENTER_READY",
+  "role_scoped": true,
+  "director_cross_domain": true,
+  "contractor_own_records_only": true,
+  "evidence_required": true,
+  "approval_required_visible": true,
+  "direct_mutation_allowed": false,
+  "direct_supabase_from_ui": false,
+  "model_provider_from_ui": false,
+  "raw_db_rows_exposed": false,
+  "raw_prompt_exposed": false,
+  "emulator_e2e": "BLOCKED_TASK_STREAM_RUNTIME_NOT_EXPOSED",
+  "allowed_blocker": true,
+  "blocker_reason": "The installed runtime did not expose the AI Command Center task-stream contract for Maestro to prove live cross-domain cards. The runner refused a fake pass.",
+  "mutations_created": 0,
+  "fake_pass_claimed": false
+}
