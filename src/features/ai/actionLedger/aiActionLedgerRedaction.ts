@@ -10,8 +10,25 @@ const credentialKeys = [
   "password",
   "credential",
 ] as const;
+const camelCaseForbiddenKeys = [
+  "userId",
+  "companyId",
+  "organizationId",
+  "rawDbRow",
+  "rawDbRows",
+  "rawPrompt",
+  "providerPayload",
+  "authorizationHeader",
+  "serviceRole",
+] as const;
+const forbiddenKeyNames = [
+  ...rawIdKeys,
+  ...rawPayloadKeys,
+  ...credentialKeys,
+  ...camelCaseForbiddenKeys,
+] as const;
 const FORBIDDEN_KEY_PATTERN = new RegExp(
-  `(^|_)(${[...rawIdKeys, ...rawPayloadKeys, ...credentialKeys].join("|")})s?$`,
+  `(^|_)(${forbiddenKeyNames.join("|")})s?$`,
   "i",
 );
 

@@ -39,6 +39,12 @@ describe("agent BFF route shell", () => {
       }),
     );
     expect(AGENT_BFF_ROUTE_DEFINITIONS.map((route) => route.endpoint)).toEqual([
+      "GET /agent/approval-inbox",
+      "GET /agent/approval-inbox/:actionId",
+      "POST /agent/approval-inbox/:actionId/approve",
+      "POST /agent/approval-inbox/:actionId/reject",
+      "POST /agent/approval-inbox/:actionId/edit-preview",
+      "POST /agent/approval-inbox/:actionId/execute-approved",
       "POST /agent/action/submit-for-approval",
       "GET /agent/action/:actionId/status",
       "POST /agent/action/:actionId/approve",

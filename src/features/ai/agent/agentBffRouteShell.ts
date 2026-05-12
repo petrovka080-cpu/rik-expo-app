@@ -89,6 +89,21 @@ import {
   type ActionLedgerStatusBffRequest,
   type SubmitForApprovalBffRequest,
 } from "../actionLedger/aiActionLedgerBff";
+import {
+  AI_APPROVAL_INBOX_BFF_CONTRACT,
+  approveApprovalInboxActionBff,
+  executeApprovedApprovalInboxActionBff,
+  getApprovalInboxActionBff,
+  getApprovalInboxBff,
+  previewApprovalInboxEditBff,
+  rejectApprovalInboxActionBff,
+} from "../approvalInbox/approvalInboxRuntime";
+import type {
+  ApprovalInboxActionRequest,
+  ApprovalInboxBffEnvelope,
+  ApprovalInboxDecisionRequest,
+  ApprovalInboxListRequest,
+} from "../approvalInbox/approvalInboxTypes";
 
 export {
   AGENT_SCREEN_RUNTIME_BFF_CONTRACT,
@@ -101,6 +116,13 @@ export {
   getActionLedgerStatusBff,
   rejectActionLedgerBff,
   submitActionForApprovalBff,
+  AI_APPROVAL_INBOX_BFF_CONTRACT,
+  approveApprovalInboxActionBff,
+  executeApprovedApprovalInboxActionBff,
+  getApprovalInboxActionBff,
+  getApprovalInboxBff,
+  previewApprovalInboxEditBff,
+  rejectApprovalInboxActionBff,
 };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
@@ -115,6 +137,12 @@ export type AgentBffRouteOperation =
   | "agent.action.approve"
   | "agent.action.reject"
   | "agent.action.execute_approved"
+  | "agent.approval_inbox.read"
+  | "agent.approval_inbox.detail"
+  | "agent.approval_inbox.approve"
+  | "agent.approval_inbox.reject"
+  | "agent.approval_inbox.edit_preview"
+  | "agent.approval_inbox.execute_approved"
   | "agent.task_stream.read"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
@@ -156,7 +184,8 @@ export type AgentBffRouteDefinition = {
     | "AgentExternalIntelEnvelope"
     | "AgentProcurementEnvelope"
     | "AgentScreenRuntimeEnvelope"
-    | "AgentActionLedgerEnvelope";
+    | "AgentActionLedgerEnvelope"
+    | "AgentApprovalInboxEnvelope";
 };
 
 export type AgentBffAuthContext = {
@@ -180,6 +209,9 @@ export type AgentBffActionStatusRequest = AgentBffShellRequest & {
 export type AgentActionLedgerSubmitRequest = SubmitForApprovalBffRequest;
 export type AgentActionLedgerStatusRequest = ActionLedgerStatusBffRequest;
 export type AgentActionLedgerDecisionRequest = ActionLedgerDecisionBffRequest;
+export type AgentApprovalInboxRequest = ApprovalInboxListRequest;
+export type AgentApprovalInboxActionRequest = ApprovalInboxActionRequest;
+export type AgentApprovalInboxDecisionRequest = ApprovalInboxDecisionRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -602,6 +634,7 @@ export type AgentProcurementEnvelope =
     };
 
 export type AgentActionLedgerEnvelope = ActionLedgerBffEnvelope;
+export type AgentApprovalInboxEnvelope = ApprovalInboxBffEnvelope;
 
 export type AgentTaskStreamCardType =
   | "approval_pending"
@@ -850,7 +883,87 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
   supplierSelectionFinalized: false,
 } as const);
 
+export const AGENT_APPROVAL_INBOX_BFF_CONTRACT = AI_APPROVAL_INBOX_BFF_CONTRACT;
+
 export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
+  {
+    operation: "agent.approval_inbox.read",
+    method: "GET",
+    endpoint: "GET /agent/approval-inbox",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
+  {
+    operation: "agent.approval_inbox.detail",
+    method: "GET",
+    endpoint: "GET /agent/approval-inbox/:actionId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
+  {
+    operation: "agent.approval_inbox.approve",
+    method: "POST",
+    endpoint: "POST /agent/approval-inbox/:actionId/approve",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
+  {
+    operation: "agent.approval_inbox.reject",
+    method: "POST",
+    endpoint: "POST /agent/approval-inbox/:actionId/reject",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
+  {
+    operation: "agent.approval_inbox.edit_preview",
+    method: "POST",
+    endpoint: "POST /agent/approval-inbox/:actionId/edit-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
+  {
+    operation: "agent.approval_inbox.execute_approved",
+    method: "POST",
+    endpoint: "POST /agent/approval-inbox/:actionId/execute-approved",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentApprovalInboxEnvelope",
+  },
   {
     operation: "agent.action.submit_for_approval",
     method: "POST",

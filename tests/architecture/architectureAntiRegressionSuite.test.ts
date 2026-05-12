@@ -9,6 +9,7 @@ import {
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
   evaluateAiCrossScreenRuntimeMatrixGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
+  evaluateAiApprovalInboxRuntimeGuardrail,
   evaluateAiPersistentActionLedgerGuardrail,
   evaluateAiProcurementCopilotRuntimeChainGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
@@ -1841,6 +1842,163 @@ describe("architecture anti-regression suite", () => {
         "ai_action_ledger_fake_local_approval_detected",
         "ai_action_ledger_direct_execution_path_detected",
         "ai_action_ledger_ui_supabase_import_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the AI approval inbox runtime", () => {
+    const passing = evaluateAiApprovalInboxRuntimeGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return [
+            "AgentApprovalInboxEnvelope",
+            "agent.approval_inbox.execute_approved",
+            "roleFiltered: true",
+            "mutates: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerBff")) {
+          return [
+            "auditRequired: true",
+            "idempotency",
+            'status: "rejected"',
+            "executeApprovedActionLedgerBff",
+            "domainExecutor: null",
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerPolicy")) {
+          return 'status !== "approved"\nAI action execution requires idempotency\nrejected: []';
+        }
+        if (relativePath.includes("executeApprovedAiAction")) {
+          return [
+            "executeApprovedAiAction",
+            "assertAiActionLedgerExecutePolicy",
+            'status !== "approved"',
+            "missing idempotency key",
+            "BLOCKED_DOMAIN_EXECUTOR_NOT_READY",
+          ].join("\n");
+        }
+        if (relativePath.includes("runAiApprovalInboxMaestro")) {
+          return "runAiApprovalInboxMaestro\nBLOCKED_APPROVAL_TEST_ACTION_NOT_AVAILABLE\nmutations_created: 0\nfake_approval: false";
+        }
+        if (relativePath.includes("ApprovalActionCard")) {
+          return [
+            "ApprovalInboxActionCard",
+            'testID="ai.approval.action.evidence"',
+            'testID="ai.approval.action.approve"',
+            "disabled",
+            "fakeActions: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("ApprovalReviewPanel")) {
+          return [
+            "ApprovalInboxActionCard",
+            'testID="ai.approval.review.panel"',
+            'testID="ai.approval.review.confirm-approve"',
+            'testID="ai.approval.review.confirm-reject"',
+            "fakeActions: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvalInboxRuntime")) {
+          return [
+            "ApprovalInboxResponse",
+            "ApprovalInboxActionCard",
+            "ApprovalInboxScreen",
+            "GET /agent/approval-inbox",
+            "GET /agent/approval-inbox/:actionId",
+            "POST /agent/approval-inbox/:actionId/approve",
+            "POST /agent/approval-inbox/:actionId/reject",
+            "POST /agent/approval-inbox/:actionId/edit-preview",
+            "POST /agent/approval-inbox/:actionId/execute-approved",
+            "backend.listByOrganization",
+            "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+            "persistentLedgerUsed: true",
+            "fakeLocalApproval: false",
+            "fakeActions: false",
+            "evidenceRefs.length === 0",
+            "approveActionLedgerBff",
+            "rejectActionLedgerBff",
+            "executeApprovedActionLedgerBff",
+            "auditRequired: true",
+            "idempotencyRequired: true",
+            "reviewPanelConfirmed",
+            "reviewPanelRequired: true",
+            "approveWithoutReviewAllowed: false",
+            "directDomainMutation: false",
+            "rawDbRowsExposed: false",
+            "rawPromptExposed: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvalInboxActionPolicy")) {
+          return [
+            "ApprovalInboxResponse",
+            "ApprovalInboxActionCard",
+            "ApprovalInboxScreen",
+            "canReadApprovalInboxAction",
+            'role === "unknown"',
+            "hasDirectorFullAiAccess",
+            "requestedByUserIdHash",
+            "fakeActions: false",
+            "rawDbRowsExposed: false",
+            "rawPromptExposed: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvalInboxEvidence")) {
+          return [
+            "ApprovalInboxResponse",
+            "ApprovalInboxActionCard",
+            "ApprovalInboxScreen",
+            "normalizeApprovalInboxEvidenceRefs",
+            "hasApprovalInboxEvidence",
+            "rejected_blocks_execution",
+            "fakeActions: false",
+            "rawDbRowsExposed: false",
+            "rawPromptExposed: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvalInbox")) {
+          return [
+            "ApprovalInboxResponse",
+            "ApprovalInboxActionCard",
+            "ApprovalInboxScreen",
+            "fakeActions: false",
+            "rawDbRowsExposed: false",
+            "rawPromptExposed: false",
+          ].join("\n");
+        }
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_approval_inbox_runtime",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiApprovalInboxRuntimeGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("ApprovalActionCard")) return 'testID="ai.approval.action.approve"';
+        if (relativePath.includes("approvalInbox")) {
+          return "fakeLocalApproval: true\nfakeActions: true\nlocalApprovalQueue\ncreateOrder()\nrawPrompt: hidden";
+        }
+        if (relativePath.includes("executeApprovedAiAction")) return "";
+        if (relativePath.includes("agentBffRouteShell")) return "mutates: true";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "approval_inbox_files_missing",
+        "approval_inbox_bff_routes_missing",
+        "approval_inbox_not_reading_persistent_ledger",
+        "approval_inbox_fake_local_approval_detected",
+        "approval_inbox_review_panel_not_required",
+        "approval_inbox_direct_mutation_detected",
       ]),
     );
   });

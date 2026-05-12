@@ -514,6 +514,29 @@ export type AiPersistentActionLedgerArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiApprovalInboxRuntimeArchitectureSummary = {
+  inboxFilesPresent: boolean;
+  bffRoutesPresent: boolean;
+  persistentLedgerReadRequired: boolean;
+  fakeLocalApprovalAbsent: boolean;
+  roleScoped: boolean;
+  evidenceRequired: boolean;
+  auditRequired: boolean;
+  idempotencyRequired: boolean;
+  reviewPanelRequired: boolean;
+  approveWithoutReviewAllowed: boolean;
+  rejectBlocksExecution: boolean;
+  pendingCannotExecute: boolean;
+  executeApprovedRequiresGate: boolean;
+  domainExecutorBlockedWhenMissing: boolean;
+  noDirectMutation: boolean;
+  noUiSupabaseImport: boolean;
+  noUiModelProviderImport: boolean;
+  noRawPayloadFields: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -713,6 +736,7 @@ export type ArchitectureAntiRegressionReport = {
   aiProcurementCopilotRuntimeChain: AiProcurementCopilotRuntimeChainArchitectureSummary;
   aiCrossScreenRuntimeMatrix: AiCrossScreenRuntimeMatrixArchitectureSummary;
   aiPersistentActionLedger: AiPersistentActionLedgerArchitectureSummary;
+  aiApprovalInboxRuntime: AiApprovalInboxRuntimeArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -867,6 +891,17 @@ const AI_ACTION_LEDGER_FILES = [
   "src/features/ai/actionLedger/aiActionLedgerBff.ts",
   "src/features/ai/actionLedger/executeApprovedAiAction.ts",
 ] as const;
+const AI_APPROVAL_INBOX_FILES = [
+  "src/features/ai/approvalInbox/approvalInboxTypes.ts",
+  "src/features/ai/approvalInbox/approvalInboxRuntime.ts",
+  "src/features/ai/approvalInbox/approvalInboxViewModel.ts",
+  "src/features/ai/approvalInbox/approvalInboxEvidence.ts",
+  "src/features/ai/approvalInbox/approvalInboxRedaction.ts",
+  "src/features/ai/approvalInbox/approvalInboxActionPolicy.ts",
+  "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+  "src/features/ai/approvalInbox/ApprovalActionCard.tsx",
+  "src/features/ai/approvalInbox/ApprovalReviewPanel.tsx",
+] as const;
 const AI_ACTION_LEDGER_MIGRATION_PATH =
   "supabase/migrations/20260512120000_ai_action_ledger.sql";
 const AI_ACTION_LEDGER_AUDIT_RLS_MIGRATION_PATH =
@@ -882,6 +917,8 @@ const AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH =
   "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts";
 const AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovalActionLedgerMaestro.ts";
+const AI_APPROVAL_INBOX_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiApprovalInboxMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -3782,6 +3819,220 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
   };
 }
 
+export function evaluateAiApprovalInboxRuntimeGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiApprovalInboxRuntimeArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const inboxSources = AI_APPROVAL_INBOX_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const inboxSource = inboxSources.join("\n");
+  const runtimeSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxRuntime.ts",
+    }) ?? "";
+  const policySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxActionPolicy.ts",
+    }) ?? "";
+  const evidenceSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxEvidence.ts",
+    }) ?? "";
+  const cardSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalActionCard.tsx",
+    }) ?? "";
+  const reviewPanelSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalReviewPanel.tsx",
+    }) ?? "";
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const ledgerBffSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+    }) ?? "";
+  const ledgerPolicySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerPolicy.ts",
+    }) ?? "";
+  const executeGateSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/executeApprovedAiAction.ts",
+    }) ?? "";
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_INBOX_E2E_RUNNER_PATH }) ?? "";
+
+  const inboxFilesPresent =
+    inboxSources.every((source) => source.length > 0) &&
+    inboxSource.includes("ApprovalInboxResponse") &&
+    inboxSource.includes("ApprovalInboxActionCard") &&
+    inboxSource.includes("ApprovalInboxScreen");
+  const bffRoutesPresent =
+    runtimeSource.includes("GET /agent/approval-inbox") &&
+    runtimeSource.includes("GET /agent/approval-inbox/:actionId") &&
+    runtimeSource.includes("POST /agent/approval-inbox/:actionId/approve") &&
+    runtimeSource.includes("POST /agent/approval-inbox/:actionId/reject") &&
+    runtimeSource.includes("POST /agent/approval-inbox/:actionId/edit-preview") &&
+    runtimeSource.includes("POST /agent/approval-inbox/:actionId/execute-approved") &&
+    shellSource.includes("AgentApprovalInboxEnvelope") &&
+    shellSource.includes("agent.approval_inbox.execute_approved");
+  const persistentLedgerReadRequired =
+    runtimeSource.includes("backend.listByOrganization") &&
+    runtimeSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND") &&
+    runtimeSource.includes("persistentLedgerUsed: true") &&
+    !/localApprovalQueue|localApprovalStore|approvalInboxFixture|fakeApproval/i.test(runtimeSource);
+  const fakeLocalApprovalAbsent =
+    runtimeSource.includes("fakeLocalApproval: false") &&
+    inboxSource.includes("fakeActions: false") &&
+    !/fakeLocalApproval:\s*true|fakeActions:\s*true|fake approval|fake status|fake execution/i.test(
+      inboxSource,
+    );
+  const roleScoped =
+    policySource.includes("canReadApprovalInboxAction") &&
+    policySource.includes("role === \"unknown\"") &&
+    policySource.includes("hasDirectorFullAiAccess") &&
+    policySource.includes("requestedByUserIdHash") &&
+    shellSource.includes("roleFiltered: true");
+  const evidenceRequired =
+    evidenceSource.includes("normalizeApprovalInboxEvidenceRefs") &&
+    evidenceSource.includes("hasApprovalInboxEvidence") &&
+    runtimeSource.includes("evidenceRefs.length === 0") &&
+    cardSource.includes('testID="ai.approval.action.evidence"');
+  const auditRequired =
+    runtimeSource.includes("approveActionLedgerBff") &&
+    runtimeSource.includes("rejectActionLedgerBff") &&
+    runtimeSource.includes("executeApprovedActionLedgerBff") &&
+    runtimeSource.includes("auditRequired: true") &&
+    ledgerBffSource.includes("auditRequired: true");
+  const idempotencyRequired =
+    runtimeSource.includes("idempotencyRequired: true") &&
+    ledgerBffSource.includes("idempotency") &&
+    ledgerPolicySource.includes("AI action execution requires idempotency");
+  const reviewPanelRequired =
+    runtimeSource.includes("reviewPanelConfirmed") &&
+    runtimeSource.includes("reviewPanelRequired: true") &&
+    reviewPanelSource.includes('testID="ai.approval.review.panel"') &&
+    reviewPanelSource.includes('testID="ai.approval.review.confirm-approve"') &&
+    reviewPanelSource.includes('testID="ai.approval.review.confirm-reject"');
+  const approveWithoutReviewAllowed =
+    runtimeSource.includes("approveWithoutReviewAllowed: false") &&
+    cardSource.includes("disabled") &&
+    cardSource.includes('testID="ai.approval.action.approve"');
+  const rejectBlocksExecution =
+    evidenceSource.includes("rejected_blocks_execution") &&
+    ledgerPolicySource.includes("rejected: []") &&
+    ledgerPolicySource.includes('status !== "approved"');
+  const pendingCannotExecute =
+    ledgerPolicySource.includes('status !== "approved"') &&
+    ledgerBffSource.includes("executeApprovedActionLedgerBff") &&
+    runtimeSource.includes("executeApprovedActionLedgerBff");
+  const executeApprovedRequiresGate =
+    runtimeSource.includes("executeApprovedActionLedgerBff") &&
+    executeGateSource.includes("executeApprovedAiAction") &&
+    executeGateSource.includes("assertAiActionLedgerExecutePolicy");
+  const domainExecutorBlockedWhenMissing =
+    executeGateSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+    ledgerBffSource.includes("domainExecutor: null");
+  const directMutationSurface = `${inboxSource}\n${shellSource}`;
+  const noDirectMutation =
+    !/\bdomainExecutor\.execute\b/.test(directMutationSurface) &&
+    !/\b(createOrder|confirmSupplier|changePaymentStatus|changeWarehouseStatus|sendDocument)\b/.test(
+      directMutationSurface,
+    ) &&
+    runtimeSource.includes("directDomainMutation: false") &&
+    shellSource.includes("mutates: false");
+  const uiSource = [
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+    }) ?? "",
+    cardSource,
+    reviewPanelSource,
+  ].join("\n");
+  const noUiSupabaseImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(uiSource);
+  const noUiModelProviderImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      uiSource,
+    );
+  const noRawPayloadFields =
+    inboxSource.includes("rawDbRowsExposed: false") &&
+    inboxSource.includes("rawPromptExposed: false") &&
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows|user_id|organization_id|service_role|Authorization)\s*:/.test(
+      inboxSource,
+    );
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiApprovalInboxMaestro") &&
+    e2eRunnerSource.includes("BLOCKED_APPROVAL_TEST_ACTION_NOT_AVAILABLE") &&
+    e2eRunnerSource.includes("mutations_created: 0") &&
+    e2eRunnerSource.includes("fake_approval: false");
+
+  const findings = [
+    ...(inboxFilesPresent ? [] : ["approval_inbox_files_missing"]),
+    ...(bffRoutesPresent ? [] : ["approval_inbox_bff_routes_missing"]),
+    ...(persistentLedgerReadRequired ? [] : ["approval_inbox_not_reading_persistent_ledger"]),
+    ...(fakeLocalApprovalAbsent ? [] : ["approval_inbox_fake_local_approval_detected"]),
+    ...(roleScoped ? [] : ["approval_inbox_role_scope_missing"]),
+    ...(evidenceRequired ? [] : ["approval_inbox_evidence_not_required"]),
+    ...(auditRequired ? [] : ["approval_inbox_audit_not_required"]),
+    ...(idempotencyRequired ? [] : ["approval_inbox_idempotency_not_required"]),
+    ...(reviewPanelRequired ? [] : ["approval_inbox_review_panel_not_required"]),
+    ...(approveWithoutReviewAllowed ? [] : ["approval_inbox_approve_without_review_allowed"]),
+    ...(rejectBlocksExecution ? [] : ["approval_inbox_reject_does_not_block_execution"]),
+    ...(pendingCannotExecute ? [] : ["approval_inbox_pending_can_execute"]),
+    ...(executeApprovedRequiresGate ? [] : ["approval_inbox_execute_gate_missing"]),
+    ...(domainExecutorBlockedWhenMissing ? [] : ["approval_inbox_domain_executor_not_blocked"]),
+    ...(noDirectMutation ? [] : ["approval_inbox_direct_mutation_detected"]),
+    ...(noUiSupabaseImport ? [] : ["approval_inbox_ui_supabase_import_detected"]),
+    ...(noUiModelProviderImport ? [] : ["approval_inbox_ui_model_provider_import_detected"]),
+    ...(noRawPayloadFields ? [] : ["approval_inbox_raw_payload_field_detected"]),
+    ...(e2eRunnerPresent ? [] : ["approval_inbox_e2e_runner_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_approval_inbox_runtime",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      inboxFilesPresent,
+      bffRoutesPresent,
+      persistentLedgerReadRequired,
+      fakeLocalApprovalAbsent,
+      roleScoped,
+      evidenceRequired,
+      auditRequired,
+      idempotencyRequired,
+      reviewPanelRequired,
+      approveWithoutReviewAllowed,
+      rejectBlocksExecution,
+      pendingCannotExecute,
+      executeApprovedRequiresGate,
+      domainExecutorBlockedWhenMissing,
+      noDirectMutation,
+      noUiSupabaseImport,
+      noUiModelProviderImport,
+      noRawPayloadFields,
+      e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -5672,6 +5923,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiProcurementCopilotRuntimeChain = evaluateAiProcurementCopilotRuntimeChainGuardrail({ projectRoot });
   const aiCrossScreenRuntimeMatrix = evaluateAiCrossScreenRuntimeMatrixGuardrail({ projectRoot });
   const aiPersistentActionLedger = evaluateAiPersistentActionLedgerGuardrail({ projectRoot });
+  const aiApprovalInboxRuntime = evaluateAiApprovalInboxRuntimeGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -5711,6 +5963,7 @@ export function runArchitectureAntiRegressionSuite(
     aiProcurementCopilotRuntimeChain.check,
     aiCrossScreenRuntimeMatrix.check,
     aiPersistentActionLedger.check,
+    aiApprovalInboxRuntime.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -5751,6 +6004,7 @@ export function runArchitectureAntiRegressionSuite(
     aiProcurementCopilotRuntimeChain: aiProcurementCopilotRuntimeChain.summary,
     aiCrossScreenRuntimeMatrix: aiCrossScreenRuntimeMatrix.summary,
     aiPersistentActionLedger: aiPersistentActionLedger.summary,
+    aiApprovalInboxRuntime: aiApprovalInboxRuntime.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -5819,6 +6073,9 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_persistent_action_ledger: ${report.aiPersistentActionLedger.ledgerFilesPresent}`);
   console.info(`ai_persistent_action_ledger_pending: ${report.aiPersistentActionLedger.submitForApprovalPersistsPending}`);
   console.info(`ai_persistent_action_ledger_no_fake_local: ${report.aiPersistentActionLedger.noFakeLocalApproval}`);
+  console.info(`ai_approval_inbox_runtime: ${report.aiApprovalInboxRuntime.inboxFilesPresent}`);
+  console.info(`ai_approval_inbox_persistent_ledger: ${report.aiApprovalInboxRuntime.persistentLedgerReadRequired}`);
+  console.info(`ai_approval_inbox_review_panel_required: ${report.aiApprovalInboxRuntime.reviewPanelRequired}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

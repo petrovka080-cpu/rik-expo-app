@@ -22,6 +22,10 @@ import type {
 
 export type AiActionLedgerPersistentBackend = {
   readonly mounted: true;
+  listByOrganization: (
+    organizationIdHash: string,
+    page: { cursor?: string | null; limit: number },
+  ) => Promise<{ records: AiActionLedgerRecord[]; nextCursor: string | null }>;
   findByIdempotencyKey: (
     organizationIdHash: string,
     idempotencyKey: string,

@@ -284,6 +284,17 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerBff.ts"),
       path.join(SRC, "features", "ai", "actionLedger", "executeApprovedAiAction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic07ApprovalInboxExecutionGateFiles = [
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxTypes.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxRuntime.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxViewModel.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxEvidence.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxRedaction.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxActionPolicy.ts"),
+      path.join(SRC, "features", "ai", "approvalInbox", "ApprovalInboxScreen.tsx"),
+      path.join(SRC, "features", "ai", "approvalInbox", "ApprovalActionCard.tsx"),
+      path.join(SRC, "features", "ai", "approvalInbox", "ApprovalReviewPanel.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1033,6 +1044,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
     expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
+    expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1188,7 +1200,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic03ExternalIntelGatewayFiles -
         sAiMagic04ProcurementCopilotRuntimeChainFiles -
         sAiMagic05CrossScreenRuntimeMatrixFiles -
-        sAiMagic06PersistentActionLedgerFiles,
+        sAiMagic06PersistentActionLedgerFiles -
+        sAiMagic07ApprovalInboxExecutionGateFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
