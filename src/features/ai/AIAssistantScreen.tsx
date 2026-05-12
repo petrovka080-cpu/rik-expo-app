@@ -426,6 +426,8 @@ export default function AIAssistantScreen() {
               .some((historyMessage) => historyMessage.role === "user");
             const isLatestAssistantReply =
               message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
+            const shouldCompactAssistantHistory =
+              message.role === "assistant" && hasPriorUserPrompt && !isLatestAssistantReply;
             const responseTestId = isLatestAssistantReply
               ? "ai.assistant.response"
               : message.role === "assistant"
@@ -446,6 +448,8 @@ export default function AIAssistantScreen() {
                     styles.messageText,
                     message.role === "assistant" ? styles.assistantText : styles.userText,
                   ]}
+                  numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
+                  ellipsizeMode="tail"
                 >
                   {message.content}
                 </Text>

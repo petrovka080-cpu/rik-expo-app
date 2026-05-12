@@ -62,8 +62,12 @@ describe("AI assistant stable e2e test IDs", () => {
   it("targets the generated assistant reply instead of the initial greeting", () => {
     expect(assistantSource).toContain("hasPriorUserPrompt");
     expect(assistantSource).toContain("isLatestAssistantReply");
+    expect(assistantSource).toContain("shouldCompactAssistantHistory");
     expect(assistantSource).toContain('index === messages.length - 1');
     expect(assistantSource).toContain('testID={responseTestId}');
+    expect(assistantSource).toContain(
+      "numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}",
+    );
   });
 
   it("targets stable auth and assistant IDs from every role-screen flow", () => {
