@@ -179,112 +179,31 @@ create or replace function public.ai_action_ledger_submit_for_approval_v1(
   p_actor_role text
 )
 returns jsonb
-language plpgsql
+language sql
+stable
 security invoker
 set search_path = ''
 as $$
-declare
-  v_action_id uuid;
-  v_event_type text := 'ai.action.submitted_for_approval';
-begin
-  if auth.uid() is null then
-    raise exception 'ai_action_ledger: auth required';
-  end if;
-
-  if not public.ai_action_ledger_actor_can_view_company_v1(p_organization_id) then
-    raise exception 'ai_action_ledger: organization scope denied';
-  end if;
-
-  if length(btrim(coalesce(p_idempotency_key, ''))) < 16 then
-    raise exception 'ai_action_ledger: idempotency required';
-  end if;
-
-  if jsonb_typeof(coalesce(p_evidence_refs, '[]'::jsonb)) <> 'array'
-    or jsonb_array_length(coalesce(p_evidence_refs, '[]'::jsonb)) < 1
-    or jsonb_array_length(coalesce(p_evidence_refs, '[]'::jsonb)) > 20 then
-    raise exception 'ai_action_ledger: evidence required';
-  end if;
-
-  if not public.ai_action_ledger_no_raw_payload_v1(coalesce(p_redacted_payload, '{}'::jsonb)) then
-    raise exception 'ai_action_ledger: redacted payload required';
-  end if;
-
-  insert into public.ai_action_ledger (
-    organization_id,
-    requested_by,
-    action_type,
-    status,
-    risk_level,
-    screen_id,
-    domain,
-    summary,
-    redacted_payload,
-    evidence_refs,
-    idempotency_key,
-    expires_at
-  )
-  values (
-    p_organization_id,
-    auth.uid(),
-    btrim(p_action_type),
-    'pending',
-    btrim(p_risk_level),
-    btrim(p_screen_id),
-    btrim(p_domain),
-    btrim(p_summary),
-    coalesce(p_redacted_payload, '{}'::jsonb),
-    coalesce(p_evidence_refs, '[]'::jsonb),
-    btrim(p_idempotency_key),
-    p_expires_at
-  )
-  on conflict (organization_id, idempotency_key) do nothing
-  returning id into v_action_id;
-
-  if v_action_id is null then
-    select al.id
-    into v_action_id
-    from public.ai_action_ledger al
-    where al.organization_id = p_organization_id
-      and al.idempotency_key = btrim(p_idempotency_key);
-
-    v_event_type := 'ai.action.idempotency_reused';
-  end if;
-
-  insert into public.ai_action_ledger_audit (
-    action_id,
-    organization_id,
-    event_type,
-    action_status,
-    actor_user_id,
-    actor_role,
-    reason,
-    evidence_refs,
-    redacted_payload
-  )
-  values (
-    v_action_id,
-    p_organization_id,
-    v_event_type,
-    'pending',
-    auth.uid(),
-    btrim(p_actor_role),
-    case
-      when v_event_type = 'ai.action.idempotency_reused'
-      then 'AI action idempotency key reused; existing pending action returned.'
-      else 'AI action persisted as pending approval.'
+  select jsonb_build_object(
+    'status', 'blocked',
+    'blocker', 'BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED',
+    'reason', 'AI action ledger write RPC is a contract stub until an approved write migration is applied.',
+    'organizationScopeChecked', public.ai_action_ledger_actor_can_view_company_v1(p_organization_id),
+    'actionType', btrim(coalesce(p_action_type, '')),
+    'riskLevel', btrim(coalesce(p_risk_level, '')),
+    'screenId', btrim(coalesce(p_screen_id, '')),
+    'domain', btrim(coalesce(p_domain, '')),
+    'redactedPayloadAccepted', public.ai_action_ledger_no_raw_payload_v1(coalesce(p_redacted_payload, '{}'::jsonb)),
+    'evidenceCount', case
+      when jsonb_typeof(coalesce(p_evidence_refs, '[]'::jsonb)) = 'array'
+      then jsonb_array_length(coalesce(p_evidence_refs, '[]'::jsonb))
+      else 0
     end,
-    coalesce(p_evidence_refs, '[]'::jsonb),
-    '{}'::jsonb
-  );
-
-  return jsonb_build_object(
-    'status', 'pending',
-    'actionId', v_action_id,
+    'idempotencyPresent', length(btrim(coalesce(p_idempotency_key, ''))) >= 16,
+    'expiresAtPresent', p_expires_at is not null,
     'requiresApproval', true,
-    'finalExecution', false,
-    'idempotencyReused', v_event_type = 'ai.action.idempotency_reused'
+    'finalExecution', false
   );
-end;
 $$;
 
 create or replace function public.ai_action_ledger_get_status_v1(p_action_id uuid)
@@ -294,21 +213,31 @@ stable
 security invoker
 set search_path = ''
 as $$
-  select jsonb_build_object(
-    'status', al.status,
-    'actionId', al.id,
-    'actionType', al.action_type,
-    'riskLevel', al.risk_level,
-    'screenId', al.screen_id,
-    'domain', al.domain,
-    'summary', al.summary,
-    'evidenceRefs', al.evidence_refs,
-    'requiresApproval', true,
-    'finalExecution', false
-  )
-  from public.ai_action_ledger al
-  where al.id = p_action_id
-    and public.ai_action_ledger_actor_can_view_company_v1(al.organization_id);
+  select coalesce(
+    (
+      select jsonb_build_object(
+        'status', al.status,
+        'actionId', al.id,
+        'actionType', al.action_type,
+        'riskLevel', al.risk_level,
+        'screenId', al.screen_id,
+        'domain', al.domain,
+        'summary', al.summary,
+        'evidenceRefs', al.evidence_refs,
+        'requiresApproval', true,
+        'finalExecution', false
+      )
+      from public.ai_action_ledger al
+      where al.id = p_action_id
+        and public.ai_action_ledger_actor_can_view_company_v1(al.organization_id)
+    ),
+    jsonb_build_object(
+      'status', 'blocked',
+      'actionId', p_action_id,
+      'blocker', 'BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED',
+      'finalExecution', false
+    )
+  );
 $$;
 
 create or replace function public.ai_action_ledger_approve_v1(
@@ -316,57 +245,19 @@ create or replace function public.ai_action_ledger_approve_v1(
   p_actor_role text
 )
 returns jsonb
-language plpgsql
+language sql
+stable
 security invoker
 set search_path = ''
 as $$
-declare
-  v_record public.ai_action_ledger%rowtype;
-begin
-  select *
-  into v_record
-  from public.ai_action_ledger
-  where id = p_action_id;
-
-  if v_record.id is null then
-    raise exception 'ai_action_ledger: action not found';
-  end if;
-
-  if not public.ai_action_ledger_actor_can_manage_company_v1(v_record.organization_id) then
-    raise exception 'ai_action_ledger: approve scope denied';
-  end if;
-
-  update public.ai_action_ledger
-  set status = 'approved',
-      approved_by = auth.uid()
-  where id = p_action_id
-  returning * into v_record;
-
-  insert into public.ai_action_ledger_audit (
-    action_id,
-    organization_id,
-    event_type,
-    action_status,
-    actor_user_id,
-    actor_role,
-    reason,
-    evidence_refs,
-    redacted_payload
-  )
-  values (
-    v_record.id,
-    v_record.organization_id,
-    'ai.action.approved',
-    v_record.status,
-    auth.uid(),
-    btrim(p_actor_role),
-    'AI action approved through persistent ledger.',
-    v_record.evidence_refs,
-    '{}'::jsonb
+  select jsonb_build_object(
+    'status', 'blocked',
+    'actionId', p_action_id,
+    'blocker', 'BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED',
+    'reason', 'AI action approval RPC is a contract stub until an approved write migration is applied.',
+    'actorRole', btrim(coalesce(p_actor_role, '')),
+    'finalExecution', false
   );
-
-  return public.ai_action_ledger_get_status_v1(v_record.id);
-end;
 $$;
 
 create or replace function public.ai_action_ledger_reject_v1(
@@ -375,56 +266,20 @@ create or replace function public.ai_action_ledger_reject_v1(
   p_actor_role text
 )
 returns jsonb
-language plpgsql
+language sql
+stable
 security invoker
 set search_path = ''
 as $$
-declare
-  v_record public.ai_action_ledger%rowtype;
-begin
-  select *
-  into v_record
-  from public.ai_action_ledger
-  where id = p_action_id;
-
-  if v_record.id is null then
-    raise exception 'ai_action_ledger: action not found';
-  end if;
-
-  if not public.ai_action_ledger_actor_can_manage_company_v1(v_record.organization_id) then
-    raise exception 'ai_action_ledger: reject scope denied';
-  end if;
-
-  update public.ai_action_ledger
-  set status = 'rejected'
-  where id = p_action_id
-  returning * into v_record;
-
-  insert into public.ai_action_ledger_audit (
-    action_id,
-    organization_id,
-    event_type,
-    action_status,
-    actor_user_id,
-    actor_role,
-    reason,
-    evidence_refs,
-    redacted_payload
-  )
-  values (
-    v_record.id,
-    v_record.organization_id,
-    'ai.action.rejected',
-    v_record.status,
-    auth.uid(),
-    btrim(p_actor_role),
-    left(btrim(coalesce(p_reason, 'AI action rejected through persistent ledger.')), 600),
-    v_record.evidence_refs,
-    '{}'::jsonb
+  select jsonb_build_object(
+    'status', 'blocked',
+    'actionId', p_action_id,
+    'blocker', 'BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED',
+    'reason', 'AI action rejection RPC is a contract stub until an approved write migration is applied.',
+    'actorRole', btrim(coalesce(p_actor_role, '')),
+    'reasonProvided', length(btrim(coalesce(p_reason, ''))) > 0,
+    'finalExecution', false
   );
-
-  return public.ai_action_ledger_get_status_v1(v_record.id);
-end;
 $$;
 
 create or replace function public.ai_action_ledger_execute_approved_v1(
@@ -432,57 +287,19 @@ create or replace function public.ai_action_ledger_execute_approved_v1(
   p_actor_role text
 )
 returns jsonb
-language plpgsql
+language sql
+stable
 security invoker
 set search_path = ''
 as $$
-declare
-  v_record public.ai_action_ledger%rowtype;
-begin
-  select *
-  into v_record
-  from public.ai_action_ledger
-  where id = p_action_id;
-
-  if v_record.id is null then
-    raise exception 'ai_action_ledger: action not found';
-  end if;
-
-  if not public.ai_action_ledger_actor_can_manage_company_v1(v_record.organization_id) then
-    raise exception 'ai_action_ledger: execute scope denied';
-  end if;
-
-  insert into public.ai_action_ledger_audit (
-    action_id,
-    organization_id,
-    event_type,
-    action_status,
-    actor_user_id,
-    actor_role,
-    reason,
-    evidence_refs,
-    redacted_payload
-  )
-  values (
-    v_record.id,
-    v_record.organization_id,
-    'ai.action.execution_blocked',
-    v_record.status,
-    auth.uid(),
-    btrim(p_actor_role),
-    'BLOCKED_DOMAIN_EXECUTOR_NOT_READY',
-    v_record.evidence_refs,
-    '{}'::jsonb
-  );
-
-  return jsonb_build_object(
+  select jsonb_build_object(
     'status', 'blocked',
-    'actionId', v_record.id,
+    'actionId', p_action_id,
     'blocker', 'BLOCKED_DOMAIN_EXECUTOR_NOT_READY',
+    'actorRole', btrim(coalesce(p_actor_role, '')),
     'domainExecutorReady', false,
     'finalExecution', false
   );
-end;
 $$;
 
 revoke all on function public.ai_action_ledger_actor_can_view_company_v1(uuid) from public;

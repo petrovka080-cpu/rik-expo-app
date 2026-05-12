@@ -20,7 +20,8 @@
   "ui_changed": false,
   "hook_work": false,
   "notes": [
-    "Added additive migration proposal for AI action ledger audit storage, RLS, scoped RPC contracts, and DB lifecycle guard.",
+    "Added additive migration proposal for AI action ledger audit storage, RLS, scoped RPC contract stubs, and DB lifecycle guard.",
+    "Write RPC behavior is intentionally blocked until a separately approved write migration exists.",
     "Persistent runtime mount still requires explicit migration approval before database application."
   ]
 }

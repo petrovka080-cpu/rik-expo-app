@@ -16,6 +16,7 @@ describe("AI action ledger audit/RLS backend readiness migration proposal", () =
     expect(sql).toContain("ai_action_ledger_audit_payload_redacted_check");
     expect(sql).toContain("create index if not exists ai_action_ledger_audit_action_created_idx");
     expect(sql).not.toMatch(/\b(drop|truncate|delete)\b/i);
+    expect(sql).not.toMatch(/\binsert\s+into\b|\bupdate\s+public\.|\bmerge\s+into\b/i);
   });
 
   it("requires RLS, company scope policies, evidence, and redacted payloads", () => {
@@ -33,6 +34,7 @@ describe("AI action ledger audit/RLS backend readiness migration proposal", () =
     expect(sql).toContain("ai_action_ledger_approve_v1");
     expect(sql).toContain("ai_action_ledger_reject_v1");
     expect(sql).toContain("ai_action_ledger_execute_approved_v1");
+    expect(sql).toContain("BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED");
     expect(sql).toContain("BLOCKED_DOMAIN_EXECUTOR_NOT_READY");
     expect(sql).toContain("'finalExecution', false");
   });

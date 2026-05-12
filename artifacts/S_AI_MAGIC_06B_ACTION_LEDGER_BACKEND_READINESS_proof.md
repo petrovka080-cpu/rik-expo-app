@@ -9,6 +9,7 @@ Persistent runtime status remains `BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED` beca
 - Added `public.ai_action_ledger_audit` proposal for redacted audit events.
 - Added RLS proposal for `public.ai_action_ledger` and `public.ai_action_ledger_audit`.
 - Added route-aligned RPC proposal for submit/status/approve/reject/execute-approved.
+- Kept write RPC behavior blocked until a separately approved write migration exists, so release automation does not ship unapproved SQL DML.
 - Kept execute-approved blocked with `BLOCKED_DOMAIN_EXECUTOR_NOT_READY`.
 - Extended architecture scanner so persistent action ledger must include audit storage, RLS, RPC contracts, DB lifecycle guard, and no service-role grant.
 

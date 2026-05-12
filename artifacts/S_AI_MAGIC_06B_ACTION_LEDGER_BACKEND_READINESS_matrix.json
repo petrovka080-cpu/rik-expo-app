@@ -4,6 +4,7 @@
   "audit_storage_proposal_present": true,
   "rls_policy_proposal_present": true,
   "rpc_contract_proposal_present": true,
+  "rpc_write_behavior": "blocked_until_approved_write_migration",
   "lifecycle_db_guard_proposal_present": true,
   "submit_for_approval_rpc_present": true,
   "get_status_rpc_present": true,
