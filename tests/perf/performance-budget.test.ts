@@ -221,6 +221,24 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamEvidence.ts"),
       path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamCardProducers.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic01AppActionGraphInternalFirstFiles = [
+      path.join(SRC, "features", "ai", "appGraph", "aiAppActionTypes.ts"),
+      path.join(SRC, "features", "ai", "appGraph", "aiScreenActionRegistry.ts"),
+      path.join(SRC, "features", "ai", "appGraph", "aiButtonActionRegistry.ts"),
+      path.join(SRC, "features", "ai", "appGraph", "aiActionGraphResolver.ts"),
+      path.join(SRC, "features", "ai", "appGraph", "aiActionGraphEvidence.ts"),
+      path.join(SRC, "features", "ai", "appGraph", "aiActionGraphRedaction.ts"),
+      path.join(SRC, "features", "ai", "domainGraph", "aiDomainEntityTypes.ts"),
+      path.join(SRC, "features", "ai", "domainGraph", "aiDomainEntityRegistry.ts"),
+      path.join(SRC, "features", "ai", "domainGraph", "aiDomainRelationshipRegistry.ts"),
+      path.join(SRC, "features", "ai", "domainGraph", "aiDomainGraphResolver.ts"),
+      path.join(SRC, "features", "ai", "intelligence", "internalFirstPolicy.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelTypes.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalSourceRegistry.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelPolicy.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelResolver.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelRedaction.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -968,6 +986,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
+    expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -993,6 +1012,7 @@ describe("performance budget — bundle module count", () => {
         sAiGetActionStatusToolFiles -
         sAiProduct01DailyCommandCenterFiles -
         sAiProduct02TaskStreamRuntimeFiles -
+        sAiMagic01AppActionGraphInternalFirstFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

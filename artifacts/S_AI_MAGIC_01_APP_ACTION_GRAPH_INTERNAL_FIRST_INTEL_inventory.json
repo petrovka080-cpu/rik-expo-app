@@ -1,0 +1,44 @@
+{
+  "wave": "S_AI_MAGIC_01_APP_ACTION_GRAPH_AND_INTERNAL_FIRST_INTELLIGENCE",
+  "source_files": [
+    "src/features/ai/appGraph/aiAppActionTypes.ts",
+    "src/features/ai/appGraph/aiScreenActionRegistry.ts",
+    "src/features/ai/appGraph/aiButtonActionRegistry.ts",
+    "src/features/ai/appGraph/aiActionGraphResolver.ts",
+    "src/features/ai/appGraph/aiActionGraphEvidence.ts",
+    "src/features/ai/appGraph/aiActionGraphRedaction.ts",
+    "src/features/ai/domainGraph/aiDomainEntityTypes.ts",
+    "src/features/ai/domainGraph/aiDomainEntityRegistry.ts",
+    "src/features/ai/domainGraph/aiDomainRelationshipRegistry.ts",
+    "src/features/ai/domainGraph/aiDomainGraphResolver.ts",
+    "src/features/ai/intelligence/internalFirstPolicy.ts",
+    "src/features/ai/externalIntel/externalIntelTypes.ts",
+    "src/features/ai/externalIntel/externalSourceRegistry.ts",
+    "src/features/ai/externalIntel/externalIntelPolicy.ts",
+    "src/features/ai/externalIntel/externalIntelResolver.ts",
+    "src/features/ai/externalIntel/externalIntelRedaction.ts",
+    "src/features/ai/agent/agentBffRouteShell.ts"
+  ],
+  "script_files": [
+    "scripts/ai/scanAppActionGraphCoverage.ts",
+    "scripts/e2e/runAiAppActionGraphMaestro.ts",
+    "scripts/architecture_anti_regression_suite.ts"
+  ],
+  "test_files": [
+    "tests/ai/appActionGraphRegistry.contract.test.ts",
+    "tests/ai/appButtonActionCoverage.contract.test.ts",
+    "tests/ai/appActionGraphResolver.contract.test.ts",
+    "tests/ai/domainEntityGraph.contract.test.ts",
+    "tests/ai/externalIntelPolicy.contract.test.ts",
+    "tests/ai/internalFirstIntelligence.contract.test.ts",
+    "tests/ai/agentAppGraphBff.contract.test.ts",
+    "tests/architecture/aiAppActionGraphArchitecture.contract.test.ts",
+    "tests/e2e/aiAppActionGraphRuntime.e2e.test.ts"
+  ],
+  "source_changed": true,
+  "android_apk_rebuilt": true,
+  "android_build_id": "cf641925-de50-4771-bb8c-b127d542cd62",
+  "android_artifact_path": "artifacts/release/android-emulator.apk",
+  "credentials_in_artifacts": false,
+  "secrets_printed": false
+}

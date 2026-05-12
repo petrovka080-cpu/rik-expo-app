@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
+  evaluateAiAppActionGraphArchitectureGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
   evaluateAiResponseSmokeNonBlockingContractGuardrail,
   evaluateAiModelBoundaryGuardrail,
@@ -1277,6 +1278,108 @@ describe("architecture anti-regression suite", () => {
         "ios_submit_status_not_proven",
         "credentials_cli_args_not_blocked",
         "production_ota_not_blocked",
+      ]),
+    );
+  });
+
+  it("ratchets the AI app action graph and internal-first intelligence boundary", () => {
+    const passing = evaluateAiAppActionGraphArchitectureGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/app-graph/action/:buttonId",
+            "POST /agent/app-graph/resolve",
+            "POST /agent/intel/compare",
+            "resolveAiActionGraph",
+            "resolveInternalFirstDecision",
+            "mutates: false",
+            "executesTool: false",
+            "mutationCount: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("appGraph")) {
+          return [
+            "AI_BUTTON_ACTION_REGISTRY",
+            "buttonId",
+            "testId",
+            "sourceEntities",
+            'screenId: "director.dashboard"',
+            'screenId: "ai.command.center"',
+            'screenId: "buyer.main"',
+            'screenId: "market.home"',
+            'screenId: "accountant.main"',
+            'screenId: "foreman.main"',
+            'screenId: "foreman.subcontract"',
+            'screenId: "warehouse.main"',
+            'screenId: "contractor.main"',
+            'screenId: "office.hub"',
+            'screenId: "map.main"',
+            'screenId: "chat.main"',
+            'riskLevel: "safe_read"',
+            'riskLevel: "draft_only"',
+            'riskLevel: "approval_required"',
+            'riskLevel: "forbidden"',
+            "approvalRequired",
+            "evidenceRequired",
+            "directExecutionAllowed: false",
+            "mutationCount: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("domainGraph")) return "project request supplier rawRowsAllowed: false";
+        if (relativePath.includes("internalFirstPolicy")) {
+          return "InternalFirstDecision external_source_used_before_internal_search final_decision_from_external_only";
+        }
+        if (relativePath.includes("externalIntel")) {
+          return [
+            "ExternalSourcePolicy",
+            "EXTERNAL_SOURCE_REGISTRY",
+            "EXTERNAL_LIVE_FETCH_ENABLED = false",
+            "externalLiveFetchEnabled: false",
+            "requiresCitation: true",
+            "citationsRequired: true",
+            "forbiddenForFinalAction: true",
+            "finalActionForbidden: true",
+          ].join("\n");
+        }
+        if (relativePath === "scripts/ai/scanAppActionGraphCoverage.ts") {
+          return [
+            "Pressable",
+            "TouchableOpacity",
+            "ai_relevant_button_missing_registry_entry",
+            "approval_required_action_executes_directly",
+          ].join("\n");
+        }
+        if (relativePath.includes("commandCenter")) return "ai command center";
+        return "present";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_app_action_graph_architecture",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiAppActionGraphArchitectureGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("externalIntel")) return "fetch('https://example.com') forbiddenForFinalAction: false";
+        if (relativePath.includes("appGraph")) return 'riskLevel: "approval_required"\nrequiredTool: "direct_execute"';
+        if (relativePath.includes("commandCenter")) return 'import { supabase } from "@supabase/supabase-js";';
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "domain_entity_graph_files_missing",
+        "internal_first_policy_missing",
+        "external_live_fetch_enabled",
+        "mobile_external_live_fetch_detected",
+        "ui_supabase_import_for_ai_graph_detected",
       ]),
     );
   });

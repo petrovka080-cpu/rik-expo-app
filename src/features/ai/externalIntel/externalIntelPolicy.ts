@@ -1,0 +1,33 @@
+import { EXTERNAL_LIVE_FETCH_ENABLED, getExternalSourcePolicy } from "./externalSourceRegistry";
+import type { ExternalSourcePolicy } from "./externalIntelTypes";
+
+export type ExternalIntelPolicyDecision = {
+  allowed: boolean;
+  externalLiveFetchEnabled: false;
+  policies: readonly ExternalSourcePolicy[];
+  citationsRequired: true;
+  finalActionForbidden: true;
+  reason: string;
+};
+
+export function resolveExternalIntelPolicy(params: {
+  domain: string;
+  sourcePolicyIds: readonly string[];
+}): ExternalIntelPolicyDecision {
+  const policies = params.sourcePolicyIds
+    .map((sourceId) => getExternalSourcePolicy(sourceId))
+    .filter((policy): policy is ExternalSourcePolicy => policy !== null)
+    .filter((policy) => policy.allowedDomains.includes(params.domain));
+
+  return {
+    allowed: policies.length > 0,
+    externalLiveFetchEnabled: EXTERNAL_LIVE_FETCH_ENABLED,
+    policies,
+    citationsRequired: true,
+    finalActionForbidden: true,
+    reason:
+      policies.length > 0
+        ? "External policy exists, but live fetch is disabled for this wave."
+        : "External source is not registered for this domain.",
+  };
+}

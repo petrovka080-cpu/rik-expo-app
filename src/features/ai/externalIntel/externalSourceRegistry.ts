@@ -1,0 +1,87 @@
+import type { ExternalSourcePolicy } from "./externalIntelTypes";
+
+export const EXTERNAL_LIVE_FETCH_ENABLED = false as const;
+
+export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
+  {
+    sourceId: "supplier_public_catalog.default",
+    category: "supplier_public_catalog",
+    allowedDomains: ["procurement", "marketplace"],
+    requiresCitation: true,
+    maxResults: 5,
+    freshnessWindowDays: 30,
+    allowedForDecision: false,
+    allowedForDraft: true,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "market_price_reference.default",
+    category: "market_price_reference",
+    allowedDomains: ["marketplace", "procurement"],
+    requiresCitation: true,
+    maxResults: 5,
+    freshnessWindowDays: 14,
+    allowedForDecision: false,
+    allowedForDraft: true,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "construction_norm_reference.default",
+    category: "construction_norm_reference",
+    allowedDomains: ["reports", "documents", "subcontracts"],
+    requiresCitation: true,
+    maxResults: 3,
+    freshnessWindowDays: 180,
+    allowedForDecision: false,
+    allowedForDraft: true,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "real_estate_listing_reference.default",
+    category: "real_estate_listing_reference",
+    allowedDomains: ["real_estate"],
+    requiresCitation: true,
+    maxResults: 5,
+    freshnessWindowDays: 7,
+    allowedForDecision: false,
+    allowedForDraft: true,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "company_public_profile.default",
+    category: "company_public_profile",
+    allowedDomains: ["finance", "office", "procurement"],
+    requiresCitation: true,
+    maxResults: 3,
+    freshnessWindowDays: 30,
+    allowedForDecision: false,
+    allowedForDraft: false,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "regulatory_reference.default",
+    category: "regulatory_reference",
+    allowedDomains: ["finance", "documents", "reports"],
+    requiresCitation: true,
+    maxResults: 3,
+    freshnessWindowDays: 90,
+    allowedForDecision: false,
+    allowedForDraft: true,
+    forbiddenForFinalAction: true,
+  },
+  {
+    sourceId: "currency_or_macro_reference.default",
+    category: "currency_or_macro_reference",
+    allowedDomains: ["finance", "control"],
+    requiresCitation: true,
+    maxResults: 3,
+    freshnessWindowDays: 1,
+    allowedForDecision: false,
+    allowedForDraft: false,
+    forbiddenForFinalAction: true,
+  },
+] as const;
+
+export function getExternalSourcePolicy(sourceId: string): ExternalSourcePolicy | null {
+  return EXTERNAL_SOURCE_REGISTRY.find((policy) => policy.sourceId === sourceId) ?? null;
+}

@@ -372,6 +372,29 @@ export type AiCommandCenterTaskStreamRuntimeArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiAppActionGraphArchitectureSummary = {
+  appGraphFilesPresent: boolean;
+  domainGraphFilesPresent: boolean;
+  internalFirstPolicyPresent: boolean;
+  externalIntelPolicyPresent: boolean;
+  bffRoutesPresent: boolean;
+  majorScreensRegistered: boolean;
+  aiRelevantButtonsMapped: boolean;
+  buttonCoverageScannerPresent: boolean;
+  businessActionsHaveRiskPolicy: boolean;
+  approvalRequiredCannotExecuteDirectly: boolean;
+  forbiddenActionsHaveNoTool: boolean;
+  externalSourcesRequireCitation: boolean;
+  externalLiveFetchDisabled: boolean;
+  externalFinalActionForbidden: boolean;
+  noMobileExternalLiveFetch: boolean;
+  noUiSupabaseGraphImport: boolean;
+  noUiModelProviderGraphImport: boolean;
+  noRawPayloadFields: boolean;
+  mutationCountZero: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -565,6 +588,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
+  aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -654,6 +678,29 @@ const AI_TASK_STREAM_RUNTIME_FILES = [
   "src/features/ai/taskStream/aiTaskStreamEvidence.ts",
   "src/features/ai/taskStream/aiTaskStreamCardProducers.ts",
 ] as const;
+const AI_APP_ACTION_GRAPH_FILES = [
+  "src/features/ai/appGraph/aiAppActionTypes.ts",
+  "src/features/ai/appGraph/aiScreenActionRegistry.ts",
+  "src/features/ai/appGraph/aiButtonActionRegistry.ts",
+  "src/features/ai/appGraph/aiActionGraphResolver.ts",
+  "src/features/ai/appGraph/aiActionGraphEvidence.ts",
+  "src/features/ai/appGraph/aiActionGraphRedaction.ts",
+] as const;
+const AI_DOMAIN_GRAPH_FILES = [
+  "src/features/ai/domainGraph/aiDomainEntityTypes.ts",
+  "src/features/ai/domainGraph/aiDomainEntityRegistry.ts",
+  "src/features/ai/domainGraph/aiDomainRelationshipRegistry.ts",
+  "src/features/ai/domainGraph/aiDomainGraphResolver.ts",
+] as const;
+const AI_INTERNAL_FIRST_POLICY_PATH = "src/features/ai/intelligence/internalFirstPolicy.ts";
+const AI_EXTERNAL_INTEL_FILES = [
+  "src/features/ai/externalIntel/externalIntelTypes.ts",
+  "src/features/ai/externalIntel/externalSourceRegistry.ts",
+  "src/features/ai/externalIntel/externalIntelPolicy.ts",
+  "src/features/ai/externalIntel/externalIntelResolver.ts",
+  "src/features/ai/externalIntel/externalIntelRedaction.ts",
+] as const;
+const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
 const AI_RISK_POLICY_PATH = "src/features/ai/policy/aiRiskPolicy.ts";
@@ -2230,6 +2277,10 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
   const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH });
   const allRoutesPresent =
+    Boolean(shellSource?.includes("GET /agent/app-graph/screen/:screenId")) &&
+    Boolean(shellSource?.includes("GET /agent/app-graph/action/:buttonId")) &&
+    Boolean(shellSource?.includes("POST /agent/app-graph/resolve")) &&
+    Boolean(shellSource?.includes("POST /agent/intel/compare")) &&
     Boolean(shellSource?.includes("GET /agent/task-stream")) &&
     Boolean(shellSource?.includes("GET /agent/tools")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/validate")) &&
@@ -2404,6 +2455,176 @@ export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
       noModelProviderUiImport,
       noRawPayloadFields,
       unknownRoleDenied,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiAppActionGraphArchitectureGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiAppActionGraphArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const appGraphSources = AI_APP_ACTION_GRAPH_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const domainGraphSources = AI_DOMAIN_GRAPH_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const externalIntelSources = AI_EXTERNAL_INTEL_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const appGraphSource = appGraphSources.join("\n");
+  const domainGraphSource = domainGraphSources.join("\n");
+  const externalIntelSource = externalIntelSources.join("\n");
+  const internalFirstSource =
+    safeReadProjectFile({ readFile, relativePath: AI_INTERNAL_FIRST_POLICY_PATH }) ?? "";
+  const scannerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH }) ?? "";
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const commandCenterSource = (safeReadProjectFile({
+    readFile,
+    relativePath: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+  }) ?? "");
+
+  const appGraphFilesPresent = appGraphSources.every((source) => source.length > 0);
+  const domainGraphFilesPresent = domainGraphSources.every((source) => source.length > 0);
+  const internalFirstPolicyPresent =
+    internalFirstSource.includes("InternalFirstDecision") &&
+    internalFirstSource.includes("external_source_used_before_internal_search") &&
+    internalFirstSource.includes("final_decision_from_external_only");
+  const externalIntelPolicyPresent =
+    externalIntelSources.every((source) => source.length > 0) &&
+    externalIntelSource.includes("ExternalSourcePolicy") &&
+    externalIntelSource.includes("EXTERNAL_SOURCE_REGISTRY");
+  const bffRoutesPresent =
+    shellSource.includes("GET /agent/app-graph/screen/:screenId") &&
+    shellSource.includes("GET /agent/app-graph/action/:buttonId") &&
+    shellSource.includes("POST /agent/app-graph/resolve") &&
+    shellSource.includes("POST /agent/intel/compare") &&
+    shellSource.includes("resolveAiActionGraph") &&
+    shellSource.includes("resolveInternalFirstDecision");
+  const requiredScreens = [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+  ] as const;
+  const majorScreensRegistered = requiredScreens.every((screenId) =>
+    appGraphSource.includes(`screenId: "${screenId}"`) || appGraphSource.includes(`"${screenId}"`),
+  );
+  const aiRelevantButtonsMapped =
+    appGraphSource.includes("AI_BUTTON_ACTION_REGISTRY") &&
+    appGraphSource.includes("buttonId") &&
+    appGraphSource.includes("testId") &&
+    appGraphSource.includes("sourceEntities");
+  const buttonCoverageScannerPresent =
+    scannerSource.includes("Pressable") &&
+    scannerSource.includes("TouchableOpacity") &&
+    scannerSource.includes("ai_relevant_button_missing_registry_entry") &&
+    scannerSource.includes("approval_required_action_executes_directly");
+  const businessActionsHaveRiskPolicy =
+    appGraphSource.includes('riskLevel: "safe_read"') &&
+    appGraphSource.includes('riskLevel: "draft_only"') &&
+    appGraphSource.includes('riskLevel: "approval_required"') &&
+    appGraphSource.includes('riskLevel: "forbidden"') &&
+    appGraphSource.includes("approvalRequired") &&
+    appGraphSource.includes("evidenceRequired");
+  const approvalRequiredCannotExecuteDirectly =
+    appGraphSource.includes("directExecutionAllowed: false") &&
+    appGraphSource.includes("mutationCount: 0") &&
+    shellSource.includes("mutates: false") &&
+    shellSource.includes("executesTool: false");
+  const forbiddenActionsHaveNoTool =
+    appGraphSource.includes('riskLevel: "forbidden"') &&
+    !/riskLevel:\s*"forbidden"[\s\S]{0,240}requiredTool:/.test(appGraphSource);
+  const externalSourcesRequireCitation =
+    externalIntelSource.includes("requiresCitation: true") &&
+    externalIntelSource.includes("citationsRequired: true");
+  const externalLiveFetchDisabled =
+    externalIntelSource.includes("EXTERNAL_LIVE_FETCH_ENABLED = false") &&
+    externalIntelSource.includes("externalLiveFetchEnabled: false");
+  const externalFinalActionForbidden =
+    externalIntelSource.includes("forbiddenForFinalAction: true") &&
+    externalIntelSource.includes("finalActionForbidden: true");
+  const noMobileExternalLiveFetch =
+    !/\bfetch\s*\(|\bXMLHttpRequest\b|mobile_side_internet_fetch/i.test(externalIntelSource) &&
+    !/externalIntelResolver/.test(commandCenterSource);
+  const noUiSupabaseGraphImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      commandCenterSource,
+    );
+  const noUiModelProviderGraphImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      commandCenterSource,
+    );
+  const noRawPayloadFields =
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows)\s*:/.test(
+      `${appGraphSource}\n${domainGraphSource}\n${internalFirstSource}\n${externalIntelSource}`,
+    );
+  const mutationCountZero =
+    appGraphSource.includes("mutationCount: 0") &&
+    shellSource.includes("mutationCount: 0") &&
+    !`${appGraphSource}\n${shellSource}`.includes("mutationCount: 1");
+  const findings = [
+    ...(appGraphFilesPresent ? [] : ["app_action_graph_files_missing"]),
+    ...(domainGraphFilesPresent ? [] : ["domain_entity_graph_files_missing"]),
+    ...(internalFirstPolicyPresent ? [] : ["internal_first_policy_missing"]),
+    ...(externalIntelPolicyPresent ? [] : ["external_intel_policy_missing"]),
+    ...(bffRoutesPresent ? [] : ["app_action_graph_bff_routes_missing"]),
+    ...(majorScreensRegistered ? [] : ["major_screen_missing_action_graph"]),
+    ...(aiRelevantButtonsMapped ? [] : ["ai_relevant_button_missing_registry_entry"]),
+    ...(buttonCoverageScannerPresent ? [] : ["button_action_coverage_scanner_missing"]),
+    ...(businessActionsHaveRiskPolicy ? [] : ["business_action_missing_risk_policy"]),
+    ...(approvalRequiredCannotExecuteDirectly ? [] : ["approval_required_action_can_execute_directly"]),
+    ...(forbiddenActionsHaveNoTool ? [] : ["forbidden_action_has_tool"]),
+    ...(externalSourcesRequireCitation ? [] : ["external_source_lacks_citation_policy"]),
+    ...(externalLiveFetchDisabled ? [] : ["external_live_fetch_enabled"]),
+    ...(externalFinalActionForbidden ? [] : ["external_source_final_action_allowed"]),
+    ...(noMobileExternalLiveFetch ? [] : ["mobile_external_live_fetch_detected"]),
+    ...(noUiSupabaseGraphImport ? [] : ["ui_supabase_import_for_ai_graph_detected"]),
+    ...(noUiModelProviderGraphImport ? [] : ["ui_model_provider_import_for_ai_graph_detected"]),
+    ...(noRawPayloadFields ? [] : ["ai_graph_raw_payload_field_detected"]),
+    ...(mutationCountZero ? [] : ["ai_graph_mutation_count_not_zero"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_app_action_graph_architecture",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      appGraphFilesPresent,
+      domainGraphFilesPresent,
+      internalFirstPolicyPresent,
+      externalIntelPolicyPresent,
+      bffRoutesPresent,
+      majorScreensRegistered,
+      aiRelevantButtonsMapped,
+      buttonCoverageScannerPresent,
+      businessActionsHaveRiskPolicy,
+      approvalRequiredCannotExecuteDirectly,
+      forbiddenActionsHaveNoTool,
+      externalSourcesRequireCitation,
+      externalLiveFetchDisabled,
+      externalFinalActionForbidden,
+      noMobileExternalLiveFetch,
+      noUiSupabaseGraphImport,
+      noUiModelProviderGraphImport,
+      noRawPayloadFields,
+      mutationCountZero,
       findings,
     },
   };
@@ -4293,6 +4514,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
+  const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -4326,6 +4548,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolPlanPolicyArchitecture.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
+    aiAppActionGraphArchitecture.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -4360,6 +4583,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
+    aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -4415,6 +4639,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
   console.info(`ai_command_center_task_stream_no_fake_cards: ${report.aiCommandCenterTaskStreamRuntime.noFakeCards}`);
+  console.info(`ai_app_action_graph_architecture: ${report.aiAppActionGraphArchitecture.majorScreensRegistered}`);
+  console.info(`ai_app_action_graph_external_live_fetch: ${report.aiAppActionGraphArchitecture.externalLiveFetchDisabled}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
