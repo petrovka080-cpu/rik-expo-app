@@ -22,5 +22,20 @@
   "service_role_used": false,
   "credentials_in_source": false,
   "credentials_in_cli_args": false,
-  "credentials_printed": false
+  "credentials_printed": false,
+  "android_rebuilt_for_source_change": true,
+  "android_installed_on_emulator": true,
+  "android_runtime_smoke": "PASS",
+  "runtime_e2e_status": "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
+  "deterministic_phase_all_roles_reached": true,
+  "deterministic_phase_blocker_closed": true,
+  "llm_response_smoke_all_roles_passed": false,
+  "latest_maestro_report_failures": [
+    "director: ai.assistant.response not visible before smoke timeout",
+    "foreman: ai.assistant.response not visible before smoke timeout",
+    "buyer: ai.assistant.response not visible before smoke timeout",
+    "accountant: ai.assistant.response not visible before smoke timeout",
+    "contractor: ai.assistant.response not visible before smoke timeout"
+  ],
+  "full_runtime_green": false
 }

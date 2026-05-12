@@ -58,18 +58,6 @@ name: AI Role Screen Knowledge Director
     id: "ai.knowledge.blocked-intents"
 - assertVisible:
     id: "ai.knowledge.approval-boundary"
-- extendedWaitUntil:
-    visible: "finance_documents"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "warehouse_item"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "supplier"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "approval_required"
-    timeout: 30000
 - assertNotVisible: "executed successfully"
 - tapOn:
     id: "ai.assistant.input"

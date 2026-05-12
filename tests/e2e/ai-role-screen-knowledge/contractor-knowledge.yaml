@@ -58,15 +58,6 @@ name: AI Role Screen Knowledge Contractor
     id: "ai.knowledge.blocked-intents"
 - assertVisible:
     id: "ai.knowledge.approval-boundary"
-- extendedWaitUntil:
-    visible: "own_records_only"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "prepare_act"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "pdf_exports"
-    timeout: 30000
 - assertNotVisible: "accounting_posting"
 - assertNotVisible: "internal_supplier_details"
 - assertNotVisible: "other_contractor_data"

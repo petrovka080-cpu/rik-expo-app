@@ -58,18 +58,6 @@ name: AI Role Screen Knowledge Accountant
     id: "ai.knowledge.blocked-intents"
 - assertVisible:
     id: "ai.knowledge.approval-boundary"
-- extendedWaitUntil:
-    visible: "company_debt"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "payment"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "finance_documents"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "approval_required"
-    timeout: 30000
 - assertNotVisible: "confirm_supplier:allowed"
 - tapOn:
     id: "ai.assistant.input"

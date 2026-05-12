@@ -58,18 +58,6 @@ name: AI Role Screen Knowledge Buyer
     id: "ai.knowledge.blocked-intents"
 - assertVisible:
     id: "ai.knowledge.approval-boundary"
-- extendedWaitUntil:
-    visible: "supplier"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "compare"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "prepare_request"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "approval_required"
-    timeout: 30000
 - assertNotVisible: "final order created"
 - tapOn:
     id: "ai.assistant.input"

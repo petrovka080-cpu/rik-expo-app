@@ -20,6 +20,10 @@
     "tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts",
     "tests/architecture/aiKnowledgePreviewE2eContract.contract.test.ts"
   ],
+  "follow_up_test_files_changed": [
+    "tests/e2e/aiRoleScreenKnowledge.e2e.test.ts",
+    "tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts"
+  ],
   "root_cause_confirmed_from": [
     "src/features/ai/knowledge/aiKnowledgeResolver.ts",
     "src/features/ai/assistantPrompts.ts",
@@ -35,6 +39,15 @@
     "ai.knowledge.blocked-intents",
     "ai.knowledge.approval-boundary"
   ],
+  "runtime": {
+    "android_apk_rebuilt_for_source_change": true,
+    "android_emulator_apk_installed": true,
+    "runtime_smoke_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+    "ai_role_screen_runner_status": "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
+    "deterministic_phase_all_roles_reached": true,
+    "llm_response_smoke_timeout": true,
+    "maestro_report": "artifacts/maestro-ai-role-screen-knowledge-closeout/report.xml"
+  },
   "forbidden_paths_used": {
     "auth_admin": false,
     "list_users": false,

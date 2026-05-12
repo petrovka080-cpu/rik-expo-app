@@ -11,6 +11,16 @@
 - Removed the blocking Maestro assertion on `AI APP KNOWLEDGE BLOCK`.
 - Split flows into deterministic preview phase and LLM smoke phase.
 - LLM smoke phase asserts only `ai.assistant.response` visibility.
+- Moved role-specific text/content proof into contract tests against `resolveAiScreenKnowledge()` instead of Android visible text assertions.
+
+## Runtime
+
+- Android APK was rebuilt only because source changed, then installed on the emulator.
+- Android installed-build smoke passed: `GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF`.
+- The role-screen runner used explicit role env credentials only.
+- Deterministic preview phase was reached for all five roles; the remaining runtime blocker is `BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT`.
+- Latest Maestro report failed only on `ai.assistant.response` visibility during the LLM smoke phase.
+- No exact LLM output assertion remains.
 
 ## Safety
 

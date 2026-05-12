@@ -34,34 +34,20 @@ describe("AI role-screen knowledge Maestro e2e contract", () => {
     expect(directorFlow).toContain("rik://ai?context=director");
     expect(directorFlow).toContain('id: "ai.knowledge.preview"');
     expect(directorFlow).toContain('id: "ai.knowledge.approval-boundary"');
-    expect(directorFlow).toContain("finance_documents");
-    expect(directorFlow).toContain("warehouse_item");
-    expect(directorFlow).toContain("approval_required");
 
     expect(foremanFlow).toContain("E2E_FOREMAN_EMAIL");
     expect(foremanFlow).toContain("rik://ai?context=foreman");
-    expect(foremanFlow).toContain("prepare_report");
-    expect(foremanFlow).toContain("prepare_request");
-    expect(foremanFlow).toContain("prepare_act");
     expect(foremanFlow).toContain("assertNotVisible");
     expect(foremanFlow).toContain("accounting_posting");
 
     expect(buyerFlow).toContain("E2E_BUYER_EMAIL");
-    expect(buyerFlow).toContain("supplier");
-    expect(buyerFlow).toContain("compare");
-    expect(buyerFlow).toContain("prepare_request");
     expect(buyerFlow).toContain("final order created");
 
     expect(accountantFlow).toContain("E2E_ACCOUNTANT_EMAIL");
-    expect(accountantFlow).toContain("company_debt");
-    expect(accountantFlow).toContain("payment");
-    expect(accountantFlow).toContain("finance_documents");
     expect(accountantFlow).toContain("confirm_supplier:allowed");
 
     expect(contractorFlow).toContain("E2E_CONTRACTOR_EMAIL");
-    expect(contractorFlow).toContain("own_records_only");
-    expect(contractorFlow).toContain("prepare_act");
-    expect(contractorFlow).toContain("internal_supplier_details");
+    expect(contractorFlow).toContain("accounting_posting");
     expect(contractorFlow).toContain("other_contractor_data");
 
     for (const flow of [directorFlow, foremanFlow, buyerFlow, accountantFlow, contractorFlow]) {

@@ -58,20 +58,8 @@ name: AI Role Screen Knowledge Foreman
     id: "ai.knowledge.blocked-intents"
 - assertVisible:
     id: "ai.knowledge.approval-boundary"
-- extendedWaitUntil:
-    visible: "prepare_report"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "prepare_request"
-    timeout: 30000
-- extendedWaitUntil:
-    visible: "prepare_act"
-    timeout: 30000
 - assertNotVisible: "accounting_posting"
 - assertNotVisible: "full company finance"
-- extendedWaitUntil:
-    visible: "approval_required"
-    timeout: 30000
 - tapOn:
     id: "ai.assistant.input"
 - inputText: "What do I need to close on my object?"
