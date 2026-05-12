@@ -13,6 +13,7 @@
   "latest_assistant_reply_testid": true,
   "assistant_history_testid": true,
   "assistant_history_compacted_after_user_prompt": true,
+  "initial_greeting_compacted_after_user_prompt": true,
   "response_visibility_target": "ai.assistant.response",
   "maestro_flows_use_stable_response_id": true,
   "credentials_in_source": false,

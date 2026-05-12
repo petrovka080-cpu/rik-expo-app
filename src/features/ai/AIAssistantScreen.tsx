@@ -324,6 +324,8 @@ export default function AIAssistantScreen() {
     );
   }
 
+  const hasAnyUserPrompt = messages.some((candidate) => candidate.role === "user");
+
   return (
     <SafeAreaView testID="ai.assistant.screen" style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -427,7 +429,7 @@ export default function AIAssistantScreen() {
             const isLatestAssistantReply =
               message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
             const shouldCompactAssistantHistory =
-              message.role === "assistant" && hasPriorUserPrompt && !isLatestAssistantReply;
+              message.role === "assistant" && hasAnyUserPrompt && !isLatestAssistantReply;
             const responseTestId = isLatestAssistantReply
               ? "ai.assistant.response"
               : message.role === "assistant"

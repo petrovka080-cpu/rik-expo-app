@@ -13,7 +13,7 @@ Bounded fix:
 
 - Kept `ai.assistant.response` on the latest generated assistant reply only.
 - Kept prior assistant messages on `ai.assistant.response.history`.
-- Compact only prior assistant history after a user prompt with `numberOfLines={2}`.
+- Compact all prior assistant history after a user prompt, including the initial greeting, with `numberOfLines={2}`.
 - No auth, navigation, hook, provider, role, Supabase, DB, model, or AI response logic changed.
 
 Required next step:

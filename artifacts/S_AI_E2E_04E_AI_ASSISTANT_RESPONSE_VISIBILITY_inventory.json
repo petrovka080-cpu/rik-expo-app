@@ -9,7 +9,7 @@
   ],
   "runtime_blocker_observed_before_change": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
   "observed_runtime_fact": "ai.assistant.response existed in the Android UI tree but was clipped below the visible message viewport after the real assistant reply was generated.",
-  "bounded_change": "Older assistant history is visually limited after a user prompt so the latest generated assistant reply remains targetable.",
+  "bounded_change": "All prior assistant history, including the initial greeting, is visually limited after a user prompt so the latest generated assistant reply remains targetable.",
   "forbidden_paths_added": false,
   "new_ai_tools_added": false,
   "new_build_required_after_source_change": true
