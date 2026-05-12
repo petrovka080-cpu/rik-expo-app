@@ -1,0 +1,27 @@
+{
+  "wave": "S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_CONTRACT",
+  "created": [
+    "src/features/ai/actionLedger/aiActionLedgerRpcTypes.ts",
+    "src/features/ai/actionLedger/aiActionLedgerRpcTransport.ts",
+    "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts",
+    "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
+    "tests/ai/aiActionLedgerRpcBackend.contract.test.ts",
+    "tests/ai/aiActionLedgerRpcMigration.contract.test.ts"
+  ],
+  "modified": [
+    "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+    "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+    "src/features/ai/approvalInbox/approvalInboxRuntime.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/architecture/aiActionLedgerArchitecture.contract.test.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "production_mutations": false,
+  "migration_applied": false,
+  "migration_policy": "additive proposal only; apply only after explicit migration approval",
+  "secrets_in_artifact": false
+}

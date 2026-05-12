@@ -1,7 +1,10 @@
 import {
   createAiActionLedgerRepository,
+  isAiActionLedgerBackendBlockedError,
   type AiActionLedgerRepository,
+  type AiActionLedgerPersistentBackend,
 } from "../actionLedger/aiActionLedgerRepository";
+import { createAiActionLedgerRpcBackend } from "../actionLedger/aiActionLedgerRpcBackend";
 import {
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -169,15 +172,41 @@ function buildActionCard(params: {
 }
 
 function repositoryFor(request: ApprovalInboxListRequest): AiActionLedgerRepository {
-  return createAiActionLedgerRepository(request.backend ?? null);
+  return createAiActionLedgerRepository(resolveApprovalInboxBackend(request));
+}
+
+function resolveApprovalInboxBackend(
+  request: ApprovalInboxListRequest,
+): AiActionLedgerPersistentBackend | null {
+  if (request.backend) return request.backend;
+  if (!request.auth || request.auth.role === "unknown" || !request.auth.userId.trim()) {
+    return null;
+  }
+  return createAiActionLedgerRpcBackend({
+    organizationId: request.organizationId ?? "",
+    organizationIdHash: approvalInboxOrganizationHash({
+      role: request.auth.role,
+      organizationId: request.organizationId,
+    }),
+    actorUserId: request.auth.userId,
+    actorUserIdHash: approvalInboxUserHash(request.auth.userId),
+    actorRole: request.auth.role,
+  });
 }
 
 async function findScopedRecord(
   request: ApprovalInboxActionRequest,
 ): Promise<AiActionLedgerRecord | null> {
   if (!request.auth || request.auth.role === "unknown" || !request.auth.userId.trim()) return null;
-  if (!request.backend) return null;
-  const record = await request.backend.findByActionId(normalizeActionId(request.actionId));
+  const backend = resolveApprovalInboxBackend(request);
+  if (!backend) return null;
+  let record: AiActionLedgerRecord | null;
+  try {
+    record = await backend.findByActionId(normalizeActionId(request.actionId));
+  } catch (error) {
+    if (isAiActionLedgerBackendBlockedError(error)) return null;
+    throw error;
+  }
   if (!record) return null;
   const userIdHash = approvalInboxUserHash(request.auth.userId);
   return canReadApprovalInboxAction({ role: request.auth.role, userIdHash, record }) ? record : null;
@@ -193,7 +222,8 @@ export async function loadApprovalInbox(
       reason: "Approval Inbox requires authenticated role context.",
     });
   }
-  if (!request.backend) {
+  const backend = resolveApprovalInboxBackend(request);
+  if (!backend) {
     return blockedResponse({
       role: request.auth.role,
       blocker: "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
@@ -206,10 +236,22 @@ export async function loadApprovalInbox(
     organizationId: request.organizationId,
   });
   const userIdHash = approvalInboxUserHash(request.auth.userId);
-  const page = await request.backend.listByOrganization(organizationIdHash, {
-    cursor: request.cursor,
-    limit: normalizeLimit(request.limit),
-  });
+  let page: Awaited<ReturnType<NonNullable<ApprovalInboxListRequest["backend"]>["listByOrganization"]>>;
+  try {
+    page = await backend.listByOrganization(organizationIdHash, {
+      cursor: request.cursor,
+      limit: normalizeLimit(request.limit),
+    });
+  } catch (error) {
+    if (isAiActionLedgerBackendBlockedError(error)) {
+      return blockedResponse({
+        role: request.auth.role,
+        blocker: error.blocker,
+        reason: error.message,
+      });
+    }
+    throw error;
+  }
   const actions = page.records
     .filter((record) =>
       canReadApprovalInboxAction({

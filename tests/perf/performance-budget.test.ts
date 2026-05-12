@@ -295,6 +295,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "approvalInbox", "ApprovalActionCard.tsx"),
       path.join(SRC, "features", "ai", "approvalInbox", "ApprovalReviewPanel.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic08ApprovalLedgerBackendMountFiles = [
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcTypes.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcTransport.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcBackend.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1045,6 +1050,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
     expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
+    expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1201,7 +1207,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic04ProcurementCopilotRuntimeChainFiles -
         sAiMagic05CrossScreenRuntimeMatrixFiles -
         sAiMagic06PersistentActionLedgerFiles -
-        sAiMagic07ApprovalInboxExecutionGateFiles,
+        sAiMagic07ApprovalInboxExecutionGateFiles -
+        sAiMagic08ApprovalLedgerBackendMountFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

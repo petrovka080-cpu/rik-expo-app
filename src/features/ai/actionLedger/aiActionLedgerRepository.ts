@@ -43,6 +43,22 @@ export type AiActionLedgerPersistentBackend = {
   ) => Promise<AiActionLedgerRecord>;
 };
 
+export class AiActionLedgerBackendBlockedError extends Error {
+  readonly blocker: AiActionLedgerBlockedCode;
+
+  constructor(blocker: AiActionLedgerBlockedCode, reason: string) {
+    super(reason);
+    this.name = "AiActionLedgerBackendBlockedError";
+    this.blocker = blocker;
+  }
+}
+
+export function isAiActionLedgerBackendBlockedError(
+  value: unknown,
+): value is AiActionLedgerBackendBlockedError {
+  return value instanceof AiActionLedgerBackendBlockedError;
+}
+
 export type AiActionLedgerRepository = {
   submitForApproval: (
     input: SubmitAiActionForApprovalInput,
@@ -224,10 +240,18 @@ export function createAiActionLedgerRepository(
         );
       }
 
-      const existing = await backend.findByIdempotencyKey(
-        input.organizationIdHash,
-        normalizeText(input.idempotencyKey),
-      );
+      let existing: AiActionLedgerRecord | null;
+      try {
+        existing = await backend.findByIdempotencyKey(
+          input.organizationIdHash,
+          normalizeText(input.idempotencyKey),
+        );
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedSubmit(error.blocker, error.message);
+        }
+        throw error;
+      }
       if (existing) {
         const auditEvent = createAiActionLedgerAuditEvent({
           eventType: "ai.action.idempotency_reused",
@@ -268,7 +292,15 @@ export function createAiActionLedgerRepository(
         evidenceRefs,
         createdAt: record.createdAt,
       });
-      const persisted = await backend.insertPending(record, auditEvent);
+      let persisted: AiActionLedgerRecord;
+      try {
+        persisted = await backend.insertPending(record, auditEvent);
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedSubmit(error.blocker, error.message, [auditEvent]);
+        }
+        throw error;
+      }
 
       return {
         ...SAFE_PERSISTED_METADATA,
@@ -291,7 +323,15 @@ export function createAiActionLedgerRepository(
         );
       }
 
-      const record = await backend.findByActionId(actionId);
+      let record: AiActionLedgerRecord | null;
+      try {
+        record = await backend.findByActionId(actionId);
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedStatus(actionId, error.blocker, error.message);
+        }
+        throw error;
+      }
       if (!record) {
         return {
           ...SAFE_PERSISTED_METADATA,
@@ -327,7 +367,15 @@ export function createAiActionLedgerRepository(
           "AI action ledger persistence backend is not mounted.",
         );
       }
-      const record = await backend.findByActionId(params.actionId);
+      let record: AiActionLedgerRecord | null;
+      try {
+        record = await backend.findByActionId(params.actionId);
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedDecision(params.actionId, error.blocker, error.message);
+        }
+        throw error;
+      }
       if (!record) {
         return blockedDecision(
           params.actionId,
@@ -361,12 +409,20 @@ export function createAiActionLedgerRepository(
         evidenceRefs: record.evidenceRefs,
         createdAt: params.nowIso,
       });
-      const updated = await backend.updateStatus(
-        record.actionId,
-        "approved",
-        { approvedByUserIdHash: params.approvedByUserIdHash },
-        auditEvent,
-      );
+      let updated: AiActionLedgerRecord;
+      try {
+        updated = await backend.updateStatus(
+          record.actionId,
+          "approved",
+          { approvedByUserIdHash: params.approvedByUserIdHash },
+          auditEvent,
+        );
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedDecision(params.actionId, error.blocker, error.message, [auditEvent]);
+        }
+        throw error;
+      }
 
       return {
         ...SAFE_PERSISTED_METADATA,
@@ -386,7 +442,15 @@ export function createAiActionLedgerRepository(
           "AI action ledger persistence backend is not mounted.",
         );
       }
-      const record = await backend.findByActionId(params.actionId);
+      let record: AiActionLedgerRecord | null;
+      try {
+        record = await backend.findByActionId(params.actionId);
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedDecision(params.actionId, error.blocker, error.message);
+        }
+        throw error;
+      }
       if (!record) {
         return blockedDecision(
           params.actionId,
@@ -421,7 +485,15 @@ export function createAiActionLedgerRepository(
         evidenceRefs: record.evidenceRefs,
         createdAt: params.nowIso,
       });
-      const updated = await backend.updateStatus(record.actionId, "rejected", {}, auditEvent);
+      let updated: AiActionLedgerRecord;
+      try {
+        updated = await backend.updateStatus(record.actionId, "rejected", {}, auditEvent);
+      } catch (error) {
+        if (isAiActionLedgerBackendBlockedError(error)) {
+          return blockedDecision(params.actionId, error.blocker, error.message, [auditEvent]);
+        }
+        throw error;
+      }
 
       return {
         ...SAFE_PERSISTED_METADATA,

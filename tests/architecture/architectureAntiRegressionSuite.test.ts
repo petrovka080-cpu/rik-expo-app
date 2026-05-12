@@ -1722,6 +1722,22 @@ describe("architecture anti-regression suite", () => {
             "approval actor is outside company management scope",
           ].join("\n");
         }
+        if (relativePath === "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql") {
+          return [
+            "Additive proposal only",
+            "Apply only after explicit migration approval",
+            "add column if not exists requested_by_user_id_hash",
+            "add column if not exists organization_id_hash",
+            "ai_action_ledger_to_safe_json_v1",
+            "ai_action_ledger_find_by_idempotency_key_v1",
+            "ai_action_ledger_list_by_org_v1",
+            "insert into public.ai_action_ledger",
+            "insert into public.ai_action_ledger_audit",
+            "ai.action.idempotency_reused",
+            "update public.ai_action_ledger",
+            "'finalExecution', false",
+          ].join("\n");
+        }
         if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
           return "AgentActionLedgerEnvelope\nagent.action.execute_approved";
         }
@@ -1768,6 +1784,20 @@ describe("architecture anti-regression suite", () => {
             "createAiActionLedgerAuditEvent",
             "normalizeAiActionLedgerEvidenceRefs",
             'status: "pending"',
+            "fakeLocalApproval: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerRpcBackend")) {
+          return [
+            "createAiActionLedgerRpcBackend",
+            "resolveAiActionLedgerRpcBackendReadiness",
+            "runAiActionLedgerRpcTransport",
+            "ai_action_ledger_submit_for_approval_v1",
+            "ai_action_ledger_find_by_idempotency_key_v1",
+            "ai_action_ledger_list_by_org_v1",
+            "BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED",
+            "stableHashOpaqueId",
+            "mounted: true",
             "fakeLocalApproval: false",
           ].join("\n");
         }
@@ -1837,6 +1867,8 @@ describe("architecture anti-regression suite", () => {
         "ai_action_ledger_audit_storage_proposal_missing",
         "ai_action_ledger_rls_policy_proposal_missing",
         "ai_action_ledger_rpc_contract_proposal_missing",
+        "ai_action_ledger_rpc_backend_adapter_missing",
+        "ai_action_ledger_write_rpc_mount_proposal_missing",
         "ai_action_ledger_bff_routes_missing",
         "submit_for_approval_not_persistent_pending",
         "ai_action_ledger_fake_local_approval_detected",

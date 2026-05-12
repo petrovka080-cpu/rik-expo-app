@@ -16,6 +16,8 @@ describe("AI persistent action ledger architecture", () => {
         auditStorageProposalPresent: true,
         rlsPolicyProposalPresent: true,
         rpcContractProposalPresent: true,
+        rpcBackendAdapterPresent: true,
+        writeRpcMountProposalPresent: true,
         lifecycleDbGuardProposalPresent: true,
         noServiceRoleGrantInLedgerBackend: true,
         bffRoutesPresent: true,

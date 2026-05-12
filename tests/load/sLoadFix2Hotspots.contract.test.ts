@@ -37,6 +37,9 @@ const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
   [
     "supabase/migrations/20260512120000_ai_action_ledger.sql",
     "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
+    "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql",
+    "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
+    "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql -> artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
   ].includes(file.replace(/\\/g, "/"));
 
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {

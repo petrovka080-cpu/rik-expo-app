@@ -494,6 +494,8 @@ export type AiPersistentActionLedgerArchitectureSummary = {
   auditStorageProposalPresent: boolean;
   rlsPolicyProposalPresent: boolean;
   rpcContractProposalPresent: boolean;
+  rpcBackendAdapterPresent: boolean;
+  writeRpcMountProposalPresent: boolean;
   lifecycleDbGuardProposalPresent: boolean;
   noServiceRoleGrantInLedgerBackend: boolean;
   bffRoutesPresent: boolean;
@@ -888,6 +890,9 @@ const AI_ACTION_LEDGER_FILES = [
   "src/features/ai/actionLedger/aiActionLedgerEvidence.ts",
   "src/features/ai/actionLedger/aiActionLedgerAudit.ts",
   "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+  "src/features/ai/actionLedger/aiActionLedgerRpcTypes.ts",
+  "src/features/ai/actionLedger/aiActionLedgerRpcTransport.ts",
+  "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts",
   "src/features/ai/actionLedger/aiActionLedgerBff.ts",
   "src/features/ai/actionLedger/executeApprovedAiAction.ts",
 ] as const;
@@ -906,6 +911,8 @@ const AI_ACTION_LEDGER_MIGRATION_PATH =
   "supabase/migrations/20260512120000_ai_action_ledger.sql";
 const AI_ACTION_LEDGER_AUDIT_RLS_MIGRATION_PATH =
   "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
+const AI_ACTION_LEDGER_WRITE_RPC_MIGRATION_PATH =
+  "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql";
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
 const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
   "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
@@ -3585,6 +3592,22 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
       readFile,
       relativePath: "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
     }) ?? "";
+  const rpcBackendSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts",
+    }) ?? "";
+  const rpcTypesSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRpcTypes.ts",
+    }) ?? "";
+  const rpcTransportSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRpcTransport.ts",
+    }) ?? "";
+  const rpcBackendBoundarySource = `${rpcBackendSource}\n${rpcTypesSource}\n${rpcTransportSource}`;
   const auditSource =
     safeReadProjectFile({
       readFile,
@@ -3621,6 +3644,8 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
   const auditRlsMigrationSource =
     safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_AUDIT_RLS_MIGRATION_PATH }) ??
     "";
+  const writeRpcMigrationSource =
+    safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_WRITE_RPC_MIGRATION_PATH }) ?? "";
   const e2eRunnerSource =
     safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH }) ?? "";
   const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
@@ -3659,6 +3684,33 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     auditRlsMigrationSource.includes("security invoker") &&
     auditRlsMigrationSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
     auditRlsMigrationSource.includes("'finalExecution', false");
+  const rpcBackendAdapterPresent =
+    rpcBackendBoundarySource.includes("createAiActionLedgerRpcBackend") &&
+    rpcBackendBoundarySource.includes("resolveAiActionLedgerRpcBackendReadiness") &&
+    rpcBackendBoundarySource.includes("runAiActionLedgerRpcTransport") &&
+    rpcBackendBoundarySource.includes("ai_action_ledger_submit_for_approval_v1") &&
+    rpcBackendBoundarySource.includes("ai_action_ledger_find_by_idempotency_key_v1") &&
+    rpcBackendBoundarySource.includes("ai_action_ledger_list_by_org_v1") &&
+    rpcBackendBoundarySource.includes("BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED") &&
+    rpcBackendBoundarySource.includes("stableHashOpaqueId") &&
+    rpcBackendBoundarySource.includes("mounted: true");
+  const writeRpcMountProposalPresent =
+    writeRpcMigrationSource.includes("Additive proposal only") &&
+    writeRpcMigrationSource.includes("Apply only after explicit migration approval") &&
+    writeRpcMigrationSource.includes("add column if not exists requested_by_user_id_hash") &&
+    writeRpcMigrationSource.includes("add column if not exists organization_id_hash") &&
+    writeRpcMigrationSource.includes("ai_action_ledger_to_safe_json_v1") &&
+    writeRpcMigrationSource.includes("ai_action_ledger_find_by_idempotency_key_v1") &&
+    writeRpcMigrationSource.includes("ai_action_ledger_list_by_org_v1") &&
+    writeRpcMigrationSource.includes("insert into public.ai_action_ledger") &&
+    writeRpcMigrationSource.includes("insert into public.ai_action_ledger_audit") &&
+    writeRpcMigrationSource.includes("ai.action.idempotency_reused") &&
+    writeRpcMigrationSource.includes("update public.ai_action_ledger") &&
+    writeRpcMigrationSource.includes("'finalExecution', false") &&
+    !/\b(drop|truncate|delete)\b/i.test(writeRpcMigrationSource) &&
+    !/\bservice_role\b|SUPABASE_SERVICE_ROLE_KEY|\bauth\.admin\b|\blistUsers\b/i.test(
+      writeRpcMigrationSource,
+    );
   const lifecycleDbGuardProposalPresent =
     auditRlsMigrationSource.includes("ai_action_ledger_lifecycle_guard_v1") &&
     auditRlsMigrationSource.includes("old.status = 'pending'") &&
@@ -3766,6 +3818,8 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     ...(auditStorageProposalPresent ? [] : ["ai_action_ledger_audit_storage_proposal_missing"]),
     ...(rlsPolicyProposalPresent ? [] : ["ai_action_ledger_rls_policy_proposal_missing"]),
     ...(rpcContractProposalPresent ? [] : ["ai_action_ledger_rpc_contract_proposal_missing"]),
+    ...(rpcBackendAdapterPresent ? [] : ["ai_action_ledger_rpc_backend_adapter_missing"]),
+    ...(writeRpcMountProposalPresent ? [] : ["ai_action_ledger_write_rpc_mount_proposal_missing"]),
     ...(lifecycleDbGuardProposalPresent ? [] : ["ai_action_ledger_db_lifecycle_guard_missing"]),
     ...(noServiceRoleGrantInLedgerBackend ? [] : ["ai_action_ledger_service_role_or_destructive_sql_detected"]),
     ...(bffRoutesPresent ? [] : ["ai_action_ledger_bff_routes_missing"]),
@@ -3797,6 +3851,8 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
       auditStorageProposalPresent,
       rlsPolicyProposalPresent,
       rpcContractProposalPresent,
+      rpcBackendAdapterPresent,
+      writeRpcMountProposalPresent,
       lifecycleDbGuardProposalPresent,
       noServiceRoleGrantInLedgerBackend,
       bffRoutesPresent,
@@ -6072,6 +6128,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_cross_screen_runtime_no_mutation: ${report.aiCrossScreenRuntimeMatrix.noMutationSurface}`);
   console.info(`ai_persistent_action_ledger: ${report.aiPersistentActionLedger.ledgerFilesPresent}`);
   console.info(`ai_persistent_action_ledger_pending: ${report.aiPersistentActionLedger.submitForApprovalPersistsPending}`);
+  console.info(`ai_persistent_action_ledger_rpc_backend: ${report.aiPersistentActionLedger.rpcBackendAdapterPresent}`);
+  console.info(`ai_persistent_action_ledger_write_rpc: ${report.aiPersistentActionLedger.writeRpcMountProposalPresent}`);
   console.info(`ai_persistent_action_ledger_no_fake_local: ${report.aiPersistentActionLedger.noFakeLocalApproval}`);
   console.info(`ai_approval_inbox_runtime: ${report.aiApprovalInboxRuntime.inboxFilesPresent}`);
   console.info(`ai_approval_inbox_persistent_ledger: ${report.aiApprovalInboxRuntime.persistentLedgerReadRequired}`);

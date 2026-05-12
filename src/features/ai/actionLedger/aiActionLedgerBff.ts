@@ -7,6 +7,7 @@ import {
   createAiActionLedgerRepository,
   type AiActionLedgerRepository,
 } from "./aiActionLedgerRepository";
+import { createAiActionLedgerRpcBackend } from "./aiActionLedgerRpcBackend";
 import { createAiActionLedgerAuditEvent } from "./aiActionLedgerAudit";
 import { executeApprovedAiAction } from "./executeApprovedAiAction";
 import type {
@@ -66,6 +67,7 @@ export type SubmitForApprovalBffRequest = {
 export type ActionLedgerStatusBffRequest = {
   auth: AiActionLedgerBffAuthContext | null;
   actionId: string;
+  organizationId?: string;
   repository?: AiActionLedgerRepository;
 };
 
@@ -198,8 +200,20 @@ function normalizeSubmitInput(input: SubmitForApprovalInput): {
   };
 }
 
-function repositoryOrBlocked(repository?: AiActionLedgerRepository): AiActionLedgerRepository {
-  return repository ?? createAiActionLedgerRepository(null);
+function repositoryForBff(request: {
+  auth: AiActionLedgerBffAuthContext;
+  organizationId?: string;
+  repository?: AiActionLedgerRepository;
+}): AiActionLedgerRepository {
+  if (request.repository) return request.repository;
+  const backend = createAiActionLedgerRpcBackend({
+    organizationId: request.organizationId ?? "",
+    organizationIdHash: orgHash(request.auth, request.organizationId),
+    actorUserId: request.auth.userId,
+    actorUserIdHash: userHash(request.auth),
+    actorRole: request.auth.role,
+  });
+  return createAiActionLedgerRepository(backend);
 }
 
 function orgHash(auth: AiActionLedgerBffAuthContext, organizationId?: string): string {
@@ -219,7 +233,7 @@ export async function submitActionForApprovalBff(
   const input = normalizeSubmitInput(request.input);
   if (!input) return invalidInput("submit-for-approval requires actionType, screenId, domain, summary, and idempotencyKey");
 
-  const result = await repositoryOrBlocked(request.repository).submitForApproval(
+  const result = await repositoryForBff({ ...request, auth: request.auth }).submitForApproval(
     {
       ...input,
       requestedByUserIdHash: userHash(request.auth),
@@ -258,7 +272,7 @@ export async function getActionLedgerStatusBff(
   const actionId = normalizeText(request.actionId);
   if (!actionId) return invalidInput("actionId is required");
 
-  const result = await repositoryOrBlocked(request.repository).getStatus(actionId, request.auth.role);
+  const result = await repositoryForBff({ ...request, auth: request.auth }).getStatus(actionId, request.auth.role);
   return {
     ok: true,
     data: {
@@ -284,7 +298,7 @@ export async function approveActionLedgerBff(
   const actionId = normalizeText(request.actionId);
   if (!actionId) return invalidInput("actionId is required");
 
-  const result = await repositoryOrBlocked(request.repository).approve({
+  const result = await repositoryForBff({ ...request, auth: request.auth }).approve({
     actionId,
     approverRole: request.auth.role,
     approvedByUserIdHash: userHash(request.auth),
@@ -316,7 +330,7 @@ export async function rejectActionLedgerBff(
   const actionId = normalizeText(request.actionId);
   if (!actionId) return invalidInput("actionId is required");
 
-  const result = await repositoryOrBlocked(request.repository).reject({
+  const result = await repositoryForBff({ ...request, auth: request.auth }).reject({
     actionId,
     rejectorRole: request.auth.role,
     rejectedByUserIdHash: userHash(request.auth),
@@ -349,7 +363,7 @@ export async function executeApprovedActionLedgerBff(
   const actionId = normalizeText(request.actionId);
   if (!actionId) return invalidInput("actionId is required");
 
-  const status = await repositoryOrBlocked(request.repository).getStatus(actionId, request.auth.role);
+  const status = await repositoryForBff({ ...request, auth: request.auth }).getStatus(actionId, request.auth.role);
   const record: AiActionLedgerRecord | undefined = status.record;
   const result = record
     ? await executeApprovedAiAction({

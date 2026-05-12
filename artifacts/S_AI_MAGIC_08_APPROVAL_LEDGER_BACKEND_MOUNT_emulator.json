@@ -1,0 +1,37 @@
+{
+  "final_status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+  "android_runtime_smoke": {
+    "final_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+    "runtime_smoke": "PASS",
+    "apk_installed_on_emulator": true,
+    "anr_observed": false,
+    "crash_screen_observed": false,
+    "google_play_submit": false
+  },
+  "android_apk_rebuild": {
+    "status": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+    "reason": "EAS Android Free plan build quota is exhausted until 2026-06-01.",
+    "ota_used": false,
+    "ios_build_used": false,
+    "android_play_submit_used": false
+  },
+  "approval_action_ledger_e2e": {
+    "status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+    "backend_persistence_mounted": false,
+    "fake_local_approval": false,
+    "fake_action_status": false,
+    "fake_execution": false,
+    "mutations_created": 0,
+    "exact_reason": "Persistent AI action ledger backend is not mounted; no fake local approval was created."
+  },
+  "approval_inbox_e2e": {
+    "status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+    "persistent_ledger_used": false,
+    "fake_approval": false,
+    "fake_action_status": false,
+    "fake_execution": false,
+    "mutations_created": 0,
+    "exact_reason": "Persistent action ledger backend is not mounted; no fake approval action was created."
+  },
+  "secrets_in_artifact": false
+}
