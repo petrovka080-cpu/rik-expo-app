@@ -1,0 +1,39 @@
+{
+  "wave": "S_AI_APPROVAL_02_PERSISTENT_APPROVAL_QUEUE_GATE",
+  "final_status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+  "green_status": "GREEN_AI_PERSISTENT_APPROVAL_QUEUE_READY",
+  "persistent_backend_found": false,
+  "compatible_candidate_count": 0,
+  "fake_local_approval": false,
+  "idempotency_required": true,
+  "audit_required": true,
+  "pending_cannot_execute": true,
+  "rejected_cannot_execute": true,
+  "expired_cannot_execute": true,
+  "direct_execute_enabled": false,
+  "migration_proposal_only": true,
+  "migration_applied": false,
+  "db_writes_performed": false,
+  "db_seed_used": false,
+  "auth_admin_used": false,
+  "list_users_used": false,
+  "service_role_used": false,
+  "model_provider_changed": false,
+  "openai_gpt_enabled": false,
+  "gemini_removed": false,
+  "credentials_in_cli_args": false,
+  "credentials_in_artifacts": false,
+  "secrets_printed": false,
+  "endpoints_not_wired_due_blocker": [
+    "POST /agent/action/submit-for-approval",
+    "POST /agent/action/:id/approve",
+    "POST /agent/action/:id/reject"
+  ],
+  "existing_shell_endpoint": "GET /agent/action/:id/status",
+  "candidate_storage": {
+    "public.approval_queue": "incompatible_request_item_queue_missing_idempotency_and_audit",
+    "public.approval_ledger": "incompatible_director_side_effect_ledger_not_pending_queue",
+    "public.submit_jobs": "incompatible_worker_job_queue_not_human_approval_queue",
+    "local_ai_approval_gate": "local_only_not_persistent"
+  }
+}
