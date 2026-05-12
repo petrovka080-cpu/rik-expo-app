@@ -1,6 +1,6 @@
 {
   "wave": "S_AI_MAGIC_02_PROCUREMENT_REQUEST_CONTEXT_ENGINE",
-  "generatedAtLocal": "2026-05-12T20:20:00+06:00",
+  "generatedAtLocal": "2026-05-12T20:45:00+06:00",
   "source": {
     "created": [
       "src/features/ai/procurement/procurementContextTypes.ts",
@@ -38,7 +38,8 @@
   },
   "scripts": {
     "created": [
-      "scripts/e2e/runAiProcurementContextMaestro.ts"
+      "scripts/e2e/runAiProcurementContextMaestro.ts",
+      "scripts/e2e/resolveAiProcurementRuntimeRequest.ts"
     ],
     "modified": [
       "scripts/architecture_anti_regression_suite.ts"
@@ -66,8 +67,19 @@
     "apkInstalledOnEmulator": true,
     "runtimeSmoke": "PASS"
   },
+  "runtimeRequestDiscovery": {
+    "source": "bounded_buyer_summary_rpc",
+    "rpcName": "buyer_summary_inbox_scope_v1",
+    "readLimit": 10,
+    "requestContextRuntime": true,
+    "safeSnapshotOnly": true,
+    "rawRowsStored": false,
+    "dbSeedUsed": false,
+    "dbWritesPerformed": false,
+    "serviceRoleUsed": false
+  },
   "blockedRuntime": {
-    "emulatorE2e": "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
-    "reason": "E2E_PROCUREMENT_TEST_REQUEST_ID is required; no DB seed or fake request is allowed."
+    "emulatorE2e": "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
+    "reason": "Explicit AI role E2E credentials are required after bounded real procurement request discovery."
   }
 }

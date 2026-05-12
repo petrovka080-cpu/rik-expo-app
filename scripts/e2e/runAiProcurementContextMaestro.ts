@@ -5,7 +5,9 @@ import { spawnSync } from "node:child_process";
 
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
+import { resolveAiProcurementRuntimeRequest } from "./resolveAiProcurementRuntimeRequest";
 import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveProcurementRequestContext } from "../../src/features/ai/procurement/procurementRequestContextResolver";
 
 export type AiProcurementContextMaestroStatus =
   | "GREEN_AI_PROCUREMENT_CONTEXT_RUNTIME_READY"
@@ -27,7 +29,12 @@ export type AiProcurementContextMaestroArtifact = {
   final_order_created: false;
   mutations_created: 0;
   role_auth_source: "explicit_env" | "missing";
-  test_request_source: "explicit_env" | "missing";
+  test_request_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
+  request_context_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
+  request_id_hash: string | null;
+  real_request_discovery_bounded: boolean;
+  real_request_discovery_read_limit: number | null;
+  real_request_item_count: number;
   db_seed_used: false;
   fake_request_created: false;
   fake_suppliers_created: false;
@@ -78,10 +85,6 @@ function isSourceReady(): boolean {
   );
 }
 
-function hasExplicitTestRequest(): boolean {
-  return Boolean(process.env.E2E_PROCUREMENT_TEST_REQUEST_ID?.trim());
-}
-
 function baseArtifact(
   finalStatus: AiProcurementContextMaestroStatus,
   exactReason: string | null,
@@ -102,7 +105,12 @@ function baseArtifact(
     final_order_created: false,
     mutations_created: 0,
     role_auth_source: resolveExplicitAiRoleAuthEnv().source,
-    test_request_source: hasExplicitTestRequest() ? "explicit_env" : "missing",
+    test_request_source: "missing",
+    request_context_source: "missing",
+    request_id_hash: null,
+    real_request_discovery_bounded: false,
+    real_request_discovery_read_limit: null,
+    real_request_item_count: 0,
     db_seed_used: false,
     fake_request_created: false,
     fake_suppliers_created: false,
@@ -196,6 +204,19 @@ function createFlowFile(): string {
   return flowPath;
 }
 
+function hasBackendContextRuntime(
+  resolution: Awaited<ReturnType<typeof resolveAiProcurementRuntimeRequest>>,
+): boolean {
+  if (!resolution.requestId || !resolution.safeSnapshot) return false;
+  const context = resolveProcurementRequestContext({
+    auth: { userId: "e2e-buyer-runtime", role: "buyer" },
+    requestId: resolution.requestId,
+    screenId: "buyer.main",
+    requestSnapshot: resolution.safeSnapshot,
+  });
+  return context.status === "loaded" && context.requestedItems.length > 0;
+}
+
 export async function runAiProcurementContextMaestro(): Promise<AiProcurementContextMaestroArtifact> {
   if (!isSourceReady()) {
     return writeArtifact(
@@ -206,11 +227,24 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
     );
   }
 
-  if (!hasExplicitTestRequest()) {
+  const requestResolution = await resolveAiProcurementRuntimeRequest();
+  const requestReady = requestResolution.status === "loaded" && Boolean(requestResolution.requestId);
+  const backendContextRuntime = hasBackendContextRuntime(requestResolution);
+  if (!requestReady) {
     return writeArtifact(
       baseArtifact(
         "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
-        "E2E_PROCUREMENT_TEST_REQUEST_ID is required; no DB seed or fake request is allowed.",
+        requestResolution.exactReason ??
+          "No real procurement request is available from explicit env or bounded runtime discovery.",
+        {
+          test_request_source: requestResolution.source,
+          request_context_source: requestResolution.source,
+          request_id_hash: requestResolution.requestIdHash,
+          real_request_discovery_bounded: requestResolution.boundedRead,
+          real_request_discovery_read_limit: requestResolution.readLimit,
+          real_request_item_count: requestResolution.itemCount,
+          request_context_runtime: backendContextRuntime,
+        },
       ),
     );
   }
@@ -220,7 +254,22 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
     return writeArtifact(
       baseArtifact(
         "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
-        "Explicit AI role E2E credentials are required.",
+        "Explicit AI role E2E credentials are required after bounded real procurement request discovery.",
+        {
+          test_request_source: requestResolution.source,
+          request_context_source: requestResolution.source,
+          request_id_hash: requestResolution.requestIdHash,
+          real_request_discovery_bounded: requestResolution.boundedRead,
+          real_request_discovery_read_limit: requestResolution.readLimit,
+          real_request_item_count: requestResolution.itemCount,
+          request_context_runtime: backendContextRuntime,
+          internal_first_message_visible: false,
+          marketplace_checked_visible: false,
+          supplier_cards_or_empty_state_visible: false,
+          evidence_visible_if_cards_exist: false,
+          draft_preview_action_visible: false,
+          approval_required_visible: false,
+        },
       ),
     );
   }
@@ -231,7 +280,16 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
       baseArtifact(
         "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
         emulator.blockedReason ?? "Android emulator/device was not ready.",
-        { role_auth_source: "explicit_env", test_request_source: "explicit_env" },
+        {
+          role_auth_source: "explicit_env",
+          test_request_source: requestResolution.source,
+          request_context_source: requestResolution.source,
+          request_id_hash: requestResolution.requestIdHash,
+          real_request_discovery_bounded: requestResolution.boundedRead,
+          real_request_discovery_read_limit: requestResolution.readLimit,
+          real_request_item_count: requestResolution.itemCount,
+          request_context_runtime: backendContextRuntime,
+        },
       ),
     );
   }
@@ -241,7 +299,16 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
       baseArtifact(
         "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
         "Maestro CLI is not available.",
-        { role_auth_source: "explicit_env", test_request_source: "explicit_env" },
+        {
+          role_auth_source: "explicit_env",
+          test_request_source: requestResolution.source,
+          request_context_source: requestResolution.source,
+          request_id_hash: requestResolution.requestIdHash,
+          real_request_discovery_bounded: requestResolution.boundedRead,
+          real_request_discovery_read_limit: requestResolution.readLimit,
+          real_request_item_count: requestResolution.itemCount,
+          request_context_runtime: backendContextRuntime,
+        },
       ),
     );
   }
@@ -255,7 +322,7 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
       {
         MAESTRO_E2E_BUYER_EMAIL: roleAuth.env.E2E_BUYER_EMAIL,
         MAESTRO_E2E_BUYER_PASSWORD: roleAuth.env.E2E_BUYER_PASSWORD,
-        MAESTRO_E2E_PROCUREMENT_REQUEST_ID: process.env.E2E_PROCUREMENT_TEST_REQUEST_ID ?? "",
+        MAESTRO_E2E_PROCUREMENT_REQUEST_ID: requestResolution.requestId ?? "",
       },
       secrets,
     );
@@ -264,7 +331,16 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
       baseArtifact(
         "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
         "AI procurement runtime UI was not targetable with the installed app.",
-        { role_auth_source: "explicit_env", test_request_source: "explicit_env" },
+        {
+          role_auth_source: "explicit_env",
+          test_request_source: requestResolution.source,
+          request_context_source: requestResolution.source,
+          request_id_hash: requestResolution.requestIdHash,
+          real_request_discovery_bounded: requestResolution.boundedRead,
+          real_request_discovery_read_limit: requestResolution.readLimit,
+          real_request_item_count: requestResolution.itemCount,
+          request_context_runtime: backendContextRuntime,
+        },
       ),
     );
   } finally {
@@ -274,8 +350,13 @@ export async function runAiProcurementContextMaestro(): Promise<AiProcurementCon
   return writeArtifact(
     baseArtifact("GREEN_AI_PROCUREMENT_CONTEXT_RUNTIME_READY", null, {
       role_auth_source: "explicit_env",
-      test_request_source: "explicit_env",
-      request_context_runtime: true,
+      test_request_source: requestResolution.source,
+      request_context_source: requestResolution.source,
+      request_id_hash: requestResolution.requestIdHash,
+      real_request_discovery_bounded: requestResolution.boundedRead,
+      real_request_discovery_read_limit: requestResolution.readLimit,
+      real_request_item_count: requestResolution.itemCount,
+      request_context_runtime: backendContextRuntime,
       internal_first_message_visible: true,
       marketplace_checked_visible: true,
       supplier_cards_or_empty_state_visible: true,

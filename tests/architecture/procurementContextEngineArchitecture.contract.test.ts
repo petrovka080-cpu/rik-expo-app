@@ -31,6 +31,8 @@ describe("AI procurement context engine architecture", () => {
         noRawOutputFields: true,
         noApprovalPersistenceFake: true,
         e2eRunnerPresent: true,
+        e2eBoundedRealRequestDiscoveryPresent: true,
+        e2eRequestDiscoveryNoSeedOrAdmin: true,
       }),
     );
   });

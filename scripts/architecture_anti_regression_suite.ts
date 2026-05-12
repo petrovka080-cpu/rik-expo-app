@@ -416,6 +416,8 @@ export type AiProcurementContextEngineArchitectureSummary = {
   noRawOutputFields: boolean;
   noApprovalPersistenceFake: boolean;
   e2eRunnerPresent: boolean;
+  e2eBoundedRealRequestDiscoveryPresent: boolean;
+  e2eRequestDiscoveryNoSeedOrAdmin: boolean;
   findings: readonly string[];
 };
 
@@ -735,6 +737,8 @@ const AI_PROCUREMENT_CONTEXT_ENGINE_FILES = [
   "src/features/ai/procurement/procurementRedaction.ts",
 ] as const;
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
+const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
+  "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -2702,6 +2706,8 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
   }) ?? "");
   const e2eRunnerSource =
     safeReadProjectFile({ readFile, relativePath: AI_PROCUREMENT_E2E_RUNNER_PATH }) ?? "";
+  const e2eRequestResolverSource =
+    safeReadProjectFile({ readFile, relativePath: AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH }) ?? "";
 
   const procurementFilesPresent = procurementSources.every((source) => source.length > 0);
   const bffRoutesPresent =
@@ -2786,6 +2792,17 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
     e2eRunnerSource.includes("runAiProcurementContextMaestro") &&
     e2eRunnerSource.includes("BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE") &&
     e2eRunnerSource.includes("mutations_created: 0");
+  const e2eBoundedRealRequestDiscoveryPresent =
+    e2eRunnerSource.includes("resolveAiProcurementRuntimeRequest") &&
+    e2eRequestResolverSource.includes("buyer_summary_inbox_scope_v1") &&
+    e2eRequestResolverSource.includes("p_limit: BUYER_SUMMARY_INBOX_LIMIT") &&
+    e2eRequestResolverSource.includes("safeSnapshot") &&
+    e2eRequestResolverSource.includes("bounded_buyer_summary_rpc");
+  const e2eRequestDiscoveryNoSeedOrAdmin =
+    Boolean(e2eRequestResolverSource) &&
+    !/auth\.admin|\.listUsers\s*\(|\.(?:from|select|insert|update|delete|upsert)\s*\(|dbSeedUsed:\s*true|fakeRequestCreated:\s*true|service_role/i.test(
+      e2eRequestResolverSource,
+    );
   const findings = [
     ...(procurementFilesPresent ? [] : ["procurement_context_engine_files_missing"]),
     ...(bffRoutesPresent ? [] : ["procurement_bff_routes_missing"]),
@@ -2807,6 +2824,8 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
     ...(noRawOutputFields ? [] : ["procurement_raw_output_field_detected"]),
     ...(noApprovalPersistenceFake ? [] : ["procurement_fake_approval_persistence_detected"]),
     ...(e2eRunnerPresent ? [] : ["procurement_e2e_runner_missing"]),
+    ...(e2eBoundedRealRequestDiscoveryPresent ? [] : ["procurement_e2e_bounded_request_discovery_missing"]),
+    ...(e2eRequestDiscoveryNoSeedOrAdmin ? [] : ["procurement_e2e_request_discovery_seed_or_admin_detected"]),
   ];
 
   return {
@@ -2836,6 +2855,8 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
       noRawOutputFields,
       noApprovalPersistenceFake,
       e2eRunnerPresent,
+      e2eBoundedRealRequestDiscoveryPresent,
+      e2eRequestDiscoveryNoSeedOrAdmin,
       findings,
     },
   };

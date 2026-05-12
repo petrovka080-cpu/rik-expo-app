@@ -1,9 +1,9 @@
 {
-  "final_status": "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
+  "final_status": "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
   "framework": "maestro",
   "device": "android",
   "procurement_context_source_ready": true,
-  "request_context_runtime": false,
+  "request_context_runtime": true,
   "internal_first_message_visible": false,
   "marketplace_checked_visible": false,
   "supplier_cards_or_empty_state_visible": false,
@@ -13,7 +13,12 @@
   "final_order_created": false,
   "mutations_created": 0,
   "role_auth_source": "missing",
-  "test_request_source": "missing",
+  "test_request_source": "bounded_buyer_summary_rpc",
+  "request_context_source": "bounded_buyer_summary_rpc",
+  "request_id_hash": "request_04fbd607",
+  "real_request_discovery_bounded": true,
+  "real_request_discovery_read_limit": 10,
+  "real_request_item_count": 1,
   "db_seed_used": false,
   "fake_request_created": false,
   "fake_suppliers_created": false,
@@ -24,5 +29,5 @@
   "stdout_redacted": true,
   "stderr_redacted": true,
   "fake_pass_claimed": false,
-  "exactReason": "E2E_PROCUREMENT_TEST_REQUEST_ID is required; no DB seed or fake request is allowed."
+  "exactReason": "Explicit AI role E2E credentials are required after bounded real procurement request discovery."
 }

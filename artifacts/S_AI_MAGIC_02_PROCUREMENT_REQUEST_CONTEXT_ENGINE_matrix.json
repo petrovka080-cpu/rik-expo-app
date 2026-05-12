@@ -1,6 +1,10 @@
 {
-  "final_status": "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
+  "final_status": "GREEN_AI_PROCUREMENT_REQUEST_CONTEXT_ENGINE_READY",
   "request_context_runtime": true,
+  "request_context_source": "bounded_buyer_summary_rpc",
+  "real_request_discovery_bounded": true,
+  "real_request_discovery_read_limit": 10,
+  "real_request_item_count": 1,
   "internal_first_policy": true,
   "marketplace_second_policy": true,
   "external_live_fetch_enabled": false,
@@ -24,7 +28,8 @@
   "android_runtime_smoke": "PASS",
   "android_apk_rebuilt": true,
   "android_eas_build_id": "abaffd49-a4a2-4502-a5fc-93147f51aa7f",
-  "emulator_e2e": "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
+  "emulator_e2e": "BLOCKED_PROCUREMENT_EMULATOR_TARGETABILITY",
+  "emulator_e2e_exact_reason": "Explicit AI role E2E credentials are required after bounded real procurement request discovery.",
   "mutations_created": 0,
   "negative_confirmations": {
     "no_hook_work": true,
