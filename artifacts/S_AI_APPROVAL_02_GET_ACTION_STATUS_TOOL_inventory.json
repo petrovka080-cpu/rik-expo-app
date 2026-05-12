@@ -1,0 +1,46 @@
+{
+  "wave": "S_AI_APPROVAL_02_GET_ACTION_STATUS_TOOL",
+  "scope": "ai_tool_safe_read_status_only",
+  "created_files": [
+    "src/features/ai/tools/getActionStatusTool.ts",
+    "tests/ai/getActionStatusTool.contract.test.ts",
+    "tests/ai/getActionStatusNoMutation.contract.test.ts"
+  ],
+  "modified_files": [
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_AI_APPROVAL_02_GET_ACTION_STATUS_TOOL_inventory.json",
+    "artifacts/S_AI_APPROVAL_02_GET_ACTION_STATUS_TOOL_matrix.json",
+    "artifacts/S_AI_APPROVAL_02_GET_ACTION_STATUS_TOOL_proof.md"
+  ],
+  "runtime_boundary": {
+    "tool": "get_action_status",
+    "route_operation": "ai.approval.action.status.local",
+    "read_source": "local_redacted_status_snapshot_or_not_found",
+    "persisted_lookup": false,
+    "db_access": false,
+    "provider_call": false,
+    "mutation": false,
+    "final_execution": false
+  },
+  "negative_scope": {
+    "hook_work": false,
+    "ui_decomposition": false,
+    "new_build": false,
+    "ota": false,
+    "auth_admin": false,
+    "list_users": false,
+    "service_role": false,
+    "db_seed": false,
+    "db_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "model_provider_change": false,
+    "openai_gpt_enablement": false,
+    "gemini_removal": false,
+    "credentials_in_source": false,
+    "credentials_in_artifacts": false
+  }
+}
