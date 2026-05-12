@@ -1,0 +1,42 @@
+{
+  "wave": "S_AI_E2E_04B_AI_ASSISTANT_SURFACE_TARGETABILITY",
+  "final_status": "GREEN_AI_ASSISTANT_SURFACE_TARGETABILITY_SOURCE_READY",
+  "blocked_status_before_fix": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+  "runtime_probe": {
+    "android_runtime_smoke": "PASS",
+    "role_auth_source": "explicit_env",
+    "all_role_credentials_resolved": true,
+    "maestro_failure": "ai.assistant.input_not_visible",
+    "source_testids_present": true,
+    "installed_apk_requires_rebuild_for_source_fix": true
+  },
+  "source_fix": {
+    "file": "src/features/ai/AIAssistantScreen.tsx",
+    "auth_logic_changed": false,
+    "navigation_logic_changed": false,
+    "hook_work": false,
+    "ui_decomposition": false,
+    "fake_ai_answer": false,
+    "hardcoded_ai_response": false,
+    "model_provider_changed": false,
+    "scoped_context_preview_bounded": true,
+    "assistant_input_testid_retained": true,
+    "assistant_send_testid_retained": true,
+    "assistant_response_testid_retained": true
+  },
+  "safety": {
+    "auth_admin_used": false,
+    "list_users_used": false,
+    "service_role_used": false,
+    "db_seed_used": false,
+    "db_writes_used": false,
+    "migrations_used": false,
+    "supabase_project_changes": false,
+    "credentials_in_source": false,
+    "credentials_in_cli_args": false,
+    "credentials_in_artifacts": false,
+    "secrets_printed": false,
+    "raw_prompt_context_provider_payload_stored": false,
+    "raw_db_rows_in_ai_context": false
+  }
+}

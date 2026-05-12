@@ -372,8 +372,10 @@ export default function AIAssistantScreen() {
             </View>
             {scopedFacts ? (
               <>
-                <Text style={styles.scopeCardText}>{scopedFacts.summary}</Text>
-                <Text style={styles.scopeCardMeta}>
+                <Text style={styles.scopeCardText} numberOfLines={3}>
+                  {scopedFacts.summary}
+                </Text>
+                <Text style={styles.scopeCardMeta} numberOfLines={2}>
                   {`${scopedFacts.scopeKey} • ${scopedFacts.sourceKinds.join(", ")}`}
                 </Text>
               </>

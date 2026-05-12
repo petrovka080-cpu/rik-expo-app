@@ -1,0 +1,44 @@
+{
+  "wave": "S_AI_E2E_04B_AI_ASSISTANT_SURFACE_TARGETABILITY",
+  "changed_source_files": [
+    "src/features/ai/AIAssistantScreen.tsx"
+  ],
+  "changed_test_files": [
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts"
+  ],
+  "changed_artifacts": [
+    "artifacts/S_AI_E2E_04B_AI_ASSISTANT_SURFACE_TARGETABILITY_matrix.json",
+    "artifacts/S_AI_E2E_04B_AI_ASSISTANT_SURFACE_TARGETABILITY_inventory.json",
+    "artifacts/S_AI_E2E_04B_AI_ASSISTANT_SURFACE_TARGETABILITY_proof.md"
+  ],
+  "runtime_observation": {
+    "android_package": "com.azisbek_dzhantaev.rikexpoapp",
+    "android_build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
+    "installed_apk_runtime_smoke": "PASS",
+    "maestro_blocker": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+    "accessibility_tree_ai_screen_visible": true,
+    "accessibility_tree_ai_input_visible": false,
+    "accessibility_tree_ai_send_visible": false,
+    "diagnosis": "scoped facts preview can push assistant composer outside the visible Android accessibility viewport"
+  },
+  "negative_confirmations": {
+    "no_new_build": true,
+    "no_ota": true,
+    "no_hook_work": true,
+    "no_ui_decomposition": true,
+    "no_fake_ai_answer": true,
+    "no_hardcoded_ai_response": true,
+    "no_auth_admin": true,
+    "no_list_users": true,
+    "no_service_role": true,
+    "no_db_seed": true,
+    "no_db_writes": true,
+    "no_migrations": true,
+    "no_supabase_project_changes": true,
+    "no_model_provider_change": true,
+    "no_openai_gpt_enablement": true,
+    "no_gemini_removal": true,
+    "no_credentials_in_artifacts": true,
+    "no_secrets_printed": true
+  }
+}

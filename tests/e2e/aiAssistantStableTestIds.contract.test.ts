@@ -35,6 +35,17 @@ describe("AI assistant stable e2e test IDs", () => {
     expect(assistantSource).not.toContain("openai");
   });
 
+  it("keeps scoped context preview bounded so the composer remains targetable", () => {
+    expect(assistantSource).toContain(
+      '<Text style={styles.scopeCardText} numberOfLines={3}>',
+    );
+    expect(assistantSource).toContain(
+      '<Text style={styles.scopeCardMeta} numberOfLines={2}>',
+    );
+    expect(assistantSource).toContain('testID="ai.assistant.input"');
+    expect(assistantSource).toContain('testID="ai.assistant.send"');
+  });
+
   it("targets stable auth and assistant IDs from every role-screen flow", () => {
     for (const flowPath of flowFiles) {
       const flow = read(flowPath);
