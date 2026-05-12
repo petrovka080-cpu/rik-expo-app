@@ -9,6 +9,7 @@ import {
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
   evaluateAiCrossScreenRuntimeMatrixGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
+  evaluateAiPersistentActionLedgerGuardrail,
   evaluateAiProcurementCopilotRuntimeChainGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
@@ -1676,6 +1677,139 @@ describe("architecture anti-regression suite", () => {
         "screen_runtime_bff_routes_missing",
         "screen_runtime_fake_cards_detected",
         "screen_runtime_mutation_surface_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the AI persistent approval action ledger", () => {
+    const passing = evaluateAiPersistentActionLedgerGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "supabase/migrations/20260512120000_ai_action_ledger.sql") {
+          return [
+            "create table if not exists public.ai_action_ledger",
+            "idempotency_key text not null",
+            "unique (organization_id, idempotency_key)",
+            "create index if not exists ai_action_ledger_org_status_created_idx",
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return "AgentActionLedgerEnvelope\nagent.action.execute_approved";
+        }
+        if (relativePath === "src/features/ai/tools/submitForApprovalTool.ts") {
+          return [
+            "repository.submitForApproval",
+            "persisted: true",
+            "local_gate_only: false",
+            "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/tools/getActionStatusTool.ts") {
+          return "repository.getStatus\nlookup_performed: true\npersisted: true";
+        }
+        if (relativePath.includes("runAiApprovalActionLedgerMaestro")) {
+          return "runAiApprovalActionLedgerMaestro\nBLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND\nmutations_created: 0\nfake_local_approval: false";
+        }
+        if (relativePath.includes("commandCenter")) return "command center";
+        if (relativePath.includes("aiActionLedgerPolicy")) {
+          return [
+            "AiActionLedgerRecord",
+            "AiActionStatus",
+            "SubmitAiActionForApprovalInput",
+            "auditRequired: true",
+            "evidenceRequired: true",
+            "idempotencyRequired: true",
+            "idempotencyKey.trim().length < 16",
+            "AI action ledger requires evidence",
+            "ALLOWED_TRANSITIONS",
+            'draft: ["pending"]',
+            'pending: ["approved", "rejected", "expired"]',
+            'approved: ["executed", "expired"]',
+            'status !== "approved"',
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerRepository")) {
+          return [
+            "AiActionLedgerRecord",
+            "AiActionStatus",
+            "SubmitAiActionForApprovalInput",
+            "ai.action.submitted_for_approval",
+            "findByIdempotencyKey",
+            "insertPending(record, auditEvent)",
+            "createAiActionLedgerAuditEvent",
+            "normalizeAiActionLedgerEvidenceRefs",
+            'status: "pending"',
+            "fakeLocalApproval: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerAudit")) {
+          return "AiActionLedgerRecord\nAiActionStatus\nSubmitAiActionForApprovalInput\ncreateAiActionLedgerAuditEvent\nhasAiActionLedgerAuditEvent";
+        }
+        if (relativePath.includes("aiActionLedgerRedaction")) {
+          return "AiActionLedgerRecord\nAiActionStatus\nSubmitAiActionForApprovalInput\nFORBIDDEN_KEY_PATTERN\nraw_prompt\nprovider_payload";
+        }
+        if (relativePath.includes("executeApprovedAiAction")) {
+          return [
+            "AiActionLedgerRecord",
+            "AiActionStatus",
+            "SubmitAiActionForApprovalInput",
+            "executeApprovedAiAction",
+            "assertAiActionLedgerExecutePolicy",
+            "canTransitionAiActionStatus",
+            "hasAiActionLedgerAuditEvent",
+            "BLOCKED_DOMAIN_EXECUTOR_NOT_READY",
+            "Domain executor is not mounted",
+            "fakeLocalApproval: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("aiActionLedgerBff")) {
+          return [
+            "AiActionLedgerRecord",
+            "AiActionStatus",
+            "SubmitAiActionForApprovalInput",
+            "POST /agent/action/submit-for-approval",
+            "GET /agent/action/:actionId/status",
+            "POST /agent/action/:actionId/approve",
+            "POST /agent/action/:actionId/reject",
+            "POST /agent/action/:actionId/execute-approved",
+            "executeApprovedActionLedgerBff",
+            "domainExecutor: null",
+            "evidenceBacked: true",
+            "fakeLocalApproval: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("actionLedger")) {
+          return "AiActionLedgerRecord\nAiActionStatus\nSubmitAiActionForApprovalInput\nfakeLocalApproval: false";
+        }
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_persistent_action_ledger",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiPersistentActionLedgerGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("submitForApprovalTool")) return "persisted: false\nlocal_gate_only: true";
+        if (relativePath.includes("commandCenter")) return 'import { supabase } from "@supabase/supabase-js";';
+        if (relativePath.includes("actionLedger")) return "fakeLocalApproval: true\ncreateOrder()";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "ai_action_ledger_files_missing",
+        "ai_action_ledger_bff_routes_missing",
+        "submit_for_approval_not_persistent_pending",
+        "ai_action_ledger_fake_local_approval_detected",
+        "ai_action_ledger_direct_execution_path_detected",
+        "ai_action_ledger_ui_supabase_import_detected",
       ]),
     );
   });

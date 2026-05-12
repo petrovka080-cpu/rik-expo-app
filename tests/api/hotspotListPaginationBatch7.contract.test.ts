@@ -40,6 +40,9 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
     "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file);
 
+const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
+  file === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+
 const isLaterApprovedRpcValidationPatch = (file: string) =>
   ["src/lib/api/integrity.guards.ts"].includes(file);
 
@@ -307,6 +310,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
       (file) =>
         !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+        !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isLaterApprovedRpcValidationPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&

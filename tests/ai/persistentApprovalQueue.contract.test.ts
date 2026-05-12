@@ -53,7 +53,7 @@ describe("persistent approval queue readiness contract", () => {
     );
   });
 
-  it("keeps the current submit_for_approval path explicitly local-only until storage exists", async () => {
+  it("blocks submit_for_approval without mounted ledger storage instead of using local-only approval", async () => {
     await expect(
       runSubmitForApprovalToolGate({
         auth: { userId: "director-user", role: "director" },
@@ -68,16 +68,9 @@ describe("persistent approval queue readiness contract", () => {
         },
       }),
     ).resolves.toMatchObject({
-      ok: true,
-      data: {
-        action_status: "pending",
-        persisted: false,
-        local_gate_only: true,
-        mutation_count: 0,
-        final_execution: 0,
-        provider_called: false,
-        db_accessed: false,
-        direct_execution_enabled: false,
+      ok: false,
+      error: {
+        code: "SUBMIT_FOR_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
       },
     });
   });

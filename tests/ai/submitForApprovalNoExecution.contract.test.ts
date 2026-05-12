@@ -4,6 +4,8 @@ import {
   SUBMIT_FOR_APPROVAL_MAX_EVIDENCE_REFS,
   runSubmitForApprovalToolGate,
 } from "../../src/features/ai/tools/submitForApprovalTool";
+import { createAiActionLedgerRepository } from "../../src/features/ai/actionLedger/aiActionLedgerRepository";
+import { createContractTestActionLedgerBackend } from "./aiActionLedgerTestBackend";
 
 describe("submit_for_approval no-execution contract", () => {
   it("registers submit_for_approval as approval_required with idempotency and evidence", () => {
@@ -74,14 +76,16 @@ describe("submit_for_approval no-execution contract", () => {
     });
   });
 
-  it("bounds evidence refs and never claims final execution or persistence", async () => {
+  it("bounds evidence refs and persists only a pending ledger action", async () => {
     const refs = Array.from(
       { length: SUBMIT_FOR_APPROVAL_MAX_EVIDENCE_REFS + 5 },
       (_, index) => `approval:evidence:${index + 1}`,
     );
+    const { backend } = createContractTestActionLedgerBackend();
 
     const result = await runSubmitForApprovalToolGate({
       auth: { userId: "contractor-user", role: "contractor" },
+      repository: createAiActionLedgerRepository(backend),
       input: {
         draft_id: "draft-act-contractor",
         approval_target: "act",
@@ -100,12 +104,12 @@ describe("submit_for_approval no-execution contract", () => {
         action_type: "send_document",
         action_status: "pending",
         approval_required: true,
-        persisted: false,
-        local_gate_only: true,
+        persisted: true,
+        local_gate_only: false,
         mutation_count: 0,
         final_execution: 0,
         provider_called: false,
-        db_accessed: false,
+        db_accessed: true,
         direct_execution_enabled: false,
       },
     });

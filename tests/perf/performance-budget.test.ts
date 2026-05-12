@@ -274,6 +274,16 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeBff.ts"),
       path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeProducers.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic06PersistentActionLedgerFiles = [
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerTypes.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerPolicy.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRedaction.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerEvidence.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerAudit.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRepository.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerBff.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "executeApprovedAiAction.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1022,6 +1032,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
+    expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1176,7 +1187,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic02ProcurementContextEngineFiles -
         sAiMagic03ExternalIntelGatewayFiles -
         sAiMagic04ProcurementCopilotRuntimeChainFiles -
-        sAiMagic05CrossScreenRuntimeMatrixFiles,
+        sAiMagic05CrossScreenRuntimeMatrixFiles -
+        sAiMagic06PersistentActionLedgerFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

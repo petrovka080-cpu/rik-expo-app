@@ -39,6 +39,11 @@ describe("agent BFF route shell", () => {
       }),
     );
     expect(AGENT_BFF_ROUTE_DEFINITIONS.map((route) => route.endpoint)).toEqual([
+      "POST /agent/action/submit-for-approval",
+      "GET /agent/action/:actionId/status",
+      "POST /agent/action/:actionId/approve",
+      "POST /agent/action/:actionId/reject",
+      "POST /agent/action/:actionId/execute-approved",
       "GET /agent/screen-runtime/:screenId",
       "POST /agent/screen-runtime/:screenId/intent-preview",
       "POST /agent/screen-runtime/:screenId/action-plan",
@@ -61,7 +66,6 @@ describe("agent BFF route shell", () => {
       "GET /agent/tools",
       "POST /agent/tools/:name/validate",
       "POST /agent/tools/:name/preview",
-      "GET /agent/action/:id/status",
     ]);
     expect(
       AGENT_BFF_ROUTE_DEFINITIONS.every(

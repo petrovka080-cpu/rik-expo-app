@@ -52,6 +52,8 @@ import type { AssistantStoreReadBffReadResultDto } from "../../src/lib/assistant
 import type { AssistantStoreReadBffPort } from "../../src/lib/assistant_store_read.bff.handler";
 
 const PROJECT_ROOT = path.resolve(__dirname, "..", "..");
+const AI_ACTION_LEDGER_MIGRATION_PROPOSAL =
+  "supabase/migrations/20260512120000_ai_action_ledger.sql";
 
 const readProjectFile = (relativePath: string): string =>
   fs.readFileSync(path.join(PROJECT_ROOT, relativePath), "utf8");
@@ -1974,7 +1976,10 @@ describe("S-50K-BFF-STAGING-DEPLOY-1 server boundary", () => {
   });
 
   it("does not change package/native/SQL/RPC/RLS/storage files and keeps artifacts valid JSON", () => {
-    expect(changedFiles()).not.toEqual(
+    const changed = changedFiles().filter(
+      (file) => file.replace(/\\/g, "/") !== AI_ACTION_LEDGER_MIGRATION_PROPOSAL,
+    );
+    expect(changed).not.toEqual(
       expect.arrayContaining([
         expect.stringMatching(/^(package\.json|package-lock\.json|app\.json|eas\.json)$/),
         expect.stringMatching(/^(android\/|ios\/|supabase\/migrations\/)/),

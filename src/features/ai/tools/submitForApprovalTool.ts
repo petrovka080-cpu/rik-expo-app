@@ -1,6 +1,11 @@
-import { submitAiActionForApproval } from "../approval/aiApprovalGate";
 import type { AiDomain, AiUserRole } from "../policy/aiRolePolicy";
 import type { AiActionType } from "../policy/aiRiskPolicy";
+import {
+  createAiActionLedgerRepository,
+  type AiActionLedgerRepository,
+} from "../actionLedger/aiActionLedgerRepository";
+import type { AiActionLedgerActionType } from "../actionLedger/aiActionLedgerTypes";
+import { stableHashOpaqueId } from "../actionLedger/aiActionLedgerPolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 
 export const SUBMIT_FOR_APPROVAL_TOOL_NAME = "submit_for_approval" as const;
@@ -40,12 +45,12 @@ export type SubmitForApprovalToolOutput = {
   evidence_refs: string[];
   risk_level: typeof SUBMIT_FOR_APPROVAL_RISK_LEVEL;
   idempotency_key_present: true;
-  persisted: false;
-  local_gate_only: true;
+  persisted: true;
+  local_gate_only: false;
   mutation_count: 0;
   final_execution: 0;
   provider_called: false;
-  db_accessed: false;
+  db_accessed: true;
   direct_execution_enabled: false;
 };
 
@@ -57,13 +62,16 @@ export type SubmitForApprovalToolAuthContext = {
 export type SubmitForApprovalToolRequest = {
   auth: SubmitForApprovalToolAuthContext | null;
   input: unknown;
+  organizationId?: string;
+  repository?: AiActionLedgerRepository;
 };
 
 export type SubmitForApprovalToolErrorCode =
   | "SUBMIT_FOR_APPROVAL_AUTH_REQUIRED"
   | "SUBMIT_FOR_APPROVAL_ROLE_NOT_ALLOWED"
   | "SUBMIT_FOR_APPROVAL_INVALID_INPUT"
-  | "SUBMIT_FOR_APPROVAL_POLICY_BLOCKED";
+  | "SUBMIT_FOR_APPROVAL_POLICY_BLOCKED"
+  | "SUBMIT_FOR_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND";
 
 export type SubmitForApprovalToolEnvelope =
   | {
@@ -137,7 +145,7 @@ function normalizeEvidenceRefs(value: unknown): string[] {
     .slice(0, SUBMIT_FOR_APPROVAL_MAX_EVIDENCE_REFS);
 }
 
-function actionTypeForTarget(target: SubmitForApprovalTarget): AiActionType {
+function actionTypeForTarget(target: SubmitForApprovalTarget): AiActionLedgerActionType {
   if (target === "request") return "submit_request";
   if (target === "supplier_selection") return "confirm_supplier";
   if (target === "payment_status_change") return "change_payment_status";
@@ -239,12 +247,16 @@ export async function runSubmitForApprovalToolGate(
   }
 
   const actionType = actionTypeForTarget(input.value.approval_target);
-  const action = submitAiActionForApproval({
+  const repository = request.repository ?? createAiActionLedgerRepository(null);
+  const action = await repository.submitForApproval({
     actionType,
     screenId: input.value.screen_id,
     domain: input.value.domain,
-    requestedByRole: request.auth.role,
-    requestedByUserIdHash: "present_redacted",
+    requestedByUserIdHash: stableHashOpaqueId("user", request.auth.userId),
+    organizationIdHash: stableHashOpaqueId(
+      "org",
+      request.organizationId ?? `${request.auth.role}:organization_scope`,
+    ),
     summary: input.value.summary,
     redactedPayload: {
       draft_id: input.value.draft_id,
@@ -253,14 +265,17 @@ export async function runSubmitForApprovalToolGate(
     },
     evidenceRefs: input.value.evidence_refs,
     idempotencyKey: input.value.idempotency_key,
-  });
+  }, request.auth.role);
 
   if (action.status !== "pending") {
     return {
       ok: false,
       error: {
-        code: "SUBMIT_FOR_APPROVAL_POLICY_BLOCKED",
-        message: "approval gate rejected the request before persistence or execution",
+        code:
+          action.blocker === "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND"
+            ? "SUBMIT_FOR_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND"
+            : "SUBMIT_FOR_APPROVAL_POLICY_BLOCKED",
+        message: action.reason ?? "approval ledger rejected the request before execution",
       },
     };
   }
@@ -269,23 +284,23 @@ export async function runSubmitForApprovalToolGate(
     ok: true,
     data: {
       status: SUBMIT_FOR_APPROVAL_STATUS,
-      action_id: action.actionId,
-      action_status: action.status,
+      action_id: action.actionId ?? action.record?.actionId ?? "missing_action_id",
+      action_status: "pending",
       approval_required: true,
       audit_event: SUBMIT_FOR_APPROVAL_AUDIT_EVENT,
       approval_target: input.value.approval_target,
-      action_type: action.actionType,
-      screen_id: action.screenId,
-      domain: action.domain,
-      evidence_refs: action.evidenceRefs,
+      action_type: actionType as AiActionType,
+      screen_id: action.record?.screenId ?? input.value.screen_id,
+      domain: action.record?.domain ?? input.value.domain,
+      evidence_refs: action.record?.evidenceRefs ?? input.value.evidence_refs,
       risk_level: SUBMIT_FOR_APPROVAL_RISK_LEVEL,
       idempotency_key_present: true,
-      persisted: false,
-      local_gate_only: true,
+      persisted: true,
+      local_gate_only: false,
       mutation_count: 0,
       final_execution: 0,
       provider_called: false,
-      db_accessed: false,
+      db_accessed: true,
       direct_execution_enabled: false,
     },
   };

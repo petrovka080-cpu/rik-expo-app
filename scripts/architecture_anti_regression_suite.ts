@@ -488,6 +488,27 @@ export type AiCrossScreenRuntimeMatrixArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiPersistentActionLedgerArchitectureSummary = {
+  ledgerFilesPresent: boolean;
+  migrationProposalPresent: boolean;
+  bffRoutesPresent: boolean;
+  submitForApprovalPersistsPending: boolean;
+  getActionStatusReadsPersistedStatus: boolean;
+  idempotencyRequired: boolean;
+  auditRequired: boolean;
+  evidenceRequired: boolean;
+  lifecycleTransitionsEnforced: boolean;
+  executeApprovedGatePresent: boolean;
+  domainExecutorBlockedWhenMissing: boolean;
+  noFakeLocalApproval: boolean;
+  noDirectExecutionPath: boolean;
+  noUiSupabaseImport: boolean;
+  noUiModelProviderImport: boolean;
+  noRawLedgerPayloadFields: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -686,6 +707,7 @@ export type ArchitectureAntiRegressionReport = {
   aiExternalIntelGateway: AiExternalIntelGatewayArchitectureSummary;
   aiProcurementCopilotRuntimeChain: AiProcurementCopilotRuntimeChainArchitectureSummary;
   aiCrossScreenRuntimeMatrix: AiCrossScreenRuntimeMatrixArchitectureSummary;
+  aiPersistentActionLedger: AiPersistentActionLedgerArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -830,6 +852,18 @@ const AI_SCREEN_RUNTIME_FILES = [
   "src/features/ai/screenRuntime/aiScreenRuntimeBff.ts",
   "src/features/ai/screenRuntime/aiScreenRuntimeProducers.ts",
 ] as const;
+const AI_ACTION_LEDGER_FILES = [
+  "src/features/ai/actionLedger/aiActionLedgerTypes.ts",
+  "src/features/ai/actionLedger/aiActionLedgerPolicy.ts",
+  "src/features/ai/actionLedger/aiActionLedgerRedaction.ts",
+  "src/features/ai/actionLedger/aiActionLedgerEvidence.ts",
+  "src/features/ai/actionLedger/aiActionLedgerAudit.ts",
+  "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+  "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+  "src/features/ai/actionLedger/executeApprovedAiAction.ts",
+] as const;
+const AI_ACTION_LEDGER_MIGRATION_PATH =
+  "supabase/migrations/20260512120000_ai_action_ledger.sql";
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
 const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
   "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
@@ -839,6 +873,8 @@ const AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH =
   "scripts/e2e/runAiProcurementCopilotMaestro.ts";
 const AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH =
   "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts";
+const AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiApprovalActionLedgerMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -2424,7 +2460,11 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
     Boolean(shellSource?.includes("GET /agent/tools")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/validate")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/preview")) &&
-    Boolean(shellSource?.includes("GET /agent/action/:id/status"));
+    Boolean(shellSource?.includes("POST /agent/action/submit-for-approval")) &&
+    Boolean(shellSource?.includes("GET /agent/action/:actionId/status")) &&
+    Boolean(shellSource?.includes("POST /agent/action/:actionId/approve")) &&
+    Boolean(shellSource?.includes("POST /agent/action/:actionId/reject")) &&
+    Boolean(shellSource?.includes("POST /agent/action/:actionId/execute-approved"));
   const authRequired =
     Boolean(shellSource?.includes("AGENT_BFF_AUTH_REQUIRED")) &&
     Boolean(shellSource?.includes("authRequired: true"));
@@ -3473,6 +3513,215 @@ export function evaluateAiCrossScreenRuntimeMatrixGuardrail(params: {
       noFakeCards,
       noMutationSurface,
       contractorOwnRecordsOnly,
+      e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiPersistentActionLedgerGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiPersistentActionLedgerArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const ledgerSources = AI_ACTION_LEDGER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const ledgerSource = ledgerSources.join("\n");
+  const policySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerPolicy.ts",
+    }) ?? "";
+  const repositorySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+    }) ?? "";
+  const auditSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerAudit.ts",
+    }) ?? "";
+  const redactionSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRedaction.ts",
+    }) ?? "";
+  const executeSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/executeApprovedAiAction.ts",
+    }) ?? "";
+  const bffSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+    }) ?? "";
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const submitToolSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/tools/submitForApprovalTool.ts",
+    }) ?? "";
+  const statusToolSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/tools/getActionStatusTool.ts",
+    }) ?? "";
+  const migrationSource =
+    safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_MIGRATION_PATH }) ?? "";
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH }) ?? "";
+  const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+
+  const ledgerFilesPresent =
+    ledgerSources.every((source) => source.length > 0) &&
+    ledgerSource.includes("AiActionLedgerRecord") &&
+    ledgerSource.includes("AiActionStatus") &&
+    ledgerSource.includes("SubmitAiActionForApprovalInput");
+  const migrationProposalPresent =
+    migrationSource.includes("create table if not exists public.ai_action_ledger") &&
+    migrationSource.includes("unique (organization_id, idempotency_key)") &&
+    migrationSource.includes("create index if not exists ai_action_ledger_org_status_created_idx") &&
+    !/\b(drop|truncate|delete)\b/i.test(migrationSource);
+  const bffRoutesPresent =
+    bffSource.includes("POST /agent/action/submit-for-approval") &&
+    bffSource.includes("GET /agent/action/:actionId/status") &&
+    bffSource.includes("POST /agent/action/:actionId/approve") &&
+    bffSource.includes("POST /agent/action/:actionId/reject") &&
+    bffSource.includes("POST /agent/action/:actionId/execute-approved") &&
+    shellSource.includes("AgentActionLedgerEnvelope") &&
+    shellSource.includes("agent.action.execute_approved");
+  const submitForApprovalPersistsPending =
+    repositorySource.includes("insertPending(record, auditEvent)") &&
+    repositorySource.includes('status: "pending"') &&
+    submitToolSource.includes("repository.submitForApproval") &&
+    submitToolSource.includes("persisted: true") &&
+    submitToolSource.includes("local_gate_only: false") &&
+    submitToolSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND");
+  const getActionStatusReadsPersistedStatus =
+    statusToolSource.includes("repository.getStatus") &&
+    statusToolSource.includes("lookup_performed: true") &&
+    (statusToolSource.includes("persisted: true") ||
+      statusToolSource.includes("persisted: status.persistedLookup"));
+  const idempotencyRequired =
+    repositorySource.includes("findByIdempotencyKey") &&
+    policySource.includes("idempotencyRequired: true") &&
+    policySource.includes("idempotencyKey.trim().length < 16") &&
+    migrationSource.includes("idempotency_key text not null") &&
+    migrationSource.includes("unique (organization_id, idempotency_key)");
+  const auditRequired =
+    policySource.includes("auditRequired: true") &&
+    auditSource.includes("createAiActionLedgerAuditEvent") &&
+    ledgerSource.includes("ai.action.submitted_for_approval") &&
+    repositorySource.includes("createAiActionLedgerAuditEvent") &&
+    executeSource.includes("hasAiActionLedgerAuditEvent");
+  const evidenceRequired =
+    policySource.includes("evidenceRequired: true") &&
+    policySource.includes("AI action ledger requires evidence") &&
+    repositorySource.includes("normalizeAiActionLedgerEvidenceRefs") &&
+    bffSource.includes("evidenceBacked: true");
+  const lifecycleTransitionsEnforced =
+    policySource.includes("ALLOWED_TRANSITIONS") &&
+    policySource.includes('draft: ["pending"]') &&
+    policySource.includes('pending: ["approved", "rejected", "expired"]') &&
+    policySource.includes('approved: ["executed", "expired"]') &&
+    executeSource.includes("canTransitionAiActionStatus");
+  const executeApprovedGatePresent =
+    executeSource.includes("executeApprovedAiAction") &&
+    executeSource.includes("assertAiActionLedgerExecutePolicy") &&
+    policySource.includes("status !== \"approved\"") &&
+    bffSource.includes("executeApprovedActionLedgerBff");
+  const domainExecutorBlockedWhenMissing =
+    executeSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+    executeSource.includes("Domain executor is not mounted") &&
+    bffSource.includes("domainExecutor: null");
+  const noFakeLocalApproval =
+    ledgerSource.includes("fakeLocalApproval: false") &&
+    submitToolSource.includes("local_gate_only: false") &&
+    !/fakeLocalApproval:\s*true|local_gate_only:\s*true|fake local approval/i.test(
+      `${ledgerSource}\n${submitToolSource}`,
+    );
+  const directExecutionSurface = [
+    repositorySource,
+    bffSource,
+    submitToolSource,
+    statusToolSource,
+  ].join("\n");
+  const noDirectExecutionPath =
+    !/\bdomainExecutor\.execute\b/.test(directExecutionSurface) &&
+    !/\b(createOrder|confirmSupplier|changePaymentStatus|changeWarehouseStatus|sendDocument)\b/.test(
+      directExecutionSurface,
+    );
+  const noUiSupabaseImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      commandCenterSource,
+    );
+  const noUiModelProviderImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      commandCenterSource,
+    );
+  const noRawLedgerPayloadFields =
+    redactionSource.includes("FORBIDDEN_KEY_PATTERN") &&
+    redactionSource.includes("raw_prompt") &&
+    redactionSource.includes("provider_payload") &&
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows)\s*:/.test(
+      ledgerSource,
+    );
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiApprovalActionLedgerMaestro") &&
+    e2eRunnerSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND") &&
+    e2eRunnerSource.includes("mutations_created: 0") &&
+    e2eRunnerSource.includes("fake_local_approval: false");
+  const findings = [
+    ...(ledgerFilesPresent ? [] : ["ai_action_ledger_files_missing"]),
+    ...(migrationProposalPresent ? [] : ["ai_action_ledger_migration_proposal_missing_or_unsafe"]),
+    ...(bffRoutesPresent ? [] : ["ai_action_ledger_bff_routes_missing"]),
+    ...(submitForApprovalPersistsPending ? [] : ["submit_for_approval_not_persistent_pending"]),
+    ...(getActionStatusReadsPersistedStatus ? [] : ["get_action_status_not_reading_persisted_status"]),
+    ...(idempotencyRequired ? [] : ["ai_action_ledger_idempotency_not_required"]),
+    ...(auditRequired ? [] : ["ai_action_ledger_audit_not_required"]),
+    ...(evidenceRequired ? [] : ["ai_action_ledger_evidence_not_required"]),
+    ...(lifecycleTransitionsEnforced ? [] : ["ai_action_ledger_lifecycle_not_enforced"]),
+    ...(executeApprovedGatePresent ? [] : ["ai_action_ledger_execute_gate_missing"]),
+    ...(domainExecutorBlockedWhenMissing ? [] : ["ai_action_ledger_domain_executor_not_blocked"]),
+    ...(noFakeLocalApproval ? [] : ["ai_action_ledger_fake_local_approval_detected"]),
+    ...(noDirectExecutionPath ? [] : ["ai_action_ledger_direct_execution_path_detected"]),
+    ...(noUiSupabaseImport ? [] : ["ai_action_ledger_ui_supabase_import_detected"]),
+    ...(noUiModelProviderImport ? [] : ["ai_action_ledger_ui_model_provider_import_detected"]),
+    ...(noRawLedgerPayloadFields ? [] : ["ai_action_ledger_raw_payload_field_detected"]),
+    ...(e2eRunnerPresent ? [] : ["ai_action_ledger_e2e_runner_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_persistent_action_ledger",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      ledgerFilesPresent,
+      migrationProposalPresent,
+      bffRoutesPresent,
+      submitForApprovalPersistsPending,
+      getActionStatusReadsPersistedStatus,
+      idempotencyRequired,
+      auditRequired,
+      evidenceRequired,
+      lifecycleTransitionsEnforced,
+      executeApprovedGatePresent,
+      domainExecutorBlockedWhenMissing,
+      noFakeLocalApproval,
+      noDirectExecutionPath,
+      noUiSupabaseImport,
+      noUiModelProviderImport,
+      noRawLedgerPayloadFields,
       e2eRunnerPresent,
       findings,
     },
@@ -5368,6 +5617,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiExternalIntelGateway = evaluateAiExternalIntelGatewayGuardrail({ projectRoot });
   const aiProcurementCopilotRuntimeChain = evaluateAiProcurementCopilotRuntimeChainGuardrail({ projectRoot });
   const aiCrossScreenRuntimeMatrix = evaluateAiCrossScreenRuntimeMatrixGuardrail({ projectRoot });
+  const aiPersistentActionLedger = evaluateAiPersistentActionLedgerGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -5406,6 +5656,7 @@ export function runArchitectureAntiRegressionSuite(
     aiExternalIntelGateway.check,
     aiProcurementCopilotRuntimeChain.check,
     aiCrossScreenRuntimeMatrix.check,
+    aiPersistentActionLedger.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -5445,6 +5696,7 @@ export function runArchitectureAntiRegressionSuite(
     aiExternalIntelGateway: aiExternalIntelGateway.summary,
     aiProcurementCopilotRuntimeChain: aiProcurementCopilotRuntimeChain.summary,
     aiCrossScreenRuntimeMatrix: aiCrossScreenRuntimeMatrix.summary,
+    aiPersistentActionLedger: aiPersistentActionLedger.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -5510,6 +5762,9 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_procurement_copilot_no_mutation: ${report.aiProcurementCopilotRuntimeChain.noMutationSurface}`);
   console.info(`ai_cross_screen_runtime_matrix: ${report.aiCrossScreenRuntimeMatrix.majorScreensRegistered}`);
   console.info(`ai_cross_screen_runtime_no_mutation: ${report.aiCrossScreenRuntimeMatrix.noMutationSurface}`);
+  console.info(`ai_persistent_action_ledger: ${report.aiPersistentActionLedger.ledgerFilesPresent}`);
+  console.info(`ai_persistent_action_ledger_pending: ${report.aiPersistentActionLedger.submitForApprovalPersistsPending}`);
+  console.info(`ai_persistent_action_ledger_no_fake_local: ${report.aiPersistentActionLedger.noFakeLocalApproval}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

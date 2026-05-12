@@ -13,6 +13,8 @@ import {
   submitForApprovalInputSchema,
   submitForApprovalOutputSchema,
 } from "../../src/features/ai/schemas/aiToolSchemas";
+import { createAiActionLedgerRepository } from "../../src/features/ai/actionLedger/aiActionLedgerRepository";
+import { createContractTestActionLedgerBackend } from "./aiActionLedgerTestBackend";
 
 const ROOT = process.cwd();
 const sourcePath = path.join(ROOT, "src/features/ai/tools/submitForApprovalTool.ts");
@@ -96,9 +98,11 @@ describe("submit_for_approval approval-gate tool", () => {
     expect(submitForApprovalOutputSchema.properties).not.toHaveProperty("evidenceRefs");
   });
 
-  it("returns an approval-required local gate envelope without persistence or final execution", async () => {
+  it("persists an approval-required pending ledger action without final execution", async () => {
+    const { backend } = createContractTestActionLedgerBackend();
     const result = await runSubmitForApprovalToolGate({
       auth: buyerAuth,
+      repository: createAiActionLedgerRepository(backend),
       input: {
         draft_id: " draft-request-1 ",
         approval_target: "request",
@@ -125,12 +129,12 @@ describe("submit_for_approval approval-gate tool", () => {
         evidence_refs: ["draft_request:input:project", "draft_request:input:item:1"],
         risk_level: SUBMIT_FOR_APPROVAL_RISK_LEVEL,
         idempotency_key_present: true,
-        persisted: false,
-        local_gate_only: true,
+        persisted: true,
+        local_gate_only: false,
         mutation_count: 0,
         final_execution: 0,
         provider_called: false,
-        db_accessed: false,
+        db_accessed: true,
         direct_execution_enabled: false,
       },
     });
@@ -171,6 +175,7 @@ describe("submit_for_approval approval-gate tool", () => {
     await expect(
       runSubmitForApprovalToolGate({
         auth: contractorAuth,
+        repository: createAiActionLedgerRepository(createContractTestActionLedgerBackend().backend),
         input: {
           draft_id: "payment-draft-1",
           approval_target: "payment_status_change",

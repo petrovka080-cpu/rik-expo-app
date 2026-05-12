@@ -33,6 +33,9 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
     "supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
+  file.replace(/\\/g, "/") === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
   it("documents the S-LOAD-4 hotspot baseline and code-ready status", () => {
     const matrix = readJson(
@@ -118,6 +121,7 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
     const forbidden = changed.filter(
       (file) =>
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+        !isApprovedAiActionLedgerMigrationProposal(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

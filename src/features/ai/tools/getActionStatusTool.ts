@@ -6,6 +6,7 @@ import {
   type AiUserRole,
 } from "../policy/aiRolePolicy";
 import type { AiActionType } from "../policy/aiRiskPolicy";
+import type { AiActionLedgerRepository } from "../actionLedger/aiActionLedgerRepository";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 
 export const GET_ACTION_STATUS_TOOL_NAME = "get_action_status" as const;
@@ -49,13 +50,13 @@ export type GetActionStatusToolOutput = {
   evidence_refs: string[];
   route_operation: typeof GET_ACTION_STATUS_ROUTE_OPERATION;
   audit_event: typeof GET_ACTION_STATUS_AUDIT_EVENT;
-  lookup_performed: false;
+  lookup_performed: boolean;
   local_snapshot_used: boolean;
-  persisted: false;
+  persisted: boolean;
   mutation_count: 0;
   final_execution: 0;
   provider_called: false;
-  db_accessed: false;
+  db_accessed: boolean;
   raw_payload_exposed: false;
   direct_execution_enabled: false;
 };
@@ -68,6 +69,7 @@ export type GetActionStatusToolAuthContext = {
 export type GetActionStatusToolRequest = {
   auth: GetActionStatusToolAuthContext | null;
   input: unknown;
+  repository?: AiActionLedgerRepository;
 };
 
 export type GetActionStatusToolErrorCode =
@@ -257,6 +259,13 @@ function buildEvidenceRefs(snapshot: NormalizedActionStatusSnapshot | null): str
   return refs.length > 0 ? refs : ["action_status:local:snapshot"];
 }
 
+function ledgerActionToToolAction(value: string | undefined): AiActionType | "unknown" {
+  const normalized = normalizeActionType(value);
+  if (normalized) return normalized;
+  if (value === "document_send") return "send_document";
+  return "unknown";
+}
+
 export async function runGetActionStatusToolSafeRead(
   request: GetActionStatusToolRequest,
 ): Promise<GetActionStatusToolEnvelope> {
@@ -291,6 +300,39 @@ export async function runGetActionStatusToolSafeRead(
       error: {
         code: "GET_ACTION_STATUS_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+
+  if (request.repository) {
+    const status = await request.repository.getStatus(input.value.action_id, request.auth.role);
+    const record = status.record;
+    return {
+      ok: true,
+      data: {
+        action_id: input.value.action_id,
+        status: status.status === "pending" ? "approval_required" : status.status === "blocked" ? "blocked" : status.status,
+        action_status:
+          status.status === "not_found" || status.status === "blocked"
+            ? status.status === "not_found"
+              ? "not_found"
+              : "blocked"
+            : status.status,
+        action_type: ledgerActionToToolAction(record?.actionType),
+        screen_id: record?.screenId ?? "unknown",
+        domain: record?.domain ?? "unknown",
+        evidence_refs: record?.evidenceRefs ?? ["action_status:persistent:lookup"],
+        route_operation: GET_ACTION_STATUS_ROUTE_OPERATION,
+        audit_event: GET_ACTION_STATUS_AUDIT_EVENT,
+        lookup_performed: true,
+        local_snapshot_used: false,
+        persisted: status.persistedLookup,
+        mutation_count: 0,
+        final_execution: 0,
+        provider_called: false,
+        db_accessed: status.persistentBackend,
+        raw_payload_exposed: false,
+        direct_execution_enabled: false,
       },
     };
   }

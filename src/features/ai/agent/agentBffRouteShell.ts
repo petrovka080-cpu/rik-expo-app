@@ -77,12 +77,30 @@ import {
   type AgentScreenRuntimeIntentPreviewRequest,
   type AgentScreenRuntimeRequest,
 } from "../screenRuntime/aiScreenRuntimeBff";
+import {
+  AI_ACTION_LEDGER_BFF_CONTRACT,
+  approveActionLedgerBff,
+  executeApprovedActionLedgerBff,
+  getActionLedgerStatusBff,
+  rejectActionLedgerBff,
+  submitActionForApprovalBff,
+  type ActionLedgerBffEnvelope,
+  type ActionLedgerDecisionBffRequest,
+  type ActionLedgerStatusBffRequest,
+  type SubmitForApprovalBffRequest,
+} from "../actionLedger/aiActionLedgerBff";
 
 export {
   AGENT_SCREEN_RUNTIME_BFF_CONTRACT,
   getAgentScreenRuntime,
   planAgentScreenRuntimeAction,
   previewAgentScreenRuntimeIntent,
+  AI_ACTION_LEDGER_BFF_CONTRACT,
+  approveActionLedgerBff,
+  executeApprovedActionLedgerBff,
+  getActionLedgerStatusBff,
+  rejectActionLedgerBff,
+  submitActionForApprovalBff,
 };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
@@ -93,6 +111,10 @@ export type AgentBffRouteOperation =
   | "agent.tools.validate"
   | "agent.tools.preview"
   | "agent.action.status"
+  | "agent.action.submit_for_approval"
+  | "agent.action.approve"
+  | "agent.action.reject"
+  | "agent.action.execute_approved"
   | "agent.task_stream.read"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
@@ -133,7 +155,8 @@ export type AgentBffRouteDefinition = {
     | "AgentIntelCompareEnvelope"
     | "AgentExternalIntelEnvelope"
     | "AgentProcurementEnvelope"
-    | "AgentScreenRuntimeEnvelope";
+    | "AgentScreenRuntimeEnvelope"
+    | "AgentActionLedgerEnvelope";
 };
 
 export type AgentBffAuthContext = {
@@ -153,6 +176,10 @@ export type AgentBffToolRouteRequest = AgentBffShellRequest & {
 export type AgentBffActionStatusRequest = AgentBffShellRequest & {
   actionId: string;
 };
+
+export type AgentActionLedgerSubmitRequest = SubmitForApprovalBffRequest;
+export type AgentActionLedgerStatusRequest = ActionLedgerStatusBffRequest;
+export type AgentActionLedgerDecisionRequest = ActionLedgerDecisionBffRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -574,6 +601,8 @@ export type AgentProcurementEnvelope =
       };
     };
 
+export type AgentActionLedgerEnvelope = ActionLedgerBffEnvelope;
+
 export type AgentTaskStreamCardType =
   | "approval_pending"
   | "supplier_price_change"
@@ -822,6 +851,71 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
 } as const);
 
 export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
+  {
+    operation: "agent.action.submit_for_approval",
+    method: "POST",
+    endpoint: "POST /agent/action/submit-for-approval",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
+  {
+    operation: "agent.action.status",
+    method: "GET",
+    endpoint: "GET /agent/action/:actionId/status",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
+  {
+    operation: "agent.action.approve",
+    method: "POST",
+    endpoint: "POST /agent/action/:actionId/approve",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
+  {
+    operation: "agent.action.reject",
+    method: "POST",
+    endpoint: "POST /agent/action/:actionId/reject",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
+  {
+    operation: "agent.action.execute_approved",
+    method: "POST",
+    endpoint: "POST /agent/action/:actionId/execute-approved",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
   {
     operation: "agent.screen_runtime.read",
     method: "GET",
@@ -1101,19 +1195,6 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     endpoint: "POST /agent/tools/:name/preview",
     authRequired: true,
     roleFiltered: true,
-    mutates: false,
-    executesTool: false,
-    callsModelProvider: false,
-    callsDatabaseDirectly: false,
-    exposesForbiddenTools: false,
-    responseEnvelope: "AgentBffRouteShellEnvelope",
-  },
-  {
-    operation: "agent.action.status",
-    method: "GET",
-    endpoint: "GET /agent/action/:id/status",
-    authRequired: true,
-    roleFiltered: false,
     mutates: false,
     executesTool: false,
     callsModelProvider: false,

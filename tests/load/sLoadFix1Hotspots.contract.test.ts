@@ -50,6 +50,9 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
     "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
+  normalizePath(file) === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+
 const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
   [
     "app/_layout.tsx",
@@ -287,6 +290,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
       (file) =>
         !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
+        !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
