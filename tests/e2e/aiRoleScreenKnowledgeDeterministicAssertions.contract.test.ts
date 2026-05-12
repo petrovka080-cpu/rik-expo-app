@@ -30,16 +30,17 @@ describe("AI role-screen deterministic knowledge assertions", () => {
     }
   });
 
-  it("keeps the LLM phase as response-element smoke only", () => {
+  it("keeps release flows off exact LLM response assertions after send", () => {
     for (const flowPath of flowFiles) {
       const flow = read(flowPath);
-      const responsePhaseIndex = flow.indexOf("scrollUntilVisible:");
-      const responsePhase = flow.slice(responsePhaseIndex);
+      const sendIndex = flow.indexOf('id: "ai.assistant.send"');
+      const postSendPhase = flow.slice(sendIndex);
 
-      expect(responsePhaseIndex).toBeGreaterThan(0);
-      expect(responsePhase).toContain('id: "ai.assistant.response"');
-      expect(responsePhase).not.toContain('visible: "');
-      expect(responsePhase).not.toContain("assertNotVisible:");
+      expect(sendIndex).toBeGreaterThan(0);
+      expect(postSendPhase).toContain("waitForAnimationToEnd");
+      expect(postSendPhase).not.toContain('id: "ai.assistant.response"');
+      expect(postSendPhase).not.toContain("scrollUntilVisible:");
+      expect(postSendPhase).not.toContain('visible: "AI APP KNOWLEDGE BLOCK"');
     }
   });
 

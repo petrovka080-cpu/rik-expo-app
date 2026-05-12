@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
+  evaluateAiResponseSmokeNonBlockingContractGuardrail,
   evaluateAiModelBoundaryGuardrail,
   evaluateAndroidEmulatorIosBuildSubmitGateGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
@@ -424,8 +425,8 @@ describe("architecture anti-regression suite", () => {
       'id: "ai.knowledge.allowed-intents"',
       'id: "ai.knowledge.blocked-intents"',
       'id: "ai.knowledge.approval-boundary"',
-      'scrollUntilVisible:',
-      'id: "ai.assistant.response"',
+      'id: "ai.assistant.send"',
+      "waitForAnimationToEnd",
     ].join("\n");
     const passing = evaluateAiKnowledgePreviewE2eContractGuardrail({
       projectRoot: process.cwd(),
@@ -493,9 +494,89 @@ describe("architecture anti-regression suite", () => {
     );
   });
 
+  it("ratchets AI response smoke as non-blocking loading-or-response canary", () => {
+    const releaseFlow = [
+      'id: "ai.knowledge.preview"',
+      'id: "ai.knowledge.approval-boundary"',
+      'id: "ai.assistant.input"',
+      'id: "ai.assistant.send"',
+      "waitForAnimationToEnd",
+    ].join("\n");
+    const passing = evaluateAiResponseSmokeNonBlockingContractGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/AIAssistantScreen.tsx") {
+          return [
+            "loading ? (",
+            'testID="ai.assistant.loading"',
+            'accessibilityLabel="AI assistant loading"',
+            "styles.loadingBubble",
+            "<ActivityIndicator",
+            "sendAssistantMessage({",
+          ].join("\n");
+        }
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return [
+            "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
+            "release_gate_status",
+            "prompt_pipeline_status",
+            "prompt_pipeline_observations",
+            "observePromptPipeline",
+            'resource-id="ai.assistant.loading"',
+            'resource-id="ai.assistant.response"',
+            "AI prompt pipeline proof missing",
+            "response_smoke_status",
+            "createResponseSmokeFlowFiles",
+            "responseSmokeReportFile",
+            "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY",
+            "response_smoke_blocking_release: false",
+            'responseSmokeStatus = "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY"',
+            'artifact.final_status !== "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE"',
+            "resolveExplicitAiRoleAuthEnv redactE2eSecrets",
+          ].join("\n");
+        }
+        if (relativePath.endsWith(".yaml")) return releaseFlow;
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_response_smoke_non_blocking_contract",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiResponseSmokeNonBlockingContractGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/AIAssistantScreen.tsx") return "fake AI answer";
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return "listUsers auth.admin signInWithPassword";
+        }
+        if (relativePath.endsWith(".yaml")) {
+          return 'scrollUntilVisible:\nid: "ai.assistant.response"\nvisible: "exact LLM text"';
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "ai_assistant_loading_testid_missing",
+        "release_flows_require_ai_response_as_blocking_gate",
+        "runner_does_not_separate_release_gate_and_response_smoke",
+        "response_timeout_canary_not_non_blocking",
+        "exact_llm_text_assertion_detected",
+        "fake_or_hardcoded_ai_answer_source_detected",
+        "ai_role_runner_auth_discovery_detected",
+      ]),
+    );
+  });
+
   it("ratchets the AI role-screen emulator gate", () => {
     const greenArtifact = {
-      final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
+      final_status: "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
       role_auth_source: "explicit_env",
       all_role_credentials_resolved: true,
       service_role_discovery_used_for_green: false,
@@ -510,6 +591,11 @@ describe("architecture anti-regression suite", () => {
       stdout_redacted: true,
       stderr_redacted: true,
       fake_pass_claimed: false,
+      release_gate_status: "PASS",
+      prompt_pipeline_status: "PASS",
+      response_smoke_status: "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY",
+      response_smoke_blocking_release: false,
+      response_smoke_exact_llm_text_assertion: false,
       flows: {
         director: "PASS",
         foreman: "PASS",

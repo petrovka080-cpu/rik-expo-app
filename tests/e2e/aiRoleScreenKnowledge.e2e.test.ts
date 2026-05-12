@@ -51,13 +51,16 @@ describe("AI role-screen knowledge Maestro e2e contract", () => {
     expect(contractorFlow).toContain("other_contractor_data");
 
     for (const flow of [directorFlow, foremanFlow, buyerFlow, accountantFlow, contractorFlow]) {
-      const responseScrollIndex = flow.indexOf("scrollUntilVisible:");
+      const sendIndex = flow.indexOf('id: "ai.assistant.send"');
       expect(flow).not.toContain("AI APP KNOWLEDGE BLOCK");
       expect(flow).toContain('id: "ai.knowledge.role"');
       expect(flow).toContain('id: "ai.knowledge.domain"');
       expect(flow).toContain('id: "ai.knowledge.allowed-intents"');
-      expect(flow.slice(responseScrollIndex)).not.toContain('visible: "');
-      expect(flow.slice(responseScrollIndex)).not.toContain("assertNotVisible:");
+      expect(sendIndex).toBeGreaterThan(0);
+      expect(flow.slice(sendIndex)).toContain("waitForAnimationToEnd");
+      expect(flow.slice(sendIndex)).not.toContain('id: "ai.assistant.response"');
+      expect(flow.slice(sendIndex)).not.toContain("scrollUntilVisible:");
+      expect(flow.slice(sendIndex)).not.toContain('visible: "AI APP KNOWLEDGE BLOCK"');
     }
   });
 });

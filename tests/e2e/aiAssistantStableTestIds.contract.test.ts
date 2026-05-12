@@ -91,25 +91,24 @@ describe("AI assistant stable e2e test IDs", () => {
       expect(flow).toContain('id: "ai.assistant.screen"');
       expect(flow).toContain('id: "ai.assistant.input"');
       expect(flow).toContain('id: "ai.assistant.send"');
-      expect(flow).toContain('id: "ai.assistant.response"');
-      expect(flow).toContain("scrollUntilVisible:");
-      expect(flow).toContain("centerElement: true");
+      expect(flow).not.toContain('id: "ai.assistant.response"');
+      expect(flow).not.toContain("scrollUntilVisible:");
       expect(flow).toContain("${MAESTRO_E2E_");
       expect(flow).not.toMatch(/@example\.com|password\s*[:=]|service_role/i);
     }
   });
 
-  it("asserts the visible knowledge preview before scrolling to the generated response", () => {
+  it("asserts the visible knowledge preview before handing prompt-pipeline proof to the runner", () => {
     for (const flowPath of flowFiles) {
       const flow = read(flowPath);
       const knowledgeIndex = flow.indexOf('id: "ai.knowledge.preview"');
-      const responseScrollIndex = flow.indexOf("scrollUntilVisible:");
+      const sendIndex = flow.lastIndexOf('id: "ai.assistant.send"');
 
       expect(knowledgeIndex).toBeGreaterThan(0);
-      expect(responseScrollIndex).toBeGreaterThan(knowledgeIndex);
+      expect(sendIndex).toBeGreaterThan(knowledgeIndex);
+      expect(flow.slice(sendIndex)).toContain("waitForAnimationToEnd");
       expect(flow).not.toContain("AI APP KNOWLEDGE BLOCK");
-      expect(flow.slice(responseScrollIndex)).not.toContain('visible: "');
-      expect(flow.slice(responseScrollIndex)).not.toContain("assertNotVisible:");
+      expect(flow.slice(sendIndex)).not.toContain('visible: "AI APP KNOWLEDGE BLOCK"');
     }
   });
 });

@@ -15,6 +15,7 @@ import {
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 
 export type AiRoleScreenKnowledgeStatus =
+  | "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE"
   | "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT"
   | "BLOCKED_NO_E2E_ROLE_SECRETS"
   | "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
@@ -24,8 +25,14 @@ export type AiRoleScreenKnowledgeStatus =
   | "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED"
   | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
+export type AiRoleScreenResponseSmokeStatus =
+  | "PASS"
+  | "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY"
+  | null;
+
 type RoleFlowName = "director" | "foreman" | "buyer" | "accountant" | "contractor";
 type RoleFlowStatus = "PASS" | "FAIL" | "BLOCKED";
+type PromptPipelineObservation = "loading" | "response" | null;
 
 type AiRoleScreenKnowledgeArtifact = {
   final_status: AiRoleScreenKnowledgeStatus;
@@ -50,6 +57,13 @@ type AiRoleScreenKnowledgeArtifact = {
   emulator_boot_completed: boolean;
   anrDialogObserved: boolean;
   anrDialogHandledByWait: boolean;
+  release_gate_status: "PASS" | "BLOCKED";
+  prompt_pipeline_status: "PASS" | "BLOCKED";
+  response_smoke_status: AiRoleScreenResponseSmokeStatus;
+  response_smoke_blocking_release: false;
+  response_smoke_exact_llm_text_assertion: false;
+  response_smoke_exactReason: string | null;
+  prompt_pipeline_observations: Record<RoleFlowName, PromptPipelineObservation>;
   flows: Record<RoleFlowName, RoleFlowStatus>;
   mutations_created: 0;
   approval_required_observed: boolean;
@@ -71,6 +85,8 @@ const flowFilesByRole: Record<RoleFlowName, string> = {
 const flowFiles = Object.values(flowFilesByRole).map((filename) => path.join(flowDir, filename));
 const outputDir = path.join(projectRoot, "artifacts", "maestro-ai-role-screen-knowledge-closeout");
 const reportFile = path.join(outputDir, "report.xml");
+const responseSmokeFlowDir = path.join(outputDir, "response-smoke-flows");
+const responseSmokeReportFile = path.join(outputDir, "response-smoke-report.xml");
 const emulatorArtifactFile = path.join(
   projectRoot,
   "artifacts",
@@ -155,6 +171,16 @@ function allPassedFlows(): Record<RoleFlowName, RoleFlowStatus> {
   };
 }
 
+function emptyPromptPipelineObservations(): Record<RoleFlowName, PromptPipelineObservation> {
+  return {
+    director: null,
+    foreman: null,
+    buyer: null,
+    accountant: null,
+    contractor: null,
+  };
+}
+
 function buildMaestroPrefixedRoleEnv(
   env: Record<ExplicitAiRoleSecretKey, string>,
 ): Record<string, string> {
@@ -225,6 +251,13 @@ function buildBlockedArtifact(
     emulator_boot_completed: bootstrap?.bootCompleted ?? false,
     anrDialogObserved: false,
     anrDialogHandledByWait: false,
+    release_gate_status: "BLOCKED",
+    prompt_pipeline_status: "BLOCKED",
+    response_smoke_status: null,
+    response_smoke_blocking_release: false,
+    response_smoke_exact_llm_text_assertion: false,
+    response_smoke_exactReason: null,
+    prompt_pipeline_observations: emptyPromptPipelineObservations(),
     flows: allBlockedFlows(),
     mutations_created: 0,
     approval_required_observed: false,
@@ -288,6 +321,96 @@ function ensureKnowledgeRuntimeSurfaceExists(): void {
   if (!promptSource.includes("buildAiKnowledgePromptBlock") || !scopeSource.includes("buildAiKnowledgePromptBlock")) {
     throw new Error("AI knowledge resolver is not exposed through assistant prompt/context runtime.");
   }
+}
+
+function buildResponseSmokeFlowSource(releaseGateFlowSource: string): string {
+  if (!releaseGateFlowSource.includes('id: "ai.assistant.send"')) {
+    throw new Error("AI role-screen release gate flow must send a prompt before response canary.");
+  }
+
+  const responseSmokeSteps = [
+    "- scrollUntilVisible:",
+    "    element:",
+    '      id: "ai.assistant.response"',
+    "    direction: DOWN",
+    "    timeout: 90000",
+    "    visibilityPercentage: 20",
+    "    centerElement: true",
+    "- assertVisible:",
+    '    id: "ai.assistant.response"',
+    "- stopApp",
+  ].join("\n");
+
+  const withoutStop = releaseGateFlowSource.replace(/\r?\n- stopApp\s*$/, "");
+
+  return `${withoutStop.trimEnd()}\n${responseSmokeSteps}\n`;
+}
+
+function createResponseSmokeFlowFiles(): string[] {
+  fs.rmSync(responseSmokeFlowDir, { recursive: true, force: true });
+  fs.mkdirSync(responseSmokeFlowDir, { recursive: true });
+
+  return Object.values(flowFilesByRole).map((filename) => {
+    const sourcePath = path.join(flowDir, filename);
+    const smokePath = path.join(responseSmokeFlowDir, filename);
+    const releaseGateFlowSource = fs.readFileSync(sourcePath, "utf8");
+    fs.writeFileSync(smokePath, buildResponseSmokeFlowSource(releaseGateFlowSource));
+    return smokePath;
+  });
+}
+
+function runMaestroFlows(params: {
+  deviceId: string;
+  flowPaths: readonly string[];
+  reportPath: string;
+  debugOutputDir: string;
+  maestroRoleEnv: Record<string, string>;
+  secretValues: readonly string[];
+}): void {
+  runCommand(
+    maestroBinary,
+    [
+      "test",
+      "--device",
+      params.deviceId,
+      "--platform",
+      "android",
+      "--format",
+      "junit",
+      "--output",
+      params.reportPath,
+      "--debug-output",
+      params.debugOutputDir,
+      "--flatten-debug-output",
+      "--no-ansi",
+      ...params.flowPaths,
+    ],
+    true,
+    params.maestroRoleEnv,
+    params.secretValues,
+  );
+}
+
+function dumpAndroidHierarchy(deviceId: string): string {
+  const dumpPath = "/sdcard/rik_ai_role_screen_window.xml";
+  adb(deviceId, ["shell", "uiautomator", "dump", dumpPath], true);
+  return adb(deviceId, ["exec-out", "cat", dumpPath], true);
+}
+
+function observePromptPipeline(deviceId: string): PromptPipelineObservation {
+  const hierarchy = dumpAndroidHierarchy(deviceId);
+  if (
+    hierarchy.includes('resource-id="ai.assistant.loading"') ||
+    hierarchy.includes('content-desc="AI assistant loading"')
+  ) {
+    return "loading";
+  }
+
+  if (hierarchy.includes('resource-id="ai.assistant.response"')) {
+    return "response";
+  }
+
+  return null;
 }
 
 export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKnowledgeArtifact> {
@@ -355,52 +478,76 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
   fs.mkdirSync(outputDir, { recursive: true });
   adb(bootstrap.deviceId, ["shell", "am", "force-stop", appId], true);
 
-  const debugOutputDir = path.join(
-    os.tmpdir(),
-    `rik-ai-role-screen-maestro-${process.pid}-${Date.now()}`,
-  );
+  const promptPipelineObservations = emptyPromptPipelineObservations();
+  for (const [role, filename] of Object.entries(flowFilesByRole) as [RoleFlowName, string][]) {
+    const debugOutputDir = path.join(
+      os.tmpdir(),
+      `rik-ai-role-screen-maestro-${role}-${process.pid}-${Date.now()}`,
+    );
 
-  try {
-    runCommand(
-      maestroBinary,
-      [
-        "test",
-        "--device",
-        bootstrap.deviceId,
-        "--platform",
-        "android",
-        "--format",
-        "junit",
-        "--output",
-        reportFile,
-        "--debug-output",
+    try {
+      runMaestroFlows({
+        deviceId: bootstrap.deviceId,
+        flowPaths: [path.join(flowDir, filename)],
+        reportPath: role === "director" ? reportFile : path.join(outputDir, `${role}-report.xml`),
         debugOutputDir,
-        "--flatten-debug-output",
-        "--no-ansi",
-        ...flowFiles,
-      ],
-      true,
+        maestroRoleEnv,
+        secretValues,
+      });
+
+      const promptPipelineObservation = observePromptPipeline(bootstrap.deviceId);
+      if (!promptPipelineObservation) {
+        throw new Error(
+          `AI prompt pipeline proof missing for ${role}: expected ai.assistant.loading or ai.assistant.response in Android hierarchy after send.`,
+        );
+      }
+      promptPipelineObservations[role] = promptPipelineObservation;
+    } catch (error) {
+      const errorMessage = redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues);
+      const status = classifyMaestroFailure(errorMessage);
+      const artifact = buildBlockedArtifact(
+        status,
+        bootstrap,
+        errorMessage,
+        roleAuthResolution.source,
+        roleAuthResolution.allRolesResolved,
+      );
+      writeEmulatorArtifact(artifact);
+      return artifact;
+    } finally {
+      fs.rmSync(debugOutputDir, { recursive: true, force: true });
+      adb(bootstrap.deviceId, ["shell", "am", "force-stop", appId], true);
+    }
+  }
+
+  let responseSmokeStatus: AiRoleScreenResponseSmokeStatus = "PASS";
+  let responseSmokeExactReason: string | null = null;
+  const responseSmokeDebugOutputDir = path.join(
+    os.tmpdir(),
+    `rik-ai-role-screen-response-smoke-${process.pid}-${Date.now()}`,
+  );
+  try {
+    const responseSmokeFlowFiles = createResponseSmokeFlowFiles();
+    runMaestroFlows({
+      deviceId: bootstrap.deviceId,
+      flowPaths: responseSmokeFlowFiles,
+      reportPath: responseSmokeReportFile,
+      debugOutputDir: responseSmokeDebugOutputDir,
       maestroRoleEnv,
       secretValues,
-    );
+    });
   } catch (error) {
-    const errorMessage = redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues);
-    const status = classifyMaestroFailure(errorMessage);
-    const artifact = buildBlockedArtifact(
-      status,
-      bootstrap,
-      errorMessage,
-      roleAuthResolution.source,
-      roleAuthResolution.allRolesResolved,
+    responseSmokeStatus = "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY";
+    responseSmokeExactReason = redactE2eSecrets(
+      error instanceof Error ? error.message : String(error),
+      secretValues,
     );
-    writeEmulatorArtifact(artifact);
-    return artifact;
   } finally {
-    fs.rmSync(debugOutputDir, { recursive: true, force: true });
+    fs.rmSync(responseSmokeDebugOutputDir, { recursive: true, force: true });
   }
 
   const artifact: AiRoleScreenKnowledgeArtifact = {
-    final_status: "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT",
+    final_status: "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
     role_auth_source: roleAuthResolution.source,
     all_role_credentials_resolved: true,
     service_role_discovery_used_for_green: false,
@@ -422,6 +569,13 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     emulator_boot_completed: bootstrap.bootCompleted,
     anrDialogObserved: false,
     anrDialogHandledByWait: false,
+    release_gate_status: "PASS",
+    prompt_pipeline_status: "PASS",
+    response_smoke_status: responseSmokeStatus,
+    response_smoke_blocking_release: false,
+    response_smoke_exact_llm_text_assertion: false,
+    response_smoke_exactReason: responseSmokeExactReason,
+    prompt_pipeline_observations: promptPipelineObservations,
     flows: allPassedFlows(),
     mutations_created: 0,
     approval_required_observed: true,
@@ -437,7 +591,7 @@ if (require.main === module) {
   void runAiRoleScreenKnowledgeMaestro()
     .then((artifact) => {
       console.info(JSON.stringify(artifact, null, 2));
-      if (artifact.final_status !== "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT") {
+      if (artifact.final_status !== "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE") {
         process.exitCode = 1;
       }
     })

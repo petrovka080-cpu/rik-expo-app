@@ -1,0 +1,47 @@
+{
+  "wave": "S_AI_E2E_04E_RESPONSE_SMOKE_POLICY_AND_LOADING_CONTRACT",
+  "source_files_changed": [
+    "src/features/ai/AIAssistantScreen.tsx",
+    "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+    "scripts/architecture_anti_regression_suite.ts"
+  ],
+  "flow_files_changed": [
+    "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml"
+  ],
+  "tests_added": [
+    "tests/e2e/aiAssistantLoadingState.contract.test.ts",
+    "tests/e2e/aiRoleScreenResponseSmokePolicy.contract.test.ts",
+    "tests/architecture/aiResponseSmokeNonBlockingContract.contract.test.ts"
+  ],
+  "stable_test_ids": [
+    "ai.assistant.loading",
+    "ai.assistant.response",
+    "ai.knowledge.preview",
+    "ai.knowledge.approval-boundary"
+  ],
+  "runtime": {
+    "android_rebuild_required": true,
+    "android_rebuilt_for_source_change": true,
+    "android_eas_build_id": "36b0c7dd-b7c1-4cea-a1b8-361e4d2881f1",
+    "android_runtime_smoke_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+    "ai_role_screen_runner_status": "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
+    "response_smoke_non_blocking": true,
+    "response_smoke_status": "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY"
+  },
+  "forbidden_paths_used": {
+    "auth_admin": false,
+    "list_users": false,
+    "service_role": false,
+    "db_seed": false,
+    "db_writes": false,
+    "migrations": false,
+    "model_provider_change": false,
+    "ota": false,
+    "ios_build": false,
+    "android_play_submit": false
+  }
+}

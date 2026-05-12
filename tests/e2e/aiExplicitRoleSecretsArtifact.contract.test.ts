@@ -38,11 +38,22 @@ describe("AI explicit role secrets E2E artifact", () => {
       expect(typeof artifact.flows?.[role]).toBe("string");
     }
 
-    if (artifact.final_status === "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT") {
+    if (
+      artifact.final_status === "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT" ||
+      artifact.final_status === "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE"
+    ) {
       expect(artifact.role_auth_source).toBe("explicit_env");
       expect(artifact.all_role_credentials_resolved).toBe(true);
       for (const role of REQUIRED_ROLES) {
         expect(artifact.flows?.[role]).toBe("PASS");
+      }
+      if (artifact.final_status === "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE") {
+        expect(artifact.release_gate_status).toBe("PASS");
+        expect(artifact.prompt_pipeline_status).toBe("PASS");
+        expect(artifact.response_smoke_blocking_release).toBe(false);
+        expect(["PASS", "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY"]).toContain(
+          artifact.response_smoke_status,
+        );
       }
       expect(artifact.mutations_created).toBe(0);
       expect(artifact.approval_required_observed).toBe(true);

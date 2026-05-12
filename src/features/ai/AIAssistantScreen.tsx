@@ -460,7 +460,7 @@ export default function AIAssistantScreen() {
             );
           })}
           {loading ? (
-            <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]}>
+            <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]} testID="ai.assistant.loading" accessibilityLabel="AI assistant loading">
               <ActivityIndicator size="small" color="#2563EB" />
               <Text style={styles.loadingInlineText}>Думаю над ответом...</Text>
             </View>

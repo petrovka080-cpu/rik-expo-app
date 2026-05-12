@@ -1,0 +1,34 @@
+{
+  "final_status": "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
+  "previous_blocker": "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
+  "release_gate": {
+    "deterministic_knowledge_preview_passed": true,
+    "all_five_role_flows_reached_ai_screen": true,
+    "all_five_role_flows_observed_loading": false,
+    "all_five_role_flows_observed_loading_or_response": true,
+    "prompt_pipeline_observations": {
+      "director": "response",
+      "foreman": "response",
+      "buyer": "response",
+      "accountant": "response",
+      "contractor": "response"
+    },
+    "mutations_created": 0,
+    "role_leakage_observed": false,
+    "approval_boundary_observed": true
+  },
+  "response_smoke": {
+    "status": "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY",
+    "blocking_release": false,
+    "exact_llm_text_assertion": false
+  },
+  "safety": {
+    "fake_ai_answer_added": false,
+    "hardcoded_ai_response_added": false,
+    "auth_admin_used": false,
+    "list_users_used": false,
+    "service_role_used": false,
+    "credentials_in_cli_args": false,
+    "credentials_printed": false
+  }
+}

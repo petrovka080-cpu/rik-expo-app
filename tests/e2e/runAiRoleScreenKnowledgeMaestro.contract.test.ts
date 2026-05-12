@@ -13,7 +13,8 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("ensureAppInstalledAndLaunchable");
     expect(source).toContain("maestroBinary");
     expect(source).toContain("--device");
-    expect(source).toContain("...flowFiles");
+    expect(source).toContain("flowPaths: [path.join(flowDir, filename)]");
+    expect(source).toContain("...params.flowPaths");
     expect(source).toContain("classifyMaestroFailure");
   });
 
@@ -58,15 +59,31 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("mutations_created: 0");
     expect(source).toContain("approval_required_observed: true");
     expect(source).toContain("role_leakage_observed: false");
-    expect(source).toContain("GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT");
+    expect(source).toContain("GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE");
+    expect(source).toContain('release_gate_status: "PASS"');
+    expect(source).toContain('prompt_pipeline_status: "PASS"');
+    expect(source).toContain("prompt_pipeline_observations");
+    expect(source).toContain("response_smoke_status");
+    expect(source).toContain("response_smoke_blocking_release: false");
   });
 
   it("classifies role knowledge assertion failures without mislabeling them as auth failures", () => {
     expect(source).toContain("BLOCKED_AI_KNOWLEDGE_PREVIEW_NOT_ACCESSIBLE_IN_ANDROID_HIERARCHY");
     expect(source).toContain("BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT");
+    expect(source).toContain("BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY");
     expect(source).toContain("BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED");
     expect(source).toContain("ai.knowledge.");
     expect(source).toContain("ai.assistant.response");
     expect(source).toContain("Assertion is false:");
+  });
+
+  it("runs response smoke as a non-blocking canary after release gate flows", () => {
+    expect(source).toContain("observePromptPipeline");
+    expect(source).toContain("AI prompt pipeline proof missing");
+    expect(source).toContain("createResponseSmokeFlowFiles");
+    expect(source).toContain("buildResponseSmokeFlowSource");
+    expect(source).toContain("responseSmokeReportFile");
+    expect(source).toContain("responseSmokeStatus = \"BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY\"");
+    expect(source).toContain("artifact.final_status !== \"GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE\"");
   });
 });
