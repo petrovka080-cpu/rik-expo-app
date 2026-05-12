@@ -24,6 +24,7 @@ describe("AI assistant stable e2e test IDs", () => {
     expect(assistantSource).toContain('testID="ai.assistant.input"');
     expect(assistantSource).toContain('testID="ai.assistant.send"');
     expect(assistantSource).toContain('"ai.assistant.response"');
+    expect(assistantSource).toContain('"ai.assistant.response.history"');
   });
 
   it("keeps the real assistant client path and does not add fake AI output", () => {
@@ -44,6 +45,13 @@ describe("AI assistant stable e2e test IDs", () => {
     );
     expect(assistantSource).toContain('testID="ai.assistant.input"');
     expect(assistantSource).toContain('testID="ai.assistant.send"');
+  });
+
+  it("targets the generated assistant reply instead of the initial greeting", () => {
+    expect(assistantSource).toContain("hasPriorUserPrompt");
+    expect(assistantSource).toContain("isLatestAssistantReply");
+    expect(assistantSource).toContain('index === messages.length - 1');
+    expect(assistantSource).toContain('testID={responseTestId}');
   });
 
   it("targets stable auth and assistant IDs from every role-screen flow", () => {

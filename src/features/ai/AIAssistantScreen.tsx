@@ -420,25 +420,38 @@ export default function AIAssistantScreen() {
         </ScrollView>
 
         <ScrollView style={styles.messages} contentContainerStyle={styles.messagesContent}>
-          {messages.map((message) => (
-            <View
-              key={message.id}
-              testID={message.role === "assistant" ? "ai.assistant.response" : undefined}
-              style={[
-                styles.messageBubble,
-                message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
-              ]}
-            >
-              <Text
+          {messages.map((message, index) => {
+            const hasPriorUserPrompt = messages
+              .slice(0, index)
+              .some((historyMessage) => historyMessage.role === "user");
+            const isLatestAssistantReply =
+              message.role === "assistant" && hasPriorUserPrompt && index === messages.length - 1;
+            const responseTestId = isLatestAssistantReply
+              ? "ai.assistant.response"
+              : message.role === "assistant"
+                ? "ai.assistant.response.history"
+                : undefined;
+
+            return (
+              <View
+                key={message.id}
+                testID={responseTestId}
                 style={[
-                  styles.messageText,
-                  message.role === "assistant" ? styles.assistantText : styles.userText,
+                  styles.messageBubble,
+                  message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
                 ]}
               >
-                {message.content}
-              </Text>
-            </View>
-          ))}
+                <Text
+                  style={[
+                    styles.messageText,
+                    message.role === "assistant" ? styles.assistantText : styles.userText,
+                  ]}
+                >
+                  {message.content}
+                </Text>
+              </View>
+            );
+          })}
           {loading ? (
             <View style={[styles.messageBubble, styles.assistantBubble, styles.loadingBubble]}>
               <ActivityIndicator size="small" color="#2563EB" />

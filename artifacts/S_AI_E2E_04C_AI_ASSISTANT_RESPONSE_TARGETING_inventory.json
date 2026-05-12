@@ -1,0 +1,23 @@
+{
+  "final_status": "GREEN_AI_ASSISTANT_RESPONSE_TARGETING_READY_FOR_ANDROID_REBUILD",
+  "changed_files": [
+    "src/features/ai/AIAssistantScreen.tsx",
+    "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts",
+    "tests/e2e/runAiRoleScreenKnowledgeMaestro.contract.test.ts",
+    "tests/e2e/aiExplicitRoleSecretsArtifact.contract.test.ts"
+  ],
+  "runtime_surfaces": [
+    "ai.assistant.response",
+    "ai.assistant.response.history"
+  ],
+  "maestro_blocker_before_fix": "AI_APP_KNOWLEDGE_BLOCK_ASSERTION_RACE",
+  "next_runtime_gate": "npx tsx scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+  "artifact_redaction": {
+    "credentials_in_artifacts": false,
+    "raw_prompt_payload_stored": false,
+    "raw_provider_payload_stored": false,
+    "raw_db_rows_stored": false
+  }
+}

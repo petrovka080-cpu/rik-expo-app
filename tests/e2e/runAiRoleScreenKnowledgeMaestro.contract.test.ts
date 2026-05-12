@@ -14,6 +14,7 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("maestroBinary");
     expect(source).toContain("--device");
     expect(source).toContain("...flowFiles");
+    expect(source).toContain("classifyMaestroFailure");
   });
 
   it("uses the already installed Android package before attempting any APK reinstall", () => {
@@ -58,5 +59,11 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("approval_required_observed: true");
     expect(source).toContain("role_leakage_observed: false");
     expect(source).toContain("GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT");
+  });
+
+  it("classifies role knowledge assertion failures without mislabeling them as auth failures", () => {
+    expect(source).toContain("BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED");
+    expect(source).toContain("AI APP KNOWLEDGE BLOCK");
+    expect(source).toContain("Assertion is false:");
   });
 });

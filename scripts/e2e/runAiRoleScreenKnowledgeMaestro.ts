@@ -19,6 +19,7 @@ export type AiRoleScreenKnowledgeStatus =
   | "BLOCKED_NO_E2E_ROLE_SECRETS"
   | "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
   | "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
+  | "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED"
   | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
 type RoleFlowName = "director" | "foreman" | "buyer" | "accountant" | "contractor";
@@ -158,6 +159,25 @@ function buildMaestroPrefixedRoleEnv(
   return Object.fromEntries(
     Object.entries(env).map(([key, value]) => [`MAESTRO_${key}`, value]),
   );
+}
+
+function classifyMaestroFailure(errorMessage: string): AiRoleScreenKnowledgeStatus {
+  if (errorMessage.includes("auth.login.")) {
+    return "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS";
+  }
+
+  if (errorMessage.includes("ai.assistant.")) {
+    return "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE";
+  }
+
+  if (
+    errorMessage.includes("AI APP KNOWLEDGE BLOCK") ||
+    errorMessage.includes("Assertion is false:")
+  ) {
+    return "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED";
+  }
+
+  return "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 }
 
 function writeEmulatorArtifact(artifact: AiRoleScreenKnowledgeArtifact): void {
@@ -355,11 +375,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     );
   } catch (error) {
     const errorMessage = redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues);
-    const status = errorMessage.includes("auth.login.")
-      ? "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
-      : errorMessage.includes("ai.assistant.")
-        ? "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
-        : "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
+    const status = classifyMaestroFailure(errorMessage);
     const artifact = buildBlockedArtifact(
       status,
       bootstrap,
