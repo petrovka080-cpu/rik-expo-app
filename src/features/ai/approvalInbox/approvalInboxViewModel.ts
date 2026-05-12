@@ -104,21 +104,54 @@ export function buildApprovalInboxViewModel(
 export function buildApprovalPendingCommandCenterSummary(
   response: ApprovalInboxResponse,
 ): {
-  type: "approval_pending" | "approval_empty";
+  type:
+    | "approval_pending"
+    | "approved_ready_to_execute"
+    | "executed"
+    | "blocked_executor_not_ready"
+    | "approval_empty";
   count: number;
   pendingCount: number;
+  approvedReadyToExecuteCount: number;
+  executedCount: number;
+  blockedExecutorNotReadyCount: number;
   openAction: "open_approval_inbox";
   directApproveAllowed: false;
+  directExecuteAllowed: false;
   reviewPanelRequired: true;
   fakeLocalApproval: false;
   mutationCount: 0;
 } {
+  const approvedReadyToExecuteCount = response.actions.filter(
+    (action) => action.executionStatus === "ready_to_execute",
+  ).length;
+  const executedCount = response.actions.filter(
+    (action) => action.executionStatus === "executed",
+  ).length;
+  const blockedExecutorNotReadyCount = response.actions.filter(
+    (action) => action.executionStatus === "blocked_executor_not_ready",
+  ).length;
+  const type =
+    response.counts.pending > 0
+      ? "approval_pending"
+      : approvedReadyToExecuteCount > 0
+        ? "approved_ready_to_execute"
+        : executedCount > 0
+          ? "executed"
+          : blockedExecutorNotReadyCount > 0
+            ? "blocked_executor_not_ready"
+            : "approval_empty";
+
   return {
-    type: response.counts.pending > 0 ? "approval_pending" : "approval_empty",
+    type,
     count: response.counts.pending,
     pendingCount: response.counts.pending,
+    approvedReadyToExecuteCount,
+    executedCount,
+    blockedExecutorNotReadyCount,
     openAction: "open_approval_inbox",
     directApproveAllowed: false,
+    directExecuteAllowed: false,
     reviewPanelRequired: true,
     fakeLocalApproval: false,
     mutationCount: 0,

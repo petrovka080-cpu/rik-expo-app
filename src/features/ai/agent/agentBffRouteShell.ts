@@ -81,6 +81,7 @@ import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
+  getActionExecutionStatusBff,
   getActionLedgerStatusBff,
   rejectActionLedgerBff,
   submitActionForApprovalBff,
@@ -113,6 +114,7 @@ export {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
+  getActionExecutionStatusBff,
   getActionLedgerStatusBff,
   rejectActionLedgerBff,
   submitActionForApprovalBff,
@@ -137,6 +139,7 @@ export type AgentBffRouteOperation =
   | "agent.action.approve"
   | "agent.action.reject"
   | "agent.action.execute_approved"
+  | "agent.action.execution_status"
   | "agent.approval_inbox.read"
   | "agent.approval_inbox.detail"
   | "agent.approval_inbox.approve"
@@ -1020,6 +1023,19 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     operation: "agent.action.execute_approved",
     method: "POST",
     endpoint: "POST /agent/action/:actionId/execute-approved",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentActionLedgerEnvelope",
+  },
+  {
+    operation: "agent.action.execution_status",
+    method: "GET",
+    endpoint: "GET /agent/action/:actionId/execution-status",
     authRequired: true,
     roleFiltered: true,
     mutates: false,

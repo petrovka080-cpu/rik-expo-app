@@ -1,0 +1,46 @@
+{
+  "wave": "S_AI_MAGIC_08_APPROVED_PROCUREMENT_REQUEST_EXECUTOR",
+  "generated_at": "2026-05-13T00:00:00.000+06:00",
+  "preflight": {
+    "head_matches_origin_main_at_start": true,
+    "ahead_behind_at_start": "0 0",
+    "release_verify_at_start": "PASS",
+    "android_emulator_visible_at_start": true
+  },
+  "existing_request_mutation_boundary": false,
+  "existing_bff_route": true,
+  "existing_idempotency_support": true,
+  "existing_audit_support": true,
+  "direct_supabase_mutation_required": false,
+  "safe_existing_boundaries_found": [
+    "src/shared/scale/bffMutationHandlers.ts route-scoped shared mutation framework",
+    "src/features/ai/actionLedger/aiActionLedgerBff.ts approval action routes",
+    "src/features/ai/approvalInbox/approvalInboxRuntime.ts approval inbox routes"
+  ],
+  "unsafe_or_insufficient_boundaries": [
+    "src/lib/api/requests.ts uses existing API/Supabase transports, not a route-scoped AI approved executor BFF boundary",
+    "src/lib/api/requestDraftSync.service.ts uses existing draft sync transports, not a route-scoped AI approved executor BFF boundary",
+    "src/screens/buyer/* mutation files are UI/domain flows and are not an AI approved executor BFF boundary"
+  ],
+  "created_contracts": [
+    "src/features/ai/executors/approvedActionExecutorTypes.ts",
+    "src/features/ai/executors/approvedActionExecutorPolicy.ts",
+    "src/features/ai/executors/procurementRequestExecutorTypes.ts",
+    "src/features/ai/executors/executeApprovedActionGateway.ts",
+    "src/features/ai/executors/executeApprovedActionAudit.ts",
+    "src/features/ai/executors/executeApprovedActionRedaction.ts",
+    "src/features/ai/executors/procurementRequestExecutor.ts",
+    "src/features/ai/executors/procurementRequestExecutorRedaction.ts",
+    "src/features/ai/executors/procurementRequestExecutorEvidence.ts"
+  ],
+  "missing_parts": [
+    "route_scoped_bff_procurement_request_create_or_submit_boundary",
+    "approved_procurement_action_runtime_fixture"
+  ],
+  "exact_runtime_blocker": "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
+  "android_apk_build": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "android_apk_build_reason": "EAS free-plan Android build quota exhausted until 2026-06-01",
+  "fake_execution": false,
+  "fake_action_status": false,
+  "credentials_printed": false
+}

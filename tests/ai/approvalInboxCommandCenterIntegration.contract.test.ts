@@ -25,6 +25,7 @@ describe("Approval Inbox Command Center integration contract", () => {
           expiresAt: "2035-01-01T00:00:00.000Z",
           allowedReviewActions: ["view", "ask_why", "edit_preview", "approve", "reject"],
           executionAvailable: false,
+          executionStatus: "not_ready",
           requiresApproval: true,
           rawDbRowsExposed: false,
           rawPromptExposed: false,

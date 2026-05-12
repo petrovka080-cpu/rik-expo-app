@@ -300,6 +300,17 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcTransport.ts"),
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcBackend.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic08ApprovedProcurementExecutorFiles = [
+      path.join(SRC, "features", "ai", "executors", "approvedActionExecutorTypes.ts"),
+      path.join(SRC, "features", "ai", "executors", "approvedActionExecutorPolicy.ts"),
+      path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorTypes.ts"),
+      path.join(SRC, "features", "ai", "executors", "executeApprovedActionGateway.ts"),
+      path.join(SRC, "features", "ai", "executors", "executeApprovedActionAudit.ts"),
+      path.join(SRC, "features", "ai", "executors", "executeApprovedActionRedaction.ts"),
+      path.join(SRC, "features", "ai", "executors", "procurementRequestExecutor.ts"),
+      path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorRedaction.ts"),
+      path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorEvidence.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1051,6 +1062,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(3);
+    expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(9);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1208,7 +1220,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic05CrossScreenRuntimeMatrixFiles -
         sAiMagic06PersistentActionLedgerFiles -
         sAiMagic07ApprovalInboxExecutionGateFiles -
-        sAiMagic08ApprovalLedgerBackendMountFiles,
+        sAiMagic08ApprovalLedgerBackendMountFiles -
+        sAiMagic08ApprovedProcurementExecutorFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

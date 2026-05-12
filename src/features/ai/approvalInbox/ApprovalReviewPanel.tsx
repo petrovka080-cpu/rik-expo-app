@@ -8,12 +8,14 @@ export type ApprovalReviewPanelProps = {
   action: ApprovalInboxActionCard;
   onConfirmApprove?: (action: ApprovalInboxActionCard) => void;
   onConfirmReject?: (action: ApprovalInboxActionCard) => void;
+  onExecuteApproved?: (action: ApprovalInboxActionCard) => void;
 };
 
 export function ApprovalReviewPanel(props: ApprovalReviewPanelProps) {
-  const { action, onConfirmApprove, onConfirmReject } = props;
+  const { action, onConfirmApprove, onConfirmReject, onExecuteApproved } = props;
   const canApprove = action.allowedReviewActions.includes("approve");
   const canReject = action.allowedReviewActions.includes("reject");
+  const canExecute = action.allowedReviewActions.includes("execute_approved") && action.executionAvailable;
 
   return (
     <View testID="ai.approval.review.panel" style={styles.panel}>
@@ -32,6 +34,25 @@ export function ApprovalReviewPanel(props: ApprovalReviewPanelProps) {
             {ref}
           </Text>
         ))}
+      </View>
+
+      <View testID="ai.approval.execution-status" style={styles.executionBox}>
+        <Text style={styles.executionText}>{action.executionStatus}</Text>
+        {action.executionStatus === "blocked_executor_not_ready" ? (
+          <Text testID="ai.approval.execution-blocked" style={styles.executionMuted}>
+            executor_not_ready
+          </Text>
+        ) : null}
+        {action.executionStatus === "executed" ? (
+          <Text testID="ai.approval.executed" style={styles.executionText}>
+            executed
+          </Text>
+        ) : null}
+        {action.createdEntityRef ? (
+          <Text testID="ai.approval.created-entity-ref" style={styles.executionMuted}>
+            {action.createdEntityRef.entityType}:{action.createdEntityRef.entityIdHash}
+          </Text>
+        ) : null}
       </View>
 
       <View style={styles.buttonRow}>
@@ -61,6 +82,19 @@ export function ApprovalReviewPanel(props: ApprovalReviewPanelProps) {
           </Text>
         </Pressable>
       </View>
+
+      <Pressable
+        testID="ai.approval.execute-approved"
+        accessibilityRole="button"
+        disabled={!canExecute}
+        onPress={() => onExecuteApproved?.(action)}
+        style={[styles.executeButton, !canExecute ? styles.disabledButton : null]}
+      >
+        <Ionicons name="play-outline" size={16} color={canExecute ? "#FFFFFF" : "#94A3B8"} />
+        <Text style={[styles.executeText, !canExecute ? styles.disabledText : null]}>
+          Execute approved
+        </Text>
+      </Pressable>
     </View>
   );
 }
@@ -105,6 +139,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
+  executionBox: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CCFBF1",
+    backgroundColor: "#FFFFFF",
+    padding: 10,
+    gap: 4,
+  },
+  executionText: {
+    color: "#0F766E",
+    fontSize: 12,
+    fontWeight: "900",
+  },
+  executionMuted: {
+    color: "#64748B",
+    fontSize: 12,
+    fontWeight: "800",
+  },
   approveButton: {
     flex: 1,
     height: 36,
@@ -127,6 +179,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 6,
   },
+  executeButton: {
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: "#0F766E",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
   approveText: {
     color: "#FFFFFF",
     fontSize: 13,
@@ -134,6 +195,11 @@ const styles = StyleSheet.create({
   },
   rejectText: {
     color: "#991B1B",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  executeText: {
+    color: "#FFFFFF",
     fontSize: 13,
     fontWeight: "900",
   },

@@ -10,6 +10,7 @@ import {
   evaluateAiCrossScreenRuntimeMatrixGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
   evaluateAiApprovalInboxRuntimeGuardrail,
+  evaluateAiApprovedProcurementExecutorGuardrail,
   evaluateAiPersistentActionLedgerGuardrail,
   evaluateAiProcurementCopilotRuntimeChainGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
@@ -2031,6 +2032,130 @@ describe("architecture anti-regression suite", () => {
         "approval_inbox_fake_local_approval_detected",
         "approval_inbox_review_panel_not_required",
         "approval_inbox_direct_mutation_detected",
+      ]),
+    );
+  });
+
+  it("ratchets approved procurement executor to approved-only bounded execution", () => {
+    const passing = evaluateAiApprovedProcurementExecutorGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("executeApprovedActionGateway")) {
+          return [
+            "executeApprovedActionGateway",
+            "backend.updateStatus",
+            '"executed"',
+            'record.status === "executed"',
+            "already_executed",
+            "idempotency_reused",
+            "duplicateExecutionCreatesDuplicate: false",
+            "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvedActionExecutorPolicy")) {
+          return [
+            'record.status !== "approved"',
+            "AI action status",
+            "canTransitionAiActionStatus",
+            "idempotencyKey",
+            "Execution idempotency key does not match",
+            "evidenceRefs.length === 0",
+            "AI action approval is expired",
+            "FORBIDDEN_APPROVED_EXECUTOR_ACTION_TYPES",
+            "create_order",
+            "direct_supabase_query",
+          ].join("\n");
+        }
+        if (relativePath.includes("procurementRequestExecutorTypes")) {
+          return [
+            "ProcurementRequestMutationBoundary",
+            "executeApprovedProcurementRequest",
+            'boundaryId: "existing_bff_procurement_request_mutation_boundary"',
+            "routeScoped: true",
+            "idempotencyRequired: true",
+            "auditRequired: true",
+            "directSupabaseMutation: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("procurementRequestExecutor.ts")) {
+          return [
+            "createProcurementRequestExecutor",
+            "executeApprovedProcurementRequest",
+            "hasProcurementRequestExecutorEvidence",
+            "executor requires evidence",
+            '"draft_request"',
+            '"submit_request"',
+            "directSupabaseMutation: false",
+            "broadMutationRoute: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("executeApprovedActionAudit")) {
+          return "createApprovedActionExecutionAuditEvent\nai.action.execute_requested\nai.action.executed";
+        }
+        if (relativePath.includes("executeApprovedActionRedaction")) {
+          return "FORBIDDEN_KEY_PATTERN\nrawPrompt\nprovider_payload\nAuthorization";
+        }
+        if (relativePath.includes("aiActionLedgerBff")) {
+          return [
+            "POST /agent/action/:actionId/execute-approved",
+            "GET /agent/action/:actionId/execution-status",
+            "auditRequired: true",
+          ].join("\n");
+        }
+        if (relativePath.includes("approvalInboxTypes")) return "executionStatus";
+        if (relativePath.includes("approvalInboxViewModel")) {
+          return "approved_ready_to_execute\nblocked_executor_not_ready\ndirectExecuteAllowed: false";
+        }
+        if (relativePath.includes("ApprovalActionCard") || relativePath.includes("ApprovalReviewPanel")) {
+          return [
+            "ai.approval.execute-approved",
+            "ai.approval.execution-status",
+            "ai.approval.execution-blocked",
+            "ai.approval.executed",
+            "ai.approval.created-entity-ref",
+          ].join("\n");
+        }
+        if (relativePath.includes("agentBffRouteShell")) {
+          return "agent.action.execute_approved\nPOST /agent/action/:actionId/execute-approved";
+        }
+        if (relativePath.includes("runAiApprovedProcurementExecutorMaestro")) {
+          return [
+            "runAiApprovedProcurementExecutorMaestro",
+            "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
+            "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
+            "fake_execution: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("executors")) {
+          return "ApprovedActionExecutionRequest\ncreateProcurementRequestExecutor\nProcurementRequestMutationBoundary";
+        }
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_approved_procurement_executor",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiApprovedProcurementExecutorGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("ApprovalActionCard")) return 'import { supabase } from "@supabase/supabase-js"';
+        if (relativePath.includes("procurementRequestExecutor")) return "create_order\nsupabase.from('requests').insert({})";
+        if (relativePath.includes("executeApprovedActionGateway")) return 'status: "executed"';
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "approved_procurement_executor_files_missing",
+        "approved_procurement_executor_gate_missing",
+        "approved_procurement_executor_idempotency_not_required",
+        "approved_procurement_executor_ui_supabase_import_detected",
       ]),
     );
   });

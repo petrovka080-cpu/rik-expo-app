@@ -6,10 +6,19 @@ import {
 import {
   createAiActionLedgerRepository,
   type AiActionLedgerRepository,
+  type AiActionLedgerPersistentBackend,
 } from "./aiActionLedgerRepository";
 import { createAiActionLedgerRpcBackend } from "./aiActionLedgerRpcBackend";
 import { createAiActionLedgerAuditEvent } from "./aiActionLedgerAudit";
 import { executeApprovedAiAction } from "./executeApprovedAiAction";
+import {
+  executeApprovedActionGateway,
+  getApprovedActionExecutionStatus,
+} from "../executors/executeApprovedActionGateway";
+import type {
+  ApprovedActionDomainExecutor,
+  ApprovedActionExecutionResult,
+} from "../executors/approvedActionExecutorTypes";
 import type {
   AiActionDecisionOutput,
   AiActionLedgerActionType,
@@ -27,6 +36,7 @@ export const AI_ACTION_LEDGER_BFF_CONTRACT = Object.freeze({
   approveEndpoint: "POST /agent/action/:actionId/approve",
   rejectEndpoint: "POST /agent/action/:actionId/reject",
   executeApprovedEndpoint: "POST /agent/action/:actionId/execute-approved",
+  executionStatusEndpoint: "GET /agent/action/:actionId/execution-status",
   authRequired: true,
   roleResolvedServerSide: true,
   organizationScopeResolvedServerSide: true,
@@ -69,6 +79,9 @@ export type ActionLedgerStatusBffRequest = {
   actionId: string;
   organizationId?: string;
   repository?: AiActionLedgerRepository;
+  backend?: AiActionLedgerPersistentBackend | null;
+  procurementExecutor?: ApprovedActionDomainExecutor | null;
+  idempotencyKey?: string;
 };
 
 export type ActionLedgerDecisionBffRequest = ActionLedgerStatusBffRequest & {
@@ -120,11 +133,22 @@ export type ActionLedgerBffDto =
       contractId: "ai_action_ledger_bff_v1";
       documentType: "ai_action_execute_approved";
       endpoint: "POST /agent/action/:actionId/execute-approved";
-      result: ExecuteApprovedAiActionOutput;
+      result: ExecuteApprovedAiActionOutput | ApprovedActionExecutionResult;
       roleScoped: true;
       auditRequired: true;
       finalExecution: false;
       directDomainMutation: false;
+      providerCalled: false;
+      rawDbRowsExposed: false;
+      rawPromptExposed: false;
+    }
+  | {
+      contractId: "ai_action_ledger_bff_v1";
+      documentType: "ai_action_execution_status";
+      endpoint: "GET /agent/action/:actionId/execution-status";
+      result: ApprovedActionExecutionResult;
+      roleScoped: true;
+      readOnly: true;
       providerCalled: false;
       rawDbRowsExposed: false;
       rawPromptExposed: false;
@@ -214,6 +238,21 @@ function repositoryForBff(request: {
     actorRole: request.auth.role,
   });
   return createAiActionLedgerRepository(backend);
+}
+
+function backendForBff(request: {
+  auth: AiActionLedgerBffAuthContext;
+  organizationId?: string;
+  backend?: AiActionLedgerPersistentBackend | null;
+}): AiActionLedgerPersistentBackend | null {
+  if (request.backend !== undefined) return request.backend;
+  return createAiActionLedgerRpcBackend({
+    organizationId: request.organizationId ?? "",
+    organizationIdHash: orgHash(request.auth, request.organizationId),
+    actorUserId: request.auth.userId,
+    actorUserIdHash: userHash(request.auth),
+    actorRole: request.auth.role,
+  });
 }
 
 function orgHash(auth: AiActionLedgerBffAuthContext, organizationId?: string): string {
@@ -363,6 +402,37 @@ export async function executeApprovedActionLedgerBff(
   const actionId = normalizeText(request.actionId);
   if (!actionId) return invalidInput("actionId is required");
 
+  if (request.backend !== undefined) {
+    const result = await executeApprovedActionGateway({
+      backend: request.backend,
+      request: {
+        actionId,
+        idempotencyKey: normalizeText(request.idempotencyKey),
+        requestedByRole: request.auth.role,
+        screenId: "agent.action.execute-approved",
+      },
+      executors: {
+        procurement: request.procurementExecutor ?? null,
+      },
+    });
+    return {
+      ok: true,
+      data: {
+        contractId: AI_ACTION_LEDGER_BFF_CONTRACT.contractId,
+        documentType: "ai_action_execute_approved",
+        endpoint: AI_ACTION_LEDGER_BFF_CONTRACT.executeApprovedEndpoint,
+        result,
+        roleScoped: true,
+        auditRequired: true,
+        finalExecution: false,
+        directDomainMutation: false,
+        providerCalled: false,
+        rawDbRowsExposed: false,
+        rawPromptExposed: false,
+      },
+    };
+  }
+
   const status = await repositoryForBff({ ...request, auth: request.auth }).getStatus(actionId, request.auth.role);
   const record: AiActionLedgerRecord | undefined = status.record;
   const result = record
@@ -411,6 +481,39 @@ export async function executeApprovedActionLedgerBff(
       auditRequired: true,
       finalExecution: false,
       directDomainMutation: false,
+      providerCalled: false,
+      rawDbRowsExposed: false,
+      rawPromptExposed: false,
+    },
+  };
+}
+
+export async function getActionExecutionStatusBff(
+  request: ActionLedgerStatusBffRequest,
+): Promise<ActionLedgerBffEnvelope> {
+  if (!request.auth || !request.auth.userId.trim() || request.auth.role === "unknown") {
+    return authRequired();
+  }
+  const actionId = normalizeText(request.actionId);
+  const idempotencyKey = normalizeText(request.idempotencyKey);
+  if (!actionId) return invalidInput("actionId is required");
+  if (!idempotencyKey) return invalidInput("idempotencyKey is required");
+
+  const result = await getApprovedActionExecutionStatus({
+    backend: backendForBff({ ...request, auth: request.auth }),
+    actionId,
+    idempotencyKey,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AI_ACTION_LEDGER_BFF_CONTRACT.contractId,
+      documentType: "ai_action_execution_status",
+      endpoint: AI_ACTION_LEDGER_BFF_CONTRACT.executionStatusEndpoint,
+      result,
+      roleScoped: true,
+      readOnly: true,
       providerCalled: false,
       rawDbRowsExposed: false,
       rawPromptExposed: false,

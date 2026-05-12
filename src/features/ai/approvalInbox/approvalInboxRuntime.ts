@@ -164,6 +164,14 @@ function buildActionCard(params: {
     expiresAt: record.expiresAt,
     allowedReviewActions: resolveApprovalInboxReviewActions({ role, record }),
     executionAvailable: canExecuteApprovalInboxAction({ role, record }),
+    executionStatus:
+      record.status === "executed"
+        ? "executed"
+        : canExecuteApprovalInboxAction({ role, record })
+          ? "ready_to_execute"
+          : record.status === "approved"
+            ? "blocked_executor_not_ready"
+            : "not_ready",
     requiresApproval: true,
     rawDbRowsExposed: false,
     rawPromptExposed: false,
@@ -429,6 +437,16 @@ export async function previewApprovalInboxEdit(
 export async function executeApprovedApprovalInboxAction(
   request: ApprovalInboxActionRequest,
 ) {
+  if (request.procurementExecutor !== undefined && request.backend !== undefined) {
+    const record = await findScopedRecord(request);
+    return executeApprovedActionLedgerBff({
+      auth: request.auth,
+      actionId: request.actionId,
+      backend: request.backend,
+      procurementExecutor: request.procurementExecutor ?? null,
+      idempotencyKey: record?.idempotencyKey,
+    });
+  }
   return executeApprovedActionLedgerBff({
     auth: request.auth,
     actionId: request.actionId,

@@ -40,6 +40,29 @@ export function ApprovalActionCard(props: ApprovalActionCardProps) {
         <Text style={styles.approvalText}>approval_required</Text>
       </View>
 
+      <View testID="ai.approval.execution-status" style={styles.approvalRow}>
+        <Ionicons name="play-circle-outline" size={14} color="#0F766E" />
+        <Text style={styles.evidenceText}>{action.executionStatus}</Text>
+      </View>
+
+      {action.executionStatus === "blocked_executor_not_ready" ? (
+        <Text testID="ai.approval.execution-blocked" style={styles.summary}>
+          executor_not_ready
+        </Text>
+      ) : null}
+
+      {action.executionStatus === "executed" ? (
+        <Text testID="ai.approval.executed" style={styles.evidenceText}>
+          executed
+        </Text>
+      ) : null}
+
+      {action.createdEntityRef ? (
+        <Text testID="ai.approval.created-entity-ref" style={styles.evidenceText}>
+          {action.createdEntityRef.entityType}:{action.createdEntityRef.entityIdHash}
+        </Text>
+      ) : null}
+
       <View style={styles.actions}>
         <Pressable
           testID="ai.approval.action.view"
@@ -81,6 +104,16 @@ export function ApprovalActionCard(props: ApprovalActionCardProps) {
           style={[styles.iconButton, styles.disabledButton]}
         >
           <Ionicons name="close-outline" size={16} color="#94A3B8" />
+        </Pressable>
+
+        <Pressable
+          testID="ai.approval.execute-approved"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: true }}
+          disabled
+          style={[styles.iconButton, styles.disabledButton]}
+        >
+          <Ionicons name="play-outline" size={16} color="#94A3B8" />
         </Pressable>
       </View>
     </View>

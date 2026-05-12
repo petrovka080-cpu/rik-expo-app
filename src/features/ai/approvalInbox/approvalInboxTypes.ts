@@ -9,6 +9,10 @@ import type {
   ExecuteApprovedAiActionOutput,
 } from "../actionLedger/aiActionLedgerTypes";
 import type { AiActionLedgerPersistentBackend } from "../actionLedger/aiActionLedgerRepository";
+import type {
+  ApprovedActionDomainExecutor,
+  ApprovedActionExecutionResult,
+} from "../executors/approvedActionExecutorTypes";
 
 export type ApprovalInboxStatus = "loaded" | "empty" | "blocked";
 
@@ -22,7 +26,8 @@ export type ApprovalInboxReviewAction =
   | "ask_why"
   | "edit_preview"
   | "approve"
-  | "reject";
+  | "reject"
+  | "execute_approved";
 
 export type ApprovalInboxBlocker =
   | AiActionLedgerBlockedCode
@@ -45,6 +50,11 @@ export type ApprovalInboxActionCard = {
   expiresAt: string;
   allowedReviewActions: ApprovalInboxReviewAction[];
   executionAvailable: boolean;
+  executionStatus: "not_ready" | "ready_to_execute" | "executed" | "blocked_executor_not_ready";
+  createdEntityRef?: {
+    entityType: "request";
+    entityIdHash: string;
+  };
   requiresApproval: true;
   rawDbRowsExposed: false;
   rawPromptExposed: false;
@@ -103,6 +113,7 @@ export type ApprovalInboxListRequest = {
   auth: ApprovalInboxAuthContext | null;
   organizationId?: string;
   backend?: AiActionLedgerPersistentBackend | null;
+  procurementExecutor?: ApprovedActionDomainExecutor | null;
   cursor?: string | null;
   limit?: number;
 };
@@ -169,7 +180,7 @@ export type ApprovalInboxBffDto =
       contractId: "ai_approval_inbox_bff_v1";
       documentType: "ai_approval_inbox_execute_approved";
       endpoint: "POST /agent/approval-inbox/:actionId/execute-approved";
-      result: ExecuteApprovedAiActionOutput;
+      result: ExecuteApprovedAiActionOutput | ApprovedActionExecutionResult;
       roleScoped: true;
       auditRequired: true;
       finalExecution: false;

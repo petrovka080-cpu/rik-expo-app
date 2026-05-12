@@ -539,6 +539,32 @@ export type AiApprovalInboxRuntimeArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiApprovedProcurementExecutorArchitectureSummary = {
+  executorFilesPresent: boolean;
+  centralExecuteGatePresent: boolean;
+  approvedStatusRequired: boolean;
+  idempotencyRequired: boolean;
+  auditRequired: boolean;
+  evidenceRequired: boolean;
+  procurementExecutorReady: boolean;
+  bffMutationBoundaryRequired: boolean;
+  pendingCannotExecute: boolean;
+  rejectedCannotExecute: boolean;
+  expiredCannotExecute: boolean;
+  forbiddenExecutorAbsent: boolean;
+  duplicateExecutionBlocked: boolean;
+  bffRoutesPresent: boolean;
+  approvalInboxExecutionStatusPresent: boolean;
+  commandCenterExecutionStatusPresent: boolean;
+  noDirectSupabaseFromUi: boolean;
+  noUiExecutorImport: boolean;
+  noExecutorModelProviderImport: boolean;
+  noDirectSupabaseMutationInExecutor: boolean;
+  noRawPayloadFields: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -739,6 +765,7 @@ export type ArchitectureAntiRegressionReport = {
   aiCrossScreenRuntimeMatrix: AiCrossScreenRuntimeMatrixArchitectureSummary;
   aiPersistentActionLedger: AiPersistentActionLedgerArchitectureSummary;
   aiApprovalInboxRuntime: AiApprovalInboxRuntimeArchitectureSummary;
+  aiApprovedProcurementExecutor: AiApprovedProcurementExecutorArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -907,6 +934,17 @@ const AI_APPROVAL_INBOX_FILES = [
   "src/features/ai/approvalInbox/ApprovalActionCard.tsx",
   "src/features/ai/approvalInbox/ApprovalReviewPanel.tsx",
 ] as const;
+const AI_APPROVED_PROCUREMENT_EXECUTOR_FILES = [
+  "src/features/ai/executors/approvedActionExecutorTypes.ts",
+  "src/features/ai/executors/approvedActionExecutorPolicy.ts",
+  "src/features/ai/executors/procurementRequestExecutorTypes.ts",
+  "src/features/ai/executors/executeApprovedActionGateway.ts",
+  "src/features/ai/executors/executeApprovedActionAudit.ts",
+  "src/features/ai/executors/executeApprovedActionRedaction.ts",
+  "src/features/ai/executors/procurementRequestExecutor.ts",
+  "src/features/ai/executors/procurementRequestExecutorRedaction.ts",
+  "src/features/ai/executors/procurementRequestExecutorEvidence.ts",
+] as const;
 const AI_ACTION_LEDGER_MIGRATION_PATH =
   "supabase/migrations/20260512120000_ai_action_ledger.sql";
 const AI_ACTION_LEDGER_AUDIT_RLS_MIGRATION_PATH =
@@ -926,6 +964,8 @@ const AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovalActionLedgerMaestro.ts";
 const AI_APPROVAL_INBOX_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovalInboxMaestro.ts";
+const AI_APPROVED_PROCUREMENT_EXECUTOR_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiApprovedProcurementExecutorMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -4089,6 +4129,253 @@ export function evaluateAiApprovalInboxRuntimeGuardrail(params: {
   };
 }
 
+export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiApprovedProcurementExecutorArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const executorSources = AI_APPROVED_PROCUREMENT_EXECUTOR_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const executorSource = executorSources.join("\n");
+  const gatewaySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/executeApprovedActionGateway.ts",
+    }) ?? "";
+  const policySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/approvedActionExecutorPolicy.ts",
+    }) ?? "";
+  const procurementExecutorSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/procurementRequestExecutor.ts",
+    }) ?? "";
+  const procurementTypesSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/procurementRequestExecutorTypes.ts",
+    }) ?? "";
+  const redactionSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/executeApprovedActionRedaction.ts",
+    }) ?? "";
+  const ledgerBffSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+    }) ?? "";
+  const inboxTypesSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxTypes.ts",
+    }) ?? "";
+  const inboxRuntimeSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxRuntime.ts",
+    }) ?? "";
+  const inboxViewModelSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/approvalInboxViewModel.ts",
+    }) ?? "";
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const uiSource = [
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+    }) ?? "",
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalActionCard.tsx",
+    }) ?? "",
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/approvalInbox/ApprovalReviewPanel.tsx",
+    }) ?? "",
+  ].join("\n");
+  const domainExecutorSurface = [
+    gatewaySource,
+    policySource,
+    procurementExecutorSource,
+    procurementTypesSource,
+  ].join("\n");
+  const e2eRunnerSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: AI_APPROVED_PROCUREMENT_EXECUTOR_E2E_RUNNER_PATH,
+    }) ?? "";
+
+  const executorFilesPresent =
+    executorSources.every((source) => source.length > 0) &&
+    executorSource.includes("ApprovedActionExecutionRequest") &&
+    executorSource.includes("createProcurementRequestExecutor") &&
+    executorSource.includes("ProcurementRequestMutationBoundary");
+  const centralExecuteGatePresent =
+    gatewaySource.includes("executeApprovedActionGateway") &&
+    gatewaySource.includes("backend.updateStatus") &&
+    gatewaySource.includes('"executed"') &&
+    gatewaySource.includes("record.status === \"executed\"");
+  const approvedStatusRequired =
+    policySource.includes('record.status !== "approved"') &&
+    policySource.includes("canTransitionAiActionStatus") &&
+    gatewaySource.includes("executeApprovedActionGateway");
+  const idempotencyRequired =
+    policySource.includes("idempotencyKey") &&
+    policySource.includes("Execution idempotency key does not match") &&
+    gatewaySource.includes("idempotency_reused") &&
+    procurementTypesSource.includes("idempotencyRequired: true");
+  const auditRequired =
+    executorSource.includes("createApprovedActionExecutionAuditEvent") &&
+    executorSource.includes("ai.action.execute_requested") &&
+    executorSource.includes("ai.action.executed") &&
+    procurementTypesSource.includes("auditRequired: true") &&
+    ledgerBffSource.includes("auditRequired: true");
+  const evidenceRequired =
+    policySource.includes("evidenceRefs.length === 0") &&
+    procurementExecutorSource.includes("hasProcurementRequestExecutorEvidence") &&
+    procurementExecutorSource.includes("executor requires evidence");
+  const procurementExecutorReady =
+    procurementExecutorSource.includes("createProcurementRequestExecutor") &&
+    procurementExecutorSource.includes("executeApprovedProcurementRequest") &&
+    procurementExecutorSource.includes('"draft_request"') &&
+    procurementExecutorSource.includes('"submit_request"');
+  const bffMutationBoundaryRequired =
+    procurementTypesSource.includes("executeApprovedProcurementRequest") &&
+    procurementTypesSource.includes('boundaryId: "existing_bff_procurement_request_mutation_boundary"') &&
+    procurementTypesSource.includes("routeScoped: true") &&
+    procurementTypesSource.includes("directSupabaseMutation: false") &&
+    gatewaySource.includes("BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND");
+  const pendingCannotExecute =
+    policySource.includes('record.status !== "approved"') &&
+    policySource.includes("AI action status") &&
+    !/pending[\s\S]{0,80}status:\s*["']executed["']/.test(gatewaySource);
+  const rejectedCannotExecute =
+    policySource.includes('record.status !== "approved"') &&
+    !/rejected[\s\S]{0,80}status:\s*["']executed["']/.test(gatewaySource);
+  const expiredCannotExecute =
+    policySource.includes("AI action approval is expired") &&
+    !/expired[\s\S]{0,80}status:\s*["']executed["']/.test(gatewaySource);
+  const forbiddenExecutorAbsent =
+    policySource.includes("FORBIDDEN_APPROVED_EXECUTOR_ACTION_TYPES") &&
+    policySource.includes("create_order") &&
+    policySource.includes("direct_supabase_query") &&
+    !/actionTypes:\s*\[[^\]]*(confirm_supplier|create_order|change_warehouse_status|send_document|change_payment_status)/.test(
+      procurementExecutorSource,
+    );
+  const duplicateExecutionBlocked =
+    gatewaySource.includes("already_executed") &&
+    gatewaySource.includes("idempotency_reused") &&
+    gatewaySource.includes("record.status === \"executed\"") &&
+    gatewaySource.includes("duplicateExecutionCreatesDuplicate: false");
+  const bffRoutesPresent =
+    ledgerBffSource.includes("POST /agent/action/:actionId/execute-approved") &&
+    ledgerBffSource.includes("GET /agent/action/:actionId/execution-status") &&
+    shellSource.includes("agent.action.execute_approved") &&
+    shellSource.includes("POST /agent/action/:actionId/execute-approved");
+  const approvalInboxExecutionStatusPresent =
+    inboxTypesSource.includes("executionStatus") &&
+    uiSource.includes("ai.approval.execute-approved") &&
+    uiSource.includes("ai.approval.execution-status") &&
+    uiSource.includes("ai.approval.execution-blocked") &&
+    uiSource.includes("ai.approval.executed");
+  const commandCenterExecutionStatusPresent =
+    inboxViewModelSource.includes("approved_ready_to_execute") &&
+    inboxViewModelSource.includes("blocked_executor_not_ready") &&
+    inboxViewModelSource.includes("directExecuteAllowed: false");
+  const noDirectSupabaseFromUi =
+    !/@supabase\/supabase-js|\bsupabase\s*\.|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(uiSource);
+  const noUiExecutorImport =
+    !/features\/ai\/executors|executeApprovedActionGateway|procurementRequestExecutor/i.test(uiSource);
+  const noExecutorModelProviderImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      executorSource,
+    );
+  const noDirectSupabaseMutationInExecutor =
+    !/@supabase\/supabase-js|\bsupabase\s*\.|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      domainExecutorSurface,
+    ) &&
+    procurementTypesSource.includes("directSupabaseMutation: false");
+  const noRawPayloadFields =
+    redactionSource.includes("FORBIDDEN_KEY_PATTERN") &&
+    redactionSource.includes("rawPrompt") &&
+    redactionSource.includes("provider_payload") &&
+    redactionSource.includes("Authorization") &&
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|user_id|organization_id|Authorization|token|secret|service_role)\s*:/.test(
+      executorSource,
+    );
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiApprovedProcurementExecutorMaestro") &&
+    e2eRunnerSource.includes("BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE") &&
+    e2eRunnerSource.includes("BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND") &&
+    e2eRunnerSource.includes("fake_execution: false");
+
+  const findings = [
+    ...(executorFilesPresent ? [] : ["approved_procurement_executor_files_missing"]),
+    ...(centralExecuteGatePresent ? [] : ["approved_procurement_executor_gate_missing"]),
+    ...(approvedStatusRequired ? [] : ["approved_procurement_executor_approved_status_not_required"]),
+    ...(idempotencyRequired ? [] : ["approved_procurement_executor_idempotency_not_required"]),
+    ...(auditRequired ? [] : ["approved_procurement_executor_audit_not_required"]),
+    ...(evidenceRequired ? [] : ["approved_procurement_executor_evidence_not_required"]),
+    ...(procurementExecutorReady ? [] : ["approved_procurement_executor_not_ready"]),
+    ...(bffMutationBoundaryRequired ? [] : ["approved_procurement_executor_bff_boundary_not_required"]),
+    ...(pendingCannotExecute ? [] : ["approved_procurement_executor_pending_can_execute"]),
+    ...(rejectedCannotExecute ? [] : ["approved_procurement_executor_rejected_can_execute"]),
+    ...(expiredCannotExecute ? [] : ["approved_procurement_executor_expired_can_execute"]),
+    ...(forbiddenExecutorAbsent ? [] : ["approved_procurement_executor_forbidden_type_registered"]),
+    ...(duplicateExecutionBlocked ? [] : ["approved_procurement_executor_duplicate_execution_not_blocked"]),
+    ...(bffRoutesPresent ? [] : ["approved_procurement_executor_bff_routes_missing"]),
+    ...(approvalInboxExecutionStatusPresent ? [] : ["approved_procurement_executor_inbox_status_missing"]),
+    ...(commandCenterExecutionStatusPresent ? [] : ["approved_procurement_executor_command_center_status_missing"]),
+    ...(noDirectSupabaseFromUi ? [] : ["approved_procurement_executor_ui_supabase_import_detected"]),
+    ...(noUiExecutorImport ? [] : ["approved_procurement_executor_ui_imports_executor"]),
+    ...(noExecutorModelProviderImport ? [] : ["approved_procurement_executor_model_provider_import_detected"]),
+    ...(noDirectSupabaseMutationInExecutor ? [] : ["approved_procurement_executor_direct_supabase_detected"]),
+    ...(noRawPayloadFields ? [] : ["approved_procurement_executor_raw_payload_field_detected"]),
+    ...(e2eRunnerPresent ? [] : ["approved_procurement_executor_e2e_runner_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_approved_procurement_executor",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      executorFilesPresent,
+      centralExecuteGatePresent,
+      approvedStatusRequired,
+      idempotencyRequired,
+      auditRequired,
+      evidenceRequired,
+      procurementExecutorReady,
+      bffMutationBoundaryRequired,
+      pendingCannotExecute,
+      rejectedCannotExecute,
+      expiredCannotExecute,
+      forbiddenExecutorAbsent,
+      duplicateExecutionBlocked,
+      bffRoutesPresent,
+      approvalInboxExecutionStatusPresent,
+      commandCenterExecutionStatusPresent,
+      noDirectSupabaseFromUi,
+      noUiExecutorImport,
+      noExecutorModelProviderImport,
+      noDirectSupabaseMutationInExecutor,
+      noRawPayloadFields,
+      e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -5980,6 +6267,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiCrossScreenRuntimeMatrix = evaluateAiCrossScreenRuntimeMatrixGuardrail({ projectRoot });
   const aiPersistentActionLedger = evaluateAiPersistentActionLedgerGuardrail({ projectRoot });
   const aiApprovalInboxRuntime = evaluateAiApprovalInboxRuntimeGuardrail({ projectRoot });
+  const aiApprovedProcurementExecutor = evaluateAiApprovedProcurementExecutorGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -6020,6 +6308,7 @@ export function runArchitectureAntiRegressionSuite(
     aiCrossScreenRuntimeMatrix.check,
     aiPersistentActionLedger.check,
     aiApprovalInboxRuntime.check,
+    aiApprovedProcurementExecutor.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -6061,6 +6350,7 @@ export function runArchitectureAntiRegressionSuite(
     aiCrossScreenRuntimeMatrix: aiCrossScreenRuntimeMatrix.summary,
     aiPersistentActionLedger: aiPersistentActionLedger.summary,
     aiApprovalInboxRuntime: aiApprovalInboxRuntime.summary,
+    aiApprovedProcurementExecutor: aiApprovedProcurementExecutor.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -6134,6 +6424,10 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_approval_inbox_runtime: ${report.aiApprovalInboxRuntime.inboxFilesPresent}`);
   console.info(`ai_approval_inbox_persistent_ledger: ${report.aiApprovalInboxRuntime.persistentLedgerReadRequired}`);
   console.info(`ai_approval_inbox_review_panel_required: ${report.aiApprovalInboxRuntime.reviewPanelRequired}`);
+  console.info(`ai_approved_procurement_executor: ${report.aiApprovedProcurementExecutor.executorFilesPresent}`);
+  console.info(`ai_approved_procurement_executor_gate: ${report.aiApprovedProcurementExecutor.centralExecuteGatePresent}`);
+  console.info(`ai_approved_procurement_executor_boundary: ${report.aiApprovedProcurementExecutor.bffMutationBoundaryRequired}`);
+  console.info(`ai_approved_procurement_executor_no_duplicate: ${report.aiApprovedProcurementExecutor.duplicateExecutionBlocked}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

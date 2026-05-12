@@ -113,5 +113,6 @@ export function resolveApprovalInboxReviewActions(params: {
   }
   if (canApproveApprovalInboxAction(params)) actions.push("approve");
   if (canRejectApprovalInboxAction(params)) actions.push("reject");
+  if (canExecuteApprovalInboxAction(params)) actions.push("execute_approved");
   return actions;
 }

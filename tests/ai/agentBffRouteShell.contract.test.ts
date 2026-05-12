@@ -50,6 +50,7 @@ describe("agent BFF route shell", () => {
       "POST /agent/action/:actionId/approve",
       "POST /agent/action/:actionId/reject",
       "POST /agent/action/:actionId/execute-approved",
+      "GET /agent/action/:actionId/execution-status",
       "GET /agent/screen-runtime/:screenId",
       "POST /agent/screen-runtime/:screenId/intent-preview",
       "POST /agent/screen-runtime/:screenId/action-plan",
