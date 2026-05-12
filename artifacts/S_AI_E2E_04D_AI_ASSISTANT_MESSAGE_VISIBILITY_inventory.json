@@ -1,0 +1,24 @@
+{
+  "final_status": "GREEN_AI_ASSISTANT_MESSAGE_VISIBILITY_READY_FOR_ANDROID_REBUILD",
+  "changed_files": [
+    "src/features/ai/AIAssistantScreen.tsx",
+    "src/features/ai/AIAssistantScreen.styles.ts",
+    "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml",
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts"
+  ],
+  "runtime_observation_before_fix": {
+    "ai_assistant_response_exists": true,
+    "ai_assistant_response_visible": false,
+    "message_area_height_was_too_small": true
+  },
+  "artifact_redaction": {
+    "credentials_in_artifacts": false,
+    "raw_prompt_payload_stored": false,
+    "raw_provider_payload_stored": false,
+    "raw_db_rows_stored": false
+  }
+}

@@ -21,6 +21,7 @@ describe("AI assistant stable e2e test IDs", () => {
   it("exposes stable IDs on the existing assistant entry and surface", () => {
     expect(assistantFabSource).toContain('testID="ai.assistant.open"');
     expect(assistantSource).toContain('testID="ai.assistant.screen"');
+    expect(assistantSource).toContain('testID="ai.assistant.messages"');
     expect(assistantSource).toContain('testID="ai.assistant.input"');
     expect(assistantSource).toContain('testID="ai.assistant.send"');
     expect(assistantSource).toContain('"ai.assistant.response"');
@@ -47,6 +48,17 @@ describe("AI assistant stable e2e test IDs", () => {
     expect(assistantSource).toContain('testID="ai.assistant.send"');
   });
 
+  it("keeps assistant chip rows bounded so response bubbles stay targetable", () => {
+    const stylesSource = read("src/features/ai/AIAssistantScreen.styles.ts");
+
+    expect(assistantSource).toContain("style={styles.routeScroller}");
+    expect(assistantSource).toContain("style={styles.quickPromptScroller}");
+    expect(stylesSource).toContain("routeScroller");
+    expect(stylesSource).toContain("quickPromptScroller");
+    expect(stylesSource).toContain("maxHeight: 58");
+    expect(stylesSource).toContain("maxHeight: 62");
+  });
+
   it("targets the generated assistant reply instead of the initial greeting", () => {
     expect(assistantSource).toContain("hasPriorUserPrompt");
     expect(assistantSource).toContain("isLatestAssistantReply");
@@ -65,6 +77,8 @@ describe("AI assistant stable e2e test IDs", () => {
       expect(flow).toContain('id: "ai.assistant.input"');
       expect(flow).toContain('id: "ai.assistant.send"');
       expect(flow).toContain('id: "ai.assistant.response"');
+      expect(flow).toContain("scrollUntilVisible:");
+      expect(flow).toContain("centerElement: true");
       expect(flow).toContain("${MAESTRO_E2E_");
       expect(flow).not.toMatch(/@example\.com|password\s*[:=]|service_role/i);
     }

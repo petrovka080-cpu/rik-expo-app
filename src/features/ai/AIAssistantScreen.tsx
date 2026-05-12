@@ -388,7 +388,7 @@ export default function AIAssistantScreen() {
           </View>
         ) : null}
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
+        <ScrollView horizontal style={styles.routeScroller} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
           {assistantContext !== "unknown" ? (
             <View style={styles.routeChip}>
               <Text style={styles.routeChipText}>{getAssistantContextLabel(assistantContext)}</Text>
@@ -411,7 +411,7 @@ export default function AIAssistantScreen() {
           </Pressable>
         </ScrollView>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickPromptRow}>
+        <ScrollView horizontal style={styles.quickPromptScroller} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickPromptRow}>
           {quickPrompts.map((prompt) => (
             <Pressable key={prompt.id} style={styles.quickPromptChip} onPress={() => void send(prompt.prompt)}>
               <Text style={styles.quickPromptText}>{prompt.label}</Text>
@@ -419,7 +419,7 @@ export default function AIAssistantScreen() {
           ))}
         </ScrollView>
 
-        <ScrollView style={styles.messages} contentContainerStyle={styles.messagesContent}>
+        <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
           {messages.map((message, index) => {
             const hasPriorUserPrompt = messages
               .slice(0, index)

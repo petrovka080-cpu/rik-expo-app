@@ -115,7 +115,12 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   routeRow: {
     paddingHorizontal: 16,
     paddingTop: 12,
+    paddingBottom: 4,
     gap: 10,
+  },
+  routeScroller: {
+    flexGrow: 0,
+    maxHeight: 58,
   },
   routeChip: {
     paddingHorizontal: 14,
@@ -133,7 +138,12 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   quickPromptRow: {
     paddingHorizontal: 16,
     paddingTop: 12,
+    paddingBottom: 4,
     gap: 10,
+  },
+  quickPromptScroller: {
+    flexGrow: 0,
+    maxHeight: 62,
   },
   quickPromptChip: {
     paddingHorizontal: 14,

@@ -42,10 +42,15 @@ name: AI Role Screen Knowledge Director
     visible:
       id: "ai.assistant.send"
     timeout: 30000
-- extendedWaitUntil:
-    visible:
+- scrollUntilVisible:
+    element:
       id: "ai.assistant.response"
-    timeout: 60000
+    direction: DOWN
+    timeout: 90000
+    visibilityPercentage: 20
+    centerElement: true
+- assertVisible:
+    id: "ai.assistant.response"
 - extendedWaitUntil:
     visible: "AI APP KNOWLEDGE BLOCK"
     timeout: 60000
