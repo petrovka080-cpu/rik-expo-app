@@ -1,0 +1,88 @@
+{
+  "wave": "S_AI_MAGIC_05_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX",
+  "generatedAt": "2026-05-12",
+  "source_contract_status": "GREEN_AI_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX_READY",
+  "runtime_final_status": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "secondary_runtime_blocker": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+  "createdFiles": [
+    "src/features/ai/screenRuntime/aiScreenRuntimeTypes.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeRegistry.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeResolver.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeEvidence.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeRedaction.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeActionPolicy.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeBff.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeProducers.ts",
+    "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts",
+    "tests/ai/aiScreenRuntimeRegistry.contract.test.ts",
+    "tests/ai/aiScreenRuntimeResolver.contract.test.ts",
+    "tests/ai/aiScreenRuntimeEvidence.contract.test.ts",
+    "tests/ai/aiScreenRuntimeRoleScope.contract.test.ts",
+    "tests/ai/aiScreenRuntimeActionSafety.contract.test.ts",
+    "tests/ai/aiScreenRuntimeNoFakeCards.contract.test.ts",
+    "tests/ai/aiScreenRuntimeBff.contract.test.ts",
+    "tests/architecture/aiScreenRuntimeArchitecture.contract.test.ts",
+    "tests/e2e/aiCrossScreenRuntime.e2e.test.ts"
+  ],
+  "modifiedFiles": [
+    "src/features/ai/agent/agentBffRouteShell.ts",
+    "src/features/ai/commandCenter/AiCommandCenterCards.tsx",
+    "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+    "scripts/architecture_anti_regression_suite.ts",
+    "tests/ai/agentBffRouteShell.contract.test.ts",
+    "tests/architecture/agentBffNoMutation.contract.test.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_AI_MAGIC_05_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX_inventory.json",
+    "artifacts/S_AI_MAGIC_05_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX_matrix.json",
+    "artifacts/S_AI_MAGIC_05_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX_emulator.json",
+    "artifacts/S_AI_MAGIC_05_CROSS_SCREEN_COPILOT_RUNTIME_MATRIX_proof.md"
+  ],
+  "registeredScreens": [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+    "reports.modal",
+    "documents.surface"
+  ],
+  "notMountedScreens": [
+    "documents.surface"
+  ],
+  "bffRoutes": [
+    "GET /agent/screen-runtime/:screenId",
+    "POST /agent/screen-runtime/:screenId/intent-preview",
+    "POST /agent/screen-runtime/:screenId/action-plan"
+  ],
+  "gates": {
+    "typescript": "PASS",
+    "expo_lint": "PASS",
+    "targeted_contract_tests": "PASS",
+    "full_jest": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "android_runtime_smoke": "PASS",
+    "cross_screen_e2e": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+    "android_apk_rebuild": "BLOCKED_ANDROID_APK_BUILD_FAILED"
+  },
+  "blockers": [
+    {
+      "code": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+      "reason": "EAS Free plan Android build quota is exhausted until 2026-06-01."
+    },
+    {
+      "code": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+      "reason": "Explicit separate AI role E2E credentials are required for cross-screen role-isolation proof."
+    }
+  ]
+}

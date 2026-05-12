@@ -132,6 +132,13 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           </View>
         </View>
 
+        <View testID="ai.screen.runtime.screen" style={styles.runtimeMatrixSurface}>
+          <Text testID="ai.screen.runtime.status" style={styles.runtimeMatrixText}>
+            screen_runtime={state.viewModel.status}; mutation_count=
+            {state.viewModel.mutationCount}
+          </Text>
+        </View>
+
         {state.loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator size="small" color="#2563EB" />
@@ -152,6 +159,7 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
 
         {!state.loading && state.viewModel.taskStreamLoaded ? (
           <View testID="ai.command.center.task-stream-loaded" style={styles.loadedBadge}>
+            <View testID="ai.screen.runtime.loaded" style={styles.runtimeInlineMarker} />
             <Text style={styles.loadedBadgeText}>
               role-scoped task stream loaded
             </Text>
@@ -180,6 +188,7 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
 
         {!state.loading && !state.viewModel.denied && state.viewModel.empty && state.viewModel.status !== "blocked" ? (
           <View testID="ai.command.center.empty-state" style={styles.stateBox}>
+            <View testID="ai.screen.runtime.empty" style={styles.runtimeInlineMarker} />
             <Text style={styles.stateTitle}>
               \u041d\u0435\u0442 \u0437\u0430\u0434\u0430\u0447
             </Text>
@@ -293,6 +302,22 @@ const styles = StyleSheet.create({
     color: "#075985",
     fontSize: 12,
     fontWeight: "800",
+  },
+  runtimeMatrixSurface: {
+    marginTop: 14,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  runtimeMatrixText: {
+    color: "#334155",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  runtimeInlineMarker: {
+    width: 1,
+    height: 1,
   },
   loadedBadge: {
     marginTop: 10,

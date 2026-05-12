@@ -68,6 +68,22 @@ import type {
   ProcurementCopilotSubmitPreviewInput,
   ProcurementCopilotSubmitForApprovalPreview,
 } from "../procurementCopilot/procurementCopilotTypes";
+import {
+  AGENT_SCREEN_RUNTIME_BFF_CONTRACT,
+  getAgentScreenRuntime,
+  planAgentScreenRuntimeAction,
+  previewAgentScreenRuntimeIntent,
+  type AgentScreenRuntimeActionPlanRequest,
+  type AgentScreenRuntimeIntentPreviewRequest,
+  type AgentScreenRuntimeRequest,
+} from "../screenRuntime/aiScreenRuntimeBff";
+
+export {
+  AGENT_SCREEN_RUNTIME_BFF_CONTRACT,
+  getAgentScreenRuntime,
+  planAgentScreenRuntimeAction,
+  previewAgentScreenRuntimeIntent,
+};
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -92,7 +108,10 @@ export type AgentBffRouteOperation =
   | "agent.procurement.copilot.context.read"
   | "agent.procurement.copilot.plan.preview"
   | "agent.procurement.copilot.draft_preview"
-  | "agent.procurement.copilot.submit_for_approval.preview";
+  | "agent.procurement.copilot.submit_for_approval.preview"
+  | "agent.screen_runtime.read"
+  | "agent.screen_runtime.intent_preview"
+  | "agent.screen_runtime.action_plan";
 
 export type AgentBffHttpMethod = "GET" | "POST";
 
@@ -113,7 +132,8 @@ export type AgentBffRouteDefinition = {
     | "AgentAppGraphEnvelope"
     | "AgentIntelCompareEnvelope"
     | "AgentExternalIntelEnvelope"
-    | "AgentProcurementEnvelope";
+    | "AgentProcurementEnvelope"
+    | "AgentScreenRuntimeEnvelope";
 };
 
 export type AgentBffAuthContext = {
@@ -215,6 +235,14 @@ export type AgentProcurementCopilotDraftPreviewRequest = AgentBffShellRequest & 
 export type AgentProcurementCopilotSubmitForApprovalPreviewRequest = AgentBffShellRequest & {
   input: ProcurementCopilotSubmitPreviewInput;
 };
+
+export type AgentCrossScreenRuntimeRequest = AgentBffShellRequest & AgentScreenRuntimeRequest;
+
+export type AgentCrossScreenRuntimeIntentPreviewRequest = AgentBffShellRequest &
+  AgentScreenRuntimeIntentPreviewRequest;
+
+export type AgentCrossScreenRuntimeActionPlanRequest = AgentBffShellRequest &
+  AgentScreenRuntimeActionPlanRequest;
 
 export type AgentBffVisibleTool = {
   name: AiToolDefinition["name"];
@@ -794,6 +822,45 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
 } as const);
 
 export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
+  {
+    operation: "agent.screen_runtime.read",
+    method: "GET",
+    endpoint: "GET /agent/screen-runtime/:screenId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenRuntimeEnvelope",
+  },
+  {
+    operation: "agent.screen_runtime.intent_preview",
+    method: "POST",
+    endpoint: "POST /agent/screen-runtime/:screenId/intent-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenRuntimeEnvelope",
+  },
+  {
+    operation: "agent.screen_runtime.action_plan",
+    method: "POST",
+    endpoint: "POST /agent/screen-runtime/:screenId/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenRuntimeEnvelope",
+  },
   {
     operation: "agent.external_intel.sources.read",
     method: "GET",

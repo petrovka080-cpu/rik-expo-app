@@ -264,6 +264,16 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotRedaction.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotActionPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic05CrossScreenRuntimeMatrixFiles = [
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeTypes.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeResolver.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeEvidence.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeRedaction.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeActionPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeBff.ts"),
+      path.join(SRC, "features", "ai", "screenRuntime", "aiScreenRuntimeProducers.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1165,7 +1175,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle135SubcontractsSharedTransportFiles -
         sAiMagic02ProcurementContextEngineFiles -
         sAiMagic03ExternalIntelGatewayFiles -
-        sAiMagic04ProcurementCopilotRuntimeChainFiles,
+        sAiMagic04ProcurementCopilotRuntimeChainFiles -
+        sAiMagic05CrossScreenRuntimeMatrixFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

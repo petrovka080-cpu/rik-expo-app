@@ -25,57 +25,79 @@ export function AiCommandCenterCard(props: AiCommandCenterCardProps) {
   const priorityColor = PRIORITY_COLORS[props.card.priority];
 
   return (
-    <View testID="ai.command.center.card" style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <View style={styles.titleColumn}>
-          <Text style={styles.domain}>{props.card.domainLabel}</Text>
-          <Text style={styles.title}>{props.card.title}</Text>
+    <View testID="ai.screen.runtime.card">
+      <View testID="ai.command.center.card" style={styles.card}>
+        <View style={styles.cardTopRow}>
+          <View style={styles.titleColumn}>
+            <Text style={styles.domain}>{props.card.domainLabel}</Text>
+            <Text style={styles.title}>{props.card.title}</Text>
+          </View>
+          <View
+            testID="ai.command.center.card.priority"
+            style={[styles.priorityBadge, { borderColor: priorityColor }]}
+          >
+            <Text style={[styles.priorityText, { color: priorityColor }]}>
+              {props.card.priorityLabel}
+            </Text>
+          </View>
         </View>
-        <View
-          testID="ai.command.center.card.priority"
-          style={[styles.priorityBadge, { borderColor: priorityColor }]}
-        >
-          <Text style={[styles.priorityText, { color: priorityColor }]}>
-            {props.card.priorityLabel}
+
+        <Text style={styles.summary}>{props.card.summary}</Text>
+
+        <View style={styles.metaRow}>
+          <View testID="ai.screen.runtime.card.evidence" style={styles.evidenceGroup}>
+            <View testID="ai.command.center.card.evidence" style={styles.evidenceGroup}>
+              {props.card.insufficientEvidence ? (
+                <View style={[styles.evidenceChip, styles.evidenceChipWarning]}>
+                  <Ionicons name="alert-circle-outline" size={13} color="#B45309" />
+                  <Text style={[styles.evidenceText, styles.evidenceTextWarning]}>
+                    {props.card.evidenceLabel}
+                  </Text>
+                </View>
+              ) : (
+                props.card.evidenceRefs.map((ref) => (
+                  <View key={ref} style={styles.evidenceChip}>
+                    <Ionicons name="link-outline" size={13} color="#475569" />
+                    <Text style={styles.evidenceText} numberOfLines={1}>
+                      {ref}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
+          </View>
+
+          {props.card.requiresApproval ? (
+            <View testID="ai.screen.runtime.card.approval-required">
+              <View
+                testID="ai.command.center.card.approval-required"
+                style={styles.approvalBadge}
+              >
+                <Ionicons name="shield-checkmark-outline" size={13} color="#92400E" />
+                <Text style={styles.approvalText}>approval</Text>
+              </View>
+            </View>
+          ) : null}
+        </View>
+
+        <View testID="ai.screen.runtime.intent" style={styles.runtimeInvisibleMarker}>
+          <Text style={styles.runtimeInvisibleText}>
+            {props.card.actionViews.map((action) => action.action).join(",")}
           </Text>
         </View>
-      </View>
-
-      <Text style={styles.summary}>{props.card.summary}</Text>
-
-      <View style={styles.metaRow}>
-        <View testID="ai.command.center.card.evidence" style={styles.evidenceGroup}>
-          {props.card.insufficientEvidence ? (
-            <View style={[styles.evidenceChip, styles.evidenceChipWarning]}>
-              <Ionicons name="alert-circle-outline" size={13} color="#B45309" />
-              <Text style={[styles.evidenceText, styles.evidenceTextWarning]}>
-                {props.card.evidenceLabel}
-              </Text>
-            </View>
-          ) : (
-            props.card.evidenceRefs.map((ref) => (
-              <View key={ref} style={styles.evidenceChip}>
-                <Ionicons name="link-outline" size={13} color="#475569" />
-                <Text style={styles.evidenceText} numberOfLines={1}>
-                  {ref}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
-
-        {props.card.requiresApproval ? (
-          <View
-            testID="ai.command.center.card.approval-required"
-            style={styles.approvalBadge}
-          >
-            <Ionicons name="shield-checkmark-outline" size={13} color="#92400E" />
-            <Text style={styles.approvalText}>approval</Text>
+        {props.card.actionViews.some((action) => !action.enabled) ? (
+          <View testID="ai.screen.runtime.blocked-intent" style={styles.runtimeInvisibleMarker}>
+            <Text style={styles.runtimeInvisibleText}>
+              {props.card.actionViews
+                .filter((action) => !action.enabled)
+                .map((action) => action.action)
+                .join(",")}
+            </Text>
           </View>
         ) : null}
-      </View>
 
-      <AiCommandCenterActions card={props.card} onAction={props.onAction} />
+        <AiCommandCenterActions card={props.card} onAction={props.onAction} />
+      </View>
     </View>
   );
 }
@@ -212,5 +234,14 @@ const styles = StyleSheet.create({
     color: "#92400E",
     fontSize: 11,
     fontWeight: "900",
+  },
+  runtimeInvisibleMarker: {
+    width: 1,
+    height: 1,
+    opacity: 0.01,
+  },
+  runtimeInvisibleText: {
+    color: "#FFFFFF",
+    fontSize: 1,
   },
 });

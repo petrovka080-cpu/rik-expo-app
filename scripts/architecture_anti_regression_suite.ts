@@ -465,6 +465,29 @@ export type AiProcurementCopilotRuntimeChainArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiCrossScreenRuntimeMatrixArchitectureSummary = {
+  runtimeFilesPresent: boolean;
+  majorScreensRegistered: boolean;
+  producerRegistryPresent: boolean;
+  producersHaveRolePolicy: boolean;
+  producersRequireEvidence: boolean;
+  bffRoutesPresent: boolean;
+  resolverValidatesScreenId: boolean;
+  unknownRoleDenied: boolean;
+  notMountedSupported: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  noUiSupabaseImport: boolean;
+  noUiExternalFetch: boolean;
+  noUiProviderImport: boolean;
+  noRawPayloadFields: boolean;
+  noFakeCards: boolean;
+  noMutationSurface: boolean;
+  contractorOwnRecordsOnly: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -662,6 +685,7 @@ export type ArchitectureAntiRegressionReport = {
   aiProcurementContextEngine: AiProcurementContextEngineArchitectureSummary;
   aiExternalIntelGateway: AiExternalIntelGatewayArchitectureSummary;
   aiProcurementCopilotRuntimeChain: AiProcurementCopilotRuntimeChainArchitectureSummary;
+  aiCrossScreenRuntimeMatrix: AiCrossScreenRuntimeMatrixArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -796,6 +820,16 @@ const AI_PROCUREMENT_COPILOT_RUNTIME_CHAIN_FILES = [
   "src/features/ai/procurementCopilot/procurementCopilotRedaction.ts",
   "src/features/ai/procurementCopilot/procurementCopilotActionPolicy.ts",
 ] as const;
+const AI_SCREEN_RUNTIME_FILES = [
+  "src/features/ai/screenRuntime/aiScreenRuntimeTypes.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeRegistry.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeResolver.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeEvidence.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeRedaction.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeActionPolicy.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeBff.ts",
+  "src/features/ai/screenRuntime/aiScreenRuntimeProducers.ts",
+] as const;
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
 const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
   "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
@@ -803,6 +837,8 @@ const AI_EXTERNAL_INTEL_E2E_RUNNER_PATH =
   "scripts/e2e/runAiProcurementExternalIntelMaestro.ts";
 const AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH =
   "scripts/e2e/runAiProcurementCopilotMaestro.ts";
+const AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -3242,6 +3278,207 @@ export function evaluateAiProcurementCopilotRuntimeChainGuardrail(params: {
   };
 }
 
+export function evaluateAiCrossScreenRuntimeMatrixGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiCrossScreenRuntimeMatrixArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const runtimeSources = AI_SCREEN_RUNTIME_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const runtimeSource = runtimeSources.join("\n");
+  const registrySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/screenRuntime/aiScreenRuntimeRegistry.ts",
+    }) ?? "";
+  const producersSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/screenRuntime/aiScreenRuntimeProducers.ts",
+    }) ?? "";
+  const resolverSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/screenRuntime/aiScreenRuntimeResolver.ts",
+    }) ?? "";
+  const bffSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/screenRuntime/aiScreenRuntimeBff.ts",
+    }) ?? "";
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH }) ?? "";
+  const requiredScreens = [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+    "reports.modal",
+    "documents.surface",
+  ] as const;
+  const producerNames = [
+    "directorControlProducer",
+    "accountantFinanceProducer",
+    "buyerProcurementProducer",
+    "foremanObjectProducer",
+    "warehouseStatusProducer",
+    "contractorOwnWorkProducer",
+    "officeAccessProducer",
+    "mapObjectProducer",
+    "chatContextProducer",
+    "reportsDocumentsProducer",
+  ] as const;
+
+  const runtimeFilesPresent =
+    runtimeSources.every((source) => source.length > 0) &&
+    runtimeSource.includes("AI_SCREEN_RUNTIME_CONTRACT") &&
+    runtimeSource.includes("resolveAiScreenRuntime");
+  const majorScreensRegistered = requiredScreens.every((screenId) =>
+    registrySource.includes(`screenId: "${screenId}"`) || registrySource.includes(`"${screenId}"`),
+  );
+  const producerRegistryPresent =
+    producersSource.includes("AI_SCREEN_RUNTIME_PRODUCERS") &&
+    producerNames.every((name) => producersSource.includes(name));
+  const producersHaveRolePolicy =
+    producerRegistryPresent &&
+    producersSource.includes("allowedRoles") &&
+    producersSource.includes("roleAllowed") &&
+    producerNames.every((name) => registrySource.includes(`producerName: "${name}"`));
+  const producersRequireEvidence =
+    producersSource.includes("hasAiScreenRuntimeEvidence") &&
+    producersSource.includes("result.cards.length === 0") &&
+    runtimeSource.includes("evidenceRequired: true");
+  const bffRoutesPresent =
+    bffSource.includes("GET /agent/screen-runtime/:screenId") &&
+    bffSource.includes("POST /agent/screen-runtime/:screenId/intent-preview") &&
+    bffSource.includes("POST /agent/screen-runtime/:screenId/action-plan") &&
+    shellSource.includes("agent.screen_runtime.read") &&
+    shellSource.includes("AgentScreenRuntimeEnvelope");
+  const resolverValidatesScreenId =
+    resolverSource.includes("getAiScreenRuntimeEntry") &&
+    resolverSource.includes("screenId is not registered") &&
+    resolverSource.includes("cursor must be a non-negative integer string");
+  const unknownRoleDenied =
+    resolverSource.includes('input.auth.role === "unknown"') &&
+    bffSource.includes('auth.role !== "unknown"');
+  const notMountedSupported =
+    registrySource.includes("future_or_not_mounted") &&
+    resolverSource.includes('status: "not_mounted"');
+  const noProviderImports =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      runtimeSource,
+    );
+  const noSupabaseImports =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      runtimeSource,
+    ) && !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(/.test(runtimeSource);
+  const noUiSupabaseImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      commandCenterSource,
+    );
+  const noUiExternalFetch =
+    !/\bfetch\s*\(|\bXMLHttpRequest\b|externalIntelResolver|external_live_fetch/i.test(
+      commandCenterSource,
+    );
+  const noUiProviderImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      commandCenterSource,
+    );
+  const noRawPayloadFields =
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows|rawRows|rawHtml|raw_html)\s*:/.test(
+      runtimeSource,
+    );
+  const noFakeCards =
+    runtimeSource.includes("fakeCards: false") &&
+    runtimeSource.includes("hardcodedAiResponse: false") &&
+    !/fake_card|fake cards|hardcoded AI response|hardcodedAiResponse:\s*true/i.test(runtimeSource);
+  const noMutationSurface =
+    runtimeSource.includes("mutationCount: 0") &&
+    runtimeSource.includes("finalMutationAllowed: false") &&
+    runtimeSource.includes("directMutationAllowed: false") &&
+    runtimeSource.includes("executed: false") &&
+    !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(|\bcreateOrder\b|\bconfirmSupplier\b|\bchangePayment\b|\bchangeWarehouse\b|\bsendDocument\b/i.test(
+      runtimeSource,
+    );
+  const contractorOwnRecordsOnly =
+    registrySource.includes("contractorOwnWorkProducer") &&
+    registrySource.includes("own_task") &&
+    registrySource.includes("own_document") &&
+    !/contractor.*finance|finance.*contractor/i.test(registrySource);
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiCrossScreenRuntimeMaestro") &&
+    e2eRunnerSource.includes("ai.screen.runtime.screen") &&
+    e2eRunnerSource.includes("BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS") &&
+    e2eRunnerSource.includes("mutations_created: 0");
+  const findings = [
+    ...(runtimeFilesPresent ? [] : ["screen_runtime_files_missing"]),
+    ...(majorScreensRegistered ? [] : ["screen_runtime_major_screen_missing"]),
+    ...(producerRegistryPresent ? [] : ["screen_runtime_producer_registry_missing"]),
+    ...(producersHaveRolePolicy ? [] : ["screen_runtime_producer_role_policy_missing"]),
+    ...(producersRequireEvidence ? [] : ["screen_runtime_producer_evidence_missing"]),
+    ...(bffRoutesPresent ? [] : ["screen_runtime_bff_routes_missing"]),
+    ...(resolverValidatesScreenId ? [] : ["screen_runtime_screen_id_validation_missing"]),
+    ...(unknownRoleDenied ? [] : ["screen_runtime_unknown_role_not_denied"]),
+    ...(notMountedSupported ? [] : ["screen_runtime_not_mounted_boundary_missing"]),
+    ...(noProviderImports ? [] : ["screen_runtime_model_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["screen_runtime_supabase_import_detected"]),
+    ...(noUiSupabaseImport ? [] : ["screen_runtime_ui_supabase_import_detected"]),
+    ...(noUiExternalFetch ? [] : ["screen_runtime_ui_external_fetch_detected"]),
+    ...(noUiProviderImport ? [] : ["screen_runtime_ui_provider_import_detected"]),
+    ...(noRawPayloadFields ? [] : ["screen_runtime_raw_payload_field_detected"]),
+    ...(noFakeCards ? [] : ["screen_runtime_fake_cards_detected"]),
+    ...(noMutationSurface ? [] : ["screen_runtime_mutation_surface_detected"]),
+    ...(contractorOwnRecordsOnly ? [] : ["screen_runtime_contractor_scope_missing"]),
+    ...(e2eRunnerPresent ? [] : ["screen_runtime_e2e_runner_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_cross_screen_runtime_matrix",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      runtimeFilesPresent,
+      majorScreensRegistered,
+      producerRegistryPresent,
+      producersHaveRolePolicy,
+      producersRequireEvidence,
+      bffRoutesPresent,
+      resolverValidatesScreenId,
+      unknownRoleDenied,
+      notMountedSupported,
+      noProviderImports,
+      noSupabaseImports,
+      noUiSupabaseImport,
+      noUiExternalFetch,
+      noUiProviderImport,
+      noRawPayloadFields,
+      noFakeCards,
+      noMutationSurface,
+      contractorOwnRecordsOnly,
+      e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -5130,6 +5367,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiProcurementContextEngine = evaluateAiProcurementContextEngineGuardrail({ projectRoot });
   const aiExternalIntelGateway = evaluateAiExternalIntelGatewayGuardrail({ projectRoot });
   const aiProcurementCopilotRuntimeChain = evaluateAiProcurementCopilotRuntimeChainGuardrail({ projectRoot });
+  const aiCrossScreenRuntimeMatrix = evaluateAiCrossScreenRuntimeMatrixGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -5167,6 +5405,7 @@ export function runArchitectureAntiRegressionSuite(
     aiProcurementContextEngine.check,
     aiExternalIntelGateway.check,
     aiProcurementCopilotRuntimeChain.check,
+    aiCrossScreenRuntimeMatrix.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -5205,6 +5444,7 @@ export function runArchitectureAntiRegressionSuite(
     aiProcurementContextEngine: aiProcurementContextEngine.summary,
     aiExternalIntelGateway: aiExternalIntelGateway.summary,
     aiProcurementCopilotRuntimeChain: aiProcurementCopilotRuntimeChain.summary,
+    aiCrossScreenRuntimeMatrix: aiCrossScreenRuntimeMatrix.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -5268,6 +5508,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_external_intel_gateway_disabled_default: ${report.aiExternalIntelGateway.disabledProviderDefault}`);
   console.info(`ai_procurement_copilot_runtime_chain: ${report.aiProcurementCopilotRuntimeChain.copilotFilesPresent}`);
   console.info(`ai_procurement_copilot_no_mutation: ${report.aiProcurementCopilotRuntimeChain.noMutationSurface}`);
+  console.info(`ai_cross_screen_runtime_matrix: ${report.aiCrossScreenRuntimeMatrix.majorScreensRegistered}`);
+  console.info(`ai_cross_screen_runtime_no_mutation: ${report.aiCrossScreenRuntimeMatrix.noMutationSurface}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

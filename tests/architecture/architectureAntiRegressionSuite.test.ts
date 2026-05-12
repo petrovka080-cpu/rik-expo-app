@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
+  evaluateAiCrossScreenRuntimeMatrixGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
   evaluateAiProcurementCopilotRuntimeChainGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
@@ -1571,6 +1572,110 @@ describe("architecture anti-regression suite", () => {
         "procurement_copilot_external_live_fetch_enabled",
         "procurement_copilot_hardcoded_supplier_cards_detected",
         "procurement_copilot_mutation_surface_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the AI cross-screen runtime matrix", () => {
+    const passing = evaluateAiCrossScreenRuntimeMatrixGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return "agent.screen_runtime.read\nAgentScreenRuntimeEnvelope";
+        }
+        if (relativePath.includes("screenRuntime")) {
+          return [
+            "AI_SCREEN_RUNTIME_CONTRACT",
+            "resolveAiScreenRuntime",
+            "AI_SCREEN_RUNTIME_PRODUCERS",
+            "allowedRoles",
+            "roleAllowed",
+            "hasAiScreenRuntimeEvidence",
+            "result.cards.length === 0",
+            "evidenceRequired: true",
+            "GET /agent/screen-runtime/:screenId",
+            "POST /agent/screen-runtime/:screenId/intent-preview",
+            "POST /agent/screen-runtime/:screenId/action-plan",
+            "getAiScreenRuntimeEntry",
+            "screenId is not registered",
+            "cursor must be a non-negative integer string",
+            'input.auth.role === "unknown"',
+            'auth.role !== "unknown"',
+            "future_or_not_mounted",
+            'status: "not_mounted"',
+            "fakeCards: false",
+            "hardcodedAiResponse: false",
+            "mutationCount: 0",
+            "finalMutationAllowed: false",
+            "directMutationAllowed: false",
+            "executed: false",
+            "contractorOwnWorkProducer",
+            "own_task",
+            "own_document",
+            '"director.dashboard"',
+            '"ai.command.center"',
+            '"buyer.main"',
+            '"market.home"',
+            '"accountant.main"',
+            '"foreman.main"',
+            '"foreman.subcontract"',
+            '"warehouse.main"',
+            '"contractor.main"',
+            '"office.hub"',
+            '"map.main"',
+            '"chat.main"',
+            '"reports.modal"',
+            '"documents.surface"',
+            "producerName: \"directorControlProducer\"",
+            "producerName: \"accountantFinanceProducer\"",
+            "producerName: \"buyerProcurementProducer\"",
+            "producerName: \"foremanObjectProducer\"",
+            "producerName: \"warehouseStatusProducer\"",
+            "producerName: \"contractorOwnWorkProducer\"",
+            "producerName: \"officeAccessProducer\"",
+            "producerName: \"mapObjectProducer\"",
+            "producerName: \"chatContextProducer\"",
+            "producerName: \"reportsDocumentsProducer\"",
+          ].join("\n");
+        }
+        if (relativePath.includes("runAiCrossScreenRuntimeMaestro")) {
+          return [
+            "runAiCrossScreenRuntimeMaestro",
+            "ai.screen.runtime.screen",
+            "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+            "mutations_created: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("commandCenter")) return "command center";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_cross_screen_runtime_matrix",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiCrossScreenRuntimeMatrixGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("screenRuntime")) {
+          return "AI_SCREEN_RUNTIME_PRODUCERS\nfake_card\nmutationCount: 1\nfinalMutationAllowed: true";
+        }
+        if (relativePath.includes("commandCenter")) return "fetch('https://example.com')";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "screen_runtime_major_screen_missing",
+        "screen_runtime_producer_role_policy_missing",
+        "screen_runtime_bff_routes_missing",
+        "screen_runtime_fake_cards_detected",
+        "screen_runtime_mutation_surface_detected",
       ]),
     );
   });
