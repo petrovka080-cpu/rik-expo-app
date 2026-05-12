@@ -44,12 +44,23 @@ export type DraftActNormalizedWorkItem = {
   evidence_ref: string;
 };
 
+export type DraftActSection = {
+  section: string;
+  title: string;
+  status: "draft_placeholder" | "source_evidence_required";
+  evidence_ref: string;
+};
+
 export type DraftActToolOutput = {
   draft_preview: string;
   act_kind: DraftActKind;
+  draft_sections: DraftActSection[];
   work_items_normalized: DraftActNormalizedWorkItem[];
+  missing_data: string[];
   missing_fields: string[];
   risk_flags: string[];
+  requires_review: true;
+  requires_approval_for_send: true;
   requires_approval: true;
   next_action: typeof DRAFT_ACT_NEXT_ACTION;
   evidence_refs: string[];
@@ -60,6 +71,11 @@ export type DraftActToolOutput = {
   persisted: false;
   idempotency_required_if_persisted: true;
   mutation_count: 0;
+  final_pdf_send: 0;
+  external_share: 0;
+  final_status_change: 0;
+  signature: 0;
+  payment_status_change: 0;
   final_submit: 0;
   act_signed: 0;
   contractor_confirmation: 0;
@@ -256,6 +272,30 @@ function buildDraftPreview(input: NormalizedDraftActInput): string {
   return `Draft ${input.act_kind} act preview for ${subcontractLabel}${periodLabel}: ${input.work_items.length} work item(s) normalized. Next action is submit_for_approval.`;
 }
 
+function buildDraftSections(input: NormalizedDraftActInput): DraftActSection[] {
+  const hasSourceEvidence = input.source_evidence_refs.length > 0 && input.work_items.length > 0;
+  return [
+    {
+      section: "work_summary",
+      title: "work summary",
+      status: hasSourceEvidence ? "draft_placeholder" : "source_evidence_required",
+      evidence_ref: "draft_act:section:work_summary",
+    },
+    {
+      section: "work_items",
+      title: "work items",
+      status: input.work_items.length > 0 ? "draft_placeholder" : "source_evidence_required",
+      evidence_ref: "draft_act:section:work_items",
+    },
+    {
+      section: "review_and_send_boundary",
+      title: "review and send boundary",
+      status: "draft_placeholder",
+      evidence_ref: "draft_act:section:review_and_send_boundary",
+    },
+  ];
+}
+
 function isAuthenticated(
   auth: DraftActToolAuthContext | null,
 ): auth is DraftActToolAuthContext {
@@ -305,18 +345,23 @@ export async function runDraftActToolDraftOnly(
     ...input.value.source_evidence_refs,
     ...input.value.work_items.map((item) => item.evidence_ref),
   ];
+  const draftSections = buildDraftSections(input.value);
 
   return {
     ok: true,
     data: {
       draft_preview: buildDraftPreview(input.value),
       act_kind: input.value.act_kind,
+      draft_sections: draftSections,
       work_items_normalized: input.value.work_items,
+      missing_data: input.value.missing_fields,
       missing_fields: input.value.missing_fields,
       risk_flags: buildRiskFlags(input.value, request.auth.role),
+      requires_review: true,
+      requires_approval_for_send: true,
       requires_approval: true,
       next_action: DRAFT_ACT_NEXT_ACTION,
-      evidence_refs: evidenceRefs,
+      evidence_refs: [...evidenceRefs, ...draftSections.map((section) => section.evidence_ref)],
       risk_level: DRAFT_ACT_RISK_LEVEL,
       role_scope: getRoleScope(request.auth.role),
       role_scoped: true,
@@ -324,6 +369,11 @@ export async function runDraftActToolDraftOnly(
       persisted: false,
       idempotency_required_if_persisted: true,
       mutation_count: 0,
+      final_pdf_send: 0,
+      external_share: 0,
+      final_status_change: 0,
+      signature: 0,
+      payment_status_change: 0,
       final_submit: 0,
       act_signed: 0,
       contractor_confirmation: 0,

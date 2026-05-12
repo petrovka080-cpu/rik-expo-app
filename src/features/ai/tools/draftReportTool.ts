@@ -27,9 +27,13 @@ export type DraftReportSection = {
 export type DraftReportToolOutput = {
   draft_preview: string;
   report_kind: DraftReportKind;
+  draft_sections: DraftReportSection[];
   sections_normalized: DraftReportSection[];
+  missing_data: string[];
   missing_fields: string[];
   risk_flags: string[];
+  requires_review: true;
+  requires_approval_for_send: true;
   requires_approval: true;
   next_action: typeof DRAFT_REPORT_NEXT_ACTION;
   evidence_refs: string[];
@@ -38,6 +42,11 @@ export type DraftReportToolOutput = {
   persisted: false;
   idempotency_required_if_persisted: true;
   mutation_count: 0;
+  final_pdf_send: 0;
+  external_share: 0;
+  final_status_change: 0;
+  signature: 0;
+  payment_status_change: 0;
   final_submit: 0;
   report_published: 0;
   finance_mutation: 0;
@@ -267,9 +276,13 @@ export async function runDraftReportToolDraftOnly(
     data: {
       draft_preview: buildDraftPreview(input.value),
       report_kind: input.value.report_kind,
+      draft_sections: sections,
       sections_normalized: sections,
+      missing_data: input.value.missing_fields,
       missing_fields: input.value.missing_fields,
       risk_flags: buildRiskFlags(input.value),
+      requires_review: true,
+      requires_approval_for_send: true,
       requires_approval: true,
       next_action: DRAFT_REPORT_NEXT_ACTION,
       evidence_refs: evidenceRefs,
@@ -278,6 +291,11 @@ export async function runDraftReportToolDraftOnly(
       persisted: false,
       idempotency_required_if_persisted: true,
       mutation_count: 0,
+      final_pdf_send: 0,
+      external_share: 0,
+      final_status_change: 0,
+      signature: 0,
+      payment_status_change: 0,
       final_submit: 0,
       report_published: 0,
       finance_mutation: 0,

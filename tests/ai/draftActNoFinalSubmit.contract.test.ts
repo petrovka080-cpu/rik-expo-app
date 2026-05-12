@@ -70,6 +70,14 @@ describe("draft_act no-final-submit contract", () => {
       ok: true,
       data: {
         act_kind: "work_completion",
+        missing_data: [
+          "subcontract_id",
+          "act_kind",
+          "work_summary",
+          "source_evidence_refs",
+          "work_items[0].quantity",
+          "work_items[0].unit",
+        ],
         missing_fields: [
           "subcontract_id",
           "act_kind",
@@ -79,6 +87,8 @@ describe("draft_act no-final-submit contract", () => {
           "work_items[0].unit",
         ],
         risk_flags: ["missing_required_fields", "period_range_missing"],
+        requires_review: true,
+        requires_approval_for_send: true,
         requires_approval: true,
         next_action: "submit_for_approval",
         role_scope: "foreman_subcontract_scope",
@@ -86,6 +96,11 @@ describe("draft_act no-final-submit contract", () => {
         persisted: false,
         idempotency_required_if_persisted: true,
         mutation_count: 0,
+        final_pdf_send: 0,
+        external_share: 0,
+        final_status_change: 0,
+        signature: 0,
+        payment_status_change: 0,
         final_submit: 0,
         act_signed: 0,
         contractor_confirmation: 0,
@@ -127,6 +142,11 @@ describe("draft_act no-final-submit contract", () => {
           "source_evidence_truncated_to_safe_limit",
           "work_items_truncated_to_safe_limit",
         ],
+        final_pdf_send: 0,
+        external_share: 0,
+        final_status_change: 0,
+        signature: 0,
+        payment_status_change: 0,
         final_submit: 0,
         act_signed: 0,
         payment_mutation: 0,
@@ -136,7 +156,7 @@ describe("draft_act no-final-submit contract", () => {
     if (!result.ok) throw new Error("expected draft_act success");
     expect(result.data.work_items_normalized).toHaveLength(DRAFT_ACT_MAX_WORK_ITEMS);
     expect(result.data.evidence_refs).toHaveLength(
-      1 + DRAFT_ACT_MAX_EVIDENCE_REFS + DRAFT_ACT_MAX_WORK_ITEMS,
+      4 + DRAFT_ACT_MAX_EVIDENCE_REFS + DRAFT_ACT_MAX_WORK_ITEMS,
     );
     expect(result.data.evidence_refs).toContain("draft_act:input:subcontract");
     expect(result.data.evidence_refs).toContain("draft_act:input:work_item:1");

@@ -1,0 +1,35 @@
+{
+  "wave": "S_AI_DRAFT_02_DRAFT_REPORT_AND_ACT_TOOLS",
+  "scope": "draft_report_and_draft_act_contract_closeout",
+  "tools": ["draft_report", "draft_act"],
+  "created_files": [
+    "tests/ai/draftDocumentNoSend.contract.test.ts"
+  ],
+  "modified_files": [
+    "src/features/ai/tools/draftReportTool.ts",
+    "src/features/ai/tools/draftActTool.ts",
+    "src/features/ai/schemas/aiToolSchemas.ts",
+    "tests/ai/draftReportTool.contract.test.ts",
+    "tests/ai/draftActTool.contract.test.ts",
+    "tests/ai/draftReportNoFinalSubmit.contract.test.ts",
+    "tests/ai/draftActNoFinalSubmit.contract.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_AND_ACT_TOOLS_inventory.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_AND_ACT_TOOLS_matrix.json",
+    "artifacts/S_AI_DRAFT_02_DRAFT_REPORT_AND_ACT_TOOLS_proof.md"
+  ],
+  "runtime_contract": {
+    "draft_sections": true,
+    "missing_data": true,
+    "evidence_refs": true,
+    "requires_review": true,
+    "requires_approval_for_send": true,
+    "draft_only": true,
+    "final_send": false,
+    "external_share": false,
+    "final_status_change": false,
+    "signature": false,
+    "payment_status_change": false
+  }
+}
