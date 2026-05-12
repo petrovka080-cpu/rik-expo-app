@@ -1,6 +1,7 @@
 import type { ExternalSourcePolicy } from "./externalIntelTypes";
 
 export const EXTERNAL_LIVE_FETCH_ENABLED = false as const;
+export const EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled" as const;
 
 export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
   {
@@ -34,7 +35,7 @@ export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
   {
     sourceId: "construction_norm_reference.default",
     category: "construction_norm_reference",
-    allowedDomains: ["reports", "documents", "subcontracts"],
+    allowedDomains: ["documents", "procurement"],
     domainAllowlistRequired: true,
     requiresCitation: true,
     requiresCheckedAt: true,
@@ -62,7 +63,7 @@ export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
   {
     sourceId: "company_public_profile.default",
     category: "company_public_profile",
-    allowedDomains: ["finance", "office", "procurement"],
+    allowedDomains: ["finance", "procurement", "marketplace"],
     domainAllowlistRequired: true,
     requiresCitation: true,
     requiresCheckedAt: true,
@@ -76,7 +77,7 @@ export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
   {
     sourceId: "regulatory_reference.default",
     category: "regulatory_reference",
-    allowedDomains: ["finance", "documents", "reports"],
+    allowedDomains: ["finance", "documents", "procurement"],
     domainAllowlistRequired: true,
     requiresCitation: true,
     requiresCheckedAt: true,
@@ -90,7 +91,7 @@ export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
   {
     sourceId: "currency_or_macro_reference.default",
     category: "currency_or_macro_reference",
-    allowedDomains: ["finance", "control"],
+    allowedDomains: ["finance", "procurement"],
     domainAllowlistRequired: true,
     requiresCitation: true,
     requiresCheckedAt: true,
@@ -101,6 +102,12 @@ export const EXTERNAL_SOURCE_REGISTRY: readonly ExternalSourcePolicy[] = [
     allowedForDraft: false,
     forbiddenForFinalAction: true,
   },
+] as const;
+
+export const PROCUREMENT_EXTERNAL_SOURCE_POLICY_IDS = [
+  "supplier_public_catalog.default",
+  "market_price_reference.default",
+  "company_public_profile.default",
 ] as const;
 
 export function getExternalSourcePolicy(sourceId: string): ExternalSourcePolicy | null {

@@ -248,6 +248,13 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurement", "procurementEvidenceBuilder.ts"),
       path.join(SRC, "features", "ai", "procurement", "procurementRedaction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic03ExternalIntelGatewayFiles = [
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelProvider.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "externalIntelProviderFlags.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "DisabledExternalIntelProvider.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "ExternalIntelGateway.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "internalFirstExternalGate.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1147,7 +1154,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle131BuyerAccountingFlagsTransportFiles -
         sAuditBattle133CatalogProposalCreationTransportFiles -
         sAuditBattle135SubcontractsSharedTransportFiles -
-        sAiMagic02ProcurementContextEngineFiles,
+        sAiMagic02ProcurementContextEngineFiles -
+        sAiMagic03ExternalIntelGatewayFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

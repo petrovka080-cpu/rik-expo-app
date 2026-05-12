@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
+  evaluateAiExternalIntelGatewayGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
   evaluateAiResponseSmokeNonBlockingContractGuardrail,
@@ -1380,6 +1381,97 @@ describe("architecture anti-regression suite", () => {
         "external_live_fetch_enabled",
         "mobile_external_live_fetch_detected",
         "ui_supabase_import_for_ai_graph_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the AI external intelligence gateway boundary", () => {
+    const passing = evaluateAiExternalIntelGatewayGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return [
+            "GET /agent/external-intel/sources",
+            "POST /agent/external-intel/search/preview",
+            "POST /agent/procurement/external-supplier-candidates/preview",
+            "AGENT_EXTERNAL_INTEL_BFF_CONTRACT",
+            "liveEnabled: false",
+            "finalActionAllowed: false",
+            "supplierConfirmationAllowed: false",
+            "orderCreationAllowed: false",
+            "mutationCount: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("externalIntel")) {
+          return [
+            "ExternalIntelGateway",
+            "DisabledExternalIntelProvider",
+            "new DisabledExternalIntelProvider()",
+            'EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"',
+            "external_policy_not_enabled",
+            "resolveExternalIntelProviderFlags",
+            "AI_EXTERNAL_INTEL_LIVE_ENABLED",
+            "AI_EXTERNAL_INTEL_PROVIDER",
+            "approvedProviderConfigured",
+            "resolveInternalFirstExternalGate",
+            "internal_evidence_required",
+            "marketplace_check_required_for_procurement",
+            "EXTERNAL_SOURCE_REGISTRY",
+            "supplier_public_catalog",
+            "currency_or_macro_reference",
+            "requiresCitation: true",
+            "citationsRequired: true",
+            "citationsForResults",
+            "requiresCheckedAt: true",
+            "checkedAtRequired: true",
+            "checkedAt",
+            "EXTERNAL_LIVE_FETCH_ENABLED = false",
+            "forbiddenForFinalAction: true",
+          ].join("\n");
+        }
+        if (relativePath.includes("procurement")) {
+          return [
+            "previewProcurementExternalSupplierCandidates",
+            "finalActionAllowed: false",
+            "requiresApprovalForAction: true",
+          ].join("\n");
+        }
+        if (relativePath.includes("runAiProcurementExternalIntelMaestro")) {
+          return "runAiProcurementExternalIntelMaestro mutations_created: 0";
+        }
+        if (relativePath.includes("commandCenter")) return "command center";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_external_intel_gateway",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiExternalIntelGatewayGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("externalIntel")) {
+          return "fetch('https://example.com') requiresCitation: false checkedAtRequired: false finalActionAllowed: true";
+        }
+        if (relativePath.includes("commandCenter")) return "ExternalIntelGateway fetch('https://example.com')";
+        if (relativePath.includes("procurement")) return "createOrder() finalActionAllowed: true";
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") return "orderCreationAllowed: true";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "external_disabled_provider_default_missing",
+        "external_internal_first_gate_missing",
+        "mobile_external_fetch_detected",
+        "ui_external_provider_import_detected",
+        "external_mutation_surface_detected",
+        "external_final_action_allowed",
       ]),
     );
   });

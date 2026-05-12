@@ -1,5 +1,5 @@
 import { EXTERNAL_LIVE_FETCH_ENABLED, getExternalSourcePolicy } from "./externalSourceRegistry";
-import type { ExternalSourcePolicy } from "./externalIntelTypes";
+import type { ExternalIntelDomain, ExternalSourcePolicy } from "./externalIntelTypes";
 
 export type ExternalIntelPolicyDecision = {
   allowed: boolean;
@@ -14,13 +14,14 @@ export type ExternalIntelPolicyDecision = {
 };
 
 export function resolveExternalIntelPolicy(params: {
-  domain: string;
+  domain: ExternalIntelDomain | string;
   sourcePolicyIds: readonly string[];
 }): ExternalIntelPolicyDecision {
+  const domain = params.domain as ExternalIntelDomain;
   const policies = params.sourcePolicyIds
     .map((sourceId) => getExternalSourcePolicy(sourceId))
     .filter((policy): policy is ExternalSourcePolicy => policy !== null)
-    .filter((policy) => policy.allowedDomains.includes(params.domain));
+    .filter((policy) => policy.allowedDomains.includes(domain));
 
   return {
     allowed: policies.length > 0,

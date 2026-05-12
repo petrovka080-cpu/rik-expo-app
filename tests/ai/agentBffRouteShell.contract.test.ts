@@ -39,8 +39,11 @@ describe("agent BFF route shell", () => {
       }),
     );
     expect(AGENT_BFF_ROUTE_DEFINITIONS.map((route) => route.endpoint)).toEqual([
+      "GET /agent/external-intel/sources",
+      "POST /agent/external-intel/search/preview",
       "GET /agent/procurement/request-context/:requestId",
       "POST /agent/procurement/supplier-match/preview",
+      "POST /agent/procurement/external-supplier-candidates/preview",
       "POST /agent/procurement/draft-request/preview",
       "POST /agent/procurement/submit-for-approval",
       "GET /agent/app-graph/screen/:screenId",

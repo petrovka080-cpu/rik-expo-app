@@ -29,3 +29,25 @@ export function redactExternalIntelQuery(query: string): ExternalIntelRedactionR
     reason: "External query is redacted and bounded.",
   };
 }
+
+function stableHash(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+export function hashExternalIntelUrl(url: string): string {
+  const normalized = String(url ?? "").trim().toLowerCase();
+  return `url_${stableHash(normalized)}`;
+}
+
+export function redactExternalIntelProviderError(error: unknown): string {
+  void error;
+  if (error instanceof Error && error.message.trim().length > 0) {
+    return "external_provider_error_redacted";
+  }
+  return "external_provider_error_redacted";
+}

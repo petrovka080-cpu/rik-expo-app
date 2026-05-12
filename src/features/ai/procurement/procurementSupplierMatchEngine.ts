@@ -3,8 +3,12 @@ import {
   type CompareSupplierCard,
 } from "../tools/compareSuppliersTool";
 import { runSearchCatalogToolSafeRead } from "../tools/searchCatalogTool";
+import { createExternalIntelGateway, type ExternalIntelGateway } from "../externalIntel/ExternalIntelGateway";
+import { PROCUREMENT_EXTERNAL_SOURCE_POLICY_IDS } from "../externalIntel/externalSourceRegistry";
 import { buildProcurementInternalFirstPlan } from "./procurementInternalFirstEngine";
 import type {
+  ExternalSupplierCandidatesInput,
+  ExternalSupplierCandidatesOutput,
   ProcurementAuthContext,
   ProcurementCatalogReader,
   ProcurementNoMutationProof,
@@ -36,6 +40,7 @@ export type ProcurementSupplierMatchEngineRequest = {
   externalSourcePolicyIds?: readonly string[];
   searchCatalogItems?: ProcurementCatalogReader;
   listSuppliers?: ProcurementSupplierReader;
+  externalGateway?: ExternalIntelGateway;
 };
 
 function proof(toolsCalled: readonly ProcurementSafeToolName[]): ProcurementNoMutationProof {
@@ -117,6 +122,66 @@ function internalEvidenceFromRequest(params: {
     `internal_app:item:${hashOpaqueId("request_item", `${index}:${item.materialLabel}`)}`,
   );
   return uniqueProcurementRefs([...contextRefs, ...requestRef, ...itemRefs]);
+}
+
+function buildExternalSupplierQuery(input: ExternalSupplierCandidatesInput): string {
+  const itemLabels = normalizeItems({ items: input.items }).map((item) => item.materialLabel);
+  const location = normalizeProcurementOptionalText(input.location);
+  return uniqueProcurementRefs([...itemLabels, location ? [`location:${location}`] : []].flat()).join(" ");
+}
+
+export async function previewProcurementExternalSupplierCandidates(params: {
+  auth: ProcurementAuthContext | null;
+  input: ExternalSupplierCandidatesInput;
+  sourcePolicyIds?: readonly string[];
+  externalGateway?: ExternalIntelGateway;
+}): Promise<ExternalSupplierCandidatesOutput> {
+  if (!params.auth || !canUseProcurementRequestContext(params.auth.role)) {
+    return {
+      status: "blocked",
+      internalFirstSummary: "External supplier candidate preview is blocked by role scope.",
+      candidates: [],
+      citations: [],
+      recommendationBoundary: "External candidates cannot create suppliers, orders, requests, or confirmations.",
+      requiresApprovalForAction: true,
+      finalActionAllowed: false,
+      mutationCount: 0,
+    };
+  }
+
+  const gateway = params.externalGateway ?? createExternalIntelGateway();
+  const preview = await gateway.searchPreview({
+    domain: "procurement",
+    query: buildExternalSupplierQuery(params.input),
+    location: params.input.location,
+    internalEvidenceRefs: params.input.internalEvidenceRefs,
+    marketplaceChecked: params.input.marketplaceChecked,
+    sourcePolicyIds: [...(params.sourcePolicyIds ?? PROCUREMENT_EXTERNAL_SOURCE_POLICY_IDS)],
+    limit: params.input.limit,
+  });
+
+  return {
+    status: preview.status,
+    internalFirstSummary:
+      "Internal request evidence and marketplace check are required before external supplier candidates.",
+    candidates: preview.results.map((result) => ({
+      supplierLabel: result.title,
+      sourceId: result.sourceId,
+      publicProfileSummary: result.summary,
+      productMatchSummary: result.summary,
+      priceBucket: "unknown",
+      availabilityBucket: "unknown",
+      riskFlags: ["external_preview_only", "approval_required_for_action"],
+      citationRef: result.evidenceRef,
+      evidenceRefs: [result.evidenceRef],
+    })),
+    citations: preview.citations,
+    recommendationBoundary:
+      "External candidate evidence is preview-only and forbidden for final supplier confirmation or order creation.",
+    requiresApprovalForAction: true,
+    finalActionAllowed: false,
+    mutationCount: 0,
+  };
 }
 
 export async function previewProcurementSupplierMatch(
@@ -220,10 +285,26 @@ export async function previewProcurementSupplierMatch(
     externalSourcePolicyIds: request.externalSourcePolicyIds,
   });
   const supplierCards = supplierResult.data.supplier_cards.map(mapSupplierCard);
+  const externalPreview = request.externalRequested
+    ? await previewProcurementExternalSupplierCandidates({
+        auth: request.auth,
+        input: {
+          requestIdHash: request.input.requestIdHash,
+          items,
+          location: request.input.location,
+          internalEvidenceRefs,
+          marketplaceChecked: true,
+          limit,
+        },
+        sourcePolicyIds: request.externalSourcePolicyIds,
+        externalGateway: request.externalGateway,
+      })
+    : null;
   const evidenceRefs = uniqueProcurementRefs([
     ...internalEvidenceRefs,
     ...marketplaceEvidenceRefs,
     ...internalFirstPlan.evidenceRefs,
+    ...(externalPreview?.candidates.flatMap((candidate) => candidate.evidenceRefs) ?? []),
   ]);
   const status = supplierCards.length > 0 ? "loaded" : "empty";
   const missingData = uniqueProcurementRefs([
@@ -236,14 +317,15 @@ export async function previewProcurementSupplierMatch(
       status,
       internalDataChecked: true,
       marketplaceChecked: true,
-      externalChecked: false,
-      externalStatus: internalFirstPlan.externalStatus,
+      externalChecked: externalPreview?.status === "loaded" || externalPreview?.status === "empty",
+      externalStatus: externalPreview?.status ?? internalFirstPlan.externalStatus,
       supplierCards,
       recommendationSummary: supplierResult.data.recommendation_summary,
       missingData,
       nextAction: status === "loaded" ? "draft_request" : "explain",
       requiresApproval: true,
       evidenceRefs,
+      externalCitations: externalPreview?.citations,
     },
     proof: proof(toolsCalled),
   };

@@ -1,4 +1,8 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
+import type {
+  ExternalIntelCitation,
+  ExternalIntelSearchStatus,
+} from "../externalIntel/externalIntelTypes";
 import type { CatalogItem, Supplier } from "../../../lib/catalog/catalog.types";
 
 export type ProcurementContextStatus = "loaded" | "empty" | "blocked";
@@ -92,7 +96,11 @@ export type ProcurementInternalFirstPlan = {
   internalDataChecked: true;
   marketplaceChecked: boolean;
   externalChecked: false;
-  externalStatus: "not_requested" | "external_policy_not_enabled" | "external_policy_blocked";
+  externalStatus:
+    | "not_requested"
+    | "external_policy_not_enabled"
+    | "external_policy_blocked"
+    | "external_provider_not_configured";
   evidenceRefs: string[];
   missingData: string[];
   violations: string[];
@@ -117,7 +125,14 @@ export type SupplierMatchPreviewOutput = {
   internalDataChecked: true;
   marketplaceChecked: true;
   externalChecked: boolean;
-  externalStatus?: "not_requested" | "external_policy_not_enabled" | "external_policy_blocked";
+  externalStatus?:
+    | "not_requested"
+    | "external_policy_not_enabled"
+    | "external_policy_blocked"
+    | "external_provider_not_configured"
+    | "loaded"
+    | "empty"
+    | "blocked";
   supplierCards: {
     supplierLabel: string;
     priceBucket?: "low" | "medium" | "high" | "unknown";
@@ -131,6 +146,7 @@ export type SupplierMatchPreviewOutput = {
   nextAction: "draft_request" | "explain" | "blocked";
   requiresApproval: true;
   evidenceRefs: string[];
+  externalCitations?: ExternalIntelCitation[];
 };
 
 export type ProcurementSafeToolName = "search_catalog" | "compare_suppliers" | "draft_request";
@@ -221,4 +237,39 @@ export type ProcurementApprovalPreviewOutput = {
   mutationCount: 0;
   finalExecution: 0;
   evidenceRefs: string[];
+};
+
+export type ExternalSupplierCandidatesInput = {
+  requestIdHash?: string;
+  items: {
+    materialLabel: string;
+    category?: string;
+    quantity?: number;
+    unit?: string;
+  }[];
+  location?: string;
+  internalEvidenceRefs: string[];
+  marketplaceChecked: true;
+  limit?: number;
+};
+
+export type ExternalSupplierCandidatesOutput = {
+  status: ExternalIntelSearchStatus;
+  internalFirstSummary: string;
+  candidates: {
+    supplierLabel: string;
+    sourceId: string;
+    publicProfileSummary: string;
+    productMatchSummary: string;
+    priceBucket?: "low" | "medium" | "high" | "unknown";
+    availabilityBucket?: "available" | "limited" | "unknown";
+    riskFlags: string[];
+    citationRef: string;
+    evidenceRefs: string[];
+  }[];
+  citations: ExternalIntelCitation[];
+  recommendationBoundary: string;
+  requiresApprovalForAction: true;
+  finalActionAllowed: false;
+  mutationCount: 0;
 };

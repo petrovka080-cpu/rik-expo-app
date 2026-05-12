@@ -23,7 +23,13 @@ import type {
 } from "../appGraph/aiAppActionTypes";
 import { resolveInternalFirstDecision } from "../intelligence/internalFirstPolicy";
 import { resolveExternalIntel } from "../externalIntel/externalIntelResolver";
-import type { ExternalIntelCitation } from "../externalIntel/externalIntelTypes";
+import { createExternalIntelGateway } from "../externalIntel/ExternalIntelGateway";
+import type {
+  ExternalIntelCitation,
+  ExternalIntelSearchPreviewInput,
+  ExternalIntelSearchPreviewOutput,
+  ExternalIntelSourcesResponse,
+} from "../externalIntel/externalIntelTypes";
 import { AI_PERSISTENT_APPROVAL_QUEUE_READINESS } from "../approval/aiApprovalTypes";
 import {
   buildProcurementDraftPreview,
@@ -32,9 +38,12 @@ import {
 import { resolveProcurementRequestContext } from "../procurement/procurementRequestContextResolver";
 import {
   previewProcurementSupplierMatch,
+  previewProcurementExternalSupplierCandidates,
   type ProcurementSupplierMatchEngineRequest,
 } from "../procurement/procurementSupplierMatchEngine";
 import type {
+  ExternalSupplierCandidatesInput,
+  ExternalSupplierCandidatesOutput,
   ProcurementApprovalPreviewInput,
   ProcurementApprovalPreviewOutput,
   ProcurementDraftPreviewOutput,
@@ -58,8 +67,11 @@ export type AgentBffRouteOperation =
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
   | "agent.intel.compare"
+  | "agent.external_intel.sources.read"
+  | "agent.external_intel.search.preview"
   | "agent.procurement.request_context.read"
   | "agent.procurement.supplier_match.preview"
+  | "agent.procurement.external_supplier_candidates.preview"
   | "agent.procurement.draft_request.preview"
   | "agent.procurement.submit_for_approval";
 
@@ -81,6 +93,7 @@ export type AgentBffRouteDefinition = {
     | "AgentTaskStreamEnvelope"
     | "AgentAppGraphEnvelope"
     | "AgentIntelCompareEnvelope"
+    | "AgentExternalIntelEnvelope"
     | "AgentProcurementEnvelope";
 };
 
@@ -129,6 +142,12 @@ export type AgentIntelCompareRequest = AgentBffShellRequest & {
   input: AgentIntelCompareInput;
 };
 
+export type AgentExternalIntelSourcesRequest = AgentBffShellRequest;
+
+export type AgentExternalIntelSearchPreviewRequest = AgentBffShellRequest & {
+  input: ExternalIntelSearchPreviewInput;
+};
+
 export type AgentProcurementRequestContextRequest = AgentBffShellRequest & {
   requestId: string;
   screenId: string;
@@ -144,6 +163,10 @@ export type AgentProcurementSupplierMatchRequest = AgentBffShellRequest & {
   externalSourcePolicyIds?: readonly string[];
   searchCatalogItems?: ProcurementSupplierMatchEngineRequest["searchCatalogItems"];
   listSuppliers?: ProcurementSupplierMatchEngineRequest["listSuppliers"];
+};
+
+export type AgentProcurementExternalSupplierCandidatesRequest = AgentBffShellRequest & {
+  input: ExternalSupplierCandidatesInput;
 };
 
 export type AgentProcurementDraftRequestPreviewRequest = AgentBffShellRequest & {
@@ -264,6 +287,35 @@ export type AgentIntelCompareDto = {
   dbAccessedDirectly: false;
 };
 
+export type AgentExternalIntelSourcesDto = {
+  contractId: "agent_external_intel_bff_v1";
+  documentType: "agent_external_intel_sources";
+  endpoint: "GET /agent/external-intel/sources";
+  result: ExternalIntelSourcesResponse;
+  roleScoped: true;
+  readOnly: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentExternalIntelSearchPreviewDto = {
+  contractId: "agent_external_intel_bff_v1";
+  documentType: "agent_external_intel_search_preview";
+  endpoint: "POST /agent/external-intel/search/preview";
+  result: ExternalIntelSearchPreviewOutput;
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: boolean;
+  dbAccessedDirectly: false;
+};
+
+export type AgentExternalIntelDto =
+  | AgentExternalIntelSourcesDto
+  | AgentExternalIntelSearchPreviewDto;
+
 export type AgentProcurementRequestContextDto = {
   contractId: "agent_procurement_bff_v1";
   documentType: "agent_procurement_request_context";
@@ -283,6 +335,19 @@ export type AgentProcurementSupplierMatchDto = {
   endpoint: "POST /agent/procurement/supplier-match/preview";
   result: SupplierMatchPreviewOutput;
   toolBoundary: "search_catalog_and_compare_suppliers_only";
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentProcurementExternalSupplierCandidatesDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_external_supplier_candidates_preview";
+  endpoint: "POST /agent/procurement/external-supplier-candidates/preview";
+  result: ExternalSupplierCandidatesOutput;
   roleScoped: true;
   readOnly: true;
   evidenceBacked: true;
@@ -322,6 +387,7 @@ export type AgentProcurementSubmitForApprovalDto = {
 export type AgentProcurementDto =
   | AgentProcurementRequestContextDto
   | AgentProcurementSupplierMatchDto
+  | AgentProcurementExternalSupplierCandidatesDto
   | AgentProcurementDraftRequestPreviewDto
   | AgentProcurementSubmitForApprovalDto;
 
@@ -350,6 +416,19 @@ export type AgentIntelCompareEnvelope =
       ok: false;
       error: {
         code: "AGENT_INTEL_COMPARE_AUTH_REQUIRED" | "AGENT_INTEL_COMPARE_INVALID_INPUT";
+        message: string;
+      };
+    };
+
+export type AgentExternalIntelEnvelope =
+  | {
+      ok: true;
+      data: AgentExternalIntelDto;
+    }
+  | {
+      ok: false;
+      error: {
+        code: "AGENT_EXTERNAL_INTEL_AUTH_REQUIRED" | "AGENT_EXTERNAL_INTEL_INVALID_INPUT";
         message: string;
       };
     };
@@ -569,12 +648,35 @@ export const AGENT_APP_GRAPH_BFF_CONTRACT = Object.freeze({
   executionEnabled: false,
 } as const);
 
+export const AGENT_EXTERNAL_INTEL_BFF_CONTRACT = Object.freeze({
+  contractId: "agent_external_intel_bff_v1",
+  documentType: "agent_external_intel",
+  endpoints: [
+    "GET /agent/external-intel/sources",
+    "POST /agent/external-intel/search/preview",
+  ],
+  liveEnabled: false,
+  provider: "disabled",
+  readOnly: true,
+  roleScoped: true,
+  citationsRequired: true,
+  checkedAtRequired: true,
+  rawHtmlReturned: false,
+  mutationCount: 0,
+  directDatabaseAccess: 0,
+  modelProviderImports: 0,
+  finalActionAllowed: false,
+  supplierConfirmationAllowed: false,
+  orderCreationAllowed: false,
+} as const);
+
 export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
   contractId: "agent_procurement_bff_v1",
   documentType: "agent_procurement",
   endpoints: [
     "GET /agent/procurement/request-context/:requestId",
     "POST /agent/procurement/supplier-match/preview",
+    "POST /agent/procurement/external-supplier-candidates/preview",
     "POST /agent/procurement/draft-request/preview",
     "POST /agent/procurement/submit-for-approval",
   ],
@@ -590,6 +692,32 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
 } as const);
 
 export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
+  {
+    operation: "agent.external_intel.sources.read",
+    method: "GET",
+    endpoint: "GET /agent/external-intel/sources",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentExternalIntelEnvelope",
+  },
+  {
+    operation: "agent.external_intel.search.preview",
+    method: "POST",
+    endpoint: "POST /agent/external-intel/search/preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentExternalIntelEnvelope",
+  },
   {
     operation: "agent.procurement.request_context.read",
     method: "GET",
@@ -607,6 +735,19 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     operation: "agent.procurement.supplier_match.preview",
     method: "POST",
     endpoint: "POST /agent/procurement/supplier-match/preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.external_supplier_candidates.preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/external-supplier-candidates/preview",
     authRequired: true,
     roleFiltered: true,
     mutates: false,
@@ -1158,6 +1299,62 @@ export function compareAgentIntel(
   };
 }
 
+function externalIntelAuthRequiredError(): AgentExternalIntelEnvelope {
+  return {
+    ok: false,
+    error: {
+      code: "AGENT_EXTERNAL_INTEL_AUTH_REQUIRED",
+      message: "Agent external intelligence route requires authenticated role context",
+    },
+  };
+}
+
+export function getAgentExternalIntelSources(
+  request: AgentExternalIntelSourcesRequest,
+): AgentExternalIntelEnvelope {
+  if (!isAuthenticated(request.auth)) return externalIntelAuthRequiredError();
+
+  const gateway = createExternalIntelGateway();
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_EXTERNAL_INTEL_BFF_CONTRACT.contractId,
+      documentType: "agent_external_intel_sources",
+      endpoint: "GET /agent/external-intel/sources",
+      result: gateway.listSources(),
+      roleScoped: true,
+      readOnly: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export async function previewAgentExternalIntelSearch(
+  request: AgentExternalIntelSearchPreviewRequest,
+): Promise<AgentExternalIntelEnvelope> {
+  if (!isAuthenticated(request.auth)) return externalIntelAuthRequiredError();
+
+  const gateway = createExternalIntelGateway();
+  const result = await gateway.searchPreview(request.input);
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_EXTERNAL_INTEL_BFF_CONTRACT.contractId,
+      documentType: "agent_external_intel_search_preview",
+      endpoint: "POST /agent/external-intel/search/preview",
+      result,
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: result.providerCalled,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
 function procurementAuthRequiredError(): AgentProcurementEnvelope {
   return {
     ok: false,
@@ -1223,6 +1420,33 @@ export async function previewAgentProcurementSupplierMatch(
       endpoint: "POST /agent/procurement/supplier-match/preview",
       result: result.output,
       toolBoundary: "search_catalog_and_compare_suppliers_only",
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export async function previewAgentProcurementExternalSupplierCandidates(
+  request: AgentProcurementExternalSupplierCandidatesRequest,
+): Promise<AgentProcurementEnvelope> {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = await previewProcurementExternalSupplierCandidates({
+    auth: request.auth,
+    input: request.input,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_external_supplier_candidates_preview",
+      endpoint: "POST /agent/procurement/external-supplier-candidates/preview",
+      result,
       roleScoped: true,
       readOnly: true,
       evidenceBacked: true,

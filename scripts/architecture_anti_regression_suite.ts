@@ -421,6 +421,27 @@ export type AiProcurementContextEngineArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiExternalIntelGatewayArchitectureSummary = {
+  gatewayFilesPresent: boolean;
+  sourceRegistryPresent: boolean;
+  disabledProviderDefault: boolean;
+  providerFlagsPresent: boolean;
+  internalFirstGatePresent: boolean;
+  bffRouteContractPresent: boolean;
+  procurementExternalCandidatesPresent: boolean;
+  citationPolicyPresent: boolean;
+  checkedAtPolicyPresent: boolean;
+  externalLiveFetchDisabledByDefault: boolean;
+  noMobileExternalFetch: boolean;
+  noUiProviderImport: boolean;
+  noRawHtmlToMobile: boolean;
+  noSecretsInSourceOrArtifacts: boolean;
+  noAuthAdminOrServiceRole: boolean;
+  noMutationSurface: boolean;
+  externalFinalActionForbidden: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -616,6 +637,7 @@ export type ArchitectureAntiRegressionReport = {
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
   aiProcurementContextEngine: AiProcurementContextEngineArchitectureSummary;
+  aiExternalIntelGateway: AiExternalIntelGatewayArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -726,6 +748,11 @@ const AI_EXTERNAL_INTEL_FILES = [
   "src/features/ai/externalIntel/externalIntelPolicy.ts",
   "src/features/ai/externalIntel/externalIntelResolver.ts",
   "src/features/ai/externalIntel/externalIntelRedaction.ts",
+  "src/features/ai/externalIntel/externalIntelProviderFlags.ts",
+  "src/features/ai/externalIntel/externalIntelProvider.ts",
+  "src/features/ai/externalIntel/DisabledExternalIntelProvider.ts",
+  "src/features/ai/externalIntel/ExternalIntelGateway.ts",
+  "src/features/ai/externalIntel/internalFirstExternalGate.ts",
 ] as const;
 const AI_PROCUREMENT_CONTEXT_ENGINE_FILES = [
   "src/features/ai/procurement/procurementContextTypes.ts",
@@ -739,6 +766,8 @@ const AI_PROCUREMENT_CONTEXT_ENGINE_FILES = [
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
 const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
   "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
+const AI_EXTERNAL_INTEL_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiProcurementExternalIntelMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -2862,6 +2891,160 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
   };
 }
 
+export function evaluateAiExternalIntelGatewayGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiExternalIntelGatewayArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const externalIntelSources = AI_EXTERNAL_INTEL_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const externalIntelSource = externalIntelSources.join("\n");
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const procurementSource = AI_PROCUREMENT_CONTEXT_ENGINE_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+  const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_EXTERNAL_INTEL_E2E_RUNNER_PATH }) ?? "";
+  const artifactSource = [
+    "artifacts/S_AI_MAGIC_03_EXTERNAL_INTEL_GATEWAY_inventory.json",
+    "artifacts/S_AI_MAGIC_03_EXTERNAL_INTEL_GATEWAY_matrix.json",
+    "artifacts/S_AI_MAGIC_03_EXTERNAL_INTEL_GATEWAY_emulator.json",
+    "artifacts/S_AI_MAGIC_03_EXTERNAL_INTEL_GATEWAY_proof.md",
+  ].map((relativePath) => safeReadProjectFile({ readFile, relativePath }) ?? "").join("\n");
+
+  const gatewayFilesPresent =
+    externalIntelSources.every((source) => source.length > 0) &&
+    externalIntelSource.includes("ExternalIntelGateway") &&
+    externalIntelSource.includes("DisabledExternalIntelProvider");
+  const sourceRegistryPresent =
+    externalIntelSource.includes("EXTERNAL_SOURCE_REGISTRY") &&
+    externalIntelSource.includes("supplier_public_catalog") &&
+    externalIntelSource.includes("currency_or_macro_reference");
+  const disabledProviderDefault =
+    externalIntelSource.includes('EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"') &&
+    externalIntelSource.includes("new DisabledExternalIntelProvider()") &&
+    externalIntelSource.includes("external_policy_not_enabled");
+  const providerFlagsPresent =
+    externalIntelSource.includes("resolveExternalIntelProviderFlags") &&
+    externalIntelSource.includes("AI_EXTERNAL_INTEL_LIVE_ENABLED") &&
+    externalIntelSource.includes("AI_EXTERNAL_INTEL_PROVIDER") &&
+    externalIntelSource.includes("approvedProviderConfigured");
+  const internalFirstGatePresent =
+    externalIntelSource.includes("resolveInternalFirstExternalGate") &&
+    externalIntelSource.includes("internal_evidence_required") &&
+    externalIntelSource.includes("marketplace_check_required_for_procurement");
+  const bffRouteContractPresent =
+    shellSource.includes("GET /agent/external-intel/sources") &&
+    shellSource.includes("POST /agent/external-intel/search/preview") &&
+    shellSource.includes("POST /agent/procurement/external-supplier-candidates/preview") &&
+    shellSource.includes("AGENT_EXTERNAL_INTEL_BFF_CONTRACT");
+  const procurementExternalCandidatesPresent =
+    procurementSource.includes("previewProcurementExternalSupplierCandidates") &&
+    procurementSource.includes("finalActionAllowed: false") &&
+    procurementSource.includes("requiresApprovalForAction: true");
+  const citationPolicyPresent =
+    externalIntelSource.includes("requiresCitation: true") &&
+    externalIntelSource.includes("citationsRequired: true") &&
+    externalIntelSource.includes("citationsForResults") &&
+    !/requiresCitation:\s*false|citationsRequired:\s*false/.test(externalIntelSource);
+  const checkedAtPolicyPresent =
+    externalIntelSource.includes("requiresCheckedAt: true") &&
+    externalIntelSource.includes("checkedAtRequired: true") &&
+    externalIntelSource.includes("checkedAt") &&
+    !/requiresCheckedAt:\s*false|checkedAtRequired:\s*false/.test(externalIntelSource);
+  const externalLiveFetchDisabledByDefault =
+    externalIntelSource.includes("EXTERNAL_LIVE_FETCH_ENABLED = false") &&
+    externalIntelSource.includes('EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"') &&
+    shellSource.includes("liveEnabled: false");
+  const noMobileExternalFetch =
+    !/\bfetch\s*\(|\bXMLHttpRequest\b|cheerio|puppeteer|uncontrolled_scraping/i.test(
+      `${externalIntelSource}\n${commandCenterSource}`,
+    );
+  const noUiProviderImport =
+    !/ExternalIntelGateway|DisabledExternalIntelProvider|externalIntelProvider|approved_search_api/i.test(
+      commandCenterSource,
+    );
+  const noRawHtmlToMobile =
+    !/\brawHtml\s*:|\bhtml\s*:|raw_html_payload|rawHtmlBody/i.test(
+      `${externalIntelSource}\n${shellSource}\n${procurementSource}`,
+    );
+  const noSecretsInSourceOrArtifacts =
+    !/(?:sk-[A-Za-z0-9_-]{12,}|AIza[0-9A-Za-z_-]{20,}|Bearer\s+[0-9A-Za-z._-]{12,}|apiKey:\s*["'][^"']+["'])/.test(
+      `${externalIntelSource}\n${artifactSource}`,
+    );
+  const noAuthAdminOrServiceRole =
+    !/\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      `${externalIntelSource}\n${shellSource}\n${procurementSource}`,
+    );
+  const noMutationSurface =
+    !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(|\bcreateOrder\b|\bconfirmSupplier\b|\bsendRfq\b|\bwarehouseMutation\b|\bsendDocument\b/i.test(
+      `${externalIntelSource}\n${procurementSource}`,
+    ) &&
+    shellSource.includes("mutationCount: 0") &&
+    e2eRunnerSource.includes("mutations_created: 0");
+  const externalFinalActionForbidden =
+    externalIntelSource.includes("forbiddenForFinalAction: true") &&
+    procurementSource.includes("finalActionAllowed: false") &&
+    shellSource.includes("finalActionAllowed: false") &&
+    !/forbiddenForFinalAction:\s*false|finalActionAllowed:\s*true|supplierConfirmationAllowed:\s*true|orderCreationAllowed:\s*true/.test(
+      `${externalIntelSource}\n${procurementSource}\n${shellSource}`,
+    );
+  const findings = [
+    ...(gatewayFilesPresent ? [] : ["external_intel_gateway_files_missing"]),
+    ...(sourceRegistryPresent ? [] : ["external_source_registry_missing"]),
+    ...(disabledProviderDefault ? [] : ["external_disabled_provider_default_missing"]),
+    ...(providerFlagsPresent ? [] : ["external_provider_flags_missing"]),
+    ...(internalFirstGatePresent ? [] : ["external_internal_first_gate_missing"]),
+    ...(bffRouteContractPresent ? [] : ["external_intel_bff_route_contract_missing"]),
+    ...(procurementExternalCandidatesPresent ? [] : ["procurement_external_candidates_missing"]),
+    ...(citationPolicyPresent ? [] : ["external_citation_policy_missing"]),
+    ...(checkedAtPolicyPresent ? [] : ["external_checked_at_policy_missing"]),
+    ...(externalLiveFetchDisabledByDefault ? [] : ["external_live_fetch_default_true"]),
+    ...(noMobileExternalFetch ? [] : ["mobile_external_fetch_detected"]),
+    ...(noUiProviderImport ? [] : ["ui_external_provider_import_detected"]),
+    ...(noRawHtmlToMobile ? [] : ["raw_html_mobile_payload_detected"]),
+    ...(noSecretsInSourceOrArtifacts ? [] : ["external_provider_secret_detected"]),
+    ...(noAuthAdminOrServiceRole ? [] : ["external_auth_admin_or_service_role_detected"]),
+    ...(noMutationSurface ? [] : ["external_mutation_surface_detected"]),
+    ...(externalFinalActionForbidden ? [] : ["external_final_action_allowed"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_external_intel_gateway",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      gatewayFilesPresent,
+      sourceRegistryPresent,
+      disabledProviderDefault,
+      providerFlagsPresent,
+      internalFirstGatePresent,
+      bffRouteContractPresent,
+      procurementExternalCandidatesPresent,
+      citationPolicyPresent,
+      checkedAtPolicyPresent,
+      externalLiveFetchDisabledByDefault,
+      noMobileExternalFetch,
+      noUiProviderImport,
+      noRawHtmlToMobile,
+      noSecretsInSourceOrArtifacts,
+      noAuthAdminOrServiceRole,
+      noMutationSurface,
+      externalFinalActionForbidden,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -4748,6 +4931,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
   const aiProcurementContextEngine = evaluateAiProcurementContextEngineGuardrail({ projectRoot });
+  const aiExternalIntelGateway = evaluateAiExternalIntelGatewayGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -4783,6 +4967,7 @@ export function runArchitectureAntiRegressionSuite(
     aiCommandCenterTaskStreamRuntime.check,
     aiAppActionGraphArchitecture.check,
     aiProcurementContextEngine.check,
+    aiExternalIntelGateway.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -4819,6 +5004,7 @@ export function runArchitectureAntiRegressionSuite(
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
     aiProcurementContextEngine: aiProcurementContextEngine.summary,
+    aiExternalIntelGateway: aiExternalIntelGateway.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -4878,6 +5064,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_app_action_graph_external_live_fetch: ${report.aiAppActionGraphArchitecture.externalLiveFetchDisabled}`);
   console.info(`ai_procurement_context_engine: ${report.aiProcurementContextEngine.procurementFilesPresent}`);
   console.info(`ai_procurement_context_no_final_mutation: ${report.aiProcurementContextEngine.submitForApprovalNoFinalExecution}`);
+  console.info(`ai_external_intel_gateway: ${report.aiExternalIntelGateway.gatewayFilesPresent}`);
+  console.info(`ai_external_intel_gateway_disabled_default: ${report.aiExternalIntelGateway.disabledProviderDefault}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

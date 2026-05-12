@@ -1,5 +1,6 @@
 import { resolveExternalIntelPolicy } from "../../src/features/ai/externalIntel/externalIntelPolicy";
 import { resolveExternalIntel } from "../../src/features/ai/externalIntel/externalIntelResolver";
+import { resolveExternalIntelProviderFlags } from "../../src/features/ai/externalIntel/externalIntelProviderFlags";
 import { EXTERNAL_LIVE_FETCH_ENABLED, EXTERNAL_SOURCE_REGISTRY } from "../../src/features/ai/externalIntel/externalSourceRegistry";
 
 describe("AI external intelligence policy foundation", () => {
@@ -36,6 +37,29 @@ describe("AI external intelligence policy foundation", () => {
       externalLiveFetchEnabled: false,
       citationsRequired: true,
       finalActionForbidden: true,
+    });
+  });
+
+  it("does not enable live external lookup without explicit approved env policy", () => {
+    expect(resolveExternalIntelProviderFlags({})).toMatchObject({
+      externalLiveFetchEnabled: false,
+      provider: "disabled",
+      requireInternalEvidence: true,
+      requireMarketplaceCheck: true,
+      requireCitations: true,
+      approvedProviderConfigured: false,
+    });
+    expect(
+      resolveExternalIntelProviderFlags({
+        AI_EXTERNAL_INTEL_LIVE_ENABLED: "true",
+        AI_EXTERNAL_INTEL_PROVIDER: "approved_search_api",
+        AI_EXTERNAL_INTEL_REQUIRE_INTERNAL_EVIDENCE: "true",
+        AI_EXTERNAL_INTEL_REQUIRE_CITATIONS: "true",
+      }),
+    ).toMatchObject({
+      externalLiveFetchEnabled: true,
+      provider: "approved_search_api",
+      approvedProviderConfigured: false,
     });
   });
 });
