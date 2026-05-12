@@ -41,7 +41,10 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   ].includes(file);
 
 const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
-  file === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+  [
+    "supabase/migrations/20260512120000_ai_action_ledger.sql",
+    "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
+  ].includes(file);
 
 const isLaterApprovedRpcValidationPatch = (file: string) =>
   ["src/lib/api/integrity.guards.ts"].includes(file);

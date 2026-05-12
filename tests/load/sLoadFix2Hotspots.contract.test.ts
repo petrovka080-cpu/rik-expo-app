@@ -34,7 +34,10 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   ].includes(file.replace(/\\/g, "/"));
 
 const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
-  file.replace(/\\/g, "/") === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+  [
+    "supabase/migrations/20260512120000_ai_action_ledger.sql",
+    "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
+  ].includes(file.replace(/\\/g, "/"));
 
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
   it("documents the S-LOAD-4 hotspot baseline and code-ready status", () => {

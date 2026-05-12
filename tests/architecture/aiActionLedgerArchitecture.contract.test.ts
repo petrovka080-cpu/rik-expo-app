@@ -13,6 +13,11 @@ describe("AI persistent action ledger architecture", () => {
       expect.objectContaining({
         ledgerFilesPresent: true,
         migrationProposalPresent: true,
+        auditStorageProposalPresent: true,
+        rlsPolicyProposalPresent: true,
+        rpcContractProposalPresent: true,
+        lifecycleDbGuardProposalPresent: true,
+        noServiceRoleGrantInLedgerBackend: true,
         bffRoutesPresent: true,
         submitForApprovalPersistsPending: true,
         getActionStatusReadsPersistedStatus: true,

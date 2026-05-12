@@ -51,7 +51,10 @@ const isLaterApprovedWarehouseIssueSourcePatch = (file: string) =>
   ].includes(file.replace(/\\/g, "/"));
 
 const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
-  normalizePath(file) === "supabase/migrations/20260512120000_ai_action_ledger.sql";
+  [
+    "supabase/migrations/20260512120000_ai_action_ledger.sql",
+    "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
+  ].includes(normalizePath(file));
 
 const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
   [

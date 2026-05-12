@@ -1693,6 +1693,35 @@ describe("architecture anti-regression suite", () => {
             "create index if not exists ai_action_ledger_org_status_created_idx",
           ].join("\n");
         }
+        if (relativePath === "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql") {
+          return [
+            "create table if not exists public.ai_action_ledger_audit",
+            "ai.action.submitted_for_approval",
+            "ai.action.idempotency_reused",
+            "ai_action_ledger_audit_payload_redacted_check",
+            "create index if not exists ai_action_ledger_audit_action_created_idx",
+            "alter table public.ai_action_ledger enable row level security",
+            "alter table public.ai_action_ledger_audit enable row level security",
+            "force row level security",
+            "ai_action_ledger_select_company_scope",
+            "ai_action_ledger_insert_pending_company_scope",
+            "ai_action_ledger_update_manage_scope",
+            "ai_action_ledger_audit_insert_company_scope",
+            "ai_action_ledger_submit_for_approval_v1",
+            "ai_action_ledger_get_status_v1",
+            "ai_action_ledger_approve_v1",
+            "ai_action_ledger_reject_v1",
+            "ai_action_ledger_execute_approved_v1",
+            "security invoker",
+            "BLOCKED_DOMAIN_EXECUTOR_NOT_READY",
+            "'finalExecution', false",
+            "ai_action_ledger_lifecycle_guard_v1",
+            "old.status = 'pending'",
+            "old.status = 'approved'",
+            "status transition is blocked",
+            "trg_ai_action_ledger_lifecycle_guard_v1",
+          ].join("\n");
+        }
         if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
           return "AgentActionLedgerEnvelope\nagent.action.execute_approved";
         }
@@ -1805,6 +1834,9 @@ describe("architecture anti-regression suite", () => {
     expect(failing.check.errors).toEqual(
       expect.arrayContaining([
         "ai_action_ledger_files_missing",
+        "ai_action_ledger_audit_storage_proposal_missing",
+        "ai_action_ledger_rls_policy_proposal_missing",
+        "ai_action_ledger_rpc_contract_proposal_missing",
         "ai_action_ledger_bff_routes_missing",
         "submit_for_approval_not_persistent_pending",
         "ai_action_ledger_fake_local_approval_detected",
