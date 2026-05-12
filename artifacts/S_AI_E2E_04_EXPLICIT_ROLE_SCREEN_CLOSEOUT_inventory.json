@@ -1,0 +1,32 @@
+{
+  "wave": "S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_E2E_CLOSEOUT",
+  "runtime_commands_executed": [
+    "npx tsx scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+    "npx tsx scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_CLOSEOUT_matrix.json",
+    "artifacts/S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_CLOSEOUT_emulator.json",
+    "artifacts/S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_CLOSEOUT_inventory.json",
+    "artifacts/S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_CLOSEOUT_proof.md"
+  ],
+  "android_build_id": "de638c48-66a8-48d8-a438-28c914d1c1b3",
+  "android_git_commit_hash": "83e325aaa67c324949fd29b8f927b31014d6192c",
+  "runtime_smoke_passed": true,
+  "explicit_role_secrets_present": true,
+  "roles_attempted": [
+    "director",
+    "foreman",
+    "buyer",
+    "accountant",
+    "contractor"
+  ],
+  "blocker": "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
+  "redaction": {
+    "credentials_in_source": false,
+    "credentials_in_cli_args": false,
+    "credentials_in_artifacts": false,
+    "secrets_printed": false,
+    "raw_prompt_context_payload_stored": false
+  }
+}

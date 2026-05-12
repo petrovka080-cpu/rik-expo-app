@@ -1,51 +1,30 @@
 {
-  "wave": "S_AI_E2E_04_EXPLICIT_ROLE_SCREEN_E2E_CLOSEOUT",
-  "final_status": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
-  "android": {
-    "adb_devices_initial": "emulator-5554 device",
-    "package_name": "com.azisbek_dzhantaev.rikexpoapp",
-    "build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
-    "build_profile": "preview",
-    "version_code": "7",
-    "version_name": "1.0.0",
-    "runtime_smoke": "PASS",
-    "apk_installed_on_emulator": true,
-    "emulator_boot_completed": true,
-    "physical_device_required": false,
-    "google_play_submit": false,
-    "anr_observed": false,
-    "crash_screen_observed": false,
-    "fake_emulator_pass": false
-  },
-  "resolver": {
-    "file": "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts",
-    "role_auth_source": "explicit_env",
-    "all_role_credentials_resolved": true,
-    "missing_required_env_count": 0,
-    "credentials_printed": false
-  },
-  "runner": {
-    "file": "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
-    "framework": "maestro",
-    "device": "android",
-    "credential_transport": "child_process.env",
-    "blocked_before_login": false,
-    "blocked_before_maestro_flow_execution": false,
-    "exact_reason": "All five Maestro role flows failed because id ai.assistant.input was not visible.",
-    "credentials_in_cli_args": false,
-    "credentials_printed": false,
-    "stdout_redacted": true,
-    "stderr_redacted": true
-  },
-  "flows": {
-    "director": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
-    "foreman": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
-    "buyer": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
-    "accountant": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
-    "contractor": "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
-  },
+  "final_status": "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
+  "device": "emulator-5554",
+  "android_package": "com.azisbek_dzhantaev.rikexpoapp",
+  "android_runtime_smoke": "PASS",
+  "apk_installed_on_emulator": true,
+  "physical_device_required": false,
+  "google_play_submit": false,
+  "fake_emulator_pass": false,
+  "android_build_id": "de638c48-66a8-48d8-a438-28c914d1c1b3",
+  "android_git_commit_hash": "83e325aaa67c324949fd29b8f927b31014d6192c",
+  "maestro_framework": "maestro",
+  "role_auth_source": "explicit_env",
+  "all_role_credentials_resolved": true,
+  "credentials_in_cli_args": false,
+  "credentials_printed": false,
+  "stdout_redacted": true,
+  "stderr_redacted": true,
+  "flows_attempted": [
+    "director",
+    "foreman",
+    "buyer",
+    "accountant",
+    "contractor"
+  ],
+  "flow_result": "5/5 BLOCKED",
+  "blocker": "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
   "mutations_created": 0,
-  "approval_required_observed": false,
-  "role_leakage_observed": false,
-  "fake_pass_claimed": false
+  "role_leakage_observed": false
 }
