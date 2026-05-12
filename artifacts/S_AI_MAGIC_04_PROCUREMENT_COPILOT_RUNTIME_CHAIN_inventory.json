@@ -1,0 +1,53 @@
+{
+  "wave": "S_AI_MAGIC_04_PROCUREMENT_COPILOT_RUNTIME_CHAIN",
+  "final_status": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "contract_status": "GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_CHAIN_READY",
+  "created_source_files": [
+    "src/features/ai/procurementCopilot/procurementCopilotTypes.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotPlanEngine.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotEvidence.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotDraftBridge.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotExternalBridge.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotRedaction.ts",
+    "src/features/ai/procurementCopilot/procurementCopilotActionPolicy.ts"
+  ],
+  "updated_source_files": [
+    "src/features/ai/agent/agentBffRouteShell.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "scripts/e2e/runAiProcurementCopilotMaestro.ts"
+  ],
+  "created_tests": [
+    "tests/ai/procurementCopilotPlanEngine.contract.test.ts",
+    "tests/ai/procurementCopilotInternalFirst.contract.test.ts",
+    "tests/ai/procurementCopilotDraftPreview.contract.test.ts",
+    "tests/ai/procurementCopilotExternalBridge.contract.test.ts",
+    "tests/ai/procurementCopilotActionSafety.contract.test.ts",
+    "tests/ai/procurementCopilotRoleScope.contract.test.ts",
+    "tests/ai/procurementCopilotRedaction.contract.test.ts",
+    "tests/architecture/procurementCopilotArchitecture.contract.test.ts",
+    "tests/e2e/aiProcurementCopilotRuntime.e2e.test.ts"
+  ],
+  "updated_tests": [
+    "tests/ai/agentBffRouteShell.contract.test.ts",
+    "tests/architecture/agentBffNoMutation.contract.test.ts",
+    "tests/architecture/architectureAntiRegressionSuite.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "bff_routes": [
+    "GET /agent/procurement/copilot/context",
+    "POST /agent/procurement/copilot/plan",
+    "POST /agent/procurement/copilot/draft-preview",
+    "POST /agent/procurement/copilot/submit-for-approval-preview"
+  ],
+  "android_build_blocker": "EAS Android free-plan monthly quota exhausted; reset date reported as 2026-06-01.",
+  "emulator_e2e_blocker": "Explicit AI role E2E credentials are required for procurement copilot UI proof.",
+  "safety": {
+    "db_writes": false,
+    "migrations": false,
+    "supabase_project_changes": false,
+    "production_env_mutation": false,
+    "credentials_in_source": false,
+    "credentials_in_artifacts": false,
+    "secrets_printed": false
+  }
+}

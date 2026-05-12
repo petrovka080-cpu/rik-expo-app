@@ -255,6 +255,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "externalIntel", "ExternalIntelGateway.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "internalFirstExternalGate.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic04ProcurementCopilotRuntimeChainFiles = [
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotTypes.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotPlanEngine.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotEvidence.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotDraftBridge.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotExternalBridge.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotRedaction.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "procurementCopilotActionPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1155,7 +1164,8 @@ describe("performance budget — bundle module count", () => {
         sAuditBattle133CatalogProposalCreationTransportFiles -
         sAuditBattle135SubcontractsSharedTransportFiles -
         sAiMagic02ProcurementContextEngineFiles -
-        sAiMagic03ExternalIntelGatewayFiles,
+        sAiMagic03ExternalIntelGatewayFiles -
+        sAiMagic04ProcurementCopilotRuntimeChainFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

@@ -8,6 +8,7 @@ import {
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
+  evaluateAiProcurementCopilotRuntimeChainGuardrail,
   evaluateAiAppActionGraphArchitectureGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
   evaluateAiResponseSmokeNonBlockingContractGuardrail,
@@ -1472,6 +1473,104 @@ describe("architecture anti-regression suite", () => {
         "ui_external_provider_import_detected",
         "external_mutation_surface_detected",
         "external_final_action_allowed",
+      ]),
+    );
+  });
+
+  it("ratchets the AI procurement copilot runtime chain", () => {
+    const passing = evaluateAiProcurementCopilotRuntimeChainGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return [
+            "GET /agent/procurement/copilot/context",
+            "POST /agent/procurement/copilot/plan",
+            "POST /agent/procurement/copilot/draft-preview",
+            "POST /agent/procurement/copilot/submit-for-approval-preview",
+          ].join("\n");
+        }
+        if (relativePath.includes("externalIntel")) {
+          return 'EXTERNAL_LIVE_FETCH_ENABLED = false\nEXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"';
+        }
+        if (relativePath.includes("procurementCopilot")) {
+          return [
+            "ProcurementCopilotPlan",
+            "buildProcurementCopilotPlan",
+            "runProcurementCopilotRuntimeChain",
+            "resolveProcurementRequestContext",
+            "previewProcurementSupplierMatch",
+            "PROCUREMENT_COPILOT_SOURCE_ORDER",
+            "internal_request_context",
+            "internal_marketplace",
+            "compare_suppliers",
+            "external_intel_status",
+            "draft_request_preview",
+            "approval_boundary",
+            "search_catalog",
+            "recordStep?.(\"internal_marketplace\")",
+            "recordStep?.(\"external_intel_status\")",
+            "previewProcurementCopilotExternalIntel",
+            "ExternalIntelGateway",
+            "externalResultCanFinalize: false",
+            "buildProcurementDraftPreview",
+            "draft_request",
+            "previewProcurementCopilotSubmitForApproval",
+            "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY",
+            "finalExecution: 0",
+            "persisted: false",
+            "assertProcurementCopilotSupplierEvidence",
+            "card.evidenceRefs.length > 0",
+            "supplier_card_",
+            "mutationCount: 0",
+            "orderCreationAllowed: false",
+            "supplierConfirmationAllowed: false",
+          ].join("\n");
+        }
+        if (relativePath.includes("runAiProcurementCopilotMaestro")) {
+          return [
+            "runAiProcurementCopilotMaestro",
+            "ai.procurement.copilot.screen",
+            "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
+            "mutations_created: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("commandCenter")) return "command center";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_procurement_copilot_runtime_chain",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiProcurementCopilotRuntimeChainGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("procurementCopilot")) {
+          return [
+            "buildProcurementCopilotPlan",
+            "external_intel_status",
+            "internal_marketplace",
+            'supplierCards: [{ supplierLabel: "Supplier Alpha" }]',
+            "mutationCount: 1",
+            "orderCreationAllowed: true",
+          ].join("\n");
+        }
+        if (relativePath.includes("commandCenter")) return "fetch('https://example.com')";
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "procurement_copilot_bff_routes_missing",
+        "procurement_copilot_marketplace_second_missing",
+        "procurement_copilot_external_live_fetch_enabled",
+        "procurement_copilot_hardcoded_supplier_cards_detected",
+        "procurement_copilot_mutation_surface_detected",
       ]),
     );
   });

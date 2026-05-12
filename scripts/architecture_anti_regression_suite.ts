@@ -442,6 +442,29 @@ export type AiExternalIntelGatewayArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiProcurementCopilotRuntimeChainArchitectureSummary = {
+  copilotFilesPresent: boolean;
+  bffRoutesPresent: boolean;
+  planEnginePresent: boolean;
+  internalFirstOrderPresent: boolean;
+  marketplaceSecondPresent: boolean;
+  externalStatusBridgePresent: boolean;
+  externalLiveFetchDisabled: boolean;
+  draftPreviewOnly: boolean;
+  submitForApprovalPreviewOnly: boolean;
+  supplierCardsRequireEvidence: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  noUiSupabaseImport: boolean;
+  noUiExternalFetch: boolean;
+  noUiModelProviderImport: boolean;
+  noRawOutputFields: boolean;
+  noHardcodedSupplierCards: boolean;
+  noMutationSurface: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -638,6 +661,7 @@ export type ArchitectureAntiRegressionReport = {
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
   aiProcurementContextEngine: AiProcurementContextEngineArchitectureSummary;
   aiExternalIntelGateway: AiExternalIntelGatewayArchitectureSummary;
+  aiProcurementCopilotRuntimeChain: AiProcurementCopilotRuntimeChainArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -763,11 +787,22 @@ const AI_PROCUREMENT_CONTEXT_ENGINE_FILES = [
   "src/features/ai/procurement/procurementEvidenceBuilder.ts",
   "src/features/ai/procurement/procurementRedaction.ts",
 ] as const;
+const AI_PROCUREMENT_COPILOT_RUNTIME_CHAIN_FILES = [
+  "src/features/ai/procurementCopilot/procurementCopilotTypes.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotPlanEngine.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotEvidence.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotDraftBridge.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotExternalBridge.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotRedaction.ts",
+  "src/features/ai/procurementCopilot/procurementCopilotActionPolicy.ts",
+] as const;
 const AI_PROCUREMENT_E2E_RUNNER_PATH = "scripts/e2e/runAiProcurementContextMaestro.ts";
 const AI_PROCUREMENT_E2E_REQUEST_RESOLVER_PATH =
   "scripts/e2e/resolveAiProcurementRuntimeRequest.ts";
 const AI_EXTERNAL_INTEL_E2E_RUNNER_PATH =
   "scripts/e2e/runAiProcurementExternalIntelMaestro.ts";
+const AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiProcurementCopilotMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
@@ -3045,6 +3080,168 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
   };
 }
 
+export function evaluateAiProcurementCopilotRuntimeChainGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiProcurementCopilotRuntimeChainArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const copilotSources = AI_PROCUREMENT_COPILOT_RUNTIME_CHAIN_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const copilotSource = copilotSources.join("\n");
+  const externalIntelSource = AI_EXTERNAL_INTEL_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH }) ?? "";
+
+  const copilotFilesPresent =
+    copilotSources.every((source) => source.length > 0) &&
+    copilotSource.includes("ProcurementCopilotPlan") &&
+    copilotSource.includes("buildProcurementCopilotPlan");
+  const bffRoutesPresent =
+    shellSource.includes("GET /agent/procurement/copilot/context") &&
+    shellSource.includes("POST /agent/procurement/copilot/plan") &&
+    shellSource.includes("POST /agent/procurement/copilot/draft-preview") &&
+    shellSource.includes("POST /agent/procurement/copilot/submit-for-approval-preview");
+  const planEnginePresent =
+    copilotSource.includes("runProcurementCopilotRuntimeChain") &&
+    copilotSource.includes("resolveProcurementRequestContext") &&
+    copilotSource.includes("previewProcurementSupplierMatch");
+  const internalFirstOrderPresent =
+    copilotSource.includes("PROCUREMENT_COPILOT_SOURCE_ORDER") &&
+    copilotSource.includes("internal_request_context") &&
+    copilotSource.indexOf("internal_request_context") < copilotSource.indexOf("internal_marketplace") &&
+    copilotSource.indexOf("internal_marketplace") < copilotSource.indexOf("external_intel_status");
+  const marketplaceSecondPresent =
+    copilotSource.includes("search_catalog") &&
+    copilotSource.includes("compare_suppliers") &&
+    copilotSource.includes("previewProcurementSupplierMatch") &&
+    copilotSource.includes("recordStep?.(\"internal_marketplace\")") &&
+    copilotSource.includes("recordStep?.(\"external_intel_status\")") &&
+    copilotSource.includes("external_intel_status") &&
+    internalFirstOrderPresent;
+  const externalStatusBridgePresent =
+    copilotSource.includes("previewProcurementCopilotExternalIntel") &&
+    copilotSource.includes("ExternalIntelGateway") &&
+    copilotSource.includes("externalResultCanFinalize: false");
+  const externalLiveFetchDisabled =
+    externalIntelSource.includes("EXTERNAL_LIVE_FETCH_ENABLED = false") &&
+    externalIntelSource.includes('EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"') &&
+    !/externalLiveFetchEnabled:\s*true|external_live_fetch_enabled\s*=\s*true/i.test(copilotSource);
+  const draftPreviewOnly =
+    copilotSource.includes("buildProcurementDraftPreview") &&
+    copilotSource.includes("draft_request") &&
+    !/finalMutationAllowed:\s*true|runSubmitForApprovalToolGate|final submit/i.test(copilotSource);
+  const submitForApprovalPreviewOnly =
+    copilotSource.includes("previewProcurementCopilotSubmitForApproval") &&
+    copilotSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY") &&
+    copilotSource.includes("finalExecution: 0") &&
+    copilotSource.includes("persisted: false");
+  const supplierCardsRequireEvidence =
+    copilotSource.includes("assertProcurementCopilotSupplierEvidence") &&
+    copilotSource.includes("card.evidenceRefs.length > 0") &&
+    copilotSource.includes("supplier_card_");
+  const noProviderImports =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      copilotSource,
+    );
+  const noSupabaseImports =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      copilotSource,
+    ) && !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(/.test(copilotSource);
+  const noUiSupabaseImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+      commandCenterSource,
+    );
+  const noUiExternalFetch =
+    !/\bfetch\s*\(|\bXMLHttpRequest\b|externalIntelResolver|external_live_fetch/i.test(
+      commandCenterSource,
+    );
+  const noUiModelProviderImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
+      commandCenterSource,
+    );
+  const noRawOutputFields =
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows|rawRows|rawHtml|raw_html)\s*:/.test(
+      copilotSource,
+    );
+  const noHardcodedSupplierCards =
+    !/fake_supplier|fake marketplace|hardcoded_supplier|supplierCards:\s*\[\s*{|"Supplier\s+[A-Z][A-Za-z]*"/i.test(
+      copilotSource,
+    );
+  const noMutationSurface =
+    !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(|\bcreateOrder\b|\bconfirmSupplier\b|\bsendRfq\b|\bwarehouseMutation\b|\bsendDocument\b/i.test(
+      copilotSource,
+    ) &&
+    copilotSource.includes("mutationCount: 0") &&
+    copilotSource.includes("orderCreationAllowed: false") &&
+    copilotSource.includes("supplierConfirmationAllowed: false");
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiProcurementCopilotMaestro") &&
+    e2eRunnerSource.includes("ai.procurement.copilot.screen") &&
+    e2eRunnerSource.includes("BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE") &&
+    e2eRunnerSource.includes("mutations_created: 0");
+  const findings = [
+    ...(copilotFilesPresent ? [] : ["procurement_copilot_files_missing"]),
+    ...(bffRoutesPresent ? [] : ["procurement_copilot_bff_routes_missing"]),
+    ...(planEnginePresent ? [] : ["procurement_copilot_plan_engine_missing"]),
+    ...(internalFirstOrderPresent ? [] : ["procurement_copilot_internal_first_order_missing"]),
+    ...(marketplaceSecondPresent ? [] : ["procurement_copilot_marketplace_second_missing"]),
+    ...(externalStatusBridgePresent ? [] : ["procurement_copilot_external_bridge_missing"]),
+    ...(externalLiveFetchDisabled ? [] : ["procurement_copilot_external_live_fetch_enabled"]),
+    ...(draftPreviewOnly ? [] : ["procurement_copilot_draft_not_preview_only"]),
+    ...(submitForApprovalPreviewOnly ? [] : ["procurement_copilot_submit_executes_final_action"]),
+    ...(supplierCardsRequireEvidence ? [] : ["procurement_copilot_supplier_card_evidence_missing"]),
+    ...(noProviderImports ? [] : ["procurement_copilot_model_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["procurement_copilot_supabase_import_detected"]),
+    ...(noUiSupabaseImport ? [] : ["procurement_copilot_ui_supabase_import_detected"]),
+    ...(noUiExternalFetch ? [] : ["procurement_copilot_ui_external_fetch_detected"]),
+    ...(noUiModelProviderImport ? [] : ["procurement_copilot_ui_model_provider_import_detected"]),
+    ...(noRawOutputFields ? [] : ["procurement_copilot_raw_output_field_detected"]),
+    ...(noHardcodedSupplierCards ? [] : ["procurement_copilot_hardcoded_supplier_cards_detected"]),
+    ...(noMutationSurface ? [] : ["procurement_copilot_mutation_surface_detected"]),
+    ...(e2eRunnerPresent ? [] : ["procurement_copilot_e2e_runner_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "ai_procurement_copilot_runtime_chain",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      copilotFilesPresent,
+      bffRoutesPresent,
+      planEnginePresent,
+      internalFirstOrderPresent,
+      marketplaceSecondPresent,
+      externalStatusBridgePresent,
+      externalLiveFetchDisabled,
+      draftPreviewOnly,
+      submitForApprovalPreviewOnly,
+      supplierCardsRequireEvidence,
+      noProviderImports,
+      noSupabaseImports,
+      noUiSupabaseImport,
+      noUiExternalFetch,
+      noUiModelProviderImport,
+      noRawOutputFields,
+      noHardcodedSupplierCards,
+      noMutationSurface,
+      e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -4932,6 +5129,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
   const aiProcurementContextEngine = evaluateAiProcurementContextEngineGuardrail({ projectRoot });
   const aiExternalIntelGateway = evaluateAiExternalIntelGatewayGuardrail({ projectRoot });
+  const aiProcurementCopilotRuntimeChain = evaluateAiProcurementCopilotRuntimeChainGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -4968,6 +5166,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppActionGraphArchitecture.check,
     aiProcurementContextEngine.check,
     aiExternalIntelGateway.check,
+    aiProcurementCopilotRuntimeChain.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -5005,6 +5204,7 @@ export function runArchitectureAntiRegressionSuite(
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
     aiProcurementContextEngine: aiProcurementContextEngine.summary,
     aiExternalIntelGateway: aiExternalIntelGateway.summary,
+    aiProcurementCopilotRuntimeChain: aiProcurementCopilotRuntimeChain.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -5066,6 +5266,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_procurement_context_no_final_mutation: ${report.aiProcurementContextEngine.submitForApprovalNoFinalExecution}`);
   console.info(`ai_external_intel_gateway: ${report.aiExternalIntelGateway.gatewayFilesPresent}`);
   console.info(`ai_external_intel_gateway_disabled_default: ${report.aiExternalIntelGateway.disabledProviderDefault}`);
+  console.info(`ai_procurement_copilot_runtime_chain: ${report.aiProcurementCopilotRuntimeChain.copilotFilesPresent}`);
+  console.info(`ai_procurement_copilot_no_mutation: ${report.aiProcurementCopilotRuntimeChain.noMutationSurface}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
