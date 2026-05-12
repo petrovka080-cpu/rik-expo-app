@@ -11,7 +11,10 @@ export type ExternalSourcePolicy = {
   sourceId: string;
   category: ExternalSourceCategory;
   allowedDomains: readonly string[];
+  domainAllowlistRequired: true;
   requiresCitation: true;
+  requiresCheckedAt: true;
+  redactionRequired: true;
   maxResults: number;
   freshnessWindowDays: number;
   allowedForDecision: boolean;

@@ -6,6 +6,9 @@ export type ExternalIntelPolicyDecision = {
   externalLiveFetchEnabled: false;
   policies: readonly ExternalSourcePolicy[];
   citationsRequired: true;
+  checkedAtRequired: true;
+  redactionRequired: true;
+  domainAllowlistRequired: true;
   finalActionForbidden: true;
   reason: string;
 };
@@ -24,6 +27,9 @@ export function resolveExternalIntelPolicy(params: {
     externalLiveFetchEnabled: EXTERNAL_LIVE_FETCH_ENABLED,
     policies,
     citationsRequired: true,
+    checkedAtRequired: true,
+    redactionRequired: true,
+    domainAllowlistRequired: true,
     finalActionForbidden: true,
     reason:
       policies.length > 0

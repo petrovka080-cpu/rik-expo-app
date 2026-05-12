@@ -1,0 +1,73 @@
+{
+  "wave": "S_AI_MAGIC_02_PROCUREMENT_REQUEST_CONTEXT_ENGINE",
+  "generatedAtLocal": "2026-05-12T20:20:00+06:00",
+  "source": {
+    "created": [
+      "src/features/ai/procurement/procurementContextTypes.ts",
+      "src/features/ai/procurement/procurementRequestContextResolver.ts",
+      "src/features/ai/procurement/procurementInternalFirstEngine.ts",
+      "src/features/ai/procurement/procurementSupplierMatchEngine.ts",
+      "src/features/ai/procurement/procurementDraftPlanBuilder.ts",
+      "src/features/ai/procurement/procurementEvidenceBuilder.ts",
+      "src/features/ai/procurement/procurementRedaction.ts"
+    ],
+    "modified": [
+      "src/features/ai/agent/agentBffRouteShell.ts",
+      "src/features/ai/externalIntel/externalIntelPolicy.ts",
+      "src/features/ai/externalIntel/externalIntelTypes.ts",
+      "src/features/ai/externalIntel/externalSourceRegistry.ts"
+    ]
+  },
+  "tests": {
+    "created": [
+      "tests/ai/procurementRequestContextResolver.contract.test.ts",
+      "tests/ai/procurementInternalFirstEngine.contract.test.ts",
+      "tests/ai/procurementSupplierMatchEngine.contract.test.ts",
+      "tests/ai/procurementDraftPlanBuilder.contract.test.ts",
+      "tests/ai/procurementExternalPolicy.contract.test.ts",
+      "tests/ai/procurementNoMutation.contract.test.ts",
+      "tests/ai/procurementRoleScope.contract.test.ts",
+      "tests/architecture/procurementContextEngineArchitecture.contract.test.ts",
+      "tests/e2e/aiProcurementContextRuntime.e2e.test.ts"
+    ],
+    "modified": [
+      "tests/ai/agentBffRouteShell.contract.test.ts",
+      "tests/architecture/agentBffNoMutation.contract.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ]
+  },
+  "scripts": {
+    "created": [
+      "scripts/e2e/runAiProcurementContextMaestro.ts"
+    ],
+    "modified": [
+      "scripts/architecture_anti_regression_suite.ts"
+    ]
+  },
+  "routes": [
+    "GET /agent/procurement/request-context/:requestId",
+    "POST /agent/procurement/supplier-match/preview",
+    "POST /agent/procurement/draft-request/preview",
+    "POST /agent/procurement/submit-for-approval"
+  ],
+  "safeTools": [
+    "search_catalog",
+    "compare_suppliers",
+    "draft_request"
+  ],
+  "approval": {
+    "requiresApproval": true,
+    "submitForApprovalStatus": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY",
+    "fakeLocalApprovalCreated": false
+  },
+  "android": {
+    "easPreviewBuildId": "abaffd49-a4a2-4502-a5fc-93147f51aa7f",
+    "apkPath": "artifacts/release/android-emulator.apk",
+    "apkInstalledOnEmulator": true,
+    "runtimeSmoke": "PASS"
+  },
+  "blockedRuntime": {
+    "emulatorE2e": "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
+    "reason": "E2E_PROCUREMENT_TEST_REQUEST_ID is required; no DB seed or fake request is allowed."
+  }
+}
