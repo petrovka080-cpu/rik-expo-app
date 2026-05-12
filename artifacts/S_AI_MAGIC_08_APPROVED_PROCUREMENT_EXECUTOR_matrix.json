@@ -11,6 +11,8 @@
   "procurement_bff_mutation_boundary_mounted": true,
   "request_sync_draft_v2_boundary_used": true,
   "executed_status_persistence_required": true,
+  "execute_status_rpc_adapter_present": true,
+  "execute_status_rpc_default_enabled": false,
   "default_rpc_executed_status_backend_ready": false,
   "pending_can_execute": false,
   "rejected_can_execute": false,

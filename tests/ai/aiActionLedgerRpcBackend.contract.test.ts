@@ -45,7 +45,10 @@ function buildRpcRecord(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function createRpcBackend(transport: AiActionLedgerRpcTransport) {
+function createRpcBackend(
+  transport: AiActionLedgerRpcTransport,
+  options: { executeApprovedStatusTransitionMounted?: true } = {},
+) {
   const backend = createAiActionLedgerRpcBackend({
     organizationId,
     organizationIdHash,
@@ -53,6 +56,7 @@ function createRpcBackend(transport: AiActionLedgerRpcTransport) {
     actorUserIdHash: requestedByUserIdHash,
     actorRole: "buyer",
     transport,
+    ...options,
   });
   if (!backend) throw new Error("expected RPC backend to be ready");
   return backend;
@@ -181,5 +185,124 @@ describe("AI action ledger RPC backend contract", () => {
         p_actor_role: "buyer",
       },
     });
+  });
+
+  it("keeps executed-status persistence disabled by default", async () => {
+    const calls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const backend = createRpcBackend(async (fn, args) => {
+      calls.push({ fn, args });
+      return { data: buildRpcRecord({ status: "executed" }), error: null };
+    });
+
+    expect(backend.canPersistExecutedStatus).toBeUndefined();
+    await expect(
+      backend.updateStatus(
+        actionId,
+        "executed",
+        {
+          executedAt: "2026-05-13T12:00:00.000Z",
+          redactedPayload: {
+            draftHash: "draft:rpc:1",
+            createdEntityRef: { entityType: "request", entityIdHash: "request:hash" },
+          },
+        },
+        {
+          eventType: "ai.action.executed",
+          actionId,
+          actionType: "draft_request",
+          status: "executed",
+          role: "buyer",
+          screenId: "buyer.main",
+          domain: "procurement",
+          reason: "Executed status persistence attempted without mounted RPC.",
+          evidenceRefs: ["draft:evidence:rpc:1"],
+          createdAt: "2026-05-13T12:00:00.000Z",
+          redacted: true,
+          rawPromptExposed: false,
+          rawProviderPayloadExposed: false,
+          rawDbRowsExposed: false,
+          credentialsExposed: false,
+        },
+      ),
+    ).rejects.toMatchObject({
+      blocker: "BLOCKED_APPROVAL_ACTION_TRANSITION_DENIED",
+    });
+    expect(calls).toHaveLength(0);
+  });
+
+  it("can call the approved execute-status RPC only when explicitly mounted", async () => {
+    const calls: Array<{ fn: string; args: Record<string, unknown> }> = [];
+    const backend = createRpcBackend(
+      async (fn, args) => {
+        calls.push({ fn, args });
+        if (fn !== AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved) {
+          return { data: null, error: { message: `unexpected rpc ${fn}` } };
+        }
+        return {
+          data: buildRpcRecord({
+            status: "executed",
+            executedAt: "2026-05-13T12:00:00.000Z",
+            redactedPayload: {
+              draftHash: "draft:rpc:1",
+              createdEntityRef: { entityType: "request", entityIdHash: "request:hash" },
+            },
+          }),
+          error: null,
+        };
+      },
+      { executeApprovedStatusTransitionMounted: true },
+    );
+
+    expect(backend.canPersistExecutedStatus).toBe(true);
+    const updated = await backend.updateStatus(
+      actionId,
+      "executed",
+      {
+        executedAt: "2026-05-13T12:00:00.000Z",
+        redactedPayload: {
+          draftHash: "draft:rpc:1",
+          createdEntityRef: { entityType: "request", entityIdHash: "request:hash" },
+        },
+      },
+      {
+        eventType: "ai.action.executed",
+        actionId,
+        actionType: "draft_request",
+        status: "executed",
+        role: "buyer",
+        screenId: "buyer.main",
+        domain: "procurement",
+        reason: "Approved action executed through mounted status RPC.",
+        evidenceRefs: ["draft:evidence:rpc:1"],
+        createdAt: "2026-05-13T12:00:00.000Z",
+        redacted: true,
+        rawPromptExposed: false,
+        rawProviderPayloadExposed: false,
+        rawDbRowsExposed: false,
+        credentialsExposed: false,
+      },
+    );
+
+    expect(updated).toMatchObject({
+      status: "executed",
+      executedAt: "2026-05-13T12:00:00.000Z",
+      redactedPayload: {
+        createdEntityRef: { entityType: "request", entityIdHash: "request:hash" },
+      },
+    });
+    expect(calls).toEqual([
+      {
+        fn: AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved,
+        args: expect.objectContaining({
+          p_action_id: actionId,
+          p_actor_role: "buyer",
+          p_executed_at: "2026-05-13T12:00:00.000Z",
+          p_redacted_payload: expect.objectContaining({
+            createdEntityRef: { entityType: "request", entityIdHash: "request:hash" },
+          }),
+        }),
+      },
+    ]);
+    expect(JSON.stringify(calls)).not.toMatch(/11111111-1111-4111-8111-111111111111|buyer-user/);
   });
 });

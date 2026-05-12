@@ -8,6 +8,7 @@ What is production-ready:
 - Bounded procurement executor contract supports only `draft_request` and `submit_request`.
 - Route-scoped procurement boundary is now mounted via `request_sync_draft_v2`; it requires ERP `rikCode`, positive quantities, idempotency, audit and evidence.
 - The gateway refuses to start domain mutation unless the persistent ledger backend can persist `executed` status and redacted `createdEntityRef`.
+- The RPC backend now has a dormant execute-status adapter for `ai_action_ledger_execute_approved_v1`, but it is disabled by default and only exposes `canPersistExecutedStatus` when an approved backend mount explicitly opts in.
 - Pending, rejected, expired, blocked, and forbidden actions cannot execute.
 - Duplicate execution returns `already_executed` and does not call the procurement boundary again.
 - Approval Inbox shows execution status and keeps execute-approved inside review/detail UI.
@@ -16,7 +17,7 @@ What is production-ready:
 Honest blocker:
 
 - No approved procurement action is available for Android executor E2E, so no live execute was claimed.
-- The default RPC approval ledger still needs a runtime executed-status backend before production execution can be enabled outside injected contract backends.
+- The default RPC approval ledger still keeps executed-status persistence disabled until the approved backend mount exists; production execution remains blocked rather than partially mutating.
 - No fake execution was added.
 - No direct Supabase mutation was added.
 - Android runtime smoke passed on the installed preview APK, but a fresh EAS Android rebuild was blocked by the account's monthly build quota until 2026-06-01.

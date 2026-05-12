@@ -11,6 +11,8 @@
   "existing_bff_route": true,
   "existing_idempotency_support": true,
   "existing_audit_support": true,
+  "execute_status_rpc_adapter_present": true,
+  "execute_status_rpc_default_enabled": false,
   "direct_supabase_mutation_required": false,
   "safe_existing_boundaries_found": [
     "src/shared/scale/bffMutationHandlers.ts route-scoped shared mutation framework",
@@ -36,7 +38,7 @@
   ],
   "missing_parts": [
     "approved_procurement_action_runtime_fixture",
-    "runtime ledger backend with canPersistExecutedStatus=true"
+    "approved runtime ledger backend mount with canPersistExecutedStatus=true"
   ],
   "exact_runtime_blocker": "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
   "android_apk_build": "BLOCKED_ANDROID_APK_BUILD_FAILED",

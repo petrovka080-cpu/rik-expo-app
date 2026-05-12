@@ -40,6 +40,7 @@ export type AiActionLedgerRpcBackendOptions = {
   actorUserIdHash?: string;
   actorRole: AiUserRole;
   transport?: AiActionLedgerRpcTransport;
+  executeApprovedStatusTransitionMounted?: true;
 };
 
 export type AiActionLedgerRpcBackendReadiness = {
@@ -261,6 +262,9 @@ export function createAiActionLedgerRpcBackend(
 
   return {
     mounted: true,
+    ...(options.executeApprovedStatusTransitionMounted === true
+      ? { canPersistExecutedStatus: true as const }
+      : {}),
     async listByOrganization(requestedOrganizationIdHash, page) {
       if (requestedOrganizationIdHash !== organizationIdHash) {
         return { records: [], nextCursor: null };
@@ -336,19 +340,38 @@ export function createAiActionLedgerRpcBackend(
           ? AI_ACTION_LEDGER_RPC_FUNCTIONS.approve
           : status === "rejected"
             ? AI_ACTION_LEDGER_RPC_FUNCTIONS.reject
-            : null;
+            : status === "executed" && options.executeApprovedStatusTransitionMounted === true
+              ? AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved
+              : null;
       if (!fn) {
         throw new AiActionLedgerBackendBlockedError(
           "BLOCKED_APPROVAL_ACTION_TRANSITION_DENIED",
           `AI action ledger RPC backend does not support transition to ${status}.`,
         );
       }
-      const payload = await call(fn, {
-        p_action_id: actionId,
-        p_actor_role: options.actorRole,
-        p_reason: auditEvent.reason,
-        p_approved_by_user_id_hash: patch.approvedByUserIdHash,
-      });
+      if (status === "executed" && (!patch.executedAt || patch.redactedPayload == null)) {
+        throw new AiActionLedgerBackendBlockedError(
+          "BLOCKED_APPROVAL_ACTION_INVALID_INPUT",
+          "AI action ledger execute-approved RPC requires executedAt and redactedPayload.",
+        );
+      }
+      const payload = await call(
+        fn,
+        status === "executed"
+          ? {
+              p_action_id: actionId,
+              p_actor_role: options.actorRole,
+              p_reason: auditEvent.reason,
+              p_executed_at: patch.executedAt,
+              p_redacted_payload: patch.redactedPayload,
+            }
+          : {
+              p_action_id: actionId,
+              p_actor_role: options.actorRole,
+              p_reason: auditEvent.reason,
+              p_approved_by_user_id_hash: patch.approvedByUserIdHash,
+            },
+      );
       const updated = mapRecord(payload);
       if (!updated) {
         throw new AiActionLedgerBackendBlockedError(
