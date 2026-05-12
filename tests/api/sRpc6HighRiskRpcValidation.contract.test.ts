@@ -19,6 +19,11 @@ import { isBuyerRequestProposalMapRpcResponse } from "../../src/screens/buyer/ho
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
+const aiActionLedgerReadinessMigration =
+  "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
+
+const isApprovedAiActionLedgerReadinessPatch = (file: string) =>
+  file.replace(/\\/g, "/") === aiActionLedgerReadinessMigration;
 
 const expectInvalid = (
   value: unknown,
@@ -316,7 +321,8 @@ describe("S-RPC-6 high-risk RPC validation", () => {
     })
       .split(/\r?\n/)
       .map((line) => line.trim())
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

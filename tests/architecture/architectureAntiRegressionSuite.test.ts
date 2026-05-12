@@ -1705,7 +1705,6 @@ describe("architecture anti-regression suite", () => {
             "force row level security",
             "ai_action_ledger_select_company_scope",
             "ai_action_ledger_insert_pending_company_scope",
-            "ai_action_ledger_update_manage_scope",
             "ai_action_ledger_audit_insert_company_scope",
             "ai_action_ledger_submit_for_approval_v1",
             "ai_action_ledger_get_status_v1",
@@ -1719,7 +1718,7 @@ describe("architecture anti-regression suite", () => {
             "old.status = 'pending'",
             "old.status = 'approved'",
             "status transition is blocked",
-            "trg_ai_action_ledger_lifecycle_guard_v1",
+            "approval actor is outside company management scope",
           ].join("\n");
         }
         if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {

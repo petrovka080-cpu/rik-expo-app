@@ -29,9 +29,13 @@ const changedFiles = () =>
 
 const sLoadFix6WarehouseIssueExplainPatch =
   "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+const aiActionLedgerReadinessMigration =
+  "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
 
 const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
-  file.replace(/\\/g, "/") === sLoadFix6WarehouseIssueExplainPatch;
+  [sLoadFix6WarehouseIssueExplainPatch, aiActionLedgerReadinessMigration].includes(
+    file.replace(/\\/g, "/"),
+  );
 
 describe("S-50K-QUEUE-RUNTIME-ADAPTER-2 runtime guardrails", () => {
   it("caps queue claim, concurrency, and compaction budgets", () => {

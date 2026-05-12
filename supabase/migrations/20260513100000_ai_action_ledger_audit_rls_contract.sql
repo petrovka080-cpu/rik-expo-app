@@ -330,7 +330,6 @@ revoke all on table public.ai_action_ledger_audit from anon;
 revoke all on table public.ai_action_ledger from authenticated;
 revoke all on table public.ai_action_ledger_audit from authenticated;
 grant select, insert on table public.ai_action_ledger to authenticated;
-grant update (status, approved_by, executed_at, updated_at) on table public.ai_action_ledger to authenticated;
 grant select, insert on table public.ai_action_ledger_audit to authenticated;
 
 do $$
@@ -364,19 +363,6 @@ begin
   if not exists (
     select 1 from pg_policies
     where schemaname = 'public'
-      and tablename = 'ai_action_ledger'
-      and policyname = 'ai_action_ledger_update_manage_scope'
-  ) then
-    execute 'create policy ai_action_ledger_update_manage_scope on public.ai_action_ledger for update to authenticated using (public.ai_action_ledger_actor_can_manage_company_v1(organization_id)) with check (public.ai_action_ledger_actor_can_manage_company_v1(organization_id))';
-  end if;
-end;
-$$;
-
-do $$
-begin
-  if not exists (
-    select 1 from pg_policies
-    where schemaname = 'public'
       and tablename = 'ai_action_ledger_audit'
       and policyname = 'ai_action_ledger_audit_select_company_scope'
   ) then
@@ -394,36 +380,6 @@ begin
       and policyname = 'ai_action_ledger_audit_insert_company_scope'
   ) then
     execute 'create policy ai_action_ledger_audit_insert_company_scope on public.ai_action_ledger_audit for insert to authenticated with check (auth.uid() is not null and actor_user_id = auth.uid() and jsonb_typeof(evidence_refs) = ''array'' and public.ai_action_ledger_no_raw_payload_v1(redacted_payload) and public.ai_action_ledger_actor_can_view_company_v1(organization_id))';
-  end if;
-end;
-$$;
-
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_trigger
-    where tgname = 'trg_ai_action_ledger_updated_at_v1'
-  ) then
-    create trigger trg_ai_action_ledger_updated_at_v1
-    before update on public.ai_action_ledger
-    for each row
-    execute function public.ai_action_ledger_updated_at_v1();
-  end if;
-end;
-$$;
-
-do $$
-begin
-  if not exists (
-    select 1
-    from pg_trigger
-    where tgname = 'trg_ai_action_ledger_lifecycle_guard_v1'
-  ) then
-    create trigger trg_ai_action_ledger_lifecycle_guard_v1
-    before update on public.ai_action_ledger
-    for each row
-    execute function public.ai_action_ledger_lifecycle_guard_v1();
   end if;
 end;
 $$;

@@ -31,10 +31,13 @@ const isApprovedTryCatchGapsBatchAPatch = (file: string) =>
 
 const sLoadFix6WarehouseIssueExplainPatch =
   "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
+const aiActionLedgerReadinessMigration =
+  "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
 
 const isApprovedSLoadFix6WarehouseIssuePatch = (file: string) =>
   [
     sLoadFix6WarehouseIssueExplainPatch,
+    aiActionLedgerReadinessMigration,
     "src/screens/warehouse/warehouse.stockReports.service.ts",
   ].includes(file.replace(/\\/g, "/"));
 

@@ -3612,7 +3612,6 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     auditRlsMigrationSource.includes("force row level security") &&
     auditRlsMigrationSource.includes("ai_action_ledger_select_company_scope") &&
     auditRlsMigrationSource.includes("ai_action_ledger_insert_pending_company_scope") &&
-    auditRlsMigrationSource.includes("ai_action_ledger_update_manage_scope") &&
     auditRlsMigrationSource.includes("ai_action_ledger_audit_insert_company_scope");
   const rpcContractProposalPresent =
     auditRlsMigrationSource.includes("ai_action_ledger_submit_for_approval_v1") &&
@@ -3628,7 +3627,7 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     auditRlsMigrationSource.includes("old.status = 'pending'") &&
     auditRlsMigrationSource.includes("old.status = 'approved'") &&
     auditRlsMigrationSource.includes("status transition is blocked") &&
-    auditRlsMigrationSource.includes("trg_ai_action_ledger_lifecycle_guard_v1");
+    auditRlsMigrationSource.includes("approval actor is outside company management scope");
   const noServiceRoleGrantInLedgerBackend =
     auditRlsMigrationSource.length > 0 &&
     !/\bservice_role\b|SUPABASE_SERVICE_ROLE_KEY|\bauth\.admin\b|\blistUsers\b/i.test(

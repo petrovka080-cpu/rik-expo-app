@@ -17,6 +17,7 @@ describe("AI action ledger audit/RLS backend readiness migration proposal", () =
     expect(sql).toContain("create index if not exists ai_action_ledger_audit_action_created_idx");
     expect(sql).not.toMatch(/\b(drop|truncate|delete)\b/i);
     expect(sql).not.toMatch(/\binsert\s+into\b|\bupdate\s+public\.|\bmerge\s+into\b/i);
+    expect(sql).not.toMatch(/\bupdate\s+(?:only\s+)?[a-z0-9_."[\]]+/i);
   });
 
   it("requires RLS, company scope policies, evidence, and redacted payloads", () => {
