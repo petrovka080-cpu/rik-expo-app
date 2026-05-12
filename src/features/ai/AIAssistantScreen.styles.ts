@@ -77,11 +77,13 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   scopeCard: {
     marginHorizontal: 16,
     marginTop: 10,
+    maxHeight: 260,
     padding: 14,
     borderRadius: 18,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
+    overflow: "hidden",
   },
   scopeCardHeader: {
     flexDirection: "row",

@@ -62,8 +62,11 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
   });
 
   it("classifies role knowledge assertion failures without mislabeling them as auth failures", () => {
+    expect(source).toContain("BLOCKED_AI_KNOWLEDGE_PREVIEW_NOT_ACCESSIBLE_IN_ANDROID_HIERARCHY");
+    expect(source).toContain("BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT");
     expect(source).toContain("BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED");
-    expect(source).toContain("AI APP KNOWLEDGE BLOCK");
+    expect(source).toContain("ai.knowledge.");
+    expect(source).toContain("ai.assistant.response");
     expect(source).toContain("Assertion is false:");
   });
 });

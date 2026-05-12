@@ -29,7 +29,7 @@ name: AI Role Screen Knowledge Foreman
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- openLink: "rik://ai?context=foreman&prompt=What%20do%20I%20need%20to%20close%20on%20my%20object%3F&autoSend=1"
+- openLink: "rik://ai?context=foreman"
 - extendedWaitUntil:
     visible:
       id: "ai.assistant.screen"
@@ -43,8 +43,21 @@ name: AI Role Screen Knowledge Foreman
       id: "ai.assistant.send"
     timeout: 30000
 - extendedWaitUntil:
-    visible: "AI APP KNOWLEDGE BLOCK"
-    timeout: 60000
+    visible:
+      id: "ai.knowledge.preview"
+    timeout: 30000
+- assertVisible:
+    id: "ai.knowledge.role"
+- assertVisible:
+    id: "ai.knowledge.screen"
+- assertVisible:
+    id: "ai.knowledge.domain"
+- assertVisible:
+    id: "ai.knowledge.allowed-intents"
+- assertVisible:
+    id: "ai.knowledge.blocked-intents"
+- assertVisible:
+    id: "ai.knowledge.approval-boundary"
 - extendedWaitUntil:
     visible: "prepare_report"
     timeout: 30000
@@ -59,6 +72,12 @@ name: AI Role Screen Knowledge Foreman
 - extendedWaitUntil:
     visible: "approval_required"
     timeout: 30000
+- tapOn:
+    id: "ai.assistant.input"
+- inputText: "What do I need to close on my object?"
+- hideKeyboard
+- tapOn:
+    id: "ai.assistant.send"
 - scrollUntilVisible:
     element:
       id: "ai.assistant.response"

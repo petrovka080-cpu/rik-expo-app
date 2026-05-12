@@ -22,7 +22,7 @@ export function resolveAiScreenIdForAssistantContext(context: AssistantContext):
     case "contractor":
       return "contractor.main";
     case "foreman":
-      return "foreman.ai.quick_modal";
+      return "foreman.main";
     case "market":
       return "market.home";
     case "supplierMap":

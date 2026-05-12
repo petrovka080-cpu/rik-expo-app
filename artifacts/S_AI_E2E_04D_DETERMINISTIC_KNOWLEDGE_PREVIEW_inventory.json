@@ -1,0 +1,50 @@
+{
+  "wave": "S_AI_E2E_04D_DETERMINISTIC_KNOWLEDGE_PREVIEW_AND_ROLE_SCREEN_SIGNOFF",
+  "source_files_changed": [
+    "src/features/ai/AIAssistantScreen.tsx",
+    "src/features/ai/AIAssistantScreen.styles.ts",
+    "src/features/ai/assistantScopeContext.ts",
+    "src/features/ai/context/aiScreenContext.ts",
+    "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+    "scripts/architecture_anti_regression_suite.ts"
+  ],
+  "flow_files_changed": [
+    "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml"
+  ],
+  "tests_added": [
+    "tests/e2e/aiKnowledgePreviewStableSurface.contract.test.ts",
+    "tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts",
+    "tests/architecture/aiKnowledgePreviewE2eContract.contract.test.ts"
+  ],
+  "root_cause_confirmed_from": [
+    "src/features/ai/knowledge/aiKnowledgeResolver.ts",
+    "src/features/ai/assistantPrompts.ts",
+    "src/features/ai/AIAssistantScreen.tsx",
+    "tests/e2e/ai-role-screen-knowledge/*.yaml"
+  ],
+  "deterministic_test_ids": [
+    "ai.knowledge.preview",
+    "ai.knowledge.role",
+    "ai.knowledge.screen",
+    "ai.knowledge.domain",
+    "ai.knowledge.allowed-intents",
+    "ai.knowledge.blocked-intents",
+    "ai.knowledge.approval-boundary"
+  ],
+  "forbidden_paths_used": {
+    "auth_admin": false,
+    "list_users": false,
+    "service_role": false,
+    "db_seed": false,
+    "db_writes": false,
+    "migrations": false,
+    "model_provider_change": false,
+    "ota": false,
+    "ios_build": false,
+    "android_play_submit": false
+  }
+}

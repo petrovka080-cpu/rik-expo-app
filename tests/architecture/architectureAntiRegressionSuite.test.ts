@@ -6,6 +6,7 @@ import {
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
+  evaluateAiKnowledgePreviewE2eContractGuardrail,
   evaluateAiModelBoundaryGuardrail,
   evaluateAndroidEmulatorIosBuildSubmitGateGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
@@ -412,6 +413,84 @@ describe("architecture anti-regression suite", () => {
       status: "pass",
       errors: [],
     });
+  });
+
+  it("ratchets deterministic AI knowledge preview e2e assertions", () => {
+    const flow = [
+      'id: "ai.knowledge.preview"',
+      'id: "ai.knowledge.role"',
+      'id: "ai.knowledge.screen"',
+      'id: "ai.knowledge.domain"',
+      'id: "ai.knowledge.allowed-intents"',
+      'id: "ai.knowledge.blocked-intents"',
+      'id: "ai.knowledge.approval-boundary"',
+      'scrollUntilVisible:',
+      'id: "ai.assistant.response"',
+    ].join("\n");
+    const passing = evaluateAiKnowledgePreviewE2eContractGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/AIAssistantScreen.tsx") {
+          return [
+            '"ai.knowledge.preview"',
+            'testID="ai.knowledge.role"',
+            'testID="ai.knowledge.screen"',
+            'testID="ai.knowledge.domain"',
+            'testID="ai.knowledge.allowed-intents"',
+            'testID="ai.knowledge.blocked-intents"',
+            'testID="ai.knowledge.approval-boundary"',
+            "numberOfLines={1}",
+            "numberOfLines={2}",
+            "sendAssistantMessage({",
+          ].join("\n");
+        }
+        if (relativePath === "src/features/ai/AIAssistantScreen.styles.ts") {
+          return 'maxHeight: 260\noverflow: "hidden"';
+        }
+        if (relativePath === "src/features/ai/assistantScopeContext.ts") {
+          return "knowledgePreview resolveAiScreenKnowledge";
+        }
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return "resolveExplicitAiRoleAuthEnv redactE2eSecrets";
+        }
+        if (relativePath.endsWith(".yaml")) return flow;
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_knowledge_preview_e2e_contract",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiKnowledgePreviewE2eContractGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/AIAssistantScreen.tsx") {
+          return "AI APP KNOWLEDGE BLOCK\n{scopedFacts.summary}\nfake AI answer";
+        }
+        if (relativePath === "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts") {
+          return "listUsers auth.admin signInWithPassword";
+        }
+        if (relativePath.endsWith(".yaml")) {
+          return 'visible: "AI APP KNOWLEDGE BLOCK"\nscrollUntilVisible:\nvisible: "exact LLM text"';
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "ai_knowledge_preview_missing",
+        "ai_knowledge_raw_prompt_block_rendered_in_ui",
+        "maestro_flows_assert_system_prompt_block",
+        "maestro_llm_smoke_asserts_exact_text",
+        "fake_or_hardcoded_ai_answer_source_detected",
+        "ai_role_runner_auth_discovery_detected",
+      ]),
+    );
   });
 
   it("ratchets the AI role-screen emulator gate", () => {

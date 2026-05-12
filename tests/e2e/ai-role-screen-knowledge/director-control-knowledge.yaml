@@ -29,7 +29,7 @@ name: AI Role Screen Knowledge Director
     visible:
       id: "profile-edit-open"
     timeout: 30000
-- openLink: "rik://ai?context=director&prompt=What%20can%20you%20do%20on%20this%20screen%3F&autoSend=1"
+- openLink: "rik://ai?context=director"
 - extendedWaitUntil:
     visible:
       id: "ai.assistant.screen"
@@ -43,8 +43,21 @@ name: AI Role Screen Knowledge Director
       id: "ai.assistant.send"
     timeout: 30000
 - extendedWaitUntil:
-    visible: "AI APP KNOWLEDGE BLOCK"
-    timeout: 60000
+    visible:
+      id: "ai.knowledge.preview"
+    timeout: 30000
+- assertVisible:
+    id: "ai.knowledge.role"
+- assertVisible:
+    id: "ai.knowledge.screen"
+- assertVisible:
+    id: "ai.knowledge.domain"
+- assertVisible:
+    id: "ai.knowledge.allowed-intents"
+- assertVisible:
+    id: "ai.knowledge.blocked-intents"
+- assertVisible:
+    id: "ai.knowledge.approval-boundary"
 - extendedWaitUntil:
     visible: "finance_documents"
     timeout: 30000
@@ -57,6 +70,13 @@ name: AI Role Screen Knowledge Director
 - extendedWaitUntil:
     visible: "approval_required"
     timeout: 30000
+- assertNotVisible: "executed successfully"
+- tapOn:
+    id: "ai.assistant.input"
+- inputText: "What can you do on this screen?"
+- hideKeyboard
+- tapOn:
+    id: "ai.assistant.send"
 - scrollUntilVisible:
     element:
       id: "ai.assistant.response"
@@ -66,5 +86,4 @@ name: AI Role Screen Knowledge Director
     centerElement: true
 - assertVisible:
     id: "ai.assistant.response"
-- assertNotVisible: "executed successfully"
 - stopApp

@@ -376,6 +376,20 @@ export type AiRoleScreenEmulatorGateSummary = {
   findings: readonly string[];
 };
 
+export type AiKnowledgePreviewE2eContractSummary = {
+  deterministicPreviewPresent: boolean;
+  roleMetadataIdsPresent: boolean;
+  previewBounded: boolean;
+  rawPromptBlockNotRenderedInUi: boolean;
+  maestroFlowsUsePreviewIds: boolean;
+  maestroFlowsDoNotAssertPromptBlock: boolean;
+  llmSmokeResponseElementOnly: boolean;
+  noFakeAiAnswer: boolean;
+  noAuthDiscoveryInRunner: boolean;
+  credentialsAbsentFromYaml: boolean;
+  findings: readonly string[];
+};
+
 export type AndroidEmulatorIosBuildSubmitGateSummary = {
   androidApkProfilePresent: boolean;
   iosAppStoreSubmitProfilePresent: boolean;
@@ -516,6 +530,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
+  aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
@@ -587,6 +602,8 @@ const AI_MODEL_TYPES_PATH = "src/features/ai/model/AiModelTypes.ts";
 const AI_DISABLED_PROVIDER_PATH = "src/features/ai/model/DisabledModelProvider.ts";
 const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelProvider.ts";
 const AI_ASSISTANT_CLIENT_PATH = "src/features/ai/assistantClient.ts";
+const AI_ASSISTANT_SCREEN_PATH = "src/features/ai/AIAssistantScreen.tsx";
+const AI_ASSISTANT_SCREEN_STYLES_PATH = "src/features/ai/AIAssistantScreen.styles.ts";
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
 const AI_RISK_POLICY_PATH = "src/features/ai/policy/aiRiskPolicy.ts";
@@ -745,7 +762,9 @@ const REQUIRED_AI_ROLE_SCREEN_FLOW_KEYS = [
 const ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES = [
   "BLOCKED_NO_E2E_ROLE_SECRETS",
   "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS",
+  "BLOCKED_AI_KNOWLEDGE_PREVIEW_NOT_ACCESSIBLE_IN_ANDROID_HIERARCHY",
   "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
+  "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
   "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
   "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
 ] as const;
@@ -2222,6 +2241,120 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
       noLiveExecutionBoundary,
       noProviderImports,
       noDirectDatabaseAccess,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiKnowledgePreviewE2eContractSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const assistantSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCREEN_PATH });
+  const assistantStylesSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCREEN_STYLES_PATH });
+  const scopeContextSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCOPE_CONTEXT_PATH });
+  const maestroRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH });
+  const flowSources = REQUIRED_AI_ROLE_SCREEN_FLOW_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+
+  const requiredKnowledgeIds = [
+    '"ai.knowledge.preview"',
+    'testID="ai.knowledge.role"',
+    'testID="ai.knowledge.screen"',
+    'testID="ai.knowledge.domain"',
+    'testID="ai.knowledge.allowed-intents"',
+    'testID="ai.knowledge.blocked-intents"',
+    'testID="ai.knowledge.approval-boundary"',
+  ] as const;
+  const flowKnowledgeIds = [
+    'id: "ai.knowledge.preview"',
+    'id: "ai.knowledge.role"',
+    'id: "ai.knowledge.screen"',
+    'id: "ai.knowledge.domain"',
+    'id: "ai.knowledge.allowed-intents"',
+    'id: "ai.knowledge.blocked-intents"',
+    'id: "ai.knowledge.approval-boundary"',
+  ] as const;
+
+  const deterministicPreviewPresent =
+    Boolean(scopeContextSource?.includes("knowledgePreview")) &&
+    Boolean(scopeContextSource?.includes("resolveAiScreenKnowledge")) &&
+    requiredKnowledgeIds.every((needle) => Boolean(assistantSource?.includes(needle)));
+  const roleMetadataIdsPresent = requiredKnowledgeIds.slice(1).every((needle) =>
+    Boolean(assistantSource?.includes(needle)),
+  );
+  const previewBounded =
+    Boolean(assistantSource?.includes("numberOfLines={1}")) &&
+    Boolean(assistantSource?.includes("numberOfLines={2}")) &&
+    Boolean(assistantStylesSource?.includes("maxHeight: 260")) &&
+    Boolean(assistantStylesSource?.includes('overflow: "hidden"'));
+  const rawPromptBlockNotRenderedInUi =
+    !Boolean(assistantSource?.includes("AI APP KNOWLEDGE BLOCK")) &&
+    !Boolean(assistantSource?.includes("{scopedFacts.summary}"));
+  const maestroFlowsUsePreviewIds = flowSources.every((flowSource) =>
+    flowKnowledgeIds.every((needle) => flowSource.includes(needle)),
+  );
+  const maestroFlowsDoNotAssertPromptBlock = flowSources.every(
+    (flowSource) => !flowSource.includes('visible: "AI APP KNOWLEDGE BLOCK"'),
+  );
+  const llmSmokeResponseElementOnly = flowSources.every((flowSource) => {
+    const responsePhaseIndex = flowSource.indexOf("scrollUntilVisible:");
+    if (responsePhaseIndex < 0) return false;
+    const responsePhase = flowSource.slice(responsePhaseIndex);
+    return (
+      responsePhase.includes('id: "ai.assistant.response"') &&
+      !responsePhase.includes('visible: "') &&
+      !responsePhase.includes("assertNotVisible:")
+    );
+  });
+  const noFakeAiAnswer =
+    !Boolean(assistantSource?.match(/fake AI answer|hardcoded AI response/i)) &&
+    !Boolean(assistantSource?.includes("AI APP KNOWLEDGE BLOCK"));
+  const noAuthDiscoveryInRunner =
+    !Boolean(maestroRunnerSource?.includes("resolveAiRoleScreenKnowledgeAuthEnv")) &&
+    !Boolean(maestroRunnerSource?.includes("listUsers")) &&
+    !Boolean(maestroRunnerSource?.includes("auth.admin")) &&
+    !Boolean(maestroRunnerSource?.includes("SUPABASE_SERVICE_ROLE_KEY")) &&
+    !Boolean(maestroRunnerSource?.includes("signInWithPassword"));
+  const credentialsAbsentFromYaml = flowSources.every(
+    (flowSource) => !/@example\.com|password\s*[:=]|service_role|SUPABASE_SERVICE_ROLE_KEY/i.test(flowSource),
+  );
+  const findings = [
+    ...(deterministicPreviewPresent ? [] : ["ai_knowledge_preview_missing"]),
+    ...(roleMetadataIdsPresent ? [] : ["ai_knowledge_role_metadata_ids_missing"]),
+    ...(previewBounded ? [] : ["ai_knowledge_preview_not_bounded"]),
+    ...(rawPromptBlockNotRenderedInUi ? [] : ["ai_knowledge_raw_prompt_block_rendered_in_ui"]),
+    ...(maestroFlowsUsePreviewIds ? [] : ["maestro_flows_missing_knowledge_preview_ids"]),
+    ...(maestroFlowsDoNotAssertPromptBlock ? [] : ["maestro_flows_assert_system_prompt_block"]),
+    ...(llmSmokeResponseElementOnly ? [] : ["maestro_llm_smoke_asserts_exact_text"]),
+    ...(noFakeAiAnswer ? [] : ["fake_or_hardcoded_ai_answer_source_detected"]),
+    ...(noAuthDiscoveryInRunner ? [] : ["ai_role_runner_auth_discovery_detected"]),
+    ...(credentialsAbsentFromYaml ? [] : ["credentials_detected_in_maestro_yaml"]),
+  ];
+  const errors = [...findings];
+
+  return {
+    check: {
+      name: "ai_knowledge_preview_e2e_contract",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      deterministicPreviewPresent,
+      roleMetadataIdsPresent,
+      previewBounded,
+      rawPromptBlockNotRenderedInUi,
+      maestroFlowsUsePreviewIds,
+      maestroFlowsDoNotAssertPromptBlock,
+      llmSmokeResponseElementOnly,
+      noFakeAiAnswer,
+      noAuthDiscoveryInRunner,
+      credentialsAbsentFromYaml,
       findings,
     },
   };
@@ -3866,6 +3999,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
+  const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
@@ -3896,6 +4030,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture.check,
     aiToolPlanPolicyArchitecture.check,
     agentBffRouteShellArchitecture.check,
+    aiKnowledgePreviewE2eContract.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     androidEmulatorIosBuildSubmitGate.check,
@@ -3927,6 +4062,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
+    aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,

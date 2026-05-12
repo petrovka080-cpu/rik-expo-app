@@ -18,7 +18,9 @@ export type AiRoleScreenKnowledgeStatus =
   | "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT"
   | "BLOCKED_NO_E2E_ROLE_SECRETS"
   | "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS"
+  | "BLOCKED_AI_KNOWLEDGE_PREVIEW_NOT_ACCESSIBLE_IN_ANDROID_HIERARCHY"
   | "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
+  | "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT"
   | "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED"
   | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
@@ -164,6 +166,14 @@ function buildMaestroPrefixedRoleEnv(
 function classifyMaestroFailure(errorMessage: string): AiRoleScreenKnowledgeStatus {
   if (errorMessage.includes("auth.login.")) {
     return "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS";
+  }
+
+  if (errorMessage.includes("ai.knowledge.")) {
+    return "BLOCKED_AI_KNOWLEDGE_PREVIEW_NOT_ACCESSIBLE_IN_ANDROID_HIERARCHY";
+  }
+
+  if (errorMessage.includes("ai.assistant.response")) {
+    return "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT";
   }
 
   if (errorMessage.includes("ai.assistant.")) {

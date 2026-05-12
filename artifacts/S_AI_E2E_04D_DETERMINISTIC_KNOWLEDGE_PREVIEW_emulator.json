@@ -1,0 +1,11 @@
+{
+  "final_status": "PENDING_ANDROID_REBUILD_AND_RUNTIME_E2E",
+  "android_package": "com.azisbek_dzhantaev.rikexpoapp",
+  "source_changed_requires_rebuild": true,
+  "runtime_smoke_status": "not_run_after_source_change",
+  "ai_role_screen_e2e_status": "not_run_after_source_change",
+  "fake_pass_claimed": false,
+  "credentials_printed": false,
+  "credentials_in_cli_args": false,
+  "artifacts_redacted": true
+}

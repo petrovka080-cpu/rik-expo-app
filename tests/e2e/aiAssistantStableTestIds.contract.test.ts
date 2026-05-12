@@ -26,6 +26,13 @@ describe("AI assistant stable e2e test IDs", () => {
     expect(assistantSource).toContain('testID="ai.assistant.send"');
     expect(assistantSource).toContain('"ai.assistant.response"');
     expect(assistantSource).toContain('"ai.assistant.response.history"');
+    expect(assistantSource).toContain('"ai.knowledge.preview"');
+    expect(assistantSource).toContain('testID="ai.knowledge.role"');
+    expect(assistantSource).toContain('testID="ai.knowledge.screen"');
+    expect(assistantSource).toContain('testID="ai.knowledge.domain"');
+    expect(assistantSource).toContain('testID="ai.knowledge.allowed-intents"');
+    expect(assistantSource).toContain('testID="ai.knowledge.blocked-intents"');
+    expect(assistantSource).toContain('testID="ai.knowledge.approval-boundary"');
   });
 
   it("keeps the real assistant client path and does not add fake AI output", () => {
@@ -38,12 +45,15 @@ describe("AI assistant stable e2e test IDs", () => {
   });
 
   it("keeps scoped context preview bounded so the composer remains targetable", () => {
+    const stylesSource = read("src/features/ai/AIAssistantScreen.styles.ts");
+
+    expect(assistantSource).toContain("knowledgePreview");
+    expect(assistantSource).not.toContain("{scopedFacts.summary}");
+    expect(assistantSource).toContain("numberOfLines={1}");
     expect(assistantSource).toContain(
-      '<Text style={styles.scopeCardText} numberOfLines={3}>',
+      'testID="ai.knowledge.approval-boundary"',
     );
-    expect(assistantSource).toContain(
-      '<Text style={styles.scopeCardMeta} numberOfLines={2}>',
-    );
+    expect(stylesSource).toContain("maxHeight: 260");
     expect(assistantSource).toContain('testID="ai.assistant.input"');
     expect(assistantSource).toContain('testID="ai.assistant.send"');
   });
@@ -92,11 +102,14 @@ describe("AI assistant stable e2e test IDs", () => {
   it("asserts the visible knowledge preview before scrolling to the generated response", () => {
     for (const flowPath of flowFiles) {
       const flow = read(flowPath);
-      const knowledgeIndex = flow.indexOf('visible: "AI APP KNOWLEDGE BLOCK"');
+      const knowledgeIndex = flow.indexOf('id: "ai.knowledge.preview"');
       const responseScrollIndex = flow.indexOf("scrollUntilVisible:");
 
       expect(knowledgeIndex).toBeGreaterThan(0);
       expect(responseScrollIndex).toBeGreaterThan(knowledgeIndex);
+      expect(flow).not.toContain("AI APP KNOWLEDGE BLOCK");
+      expect(flow.slice(responseScrollIndex)).not.toContain('visible: "');
+      expect(flow.slice(responseScrollIndex)).not.toContain("assertNotVisible:");
     }
   });
 });

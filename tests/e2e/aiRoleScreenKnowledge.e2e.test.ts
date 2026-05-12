@@ -32,7 +32,8 @@ describe("AI role-screen knowledge Maestro e2e contract", () => {
   it("covers the required role-screen AI knowledge flows without fake answers", () => {
     expect(directorFlow).toContain("E2E_DIRECTOR_EMAIL");
     expect(directorFlow).toContain("rik://ai?context=director");
-    expect(directorFlow).toContain("AI APP KNOWLEDGE BLOCK");
+    expect(directorFlow).toContain('id: "ai.knowledge.preview"');
+    expect(directorFlow).toContain('id: "ai.knowledge.approval-boundary"');
     expect(directorFlow).toContain("finance_documents");
     expect(directorFlow).toContain("warehouse_item");
     expect(directorFlow).toContain("approval_required");
@@ -62,5 +63,15 @@ describe("AI role-screen knowledge Maestro e2e contract", () => {
     expect(contractorFlow).toContain("prepare_act");
     expect(contractorFlow).toContain("internal_supplier_details");
     expect(contractorFlow).toContain("other_contractor_data");
+
+    for (const flow of [directorFlow, foremanFlow, buyerFlow, accountantFlow, contractorFlow]) {
+      const responseScrollIndex = flow.indexOf("scrollUntilVisible:");
+      expect(flow).not.toContain("AI APP KNOWLEDGE BLOCK");
+      expect(flow).toContain('id: "ai.knowledge.role"');
+      expect(flow).toContain('id: "ai.knowledge.domain"');
+      expect(flow).toContain('id: "ai.knowledge.allowed-intents"');
+      expect(flow.slice(responseScrollIndex)).not.toContain('visible: "');
+      expect(flow.slice(responseScrollIndex)).not.toContain("assertNotVisible:");
+    }
   });
 });

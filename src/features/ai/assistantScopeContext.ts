@@ -10,14 +10,33 @@ import { fetchDirectorPendingProposalWindow } from "../../screens/director/direc
 import type { AssistantContext, AssistantRole } from "./assistant.types";
 import { redactAiContextSummaryText } from "./context/aiContextRedaction";
 import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
-import { buildAiKnowledgePromptBlock } from "./knowledge/aiKnowledgeResolver";
+import {
+  buildAiKnowledgePromptBlock,
+  resolveAiScreenKnowledge,
+} from "./knowledge/aiKnowledgeResolver";
 import { normalizeAssistantRoleToAiUserRole } from "./schemas/aiRoleSchemas";
+
+export type AssistantKnowledgePreview = {
+  role: string;
+  screenId: string;
+  domain: string;
+  screenTitle: string;
+  contextPolicy: string;
+  allowedEntities: string[];
+  documentSources: string[];
+  reportSources: string[];
+  pdfSources: string[];
+  allowedIntents: string[];
+  blockedIntents: string[];
+  approvalBoundary: string;
+};
 
 export type AssistantScopedFacts = {
   summary: string;
   scopeKey: string;
   sourceKinds: string[];
   factCount: number;
+  knowledgePreview?: AssistantKnowledgePreview;
 };
 
 const recordAssistantScopeFallback = (
@@ -74,6 +93,10 @@ const buildAssistantKnowledgeScopedFacts = (
 ): AssistantScopedFacts => {
   const aiRole = normalizeAssistantRoleToAiUserRole(role);
   const screenId = resolveAiScreenIdForAssistantContext(context);
+  const knowledge = resolveAiScreenKnowledge({
+    role: aiRole,
+    screenId,
+  });
   return {
     summary: buildAiKnowledgePromptBlock({
       role: aiRole,
@@ -82,6 +105,22 @@ const buildAssistantKnowledgeScopedFacts = (
     scopeKey: `ai_knowledge:${screenId}:${aiRole}`,
     sourceKinds: ["ai_knowledge_registry"],
     factCount: 1,
+    knowledgePreview: {
+      role: knowledge.role,
+      screenId: knowledge.screenId,
+      domain: knowledge.domain,
+      screenTitle: knowledge.screenTitle,
+      contextPolicy: knowledge.contextPolicy,
+      allowedEntities: [...knowledge.allowedEntities],
+      documentSources: [...knowledge.documentSourceIds],
+      reportSources: [...knowledge.reportSourceIds],
+      pdfSources: [...knowledge.pdfSourceIds],
+      allowedIntents: knowledge.allowedIntents.map((entry) =>
+        entry.requiresApproval ? `${entry.intent}:approval_required` : `${entry.intent}:${entry.riskLevel}`,
+      ),
+      blockedIntents: knowledge.blockedIntents.map((entry) => entry.intent),
+      approvalBoundary: knowledge.approvalBoundarySummary,
+    },
   };
 };
 
@@ -95,6 +134,7 @@ const mergeAssistantKnowledgeWithFacts = (
     scopeKey: `${knowledgeFacts.scopeKey}+${facts.scopeKey}`,
     sourceKinds: [...knowledgeFacts.sourceKinds, ...facts.sourceKinds],
     factCount: knowledgeFacts.factCount + facts.factCount,
+    knowledgePreview: knowledgeFacts.knowledgePreview,
   };
 };
 
