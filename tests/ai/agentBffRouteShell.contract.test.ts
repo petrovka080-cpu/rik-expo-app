@@ -21,7 +21,7 @@ function readToolNames(envelope: AgentBffRouteShellEnvelope): string[] {
 }
 
 describe("agent BFF route shell", () => {
-  it("defines the four agent endpoints as auth-required no-execution routes", () => {
+  it("defines the agent endpoints as auth-required no-execution routes", () => {
     expect(AGENT_BFF_ROUTE_SHELL_CONTRACT).toEqual(
       expect.objectContaining({
         contractId: "agent_bff_route_shell_v1",
@@ -39,6 +39,7 @@ describe("agent BFF route shell", () => {
       }),
     );
     expect(AGENT_BFF_ROUTE_DEFINITIONS.map((route) => route.endpoint)).toEqual([
+      "GET /agent/task-stream",
       "GET /agent/tools",
       "POST /agent/tools/:name/validate",
       "POST /agent/tools/:name/preview",

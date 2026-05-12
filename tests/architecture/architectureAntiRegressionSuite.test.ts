@@ -6,6 +6,7 @@ import {
   evaluateDirectSupabaseGuardrail,
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
+  evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
   evaluateAiKnowledgePreviewE2eContractGuardrail,
   evaluateAiResponseSmokeNonBlockingContractGuardrail,
   evaluateAiModelBoundaryGuardrail,
@@ -414,6 +415,77 @@ describe("architecture anti-regression suite", () => {
       status: "pass",
       errors: [],
     });
+  });
+
+  it("ratchets the Command Center task-stream runtime boundary", () => {
+    const passing = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
+          return "GET /agent/task-stream\nloadAiTaskStreamRuntime\nagent.task_stream.read";
+        }
+        if (relativePath.includes("commandCenter")) {
+          return [
+            "GET /agent/task-stream",
+            "runtimeStatus",
+            "taskStreamLoaded",
+            "submit_for_approval",
+            "Final mutation was not executed",
+            "mutationCount: 0",
+          ].join("\n");
+        }
+        if (relativePath.includes("taskStream")) {
+          return [
+            "canUseAiCapability",
+            "getAllowedAiDomainsForRole",
+            "roleScoped: true",
+            "screenId",
+            "ai.command.center",
+            "sourceScreenId",
+            "hasAiTaskStreamEvidence",
+            "evidenceRequired: true",
+            "evidenceBacked: true",
+            "mutationCount: 0",
+            "mutation_count: 0",
+            "directMutationAllowed: false",
+            "fakeCards: false",
+            "hardcodedAiResponse: false",
+            "Unknown AI role is denied by default",
+          ].join("\n");
+        }
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_command_center_task_stream_runtime",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.includes("commandCenter")) {
+          return 'import { supabase } from "@supabase/supabase-js";\nconst rawPrompt = "leak";';
+        }
+        if (relativePath.includes("taskStream")) {
+          return "fake task card\nmutationCount: 1";
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "command_center_task_stream_route_not_exposed",
+        "command_center_not_using_runtime_task_stream",
+        "task_stream_runtime_evidence_requirement_missing",
+        "command_center_fake_cards_detected",
+        "command_center_ui_supabase_import_detected",
+      ]),
+    );
   });
 
   it("ratchets deterministic AI knowledge preview e2e assertions", () => {

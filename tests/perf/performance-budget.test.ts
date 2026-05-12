@@ -215,6 +215,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "commandCenter", "useAiCommandCenterData.ts"),
       path.join(SRC, "features", "ai", "commandCenter", "buildAiCommandCenterViewModel.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct02TaskStreamRuntimeFiles = [
+      path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamRuntime.ts"),
+      path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamRuntimeTypes.ts"),
+      path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamEvidence.ts"),
+      path.join(SRC, "features", "ai", "taskStream", "aiTaskStreamCardProducers.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -814,6 +820,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_APPROVAL_01 adds one permanent submit_for_approval approval-gate tool module.
     // S_AI_APPROVAL_02 adds one permanent get_action_status safe-read status tool module.
     // S_AI_PRODUCT_01 adds six permanent Daily Command Center product-layer modules.
+    // S_AI_PRODUCT_02 adds four permanent Command Center task-stream runtime modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -960,6 +967,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiSubmitForApprovalToolFiles).toBeLessThanOrEqual(1);
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
+    expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -984,6 +992,7 @@ describe("performance budget — bundle module count", () => {
         sAiSubmitForApprovalToolFiles -
         sAiGetActionStatusToolFiles -
         sAiProduct01DailyCommandCenterFiles -
+        sAiProduct02TaskStreamRuntimeFiles -
         sPdfInstantFirstOpenCacheFiles -
         sDirectSupabaseBypassCatalogRequestBoundaryFiles -
         sFetchAllDirectorReportsAggregationContractFiles -

@@ -114,8 +114,10 @@ const ENTITY_BY_DOMAIN: Record<AiDomain, string> = {
 function emptyViewModel(params: {
   role: AiUserRole;
   status: AiCommandCenterViewModel["status"];
+  runtimeStatus: AiCommandCenterViewModel["runtimeStatus"];
   denied: boolean;
   errorMessage: string | null;
+  blockedReason?: string | null;
 }): AiCommandCenterViewModel {
   return {
     contractId: "ai_command_center_view_model_v1",
@@ -135,6 +137,11 @@ function emptyViewModel(params: {
     denied: params.denied,
     empty: true,
     status: params.status,
+    runtimeStatus: params.runtimeStatus,
+    taskStreamLoaded: false,
+    blockedReason: params.blockedReason ?? null,
+    nextCursor: null,
+    countsByType: {},
     errorMessage: params.errorMessage,
     cards: [],
     sections: SECTION_ORDER.map((id) => ({
@@ -400,6 +407,7 @@ export function buildAiCommandCenterViewModel(
     return emptyViewModel({
       role: input.auth?.role ?? "unknown",
       status: "denied",
+      runtimeStatus: "denied",
       denied: true,
       errorMessage: "\u0420\u043e\u043b\u044c \u043d\u0435 \u0434\u043e\u043f\u0443\u0449\u0435\u043d\u0430",
     });
@@ -408,13 +416,16 @@ export function buildAiCommandCenterViewModel(
   const taskStream = getAgentTaskStream({
     auth: input.auth,
     page: input.page ?? { limit: 50 },
-    sourceCards: input.sourceCards ?? [],
+    sourceCards: input.sourceCards,
+    runtimeEvidence: input.runtimeEvidence,
+    screenId: "ai.command.center",
   });
 
   if (!taskStream.ok) {
     return emptyViewModel({
       role: input.auth.role,
       status: "error",
+      runtimeStatus: "error",
       denied: false,
       errorMessage: taskStream.error.message,
     });
@@ -444,7 +455,16 @@ export function buildAiCommandCenterViewModel(
     providerPayloadStored: false,
     denied: false,
     empty: cards.length === 0,
-    status: "ready",
+    status: taskStream.data.runtimeStatus === "loaded"
+      ? "loaded"
+      : taskStream.data.runtimeStatus === "blocked"
+        ? "blocked"
+        : "empty",
+    runtimeStatus: taskStream.data.runtimeStatus,
+    taskStreamLoaded: taskStream.data.runtimeStatus === "loaded",
+    blockedReason: taskStream.data.blockedReason,
+    nextCursor: taskStream.data.page.nextCursor,
+    countsByType: taskStream.data.countsByType,
     errorMessage: null,
     cards,
     sections,

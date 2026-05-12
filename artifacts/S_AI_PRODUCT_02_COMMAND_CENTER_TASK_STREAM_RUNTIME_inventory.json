@@ -1,0 +1,64 @@
+{
+  "wave": "S_AI_PRODUCT_02_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSURE",
+  "previous_blocker": "BLOCKED_TASK_STREAM_RUNTIME_NOT_EXPOSED",
+  "previous_blocker_closed": true,
+  "status": "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED_WITH_E2E_ROLE_BLOCKER",
+  "source_files": [
+    "src/features/ai/taskStream/aiTaskStreamRuntime.ts",
+    "src/features/ai/taskStream/aiTaskStreamRuntimeTypes.ts",
+    "src/features/ai/taskStream/aiTaskStreamEvidence.ts",
+    "src/features/ai/taskStream/aiTaskStreamCardProducers.ts",
+    "src/features/ai/agent/agentBffRouteShell.ts",
+    "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts",
+    "src/features/ai/commandCenter/AiCommandCenterTypes.ts",
+    "src/features/ai/commandCenter/AiCommandCenterScreen.tsx"
+  ],
+  "test_files": [
+    "tests/ai/aiTaskStreamRuntime.contract.test.ts",
+    "tests/ai/aiTaskStreamCardProducers.contract.test.ts",
+    "tests/ai/aiTaskStreamEvidence.contract.test.ts",
+    "tests/ai/commandCenterTaskStreamRuntime.contract.test.ts",
+    "tests/ai/commandCenterRuntimeRoleScope.contract.test.ts",
+    "tests/ai/commandCenterRuntimeActionSafety.contract.test.ts",
+    "tests/architecture/commandCenterTaskStreamRuntimeArchitecture.contract.test.ts",
+    "tests/e2e/aiCommandCenterTaskStreamRuntime.e2e.test.ts"
+  ],
+  "runtime_runner": "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts",
+  "artifacts": [
+    "artifacts/S_AI_PRODUCT_02_COMMAND_CENTER_TASK_STREAM_RUNTIME_inventory.json",
+    "artifacts/S_AI_PRODUCT_02_COMMAND_CENTER_TASK_STREAM_RUNTIME_matrix.json",
+    "artifacts/S_AI_PRODUCT_02_COMMAND_CENTER_TASK_STREAM_RUNTIME_emulator.json",
+    "artifacts/S_AI_PRODUCT_02_COMMAND_CENTER_TASK_STREAM_RUNTIME_proof.md"
+  ],
+  "producer_registry": [
+    "warehouseStatusProducer",
+    "draftReadyProducer",
+    "approvalPendingProducer",
+    "procurementNextActionProducer",
+    "financeRiskProducer",
+    "reportReadyProducer"
+  ],
+  "safe_contract": {
+    "role_scoped": true,
+    "evidence_required": true,
+    "read_only": true,
+    "fake_cards": false,
+    "hardcoded_ai_response": false,
+    "mutation_count": 0,
+    "direct_mutation_allowed": false,
+    "raw_db_rows_exposed": false,
+    "raw_prompt_exposed": false,
+    "provider_called": false
+  },
+  "gates": {
+    "typescript": "PASS",
+    "expo_lint": "PASS",
+    "targeted_contracts": "PASS",
+    "full_jest": "PASS",
+    "architecture_anti_regression_suite": "PASS",
+    "git_diff_check": "PASS",
+    "android_apk_build": "PASS",
+    "android_runtime_smoke": "PASS",
+    "emulator_e2e": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS"
+  }
+}

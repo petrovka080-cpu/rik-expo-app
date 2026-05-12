@@ -141,6 +141,23 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           </View>
         ) : null}
 
+        {!state.loading ? (
+          <View testID="ai.command.center.runtime-status" style={styles.runtimeStatus}>
+            <Text style={styles.runtimeStatusText}>
+              task_stream={state.viewModel.runtimeStatus}; mutation_count=
+              {state.viewModel.mutationCount}
+            </Text>
+          </View>
+        ) : null}
+
+        {!state.loading && state.viewModel.taskStreamLoaded ? (
+          <View testID="ai.command.center.task-stream-loaded" style={styles.loadedBadge}>
+            <Text style={styles.loadedBadgeText}>
+              role-scoped task stream loaded
+            </Text>
+          </View>
+        ) : null}
+
         {!state.loading && state.viewModel.denied ? (
           <View style={styles.stateBox}>
             <Text style={styles.stateTitle}>
@@ -152,13 +169,22 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           </View>
         ) : null}
 
-        {!state.loading && !state.viewModel.denied && state.viewModel.empty ? (
+        {!state.loading && !state.viewModel.denied && state.viewModel.status === "blocked" ? (
           <View style={styles.stateBox}>
+            <Text style={styles.stateTitle}>Task stream blocked</Text>
+            <Text style={styles.stateText}>
+              {state.viewModel.blockedReason ?? state.viewModel.errorMessage}
+            </Text>
+          </View>
+        ) : null}
+
+        {!state.loading && !state.viewModel.denied && state.viewModel.empty && state.viewModel.status !== "blocked" ? (
+          <View testID="ai.command.center.empty-state" style={styles.stateBox}>
             <Text style={styles.stateTitle}>
               \u041d\u0435\u0442 \u0437\u0430\u0434\u0430\u0447
             </Text>
             <Text style={styles.stateText}>
-              GET /agent/task-stream \u043d\u0435 \u0432\u0435\u0440\u043d\u0443\u043b role-scoped cards.
+              \u041f\u043e\u043a\u0430 \u043d\u0435\u0442 \u0437\u0430\u0434\u0430\u0447 \u043f\u043e \u0432\u0430\u0448\u0435\u0439 \u0440\u043e\u043b\u0438
             </Text>
           </View>
         ) : null}
@@ -255,6 +281,30 @@ const styles = StyleSheet.create({
     color: "#475569",
     fontSize: 13,
     lineHeight: 18,
+  },
+  runtimeStatus: {
+    marginTop: 14,
+    borderRadius: 8,
+    backgroundColor: "#E0F2FE",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  runtimeStatusText: {
+    color: "#075985",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  loadedBadge: {
+    marginTop: 10,
+    borderRadius: 8,
+    backgroundColor: "#DCFCE7",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  loadedBadgeText: {
+    color: "#166534",
+    fontSize: 12,
+    fontWeight: "800",
   },
   panel: {
     marginTop: 16,

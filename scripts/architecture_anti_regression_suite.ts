@@ -353,6 +353,25 @@ export type AgentBffRouteShellArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiCommandCenterTaskStreamRuntimeArchitectureSummary = {
+  runtimeAdapterExists: boolean;
+  taskStreamRouteExposed: boolean;
+  commandCenterUsesRuntime: boolean;
+  roleScopeExists: boolean;
+  screenPolicyExists: boolean;
+  evidenceRequirementExists: boolean;
+  mutationCountZero: boolean;
+  directMutationBlocked: boolean;
+  submitForApprovalNoFinalExecution: boolean;
+  noFakeCards: boolean;
+  noHardcodedAiResponse: boolean;
+  noSupabaseUiImport: boolean;
+  noModelProviderUiImport: boolean;
+  noRawPayloadFields: boolean;
+  unknownRoleDenied: boolean;
+  findings: readonly string[];
+};
+
 export type AiRoleScreenEmulatorGateSummary = {
   ensureAndroidEmulatorReadyPresent: boolean;
   maestroRunnerPresent: boolean;
@@ -545,6 +564,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
+  aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiKnowledgePreviewE2eContract: AiKnowledgePreviewE2eContractSummary;
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
@@ -620,6 +640,20 @@ const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelP
 const AI_ASSISTANT_CLIENT_PATH = "src/features/ai/assistantClient.ts";
 const AI_ASSISTANT_SCREEN_PATH = "src/features/ai/AIAssistantScreen.tsx";
 const AI_ASSISTANT_SCREEN_STYLES_PATH = "src/features/ai/AIAssistantScreen.styles.ts";
+const AI_COMMAND_CENTER_FILES = [
+  "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+  "src/features/ai/commandCenter/AiCommandCenterTypes.ts",
+  "src/features/ai/commandCenter/AiCommandCenterCards.tsx",
+  "src/features/ai/commandCenter/AiCommandCenterActions.tsx",
+  "src/features/ai/commandCenter/useAiCommandCenterData.ts",
+  "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts",
+] as const;
+const AI_TASK_STREAM_RUNTIME_FILES = [
+  "src/features/ai/taskStream/aiTaskStreamRuntime.ts",
+  "src/features/ai/taskStream/aiTaskStreamRuntimeTypes.ts",
+  "src/features/ai/taskStream/aiTaskStreamEvidence.ts",
+  "src/features/ai/taskStream/aiTaskStreamCardProducers.ts",
+] as const;
 const AI_REPORTS_SERVICE_PATH = "src/lib/ai_reports.ts";
 const AI_ROLE_POLICY_PATH = "src/features/ai/policy/aiRolePolicy.ts";
 const AI_RISK_POLICY_PATH = "src/features/ai/policy/aiRiskPolicy.ts";
@@ -2196,6 +2230,7 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
   const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH });
   const allRoutesPresent =
+    Boolean(shellSource?.includes("GET /agent/task-stream")) &&
     Boolean(shellSource?.includes("GET /agent/tools")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/validate")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/preview")) &&
@@ -2257,6 +2292,118 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
       noLiveExecutionBoundary,
       noProviderImports,
       noDirectDatabaseAccess,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const commandCenterSources = AI_COMMAND_CENTER_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const runtimeSources = AI_TASK_STREAM_RUNTIME_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const commandCenterSource = commandCenterSources.join("\n");
+  const runtimeSource = runtimeSources.join("\n");
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+
+  const runtimeAdapterExists = runtimeSources.every((source) => source.length > 0);
+  const taskStreamRouteExposed =
+    shellSource.includes("GET /agent/task-stream") &&
+    shellSource.includes("loadAiTaskStreamRuntime") &&
+    shellSource.includes("agent.task_stream.read");
+  const commandCenterUsesRuntime =
+    commandCenterSource.includes("GET /agent/task-stream") &&
+    commandCenterSource.includes("runtimeStatus") &&
+    commandCenterSource.includes("taskStreamLoaded") &&
+    !commandCenterSource.includes("sourceCards: input.sourceCards ?? []");
+  const roleScopeExists =
+    runtimeSource.includes("canUseAiCapability") &&
+    runtimeSource.includes("getAllowedAiDomainsForRole") &&
+    runtimeSource.includes("roleScoped: true");
+  const screenPolicyExists =
+    runtimeSource.includes("screenId") &&
+    runtimeSource.includes("ai.command.center") &&
+    runtimeSource.includes("sourceScreenId");
+  const evidenceRequirementExists =
+    runtimeSource.includes("hasAiTaskStreamEvidence") &&
+    runtimeSource.includes("evidenceRequired: true") &&
+    runtimeSource.includes("evidenceBacked: true");
+  const mutationCountZero =
+    runtimeSource.includes("mutationCount: 0") &&
+    runtimeSource.includes("mutation_count: 0") &&
+    !runtimeSource.includes("mutationCount: 1");
+  const directMutationBlocked =
+    runtimeSource.includes("directMutationAllowed: false") &&
+    !/\b(create_order|confirm_supplier|change_payment_status|change_warehouse_status)\s*\(/.test(runtimeSource);
+  const submitForApprovalNoFinalExecution =
+    commandCenterSource.includes("Final mutation was not executed") &&
+    commandCenterSource.includes("submit_for_approval") &&
+    commandCenterSource.includes("mutationCount: 0");
+  const noFakeCards =
+    runtimeSource.includes("fakeCards: false") &&
+    !/fake task card|fake card|hardcoded task/i.test(runtimeSource);
+  const noHardcodedAiResponse =
+    runtimeSource.includes("hardcodedAiResponse: false") &&
+    !/hardcoded AI response|fake AI answer/i.test(`${runtimeSource}\n${commandCenterSource}`);
+  const noSupabaseUiImport =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(commandCenterSource);
+  const noModelProviderUiImport =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(commandCenterSource);
+  const noRawPayloadFields =
+    !/\b(rawPrompt|raw_prompt|providerPayload|provider_payload|rawDbRows|raw_db_rows|dbRows)\s*:/.test(runtimeSource);
+  const unknownRoleDenied = runtimeSource.includes("Unknown AI role is denied by default");
+  const findings = [
+    ...(taskStreamRouteExposed ? [] : ["command_center_task_stream_route_not_exposed"]),
+    ...(commandCenterUsesRuntime ? [] : ["command_center_not_using_runtime_task_stream"]),
+    ...(roleScopeExists ? [] : ["task_stream_runtime_role_policy_missing"]),
+    ...(screenPolicyExists ? [] : ["task_stream_runtime_screen_policy_missing"]),
+    ...(evidenceRequirementExists ? [] : ["task_stream_runtime_evidence_requirement_missing"]),
+    ...(mutationCountZero ? [] : ["task_stream_runtime_mutation_count_not_zero"]),
+    ...(directMutationBlocked ? [] : ["task_stream_runtime_direct_mutation_allowed"]),
+    ...(submitForApprovalNoFinalExecution ? [] : ["submit_for_approval_final_execution_possible"]),
+    ...(noFakeCards ? [] : ["command_center_fake_cards_detected"]),
+    ...(noHardcodedAiResponse ? [] : ["command_center_hardcoded_ai_response_detected"]),
+    ...(noSupabaseUiImport ? [] : ["command_center_ui_supabase_import_detected"]),
+    ...(noModelProviderUiImport ? [] : ["command_center_ui_model_provider_import_detected"]),
+    ...(noRawPayloadFields ? [] : ["task_stream_runtime_raw_payload_field_detected"]),
+    ...(unknownRoleDenied ? [] : ["task_stream_runtime_unknown_role_not_denied"]),
+  ];
+  const errors = [
+    ...(runtimeAdapterExists ? [] : ["ai_task_stream_runtime_files_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_command_center_task_stream_runtime",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      runtimeAdapterExists,
+      taskStreamRouteExposed,
+      commandCenterUsesRuntime,
+      roleScopeExists,
+      screenPolicyExists,
+      evidenceRequirementExists,
+      mutationCountZero,
+      directMutationBlocked,
+      submitForApprovalNoFinalExecution,
+      noFakeCards,
+      noHardcodedAiResponse,
+      noSupabaseUiImport,
+      noModelProviderUiImport,
+      noRawPayloadFields,
+      unknownRoleDenied,
       findings,
     },
   };
@@ -4145,6 +4292,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
+  const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiKnowledgePreviewE2eContract = evaluateAiKnowledgePreviewE2eContractGuardrail({ projectRoot });
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
@@ -4177,6 +4325,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture.check,
     aiToolPlanPolicyArchitecture.check,
     agentBffRouteShellArchitecture.check,
+    aiCommandCenterTaskStreamRuntime.check,
     aiKnowledgePreviewE2eContract.check,
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
@@ -4210,6 +4359,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
+    aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiKnowledgePreviewE2eContract: aiKnowledgePreviewE2eContract.summary,
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
@@ -4263,6 +4413,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
+  console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
+  console.info(`ai_command_center_task_stream_no_fake_cards: ${report.aiCommandCenterTaskStreamRuntime.noFakeCards}`);
   console.info(`ai_role_screen_emulator_gate_artifact: ${report.aiRoleScreenEmulatorGate.emulatorArtifactPresent}`);
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);

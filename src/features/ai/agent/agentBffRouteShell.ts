@@ -6,6 +6,11 @@ import {
 import { planAiToolUse, type AiToolPlan } from "../tools/aiToolPlanPolicy";
 import { AI_TOOL_REGISTRY } from "../tools/aiToolRegistry";
 import type { AiToolDefinition } from "../tools/aiToolTypes";
+import { loadAiTaskStreamRuntime } from "../taskStream/aiTaskStreamRuntime";
+import type {
+  AiTaskStreamRuntimeEvidenceInput,
+  AiTaskStreamRuntimeResult,
+} from "../taskStream/aiTaskStreamRuntimeTypes";
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -14,7 +19,8 @@ export type AgentBffRouteOperation =
   | "agent.tools.list"
   | "agent.tools.validate"
   | "agent.tools.preview"
-  | "agent.action.status";
+  | "agent.action.status"
+  | "agent.task_stream.read";
 
 export type AgentBffHttpMethod = "GET" | "POST";
 
@@ -29,7 +35,7 @@ export type AgentBffRouteDefinition = {
   callsModelProvider: false;
   callsDatabaseDirectly: false;
   exposesForbiddenTools: false;
-  responseEnvelope: "AgentBffRouteShellEnvelope";
+  responseEnvelope: "AgentBffRouteShellEnvelope" | "AgentTaskStreamEnvelope";
 };
 
 export type AgentBffAuthContext = {
@@ -137,8 +143,10 @@ export type AgentTaskStreamPageInput = {
 };
 
 export type AgentTaskStreamRequest = AgentBffShellRequest & {
+  screenId?: string;
   page?: AgentTaskStreamPageInput;
   sourceCards?: readonly AgentTaskStreamCard[];
+  runtimeEvidence?: AiTaskStreamRuntimeEvidenceInput;
 };
 
 export type AgentTaskStreamDto = {
@@ -160,6 +168,9 @@ export type AgentTaskStreamDto = {
   providerCalled: false;
   dbAccessedDirectly: false;
   source: "bff:agent_task_stream_v1";
+  runtimeStatus: AiTaskStreamRuntimeResult["status"];
+  blockedReason: string | null;
+  countsByType: Record<string, number>;
 };
 
 export type AgentTaskStreamEnvelope =
@@ -265,9 +276,23 @@ export const AGENT_TASK_STREAM_BFF_CONTRACT = Object.freeze({
     "missing_document",
     "recommended_next_action",
   ],
+  runtimeAdapter: "runtime:ai_task_stream_v1",
 } as const);
 
 export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
+  {
+    operation: "agent.task_stream.read",
+    method: "GET",
+    endpoint: "GET /agent/task-stream",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentTaskStreamEnvelope",
+  },
   {
     operation: "agent.tools.list",
     method: "GET",
@@ -381,6 +406,13 @@ function sortTaskStreamCards(cards: readonly AgentTaskStreamCard[]): AgentTaskSt
     if (dateDelta !== 0 && Number.isFinite(dateDelta)) return dateDelta;
     return left.id.localeCompare(right.id);
   });
+}
+
+function countTaskStreamCardsByType(cards: readonly AgentTaskStreamCard[]): Record<string, number> {
+  return cards.reduce<Record<string, number>>((acc, card) => {
+    acc[card.type] = (acc[card.type] ?? 0) + 1;
+    return acc;
+  }, {});
 }
 
 function isToolVisibleForRole(toolName: string, role: AiUserRole): boolean {
@@ -537,7 +569,18 @@ export function getAgentTaskStream(request: AgentTaskStreamRequest): AgentTaskSt
 
   const auth = request.auth;
   const limit = normalizePageLimit(request.page?.limit);
-  const visibleCards = sortTaskStreamCards(request.sourceCards ?? []).filter((card) =>
+  const runtime =
+    request.sourceCards === undefined
+      ? loadAiTaskStreamRuntime({
+          auth,
+          screenId: request.screenId ?? "ai.command.center",
+          cursor: null,
+          limit: 50,
+          evidence: request.runtimeEvidence,
+        })
+      : null;
+  const sourceCards = request.sourceCards ?? runtime?.cards ?? [];
+  const visibleCards = sortTaskStreamCards(sourceCards).filter((card) =>
     canSeeTaskStreamCard(card, auth),
   );
   const pageCards = visibleCards.slice(offset, offset + limit);
@@ -565,6 +608,10 @@ export function getAgentTaskStream(request: AgentTaskStreamRequest): AgentTaskSt
       providerCalled: false,
       dbAccessedDirectly: false,
       source: "bff:agent_task_stream_v1",
+      runtimeStatus:
+        runtime?.status ?? (pageCards.length > 0 ? "loaded" : "empty"),
+      blockedReason: runtime?.blockedReason ?? null,
+      countsByType: runtime?.countsByType ?? countTaskStreamCardsByType(pageCards),
     },
   };
 }

@@ -4,6 +4,10 @@ import type {
   AgentTaskStreamDto,
   AgentTaskStreamPriority,
 } from "../agent/agentBffRouteShell";
+import type {
+  AiTaskStreamRuntimeEvidenceInput,
+  AiTaskStreamRuntimeResult,
+} from "../taskStream/aiTaskStreamRuntimeTypes";
 import type { AiDomain, AiUserRole } from "../policy/aiRolePolicy";
 import type { AiToolName } from "../tools/aiToolTypes";
 
@@ -93,7 +97,12 @@ export type AiCommandCenterViewModel = {
   providerPayloadStored: false;
   denied: boolean;
   empty: boolean;
-  status: "ready" | "denied" | "error";
+  status: "loaded" | "empty" | "blocked" | "denied" | "error";
+  runtimeStatus: AiTaskStreamRuntimeResult["status"] | "denied" | "error";
+  taskStreamLoaded: boolean;
+  blockedReason: string | null;
+  nextCursor: string | null;
+  countsByType: Record<string, number>;
   errorMessage: string | null;
   cards: readonly AiCommandCenterCardView[];
   sections: readonly AiCommandCenterSectionView[];
@@ -103,6 +112,7 @@ export type AiCommandCenterViewModel = {
 export type BuildAiCommandCenterViewModelInput = {
   auth: AgentBffAuthContext | null;
   sourceCards?: readonly AgentTaskStreamCard[];
+  runtimeEvidence?: AiTaskStreamRuntimeEvidenceInput;
   page?: {
     limit?: number;
     cursor?: string | null;
