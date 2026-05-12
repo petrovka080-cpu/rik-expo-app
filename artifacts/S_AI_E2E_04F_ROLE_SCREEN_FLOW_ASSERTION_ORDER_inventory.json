@@ -1,0 +1,19 @@
+{
+  "wave": "S_AI_E2E_04F_ROLE_SCREEN_FLOW_ASSERTION_ORDER",
+  "files_changed": [
+    "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+    "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml",
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts",
+    "artifacts/S_AI_E2E_04F_ROLE_SCREEN_FLOW_ASSERTION_ORDER_matrix.json",
+    "artifacts/S_AI_E2E_04F_ROLE_SCREEN_FLOW_ASSERTION_ORDER_inventory.json",
+    "artifacts/S_AI_E2E_04F_ROLE_SCREEN_FLOW_ASSERTION_ORDER_proof.md"
+  ],
+  "runtime_blocker_observed_before_change": "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
+  "observed_runtime_fact": "After scrolling to ai.assistant.response, the top knowledge preview was no longer visible to Maestro.",
+  "bounded_change": "Role-screen flows now assert the visible knowledge preview before scrolling to the generated assistant response.",
+  "source_app_code_changed": false,
+  "new_android_build_required": false
+}

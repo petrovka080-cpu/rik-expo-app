@@ -42,15 +42,6 @@ name: AI Role Screen Knowledge Contractor
     visible:
       id: "ai.assistant.send"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "ai.assistant.response"
-    direction: DOWN
-    timeout: 90000
-    visibilityPercentage: 20
-    centerElement: true
-- assertVisible:
-    id: "ai.assistant.response"
 - extendedWaitUntil:
     visible: "AI APP KNOWLEDGE BLOCK"
     timeout: 60000
@@ -63,6 +54,15 @@ name: AI Role Screen Knowledge Contractor
 - extendedWaitUntil:
     visible: "pdf_exports"
     timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "ai.assistant.response"
+    direction: DOWN
+    timeout: 90000
+    visibilityPercentage: 20
+    centerElement: true
+- assertVisible:
+    id: "ai.assistant.response"
 - assertNotVisible: "accounting_posting"
 - assertNotVisible: "internal_supplier_details"
 - assertNotVisible: "other_contractor_data"

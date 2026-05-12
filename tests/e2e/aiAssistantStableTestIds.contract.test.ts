@@ -88,4 +88,15 @@ describe("AI assistant stable e2e test IDs", () => {
       expect(flow).not.toMatch(/@example\.com|password\s*[:=]|service_role/i);
     }
   });
+
+  it("asserts the visible knowledge preview before scrolling to the generated response", () => {
+    for (const flowPath of flowFiles) {
+      const flow = read(flowPath);
+      const knowledgeIndex = flow.indexOf('visible: "AI APP KNOWLEDGE BLOCK"');
+      const responseScrollIndex = flow.indexOf("scrollUntilVisible:");
+
+      expect(knowledgeIndex).toBeGreaterThan(0);
+      expect(responseScrollIndex).toBeGreaterThan(knowledgeIndex);
+    }
+  });
 });

@@ -42,15 +42,6 @@ name: AI Role Screen Knowledge Foreman
     visible:
       id: "ai.assistant.send"
     timeout: 30000
-- scrollUntilVisible:
-    element:
-      id: "ai.assistant.response"
-    direction: DOWN
-    timeout: 90000
-    visibilityPercentage: 20
-    centerElement: true
-- assertVisible:
-    id: "ai.assistant.response"
 - extendedWaitUntil:
     visible: "AI APP KNOWLEDGE BLOCK"
     timeout: 60000
@@ -68,4 +59,13 @@ name: AI Role Screen Knowledge Foreman
 - extendedWaitUntil:
     visible: "approval_required"
     timeout: 30000
+- scrollUntilVisible:
+    element:
+      id: "ai.assistant.response"
+    direction: DOWN
+    timeout: 90000
+    visibilityPercentage: 20
+    centerElement: true
+- assertVisible:
+    id: "ai.assistant.response"
 - stopApp
