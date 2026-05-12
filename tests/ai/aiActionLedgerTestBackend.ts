@@ -17,6 +17,7 @@ export function createContractTestActionLedgerBackend(): {
 
   const backend: AiActionLedgerPersistentBackend = {
     mounted: true,
+    canPersistExecutedStatus: true,
     async listByOrganization(organizationIdHash, page) {
       const offset = page.cursor && /^\d+$/.test(page.cursor) ? Number(page.cursor) : 0;
       const limit = Math.max(1, Math.min(20, Math.trunc(page.limit)));

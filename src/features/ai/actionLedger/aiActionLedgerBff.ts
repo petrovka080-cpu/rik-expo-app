@@ -9,12 +9,12 @@ import {
   type AiActionLedgerPersistentBackend,
 } from "./aiActionLedgerRepository";
 import { createAiActionLedgerRpcBackend } from "./aiActionLedgerRpcBackend";
-import { createAiActionLedgerAuditEvent } from "./aiActionLedgerAudit";
-import { executeApprovedAiAction } from "./executeApprovedAiAction";
 import {
   executeApprovedActionGateway,
   getApprovedActionExecutionStatus,
 } from "../executors/executeApprovedActionGateway";
+import { createApprovedProcurementRequestBffMutationBoundary } from "../executors/approvedProcurementRequestBffMutationBoundary";
+import { createProcurementRequestExecutor } from "../executors/procurementRequestExecutor";
 import type {
   ApprovedActionDomainExecutor,
   ApprovedActionExecutionResult,
@@ -22,8 +22,6 @@ import type {
 import type {
   AiActionDecisionOutput,
   AiActionLedgerActionType,
-  AiActionLedgerBlockedCode,
-  AiActionLedgerRecord,
   AiActionStatusOutput,
   ExecuteApprovedAiActionOutput,
   SubmitAiActionForApprovalOutput,
@@ -255,6 +253,15 @@ function backendForBff(request: {
   });
 }
 
+function procurementExecutorForBff(
+  explicitExecutor: ApprovedActionDomainExecutor | null | undefined,
+): ApprovedActionDomainExecutor | null {
+  if (explicitExecutor !== undefined) return explicitExecutor;
+  return createProcurementRequestExecutor(
+    createApprovedProcurementRequestBffMutationBoundary(),
+  );
+}
+
 function orgHash(auth: AiActionLedgerBffAuthContext, organizationId?: string): string {
   return stableHashOpaqueId("org", organizationId ?? `${auth.role}:organization_scope`);
 }
@@ -412,7 +419,7 @@ export async function executeApprovedActionLedgerBff(
         screenId: "agent.action.execute-approved",
       },
       executors: {
-        procurement: request.procurementExecutor ?? null,
+        procurement: procurementExecutorForBff(request.procurementExecutor),
       },
     });
     return {
@@ -433,42 +440,18 @@ export async function executeApprovedActionLedgerBff(
     };
   }
 
-  const status = await repositoryForBff({ ...request, auth: request.auth }).getStatus(actionId, request.auth.role);
-  const record: AiActionLedgerRecord | undefined = status.record;
-  const result = record
-    ? await executeApprovedAiAction({
-        record,
-        executorRole: request.auth.role,
-        auditEvent: createAiActionLedgerAuditEvent({
-          eventType: "ai.action.execute_requested",
-          actionId: record.actionId,
-          actionType: record.actionType,
-          status: record.status,
-          role: request.auth.role,
-          screenId: record.screenId,
-          domain: record.domain,
-          reason: "Execute-approved route audit event.",
-          evidenceRefs: record.evidenceRefs,
-        }),
-        domainExecutor: null,
-      })
-    : {
-        persistentBackend: status.persistentBackend,
-        fakeLocalApproval: false as const,
-        finalExecution: false as const,
-        directDomainMutation: false as const,
-        rawDbRowsExposed: false as const,
-        rawPromptExposed: false as const,
-        rawProviderPayloadStored: false as const,
-        credentialsPrinted: false as const,
-        status: "blocked" as const,
-        actionId,
-        persisted: status.persistentBackend,
-        auditEvents: status.auditEvents,
-        blocker: (status.blocker ?? "BLOCKED_APPROVAL_ACTION_NOT_FOUND") as AiActionLedgerBlockedCode,
-        reason: status.reason ?? "AI action was not found in the persistent ledger.",
-        domainExecutorReady: false,
-      };
+  const result = await executeApprovedActionGateway({
+    backend: backendForBff({ ...request, auth: request.auth }),
+    request: {
+      actionId,
+      idempotencyKey: normalizeText(request.idempotencyKey),
+      requestedByRole: request.auth.role,
+      screenId: "agent.action.execute-approved",
+    },
+    executors: {
+      procurement: procurementExecutorForBff(request.procurementExecutor),
+    },
+  });
 
   return {
     ok: true,

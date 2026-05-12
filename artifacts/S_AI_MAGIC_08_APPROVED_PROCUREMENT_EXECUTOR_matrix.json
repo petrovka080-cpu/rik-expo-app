@@ -1,6 +1,6 @@
 {
-  "final_status": "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
-  "contract_status": "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_CONTRACT_READY",
+  "final_status": "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
+  "contract_status": "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_BOUNDARY_READY",
   "approval_ledger_required": true,
   "approved_status_required": true,
   "idempotency_required": true,
@@ -8,7 +8,10 @@
   "evidence_required": true,
   "central_execute_gate": true,
   "procurement_executor_ready": true,
-  "procurement_bff_mutation_boundary_mounted": false,
+  "procurement_bff_mutation_boundary_mounted": true,
+  "request_sync_draft_v2_boundary_used": true,
+  "executed_status_persistence_required": true,
+  "default_rpc_executed_status_backend_ready": false,
   "pending_can_execute": false,
   "rejected_can_execute": false,
   "expired_can_execute": false,
@@ -24,5 +27,5 @@
   "android_apk_build": "BLOCKED_ANDROID_APK_BUILD_FAILED",
   "android_apk_build_reason": "EAS free-plan Android build quota exhausted until 2026-06-01",
   "android_runtime_smoke": "PASS",
-  "emulator_e2e": "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND"
+  "emulator_e2e": "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE"
 }

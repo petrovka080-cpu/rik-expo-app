@@ -437,7 +437,7 @@ export async function previewApprovalInboxEdit(
 export async function executeApprovedApprovalInboxAction(
   request: ApprovalInboxActionRequest,
 ) {
-  if (request.procurementExecutor !== undefined && request.backend !== undefined) {
+  if (request.backend !== undefined) {
     const record = await findScopedRecord(request);
     return executeApprovedActionLedgerBff({
       auth: request.auth,

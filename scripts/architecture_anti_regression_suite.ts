@@ -548,6 +548,9 @@ export type AiApprovedProcurementExecutorArchitectureSummary = {
   evidenceRequired: boolean;
   procurementExecutorReady: boolean;
   bffMutationBoundaryRequired: boolean;
+  bffMutationBoundaryMounted: boolean;
+  executedStatusPersistenceRequired: boolean;
+  boundaryUsesRequestSyncRpcV2: boolean;
   pendingCannotExecute: boolean;
   rejectedCannotExecute: boolean;
   expiredCannotExecute: boolean;
@@ -941,6 +944,7 @@ const AI_APPROVED_PROCUREMENT_EXECUTOR_FILES = [
   "src/features/ai/executors/executeApprovedActionGateway.ts",
   "src/features/ai/executors/executeApprovedActionAudit.ts",
   "src/features/ai/executors/executeApprovedActionRedaction.ts",
+  "src/features/ai/executors/approvedProcurementRequestBffMutationBoundary.ts",
   "src/features/ai/executors/procurementRequestExecutor.ts",
   "src/features/ai/executors/procurementRequestExecutorRedaction.ts",
   "src/features/ai/executors/procurementRequestExecutorEvidence.ts",
@@ -3688,6 +3692,11 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_WRITE_RPC_MIGRATION_PATH }) ?? "";
   const e2eRunnerSource =
     safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH }) ?? "";
+  const approvedExecutorGatewaySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/executeApprovedActionGateway.ts",
+    }) ?? "";
   const commandCenterSource = AI_COMMAND_CENTER_FILES.map((relativePath) =>
     safeReadProjectFile({ readFile, relativePath }) ?? "",
   ).join("\n");
@@ -3812,9 +3821,13 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     policySource.includes("status !== \"approved\"") &&
     bffSource.includes("executeApprovedActionLedgerBff");
   const domainExecutorBlockedWhenMissing =
-    executeSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
-    executeSource.includes("Domain executor is not mounted") &&
-    bffSource.includes("domainExecutor: null");
+    (executeSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+      executeSource.includes("Domain executor is not mounted") &&
+      bffSource.includes("domainExecutor: null")) ||
+    (approvedExecutorGatewaySource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+      approvedExecutorGatewaySource.includes("Persistent action ledger executed-status transition is not mounted") &&
+      approvedExecutorGatewaySource.includes("canPersistExecutedStatus") &&
+      bffSource.includes("executeApprovedActionGateway"));
   const noFakeLocalApproval =
     ledgerSource.includes("fakeLocalApproval: false") &&
     submitToolSource.includes("local_gate_only: false") &&
@@ -3968,6 +3981,11 @@ export function evaluateAiApprovalInboxRuntimeGuardrail(params: {
       readFile,
       relativePath: "src/features/ai/actionLedger/executeApprovedAiAction.ts",
     }) ?? "";
+  const approvedExecutorGatewaySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/executeApprovedActionGateway.ts",
+    }) ?? "";
   const e2eRunnerSource =
     safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_INBOX_E2E_RUNNER_PATH }) ?? "";
 
@@ -4040,8 +4058,12 @@ export function evaluateAiApprovalInboxRuntimeGuardrail(params: {
     executeGateSource.includes("executeApprovedAiAction") &&
     executeGateSource.includes("assertAiActionLedgerExecutePolicy");
   const domainExecutorBlockedWhenMissing =
-    executeGateSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
-    ledgerBffSource.includes("domainExecutor: null");
+    (executeGateSource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+      ledgerBffSource.includes("domainExecutor: null")) ||
+    (approvedExecutorGatewaySource.includes("BLOCKED_DOMAIN_EXECUTOR_NOT_READY") &&
+      approvedExecutorGatewaySource.includes("Persistent action ledger executed-status transition is not mounted") &&
+      approvedExecutorGatewaySource.includes("canPersistExecutedStatus") &&
+      ledgerBffSource.includes("executeApprovedActionGateway"));
   const directMutationSurface = `${inboxSource}\n${shellSource}`;
   const noDirectMutation =
     !/\bdomainExecutor\.execute\b/.test(directMutationSurface) &&
@@ -4161,6 +4183,11 @@ export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
       readFile,
       relativePath: "src/features/ai/executors/procurementRequestExecutorTypes.ts",
     }) ?? "";
+  const procurementBoundarySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/executors/approvedProcurementRequestBffMutationBoundary.ts",
+    }) ?? "";
   const redactionSource =
     safeReadProjectFile({
       readFile,
@@ -4206,6 +4233,7 @@ export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
     policySource,
     procurementExecutorSource,
     procurementTypesSource,
+    procurementBoundarySource,
   ].join("\n");
   const e2eRunnerSource =
     safeReadProjectFile({
@@ -4253,6 +4281,23 @@ export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
     procurementTypesSource.includes("routeScoped: true") &&
     procurementTypesSource.includes("directSupabaseMutation: false") &&
     gatewaySource.includes("BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND");
+  const bffMutationBoundaryMounted =
+    procurementBoundarySource.includes("createApprovedProcurementRequestBffMutationBoundary") &&
+    procurementBoundarySource.includes("request_sync_draft_v2") &&
+    procurementBoundarySource.includes("existing_bff_procurement_request_mutation_boundary") &&
+    ledgerBffSource.includes("createApprovedProcurementRequestBffMutationBoundary") &&
+    ledgerBffSource.includes("createProcurementRequestExecutor");
+  const executedStatusPersistenceRequired =
+    gatewaySource.includes("canPersistExecutedStatus") &&
+    gatewaySource.includes("Persistent action ledger executed-status transition is not mounted") &&
+    gatewaySource.includes("redactedPayload: withCreatedEntityRefPayload") &&
+    ledgerBffSource.includes("executeApprovedActionGateway");
+  const boundaryUsesRequestSyncRpcV2 =
+    procurementBoundarySource.includes("requestDraftSync.service") &&
+    procurementBoundarySource.includes("syncRequestDraftViaRpc") &&
+    procurementBoundarySource.includes("rikCode") &&
+    procurementBoundarySource.includes("stableHashOpaqueId(\"request\"") &&
+    !/@supabase\/supabase-js|\bsupabase\s*\./i.test(procurementBoundarySource);
   const pendingCannotExecute =
     policySource.includes('record.status !== "approved"') &&
     policySource.includes("AI action status") &&
@@ -4326,6 +4371,9 @@ export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
     ...(evidenceRequired ? [] : ["approved_procurement_executor_evidence_not_required"]),
     ...(procurementExecutorReady ? [] : ["approved_procurement_executor_not_ready"]),
     ...(bffMutationBoundaryRequired ? [] : ["approved_procurement_executor_bff_boundary_not_required"]),
+    ...(bffMutationBoundaryMounted ? [] : ["approved_procurement_executor_bff_boundary_not_mounted"]),
+    ...(executedStatusPersistenceRequired ? [] : ["approved_procurement_executor_executed_status_persistence_not_required"]),
+    ...(boundaryUsesRequestSyncRpcV2 ? [] : ["approved_procurement_executor_boundary_not_request_sync_v2"]),
     ...(pendingCannotExecute ? [] : ["approved_procurement_executor_pending_can_execute"]),
     ...(rejectedCannotExecute ? [] : ["approved_procurement_executor_rejected_can_execute"]),
     ...(expiredCannotExecute ? [] : ["approved_procurement_executor_expired_can_execute"]),
@@ -4357,6 +4405,9 @@ export function evaluateAiApprovedProcurementExecutorGuardrail(params: {
       evidenceRequired,
       procurementExecutorReady,
       bffMutationBoundaryRequired,
+      bffMutationBoundaryMounted,
+      executedStatusPersistenceRequired,
+      boundaryUsesRequestSyncRpcV2,
       pendingCannotExecute,
       rejectedCannotExecute,
       expiredCannotExecute,

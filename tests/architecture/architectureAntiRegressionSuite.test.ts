@@ -2050,6 +2050,9 @@ describe("architecture anti-regression suite", () => {
             "idempotency_reused",
             "duplicateExecutionCreatesDuplicate: false",
             "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
+            "canPersistExecutedStatus",
+            "Persistent action ledger executed-status transition is not mounted",
+            "redactedPayload: withCreatedEntityRefPayload",
           ].join("\n");
         }
         if (relativePath.includes("approvedActionExecutorPolicy")) {
@@ -2089,6 +2092,17 @@ describe("architecture anti-regression suite", () => {
             "broadMutationRoute: false",
           ].join("\n");
         }
+        if (relativePath.includes("approvedProcurementRequestBffMutationBoundary")) {
+          return [
+            "createApprovedProcurementRequestBffMutationBoundary",
+            "request_sync_draft_v2",
+            "requestDraftSync.service",
+            "syncRequestDraftViaRpc",
+            "existing_bff_procurement_request_mutation_boundary",
+            "rikCode",
+            'stableHashOpaqueId("request"',
+          ].join("\n");
+        }
         if (relativePath.includes("executeApprovedActionAudit")) {
           return "createApprovedActionExecutionAuditEvent\nai.action.execute_requested\nai.action.executed";
         }
@@ -2100,6 +2114,9 @@ describe("architecture anti-regression suite", () => {
             "POST /agent/action/:actionId/execute-approved",
             "GET /agent/action/:actionId/execution-status",
             "auditRequired: true",
+            "executeApprovedActionGateway",
+            "createApprovedProcurementRequestBffMutationBoundary",
+            "createProcurementRequestExecutor",
           ].join("\n");
         }
         if (relativePath.includes("approvalInboxTypes")) return "executionStatus";

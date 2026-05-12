@@ -1,11 +1,13 @@
 # S_AI_MAGIC_08_APPROVED_PROCUREMENT_REQUEST_EXECUTOR Proof
 
-Status: `BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND`
+Status: `BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE`
 
 What is production-ready:
 
 - Central `executeApprovedActionGateway` requires persisted ledger action, `status=approved`, idempotency, audit, evidence, role policy, non-expired status, and a registered domain executor.
 - Bounded procurement executor contract supports only `draft_request` and `submit_request`.
+- Route-scoped procurement boundary is now mounted via `request_sync_draft_v2`; it requires ERP `rikCode`, positive quantities, idempotency, audit and evidence.
+- The gateway refuses to start domain mutation unless the persistent ledger backend can persist `executed` status and redacted `createdEntityRef`.
 - Pending, rejected, expired, blocked, and forbidden actions cannot execute.
 - Duplicate execution returns `already_executed` and does not call the procurement boundary again.
 - Approval Inbox shows execution status and keeps execute-approved inside review/detail UI.
@@ -13,15 +15,16 @@ What is production-ready:
 
 Honest blocker:
 
-- No existing route-scoped BFF mutation boundary was found for creating/submitting a procurement request from an approved AI action.
+- No approved procurement action is available for Android executor E2E, so no live execute was claimed.
+- The default RPC approval ledger still needs a runtime executed-status backend before production execution can be enabled outside injected contract backends.
 - No fake execution was added.
 - No direct Supabase mutation was added.
 - Android runtime smoke passed on the installed preview APK, but a fresh EAS Android rebuild was blocked by the account's monthly build quota until 2026-06-01.
 
 Next safe unblock:
 
-1. Add a route-scoped server/BFF procurement request mutation boundary with idempotency and audit.
-2. Mount it as `ProcurementRequestMutationBoundary`.
+1. Mount/apply a production approval ledger backend that can persist `executed` and redacted `createdEntityRef`.
+2. Provide or create a real approved procurement action through the ledger flow.
 3. Re-run `runAiApprovedProcurementExecutorMaestro`.
 
 Negative confirmations:

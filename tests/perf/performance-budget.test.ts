@@ -310,6 +310,7 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutor.ts"),
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorRedaction.ts"),
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorEvidence.ts"),
+      path.join(SRC, "features", "ai", "executors", "approvedProcurementRequestBffMutationBoundary.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
@@ -1062,7 +1063,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(3);
-    expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(9);
+    expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -

@@ -1,4 +1,6 @@
 import { createProcurementRequestExecutor } from "../../src/features/ai/executors/procurementRequestExecutor";
+import { createApprovedProcurementRequestBffMutationBoundary } from "../../src/features/ai/executors/approvedProcurementRequestBffMutationBoundary";
+import { stableHashOpaqueId } from "../../src/features/ai/actionLedger/aiActionLedgerPolicy";
 import {
   createApprovedProcurementAction,
   createCountingProcurementBoundary,
@@ -37,5 +39,93 @@ describe("procurementRequestExecutor contract", () => {
 
   it("does not create an executor when no safe BFF mutation boundary exists", () => {
     expect(createProcurementRequestExecutor(null)).toBeNull();
+  });
+
+  it("mounts the existing request_sync_draft_v2 boundary without exposing raw request ids", async () => {
+    const syncCalls: unknown[] = [];
+    const boundary = createApprovedProcurementRequestBffMutationBoundary({
+      async syncRequestDraft(params) {
+        syncCalls.push(params);
+        return {
+          request: {
+            id: "11111111-1111-4111-8111-111111111111",
+            status: "submitted",
+            display_no: "REQ-1",
+          },
+          items: [],
+          submitted: params.submit === true,
+          requestCreated: true,
+          branchMeta: { sourceBranch: "rpc_v2", rpcVersion: "v2" },
+        };
+      },
+    });
+
+    const result = await boundary.executeApprovedProcurementRequest({
+      actionType: "submit_request",
+      idempotencyKey: EXECUTOR_IDEMPOTENCY_KEY,
+      evidenceRefs: ["evidence:procurement:request:1"],
+      payload: {
+        title: "Approved request",
+        notes: ["Director approved"],
+        items: [
+          {
+            materialLabel: "Concrete B25",
+            quantity: 12,
+            unit: "m3",
+            rikCode: "CONCRETE-B25",
+            supplierLabel: "Approved marketplace supplier",
+          },
+        ],
+      },
+      context: {
+        screenId: "agent.action.execute-approved",
+        requestedByRole: "director",
+        source: "ai_approved_action_executor",
+      },
+    });
+
+    expect(result.createdEntityRef).toEqual({
+      entityType: "request",
+      entityIdHash: stableHashOpaqueId("request", "11111111-1111-4111-8111-111111111111"),
+    });
+    expect(JSON.stringify(result)).not.toContain("11111111-1111-4111-8111-111111111111");
+    expect(syncCalls).toHaveLength(1);
+    expect(syncCalls[0]).toMatchObject({
+      requestId: null,
+      submit: true,
+      lines: [
+        expect.objectContaining({
+          rik_code: "CONCRETE-B25",
+          qty: 12,
+          name_human: "Concrete B25",
+        }),
+      ],
+    });
+  });
+
+  it("blocks approved request execution when ERP catalog code is missing", async () => {
+    const boundary = createApprovedProcurementRequestBffMutationBoundary({
+      async syncRequestDraft() {
+        throw new Error("sync should not be called");
+      },
+    });
+
+    await expect(
+      boundary.executeApprovedProcurementRequest({
+        actionType: "submit_request",
+        idempotencyKey: EXECUTOR_IDEMPOTENCY_KEY,
+        evidenceRefs: ["evidence:procurement:request:1"],
+        payload: {
+          title: "Approved request",
+          notes: [],
+          items: [{ materialLabel: "Concrete B25", quantity: 12, unit: "m3" }],
+        },
+        context: {
+          screenId: "agent.action.execute-approved",
+          requestedByRole: "director",
+          source: "ai_approved_action_executor",
+        },
+      }),
+    ).rejects.toThrow("rikCode");
   });
 });

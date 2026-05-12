@@ -26,6 +26,9 @@ export function redactProcurementRequestExecutorPayload(value: unknown): Procure
       materialLabel,
       quantity: normalizeNumber(entry.quantity),
       unit: normalizeText(entry.unit) || undefined,
+      rikCode: normalizeText(entry.rikCode) || normalizeText(entry.rik_code) || undefined,
+      appCode: normalizeText(entry.appCode) || normalizeText(entry.app_code) || undefined,
+      kind: normalizeText(entry.kind) || undefined,
       supplierLabel: normalizeText(entry.supplierLabel) || normalizeText(entry.supplier_label) || undefined,
     }];
   });

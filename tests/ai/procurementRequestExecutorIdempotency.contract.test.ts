@@ -3,6 +3,7 @@ import { createContractTestActionLedgerBackend } from "./aiActionLedgerTestBacke
 import {
   createApprovedProcurementAction,
   createCountingProcurementExecutor,
+  EXECUTOR_CREATED_REF,
   EXECUTOR_IDEMPOTENCY_KEY,
   EXECUTOR_NOW,
 } from "./approvedProcurementExecutorTestUtils";
@@ -31,7 +32,15 @@ describe("procurementRequestExecutor idempotency contract", () => {
 
   it("returns already_executed for the same action and idempotency key", async () => {
     const { backend, records } = createContractTestActionLedgerBackend();
-    const record = createApprovedProcurementAction({ status: "executed", executedAt: EXECUTOR_NOW });
+    const baseRecord = createApprovedProcurementAction();
+    const record = createApprovedProcurementAction({
+      status: "executed",
+      executedAt: EXECUTOR_NOW,
+      redactedPayload: {
+        ...(baseRecord.redactedPayload as Record<string, unknown>),
+        createdEntityRef: EXECUTOR_CREATED_REF,
+      },
+    });
     records.set(record.actionId, record);
 
     const result = await executeApprovedActionGateway({

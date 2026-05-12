@@ -25,8 +25,11 @@ const safeResultBase = (record: AiActionLedgerRecord | null, request: ApprovedAc
   actionType: (record?.actionType === "draft_request" ? "draft_request" : "submit_request") as "draft_request" | "submit_request",
   idempotencyKey: request.idempotencyKey,
   evidenceRefs: record?.evidenceRefs ?? [],
+  finalExecution: false as const,
+  directDomainMutation: false as const,
   directMutationFromUi: false as const,
   directSupabaseFromUi: false as const,
+  domainExecutorReady: false,
   modelProviderFromExecutor: false as const,
   rawDbRowsExposed: false as const,
   rawPromptExposed: false as const,
@@ -48,6 +51,20 @@ function blocked(params: {
     reason: params.reason,
     blocker: params.blocker,
     auditEvents: params.auditEvents ?? [],
+  };
+}
+
+function withCreatedEntityRefPayload(
+  payload: unknown,
+  createdEntityRef: ApprovedActionExecutionResult["createdEntityRef"],
+): unknown {
+  if (!createdEntityRef) return payload;
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return { createdEntityRef };
+  }
+  return {
+    ...(payload as Record<string, unknown>),
+    createdEntityRef,
   };
 }
 
@@ -97,6 +114,7 @@ export async function executeApprovedActionGateway(params: {
       ...safeResultBase(record, params.request),
       status: "already_executed",
       createdEntityRef: readRedactedCreatedEntityRef(record.redactedPayload),
+      domainExecutorReady: true,
       auditEventId: reused.auditEventId,
       auditEvents: [reused],
     };
@@ -169,6 +187,24 @@ export async function executeApprovedActionGateway(params: {
     });
   }
 
+  if (params.backend.canPersistExecutedStatus !== true) {
+    const blockedEvent = createApprovedActionExecutionAuditEvent({
+      eventType: "ai.action.execution_blocked",
+      record,
+      request: params.request,
+      reason: "Persistent action ledger executed-status transition is not mounted.",
+      createdAt: params.nowIso,
+    });
+    return blocked({
+      record,
+      request: params.request,
+      status: "domain_executor_not_ready",
+      reason: "Persistent action ledger executed-status transition is not mounted.",
+      blocker: "BLOCKED_DOMAIN_EXECUTOR_NOT_READY",
+      auditEvents: [requested, blockedEvent],
+    });
+  }
+
   const started = createApprovedActionExecutionAuditEvent({
     eventType: "ai.action.execution_started",
     record,
@@ -187,7 +223,10 @@ export async function executeApprovedActionGateway(params: {
   const updated = await params.backend.updateStatus(
     record.actionId,
     "executed",
-    { executedAt: execution.executedAt },
+    {
+      executedAt: execution.executedAt,
+      redactedPayload: withCreatedEntityRefPayload(record.redactedPayload, execution.createdEntityRef),
+    },
     executed,
   );
 
@@ -195,6 +234,7 @@ export async function executeApprovedActionGateway(params: {
     ...safeResultBase(updated, params.request),
     status: "executed",
     createdEntityRef: execution.createdEntityRef,
+    domainExecutorReady: true,
     auditEventId: execution.auditEventId ?? executed.auditEventId,
     auditEvents: [requested, started, executed],
   };
@@ -233,6 +273,7 @@ export async function getApprovedActionExecutionStatus(params: {
       ...safeResultBase(record, request),
       status: "already_executed",
       createdEntityRef: readRedactedCreatedEntityRef(record.redactedPayload),
+      domainExecutorReady: true,
       auditEvents: [],
     };
   }

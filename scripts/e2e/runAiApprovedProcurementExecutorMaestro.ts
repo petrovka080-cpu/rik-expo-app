@@ -65,6 +65,7 @@ function approvalInboxExecutionTestIds(): readonly string[] {
 function sourceReady(): boolean {
   const gatewaySource = readProjectFile("src/features/ai/executors/executeApprovedActionGateway.ts");
   const executorSource = readProjectFile("src/features/ai/executors/procurementRequestExecutor.ts");
+  const boundarySource = readProjectFile("src/features/ai/executors/approvedProcurementRequestBffMutationBoundary.ts");
   const boundaryTypesSource = readProjectFile("src/features/ai/executors/procurementRequestExecutorTypes.ts");
   const bffSource = readProjectFile("src/features/ai/actionLedger/aiActionLedgerBff.ts");
   const reviewSource = readProjectFile("src/features/ai/approvalInbox/ApprovalReviewPanel.tsx");
@@ -75,8 +76,11 @@ function sourceReady(): boolean {
     gatewaySource.includes("executeApprovedActionGateway") &&
     gatewaySource.includes("record.status === \"executed\"") &&
     gatewaySource.includes("BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND") &&
+    gatewaySource.includes("canPersistExecutedStatus") &&
     executorSource.includes("createProcurementRequestExecutor") &&
     executorSource.includes("executeApprovedProcurementRequest") &&
+    boundarySource.includes("createApprovedProcurementRequestBffMutationBoundary") &&
+    boundarySource.includes("request_sync_draft_v2") &&
     boundaryTypesSource.includes("directSupabaseMutation: false") &&
     bffSource.includes("POST /agent/action/:actionId/execute-approved") &&
     bffSource.includes("GET /agent/action/:actionId/execution-status") &&
@@ -88,6 +92,7 @@ function sourceReady(): boolean {
 function safeProcurementBoundaryMounted(): boolean {
   const candidateFiles = [
     "src/features/ai/executors/procurementRequestExecutor.ts",
+    "src/features/ai/executors/approvedProcurementRequestBffMutationBoundary.ts",
     "src/features/ai/actionLedger/aiActionLedgerBff.ts",
     "src/shared/scale/bffMutationHandlers.ts",
   ].map((relativePath) => readProjectFile(relativePath));

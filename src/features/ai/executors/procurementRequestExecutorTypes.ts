@@ -5,6 +5,9 @@ export type ProcurementRequestExecutorItem = {
   materialLabel: string;
   quantity?: number;
   unit?: string;
+  rikCode?: string;
+  appCode?: string;
+  kind?: string;
   supplierLabel?: string;
 };
 

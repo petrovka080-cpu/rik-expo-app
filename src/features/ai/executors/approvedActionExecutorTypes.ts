@@ -35,8 +35,11 @@ export type ApprovedActionExecutionResult = {
   reason?: string;
   blocker?: AiActionLedgerBlockedCode | "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND";
   auditEvents: AiActionLedgerAuditEvent[];
+  finalExecution: false;
+  directDomainMutation: false;
   directMutationFromUi: false;
   directSupabaseFromUi: false;
+  domainExecutorReady: boolean;
   modelProviderFromExecutor: false;
   rawDbRowsExposed: false;
   rawPromptExposed: false;

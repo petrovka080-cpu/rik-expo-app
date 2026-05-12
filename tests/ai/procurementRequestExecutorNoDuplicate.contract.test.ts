@@ -35,6 +35,7 @@ describe("procurementRequestExecutor no duplicate contract", () => {
 
     expect(first.status).toBe("executed");
     expect(second.status).toBe("already_executed");
+    expect(second.createdEntityRef).toEqual({ entityType: "request", entityIdHash: "request:approved-executor-1" });
     expect(calls).toHaveLength(1);
     expect(records.get(record.actionId)?.status).toBe("executed");
   });

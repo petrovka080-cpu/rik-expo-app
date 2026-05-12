@@ -1,5 +1,5 @@
 {
-  "final_status": "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
+  "final_status": "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
   "framework": "maestro",
   "device": "android",
   "source_ready": true,
@@ -10,7 +10,7 @@
   "evidence_required": true,
   "central_execute_gate_visible": true,
   "procurement_executor_contract_ready": true,
-  "procurement_bff_mutation_boundary_mounted": false,
+  "procurement_bff_mutation_boundary_mounted": true,
   "approval_inbox_execution_visible": true,
   "execution_status_visible": true,
   "duplicate_execution_checked": false,
@@ -26,5 +26,5 @@
   "credentials_printed": false,
   "stdout_redacted": true,
   "stderr_redacted": true,
-  "exactReason": "No route-scoped procurement request mutation boundary is mounted; executor contracts stayed read-only and no fake execution was created."
+  "exactReason": "No approved procurement action is available for Android executor E2E; no fake action was created."
 }

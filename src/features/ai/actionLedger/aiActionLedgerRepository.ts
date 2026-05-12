@@ -22,6 +22,7 @@ import type {
 
 export type AiActionLedgerPersistentBackend = {
   readonly mounted: true;
+  readonly canPersistExecutedStatus?: true;
   listByOrganization: (
     organizationIdHash: string,
     page: { cursor?: string | null; limit: number },
@@ -38,7 +39,7 @@ export type AiActionLedgerPersistentBackend = {
   updateStatus: (
     actionId: string,
     status: AiActionStatus,
-    patch: Partial<Pick<AiActionLedgerRecord, "approvedByUserIdHash" | "executedAt">>,
+    patch: Partial<Pick<AiActionLedgerRecord, "approvedByUserIdHash" | "executedAt" | "redactedPayload">>,
     auditEvent: AiActionLedgerAuditEvent,
   ) => Promise<AiActionLedgerRecord>;
 };

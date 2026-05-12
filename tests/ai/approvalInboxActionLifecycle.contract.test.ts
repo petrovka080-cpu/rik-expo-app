@@ -94,17 +94,27 @@ describe("Approval Inbox action lifecycle contract", () => {
     expect(auditEvents.map((event) => event.eventType)).toContain("ai.action.rejected");
   });
 
-  it("blocks execute-approved honestly when the domain executor is not mounted", async () => {
+  it("blocks execute-approved honestly when the procurement executor boundary is not mounted", async () => {
     const { backend } = createContractTestActionLedgerBackend();
     const repository = createAiActionLedgerRepository(backend);
     const submitted = await repository.submitForApproval(
       {
-        actionType: "send_document",
-        screenId: "director.dashboard",
-        domain: "documents",
-        summary: "Send prepared document",
-        redactedPayload: { documentHash: "doc:approval:1" },
-        evidenceRefs: ["doc:evidence:1"],
+        actionType: "submit_request",
+        screenId: "buyer.main",
+        domain: "procurement",
+        summary: "Submit approved procurement request",
+        redactedPayload: {
+          title: "Approved procurement request",
+          items: [
+            {
+              materialLabel: "Concrete B25",
+              quantity: 12,
+              unit: "m3",
+              rikCode: "CONCRETE-B25",
+            },
+          ],
+        },
+        evidenceRefs: ["procurement:evidence:1"],
         idempotencyKey: "approval-inbox-execute-approved-0001",
         requestedByUserIdHash: "user:director",
         organizationIdHash: "org:approval-inbox-execute",
@@ -130,10 +140,11 @@ describe("Approval Inbox action lifecycle contract", () => {
       data: {
         documentType: "ai_approval_inbox_execute_approved",
         result: {
-          status: "blocked",
-          blocker: "BLOCKED_DOMAIN_EXECUTOR_NOT_READY",
+          status: "domain_executor_not_ready",
+          blocker: "BLOCKED_PROCUREMENT_BFF_MUTATION_BOUNDARY_NOT_FOUND",
           domainExecutorReady: false,
           finalExecution: false,
+          directDomainMutation: false,
         },
       },
     });
