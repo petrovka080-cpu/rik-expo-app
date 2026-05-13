@@ -1,0 +1,45 @@
+{
+  "wave": "S_AI_HARDEN_03_SUBMIT_FOR_APPROVAL_AUDIT_TRAIL",
+  "generated_at_local": "2026-05-13T00:00:00+06:00",
+  "existing_persistent_backend": true,
+  "existing_table_or_route": [
+    "src/features/ai/actionLedger/aiActionLedgerRepository.ts",
+    "src/features/ai/actionLedger/aiActionLedgerRpcBackend.ts",
+    "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+    "POST /agent/action/submit-for-approval"
+  ],
+  "existing_approval_status_lifecycle": true,
+  "existing_idempotency_support": true,
+  "existing_audit_support": true,
+  "existing_execute_gate": true,
+  "new_audit_contract_files": [
+    "src/features/ai/approvalAudit/submitForApprovalAuditTypes.ts",
+    "src/features/ai/approvalAudit/submitForApprovalAuditPolicy.ts",
+    "src/features/ai/approvalAudit/submitForApprovalAuditEvent.ts",
+    "src/features/ai/approvalAudit/submitForApprovalRedaction.ts"
+  ],
+  "modified_runtime_files": [
+    "src/features/ai/tools/transport/submitForApproval.transport.ts",
+    "src/features/ai/tools/submitForApprovalTool.ts",
+    "src/features/ai/schemas/aiToolSchemas.ts"
+  ],
+  "test_files": [
+    "tests/ai/submitForApprovalAuditTrail.contract.test.ts",
+    "tests/ai/submitForApprovalIdempotency.contract.test.ts",
+    "tests/ai/submitForApprovalEvidenceRequired.contract.test.ts",
+    "tests/ai/submitForApprovalNoExecution.contract.test.ts",
+    "tests/architecture/submitForApprovalAuditArchitecture.contract.test.ts"
+  ],
+  "scanner_check": "submit_for_approval_audit_trail",
+  "runtime_runner": "scripts/e2e/runAiSubmitForApprovalAuditMaestro.ts",
+  "missing_parts": [
+    "runtime approval persistence context was not mounted for the Android E2E runner"
+  ],
+  "exact_runtime_blocker": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+  "android_apk_rebuild": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "android_apk_rebuild_reason": "EAS Free plan Android build quota exhausted until 2026-06-01",
+  "secrets_printed": false,
+  "credentials_in_artifacts": false,
+  "fake_local_approval": false,
+  "fake_green": false
+}

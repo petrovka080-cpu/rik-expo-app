@@ -903,6 +903,9 @@ export const submitForApprovalOutputSchema: AiToolJsonObjectSchema = {
     action_status: { type: "string", enum: ["pending"] },
     approval_required: { type: "boolean" },
     audit_event: { type: "string", enum: ["ai.action.approval_required"] },
+    audit_trail_ref: { type: "string", minLength: 1 },
+    audit_event_count: { type: "number", minimum: 1 },
+    audit_redacted: { type: "boolean" },
     approval_target: {
       type: "string",
       enum: ["request", "report", "act", "supplier_selection", "payment_status_change"],

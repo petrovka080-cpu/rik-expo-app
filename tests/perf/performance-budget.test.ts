@@ -225,6 +225,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitDecision.ts"),
       path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitArtifacts.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiHarden03SubmitForApprovalAuditFiles = [
+      path.join(SRC, "features", "ai", "approvalAudit", "submitForApprovalAuditTypes.ts"),
+      path.join(SRC, "features", "ai", "approvalAudit", "submitForApprovalAuditPolicy.ts"),
+      path.join(SRC, "features", "ai", "approvalAudit", "submitForApprovalAuditEvent.ts"),
+      path.join(SRC, "features", "ai", "approvalAudit", "submitForApprovalRedaction.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiProduct01DailyCommandCenterFiles = [
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterScreen.tsx"),
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterTypes.ts"),
@@ -1077,6 +1083,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
     expect(sAiHarden01ToolTransportBoundaryFiles).toBeLessThanOrEqual(10);
     expect(sAiHarden02ToolRateLimitBudgetFiles).toBeLessThanOrEqual(4);
+    expect(sAiHarden03SubmitForApprovalAuditFiles).toBeLessThanOrEqual(4);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
@@ -1109,6 +1116,7 @@ describe("performance budget — bundle module count", () => {
         sAiGetActionStatusToolFiles -
         sAiHarden01ToolTransportBoundaryFiles -
         sAiHarden02ToolRateLimitBudgetFiles -
+        sAiHarden03SubmitForApprovalAuditFiles -
         sAiProduct01DailyCommandCenterFiles -
         sAiProduct02TaskStreamRuntimeFiles -
         sAiMagic01AppActionGraphInternalFirstFiles -
@@ -1244,6 +1252,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic06PersistentActionLedgerFiles -
         sAiMagic07ApprovalInboxExecutionGateFiles -
         sAiMagic08ApprovalLedgerBackendMountFiles -
+        sAiHarden03SubmitForApprovalAuditFiles -
         sAiMagic08ApprovedProcurementExecutorFiles,
     ).toBeLessThanOrEqual(1300);
   });

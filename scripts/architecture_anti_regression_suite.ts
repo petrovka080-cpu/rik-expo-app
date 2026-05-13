@@ -370,6 +370,23 @@ export type AiToolRateLimitPolicyArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type SubmitForApprovalAuditArchitectureSummary = {
+  auditFilesPresent: boolean;
+  submitToolUsesAuditTrail: boolean;
+  transportUsesAuditPolicy: boolean;
+  evidenceRequired: boolean;
+  idempotencyRequired: boolean;
+  auditEventRequired: boolean;
+  pendingStatusOnly: boolean;
+  noFinalExecution: boolean;
+  noFakeLocalApproval: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  noRawPayloadFields: boolean;
+  e2eRunnerPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AgentBffRouteShellArchitectureSummary = {
   shellPresent: boolean;
   allRoutesPresent: boolean;
@@ -792,6 +809,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   aiToolTransportBoundary: AiToolTransportBoundaryArchitectureSummary;
   aiToolRateLimitPolicy: AiToolRateLimitPolicyArchitectureSummary;
+  submitForApprovalAuditTrail: SubmitForApprovalAuditArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
@@ -1045,6 +1063,14 @@ const AI_TOOL_RATE_LIMIT_POLICY_PATH = "src/features/ai/rateLimit/aiToolRateLimi
 const AI_TOOL_BUDGET_POLICY_PATH = "src/features/ai/rateLimit/aiToolBudgetPolicy.ts";
 const AI_TOOL_RATE_LIMIT_DECISION_PATH = "src/features/ai/rateLimit/aiToolRateLimitDecision.ts";
 const AI_TOOL_RATE_LIMIT_ARTIFACTS_PATH = "src/features/ai/rateLimit/aiToolRateLimitArtifacts.ts";
+const SUBMIT_FOR_APPROVAL_AUDIT_FILES = [
+  "src/features/ai/approvalAudit/submitForApprovalAuditTypes.ts",
+  "src/features/ai/approvalAudit/submitForApprovalAuditPolicy.ts",
+  "src/features/ai/approvalAudit/submitForApprovalAuditEvent.ts",
+  "src/features/ai/approvalAudit/submitForApprovalRedaction.ts",
+] as const;
+const SUBMIT_FOR_APPROVAL_AUDIT_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiSubmitForApprovalAuditMaestro.ts";
 const AI_TOOL_RUNTIME_FILES = [
   "src/features/ai/tools/searchCatalogTool.ts",
   "src/features/ai/tools/compareSuppliersTool.ts",
@@ -2819,6 +2845,133 @@ export function evaluateAiToolRateLimitPolicyGuardrail(params: {
       noProviderImports,
       noSupabaseImports,
       noProductionEnvMutation,
+      findings,
+    },
+  };
+}
+
+const submitForApprovalAuditProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i;
+const submitForApprovalAuditSupabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+const submitForApprovalAuditRawPayloadPattern = /\b(raw_prompt|raw_provider_payload|raw_db_row|provider_payload)\b/i;
+
+export function evaluateSubmitForApprovalAuditTrailGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: SubmitForApprovalAuditArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const auditSources = SUBMIT_FOR_APPROVAL_AUDIT_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const auditTypesSource =
+    auditSources.find((entry) => entry.relativePath.endsWith("submitForApprovalAuditTypes.ts"))?.source ?? "";
+  const auditPolicySource =
+    auditSources.find((entry) => entry.relativePath.endsWith("submitForApprovalAuditPolicy.ts"))?.source ?? "";
+  const auditEventSource =
+    auditSources.find((entry) => entry.relativePath.endsWith("submitForApprovalAuditEvent.ts"))?.source ?? "";
+  const auditRedactionSource =
+    auditSources.find((entry) => entry.relativePath.endsWith("submitForApprovalRedaction.ts"))?.source ?? "";
+  const transportSource = safeReadProjectFile({
+    readFile,
+    relativePath: "src/features/ai/tools/transport/submitForApproval.transport.ts",
+  });
+  const submitToolSource = safeReadProjectFile({
+    readFile,
+    relativePath: "src/features/ai/tools/submitForApprovalTool.ts",
+  });
+  const schemaSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_SCHEMAS_PATH });
+  const e2eRunnerSource = safeReadProjectFile({ readFile, relativePath: SUBMIT_FOR_APPROVAL_AUDIT_E2E_RUNNER_PATH });
+  const combinedAuditSource = auditSources.map((entry) => entry.source ?? "").join("\n");
+  const publicPayloadSource = [submitToolSource ?? "", schemaSource ?? ""].join("\n");
+
+  const auditFilesPresent = auditSources.every((entry) => Boolean(entry.source));
+  const submitToolUsesAuditTrail =
+    Boolean(submitToolSource?.includes("audit_trail_ref")) &&
+    Boolean(submitToolSource?.includes("audit_event_count")) &&
+    Boolean(submitToolSource?.includes("audit_redacted"));
+  const transportUsesAuditPolicy =
+    Boolean(transportSource?.includes("assertSubmitForApprovalAuditPolicy")) &&
+    Boolean(transportSource?.includes("buildSubmitForApprovalAuditTrail")) &&
+    Boolean(transportSource?.includes("redactSubmitForApprovalAuditPayload"));
+  const evidenceRequired =
+    Boolean(auditTypesSource.includes("evidenceRequired: true")) &&
+    Boolean(auditPolicySource.includes("evidence_required")) &&
+    Boolean(submitToolSource?.includes("evidence_refs"));
+  const idempotencyRequired =
+    Boolean(auditTypesSource.includes("idempotencyRequired: true")) &&
+    Boolean(auditPolicySource.includes("idempotency_required")) &&
+    Boolean(submitToolSource?.includes("idempotency_key"));
+  const auditEventRequired =
+    Boolean(auditEventSource.includes("createAiActionLedgerAuditEvent")) &&
+    Boolean(auditEventSource.includes("ai.action.submitted_for_approval"));
+  const pendingStatusOnly =
+    Boolean(submitToolSource?.includes('action_status: "pending"')) &&
+    !Boolean(submitToolSource?.includes('action_status: "approved"'));
+  const noFinalExecution =
+    Boolean(auditTypesSource.includes("finalExecution: false")) &&
+    Boolean(submitToolSource?.includes("final_execution: 0")) &&
+    !/\bexecuteApproved\b|\bexecute_approved\b|finalExecution\s*:\s*true|final_execution\s*:\s*1/.test(
+      [combinedAuditSource, transportSource ?? "", submitToolSource ?? ""].join("\n"),
+    );
+  const noFakeLocalApproval =
+    Boolean(auditTypesSource.includes("fakeLocalApproval: false")) &&
+    Boolean(submitToolSource?.includes("local_gate_only: false")) &&
+    !/fakeLocalApproval\s*:\s*true|local_gate_only\s*:\s*true/.test(
+      [combinedAuditSource, transportSource ?? "", submitToolSource ?? ""].join("\n"),
+    );
+  const noProviderImports = !submitForApprovalAuditProviderPattern.test(
+    [combinedAuditSource, transportSource ?? "", submitToolSource ?? ""].join("\n"),
+  );
+  const noSupabaseImports = !submitForApprovalAuditSupabasePattern.test(
+    [combinedAuditSource, auditRedactionSource, submitToolSource ?? ""].join("\n"),
+  );
+  const noRawPayloadFields = !submitForApprovalAuditRawPayloadPattern.test(publicPayloadSource);
+  const e2eRunnerPresent = Boolean(e2eRunnerSource?.includes("submit_for_approval"));
+
+  const findings = [
+    ...(noProviderImports ? [] : ["submit_for_approval_audit_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["submit_for_approval_audit_supabase_import_detected"]),
+    ...(noRawPayloadFields ? [] : ["submit_for_approval_audit_raw_payload_field_exposed"]),
+  ];
+  const errors = [
+    ...(auditFilesPresent ? [] : ["submit_for_approval_audit_files_missing"]),
+    ...(submitToolUsesAuditTrail ? [] : ["submit_for_approval_tool_missing_audit_trail_output"]),
+    ...(transportUsesAuditPolicy ? [] : ["submit_for_approval_transport_missing_audit_policy"]),
+    ...(evidenceRequired ? [] : ["submit_for_approval_evidence_not_required"]),
+    ...(idempotencyRequired ? [] : ["submit_for_approval_idempotency_not_required"]),
+    ...(auditEventRequired ? [] : ["submit_for_approval_audit_event_not_required"]),
+    ...(pendingStatusOnly ? [] : ["submit_for_approval_not_pending_only"]),
+    ...(noFinalExecution ? [] : ["submit_for_approval_can_final_execute"]),
+    ...(noFakeLocalApproval ? [] : ["submit_for_approval_fake_local_approval_detected"]),
+    ...(e2eRunnerPresent ? [] : ["submit_for_approval_audit_e2e_runner_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "submit_for_approval_audit_trail",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      auditFilesPresent,
+      submitToolUsesAuditTrail,
+      transportUsesAuditPolicy,
+      evidenceRequired,
+      idempotencyRequired,
+      auditEventRequired,
+      pendingStatusOnly,
+      noFinalExecution,
+      noFakeLocalApproval,
+      noProviderImports,
+      noSupabaseImports,
+      noRawPayloadFields,
+      e2eRunnerPresent,
       findings,
     },
   };
@@ -6617,6 +6770,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const aiToolTransportBoundary = evaluateAiToolTransportBoundaryGuardrail({ projectRoot });
   const aiToolRateLimitPolicy = evaluateAiToolRateLimitPolicyGuardrail({ projectRoot });
+  const submitForApprovalAuditTrail = evaluateSubmitForApprovalAuditTrailGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
@@ -6660,6 +6814,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolPlanPolicyArchitecture.check,
     aiToolTransportBoundary.check,
     aiToolRateLimitPolicy.check,
+    submitForApprovalAuditTrail.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
     aiAppActionGraphArchitecture.check,
@@ -6704,6 +6859,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     aiToolTransportBoundary: aiToolTransportBoundary.summary,
     aiToolRateLimitPolicy: aiToolRateLimitPolicy.summary,
+    submitForApprovalAuditTrail: submitForApprovalAuditTrail.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
@@ -6769,6 +6925,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_transport_no_direct_bff: ${report.aiToolTransportBoundary.noToolDirectBffImports}`);
   console.info(`ai_tool_rate_limit_policy: ${report.aiToolRateLimitPolicy.policyFilesPresent}`);
   console.info(`ai_tool_rate_limit_runtime_gate: ${report.aiToolRateLimitPolicy.runtimeToolsUseRateDecision}`);
+  console.info(`submit_for_approval_audit_trail: ${report.submitForApprovalAuditTrail.auditFilesPresent}`);
+  console.info(`submit_for_approval_audit_event: ${report.submitForApprovalAuditTrail.auditEventRequired}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);

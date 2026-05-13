@@ -42,6 +42,9 @@ export type SubmitForApprovalToolOutput = {
   action_status: "pending";
   approval_required: true;
   audit_event: typeof SUBMIT_FOR_APPROVAL_AUDIT_EVENT;
+  audit_trail_ref: string;
+  audit_event_count: number;
+  audit_redacted: true;
   approval_target: SubmitForApprovalTarget;
   action_type: AiActionType;
   screen_id: string;
@@ -290,6 +293,9 @@ export async function runSubmitForApprovalToolGate(
       action_status: "pending",
       approval_required: true,
       audit_event: SUBMIT_FOR_APPROVAL_AUDIT_EVENT,
+      audit_trail_ref: action.auditTrail.auditTrailRef,
+      audit_event_count: action.auditTrail.auditEventCount,
+      audit_redacted: action.auditTrail.redacted,
       approval_target: input.value.approval_target,
       action_type: actionType as AiActionType,
       screen_id: action.record?.screenId ?? input.value.screen_id,

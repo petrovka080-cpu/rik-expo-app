@@ -20,6 +20,7 @@ import {
   evaluateAndroidEmulatorIosBuildSubmitGateGuardrail,
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateAiRoleScreenEmulatorGateGuardrail,
+  evaluateSubmitForApprovalAuditTrailGuardrail,
   evaluatePostInstallReleaseSignoffGateGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
@@ -2391,6 +2392,70 @@ describe("architecture anti-regression suite", () => {
       allowlistEntries: 0,
     });
     expect(guardrail.check.status).toBe("pass");
+  });
+
+  it("ratchets submit_for_approval audit trail requirements", () => {
+    const passing = evaluateSubmitForApprovalAuditTrailGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("submitForApprovalAuditTypes.ts")) {
+          return "evidenceRequired: true\nidempotencyRequired: true\nfinalExecution: false\nfakeLocalApproval: false";
+        }
+        if (relativePath.endsWith("submitForApprovalAuditPolicy.ts")) {
+          return "assertSubmitForApprovalAuditPolicy\nevidence_required\nidempotency_required";
+        }
+        if (relativePath.endsWith("submitForApprovalAuditEvent.ts")) {
+          return "createAiActionLedgerAuditEvent\nai.action.submitted_for_approval";
+        }
+        if (relativePath.endsWith("submitForApprovalRedaction.ts")) return "redactSubmitForApprovalAuditPayload";
+        if (relativePath.endsWith("submitForApproval.transport.ts")) {
+          return "assertSubmitForApprovalAuditPolicy\nbuildSubmitForApprovalAuditTrail\nredactSubmitForApprovalAuditPayload";
+        }
+        if (relativePath.endsWith("submitForApprovalTool.ts")) {
+          return [
+            "audit_trail_ref",
+            "audit_event_count",
+            "audit_redacted",
+            "evidence_refs",
+            "idempotency_key",
+            'action_status: "pending"',
+            "final_execution: 0",
+            "local_gate_only: false",
+          ].join("\n");
+        }
+        if (relativePath.endsWith("aiToolSchemas.ts")) return "audit_trail_ref\naudit_event_count\naudit_redacted";
+        if (relativePath.endsWith("runAiSubmitForApprovalAuditMaestro.ts")) return "submit_for_approval";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "submit_for_approval_audit_trail",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateSubmitForApprovalAuditTrailGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("submitForApprovalAuditTypes.ts")) return "finalExecution: true";
+        if (relativePath.endsWith("submitForApprovalTool.ts")) return 'action_status: "approved"\nlocal_gate_only: true';
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "submit_for_approval_transport_missing_audit_policy",
+        "submit_for_approval_evidence_not_required",
+        "submit_for_approval_idempotency_not_required",
+        "submit_for_approval_audit_event_not_required",
+        "submit_for_approval_not_pending_only",
+        "submit_for_approval_can_final_execute",
+        "submit_for_approval_fake_local_approval_detected",
+      ]),
+    );
   });
 
   it("fails on new unbounded runtime list selects", () => {
