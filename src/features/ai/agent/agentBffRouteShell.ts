@@ -80,6 +80,15 @@ import {
   type AgentScreenRuntimeRequest,
 } from "../screenRuntime/aiScreenRuntimeBff";
 import {
+  AGENT_SCREEN_ACTION_BFF_CONTRACT,
+  getAgentScreenActions,
+  planAgentScreenAction,
+  previewAgentScreenActionIntent,
+  type AgentScreenActionIntentPreviewRouteRequest,
+  type AgentScreenActionPlanRouteRequest,
+  type AgentScreenActionReadRouteRequest,
+} from "./agentScreenActionRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -113,6 +122,10 @@ export {
   getAgentScreenRuntime,
   planAgentScreenRuntimeAction,
   previewAgentScreenRuntimeIntent,
+  AGENT_SCREEN_ACTION_BFF_CONTRACT,
+  getAgentScreenActions,
+  planAgentScreenAction,
+  previewAgentScreenActionIntent,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -166,7 +179,10 @@ export type AgentBffRouteOperation =
   | "agent.procurement.copilot.submit_for_approval.preview"
   | "agent.screen_runtime.read"
   | "agent.screen_runtime.intent_preview"
-  | "agent.screen_runtime.action_plan";
+  | "agent.screen_runtime.action_plan"
+  | "agent.screen_actions.read"
+  | "agent.screen_actions.intent_preview"
+  | "agent.screen_actions.action_plan";
 
 export type AgentBffHttpMethod = "GET" | "POST";
 
@@ -189,6 +205,7 @@ export type AgentBffRouteDefinition = {
     | "AgentExternalIntelEnvelope"
     | "AgentProcurementEnvelope"
     | "AgentScreenRuntimeEnvelope"
+    | "AgentScreenActionEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -217,6 +234,9 @@ export type AgentActionLedgerDecisionRequest = ActionLedgerDecisionBffRequest;
 export type AgentApprovalInboxRequest = ApprovalInboxListRequest;
 export type AgentApprovalInboxActionRequest = ApprovalInboxActionRequest;
 export type AgentApprovalInboxDecisionRequest = ApprovalInboxDecisionRequest;
+export type AgentScreenActionsRequest = AgentScreenActionReadRouteRequest;
+export type AgentScreenActionIntentPreviewRequest = AgentScreenActionIntentPreviewRouteRequest;
+export type AgentScreenActionPlanRequest = AgentScreenActionPlanRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1091,6 +1111,45 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentScreenRuntimeEnvelope",
+  },
+  {
+    operation: "agent.screen_actions.read",
+    method: "GET",
+    endpoint: "GET /agent/screen-actions/:screenId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenActionEnvelope",
+  },
+  {
+    operation: "agent.screen_actions.intent_preview",
+    method: "POST",
+    endpoint: "POST /agent/screen-actions/:screenId/intent-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenActionEnvelope",
+  },
+  {
+    operation: "agent.screen_actions.action_plan",
+    method: "POST",
+    endpoint: "POST /agent/screen-actions/:screenId/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenActionEnvelope",
   },
   {
     operation: "agent.external_intel.sources.read",

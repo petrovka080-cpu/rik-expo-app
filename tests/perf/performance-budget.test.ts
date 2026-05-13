@@ -345,6 +345,13 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorEvidence.ts"),
       path.join(SRC, "features", "ai", "executors", "approvedProcurementRequestBffMutationBoundary.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic10ScreenButtonActionMapFiles = [
+      path.join(SRC, "features", "ai", "screenActions", "aiScreenActionTypes.ts"),
+      path.join(SRC, "features", "ai", "screenActions", "aiScreenActionRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenActions", "aiScreenActionResolver.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentScreenActionContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentScreenActionRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiObs01TraceObservabilityFiles = [
       path.join(SRC, "features", "ai", "observability", "aiTraceTypes.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceRecorder.ts"),
@@ -1277,6 +1284,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic08ApprovalLedgerBackendMountFiles -
         sAiHarden03SubmitForApprovalAuditFiles -
         sAiMagic08ApprovedProcurementExecutorFiles -
+        sAiMagic10ScreenButtonActionMapFiles -
         sAiObs01TraceObservabilityFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);

@@ -19,6 +19,7 @@ import type {
   AiCommandCenterActionView,
   AiCommandCenterCardView,
 } from "./AiCommandCenterTypes";
+import { buildAiScreenActionPreviewSummary } from "../screenActions/aiScreenActionResolver";
 
 type ActionPanel = {
   title: string;
@@ -97,6 +98,10 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
     () => state.viewModel.sections.filter((section) => section.cards.length > 0),
     [state.viewModel.sections],
   );
+  const screenActionSummary = buildAiScreenActionPreviewSummary({
+    auth: state.auth,
+    screenId: "ai.command_center",
+  });
 
   const handleAction = useCallback(
     (card: AiCommandCenterCardView, action: AiCommandCenterActionView) => {
@@ -136,6 +141,22 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           <Text testID="ai.screen.runtime.status" style={styles.runtimeMatrixText}>
             screen_runtime={state.viewModel.status}; mutation_count=
             {state.viewModel.mutationCount}
+          </Text>
+        </View>
+
+        <View testID="ai.screen.actions.preview" style={styles.screenActionSurface}>
+          <Text testID="ai.screen.actions.role" style={styles.screenActionText}>
+            screen_actions_role={screenActionSummary.role}; mutation_count=
+            {screenActionSummary.mutationCount}
+          </Text>
+          <Text testID="ai.screen.actions.safe_read" style={styles.screenActionText}>
+            safe_read={screenActionSummary.safeReadCount}
+          </Text>
+          <Text testID="ai.screen.actions.draft" style={styles.screenActionText}>
+            draft={screenActionSummary.draftCount}
+          </Text>
+          <Text testID="ai.screen.actions.approval_required" style={styles.screenActionText}>
+            approval_required={screenActionSummary.approvalRequiredCount}
           </Text>
         </View>
 
@@ -312,6 +333,19 @@ const styles = StyleSheet.create({
   },
   runtimeMatrixText: {
     color: "#334155",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  screenActionSurface: {
+    marginTop: 10,
+    borderRadius: 8,
+    backgroundColor: "#F7FEE7",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 3,
+  },
+  screenActionText: {
+    color: "#365314",
     fontSize: 12,
     fontWeight: "800",
   },
