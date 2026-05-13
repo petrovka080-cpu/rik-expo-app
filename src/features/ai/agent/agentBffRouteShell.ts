@@ -56,6 +56,12 @@ import type {
   SupplierMatchPreviewOutput,
 } from "../procurement/procurementContextTypes";
 import {
+  AI_PROCUREMENT_LIVE_SUPPLIER_CHAIN_CONTRACT,
+  runAiProcurementLiveSupplierChain,
+  type AiProcurementLiveSupplierChainInput,
+  type AiProcurementLiveSupplierChainResult,
+} from "../procurement/aiProcurementLiveChain";
+import {
   buildProcurementCopilotPlan,
   resolveProcurementCopilotContext,
 } from "../procurementCopilot/procurementCopilotPlanEngine";
@@ -197,6 +203,9 @@ export type AgentBffRouteOperation =
   | "agent.procurement.external_supplier_candidates.preview"
   | "agent.procurement.draft_request.preview"
   | "agent.procurement.submit_for_approval"
+  | "agent.procurement.live_supplier_chain.preview"
+  | "agent.procurement.live_supplier_chain.draft"
+  | "agent.procurement.live_supplier_chain.submit_for_approval"
   | "agent.procurement.copilot.context.read"
   | "agent.procurement.copilot.plan.preview"
   | "agent.procurement.copilot.draft_preview"
@@ -329,6 +338,9 @@ export type AgentProcurementDraftRequestPreviewRequest = AgentBffShellRequest & 
 export type AgentProcurementSubmitForApprovalRequest = AgentBffShellRequest & {
   input: ProcurementApprovalPreviewInput;
 };
+
+export type AgentProcurementLiveSupplierChainRequest = AgentBffShellRequest &
+  Omit<AiProcurementLiveSupplierChainInput, "auth">;
 
 export type AgentProcurementCopilotContextRequest = AgentBffShellRequest & {
   requestId: string;
@@ -626,12 +638,34 @@ export type AgentProcurementCopilotSubmitForApprovalPreviewDto = {
   dbAccessedDirectly: false;
 };
 
+export type AgentProcurementLiveSupplierChainDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType:
+    | "agent_procurement_live_supplier_chain_preview"
+    | "agent_procurement_live_supplier_chain_draft"
+    | "agent_procurement_live_supplier_chain_submit_for_approval";
+  endpoint:
+    | "POST /agent/procurement/live-supplier-chain/preview"
+    | "POST /agent/procurement/live-supplier-chain/draft"
+    | "POST /agent/procurement/live-supplier-chain/submit-for-approval";
+  result: AiProcurementLiveSupplierChainResult;
+  runtimeBoundary: "internal_context_marketplace_compare_draft_approval";
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  approvalRequired: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
 export type AgentProcurementDto =
   | AgentProcurementRequestContextDto
   | AgentProcurementSupplierMatchDto
   | AgentProcurementExternalSupplierCandidatesDto
   | AgentProcurementDraftRequestPreviewDto
   | AgentProcurementSubmitForApprovalDto
+  | AgentProcurementLiveSupplierChainDto
   | AgentProcurementCopilotContextDto
   | AgentProcurementCopilotPlanDto
   | AgentProcurementCopilotDraftPreviewDto
@@ -928,6 +962,9 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
     "POST /agent/procurement/external-supplier-candidates/preview",
     "POST /agent/procurement/draft-request/preview",
     "POST /agent/procurement/submit-for-approval",
+    "POST /agent/procurement/live-supplier-chain/preview",
+    "POST /agent/procurement/live-supplier-chain/draft",
+    "POST /agent/procurement/live-supplier-chain/submit-for-approval",
     "GET /agent/procurement/copilot/context",
     "POST /agent/procurement/copilot/plan",
     "POST /agent/procurement/copilot/draft-preview",
@@ -942,6 +979,7 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
   externalLiveFetchEnabled: false,
   finalActionExecutionEnabled: false,
   supplierSelectionFinalized: false,
+  liveSupplierChainContract: AI_PROCUREMENT_LIVE_SUPPLIER_CHAIN_CONTRACT.contractId,
 } as const);
 
 export const AGENT_APPROVAL_INBOX_BFF_CONTRACT = AI_APPROVAL_INBOX_BFF_CONTRACT;
@@ -1263,6 +1301,45 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     operation: "agent.procurement.submit_for_approval",
     method: "POST",
     endpoint: "POST /agent/procurement/submit-for-approval",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.live_supplier_chain.preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/live-supplier-chain/preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.live_supplier_chain.draft",
+    method: "POST",
+    endpoint: "POST /agent/procurement/live-supplier-chain/draft",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.live_supplier_chain.submit_for_approval",
+    method: "POST",
+    endpoint: "POST /agent/procurement/live-supplier-chain/submit-for-approval",
     authRequired: true,
     roleFiltered: true,
     mutates: false,
@@ -2122,6 +2199,76 @@ export function submitAgentProcurementForApproval(
       dbAccessedDirectly: false,
     },
   };
+}
+
+async function runAgentProcurementLiveSupplierChain(
+  request: AgentProcurementLiveSupplierChainRequest,
+  documentType: AgentProcurementLiveSupplierChainDto["documentType"],
+  endpoint: AgentProcurementLiveSupplierChainDto["endpoint"],
+): Promise<AgentProcurementEnvelope> {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = await runAiProcurementLiveSupplierChain({
+    auth: request.auth,
+    requestId: request.requestId,
+    screenId: request.screenId,
+    organizationId: request.organizationId,
+    cursor: request.cursor,
+    requestSnapshot: request.requestSnapshot,
+    externalRequested: request.externalRequested,
+    externalSourcePolicyIds: request.externalSourcePolicyIds,
+    searchCatalogItems: request.searchCatalogItems,
+    listSuppliers: request.listSuppliers,
+    externalGateway: request.externalGateway,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType,
+      endpoint,
+      result,
+      runtimeBoundary: "internal_context_marketplace_compare_draft_approval",
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      approvalRequired: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export async function previewAgentProcurementLiveSupplierChain(
+  request: AgentProcurementLiveSupplierChainRequest,
+): Promise<AgentProcurementEnvelope> {
+  return runAgentProcurementLiveSupplierChain(
+    request,
+    "agent_procurement_live_supplier_chain_preview",
+    "POST /agent/procurement/live-supplier-chain/preview",
+  );
+}
+
+export async function draftAgentProcurementLiveSupplierChain(
+  request: AgentProcurementLiveSupplierChainRequest,
+): Promise<AgentProcurementEnvelope> {
+  return runAgentProcurementLiveSupplierChain(
+    request,
+    "agent_procurement_live_supplier_chain_draft",
+    "POST /agent/procurement/live-supplier-chain/draft",
+  );
+}
+
+export async function submitAgentProcurementLiveSupplierChainForApproval(
+  request: AgentProcurementLiveSupplierChainRequest,
+): Promise<AgentProcurementEnvelope> {
+  return runAgentProcurementLiveSupplierChain(
+    request,
+    "agent_procurement_live_supplier_chain_submit_for_approval",
+    "POST /agent/procurement/live-supplier-chain/submit-for-approval",
+  );
 }
 
 export function getAgentProcurementCopilotContext(

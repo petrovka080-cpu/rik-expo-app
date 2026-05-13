@@ -1,6 +1,5 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
-import { readCompareSuppliersTransport } from "./transport/compareSuppliers.transport";
 import type { AiSupplierTransportItem } from "./transport/aiToolTransportTypes";
 import {
   decideAiToolRateLimit,
@@ -239,6 +238,7 @@ async function defaultListSuppliers(
   query: string,
   limit: number,
 ): Promise<readonly AiSupplierTransportItem[]> {
+  const { readCompareSuppliersTransport } = await import("./transport/compareSuppliers.transport");
   return readCompareSuppliersTransport({ query, limit });
 }
 

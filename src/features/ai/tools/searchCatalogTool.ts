@@ -1,8 +1,5 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
-import {
-  readSearchCatalogTransport,
-  type SearchCatalogTransportRequest,
-} from "./transport/searchCatalog.transport";
+import type { SearchCatalogTransportRequest } from "./transport/searchCatalog.transport";
 import type { AiCatalogSearchTransportItem } from "./transport/aiToolTransportTypes";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 import {
@@ -190,6 +187,7 @@ async function defaultSearchCatalogItems(
   apps?: string[],
 ): Promise<readonly AiCatalogSearchTransportItem[]> {
   const request: SearchCatalogTransportRequest = { query, limit, apps };
+  const { readSearchCatalogTransport } = await import("./transport/searchCatalog.transport");
   return readSearchCatalogTransport(request);
 }
 
