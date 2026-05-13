@@ -8,6 +8,7 @@ import {
 export type AiActionLedgerPostgrestRpcVisibilityStatus =
   | "GREEN_RPC_VISIBLE_AND_CALLABLE"
   | "GREEN_RPC_VISIBLE_AUTH_REQUIRED"
+  | "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY"
   | "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
   | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
   | "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED"
@@ -40,7 +41,7 @@ export type AiActionLedgerPostgrestRpcVisibility = {
   credentialsPrinted: false;
   blocker: Exclude<
     AiActionLedgerPostgrestRpcVisibilityStatus,
-    "GREEN_RPC_VISIBLE_AND_CALLABLE" | "GREEN_RPC_VISIBLE_AUTH_REQUIRED"
+    "GREEN_RPC_VISIBLE_AND_CALLABLE" | "GREEN_RPC_VISIBLE_AUTH_REQUIRED" | "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY"
   > | null;
   exactReason: string | null;
 };
@@ -91,7 +92,10 @@ function baseResult(
   exactReason: string | null,
   overrides: Partial<AiActionLedgerPostgrestRpcVisibility> = {},
 ): AiActionLedgerPostgrestRpcVisibility {
-  const green = status === "GREEN_RPC_VISIBLE_AND_CALLABLE" || status === "GREEN_RPC_VISIBLE_AUTH_REQUIRED";
+  const green =
+    status === "GREEN_RPC_VISIBLE_AND_CALLABLE" ||
+    status === "GREEN_RPC_VISIBLE_AUTH_REQUIRED" ||
+    status === "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY";
   return {
     status,
     directSqlFunctionsChecked: false,
@@ -118,7 +122,7 @@ function baseResult(
     credentialsPrinted: false,
     blocker: green ? null : (status as Exclude<
       AiActionLedgerPostgrestRpcVisibilityStatus,
-      "GREEN_RPC_VISIBLE_AND_CALLABLE" | "GREEN_RPC_VISIBLE_AUTH_REQUIRED"
+      "GREEN_RPC_VISIBLE_AND_CALLABLE" | "GREEN_RPC_VISIBLE_AUTH_REQUIRED" | "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY"
     >),
     exactReason,
     ...overrides,
@@ -137,6 +141,11 @@ function isSchemaCacheMiss(input: ProbeInput): boolean {
 function isPermissionDenied(input: ProbeInput): boolean {
   const combined = [input.postgrestErrorCode, input.message].map(text).filter(Boolean).join(" ");
   return input.postgrestErrorCode === "42501" || /permission denied|insufficient privilege/i.test(combined);
+}
+
+function isSignatureMismatch(input: ProbeInput): boolean {
+  const combined = [input.postgrestErrorCode, input.message].map(text).filter(Boolean).join(" ");
+  return input.httpStatus === 400 && /argument|parameter|signature|function/i.test(combined);
 }
 
 export function classifyAiActionLedgerPostgrestRpcProbe(input: ProbeInput): ProbeClassification {
@@ -173,6 +182,18 @@ export function classifyAiActionLedgerPostgrestRpcProbe(input: ProbeInput): Prob
       postgrestPermissionDenied: false,
       blocker: null,
       exactReason: "PostgREST reached the ledger RPC and required authenticated caller credentials.",
+    };
+  }
+
+  if (isSignatureMismatch(input)) {
+    return {
+      status: "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY",
+      postgrestRpcVisible: true,
+      postgrestRpcCallable: false,
+      postgrestAuthRequired: false,
+      postgrestPermissionDenied: false,
+      blocker: null,
+      exactReason: "PostgREST reached the ledger RPC but rejected the supplied argument shape.",
     };
   }
 
@@ -374,7 +395,8 @@ if (require.main === module) {
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       process.exitCode =
         result.status === "GREEN_RPC_VISIBLE_AND_CALLABLE" ||
-        result.status === "GREEN_RPC_VISIBLE_AUTH_REQUIRED"
+        result.status === "GREEN_RPC_VISIBLE_AUTH_REQUIRED" ||
+        result.status === "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY"
           ? 0
           : 2;
     })

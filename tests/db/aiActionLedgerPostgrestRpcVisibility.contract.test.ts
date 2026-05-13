@@ -61,6 +61,18 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
     });
   });
 
+  it("treats HTTP 400 argument mismatch as visible RPC surface", () => {
+    expect(classifyAiActionLedgerPostgrestRpcProbe({
+      httpStatus: 400,
+      postgrestErrorCode: "PGRST102",
+      message: "Function argument signature did not match the request parameters",
+    })).toMatchObject({
+      status: "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY",
+      postgrestRpcVisible: true,
+      postgrestRpcCallable: false,
+    });
+  });
+
   it("blocks when PostgREST URL/key are missing and never prints secrets", async () => {
     const result = await verifyAiActionLedgerPostgrestRpcVisibility(
       {},
