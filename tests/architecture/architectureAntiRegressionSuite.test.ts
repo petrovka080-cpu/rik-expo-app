@@ -546,8 +546,8 @@ describe("architecture anti-regression suite", () => {
         }
         if (relativePath.includes("commandCenter")) {
           return [
-            "AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT",
             "normalizeAiCommandCenterPage",
+            "getAgentTaskStream",
             "enforceAiCommandCenterCardBudget",
             "ai.command.center.empty-state",
             "state.viewModel.empty",

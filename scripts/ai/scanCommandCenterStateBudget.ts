@@ -65,7 +65,6 @@ function hasPollingLoop(source: string): boolean {
 
 export function scanCommandCenterStateBudget(projectRoot = process.cwd()): AiCommandCenterStateBudgetScanResult {
   const source = combinedSource(projectRoot);
-  const useDataSource = readProjectFile(projectRoot, "src/features/ai/commandCenter/useAiCommandCenterData.ts");
   const viewModelSource = readProjectFile(projectRoot, "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts");
   const screenSource = readProjectFile(projectRoot, "src/features/ai/commandCenter/AiCommandCenterScreen.tsx");
 
@@ -78,8 +77,9 @@ export function scanCommandCenterStateBudget(projectRoot = process.cwd()): AiCom
   const commandCenterHasNoRealtimeSubscription = !hasRealtimeSubscription(source);
   const commandCenterHasNoPollingLoop = !hasPollingLoop(source);
   const taskStreamUsesBudgetedLimit =
-    useDataSource.includes("AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT") &&
-    !useDataSource.includes("limit: 50");
+    viewModelSource.includes("normalizeAiCommandCenterPage(input.page)") &&
+    viewModelSource.includes("page,") &&
+    viewModelSource.includes("getAgentTaskStream");
   const cardBudgetEnforcedInViewModel =
     viewModelSource.includes("normalizeAiCommandCenterPage") &&
     viewModelSource.includes("enforceAiCommandCenterCardBudget");

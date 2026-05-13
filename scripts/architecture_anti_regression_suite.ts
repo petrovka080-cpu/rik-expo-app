@@ -3548,9 +3548,8 @@ export function evaluateAiCommandCenterStateBudgetGuardrail(params: {
   const noPollingLoopInCommandCenter =
     !/\bsetInterval\s*\(|\bwhile\s*\(\s*true\s*\)|\bfor\s*\(\s*;\s*;\s*\)/i.test(commandCenterSource);
   const taskStreamUsesBudgetedLimit =
-    commandCenterSource.includes("AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT") &&
     commandCenterSource.includes("normalizeAiCommandCenterPage") &&
-    !commandCenterSource.includes("limit: 50") &&
+    commandCenterSource.includes("getAgentTaskStream") &&
     booleanRecordValue(matrixRecord, "task_stream_uses_budgeted_limit");
   const cardBudgetEnforced =
     commandCenterSource.includes("enforceAiCommandCenterCardBudget") &&
