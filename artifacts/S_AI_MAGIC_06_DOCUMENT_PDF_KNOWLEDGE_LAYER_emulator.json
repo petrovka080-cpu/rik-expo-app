@@ -1,0 +1,10 @@
+{
+  "final_status": "GREEN_AI_DOCUMENT_PDF_KNOWLEDGE_LAYER_READY",
+  "android_runtime_smoke": "PASS",
+  "emulator_runtime_proof": "PASS",
+  "raw_content_returned": false,
+  "raw_rows_returned": false,
+  "mutation_count": 0,
+  "fake_green_claimed": false,
+  "secrets_printed": false
+}

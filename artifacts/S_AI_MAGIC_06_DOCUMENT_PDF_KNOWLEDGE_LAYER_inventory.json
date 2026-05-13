@@ -1,0 +1,14 @@
+{
+  "wave": "S_AI_MAGIC_06_DOCUMENT_PDF_KNOWLEDGE_LAYER",
+  "knowledge_types": "src/features/ai/documents/aiDocumentKnowledgeTypes.ts",
+  "knowledge_registry": "src/features/ai/documents/aiDocumentKnowledgeRegistry.ts",
+  "evidence_resolver": "src/features/ai/documents/aiDocumentEvidenceResolver.ts",
+  "redaction_policy": "src/features/ai/documents/aiDocumentRedactionPolicy.ts",
+  "search_preview": "src/features/ai/documents/aiDocumentSearchPreview.ts",
+  "bff_contracts": "src/features/ai/agent/agentDocumentKnowledgeContracts.ts",
+  "bff_routes": "src/features/ai/agent/agentDocumentKnowledgeRoutes.ts",
+  "bff_shell": "src/features/ai/agent/agentBffRouteShell.ts",
+  "runtime_runner": "scripts/e2e/runAiDocumentKnowledgeMaestro.ts",
+  "android_runtime_smoke": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "secrets_printed": false
+}

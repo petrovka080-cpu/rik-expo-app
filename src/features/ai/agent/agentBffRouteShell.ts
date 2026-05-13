@@ -109,6 +109,16 @@ import {
   type AgentWorkdayLiveEvidenceRouteRequest,
 } from "./agentWorkdayLiveEvidenceRoutes";
 import {
+  AGENT_DOCUMENT_KNOWLEDGE_BFF_CONTRACT,
+  getAgentDocumentKnowledge,
+  previewAgentDocumentSummary,
+  searchAgentDocuments,
+  type AgentDocumentKnowledgeEnvelope,
+  type AgentDocumentKnowledgeReadRouteRequest,
+  type AgentDocumentSearchRouteRequest,
+  type AgentDocumentSummaryPreviewRouteRequest,
+} from "./agentDocumentKnowledgeRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -152,6 +162,10 @@ export {
   previewAgentWorkdayTask,
   AGENT_WORKDAY_LIVE_EVIDENCE_BFF_CONTRACT,
   getAgentWorkdayLiveEvidenceTasks,
+  AGENT_DOCUMENT_KNOWLEDGE_BFF_CONTRACT,
+  getAgentDocumentKnowledge,
+  previewAgentDocumentSummary,
+  searchAgentDocuments,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -167,6 +181,8 @@ export {
   previewApprovalInboxEditBff,
   rejectApprovalInboxActionBff,
 };
+
+export type { AgentDocumentKnowledgeEnvelope };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -192,6 +208,9 @@ export type AgentBffRouteOperation =
   | "agent.workday.tasks.preview"
   | "agent.workday.tasks.action_plan"
   | "agent.workday.live_evidence.read"
+  | "agent.documents.knowledge.read"
+  | "agent.documents.search.preview"
+  | "agent.documents.summarize.preview"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
@@ -241,6 +260,7 @@ export type AgentBffRouteDefinition = {
     | "AgentScreenActionEnvelope"
     | "AgentWorkdayTaskEnvelope"
     | "AgentWorkdayLiveEvidenceEnvelope"
+    | "AgentDocumentKnowledgeEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -276,6 +296,9 @@ export type AgentWorkdayTasksRequest = AgentWorkdayTaskReadRouteRequest;
 export type AgentWorkdayTaskPreviewRequest = AgentWorkdayTaskPreviewRouteRequest;
 export type AgentWorkdayTaskActionPlanRequest = AgentWorkdayTaskActionPlanRouteRequest;
 export type AgentWorkdayLiveEvidenceRequest = AgentWorkdayLiveEvidenceRouteRequest;
+export type AgentDocumentKnowledgeRequest = AgentDocumentKnowledgeReadRouteRequest;
+export type AgentDocumentSearchRequest = AgentDocumentSearchRouteRequest;
+export type AgentDocumentSummaryPreviewRequest = AgentDocumentSummaryPreviewRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1519,6 +1542,45 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentWorkdayLiveEvidenceEnvelope",
+  },
+  {
+    operation: "agent.documents.knowledge.read",
+    method: "GET",
+    endpoint: "GET /agent/documents/knowledge",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentDocumentKnowledgeEnvelope",
+  },
+  {
+    operation: "agent.documents.search.preview",
+    method: "POST",
+    endpoint: "POST /agent/documents/search",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentDocumentKnowledgeEnvelope",
+  },
+  {
+    operation: "agent.documents.summarize.preview",
+    method: "POST",
+    endpoint: "POST /agent/documents/summarize-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentDocumentKnowledgeEnvelope",
   },
   {
     operation: "agent.tools.list",

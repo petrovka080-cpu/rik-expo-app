@@ -389,6 +389,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "externalIntel", "aiExternalCitationPolicy.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "aiExternalSupplierCandidatePreview.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic18DocumentPdfKnowledgeLayerFiles = [
+      path.join(SRC, "features", "ai", "documents", "aiDocumentKnowledgeTypes.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentKnowledgeRegistry.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentEvidenceResolver.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentRedactionPolicy.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentSearchPreview.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentDocumentKnowledgeContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentDocumentKnowledgeRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1157,6 +1166,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic15RoleCopilotRuntimePackFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic16ProcurementLiveSupplierChainFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
+    expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1329,6 +1339,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic15RoleCopilotRuntimePackFiles -
         sAiMagic16ProcurementLiveSupplierChainFiles -
         sAiMagic17ExternalMarketIntelCanaryFiles -
+        sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

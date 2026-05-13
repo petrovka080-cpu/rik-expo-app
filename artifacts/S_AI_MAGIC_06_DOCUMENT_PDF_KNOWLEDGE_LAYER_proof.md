@@ -1,0 +1,20 @@
+# S_AI_MAGIC_06_DOCUMENT_PDF_KNOWLEDGE_LAYER
+
+final_status: GREEN_AI_DOCUMENT_PDF_KNOWLEDGE_LAYER_READY
+document_sources_registered: 10
+required_sources_registered: true
+document_cards_returned: 10
+document_cards_have_evidence: true
+role_scoped: true
+contractor_finance_blocked: true
+raw_content_returned: false
+raw_rows_returned: false
+mutation_count: 0
+db_writes: 0
+external_live_fetch: false
+provider_called: false
+fake_documents: false
+android_runtime_smoke: PASS
+emulator_runtime_proof: PASS
+secrets_printed: false
+exact_reason: null
