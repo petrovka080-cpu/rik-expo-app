@@ -1,0 +1,330 @@
+{
+  "wave": "S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP",
+  "registry": "src/features/ai/screenActions/aiScreenActionRegistry.ts",
+  "policy": "src/features/ai/screenActions/aiScreenActionPolicy.ts",
+  "resolver": "src/features/ai/screenActions/aiScreenActionResolver.ts",
+  "runner": "scripts/e2e/runAiScreenButtonActionTruthMapMaestro.ts",
+  "screens": [
+    {
+      "screenId": "director.dashboard",
+      "domain": "control",
+      "allowedRoles": [
+        "director",
+        "control"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "ai.command_center",
+      "domain": "control",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [],
+      "actionCount": 5
+    },
+    {
+      "screenId": "buyer.main",
+      "domain": "procurement",
+      "allowedRoles": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "buyer.requests",
+      "domain": "procurement",
+      "allowedRoles": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "market.home",
+      "domain": "marketplace",
+      "allowedRoles": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "forbiddenRoles": [
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "warehouse.main",
+      "domain": "warehouse",
+      "allowedRoles": [
+        "director",
+        "control",
+        "warehouse"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "accountant",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "accountant.main",
+      "domain": "finance",
+      "allowedRoles": [
+        "director",
+        "control",
+        "accountant"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "foreman.main",
+      "domain": "projects",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "forbiddenRoles": [
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "domain": "procurement",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "forbiddenRoles": [
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "contractor.main",
+      "domain": "subcontracts",
+      "allowedRoles": [
+        "director",
+        "control",
+        "contractor"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "reports.modal",
+      "domain": "reports",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [],
+      "actionCount": 5
+    },
+    {
+      "screenId": "documents.main",
+      "domain": "documents",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [],
+      "actionCount": 5
+    },
+    {
+      "screenId": "approval.inbox",
+      "domain": "documents",
+      "allowedRoles": [
+        "director",
+        "control"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "procurement.copilot",
+      "domain": "procurement",
+      "allowedRoles": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "screen.runtime",
+      "domain": "control",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [],
+      "actionCount": 5
+    },
+    {
+      "screenId": "chat.main",
+      "domain": "chat",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [],
+      "actionCount": 5
+    },
+    {
+      "screenId": "map.main",
+      "domain": "map",
+      "allowedRoles": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "forbiddenRoles": [
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
+      "screenId": "office.hub",
+      "domain": "control",
+      "allowedRoles": [
+        "director",
+        "control",
+        "office",
+        "admin"
+      ],
+      "forbiddenRoles": [
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor"
+      ],
+      "actionCount": 5
+    }
+  ],
+  "actionCount": 90,
+  "secrets_printed": false
+}

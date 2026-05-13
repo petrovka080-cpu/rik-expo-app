@@ -11,7 +11,8 @@ describe("AI screen action registry", () => {
     const ids = listAiScreenActionEntries().map((entry) => entry.screenId);
 
     expect(ids).toEqual(expect.arrayContaining([...AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS]));
-    expect(AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS).toHaveLength(15);
+    expect(AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS).toHaveLength(18);
+    expect(ids).toEqual(expect.arrayContaining(["chat.main", "map.main", "office.hub"]));
     expect(getAiScreenActionEntry("buyer.requests")).toMatchObject({
       domain: "procurement",
       directorControlFullAccess: true,
@@ -26,10 +27,10 @@ describe("AI screen action registry", () => {
     const actions = AI_SCREEN_ACTION_REGISTRY.flatMap((entry) => entry.visibleActions);
     const validation = validateAiScreenActionRegistry();
 
-    expect(actions.length).toBeGreaterThanOrEqual(60);
+    expect(actions.length).toBeGreaterThanOrEqual(90);
     expect(validation).toMatchObject({
       ok: true,
-      screensRegistered: 15,
+      screensRegistered: 18,
       allActionsHaveRoleScope: true,
       allActionsHaveRiskPolicy: true,
       allActionsHaveEvidenceSource: true,
@@ -37,5 +38,14 @@ describe("AI screen action registry", () => {
       forbiddenActionsExecutable: false,
       unknownToolReferences: [],
     });
+    expect(
+      AI_SCREEN_ACTION_REGISTRY.every(
+        (entry) =>
+          Array.isArray(entry.forbiddenRoles) &&
+          entry.visibleActions.every(
+            (action) => Array.isArray(action.allowedRoles) && Array.isArray(action.forbiddenRoles),
+          ),
+      ),
+    ).toBe(true);
   });
 });

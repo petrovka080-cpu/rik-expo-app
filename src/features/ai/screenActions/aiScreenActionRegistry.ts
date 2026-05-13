@@ -1,4 +1,4 @@
-import type { AiUserRole } from "../policy/aiRolePolicy";
+import { AI_USER_ROLES, type AiUserRole } from "../policy/aiRolePolicy";
 import type {
   AiScreenActionDefinition,
   AiScreenActionEvidenceSource,
@@ -27,6 +27,15 @@ const FINANCE_ROLES: readonly AiUserRole[] = ["director", "control", "accountant
 const FOREMAN_ROLES: readonly AiUserRole[] = ["director", "control", "foreman"];
 const WAREHOUSE_ROLES: readonly AiUserRole[] = ["director", "control", "warehouse"];
 const CONTRACTOR_ROLES: readonly AiUserRole[] = ["director", "control", "contractor"];
+const OFFICE_ROLES: readonly AiUserRole[] = ["director", "control", "office", "admin"];
+const MAP_ROLES: readonly AiUserRole[] = ["director", "control", "buyer", "foreman"];
+const CHAT_ROLES: readonly AiUserRole[] = OPERATIONS_ROLES;
+
+const POLICY_ROLES = AI_USER_ROLES.filter((role) => role !== "unknown");
+
+function forbiddenRolesFor(allowedRoles: readonly AiUserRole[]): AiUserRole[] {
+  return POLICY_ROLES.filter((role) => !allowedRoles.includes(role));
+}
 
 export const AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS = [
   "director.dashboard",
@@ -44,6 +53,9 @@ export const AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS = [
   "approval.inbox",
   "procurement.copilot",
   "screen.runtime",
+  "chat.main",
+  "map.main",
+  "office.hub",
 ] as const;
 
 function action(params: {
@@ -71,6 +83,8 @@ function action(params: {
     aiTool: params.aiTool,
     mode: params.mode,
     roleScope: params.roleScope,
+    allowedRoles: params.roleScope,
+    forbiddenRoles: forbiddenRolesFor(params.roleScope),
     requiresApproval: params.mode === "approval_required",
     evidenceRequired: true,
     evidenceSources: params.evidenceSources,
@@ -82,11 +96,12 @@ function action(params: {
 function entry(
   params: Omit<
     AiScreenActionRegistryEntry,
-    "directorControlFullAccess" | "nonDirectorScopedAccess" | "source"
+    "forbiddenRoles" | "directorControlFullAccess" | "nonDirectorScopedAccess" | "source"
   >,
 ): AiScreenActionRegistryEntry {
   return {
     ...params,
+    forbiddenRoles: forbiddenRolesFor(params.allowedRoles),
     directorControlFullAccess: true,
     nonDirectorScopedAccess: true,
     source: "ai_screen_button_action_registry_v1",
@@ -886,6 +901,165 @@ export const AI_SCREEN_ACTION_REGISTRY: readonly AiScreenActionRegistryEntry[] =
         roleScope: OPERATIONS_ROLES,
         evidenceSources: ["approval_policy", "role_policy"],
         forbiddenReason: "Runtime screen intelligence is read-only and plan-only.",
+      }),
+    ],
+  }),
+  entry({
+    screenId: "chat.main",
+    domain: "chat",
+    allowedRoles: CHAT_ROLES,
+    evidenceSources: ["screen_state", "chat_thread", "document_metadata", "role_policy"],
+    visibleActions: [
+      action({
+        actionId: "chat.main.read_thread_context",
+        label: "Read chat thread context",
+        intent: "read_context",
+        mode: "safe_read",
+        aiTool: "get_action_status",
+        roleScope: CHAT_ROLES,
+        evidenceSources: ["chat_thread", "screen_state"],
+      }),
+      action({
+        actionId: "chat.main.find_document",
+        label: "Find document mentioned in chat",
+        intent: "find",
+        mode: "safe_read",
+        aiTool: "get_action_status",
+        roleScope: CHAT_ROLES,
+        evidenceSources: ["chat_thread", "document_metadata"],
+      }),
+      action({
+        actionId: "chat.main.draft_reply_report",
+        label: "Prepare report-style reply draft",
+        intent: "draft_report",
+        mode: "draft_only",
+        aiTool: "draft_report",
+        roleScope: CHAT_ROLES,
+        evidenceSources: ["chat_thread", "document_metadata"],
+      }),
+      action({
+        actionId: "chat.main.submit_chat_evidence",
+        label: "Submit chat evidence for approval",
+        intent: "submit_for_approval",
+        mode: "approval_required",
+        aiTool: "submit_for_approval",
+        roleScope: CHAT_ROLES,
+        evidenceSources: ["approval_policy", "chat_thread"],
+      }),
+      action({
+        actionId: "chat.main.send_message_forbidden",
+        label: "Send chat message directly",
+        intent: "forbidden",
+        mode: "forbidden",
+        roleScope: CHAT_ROLES,
+        evidenceSources: ["approval_policy", "chat_thread"],
+        forbiddenReason: "AI can draft chat content but cannot send messages directly.",
+      }),
+    ],
+  }),
+  entry({
+    screenId: "map.main",
+    domain: "map",
+    allowedRoles: MAP_ROLES,
+    evidenceSources: ["screen_state", "map_context", "role_policy"],
+    visibleActions: [
+      action({
+        actionId: "map.main.read_object_context",
+        label: "Read map object context",
+        intent: "read_context",
+        mode: "safe_read",
+        aiTool: "get_action_status",
+        roleScope: MAP_ROLES,
+        evidenceSources: ["map_context", "screen_state"],
+      }),
+      action({
+        actionId: "map.main.find_nearby_context",
+        label: "Find nearby operational context",
+        intent: "find",
+        mode: "safe_read",
+        aiTool: "search_catalog",
+        roleScope: ["director", "control", "buyer"],
+        evidenceSources: ["map_context", "tool_contract"],
+      }),
+      action({
+        actionId: "map.main.draft_site_report",
+        label: "Prepare site-context report draft",
+        intent: "draft_report",
+        mode: "draft_only",
+        aiTool: "draft_report",
+        roleScope: MAP_ROLES,
+        evidenceSources: ["map_context", "document_metadata"],
+      }),
+      action({
+        actionId: "map.main.submit_site_context",
+        label: "Submit site context for approval",
+        intent: "submit_for_approval",
+        mode: "approval_required",
+        aiTool: "submit_for_approval",
+        roleScope: MAP_ROLES,
+        evidenceSources: ["approval_policy", "map_context"],
+      }),
+      action({
+        actionId: "map.main.create_real_estate_record_forbidden",
+        label: "Create map or real-estate record directly",
+        intent: "forbidden",
+        mode: "forbidden",
+        roleScope: MAP_ROLES,
+        evidenceSources: ["approval_policy", "map_context"],
+        forbiddenReason: "Map intelligence is read, draft, and approval-plan only.",
+      }),
+    ],
+  }),
+  entry({
+    screenId: "office.hub",
+    domain: "control",
+    allowedRoles: OFFICE_ROLES,
+    evidenceSources: ["screen_state", "office_directory", "role_policy", "approval_policy"],
+    visibleActions: [
+      action({
+        actionId: "office.hub.read_office_context",
+        label: "Read office collaboration context",
+        intent: "read_context",
+        mode: "safe_read",
+        aiTool: "get_action_status",
+        roleScope: OFFICE_ROLES,
+        evidenceSources: ["office_directory", "screen_state"],
+      }),
+      action({
+        actionId: "office.hub.find_member_or_invite",
+        label: "Find member or invite context",
+        intent: "find",
+        mode: "safe_read",
+        aiTool: "get_action_status",
+        roleScope: OFFICE_ROLES,
+        evidenceSources: ["office_directory", "role_policy"],
+      }),
+      action({
+        actionId: "office.hub.draft_collaboration_report",
+        label: "Prepare collaboration report draft",
+        intent: "draft_report",
+        mode: "draft_only",
+        aiTool: "draft_report",
+        roleScope: OFFICE_ROLES,
+        evidenceSources: ["office_directory", "document_metadata"],
+      }),
+      action({
+        actionId: "office.hub.submit_access_change",
+        label: "Submit access change for approval",
+        intent: "submit_for_approval",
+        mode: "approval_required",
+        aiTool: "submit_for_approval",
+        roleScope: OFFICE_ROLES,
+        evidenceSources: ["approval_policy", "office_directory"],
+      }),
+      action({
+        actionId: "office.hub.invite_or_remove_user_forbidden",
+        label: "Invite or remove user directly",
+        intent: "forbidden",
+        mode: "forbidden",
+        roleScope: OFFICE_ROLES,
+        evidenceSources: ["approval_policy", "office_directory"],
+        forbiddenReason: "Identity and access mutations are not executable from AI screen actions.",
       }),
     ],
   }),

@@ -1,11 +1,9 @@
 import { hasDirectorFullAiAccess, type AiUserRole } from "../policy/aiRolePolicy";
-import { AI_TOOL_NAMES } from "../tools/aiToolRegistry";
 import type { AiToolName } from "../tools/aiToolTypes";
 import {
-  AI_SCREEN_ACTION_REGISTRY,
-  AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS,
   getAiScreenActionEntry,
 } from "./aiScreenActionRegistry";
+import { validateAiScreenActionRegistryPolicy } from "./aiScreenActionPolicy";
 import type {
   AiScreenActionDefinition,
   AiScreenActionIntent,
@@ -19,8 +17,6 @@ import type {
   AiScreenActionRegistryValidation,
   AiScreenActionResolverAuth,
 } from "./aiScreenActionTypes";
-
-const TOOL_NAME_SET = new Set<string>(AI_TOOL_NAMES);
 
 function normalizeRole(role: AiUserRole | undefined): AiUserRole {
   return role ?? "unknown";
@@ -92,62 +88,7 @@ function blockedOutput(params: {
 }
 
 export function validateAiScreenActionRegistry(): AiScreenActionRegistryValidation {
-  const actions = AI_SCREEN_ACTION_REGISTRY.flatMap((entry) => entry.visibleActions);
-  const blockers = new Set<AiScreenActionRegistryValidation["blockers"][number]>();
-  const unknownToolReferences = actions
-    .map((action) => action.aiTool)
-    .filter((tool): tool is AiToolName => Boolean(tool))
-    .filter((tool) => !TOOL_NAME_SET.has(tool));
-
-  if (unknownToolReferences.length > 0) blockers.add("BLOCKED_UNKNOWN_AI_TOOL_REFERENCE");
-
-  const requiredScreensRegistered = AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS.every((screenId) =>
-    AI_SCREEN_ACTION_REGISTRY.some((entry) => entry.screenId === screenId),
-  );
-  if (!requiredScreensRegistered) blockers.add("BLOCKED_REQUIRED_SCREEN_NOT_REGISTERED");
-
-  const allActionsHaveRoleScope = actions.every((action) => action.roleScope.length > 0);
-  if (!allActionsHaveRoleScope) blockers.add("BLOCKED_ACTION_WITHOUT_ROLE_SCOPE");
-
-  const allActionsHaveRiskPolicy = actions.every((action) =>
-    ["low", "medium", "high", "forbidden"].includes(action.riskLevel),
-  );
-  const allActionsHaveEvidenceSource = actions.every(
-    (action) => action.evidenceRequired === true && action.evidenceSources.length > 0,
-  );
-  if (!allActionsHaveEvidenceSource) blockers.add("BLOCKED_ACTION_WITHOUT_EVIDENCE_SOURCE");
-
-  const allHighRiskActionsRequireApproval = actions.every(
-    (action) =>
-      action.riskLevel !== "high" ||
-      (action.mode === "approval_required" && action.requiresApproval === true),
-  );
-  if (!allHighRiskActionsRequireApproval) blockers.add("BLOCKED_HIGH_RISK_ACTION_WITHOUT_APPROVAL");
-
-  const forbiddenActionsExecutable = actions.some(
-    (action) => action.riskLevel === "forbidden" && action.mode !== "forbidden",
-  );
-  if (forbiddenActionsExecutable) blockers.add("BLOCKED_FORBIDDEN_ACTION_EXECUTABLE");
-
-  return {
-    ok:
-      blockers.size === 0 &&
-      allActionsHaveRiskPolicy &&
-      allActionsHaveRoleScope &&
-      allActionsHaveEvidenceSource &&
-      allHighRiskActionsRequireApproval &&
-      !forbiddenActionsExecutable,
-    blockers: [...blockers],
-    screensRegistered: AI_SCREEN_ACTION_REGISTRY.length,
-    buttonsOrActionsRegistered: actions.length,
-    requiredScreensRegistered,
-    allActionsHaveRoleScope,
-    allActionsHaveRiskPolicy,
-    allActionsHaveEvidenceSource,
-    allHighRiskActionsRequireApproval,
-    forbiddenActionsExecutable: false,
-    unknownToolReferences,
-  };
+  return validateAiScreenActionRegistryPolicy();
 }
 
 export function resolveAiScreenActions(params: {

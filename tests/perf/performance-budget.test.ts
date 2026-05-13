@@ -348,6 +348,7 @@ describe("performance budget — bundle module count", () => {
     const sAiMagic10ScreenButtonActionMapFiles = [
       path.join(SRC, "features", "ai", "screenActions", "aiScreenActionTypes.ts"),
       path.join(SRC, "features", "ai", "screenActions", "aiScreenActionRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenActions", "aiScreenActionPolicy.ts"),
       path.join(SRC, "features", "ai", "screenActions", "aiScreenActionResolver.ts"),
       path.join(SRC, "features", "ai", "agent", "agentScreenActionContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentScreenActionRoutes.ts"),
@@ -1133,6 +1134,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
+    expect(sAiMagic10ScreenButtonActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);

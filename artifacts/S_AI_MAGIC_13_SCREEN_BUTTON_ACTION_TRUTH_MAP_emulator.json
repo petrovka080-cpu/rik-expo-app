@@ -1,0 +1,7 @@
+{
+  "wave": "S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP",
+  "emulator_runtime_proof": "PASS",
+  "android_runtime_smoke": "PASS",
+  "command_center_preview_targetable": true,
+  "fake_emulator_pass": false
+}

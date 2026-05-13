@@ -32,7 +32,10 @@ export type AiScreenActionEvidenceSource =
   | "procurement_context"
   | "warehouse_status"
   | "finance_summary"
-  | "report_summary";
+  | "report_summary"
+  | "office_directory"
+  | "map_context"
+  | "chat_thread";
 
 export type AiScreenActionDefinition = {
   actionId: string;
@@ -42,6 +45,8 @@ export type AiScreenActionDefinition = {
   aiTool?: AiToolName;
   mode: AiScreenActionMode;
   roleScope: readonly AiUserRole[];
+  allowedRoles: readonly AiUserRole[];
+  forbiddenRoles: readonly AiUserRole[];
   requiresApproval: boolean;
   evidenceRequired: true;
   evidenceSources: readonly AiScreenActionEvidenceSource[];
@@ -53,6 +58,7 @@ export type AiScreenActionRegistryEntry = {
   screenId: string;
   domain: AiDomain;
   allowedRoles: readonly AiUserRole[];
+  forbiddenRoles: readonly AiUserRole[];
   directorControlFullAccess: true;
   nonDirectorScopedAccess: true;
   evidenceSources: readonly AiScreenActionEvidenceSource[];

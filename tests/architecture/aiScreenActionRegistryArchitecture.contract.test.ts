@@ -11,6 +11,7 @@ describe("AI screen action registry architecture", () => {
   it("keeps screen-action intelligence as a read-only metadata layer", () => {
     const files = [
       "src/features/ai/screenActions/aiScreenActionRegistry.ts",
+      "src/features/ai/screenActions/aiScreenActionPolicy.ts",
       "src/features/ai/screenActions/aiScreenActionResolver.ts",
       "src/features/ai/agent/agentScreenActionRoutes.ts",
       "src/features/ai/agent/agentScreenActionContracts.ts",
@@ -18,6 +19,10 @@ describe("AI screen action registry architecture", () => {
     const source = files.map(read).join("\n");
 
     expect(source).toContain("AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS");
+    expect(source).toContain("AI_SCREEN_ACTION_POLICY_CONTRACT");
+    expect(source).toContain("chat.main");
+    expect(source).toContain("map.main");
+    expect(source).toContain("office.hub");
     expect(source).toContain("GET /agent/screen-actions/:screenId");
     expect(source).toContain("POST /agent/screen-actions/:screenId/intent-preview");
     expect(source).toContain("POST /agent/screen-actions/:screenId/action-plan");
