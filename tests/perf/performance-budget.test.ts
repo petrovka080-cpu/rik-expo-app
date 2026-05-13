@@ -207,6 +207,18 @@ describe("performance budget — bundle module count", () => {
     const sAiGetActionStatusToolFiles = [
       path.join(SRC, "features", "ai", "tools", "getActionStatusTool.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiHarden01ToolTransportBoundaryFiles = [
+      path.join(SRC, "features", "ai", "tools", "transport", "aiToolTransportTypes.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "searchCatalog.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "compareSuppliers.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "warehouseStatus.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "financeSummary.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "draftRequest.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "draftReport.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "draftAct.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "submitForApproval.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "getActionStatus.transport.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiProduct01DailyCommandCenterFiles = [
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterScreen.tsx"),
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterTypes.ts"),
@@ -1057,6 +1069,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiDraftActToolFiles).toBeLessThanOrEqual(1);
     expect(sAiSubmitForApprovalToolFiles).toBeLessThanOrEqual(1);
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
+    expect(sAiHarden01ToolTransportBoundaryFiles).toBeLessThanOrEqual(10);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
@@ -1087,6 +1100,7 @@ describe("performance budget — bundle module count", () => {
         sAiDraftActToolFiles -
         sAiSubmitForApprovalToolFiles -
         sAiGetActionStatusToolFiles -
+        sAiHarden01ToolTransportBoundaryFiles -
         sAiProduct01DailyCommandCenterFiles -
         sAiProduct02TaskStreamRuntimeFiles -
         sAiMagic01AppActionGraphInternalFirstFiles -

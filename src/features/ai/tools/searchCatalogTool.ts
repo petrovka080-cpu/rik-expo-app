@@ -1,6 +1,9 @@
-import { searchCatalogItems as searchCatalogItemsViaTransport } from "../../../lib/catalog/catalog.search.service";
-import type { CatalogItem } from "../../../lib/catalog/catalog.types";
 import type { AiUserRole } from "../policy/aiRolePolicy";
+import {
+  readSearchCatalogTransport,
+  type SearchCatalogTransportRequest,
+} from "./transport/searchCatalog.transport";
+import type { AiCatalogSearchTransportItem } from "./transport/aiToolTransportTypes";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 
 export const SEARCH_CATALOG_TOOL_NAME = "search_catalog" as const;
@@ -61,7 +64,7 @@ export type SearchCatalogItemsReader = (
   query: string,
   limit: number,
   apps?: string[],
-) => Promise<readonly CatalogItem[]>;
+) => Promise<readonly AiCatalogSearchTransportItem[]>;
 
 export type SearchCatalogToolRequest = {
   auth: SearchCatalogToolAuthContext | null;
@@ -164,7 +167,7 @@ function buildEvidenceRef(index: number): string {
   return `catalog:${SEARCH_CATALOG_ROUTE_SCOPE}:item:${index + 1}`;
 }
 
-function toToolItem(item: CatalogItem, index: number): SearchCatalogToolItem {
+function toToolItem(item: AiCatalogSearchTransportItem, index: number): SearchCatalogToolItem {
   const evidenceRef = buildEvidenceRef(index);
   const catalogItemId = normalizeCatalogItemText(item.code, `catalog-item-${index + 1}`);
   return {
@@ -174,6 +177,15 @@ function toToolItem(item: CatalogItem, index: number): SearchCatalogToolItem {
     category: normalizeOptionalText(item.kind),
     evidence_ref: evidenceRef,
   };
+}
+
+async function defaultSearchCatalogItems(
+  query: string,
+  limit: number,
+  apps?: string[],
+): Promise<readonly AiCatalogSearchTransportItem[]> {
+  const request: SearchCatalogTransportRequest = { query, limit, apps };
+  return readSearchCatalogTransport(request);
 }
 
 function buildStatus(): SearchCatalogToolStatus {
@@ -237,7 +249,7 @@ export async function runSearchCatalogToolSafeRead(
   }
 
   try {
-    const readCatalog = request.searchCatalogItems ?? searchCatalogItemsViaTransport;
+    const readCatalog = request.searchCatalogItems ?? defaultSearchCatalogItems;
     const rows = await readCatalog(
       input.value.query,
       input.value.limit,

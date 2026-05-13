@@ -188,9 +188,10 @@ describe("compare_suppliers safe-read tool", () => {
     expect(reads).toEqual([]);
   });
 
-  it("uses the existing catalog supplier read boundary and has no direct database, mutation, or model surface", () => {
+  it("uses the AI supplier transport boundary and has no direct database, mutation, or model surface", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain('catalog.facade"');
+    expect(source).toContain('transport/compareSuppliers.transport"');
+    expect(source).not.toContain('catalog.facade"');
     expect(source).not.toMatch(/@supabase|auth\.admin|listUsers|service_role/i);
     expect(source).not.toMatch(/\.(from|rpc|insert|update|delete|upsert)\s*\(/);
     expect(source).not.toMatch(/createOrder|create_order|confirmSupplier|confirm_supplier|sendRfq|sendRFQ|send_rfq/i);

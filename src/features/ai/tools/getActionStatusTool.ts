@@ -6,8 +6,12 @@ import {
   type AiUserRole,
 } from "../policy/aiRolePolicy";
 import type { AiActionType } from "../policy/aiRiskPolicy";
-import type { AiActionLedgerRepository } from "../actionLedger/aiActionLedgerRepository";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import {
+  ledgerActionToToolAction,
+  readActionStatusTransport,
+  type AiActionLedgerRepository,
+} from "./transport/getActionStatus.transport";
 
 export const GET_ACTION_STATUS_TOOL_NAME = "get_action_status" as const;
 export const GET_ACTION_STATUS_ROUTE_OPERATION = "ai.approval.action.status.local" as const;
@@ -259,13 +263,6 @@ function buildEvidenceRefs(snapshot: NormalizedActionStatusSnapshot | null): str
   return refs.length > 0 ? refs : ["action_status:local:snapshot"];
 }
 
-function ledgerActionToToolAction(value: string | undefined): AiActionType | "unknown" {
-  const normalized = normalizeActionType(value);
-  if (normalized) return normalized;
-  if (value === "document_send") return "send_document";
-  return "unknown";
-}
-
 export async function runGetActionStatusToolSafeRead(
   request: GetActionStatusToolRequest,
 ): Promise<GetActionStatusToolEnvelope> {
@@ -305,7 +302,11 @@ export async function runGetActionStatusToolSafeRead(
   }
 
   if (request.repository) {
-    const status = await request.repository.getStatus(input.value.action_id, request.auth.role);
+    const status = await readActionStatusTransport({
+      actionId: input.value.action_id,
+      role: request.auth.role,
+      repository: request.repository,
+    });
     const record = status.record;
     return {
       ok: true,

@@ -1,7 +1,7 @@
-import { listSuppliers as listSuppliersViaTransport } from "../../../lib/catalog/catalog.facade";
-import type { Supplier } from "../../../lib/catalog/catalog.types";
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import { readCompareSuppliersTransport } from "./transport/compareSuppliers.transport";
+import type { AiSupplierTransportItem } from "./transport/aiToolTransportTypes";
 
 export const COMPARE_SUPPLIERS_TOOL_NAME = "compare_suppliers" as const;
 export const COMPARE_SUPPLIERS_MAX_LIMIT = 10;
@@ -53,7 +53,7 @@ export type CompareSuppliersToolAuthContext = {
 export type CompareSuppliersReader = (
   query: string,
   limit: number,
-) => Promise<readonly Supplier[]>;
+) => Promise<readonly AiSupplierTransportItem[]>;
 
 export type CompareSuppliersToolRequest = {
   auth: CompareSuppliersToolAuthContext | null;
@@ -156,14 +156,14 @@ function buildEvidenceRef(index: number): string {
   return `catalog:compare_suppliers:supplier:${index + 1}`;
 }
 
-function supplierMatchesLocation(supplier: Supplier, location: string | null): boolean {
+function supplierMatchesLocation(supplier: AiSupplierTransportItem, location: string | null): boolean {
   if (!location) return true;
   const address = normalizeOptionalText(supplier.address);
   if (!address) return false;
   return address.toLocaleLowerCase().includes(location.toLocaleLowerCase());
 }
 
-function buildSupplierSummary(supplier: Supplier): string {
+function buildSupplierSummary(supplier: AiSupplierTransportItem): string {
   const facts: string[] = [];
   if (normalizeOptionalText(supplier.specialization)) facts.push("specialization evidence");
   if (normalizeOptionalText(supplier.address)) facts.push("location evidence");
@@ -173,7 +173,7 @@ function buildSupplierSummary(supplier: Supplier): string {
 }
 
 function toSupplierCard(params: {
-  supplier: Supplier;
+  supplier: AiSupplierTransportItem;
   index: number;
   location: string | null;
 }): CompareSupplierCard {
@@ -230,9 +230,11 @@ function isAuthenticated(auth: CompareSuppliersToolAuthContext | null): auth is 
   return auth !== null && auth.userId.trim().length > 0 && auth.role !== "unknown";
 }
 
-async function defaultListSuppliers(query: string, limit: number): Promise<readonly Supplier[]> {
-  const rows = await listSuppliersViaTransport(query);
-  return rows.slice(0, limit);
+async function defaultListSuppliers(
+  query: string,
+  limit: number,
+): Promise<readonly AiSupplierTransportItem[]> {
+  return readCompareSuppliersTransport({ query, limit });
 }
 
 export async function runCompareSuppliersToolSafeRead(

@@ -1,6 +1,11 @@
-import { callWarehouseApiBffRead } from "../../../screens/warehouse/warehouse.api.bff.client";
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import {
+  readWarehouseStatusTransport,
+} from "./transport/warehouseStatus.transport";
+import type {
+  AiWarehouseStatusTransportRow,
+} from "./transport/aiToolTransportTypes";
 
 export const GET_WAREHOUSE_STATUS_TOOL_NAME = "get_warehouse_status" as const;
 export const GET_WAREHOUSE_STATUS_MAX_LIMIT = 20;
@@ -83,22 +88,7 @@ export type GetWarehouseStatusToolAuthContext = {
   role: AiUserRole;
 };
 
-export type WarehouseStatusSourceRow = {
-  material_id?: string | null;
-  code?: string | null;
-  name?: string | null;
-  uom_id?: string | null;
-  qty_on_hand?: number | string | null;
-  qty_reserved?: number | string | null;
-  qty_available?: number | string | null;
-  qty_incoming?: number | string | null;
-  incoming_quantity?: number | string | null;
-  project_id?: string | null;
-  object_name?: string | null;
-  warehouse_name?: string | null;
-  source_timestamp?: string | null;
-  updated_at?: string | null;
-};
+export type WarehouseStatusSourceRow = AiWarehouseStatusTransportRow;
 
 export type WarehouseStatusReadResult = {
   rows: readonly WarehouseStatusSourceRow[];
@@ -153,11 +143,6 @@ type InputValidationResult =
 type RoleScopeDecision =
   | { ok: true; scope: WarehouseStatusRoleScope }
   | { ok: false; message: string };
-
-type WarehouseStockScopePayload = {
-  rows?: unknown;
-  meta?: unknown;
-};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -392,61 +377,6 @@ function buildMovementSummary(params: {
   };
 }
 
-function readMetaNumber(meta: unknown, key: string): number | null {
-  if (!isRecord(meta)) return null;
-  const parsed = Number(meta[key]);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function readMetaBoolean(meta: unknown, key: string): boolean | null {
-  if (!isRecord(meta)) return null;
-  return typeof meta[key] === "boolean" ? meta[key] : null;
-}
-
-function parseBffStockPayload(payload: unknown, offset: number, limit: number): WarehouseStatusReadResult {
-  const payloadRecord = isRecord(payload) ? payload as WarehouseStockScopePayload : {};
-  const rows = Array.isArray(payloadRecord.rows)
-    ? (payloadRecord.rows.filter(isRecord) as WarehouseStatusSourceRow[])
-    : [];
-  const totalRowCount = readMetaNumber(payloadRecord.meta, "total_row_count");
-  const hasMore =
-    readMetaBoolean(payloadRecord.meta, "has_more") ??
-    (totalRowCount === null ? rows.length >= limit : offset + rows.length < totalRowCount);
-
-  return { rows, totalRowCount, hasMore };
-}
-
-async function defaultReadWarehouseStatus(params: {
-  offset: number;
-  limit: number;
-}): Promise<WarehouseStatusReadResult> {
-  const response = await callWarehouseApiBffRead({
-    operation: GET_WAREHOUSE_STATUS_ROUTE_OPERATION,
-    args: {
-      p_offset: params.offset,
-      p_limit: params.limit,
-    },
-  });
-
-  if (response.status === "unavailable") {
-    throw new Error(`warehouse status read unavailable: ${response.reason}`);
-  }
-  if (response.status === "error") {
-    throw new Error(response.error.message);
-  }
-  if (response.response.payload.kind !== "single") {
-    throw new Error("warehouse status read returned invalid payload");
-  }
-  const firstRow = Array.isArray(response.response.payload.result.data)
-    ? response.response.payload.result.data[0]
-    : null;
-  const payload = isRecord(firstRow) && Object.prototype.hasOwnProperty.call(firstRow, "payload")
-    ? firstRow.payload
-    : firstRow;
-
-  return parseBffStockPayload(payload, params.offset, params.limit);
-}
-
 function isAuthenticated(
   auth: GetWarehouseStatusToolAuthContext | null,
 ): auth is GetWarehouseStatusToolAuthContext {
@@ -504,7 +434,7 @@ export async function runGetWarehouseStatusToolSafeRead(
 
   try {
     const offset = parseCursorOffset(input.value.cursor);
-    const readWarehouseStatus = request.readWarehouseStatus ?? defaultReadWarehouseStatus;
+    const readWarehouseStatus = request.readWarehouseStatus ?? readWarehouseStatusTransport;
     const readResult = await readWarehouseStatus({ offset, limit: input.value.limit });
     const filteredRows = readResult.rows.filter((row) => rowMatchesInput(row, input.value));
     const items = filteredRows.slice(0, input.value.limit).map(toWarehouseStatusItem);

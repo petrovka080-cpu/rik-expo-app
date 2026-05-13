@@ -1,5 +1,6 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import { markDraftRequestTransportBoundary } from "./transport/draftRequest.transport";
 
 export const DRAFT_REQUEST_TOOL_NAME = "draft_request" as const;
 export const DRAFT_REQUEST_MAX_ITEMS = 50;
@@ -247,7 +248,7 @@ export async function runDraftRequestToolDraftOnly(
 
   return {
     ok: true,
-    data: {
+    data: markDraftRequestTransportBoundary({
       draft_preview: buildDraftPreview(input.value),
       items_normalized: input.value.items,
       missing_fields: input.value.missing_fields,
@@ -264,6 +265,6 @@ export async function runDraftRequestToolDraftOnly(
       supplier_confirmation: 0,
       order_created: 0,
       warehouse_mutation: 0,
-    },
+    }),
   };
 }

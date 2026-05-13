@@ -192,9 +192,10 @@ describe("get_warehouse_status safe-read tool", () => {
     expect(reads).toEqual([]);
   });
 
-  it("uses the existing warehouse API BFF read boundary and has no direct database, mutation, or model surface", () => {
+  it("uses the AI warehouse transport boundary and has no direct database, mutation, or model surface", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain('warehouse.api.bff.client"');
+    expect(source).toContain('transport/warehouseStatus.transport"');
+    expect(source).not.toContain('warehouse.api.bff.client"');
     expect(source).toContain("warehouse.api.stock.scope");
     expect(source).not.toMatch(/@supabase|auth\.admin|listUsers|service_role/i);
     expect(source).not.toMatch(/\.(from|rpc|insert|update|delete|upsert)\s*\(/);

@@ -339,6 +339,21 @@ export type AiToolPlanPolicyArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiToolTransportBoundaryArchitectureSummary = {
+  transportTypesPresent: boolean;
+  transportFilesPresent: boolean;
+  allToolsHaveTransportContract: boolean;
+  toolsUseTransportBoundary: boolean;
+  noToolDirectBffImports: boolean;
+  transportDtoOnly: boolean;
+  transportRedactionPresent: boolean;
+  noUiTransportImports: boolean;
+  noTransportProviderImports: boolean;
+  noTransportSupabaseImports: boolean;
+  boundedRequestContracts: boolean;
+  findings: readonly string[];
+};
+
 export type AgentBffRouteShellArchitectureSummary = {
   shellPresent: boolean;
   allRoutesPresent: boolean;
@@ -759,6 +774,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolRegistryArchitecture: AiToolRegistryArchitectureSummary;
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
+  aiToolTransportBoundary: AiToolTransportBoundaryArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
@@ -996,6 +1012,40 @@ const AI_TOOL_TYPES_PATH = "src/features/ai/tools/aiToolTypes.ts";
 const AI_TOOL_SCHEMAS_PATH = "src/features/ai/schemas/aiToolSchemas.ts";
 const AI_TOOL_READ_BINDINGS_PATH = "src/features/ai/tools/aiToolReadBindings.ts";
 const AI_TOOL_PLAN_POLICY_PATH = "src/features/ai/tools/aiToolPlanPolicy.ts";
+const AI_TOOL_TRANSPORT_TYPES_PATH = "src/features/ai/tools/transport/aiToolTransportTypes.ts";
+const AI_TOOL_TRANSPORT_FILES = [
+  "src/features/ai/tools/transport/searchCatalog.transport.ts",
+  "src/features/ai/tools/transport/compareSuppliers.transport.ts",
+  "src/features/ai/tools/transport/warehouseStatus.transport.ts",
+  "src/features/ai/tools/transport/financeSummary.transport.ts",
+  "src/features/ai/tools/transport/draftRequest.transport.ts",
+  "src/features/ai/tools/transport/draftReport.transport.ts",
+  "src/features/ai/tools/transport/draftAct.transport.ts",
+  "src/features/ai/tools/transport/submitForApproval.transport.ts",
+  "src/features/ai/tools/transport/getActionStatus.transport.ts",
+] as const;
+const AI_TOOL_RUNTIME_FILES = [
+  "src/features/ai/tools/searchCatalogTool.ts",
+  "src/features/ai/tools/compareSuppliersTool.ts",
+  "src/features/ai/tools/getWarehouseStatusTool.ts",
+  "src/features/ai/tools/getFinanceSummaryTool.ts",
+  "src/features/ai/tools/draftRequestTool.ts",
+  "src/features/ai/tools/draftReportTool.ts",
+  "src/features/ai/tools/draftActTool.ts",
+  "src/features/ai/tools/submitForApprovalTool.ts",
+  "src/features/ai/tools/getActionStatusTool.ts",
+] as const;
+const AI_TOOL_RUNTIME_TRANSPORT_IMPORTS: Record<(typeof AI_TOOL_RUNTIME_FILES)[number], string> = {
+  "src/features/ai/tools/searchCatalogTool.ts": "searchCatalog.transport",
+  "src/features/ai/tools/compareSuppliersTool.ts": "compareSuppliers.transport",
+  "src/features/ai/tools/getWarehouseStatusTool.ts": "warehouseStatus.transport",
+  "src/features/ai/tools/getFinanceSummaryTool.ts": "financeSummary.transport",
+  "src/features/ai/tools/draftRequestTool.ts": "draftRequest.transport",
+  "src/features/ai/tools/draftReportTool.ts": "draftReport.transport",
+  "src/features/ai/tools/draftActTool.ts": "draftAct.transport",
+  "src/features/ai/tools/submitForApprovalTool.ts": "submitForApproval.transport",
+  "src/features/ai/tools/getActionStatusTool.ts": "getActionStatus.transport",
+};
 const AGENT_BFF_ROUTE_SHELL_PATH = "src/features/ai/agent/agentBffRouteShell.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
@@ -2530,6 +2580,114 @@ export function evaluateAiToolPlanPolicyArchitectureGuardrail(params: {
   };
 }
 
+const aiToolTransportProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i;
+const aiToolTransportSupabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+const aiToolRuntimeDirectBoundaryPattern =
+  /\bfrom\s+["'][^"']*(?:\.\.\/\.\.\/\.\.\/(?:lib|screens)|\.\.\/actionLedger|\.bff\.client|catalog\.facade|catalog\.search\.service|aiActionLedgerRepository|aiActionLedgerPolicy)[^"']*["']/i;
+const aiToolUiTransportImportPattern =
+  /\bfrom\s+["'][^"']*features\/ai\/tools\/transport[^"']*["']|\bfrom\s+["'][^"']*\.\.\/tools\/transport[^"']*["']/i;
+
+export function evaluateAiToolTransportBoundaryGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiToolTransportBoundaryArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const transportTypesSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_TRANSPORT_TYPES_PATH });
+  const transportSources = AI_TOOL_TRANSPORT_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const runtimeSources = AI_TOOL_RUNTIME_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const uiSources = [
+    AI_ASSISTANT_SCREEN_PATH,
+    ...AI_COMMAND_CENTER_FILES,
+    "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+    "src/features/ai/approvalInbox/ApprovalActionCard.tsx",
+    "src/features/ai/approvalInbox/ApprovalReviewPanel.tsx",
+  ].map((relativePath) => safeReadProjectFile({ readFile, relativePath }) ?? "");
+  const combinedTransportSource = [
+    transportTypesSource ?? "",
+    ...transportSources.map((entry) => entry.source ?? ""),
+  ].join("\n");
+  const transportFilesPresent = transportSources.every((entry) => Boolean(entry.source));
+  const allToolsHaveTransportContract = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+    Boolean(transportTypesSource?.includes(`toolName: "${toolName}"`)),
+  );
+  const toolsUseTransportBoundary = runtimeSources.every((entry) => {
+    const source = entry.source ?? "";
+    const expectedTransportName =
+      AI_TOOL_RUNTIME_TRANSPORT_IMPORTS[entry.relativePath as (typeof AI_TOOL_RUNTIME_FILES)[number]];
+    return source.includes("./transport/") && source.includes(expectedTransportName);
+  });
+  const directToolImportFindings = runtimeSources
+    .filter((entry) => aiToolRuntimeDirectBoundaryPattern.test(entry.source ?? ""))
+    .map((entry) => entry.relativePath);
+  const noToolDirectBffImports = directToolImportFindings.length === 0;
+  const transportDtoOnly =
+    Boolean(transportTypesSource?.includes("dtoOnly: true")) &&
+    Boolean(transportTypesSource?.includes("rawRowsExposed: false")) &&
+    Boolean(transportTypesSource?.includes("boundedRequest: true"));
+  const transportRedactionPresent =
+    Boolean(transportTypesSource?.includes("hasForbiddenAiToolTransportKeys")) &&
+    Boolean(transportTypesSource?.includes("FORBIDDEN_TRANSPORT_KEYS"));
+  const noUiTransportImports = !uiSources.some((source) => aiToolUiTransportImportPattern.test(source));
+  const noTransportProviderImports = !aiToolTransportProviderPattern.test(combinedTransportSource);
+  const noTransportSupabaseImports = !aiToolTransportSupabasePattern.test(combinedTransportSource);
+  const boundedRequestContracts =
+    Boolean(transportTypesSource?.includes("clampAiToolTransportLimit")) &&
+    Boolean(transportTypesSource?.includes("idempotencyRequired")) &&
+    REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+      Boolean(transportTypesSource?.includes(`toolName: "${toolName}"`)),
+    );
+  const findings = [
+    ...directToolImportFindings.map((file) => `ai_tool_direct_bff_import:${file}`),
+    ...(noUiTransportImports ? [] : ["ai_tool_transport_ui_import_detected"]),
+    ...(noTransportProviderImports ? [] : ["ai_tool_transport_provider_import_detected"]),
+    ...(noTransportSupabaseImports ? [] : ["ai_tool_transport_supabase_import_detected"]),
+  ];
+  const errors = [
+    ...(transportTypesSource ? [] : [`missing_file:${AI_TOOL_TRANSPORT_TYPES_PATH}`]),
+    ...(transportFilesPresent ? [] : ["ai_tool_transport_files_missing"]),
+    ...(allToolsHaveTransportContract ? [] : ["ai_tool_transport_contract_missing"]),
+    ...(toolsUseTransportBoundary ? [] : ["ai_tool_runtime_not_using_transport_boundary"]),
+    ...(noToolDirectBffImports ? [] : ["ai_tool_direct_bff_imports_remain"]),
+    ...(transportDtoOnly ? [] : ["ai_tool_transport_dto_only_contract_missing"]),
+    ...(transportRedactionPresent ? [] : ["ai_tool_transport_redaction_missing"]),
+    ...(boundedRequestContracts ? [] : ["ai_tool_transport_bounded_request_contract_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_tool_transport_boundary",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      transportTypesPresent: Boolean(transportTypesSource),
+      transportFilesPresent,
+      allToolsHaveTransportContract,
+      toolsUseTransportBoundary,
+      noToolDirectBffImports,
+      transportDtoOnly,
+      transportRedactionPresent,
+      noUiTransportImports,
+      noTransportProviderImports,
+      noTransportSupabaseImports,
+      boundedRequestContracts,
+      findings,
+    },
+  };
+}
+
 const agentBffRouteShellLiveExecutionPattern =
   /\bexecuteTool\b|\brunTool\b|\btoolExecutor\b|\binvokeTool\b|\bfetch\s*\(|\bXMLHttpRequest\b|\.(?:from|rpc|insert|update|delete|upsert)\s*\(/i;
 const agentBffRouteShellProviderPattern =
@@ -3678,10 +3836,20 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
       readFile,
       relativePath: "src/features/ai/tools/submitForApprovalTool.ts",
     }) ?? "";
+  const submitForApprovalTransportSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/tools/transport/submitForApproval.transport.ts",
+    }) ?? "";
   const statusToolSource =
     safeReadProjectFile({
       readFile,
       relativePath: "src/features/ai/tools/getActionStatusTool.ts",
+    }) ?? "";
+  const getActionStatusTransportSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/tools/transport/getActionStatus.transport.ts",
     }) ?? "";
   const migrationSource =
     safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_MIGRATION_PATH }) ?? "";
@@ -3783,12 +3951,14 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
   const submitForApprovalPersistsPending =
     repositorySource.includes("insertPending(record, auditEvent)") &&
     repositorySource.includes('status: "pending"') &&
-    submitToolSource.includes("repository.submitForApproval") &&
+    submitToolSource.includes("submitForApprovalTransport") &&
+    submitForApprovalTransportSource.includes("repository.submitForApproval") &&
     submitToolSource.includes("persisted: true") &&
     submitToolSource.includes("local_gate_only: false") &&
     submitToolSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND");
   const getActionStatusReadsPersistedStatus =
-    statusToolSource.includes("repository.getStatus") &&
+    statusToolSource.includes("readActionStatusTransport") &&
+    getActionStatusTransportSource.includes("repository.getStatus") &&
     statusToolSource.includes("lookup_performed: true") &&
     (statusToolSource.includes("persisted: true") ||
       statusToolSource.includes("persisted: status.persistedLookup"));
@@ -6309,6 +6479,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolRegistryArchitecture = evaluateAiToolRegistryArchitectureGuardrail({ projectRoot });
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
+  const aiToolTransportBoundary = evaluateAiToolTransportBoundaryGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
@@ -6350,6 +6521,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRegistryArchitecture.check,
     aiToolReadBindingsArchitecture.check,
     aiToolPlanPolicyArchitecture.check,
+    aiToolTransportBoundary.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
     aiAppActionGraphArchitecture.check,
@@ -6392,6 +6564,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRegistryArchitecture: aiToolRegistryArchitecture.summary,
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
+    aiToolTransportBoundary: aiToolTransportBoundary.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
@@ -6453,6 +6626,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_read_bindings_no_live_execution: ${report.aiToolReadBindingsArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_tool_plan_policy_blocks_unknown: ${report.aiToolPlanPolicyArchitecture.blocksUnknownTools}`);
   console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
+  console.info(`ai_tool_transport_boundary: ${report.aiToolTransportBoundary.transportFilesPresent}`);
+  console.info(`ai_tool_transport_no_direct_bff: ${report.aiToolTransportBoundary.noToolDirectBffImports}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);

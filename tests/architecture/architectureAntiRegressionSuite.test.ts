@@ -1744,14 +1744,20 @@ describe("architecture anti-regression suite", () => {
         }
         if (relativePath === "src/features/ai/tools/submitForApprovalTool.ts") {
           return [
-            "repository.submitForApproval",
+            "submitForApprovalTransport",
             "persisted: true",
             "local_gate_only: false",
             "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
           ].join("\n");
         }
+        if (relativePath === "src/features/ai/tools/transport/submitForApproval.transport.ts") {
+          return "repository.submitForApproval";
+        }
         if (relativePath === "src/features/ai/tools/getActionStatusTool.ts") {
-          return "repository.getStatus\nlookup_performed: true\npersisted: true";
+          return "readActionStatusTransport\nlookup_performed: true\npersisted: true";
+        }
+        if (relativePath === "src/features/ai/tools/transport/getActionStatus.transport.ts") {
+          return "repository.getStatus";
         }
         if (relativePath.includes("runAiApprovalActionLedgerMaestro")) {
           return "runAiApprovalActionLedgerMaestro\nBLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND\nmutations_created: 0\nfake_local_approval: false";

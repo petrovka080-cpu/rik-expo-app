@@ -1,5 +1,6 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import { markDraftReportTransportBoundary } from "./transport/draftReport.transport";
 
 export const DRAFT_REPORT_TOOL_NAME = "draft_report" as const;
 export const DRAFT_REPORT_MAX_EVIDENCE_REFS = 20;
@@ -273,7 +274,7 @@ export async function runDraftReportToolDraftOnly(
 
   return {
     ok: true,
-    data: {
+    data: markDraftReportTransportBoundary({
       draft_preview: buildDraftPreview(input.value),
       report_kind: input.value.report_kind,
       draft_sections: sections,
@@ -300,6 +301,6 @@ export async function runDraftReportToolDraftOnly(
       report_published: 0,
       finance_mutation: 0,
       raw_finance_rows_exposed: false,
-    },
+    }),
   };
 }

@@ -1,7 +1,6 @@
-import { callDirectorFinanceBffRpc } from "../../../screens/director/director.finance.bff.client";
-import type { DirectorFinanceBffRequestDto } from "../../../screens/director/director.finance.bff.contract";
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import { readFinanceSummaryTransport } from "./transport/financeSummary.transport";
 
 export const GET_FINANCE_SUMMARY_TOOL_NAME = "get_finance_summary" as const;
 export const GET_FINANCE_SUMMARY_ROUTE_OPERATION = "director.finance.rpc.scope" as const;
@@ -190,47 +189,10 @@ function readArrayCount(record: Record<string, unknown>, keys: readonly string[]
   return 0;
 }
 
-function buildDirectorFinanceRequest(
-  input: NormalizedGetFinanceSummaryInput,
-): DirectorFinanceBffRequestDto {
-  if (input.scope === "supplier") {
-    return {
-      operation: "director.finance.supplier_scope.v2",
-      args: {
-        p_supplier: input.entityId ?? "",
-        p_object_id: undefined,
-        p_from: input.periodStart,
-        p_to: input.periodEnd,
-        p_kind_name: undefined,
-        p_due_days: 7,
-        p_critical_days: 14,
-      },
-    };
-  }
-
-  return {
-    operation: "director.finance.summary.v2",
-    args: {
-      p_object_id: input.scope === "project" ? input.entityId ?? undefined : undefined,
-      p_date_from: input.periodStart ?? undefined,
-      p_date_to: input.periodEnd ?? undefined,
-    },
-  };
-}
-
 async function defaultReadFinanceSummary(params: {
   input: NormalizedGetFinanceSummaryInput;
 }): Promise<FinanceSummaryReadResult> {
-  const response = await callDirectorFinanceBffRpc(buildDirectorFinanceRequest(params.input));
-
-  if (response.status === "unavailable") {
-    throw new Error(`finance summary read unavailable: ${response.reason}`);
-  }
-  if (response.status === "error") {
-    throw new Error(response.error.message);
-  }
-
-  return { payload: response.payload };
+  return readFinanceSummaryTransport(params);
 }
 
 function buildEvidenceRefs(params: {

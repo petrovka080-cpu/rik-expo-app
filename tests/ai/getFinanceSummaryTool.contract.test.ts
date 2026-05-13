@@ -190,9 +190,10 @@ describe("get_finance_summary safe-read tool", () => {
     expect(reads).toEqual([]);
   });
 
-  it("uses the existing director finance BFF read boundary and has no direct database, raw-row output, mutation, or model surface", () => {
+  it("uses the AI finance transport boundary and has no direct database, raw-row output, mutation, or model surface", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain('director.finance.bff.client"');
+    expect(source).toContain('transport/financeSummary.transport"');
+    expect(source).not.toContain('director.finance.bff.client"');
     expect(source).toContain("director.finance.rpc.scope");
     expect(source).not.toMatch(/@supabase|auth\.admin|listUsers|service_role/i);
     expect(source).not.toMatch(/\.(from|rpc|insert|update|delete|upsert)\s*\(/);

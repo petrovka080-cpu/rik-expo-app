@@ -1,11 +1,10 @@
 import type { AiDomain, AiUserRole } from "../policy/aiRolePolicy";
 import type { AiActionType } from "../policy/aiRiskPolicy";
 import {
-  createAiActionLedgerRepository,
   type AiActionLedgerRepository,
-} from "../actionLedger/aiActionLedgerRepository";
-import type { AiActionLedgerActionType } from "../actionLedger/aiActionLedgerTypes";
-import { stableHashOpaqueId } from "../actionLedger/aiActionLedgerPolicy";
+  actionTypeForApprovalTransportTarget,
+  submitForApprovalTransport,
+} from "./transport/submitForApproval.transport";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 
 export const SUBMIT_FOR_APPROVAL_TOOL_NAME = "submit_for_approval" as const;
@@ -145,13 +144,6 @@ function normalizeEvidenceRefs(value: unknown): string[] {
     .slice(0, SUBMIT_FOR_APPROVAL_MAX_EVIDENCE_REFS);
 }
 
-function actionTypeForTarget(target: SubmitForApprovalTarget): AiActionLedgerActionType {
-  if (target === "request") return "submit_request";
-  if (target === "supplier_selection") return "confirm_supplier";
-  if (target === "payment_status_change") return "change_payment_status";
-  return "send_document";
-}
-
 function normalizeInput(input: unknown): InputValidationResult {
   if (!isRecord(input)) {
     return { ok: false, message: "submit_for_approval input must be an object" };
@@ -246,26 +238,14 @@ export async function runSubmitForApprovalToolGate(
     };
   }
 
-  const actionType = actionTypeForTarget(input.value.approval_target);
-  const repository = request.repository ?? createAiActionLedgerRepository(null);
-  const action = await repository.submitForApproval({
+  const actionType = actionTypeForApprovalTransportTarget(input.value.approval_target);
+  const action = await submitForApprovalTransport({
+    auth: request.auth,
+    input: input.value,
+    organizationId: request.organizationId,
     actionType,
-    screenId: input.value.screen_id,
-    domain: input.value.domain,
-    requestedByUserIdHash: stableHashOpaqueId("user", request.auth.userId),
-    organizationIdHash: stableHashOpaqueId(
-      "org",
-      request.organizationId ?? `${request.auth.role}:organization_scope`,
-    ),
-    summary: input.value.summary,
-    redactedPayload: {
-      draft_id: input.value.draft_id,
-      approval_target: input.value.approval_target,
-      approval_reason: input.value.approval_reason,
-    },
-    evidenceRefs: input.value.evidence_refs,
-    idempotencyKey: input.value.idempotency_key,
-  }, request.auth.role);
+    repository: request.repository,
+  });
 
   if (action.status !== "pending") {
     return {

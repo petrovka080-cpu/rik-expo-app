@@ -238,6 +238,12 @@ const isApprovedAiDraftReportToolPatch = (file: string) =>
     "tests/ai/draftReportTool.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
+  [
+    "src/features/ai/tools/transport/draftReport.transport.ts",
+    "tests/perf/performance-budget.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch = (file: string) =>
   [
     "scripts/foreman_warehouse_pdf_android_runtime_verify.ts",
@@ -339,6 +345,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle123BuyerRepoStorageTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle126SupplierFilesStorageTransportBoundaryPatch(file) &&
         !isApprovedAiDraftReportToolPatch(file) &&
+        !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(

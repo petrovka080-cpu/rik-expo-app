@@ -1,5 +1,6 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import { markDraftActTransportBoundary } from "./transport/draftAct.transport";
 
 export const DRAFT_ACT_TOOL_NAME = "draft_act" as const;
 export const DRAFT_ACT_MAX_WORK_ITEMS = 50;
@@ -349,7 +350,7 @@ export async function runDraftActToolDraftOnly(
 
   return {
     ok: true,
-    data: {
+    data: markDraftActTransportBoundary({
       draft_preview: buildDraftPreview(input.value),
       act_kind: input.value.act_kind,
       draft_sections: draftSections,
@@ -379,6 +380,6 @@ export async function runDraftActToolDraftOnly(
       contractor_confirmation: 0,
       payment_mutation: 0,
       warehouse_mutation: 0,
-    },
+    }),
   };
 }

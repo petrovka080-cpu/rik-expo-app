@@ -160,9 +160,10 @@ describe("search_catalog safe-read tool", () => {
     expect(reads).toEqual([]);
   });
 
-  it("uses the existing catalog read transport boundary and has no direct database or mutation surface", () => {
+  it("uses the AI catalog transport boundary and has no direct database or mutation surface", () => {
     const source = fs.readFileSync(sourcePath, "utf8");
-    expect(source).toContain('catalog.search.service"');
+    expect(source).toContain('transport/searchCatalog.transport"');
+    expect(source).not.toContain('catalog.search.service"');
     expect(source).not.toMatch(/@supabase|auth\.admin|listUsers|service_role/i);
     expect(source).not.toMatch(/\.(from|rpc|insert|update|delete|upsert)\s*\(/);
     expect(source).not.toMatch(/create_order|confirm_supplier|change_warehouse_status|change_payment_status/i);
