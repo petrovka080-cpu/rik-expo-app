@@ -1,0 +1,19 @@
+{
+  "final_status": "BLOCKED_DB_URL_NOT_APPROVED",
+  "android_runtime_smoke": "PASS",
+  "emulator_e2e": "NOT_RUN_DB_URL_NOT_AVAILABLE_IN_AGENT_PROCESS",
+  "ledger_runtime_e2e_previous_status": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+  "current_agent_inspect_status": "BLOCKED_DB_URL_NOT_APPROVED",
+  "history_repair_used": false,
+  "reapply_used": false,
+  "mutations_created": 0,
+  "fake_approval": false,
+  "fake_status": false,
+  "fake_execution": false,
+  "seed_used": false,
+  "auth_admin_used": false,
+  "list_users_used": false,
+  "service_role_used_from_client": false,
+  "secrets_printed": false,
+  "exact_reason": "Android smoke passed, but approval ledger E2E requires DB inspect/repair/schema-cache visibility first."
+}

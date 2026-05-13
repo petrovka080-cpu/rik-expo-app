@@ -3,7 +3,7 @@
 final_status: BLOCKED_LEDGER_RPC_NOT_DEPLOYED
 previous_blocker: BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND
 previous_blocker_closed: false
-migration_preflight_status: BLOCKED_DB_PREFLIGHT_FAILED
+migration_preflight_status: GREEN_AI_ACTION_LEDGER_MIGRATION_PREFLIGHT_READY
 migration_applied: false
 migration_verified: false
 persistent_backend: false

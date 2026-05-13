@@ -1,0 +1,23 @@
+{
+  "wave": "S_DB_03_AI_ACTION_LEDGER_MIGRATION_HISTORY_RECONCILE",
+  "inspect_script": "scripts/db/inspectAiActionLedgerMigrationState.ts",
+  "history_repair_script": "scripts/db/repairAiActionLedgerMigrationHistory.ts",
+  "schema_cache_verify_script": "scripts/db/verifyAiActionLedgerRpcSchemaCache.ts",
+  "partial_forward_fix_script": "scripts/db/forwardFixAiActionLedgerPartialState.ts",
+  "migration": "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
+  "tests": [
+    "tests/db/aiActionLedgerMigrationInspect.contract.test.ts",
+    "tests/db/aiActionLedgerMigrationHistoryRepair.contract.test.ts",
+    "tests/db/aiActionLedgerRpcSchemaCache.contract.test.ts",
+    "tests/db/aiActionLedgerPartialStateForwardFix.contract.test.ts"
+  ],
+  "accepted_db_url_env_keys": [
+    "AI_ACTION_LEDGER_DATABASE_URL",
+    "DATABASE_URL",
+    "SUPABASE_DATABASE_URL",
+    "SUPABASE_DB_URL",
+    "POSTGRES_URL"
+  ],
+  "secrets_printed": false,
+  "raw_rows_printed": false
+}
