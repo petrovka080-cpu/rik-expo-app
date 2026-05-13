@@ -410,6 +410,7 @@ function buildBaseReport(
   gates: ReleaseGateResult[],
   changedFiles: string[],
   repo: ReleaseRepoState,
+  approvalEnv: NodeJS.ProcessEnv,
 ): ReleaseGuardReport {
   const configSummary = loadReleaseConfigSummary();
   const packageJsonMutationKind = readPackageJsonMutationKind(args.range ?? "HEAD", changedFiles);
@@ -420,7 +421,7 @@ function buildBaseReport(
   const migrationPolicy = buildReleaseGuardMigrationPolicy({
     changedFiles,
     readFile: readCurrentFile,
-    approvalEnv: process.env,
+    approvalEnv,
   });
   const targetChannel = assertCanonicalChannel(args.channel);
   const expectedBranch = targetChannel ? getExpectedReleaseBranch(targetChannel) : null;
@@ -512,8 +513,9 @@ function runRequiredGates(): ReleaseGateResult[] {
 }
 
 function main() {
-  loadAgentOwnerFlagsIntoEnv(process.env, PROJECT_ROOT);
   const args = parseArgs(process.argv.slice(2));
+  const approvalEnv = { ...process.env };
+  loadAgentOwnerFlagsIntoEnv(approvalEnv, PROJECT_ROOT);
   const repo = readRepoState();
   const commitRange = resolveReleaseGuardCommitRange({
     explicitRange: args.range,
@@ -522,7 +524,7 @@ function main() {
   });
   const changedFiles = readChangedFiles(commitRange);
   const gates = runRequiredGates();
-  const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles, repo);
+  const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles, repo, approvalEnv);
 
   if (baseReport.readiness.status === "fail") {
     writeReport(args.reportFile, baseReport);
