@@ -19,6 +19,9 @@ export type AiActionLedgerPostgrestExposureCloseoutStatus =
   | "BLOCKED_POSTGREST_EXPOSURE_DIAGNOSTIC_FAILED"
   | "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED"
   | "BLOCKED_POSTGREST_NETWORK_ERROR"
+  | "BLOCKED_POSTGREST_RPC_AMBIGUOUS_OVERLOAD"
+  | "BLOCKED_OLD_STUB_OVERLOADS_PRESENT"
+  | "BLOCKED_POSTGREST_SIGNATURE_AWARE_VERIFY_FAILED"
   | "BLOCKED_APPROVAL_LEDGER_E2E_NOT_GREEN"
   | "BLOCKED_SUPABASE_MANAGED_POSTGREST_RESTART_OR_SUPPORT_REQUIRED";
 
@@ -42,6 +45,13 @@ export type AiActionLedgerPostgrestExposureCloseoutArtifact = {
   postgrest_rpc_callable: boolean;
   postgrest_visibility_status: AiActionLedgerPostgrestRpcVisibility["status"] | null;
   postgrest_error: string | null;
+  signature_aware_rpc_verify: boolean;
+  all_6_rpc_signature_aware_probe_ok: boolean;
+  pgrst202: boolean;
+  pgrst203: boolean;
+  old_stub_overloads: boolean;
+  active_rpc_count: number | null;
+  authenticated_jwt_used: boolean;
   manual_dashboard_reload_required: boolean;
   approval_ledger_e2e: "PASS" | "PASS_OR_EXACT_BLOCKER" | string;
   old_apply_used: false;
@@ -88,6 +98,7 @@ const REQUIRED_LEDGER_RPC_NAMES = [
   AI_ACTION_LEDGER_RPC_FUNCTIONS.approve,
   AI_ACTION_LEDGER_RPC_FUNCTIONS.reject,
   AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved,
+  AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply,
 ] as const;
 const POLL_ATTEMPTS = 10;
 const POLL_INTERVAL_MS = 5000;
@@ -149,8 +160,16 @@ function writeArtifacts(artifact: AiActionLedgerPostgrestExposureCloseoutArtifac
       `notification_queue_nudge_executed: ${String(artifact.notification_queue_nudge_executed)}`,
       `postgrest_reload_notified: ${String(artifact.postgrest_reload_notified)}`,
       `postgrest_rpc_visible: ${String(artifact.postgrest_rpc_visible)}`,
+      `postgrest_rpc_callable: ${String(artifact.postgrest_rpc_callable)}`,
       `postgrest_visibility_status: ${artifact.postgrest_visibility_status ?? "null"}`,
       `postgrest_error: ${artifact.postgrest_error ?? "null"}`,
+      `signature_aware_rpc_verify: ${String(artifact.signature_aware_rpc_verify)}`,
+      `all_6_rpc_signature_aware_probe_ok: ${String(artifact.all_6_rpc_signature_aware_probe_ok)}`,
+      `pgrst202: ${String(artifact.pgrst202)}`,
+      `pgrst203: ${String(artifact.pgrst203)}`,
+      `old_stub_overloads: ${String(artifact.old_stub_overloads)}`,
+      `active_rpc_count: ${String(artifact.active_rpc_count)}`,
+      `authenticated_jwt_used: ${String(artifact.authenticated_jwt_used)}`,
       `manual_dashboard_reload_required: ${String(artifact.manual_dashboard_reload_required)}`,
       `approval_ledger_e2e: ${artifact.approval_ledger_e2e}`,
       "old_apply_used: false",
@@ -195,6 +214,13 @@ function artifact(
     postgrest_rpc_callable: false,
     postgrest_visibility_status: null,
     postgrest_error: null,
+    signature_aware_rpc_verify: false,
+    all_6_rpc_signature_aware_probe_ok: false,
+    pgrst202: false,
+    pgrst203: false,
+    old_stub_overloads: false,
+    active_rpc_count: null,
+    authenticated_jwt_used: false,
     manual_dashboard_reload_required: false,
     approval_ledger_e2e: "PASS_OR_EXACT_BLOCKER",
     old_apply_used: false,
@@ -281,6 +307,24 @@ function isPostgrestVisible(status: AiActionLedgerPostgrestRpcVisibility["status
   );
 }
 
+function isStrictSignatureAwareGreen(visibility: AiActionLedgerPostgrestRpcVisibility | null): boolean {
+  return Boolean(
+    visibility &&
+      visibility.status === "GREEN_RPC_VISIBLE_AND_CALLABLE" &&
+      visibility.ledger_rpc_visible &&
+      visibility.postgrestRpcCallable &&
+      visibility.signatureAwareRpcProbeChecked &&
+      visibility.all_6_rpc_signature_aware_probe_ok &&
+      visibility.active_rpc_count === REQUIRED_LEDGER_RPC_NAMES.length &&
+      visibility.functions_in_public_schema &&
+      visibility.authenticated_execute_grant_ok &&
+      visibility.authenticated_jwt_used &&
+      !visibility.pgrst202 &&
+      !visibility.pgrst203 &&
+      !visibility.old_stub_overloads,
+  );
+}
+
 function postgrestErrorFromVisibility(visibility: AiActionLedgerPostgrestRpcVisibility | null): string | null {
   if (!visibility) return null;
   return visibility.postgrestErrorCode ?? visibility.status;
@@ -297,7 +341,8 @@ async function pollPostgrestVisibility(
     }
     lastVisibility = await verifyAiActionLedgerPostgrestRpcVisibility(env, root);
     if (
-      isPostgrestVisible(lastVisibility.status) ||
+      isStrictSignatureAwareGreen(lastVisibility) ||
+      lastVisibility.status === "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED" ||
       lastVisibility.status === "BLOCKED_POSTGREST_URL_OR_KEY_MISSING" ||
       lastVisibility.status === "BLOCKED_POSTGREST_NETWORK_ERROR"
     ) {
@@ -417,6 +462,13 @@ export async function closeoutAiActionLedgerPostgrestExposure(
     postgrest_rpc_callable: Boolean(afterNotifyVisibility?.postgrestRpcCallable),
     postgrest_visibility_status: afterNotifyVisibility?.status ?? null,
     postgrest_error: postgrestErrorFromVisibility(afterNotifyVisibility),
+    signature_aware_rpc_verify: Boolean(afterNotifyVisibility?.signatureAwareRpcProbeChecked),
+    all_6_rpc_signature_aware_probe_ok: Boolean(afterNotifyVisibility?.all_6_rpc_signature_aware_probe_ok),
+    pgrst202: Boolean(afterNotifyVisibility?.pgrst202),
+    pgrst203: Boolean(afterNotifyVisibility?.pgrst203),
+    old_stub_overloads: Boolean(afterNotifyVisibility?.old_stub_overloads),
+    active_rpc_count: afterNotifyVisibility?.active_rpc_count ?? null,
+    authenticated_jwt_used: Boolean(afterNotifyVisibility?.authenticated_jwt_used),
   };
 
   if (!exposureProof?.authenticatedExecuteGrantOk) {
@@ -443,6 +495,22 @@ export async function closeoutAiActionLedgerPostgrestExposure(
     );
   }
 
+  if (afterNotifyVisibility.old_stub_overloads) {
+    return artifact(
+      "BLOCKED_OLD_STUB_OVERLOADS_PRESENT",
+      "Obsolete action-ledger RPC overloads are still present; closeout refuses a green state because they can cause PGRST203.",
+      common,
+    );
+  }
+
+  if (afterNotifyVisibility.pgrst203) {
+    return artifact(
+      "BLOCKED_POSTGREST_RPC_AMBIGUOUS_OVERLOAD",
+      afterNotifyVisibility.exactReason ?? "PostgREST returned PGRST203 for a signature-aware ledger RPC probe.",
+      common,
+    );
+  }
+
   if (!isPostgrestVisible(afterNotifyVisibility.status)) {
     const e2e = await runAiApprovalLedgerPersistenceMaestro();
     return artifact(
@@ -453,6 +521,15 @@ export async function closeoutAiActionLedgerPostgrestExposure(
         manual_dashboard_reload_required: true,
         approval_ledger_e2e: e2e.final_status,
       },
+    );
+  }
+
+  if (!isStrictSignatureAwareGreen(afterNotifyVisibility)) {
+    return artifact(
+      "BLOCKED_POSTGREST_SIGNATURE_AWARE_VERIFY_FAILED",
+      afterNotifyVisibility.exactReason ??
+        `Signature-aware ledger RPC verification did not reach strict callable green: ${afterNotifyVisibility.status}.`,
+      common,
     );
   }
 
@@ -475,7 +552,6 @@ export async function closeoutAiActionLedgerPostgrestExposure(
     {
       ...common,
       postgrest_rpc_visible: true,
-      postgrest_rpc_callable: true,
       approval_ledger_e2e: "PASS",
     },
   );
