@@ -373,6 +373,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "observability", "aiTraceRedaction.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceExportPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic15RoleCopilotRuntimePackFiles = [
+      path.join(SRC, "features", "ai", "roles", "aiRoleCopilotProfiles.ts"),
+      path.join(SRC, "features", "ai", "roles", "aiRoleCopilotPolicy.ts"),
+      path.join(SRC, "features", "ai", "roles", "aiRoleCopilotRuntime.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1138,6 +1143,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
+    expect(sAiMagic15RoleCopilotRuntimePackFiles).toBeLessThanOrEqual(3);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1307,6 +1313,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
         sAiMagic13WorkdayLiveEvidenceBridgeFiles -
         sAiObs01TraceObservabilityFiles -
+        sAiMagic15RoleCopilotRuntimePackFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

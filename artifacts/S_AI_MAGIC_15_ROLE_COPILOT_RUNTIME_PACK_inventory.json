@@ -1,0 +1,48 @@
+{
+  "wave": "S_AI_MAGIC_15_ROLE_COPILOT_RUNTIME_PACK",
+  "canonical_wave_closeout": true,
+  "profiles": "src/features/ai/roles/aiRoleCopilotProfiles.ts",
+  "policy": "src/features/ai/roles/aiRoleCopilotPolicy.ts",
+  "runtime": "src/features/ai/roles/aiRoleCopilotRuntime.ts",
+  "runtime_runner": "scripts/e2e/runAiRoleCopilotRuntimePackMaestro.ts",
+  "developer_control_runner": "scripts/e2e/runDeveloperControlFullAccessMaestro.ts",
+  "android_runtime_runner": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "required_roles": [
+    "director",
+    "control",
+    "buyer",
+    "foreman",
+    "accountant",
+    "warehouse",
+    "contractor"
+  ],
+  "required_flags": [
+    "S_AI_MAGIC_ROADMAP_APPROVED",
+    "S_AI_MAGIC_REQUIRE_ANDROID_EMULATOR_PROOF",
+    "S_AI_MAGIC_REQUIRE_ROLE_SCOPE",
+    "S_AI_MAGIC_REQUIRE_APPROVAL_FOR_HIGH_RISK",
+    "S_AI_DEVELOPER_CONTROL_FULL_ACCESS_APPROVED",
+    "S_AI_SINGLE_OWNER_ACCOUNT_MODE_APPROVED",
+    "S_AI_ALLOW_SAFE_READ",
+    "S_AI_ALLOW_DRAFT_PREVIEW",
+    "S_AI_ALLOW_SUBMIT_FOR_APPROVAL",
+    "S_AI_NO_FAKE_GREEN",
+    "S_AI_NO_SECRETS_PRINTING"
+  ],
+  "contract": {
+    "contractId": "ai_role_copilot_runtime_v1",
+    "backendFirst": true,
+    "roleScoped": true,
+    "developerControlSingleAccountSupported": true,
+    "roleIsolationE2eClaimed": false,
+    "roleIsolationContractProof": true,
+    "mutationCount": 0,
+    "dbWrites": 0,
+    "externalLiveFetch": false,
+    "providerCalled": false,
+    "fakeRoleIsolation": false,
+    "fakeAiAnswer": false,
+    "hardcodedAiResponse": false
+  },
+  "secrets_printed": false
+}

@@ -1,0 +1,10 @@
+{
+  "wave": "S_AI_MAGIC_15_ROLE_COPILOT_RUNTIME_PACK",
+  "android_runtime_smoke": "PASS",
+  "developer_control_e2e": "PASS",
+  "emulator_runtime_proof": "PASS",
+  "roles_checked": 7,
+  "role_isolation_e2e_claimed": false,
+  "fake_emulator_pass": false,
+  "secrets_printed": false
+}
