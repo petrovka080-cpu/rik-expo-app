@@ -1,5 +1,5 @@
 {
-  "final_status": "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED",
+  "final_status": "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
   "previous_blocker": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
   "previous_blocker_closed": false,
   "user_reported_inspect_before": {
@@ -10,19 +10,19 @@
     "policies_exist": false,
     "postgrest_schema_cache_rpc_visible": false
   },
-  "current_agent_db_url_env": "missing",
-  "current_agent_forward_fix_status": "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED",
+  "current_agent_db_url_env": "present",
+  "current_agent_forward_fix_status": "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
   "state_f_supported": true,
   "state_f_expected_for_user_reported_facts": true,
   "forward_fix_package_created": true,
-  "forward_fix_applied": false,
-  "forward_fix_used": false,
+  "forward_fix_applied": true,
+  "forward_fix_used": true,
   "blind_reapply_used": false,
   "history_repair_used": false,
   "destructive_migration": false,
   "unbounded_dml": false,
-  "indexes_exist_after": false,
-  "policies_exist_after": false,
+  "indexes_exist_after": true,
+  "policies_exist_after": true,
   "postgrest_schema_cache_rpc_visible_after": false,
   "submit_for_approval_rpc_visible": false,
   "get_status_rpc_visible": false,
@@ -33,7 +33,8 @@
   "secrets_printed": false,
   "android_runtime_smoke": "PASS",
   "emulator_e2e": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
-  "blocker": "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED",
+  "direct_sql_functions_exist": true,
+  "blocker": "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
   "secondary_blocker": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
-  "exact_reason": "The forward-fix runner and idempotent SQL are ready, but this agent process does not have AI_ACTION_LEDGER_DATABASE_URL, so bounded DB apply/schema-cache verification cannot run here. Android smoke passed; approval ledger E2E still confirms RPC functions are not deployed in the PostgREST schema cache."
+  "exact_reason": "The bounded forward-fix applied successfully and verified indexes/policies/functions, but PostgREST schema cache still does not expose every ledger RPC. Android smoke passed; approval ledger E2E still confirms RPC functions are not deployed in the PostgREST schema cache."
 }

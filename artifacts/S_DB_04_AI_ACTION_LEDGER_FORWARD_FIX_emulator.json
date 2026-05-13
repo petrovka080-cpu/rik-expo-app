@@ -1,9 +1,9 @@
 {
-  "final_status": "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED",
+  "final_status": "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
   "android_runtime_smoke": "PASS",
   "emulator_e2e": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
   "ledger_runtime_e2e_blocker": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
-  "forward_fix_applied": false,
+  "forward_fix_applied": true,
   "mutations_created": 0,
   "fake_approval": false,
   "fake_status": false,
@@ -13,5 +13,5 @@
   "list_users_used": false,
   "service_role_used_from_client": false,
   "secrets_printed": false,
-  "exact_reason": "Android smoke passed. Approval ledger E2E was run and still confirms the RPC functions are not deployed in the PostgREST schema cache."
+  "exact_reason": "Android smoke passed after the bounded forward-fix applied. Approval ledger E2E was run and still confirms the RPC functions are not deployed in the PostgREST schema cache."
 }

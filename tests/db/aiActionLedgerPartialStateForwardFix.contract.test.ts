@@ -75,4 +75,15 @@ describe("AI action ledger partial state forward-fix package", () => {
     expect(source).not.toMatch(/\bselect\s+\*/i);
     expect(source).not.toMatch(/\bservice_role\b|\bauth\.admin\b|\blistUsers\b/i);
   });
+
+  it("classifies schema-cache lag separately from SQL apply failure", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "scripts", "db", "forwardFixAiActionLedgerPartialState.ts"),
+      "utf8",
+    );
+
+    expect(source).toContain("BLOCKED_POSTGREST_SCHEMA_CACHE_STALE");
+    expect(source).toContain("forwardFixApplied: true");
+    expect(source).toContain("postgrestSchemaCacheRpcVisibleAfter: false");
+  });
 });

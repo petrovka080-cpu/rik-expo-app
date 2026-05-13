@@ -18,7 +18,8 @@ import {
 export type AiActionLedgerPartialStateForwardFixStatus =
   | "GREEN_AI_ACTION_LEDGER_FORWARD_FIX_APPLIED"
   | "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED"
-  | "BLOCKED_FORWARD_FIX_APPLY_FAILED";
+  | "BLOCKED_FORWARD_FIX_APPLY_FAILED"
+  | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE";
 
 export type AiActionLedgerPartialStateForwardFix = {
   status: AiActionLedgerPartialStateForwardFixStatus;
@@ -49,6 +50,7 @@ export type AiActionLedgerPartialStateForwardFix = {
   blocker:
     | "BLOCKED_FORWARD_FIX_PREFLIGHT_FAILED"
     | "BLOCKED_FORWARD_FIX_APPLY_FAILED"
+    | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
     | null;
   exactReason: string | null;
 };
@@ -204,17 +206,12 @@ export async function runAiActionLedgerPartialStateForwardFix(
   }
 
   const after = await inspectAiActionLedgerMigrationState(env, projectRoot);
-  if (
-    after.status !== "GREEN_AI_ACTION_LEDGER_MIGRATION_STATE_INSPECTED" ||
-    !after.indexesExist ||
-    !after.policiesExist ||
-    !after.postgrestSchemaCacheRpcVisible
-  ) {
+  if (after.status !== "GREEN_AI_ACTION_LEDGER_MIGRATION_STATE_INSPECTED" || !after.indexesExist || !after.policiesExist) {
     return {
       ...blockedResult(
         before,
         "present",
-        "AI action ledger forward-fix applied, but indexes, policies, or PostgREST schema-cache visibility did not verify.",
+        "AI action ledger forward-fix applied, but indexes or policies did not verify.",
       ),
       status: "BLOCKED_FORWARD_FIX_APPLY_FAILED",
       forwardFixPackageCreated: true,
@@ -223,6 +220,23 @@ export async function runAiActionLedgerPartialStateForwardFix(
       policiesExistAfter: Boolean(after.policiesExist),
       postgrestSchemaCacheRpcVisibleAfter: Boolean(after.postgrestSchemaCacheRpcVisible),
       blocker: "BLOCKED_FORWARD_FIX_APPLY_FAILED",
+    };
+  }
+
+  if (!after.postgrestSchemaCacheRpcVisible) {
+    return {
+      ...blockedResult(
+        before,
+        "present",
+        "AI action ledger forward-fix applied and DB objects verified, but PostgREST schema cache does not expose every RPC.",
+      ),
+      status: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
+      forwardFixPackageCreated: true,
+      forwardFixApplied: true,
+      indexesExistAfter: true,
+      policiesExistAfter: true,
+      postgrestSchemaCacheRpcVisibleAfter: false,
+      blocker: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
     };
   }
 
