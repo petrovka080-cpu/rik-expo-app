@@ -6,6 +6,7 @@ import {
 import { type AiDomain, type AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "../tools/aiToolPlanPolicy";
 import type { AiToolName } from "../tools/aiToolTypes";
+import { buildAiWorkdayTasks } from "../workday/aiWorkdayTaskEngine";
 import {
   AI_COMMAND_CENTER_RUNTIME_BUDGET,
   enforceAiCommandCenterCardBudget,
@@ -22,6 +23,8 @@ import {
   type AiCommandCenterCardView,
   type AiCommandCenterSectionId,
   type AiCommandCenterSectionView,
+  type AiCommandCenterWorkdayTaskView,
+  type AiCommandCenterWorkdayView,
   type AiCommandCenterViewModel,
   type BuildAiCommandCenterViewModelInput,
 } from "./AiCommandCenterTypes";
@@ -69,6 +72,13 @@ const PRIORITY_LABELS: Record<AiCommandCenterCardView["priority"], string> = {
   high: "\u0412\u044b\u0441\u043e\u043a\u0438\u0439",
   normal: "\u041d\u043e\u0440\u043c\u0430",
   low: "\u041d\u0438\u0437\u043a\u0438\u0439",
+};
+
+const WORKDAY_MODE_LABELS: Record<AiCommandCenterWorkdayTaskView["suggestedMode"], string> = {
+  safe_read: "safe_read",
+  draft_only: "draft_only",
+  approval_required: "approval_required",
+  forbidden: "forbidden",
 };
 
 const PRIORITY_SORT: Record<AiCommandCenterCardView["priority"], number> = {
@@ -126,6 +136,19 @@ function emptyViewModel(params: {
   errorMessage: string | null;
   blockedReason?: string | null;
 }): AiCommandCenterViewModel {
+  const workday: AiCommandCenterWorkdayView = {
+    endpoint: "GET /agent/workday/tasks",
+    status: params.status === "blocked" || params.status === "denied" ? "blocked" : "empty",
+    emptyReason: params.blockedReason ?? params.errorMessage,
+    cards: [],
+    roleScoped: true,
+    evidenceRequired: true,
+    mutationCount: 0,
+    dbWrites: 0,
+    externalLiveFetch: false,
+    fakeCards: false,
+  };
+
   return {
     contractId: "ai_command_center_view_model_v1",
     documentType: "ai_command_center",
@@ -163,6 +186,7 @@ function emptyViewModel(params: {
       title: SECTION_TITLES[id],
       cards: [],
     })),
+    workday,
     source: "bff:agent_task_stream_unavailable",
   };
 }
@@ -385,6 +409,41 @@ function buildSections(
   }));
 }
 
+function buildWorkdayView(input: BuildAiCommandCenterViewModelInput): AiCommandCenterWorkdayView {
+  const result = buildAiWorkdayTasks({
+    auth: input.auth,
+    screenId: "ai.command_center",
+    sourceCards: input.sourceCards,
+    runtimeEvidence: input.runtimeEvidence,
+    limit: 5,
+  });
+  const cards: AiCommandCenterWorkdayTaskView[] = result.cards.map((card) => ({
+    taskId: card.taskId,
+    title: card.title,
+    summary: card.summary,
+    riskLabel: card.riskLevel,
+    evidenceLabel: `${card.evidenceRefs.length} evidence`,
+    nextActionLabel: `${WORKDAY_MODE_LABELS[card.suggestedMode]}:${card.nextAction}`,
+    suggestedToolId: card.suggestedToolId,
+    suggestedMode: card.suggestedMode,
+    approvalRequired: card.approvalRequired,
+    mutationCount: 0,
+  }));
+
+  return {
+    endpoint: "GET /agent/workday/tasks",
+    status: result.status,
+    emptyReason: result.emptyState?.reason ?? result.blockedReason,
+    cards,
+    roleScoped: true,
+    evidenceRequired: true,
+    mutationCount: 0,
+    dbWrites: 0,
+    externalLiveFetch: false,
+    fakeCards: false,
+  };
+}
+
 export function resolveAiCommandCenterActionBoundary(params: {
   card: AiCommandCenterCardView;
   action: AiCommandCenterAction;
@@ -452,6 +511,7 @@ export function buildAiCommandCenterViewModel(
     ),
   ));
   const sections = buildSections(cards);
+  const workday = buildWorkdayView(input);
 
   return {
     contractId: "ai_command_center_view_model_v1",
@@ -490,6 +550,7 @@ export function buildAiCommandCenterViewModel(
     errorMessage: null,
     cards,
     sections,
+    workday,
     source: taskStream.data.source,
   };
 }

@@ -1,0 +1,36 @@
+{
+  "wave": "S_AI_MAGIC_12_PROACTIVE_WORKDAY_TASK_INTELLIGENCE",
+  "engine": "src/features/ai/workday/aiWorkdayTaskEngine.ts",
+  "policy": "src/features/ai/workday/aiWorkdayTaskPolicy.ts",
+  "evidence": "src/features/ai/workday/aiWorkdayTaskEvidence.ts",
+  "ranking": "src/features/ai/workday/aiWorkdayTaskRanking.ts",
+  "bff_routes": "src/features/ai/agent/agentWorkdayTaskRoutes.ts",
+  "bff_contracts": "src/features/ai/agent/agentWorkdayTaskContracts.ts",
+  "command_center_surface": "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+  "test_ids": [
+    "ai.workday.section",
+    "ai.workday.card",
+    "ai.workday.card.evidence",
+    "ai.workday.card.risk",
+    "ai.workday.card.next_action",
+    "ai.workday.empty_state"
+  ],
+  "contract": {
+    "contractId": "ai_workday_task_intelligence_v1",
+    "source": "runtime:ai_workday_task_intelligence_v1",
+    "backendFirst": true,
+    "roleScoped": true,
+    "evidenceRequired": true,
+    "internalFirst": true,
+    "readOnly": true,
+    "mutationCount": 0,
+    "dbWrites": 0,
+    "externalLiveFetch": false,
+    "providerCalled": false,
+    "finalExecution": 0,
+    "fakeCards": false,
+    "hardcodedAiAnswer": false
+  },
+  "empty_state_reason": "No eligible evidence-backed workday tasks were available in staging data.",
+  "secrets_printed": false
+}

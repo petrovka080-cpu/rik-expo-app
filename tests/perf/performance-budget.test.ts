@@ -352,6 +352,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentScreenActionContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentScreenActionRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskEvidence.ts"),
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskRanking.ts"),
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskEngine.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWorkdayTaskContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWorkdayTaskRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiObs01TraceObservabilityFiles = [
       path.join(SRC, "features", "ai", "observability", "aiTraceTypes.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceRecorder.ts"),
@@ -1118,6 +1127,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
+    expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
@@ -1285,6 +1295,7 @@ describe("performance budget — bundle module count", () => {
         sAiHarden03SubmitForApprovalAuditFiles -
         sAiMagic08ApprovedProcurementExecutorFiles -
         sAiMagic10ScreenButtonActionMapFiles -
+        sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
         sAiObs01TraceObservabilityFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);

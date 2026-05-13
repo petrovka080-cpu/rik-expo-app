@@ -89,6 +89,15 @@ import {
   type AgentScreenActionReadRouteRequest,
 } from "./agentScreenActionRoutes";
 import {
+  AGENT_WORKDAY_TASK_BFF_CONTRACT,
+  getAgentWorkdayTasks,
+  planAgentWorkdayTaskAction,
+  previewAgentWorkdayTask,
+  type AgentWorkdayTaskActionPlanRouteRequest,
+  type AgentWorkdayTaskPreviewRouteRequest,
+  type AgentWorkdayTaskReadRouteRequest,
+} from "./agentWorkdayTaskRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -126,6 +135,10 @@ export {
   getAgentScreenActions,
   planAgentScreenAction,
   previewAgentScreenActionIntent,
+  AGENT_WORKDAY_TASK_BFF_CONTRACT,
+  getAgentWorkdayTasks,
+  planAgentWorkdayTaskAction,
+  previewAgentWorkdayTask,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -162,6 +175,9 @@ export type AgentBffRouteOperation =
   | "agent.approval_inbox.edit_preview"
   | "agent.approval_inbox.execute_approved"
   | "agent.task_stream.read"
+  | "agent.workday.tasks.read"
+  | "agent.workday.tasks.preview"
+  | "agent.workday.tasks.action_plan"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
@@ -206,6 +222,7 @@ export type AgentBffRouteDefinition = {
     | "AgentProcurementEnvelope"
     | "AgentScreenRuntimeEnvelope"
     | "AgentScreenActionEnvelope"
+    | "AgentWorkdayTaskEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -237,6 +254,9 @@ export type AgentApprovalInboxDecisionRequest = ApprovalInboxDecisionRequest;
 export type AgentScreenActionsRequest = AgentScreenActionReadRouteRequest;
 export type AgentScreenActionIntentPreviewRequest = AgentScreenActionIntentPreviewRouteRequest;
 export type AgentScreenActionPlanRequest = AgentScreenActionPlanRouteRequest;
+export type AgentWorkdayTasksRequest = AgentWorkdayTaskReadRouteRequest;
+export type AgentWorkdayTaskPreviewRequest = AgentWorkdayTaskPreviewRouteRequest;
+export type AgentWorkdayTaskActionPlanRequest = AgentWorkdayTaskActionPlanRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1358,6 +1378,45 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentTaskStreamEnvelope",
+  },
+  {
+    operation: "agent.workday.tasks.read",
+    method: "GET",
+    endpoint: "GET /agent/workday/tasks",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentWorkdayTaskEnvelope",
+  },
+  {
+    operation: "agent.workday.tasks.preview",
+    method: "POST",
+    endpoint: "POST /agent/workday/tasks/:taskId/preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentWorkdayTaskEnvelope",
+  },
+  {
+    operation: "agent.workday.tasks.action_plan",
+    method: "POST",
+    endpoint: "POST /agent/workday/tasks/:taskId/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentWorkdayTaskEnvelope",
   },
   {
     operation: "agent.tools.list",

@@ -161,6 +161,39 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           </Text>
         </View>
 
+        <View testID="ai.workday.section" style={styles.workdaySurface}>
+          <Text style={styles.workdayTitle}>workday_tasks={state.viewModel.workday.status}</Text>
+          <Text style={styles.workdayMeta}>
+            mutation_count={state.viewModel.workday.mutationCount}; db_writes=
+            {state.viewModel.workday.dbWrites}; external_io=
+            {String(state.viewModel.workday.externalLiveFetch)}
+          </Text>
+          {state.viewModel.workday.cards.length > 0 ? (
+            state.viewModel.workday.cards.map((card) => (
+              <View key={card.taskId} testID="ai.workday.card" style={styles.workdayCard}>
+                <Text style={styles.workdayCardTitle}>{card.title}</Text>
+                <Text style={styles.workdayCardSummary}>{card.summary}</Text>
+                <Text testID="ai.workday.card.evidence" style={styles.workdayChip}>
+                  evidence={card.evidenceLabel}
+                </Text>
+                <Text testID="ai.workday.card.risk" style={styles.workdayChip}>
+                  risk={card.riskLabel}; mode={card.suggestedMode}
+                </Text>
+                <Text testID="ai.workday.card.next_action" style={styles.workdayChip}>
+                  next_action={card.nextActionLabel}; tool={card.suggestedToolId}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <View testID="ai.workday.empty_state" style={styles.workdayEmpty}>
+              <Text style={styles.workdayEmptyText}>
+                {state.viewModel.workday.emptyReason ??
+                  "No eligible evidence-backed workday tasks were available."}
+              </Text>
+            </View>
+          )}
+        </View>
+
         {state.loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator size="small" color="#2563EB" />
@@ -350,6 +383,58 @@ const styles = StyleSheet.create({
     color: "#365314",
     fontSize: 12,
     fontWeight: "800",
+  },
+  workdaySurface: {
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  workdayTitle: {
+    color: "#1E3A8A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  workdayMeta: {
+    color: "#1D4ED8",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  workdayCard: {
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 9,
+    gap: 4,
+  },
+  workdayCardTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  workdayCardSummary: {
+    color: "#334155",
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  workdayChip: {
+    color: "#1E40AF",
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  workdayEmpty: {
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    padding: 9,
+  },
+  workdayEmptyText: {
+    color: "#475569",
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: "700",
   },
   runtimeInlineMarker: {
     width: 1,

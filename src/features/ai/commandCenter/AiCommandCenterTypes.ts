@@ -8,6 +8,10 @@ import type {
   AiTaskStreamRuntimeEvidenceInput,
   AiTaskStreamRuntimeResult,
 } from "../taskStream/aiTaskStreamRuntimeTypes";
+import type {
+  AiWorkdayTaskCard,
+  AiWorkdayTaskEngineResult,
+} from "../workday/aiWorkdayTaskTypes";
 import type { AiDomain, AiUserRole } from "../policy/aiRolePolicy";
 import type { AiToolName } from "../tools/aiToolTypes";
 
@@ -80,6 +84,32 @@ export type AiCommandCenterSectionView = {
   cards: readonly AiCommandCenterCardView[];
 };
 
+export type AiCommandCenterWorkdayTaskView = {
+  taskId: string;
+  title: string;
+  summary: string;
+  riskLabel: string;
+  evidenceLabel: string;
+  nextActionLabel: string;
+  suggestedToolId: AiWorkdayTaskCard["suggestedToolId"];
+  suggestedMode: AiWorkdayTaskCard["suggestedMode"];
+  approvalRequired: boolean;
+  mutationCount: 0;
+};
+
+export type AiCommandCenterWorkdayView = {
+  endpoint: "GET /agent/workday/tasks";
+  status: AiWorkdayTaskEngineResult["status"];
+  emptyReason: string | null;
+  cards: readonly AiCommandCenterWorkdayTaskView[];
+  roleScoped: true;
+  evidenceRequired: true;
+  mutationCount: 0;
+  dbWrites: 0;
+  externalLiveFetch: false;
+  fakeCards: false;
+};
+
 export type AiCommandCenterViewModel = {
   contractId: "ai_command_center_view_model_v1";
   documentType: "ai_command_center";
@@ -113,6 +143,7 @@ export type AiCommandCenterViewModel = {
   errorMessage: string | null;
   cards: readonly AiCommandCenterCardView[];
   sections: readonly AiCommandCenterSectionView[];
+  workday: AiCommandCenterWorkdayView;
   source: AgentTaskStreamDto["source"] | "bff:agent_task_stream_unavailable";
 };
 
