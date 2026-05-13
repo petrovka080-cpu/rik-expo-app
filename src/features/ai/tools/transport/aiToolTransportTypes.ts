@@ -5,7 +5,19 @@ export type AiToolTransportBoundaryKind =
   | "safe_read_bff_transport"
   | "draft_only_local_transport"
   | "approval_ledger_transport"
-  | "status_ledger_transport";
+  | "status_ledger_transport"
+  | "runtime_read_transport"
+  | "runtime_preview_transport"
+  | "approved_executor_transport";
+
+export type AiRuntimeTransportName =
+  | "task_stream"
+  | "command_center"
+  | "procurement_copilot"
+  | "external_intel"
+  | "screen_runtime"
+  | "approval_inbox"
+  | "approved_executor";
 
 export type AiToolTransportContract = {
   toolName: AiToolName;
@@ -19,6 +31,22 @@ export type AiToolTransportContract = {
   supabaseImportAllowedInTool: false;
   mutationAllowedFromTool: false;
   idempotencyRequired: boolean;
+};
+
+export type AiRuntimeTransportContract = {
+  runtimeName: AiRuntimeTransportName;
+  boundary: AiToolTransportBoundaryKind;
+  routeScope: string;
+  boundedRequest: true;
+  dtoOnly: true;
+  redactionRequired: true;
+  evidenceRefsOrBlockedReasonRequired: true;
+  uiImportAllowed: false;
+  modelProviderImportAllowed: false;
+  supabaseImportAllowedInTransport: false;
+  mutationAllowedFromUi: false;
+  rawRowsExposed: false;
+  rawProviderPayloadExposed: false;
 };
 
 export type AiToolTransportAuthContext = {
@@ -97,6 +125,22 @@ export type AiSubmitForApprovalTransportInput = {
 
 export type AiActionStatusTransportInput = {
   action_id: string;
+};
+
+export type AiTaskStreamTransportInput = {
+  screen_id: string;
+  cursor?: string | null;
+  limit?: number;
+  now_iso?: string;
+};
+
+export type AiProcurementCopilotTransportInput = {
+  request_ref: string;
+  screen_id: string;
+  organization_ref?: string;
+  cursor?: string | null;
+  external_requested?: boolean;
+  external_source_policy_ids?: readonly string[];
 };
 
 export const AI_TOOL_TRANSPORT_CONTRACTS = Object.freeze([
@@ -219,6 +263,114 @@ export const AI_TOOL_TRANSPORT_CONTRACTS = Object.freeze([
   },
 ] as const satisfies readonly AiToolTransportContract[]);
 
+export const AI_RUNTIME_TRANSPORT_CONTRACTS = Object.freeze([
+  {
+    runtimeName: "task_stream",
+    boundary: "runtime_read_transport",
+    routeScope: "agent.task_stream.read",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "command_center",
+    boundary: "runtime_read_transport",
+    routeScope: "agent.command_center.read",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "procurement_copilot",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.procurement_copilot.preview",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "external_intel",
+    boundary: "runtime_read_transport",
+    routeScope: "agent.external_intel.status",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "screen_runtime",
+    boundary: "runtime_read_transport",
+    routeScope: "agent.screen_runtime.read",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "approval_inbox",
+    boundary: "approval_ledger_transport",
+    routeScope: "agent.approval_inbox.read",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "approved_executor",
+    boundary: "approved_executor_transport",
+    routeScope: "agent.action.execute_approved",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+] as const satisfies readonly AiRuntimeTransportContract[]);
+
 const FORBIDDEN_TRANSPORT_KEYS =
   /raw[_-]?(?:db|row|rows|prompt|provider|context|payload)|authorization|secret|token|service[_-]?role|user_id|organization_id|company_id/i;
 
@@ -250,4 +402,8 @@ export function hasForbiddenAiToolTransportKeys(value: unknown): boolean {
 
 export function listAiToolTransportContracts(): AiToolTransportContract[] {
   return [...AI_TOOL_TRANSPORT_CONTRACTS];
+}
+
+export function listAiRuntimeTransportContracts(): AiRuntimeTransportContract[] {
+  return [...AI_RUNTIME_TRANSPORT_CONTRACTS];
 }

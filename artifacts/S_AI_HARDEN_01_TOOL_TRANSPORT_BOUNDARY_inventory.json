@@ -1,20 +1,8 @@
 {
   "wave": "S_AI_HARDEN_01_AI_TOOL_TRANSPORT_BOUNDARY",
-  "final_status": "GREEN_AI_TOOL_TRANSPORT_BOUNDARY_READY",
-  "transport_boundary_path": "src/features/ai/tools/transport",
-  "transport_types": "src/features/ai/tools/transport/aiToolTransportTypes.ts",
-  "tools_covered": [
-    "search_catalog",
-    "compare_suppliers",
-    "get_warehouse_status",
-    "get_finance_summary",
-    "draft_request",
-    "draft_report",
-    "draft_act",
-    "submit_for_approval",
-    "get_action_status"
-  ],
-  "transport_files": [
+  "status": "GREEN_AI_TOOL_TRANSPORT_BOUNDARY_READY",
+  "transportTypes": "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+  "toolTransportFiles": [
     "src/features/ai/tools/transport/searchCatalog.transport.ts",
     "src/features/ai/tools/transport/compareSuppliers.transport.ts",
     "src/features/ai/tools/transport/warehouseStatus.transport.ts",
@@ -23,16 +11,23 @@
     "src/features/ai/tools/transport/draftReport.transport.ts",
     "src/features/ai/tools/transport/draftAct.transport.ts",
     "src/features/ai/tools/transport/submitForApproval.transport.ts",
-    "src/features/ai/tools/transport/getActionStatus.transport.ts"
+    "src/features/ai/tools/transport/getActionStatus.transport.ts",
+    "src/features/ai/tools/transport/taskStream.transport.ts",
+    "src/features/ai/tools/transport/procurementCopilot.transport.ts"
   ],
-  "direct_tool_bff_imports_remaining": false,
-  "ui_transport_imports": false,
-  "model_provider_imports": false,
-  "supabase_imports_in_runtime_tools": false,
-  "raw_db_rows_exposed": false,
-  "raw_prompt_or_provider_payload_exposed": false,
-  "bounded_request_contracts": true,
-  "redaction_contract_present": true,
-  "scanner_check": "ai_tool_transport_boundary",
-  "secrets_printed": false
+  "runtimeScopesCovered": [
+    "task_stream",
+    "command_center",
+    "procurement_copilot",
+    "external_intel",
+    "screen_runtime",
+    "approval_inbox",
+    "approved_executor"
+  ],
+  "tests": [
+    "tests/ai/aiToolTransportBoundary.contract.test.ts",
+    "tests/ai/aiToolTransportRedaction.contract.test.ts",
+    "tests/ai/aiToolTransportNoDirectBff.contract.test.ts",
+    "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
+  ]
 }

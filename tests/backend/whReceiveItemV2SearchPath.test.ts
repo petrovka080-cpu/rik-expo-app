@@ -229,7 +229,7 @@ async function createReceiveSeed(): Promise<SeedScope> {
       supplier: "Warehouse Search Path Supplier",
       currency: "KGS",
       payment_status: paymentStatus,
-      po_no: `PO-${Date.now().toString(36).toUpperCase()}`,
+      po_no: `PO-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
       attachments: [],
     })
     .select("id")

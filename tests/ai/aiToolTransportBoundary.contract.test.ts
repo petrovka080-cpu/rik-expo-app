@@ -1,57 +1,63 @@
-import { readFileSync } from "fs";
-import { join } from "path";
-
 import {
-  AI_TOOL_TRANSPORT_CONTRACTS,
+  listAiRuntimeTransportContracts,
   listAiToolTransportContracts,
 } from "../../src/features/ai/tools/transport/aiToolTransportTypes";
-import { AI_TOOL_NAMES } from "../../src/features/ai/tools/aiToolRegistry";
+import { readTaskStreamTransport } from "../../src/features/ai/tools/transport/taskStream.transport";
 
-const ROOT = process.cwd();
-const toolFiles = [
-  "src/features/ai/tools/searchCatalogTool.ts",
-  "src/features/ai/tools/compareSuppliersTool.ts",
-  "src/features/ai/tools/getWarehouseStatusTool.ts",
-  "src/features/ai/tools/getFinanceSummaryTool.ts",
-  "src/features/ai/tools/draftRequestTool.ts",
-  "src/features/ai/tools/draftReportTool.ts",
-  "src/features/ai/tools/draftActTool.ts",
-  "src/features/ai/tools/submitForApprovalTool.ts",
-  "src/features/ai/tools/getActionStatusTool.ts",
-] as const;
+describe("AI tool transport boundary contracts", () => {
+  it("covers tool and runtime routes with bounded DTO contracts", () => {
+    expect(listAiToolTransportContracts().map((contract) => contract.toolName)).toEqual([
+      "search_catalog",
+      "compare_suppliers",
+      "get_warehouse_status",
+      "get_finance_summary",
+      "draft_request",
+      "draft_report",
+      "draft_act",
+      "submit_for_approval",
+      "get_action_status",
+    ]);
+    expect(listAiRuntimeTransportContracts().map((contract) => contract.runtimeName)).toEqual([
+      "task_stream",
+      "command_center",
+      "procurement_copilot",
+      "external_intel",
+      "screen_runtime",
+      "approval_inbox",
+      "approved_executor",
+    ]);
 
-function readProjectFile(relativePath: string): string {
-  return readFileSync(join(ROOT, relativePath), "utf8");
-}
-
-describe("AI tool transport boundary", () => {
-  it("has a permanent transport contract for every registered AI tool", () => {
-    const transportContracts = listAiToolTransportContracts();
-    expect(transportContracts.map((contract) => contract.toolName).sort()).toEqual(
-      [...AI_TOOL_NAMES].sort(),
-    );
-    for (const contract of AI_TOOL_TRANSPORT_CONTRACTS) {
+    for (const contract of [
+      ...listAiToolTransportContracts(),
+      ...listAiRuntimeTransportContracts(),
+    ]) {
       expect(contract).toMatchObject({
         boundedRequest: true,
         dtoOnly: true,
         redactionRequired: true,
         uiImportAllowed: false,
         modelProviderImportAllowed: false,
-        supabaseImportAllowedInTool: false,
-        mutationAllowedFromTool: false,
       });
     }
   });
 
-  it("keeps runtime tool files behind src/features/ai/tools/transport", () => {
-    for (const file of toolFiles) {
-      const source = readProjectFile(file);
-      expect(source).toContain("./transport/");
-      expect(source).not.toMatch(
-        /\bfrom\s+["'][^"']*(?:\.\.\/\.\.\/\.\.\/(?:lib|screens)|\.\.\/actionLedger|\.bff\.client|catalog\.facade|catalog\.search\.service)[^"']*["']/i,
-      );
-      expect(source).not.toMatch(/@supabase|auth\.admin|listUsers|service_role/i);
-      expect(source).not.toMatch(/openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i);
-    }
+  it("returns evidence refs or an exact blocked reason from runtime transport", () => {
+    const result = readTaskStreamTransport({
+      auth: { userId: "buyer:test", role: "buyer" },
+      input: {
+        screen_id: "ai.command.center",
+        limit: 5,
+      },
+    });
+
+    expect(result).toMatchObject({
+      routeScope: "agent.task_stream.read",
+      boundedRequest: true,
+      dtoOnly: true,
+      rawRowsExposed: false,
+      rawProviderPayloadExposed: false,
+      mutationCount: 0,
+    });
+    expect(result.evidenceRefs.length > 0 || result.blockedReason !== null || result.status === "empty").toBe(true);
   });
 });

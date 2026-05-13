@@ -218,12 +218,19 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "tools", "transport", "draftAct.transport.ts"),
       path.join(SRC, "features", "ai", "tools", "transport", "submitForApproval.transport.ts"),
       path.join(SRC, "features", "ai", "tools", "transport", "getActionStatus.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "taskStream.transport.ts"),
+      path.join(SRC, "features", "ai", "tools", "transport", "procurementCopilot.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiHarden02ToolRateLimitBudgetFiles = [
       path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitPolicy.ts"),
       path.join(SRC, "features", "ai", "rateLimit", "aiToolBudgetPolicy.ts"),
       path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitDecision.ts"),
       path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitArtifacts.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiFixture01ExplicitE2eFixtureFiles = [
+      path.join(SRC, "features", "ai", "e2eFixtures", "aiE2eFixtureTypes.ts"),
+      path.join(SRC, "features", "ai", "e2eFixtures", "aiE2eFixtureRegistry.ts"),
+      path.join(SRC, "features", "ai", "e2eFixtures", "aiE2eFixtureRedaction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiHarden03SubmitForApprovalAuditFiles = [
       path.join(SRC, "features", "ai", "approvalAudit", "submitForApprovalAuditTypes.ts"),
@@ -323,6 +330,8 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcTypes.ts"),
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcTransport.ts"),
       path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcBackend.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRpcRepository.ts"),
+      path.join(SRC, "features", "ai", "actionLedger", "aiActionLedgerRuntimeMount.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic08ApprovedProcurementExecutorFiles = [
       path.join(SRC, "features", "ai", "executors", "approvedActionExecutorTypes.ts"),
@@ -335,6 +344,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorRedaction.ts"),
       path.join(SRC, "features", "ai", "executors", "procurementRequestExecutorEvidence.ts"),
       path.join(SRC, "features", "ai", "executors", "approvedProcurementRequestBffMutationBoundary.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiObs01TraceObservabilityFiles = [
+      path.join(SRC, "features", "ai", "observability", "aiTraceTypes.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiTraceRecorder.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiTraceRedaction.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiTraceExportPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
@@ -1081,16 +1096,18 @@ describe("performance budget — bundle module count", () => {
     expect(sAiDraftActToolFiles).toBeLessThanOrEqual(1);
     expect(sAiSubmitForApprovalToolFiles).toBeLessThanOrEqual(1);
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
-    expect(sAiHarden01ToolTransportBoundaryFiles).toBeLessThanOrEqual(10);
+    expect(sAiHarden01ToolTransportBoundaryFiles).toBeLessThanOrEqual(12);
     expect(sAiHarden02ToolRateLimitBudgetFiles).toBeLessThanOrEqual(4);
+    expect(sAiFixture01ExplicitE2eFixtureFiles).toBeLessThanOrEqual(3);
     expect(sAiHarden03SubmitForApprovalAuditFiles).toBeLessThanOrEqual(4);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
     expect(sAiMagic06PersistentActionLedgerFiles).toBeLessThanOrEqual(8);
     expect(sAiMagic07ApprovalInboxExecutionGateFiles).toBeLessThanOrEqual(9);
-    expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(3);
+    expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
+    expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1116,6 +1133,7 @@ describe("performance budget — bundle module count", () => {
         sAiGetActionStatusToolFiles -
         sAiHarden01ToolTransportBoundaryFiles -
         sAiHarden02ToolRateLimitBudgetFiles -
+        sAiFixture01ExplicitE2eFixtureFiles -
         sAiHarden03SubmitForApprovalAuditFiles -
         sAiProduct01DailyCommandCenterFiles -
         sAiProduct02TaskStreamRuntimeFiles -
@@ -1253,7 +1271,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic07ApprovalInboxExecutionGateFiles -
         sAiMagic08ApprovalLedgerBackendMountFiles -
         sAiHarden03SubmitForApprovalAuditFiles -
-        sAiMagic08ApprovedProcurementExecutorFiles,
+        sAiMagic08ApprovedProcurementExecutorFiles -
+        sAiObs01TraceObservabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

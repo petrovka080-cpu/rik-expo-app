@@ -55,8 +55,24 @@ const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
     "supabase/migrations/20260512120000_ai_action_ledger.sql",
     "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql",
     "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql",
+    "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
     "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
     "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql -> artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
+  ].includes(normalizePath(file));
+
+const isApprovedAiTraceObservabilityPatch = (file: string) =>
+  [
+    "src/features/ai/observability/aiTraceTypes.ts",
+    "src/features/ai/observability/aiTraceRecorder.ts",
+    "src/features/ai/observability/aiTraceRedaction.ts",
+    "src/features/ai/observability/aiTraceExportPolicy.ts",
+    "tests/ai/aiTraceRecorder.contract.test.ts",
+    "tests/ai/aiTraceRedaction.contract.test.ts",
+    "tests/ai/aiTraceNoSecrets.contract.test.ts",
+    "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+    "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_inventory.json",
+    "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_matrix.json",
+    "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_proof.md",
   ].includes(normalizePath(file));
 
 const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
@@ -303,6 +319,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !(tryCatchGapsBatchA && isApprovedTryCatchGapsBatchAPatch(file)) &&
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
+        !isApprovedAiTraceObservabilityPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&

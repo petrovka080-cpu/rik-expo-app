@@ -343,6 +343,7 @@ export type AiToolTransportBoundaryArchitectureSummary = {
   transportTypesPresent: boolean;
   transportFilesPresent: boolean;
   allToolsHaveTransportContract: boolean;
+  allRuntimeRoutesHaveTransportContract: boolean;
   toolsUseTransportBoundary: boolean;
   noToolDirectBffImports: boolean;
   transportDtoOnly: boolean;
@@ -412,6 +413,39 @@ export type AiPolicyGateScaleProofArchitectureSummary = {
   executeApprovedGateOnly: boolean;
   toolPlansNoDirectExecution: boolean;
   toolPlansNoProviderOrDb: boolean;
+  findings: readonly string[];
+};
+
+export type AiExplicitE2eFixtureRegistryArchitectureSummary = {
+  fixtureFilesPresent: boolean;
+  resolverScriptPresent: boolean;
+  requiredEnvNamesDeclared: boolean;
+  missingFixtureBlockerExact: boolean;
+  redactionPresent: boolean;
+  noSupabaseAdminImports: boolean;
+  noAuthAdmin: boolean;
+  noListUsers: boolean;
+  noServiceRole: boolean;
+  noSeedOrWrites: boolean;
+  artifactsRedactedPolicy: boolean;
+  findings: readonly string[];
+};
+
+export type AiTraceObservabilityArchitectureSummary = {
+  traceFilesPresent: boolean;
+  eventRegistryComplete: boolean;
+  recorderPresent: boolean;
+  redactionPresent: boolean;
+  exportPolicyPresent: boolean;
+  noRawPrompt: boolean;
+  noRawProviderPayload: boolean;
+  noSecretsOrAuthorization: boolean;
+  noFullUserEmail: boolean;
+  noDbRows: boolean;
+  noModelProviderImports: boolean;
+  noSupabaseImports: boolean;
+  testsPresent: boolean;
+  artifactsPresent: boolean;
   findings: readonly string[];
 };
 
@@ -861,6 +895,8 @@ export type ArchitectureAntiRegressionReport = {
   aiToolRateLimitPolicy: AiToolRateLimitPolicyArchitectureSummary;
   submitForApprovalAuditTrail: SubmitForApprovalAuditArchitectureSummary;
   aiPolicyGateScaleProof: AiPolicyGateScaleProofArchitectureSummary;
+  aiExplicitE2eFixtureRegistry: AiExplicitE2eFixtureRegistryArchitectureSummary;
+  aiTraceObservability: AiTraceObservabilityArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiCommandCenterStateBudget: AiCommandCenterStateBudgetArchitectureSummary;
@@ -1124,6 +1160,17 @@ const AI_TOOL_TRANSPORT_FILES = [
   "src/features/ai/tools/transport/draftAct.transport.ts",
   "src/features/ai/tools/transport/submitForApproval.transport.ts",
   "src/features/ai/tools/transport/getActionStatus.transport.ts",
+  "src/features/ai/tools/transport/taskStream.transport.ts",
+  "src/features/ai/tools/transport/procurementCopilot.transport.ts",
+] as const;
+const REQUIRED_AI_RUNTIME_TRANSPORT_NAMES = [
+  "task_stream",
+  "command_center",
+  "procurement_copilot",
+  "external_intel",
+  "screen_runtime",
+  "approval_inbox",
+  "approved_executor",
 ] as const;
 const AI_TOOL_RATE_LIMIT_POLICY_PATH = "src/features/ai/rateLimit/aiToolRateLimitPolicy.ts";
 const AI_TOOL_BUDGET_POLICY_PATH = "src/features/ai/rateLimit/aiToolBudgetPolicy.ts";
@@ -1150,6 +1197,60 @@ const AI_POLICY_GATE_SCALE_PROOF_ARTIFACT_FILES = [
   "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_matrix.json",
   "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_metrics.json",
   "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_proof.md",
+] as const;
+const AI_EXPLICIT_E2E_FIXTURE_FILES = [
+  "src/features/ai/e2eFixtures/aiE2eFixtureTypes.ts",
+  "src/features/ai/e2eFixtures/aiE2eFixtureRegistry.ts",
+  "src/features/ai/e2eFixtures/aiE2eFixtureRedaction.ts",
+] as const;
+const AI_EXPLICIT_E2E_FIXTURE_RESOLVER_PATH =
+  "scripts/e2e/resolveAiExplicitFixtures.ts";
+const AI_EXPLICIT_E2E_FIXTURE_TEST_FILES = [
+  "tests/e2e/aiExplicitFixtureRegistry.contract.test.ts",
+  "tests/e2e/aiExplicitFixtureRedaction.contract.test.ts",
+  "tests/e2e/aiFixtureMissingBlocker.contract.test.ts",
+  "tests/architecture/aiExplicitFixtureArchitecture.contract.test.ts",
+] as const;
+const AI_EXPLICIT_E2E_FIXTURE_ENV_NAMES = [
+  "E2E_PROCUREMENT_REQUEST_REF",
+  "E2E_APPROVED_PROCUREMENT_ACTION_REF",
+  "E2E_PENDING_APPROVAL_ACTION_REF",
+  "E2E_COMMAND_CENTER_SCREEN_REF",
+  "E2E_WAREHOUSE_ITEM_REF",
+  "E2E_FINANCE_COMPANY_REF",
+  "E2E_CONTRACTOR_OWN_SUBCONTRACT_REF",
+  "E2E_ROLE_MODE",
+] as const;
+const AI_TRACE_OBSERVABILITY_FILES = [
+  "src/features/ai/observability/aiTraceTypes.ts",
+  "src/features/ai/observability/aiTraceRecorder.ts",
+  "src/features/ai/observability/aiTraceRedaction.ts",
+  "src/features/ai/observability/aiTraceExportPolicy.ts",
+] as const;
+const AI_TRACE_OBSERVABILITY_TEST_FILES = [
+  "tests/ai/aiTraceRecorder.contract.test.ts",
+  "tests/ai/aiTraceRedaction.contract.test.ts",
+  "tests/ai/aiTraceNoSecrets.contract.test.ts",
+  "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+] as const;
+const AI_TRACE_OBSERVABILITY_ARTIFACT_FILES = [
+  "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_inventory.json",
+  "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_matrix.json",
+  "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_proof.md",
+] as const;
+const REQUIRED_AI_TRACE_EVENT_NAMES = [
+  "ai.tool.plan.created",
+  "ai.tool.policy.checked",
+  "ai.tool.rate_limit.checked",
+  "ai.tool.transport.called",
+  "ai.approval.submitted",
+  "ai.approval.approved",
+  "ai.approval.rejected",
+  "ai.action.execute_requested",
+  "ai.action.executed",
+  "ai.action.blocked",
+  "ai.external_intel.checked",
+  "ai.command_center.loaded",
 ] as const;
 const AI_TOOL_RUNTIME_FILES = [
   "src/features/ai/tools/searchCatalogTool.ts",
@@ -2748,6 +2849,9 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
   const allToolsHaveTransportContract = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
     Boolean(transportTypesSource?.includes(`toolName: "${toolName}"`)),
   );
+  const allRuntimeRoutesHaveTransportContract = REQUIRED_AI_RUNTIME_TRANSPORT_NAMES.every((runtimeName) =>
+    Boolean(transportTypesSource?.includes(`runtimeName: "${runtimeName}"`)),
+  );
   const toolsUseTransportBoundary = runtimeSources.every((entry) => {
     const source = entry.source ?? "";
     const expectedTransportName =
@@ -2784,6 +2888,7 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
     ...(transportTypesSource ? [] : [`missing_file:${AI_TOOL_TRANSPORT_TYPES_PATH}`]),
     ...(transportFilesPresent ? [] : ["ai_tool_transport_files_missing"]),
     ...(allToolsHaveTransportContract ? [] : ["ai_tool_transport_contract_missing"]),
+    ...(allRuntimeRoutesHaveTransportContract ? [] : ["ai_runtime_transport_contract_missing"]),
     ...(toolsUseTransportBoundary ? [] : ["ai_tool_runtime_not_using_transport_boundary"]),
     ...(noToolDirectBffImports ? [] : ["ai_tool_direct_bff_imports_remain"]),
     ...(transportDtoOnly ? [] : ["ai_tool_transport_dto_only_contract_missing"]),
@@ -2802,6 +2907,7 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
       transportTypesPresent: Boolean(transportTypesSource),
       transportFilesPresent,
       allToolsHaveTransportContract,
+      allRuntimeRoutesHaveTransportContract,
       toolsUseTransportBoundary,
       noToolDirectBffImports,
       transportDtoOnly,
@@ -2810,6 +2916,216 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
       noTransportProviderImports,
       noTransportSupabaseImports,
       boundedRequestContracts,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiExplicitE2eFixtureRegistryGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiExplicitE2eFixtureRegistryArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const fixtureSources = AI_EXPLICIT_E2E_FIXTURE_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const resolverSource =
+    safeReadProjectFile({ readFile, relativePath: AI_EXPLICIT_E2E_FIXTURE_RESOLVER_PATH }) ?? "";
+  const testSources = AI_EXPLICIT_E2E_FIXTURE_TEST_FILES.map(
+    (relativePath) => safeReadProjectFile({ readFile, relativePath }) ?? "",
+  );
+  const combinedSource = [
+    ...fixtureSources.map((entry) => entry.source ?? ""),
+    resolverSource,
+    ...testSources,
+  ].join("\n");
+  const fixtureFilesPresent = fixtureSources.every((entry) => Boolean(entry.source));
+  const resolverScriptPresent = resolverSource.length > 0;
+  const requiredEnvNamesDeclared = AI_EXPLICIT_E2E_FIXTURE_ENV_NAMES.every((name) =>
+    combinedSource.includes(name),
+  );
+  const missingFixtureBlockerExact = combinedSource.includes(
+    "BLOCKED_REQUIRED_E2E_FIXTURE_REFS_MISSING",
+  );
+  const redactionPresent =
+    combinedSource.includes("redactAiE2eFixture") &&
+    combinedSource.includes("rawFixtureValuesPrinted: false");
+  const noSupabaseAdminImports = !/@supabase\/supabase-js|createClient/i.test(combinedSource);
+  const noAuthAdmin = !/\bauth\.admin\b/i.test(combinedSource);
+  const noListUsers = !/\blistUsers\b/i.test(combinedSource);
+  const noServiceRole = !/\bservice_role\b|SUPABASE_SERVICE_ROLE_KEY/i.test(combinedSource);
+  const noSeedOrWrites =
+    !/\bdbSeedUsed:\s*true\b|\bdbWritesPerformed:\s*true\b|\bfakeRequestCreated:\s*true\b|\bfakeActionCreated:\s*true\b/i.test(
+      combinedSource,
+    ) &&
+    !/\.(?:insert|update|delete|upsert)\s*\(/i.test(combinedSource);
+  const artifactsRedactedPolicy =
+    resolverSource.includes("redactAiE2eFixtureText") &&
+    resolverSource.includes("redactAiE2eFixtureRecord");
+  const findings = [
+    ...(noSupabaseAdminImports ? [] : ["ai_fixture_resolver_supabase_import_detected"]),
+    ...(noAuthAdmin ? [] : ["ai_fixture_resolver_auth_admin_detected"]),
+    ...(noListUsers ? [] : ["ai_fixture_resolver_list_users_detected"]),
+    ...(noServiceRole ? [] : ["ai_fixture_resolver_service_role_detected"]),
+    ...(noSeedOrWrites ? [] : ["ai_fixture_resolver_seed_or_write_detected"]),
+  ];
+  const errors = [
+    ...(fixtureFilesPresent ? [] : ["ai_explicit_fixture_files_missing"]),
+    ...(resolverScriptPresent ? [] : ["ai_explicit_fixture_resolver_missing"]),
+    ...(requiredEnvNamesDeclared ? [] : ["ai_explicit_fixture_env_names_missing"]),
+    ...(missingFixtureBlockerExact ? [] : ["ai_explicit_fixture_missing_blocker_not_exact"]),
+    ...(redactionPresent ? [] : ["ai_explicit_fixture_redaction_missing"]),
+    ...(artifactsRedactedPolicy ? [] : ["ai_explicit_fixture_artifact_redaction_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_explicit_e2e_fixture_registry",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      fixtureFilesPresent,
+      resolverScriptPresent,
+      requiredEnvNamesDeclared,
+      missingFixtureBlockerExact,
+      redactionPresent,
+      noSupabaseAdminImports,
+      noAuthAdmin,
+      noListUsers,
+      noServiceRole,
+      noSeedOrWrites,
+      artifactsRedactedPolicy,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiTraceObservabilityGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiTraceObservabilityArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const traceSources = AI_TRACE_OBSERVABILITY_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const testSources = AI_TRACE_OBSERVABILITY_TEST_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const artifactSources = AI_TRACE_OBSERVABILITY_ARTIFACT_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const combinedTraceSource = traceSources.map((entry) => entry.source ?? "").join("\n");
+  const combinedSource = [
+    combinedTraceSource,
+    ...testSources.map((entry) => entry.source ?? ""),
+    ...artifactSources.map((entry) => entry.source ?? ""),
+  ].join("\n");
+  const redactionSource =
+    traceSources.find((entry) => entry.relativePath.endsWith("aiTraceRedaction.ts"))?.source ?? "";
+  const recorderSource =
+    traceSources.find((entry) => entry.relativePath.endsWith("aiTraceRecorder.ts"))?.source ?? "";
+  const exportPolicySource =
+    traceSources.find((entry) => entry.relativePath.endsWith("aiTraceExportPolicy.ts"))?.source ?? "";
+  const traceFilesPresent = traceSources.every((entry) => Boolean(entry.source));
+  const testsPresent = testSources.every((entry) => Boolean(entry.source));
+  const artifactsPresent = artifactSources.every((entry) => Boolean(entry.source));
+  const eventRegistryComplete = REQUIRED_AI_TRACE_EVENT_NAMES.every((eventName) =>
+    combinedSource.includes(eventName),
+  );
+  const recorderPresent =
+    recorderSource.includes("createAiTraceRecorder") &&
+    recorderSource.includes("recordAiTraceEvent") &&
+    recorderSource.includes("redactAiTraceAttributes");
+  const redactionPresent =
+    redactionSource.includes("FORBIDDEN_AI_TRACE_KEY_PATTERN") &&
+    redactionSource.includes("redactAiTraceAttributes") &&
+    redactionSource.includes("SENSITIVE_REDACTION_MARKER");
+  const exportPolicyPresent =
+    exportPolicySource.includes("AI_TRACE_EXPORT_POLICY") &&
+    exportPolicySource.includes("canExportAiTraceEvent") &&
+    exportPolicySource.includes("exportAiTraceEvents");
+  const noRawPrompt =
+    combinedSource.includes("rawPromptExposed: false") &&
+    redactionSource.includes("rawPrompt") &&
+    exportPolicySource.includes("noRawPrompt: true");
+  const noRawProviderPayload =
+    combinedSource.includes("rawProviderPayloadExposed: false") &&
+    redactionSource.includes("provider_payload") &&
+    exportPolicySource.includes("noRawProviderPayload: true");
+  const noSecretsOrAuthorization =
+    combinedSource.includes("credentialsExposed: false") &&
+    combinedSource.includes("authorizationHeaderExposed: false") &&
+    redactionSource.includes("Authorization") &&
+    redactionSource.includes("token") &&
+    exportPolicySource.includes("noSecrets: true");
+  const noFullUserEmail =
+    combinedSource.includes("fullUserEmailExposed: false") &&
+    redactionSource.includes("fullUserEmail") &&
+    exportPolicySource.includes("noFullUserEmail: true");
+  const noDbRows =
+    combinedSource.includes("rawDbRowsExposed: false") &&
+    redactionSource.includes("rawDbRows") &&
+    exportPolicySource.includes("noRawDbRow: true");
+  const noModelProviderImports =
+    !/\bfrom\s+["'][^"']*(features\/ai\/model|AiModelGateway|LegacyGeminiModelProvider|openai|gemini)[^"']*["']|require\(["'][^"']*(openai|gemini)/i.test(
+      combinedTraceSource,
+    );
+  const noSupabaseImports = !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
+    combinedTraceSource,
+  );
+  const findings = [
+    ...(noModelProviderImports ? [] : ["ai_trace_model_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["ai_trace_supabase_import_detected"]),
+  ];
+  const errors = [
+    ...(traceFilesPresent ? [] : ["ai_trace_observability_files_missing"]),
+    ...(eventRegistryComplete ? [] : ["ai_trace_event_registry_incomplete"]),
+    ...(recorderPresent ? [] : ["ai_trace_recorder_missing"]),
+    ...(redactionPresent ? [] : ["ai_trace_redaction_missing"]),
+    ...(exportPolicyPresent ? [] : ["ai_trace_export_policy_missing"]),
+    ...(noRawPrompt ? [] : ["ai_trace_raw_prompt_guard_missing"]),
+    ...(noRawProviderPayload ? [] : ["ai_trace_provider_payload_guard_missing"]),
+    ...(noSecretsOrAuthorization ? [] : ["ai_trace_secret_or_authorization_guard_missing"]),
+    ...(noFullUserEmail ? [] : ["ai_trace_full_email_guard_missing"]),
+    ...(noDbRows ? [] : ["ai_trace_db_row_guard_missing"]),
+    ...(testsPresent ? [] : ["ai_trace_tests_missing"]),
+    ...(artifactsPresent ? [] : ["ai_trace_artifacts_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_trace_observability",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      traceFilesPresent,
+      eventRegistryComplete,
+      recorderPresent,
+      redactionPresent,
+      exportPolicyPresent,
+      noRawPrompt,
+      noRawProviderPayload,
+      noSecretsOrAuthorization,
+      noFullUserEmail,
+      noDbRows,
+      noModelProviderImports,
+      noSupabaseImports,
+      testsPresent,
+      artifactsPresent,
       findings,
     },
   };
@@ -7208,6 +7524,8 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolRateLimitPolicy = evaluateAiToolRateLimitPolicyGuardrail({ projectRoot });
   const submitForApprovalAuditTrail = evaluateSubmitForApprovalAuditTrailGuardrail({ projectRoot });
   const aiPolicyGateScaleProof = evaluateAiPolicyGateScaleProofGuardrail({ projectRoot });
+  const aiExplicitE2eFixtureRegistry = evaluateAiExplicitE2eFixtureRegistryGuardrail({ projectRoot });
+  const aiTraceObservability = evaluateAiTraceObservabilityGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiCommandCenterStateBudget = evaluateAiCommandCenterStateBudgetGuardrail({ projectRoot });
@@ -7254,6 +7572,8 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRateLimitPolicy.check,
     submitForApprovalAuditTrail.check,
     aiPolicyGateScaleProof.check,
+    aiExplicitE2eFixtureRegistry.check,
+    aiTraceObservability.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
     aiCommandCenterStateBudget.check,
@@ -7301,6 +7621,8 @@ export function runArchitectureAntiRegressionSuite(
     aiToolRateLimitPolicy: aiToolRateLimitPolicy.summary,
     submitForApprovalAuditTrail: submitForApprovalAuditTrail.summary,
     aiPolicyGateScaleProof: aiPolicyGateScaleProof.summary,
+    aiExplicitE2eFixtureRegistry: aiExplicitE2eFixtureRegistry.summary,
+    aiTraceObservability: aiTraceObservability.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiCommandCenterStateBudget: aiCommandCenterStateBudget.summary,
@@ -7371,6 +7693,10 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`submit_for_approval_audit_event: ${report.submitForApprovalAuditTrail.auditEventRequired}`);
   console.info(`ai_policy_gate_scale_proof: ${report.aiPolicyGateScaleProof.deterministic10kProof}`);
   console.info(`ai_policy_gate_forbidden_denied: ${report.aiPolicyGateScaleProof.forbiddenAlwaysDenied}`);
+  console.info(`ai_explicit_e2e_fixture_registry: ${report.aiExplicitE2eFixtureRegistry.fixtureFilesPresent}`);
+  console.info(`ai_explicit_e2e_fixture_no_discovery: ${report.aiExplicitE2eFixtureRegistry.noAuthAdmin}`);
+  console.info(`ai_trace_observability: ${report.aiTraceObservability.traceFilesPresent}`);
+  console.info(`ai_trace_observability_redaction: ${report.aiTraceObservability.redactionPresent}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
