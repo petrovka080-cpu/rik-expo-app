@@ -1,10 +1,15 @@
 const mockBeginPlatformObservability = jest.fn();
 const mockRecordPlatformObservability = jest.fn();
 const mockObservationSuccess = jest.fn();
+const mockCallWarehouseApiBffRead = jest.fn();
 
 jest.mock("../../lib/observability/platformObservability", () => ({
   beginPlatformObservability: mockBeginPlatformObservability as any,
   recordPlatformObservability: mockRecordPlatformObservability as any,
+}));
+
+jest.mock("./warehouse.api.bff.client", () => ({
+  callWarehouseApiBffRead: (...args: unknown[]) => mockCallWarehouseApiBffRead(...args),
 }));
 
 const healthyState = {
@@ -32,6 +37,9 @@ describe("warehouse.requests.read canonical ownership", () => {
       success: mockObservationSuccess,
     });
     mockRecordPlatformObservability.mockReset();
+    mockCallWarehouseApiBffRead
+      .mockReset()
+      .mockResolvedValue({ status: "unavailable", reason: "BFF_CONTRACT_ONLY" });
     service = require("./warehouse.requests.read");
   });
 

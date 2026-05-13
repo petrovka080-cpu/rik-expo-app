@@ -1,17 +1,17 @@
 # S_AI_BACKEND_02_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_CLOSEOUT
 
-final_status: BLOCKED_POSTGREST_SCHEMA_CACHE_STALE
+final_status: GREEN_AI_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_READY
 previous_blocker: BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND
-previous_blocker_closed: false
+previous_blocker_closed: true
 migration_preflight_status: GREEN_AI_ACTION_LEDGER_MIGRATION_PREFLIGHT_READY
-migration_applied: false
-migration_verified: false
-persistent_backend: false
-submit_for_approval_persists_pending: false
-get_action_status_reads_persisted: false
-approve_reject_persist_status: false
-approval_inbox_reads_persisted: false
-approval_persistence_status: BLOCKED_POSTGREST_SCHEMA_CACHE_STALE
+migration_applied: true
+migration_verified: true
+persistent_backend: true
+submit_for_approval_persists_pending: true
+get_action_status_reads_persisted: true
+approve_reject_persist_status: true
+approval_inbox_reads_persisted: true
+approval_persistence_status: PASS
 fake_local_approval: false
 fake_action_status: false
 fake_execution: false
@@ -19,8 +19,8 @@ auth_admin_used: false
 list_users_used: false
 service_role_used: false
 seed_used: false
-mutations_created: 0
-sql_rpc_functions_exist: true
-postgrest_rpc_visible: false
-secondary_blocker: BLOCKED_LEDGER_RPC_NOT_DEPLOYED
-exactReason: SQL RPC functions exist, but PostgREST schema cache does not expose them yet.
+mutations_created: 2
+sql_rpc_functions_exist: unknown
+postgrest_rpc_visible: unknown
+secondary_blocker: null
+exactReason: null

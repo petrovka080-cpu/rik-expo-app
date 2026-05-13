@@ -14,6 +14,7 @@ describe("AI action ledger RPC schema cache verification", () => {
       "/rpc/ai_action_ledger_approve_v1",
       "/rpc/ai_action_ledger_reject_v1",
       "/rpc/ai_action_ledger_execute_approved_v1",
+      "/rpc/ai_action_ledger_verify_apply_v1",
     ].join("\n");
 
     expect(parseAiActionLedgerRpcOpenApiVisibility(source)).toMatchObject({
@@ -23,6 +24,7 @@ describe("AI action ledger RPC schema cache verification", () => {
       approveRpcVisible: true,
       rejectRpcVisible: true,
       executeApprovedRpcVisible: true,
+      verifyApplyRpcVisible: true,
     });
   });
 

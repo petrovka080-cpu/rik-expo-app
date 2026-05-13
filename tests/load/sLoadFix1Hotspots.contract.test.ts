@@ -57,6 +57,7 @@ const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
     "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql",
     "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
     "supabase/migrations/20260513234500_ai_action_ledger_forward_fix.sql",
+    "supabase/migrations/20260513235900_ai_action_ledger_drop_obsolete_stub_overloads.sql",
     "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
     "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql -> artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
   ].includes(normalizePath(file));

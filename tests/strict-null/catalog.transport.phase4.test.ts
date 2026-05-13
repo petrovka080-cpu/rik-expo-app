@@ -1,11 +1,17 @@
 const mockFrom = jest.fn();
 const mockRpc = jest.fn();
+const mockCallCatalogTransportBffRead = jest.fn();
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   supabase: {
     from: (...args: unknown[]) => mockFrom(...args),
     rpc: (...args: unknown[]) => mockRpc(...args),
   },
+}));
+
+jest.mock("../../src/lib/catalog/catalog.bff.client", () => ({
+  callCatalogTransportBffRead: (...args: unknown[]) =>
+    mockCallCatalogTransportBffRead(...args),
 }));
 
 import {
@@ -42,6 +48,9 @@ describe("catalog transport strict-null phase 4", () => {
   beforeEach(() => {
     mockFrom.mockReset();
     mockRpc.mockReset();
+    mockCallCatalogTransportBffRead
+      .mockReset()
+      .mockResolvedValue({ status: "unavailable", reason: "BFF_CONTRACT_ONLY" });
   });
 
   it("normalizes catalog group rows by preserving valid values and dropping malformed rows", () => {

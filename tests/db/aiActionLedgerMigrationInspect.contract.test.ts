@@ -16,6 +16,7 @@ const allObjects = {
   approveRpcExists: true,
   rejectRpcExists: true,
   executeApprovedRpcExists: true,
+  verifyApplyRpcExists: true,
   migrationHistoryTableExists: true,
 };
 
@@ -44,6 +45,7 @@ describe("AI action ledger migration state inspection", () => {
       approveRpcExists: false,
       rejectRpcExists: false,
       executeApprovedRpcExists: false,
+      verifyApplyRpcExists: false,
       migrationHistoryTableExists: false,
       migrationHistoryRecordExists: false,
     })).toBe("STATE_C_OBJECTS_MISSING_HISTORY_MISSING");

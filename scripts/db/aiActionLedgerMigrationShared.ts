@@ -7,6 +7,9 @@ export const AI_ACTION_LEDGER_APPLY_MIGRATION =
 export const AI_ACTION_LEDGER_FORWARD_FIX_MIGRATION =
   "20260513234500_ai_action_ledger_forward_fix.sql";
 
+export const AI_ACTION_LEDGER_OBSOLETE_STUB_OVERLOAD_CLEANUP_MIGRATION =
+  "20260513235900_ai_action_ledger_drop_obsolete_stub_overloads.sql";
+
 export function readAiActionLedgerApplyMigration(projectRoot: string): {
   file: typeof AI_ACTION_LEDGER_APPLY_MIGRATION;
   sqlSource: string;
@@ -28,6 +31,19 @@ export function readAiActionLedgerForwardFixMigration(projectRoot: string): {
     file: AI_ACTION_LEDGER_FORWARD_FIX_MIGRATION,
     sqlSource: fs.readFileSync(
       path.join(projectRoot, "supabase", "migrations", AI_ACTION_LEDGER_FORWARD_FIX_MIGRATION),
+      "utf8",
+    ),
+  };
+}
+
+export function readAiActionLedgerObsoleteStubOverloadCleanupMigration(projectRoot: string): {
+  file: typeof AI_ACTION_LEDGER_OBSOLETE_STUB_OVERLOAD_CLEANUP_MIGRATION;
+  sqlSource: string;
+} {
+  return {
+    file: AI_ACTION_LEDGER_OBSOLETE_STUB_OVERLOAD_CLEANUP_MIGRATION,
+    sqlSource: fs.readFileSync(
+      path.join(projectRoot, "supabase", "migrations", AI_ACTION_LEDGER_OBSOLETE_STUB_OVERLOAD_CLEANUP_MIGRATION),
       "utf8",
     ),
   };

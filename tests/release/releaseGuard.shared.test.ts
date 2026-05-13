@@ -598,6 +598,7 @@ describe("releaseGuard.shared", () => {
     it("blocks DML or read-model rebuild migrations until an explicit DB apply/repair wave handles them", () => {
       const migrationPolicy = buildReleaseGuardMigrationPolicy({
         changedFiles: ["supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql"],
+        approvalEnv: {},
         readFile: () => `
           create table if not exists public.warehouse_issue_queue_ready_rows_v1 (
             request_id integer primary key

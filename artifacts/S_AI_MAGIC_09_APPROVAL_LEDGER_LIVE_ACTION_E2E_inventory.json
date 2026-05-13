@@ -1,0 +1,11 @@
+{
+  "wave": "S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E",
+  "runner": "scripts/e2e/runAiApprovalLedgerLiveActionE2E.ts",
+  "rpc_verifier": "scripts/db/verifyAiActionLedgerPostgrestRpcVisibility.ts",
+  "canonical_cleanup_migration": "supabase/migrations/20260513235900_ai_action_ledger_drop_obsolete_stub_overloads.sql",
+  "runtime_mount": "src/features/ai/actionLedger/aiActionLedgerRuntimeMount.ts",
+  "central_gateway": "src/features/ai/executors/executeApprovedActionGateway.ts",
+  "android_runtime_smoke": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "secrets_printed": false,
+  "raw_rows_printed": false
+}

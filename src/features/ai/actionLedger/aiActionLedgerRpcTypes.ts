@@ -13,6 +13,7 @@ export const AI_ACTION_LEDGER_RPC_FUNCTIONS = Object.freeze({
   approve: "ai_action_ledger_approve_v1",
   reject: "ai_action_ledger_reject_v1",
   executeApproved: "ai_action_ledger_execute_approved_v1",
+  verifyApply: "ai_action_ledger_verify_apply_v1",
 } as const);
 
 export type AiActionLedgerRpcFunctionName =

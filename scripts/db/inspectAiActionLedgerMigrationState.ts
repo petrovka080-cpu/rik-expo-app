@@ -10,6 +10,7 @@ export const AI_ACTION_LEDGER_REQUIRED_RPC_FUNCTIONS = [
   AI_ACTION_LEDGER_RPC_FUNCTIONS.approve,
   AI_ACTION_LEDGER_RPC_FUNCTIONS.reject,
   AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved,
+  AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply,
 ] as const;
 
 export const AI_ACTION_LEDGER_REQUIRED_INDEXES = [
@@ -49,6 +50,7 @@ export type AiActionLedgerMigrationStateBooleans = {
   approveRpcExists: boolean;
   rejectRpcExists: boolean;
   executeApprovedRpcExists: boolean;
+  verifyApplyRpcExists: boolean;
   migrationHistoryTableExists: boolean;
   migrationHistoryRecordExists: boolean;
 };
@@ -98,13 +100,15 @@ function migrationParts(): { version: string; name: string } {
 function functionsExist(input: Pick<
   AiActionLedgerMigrationStateBooleans,
   "submitRpcExists" | "getStatusRpcExists" | "approveRpcExists" | "rejectRpcExists" | "executeApprovedRpcExists"
+  | "verifyApplyRpcExists"
 >): boolean {
   return (
     input.submitRpcExists &&
     input.getStatusRpcExists &&
     input.approveRpcExists &&
     input.rejectRpcExists &&
-    input.executeApprovedRpcExists
+    input.executeApprovedRpcExists &&
+    input.verifyApplyRpcExists
   );
 }
 
@@ -227,6 +231,10 @@ async function inspectDbObjects(client: DbClient): Promise<Omit<
         'executeApprovedRpcExists', exists (
           select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
           where n.nspname = 'public' and p.proname = $9
+        ),
+        'verifyApplyRpcExists', exists (
+          select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+          where n.nspname = 'public' and p.proname = $10
         )
       ) as result
     `,
@@ -240,6 +248,7 @@ async function inspectDbObjects(client: DbClient): Promise<Omit<
       AI_ACTION_LEDGER_RPC_FUNCTIONS.approve,
       AI_ACTION_LEDGER_RPC_FUNCTIONS.reject,
       AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved,
+      AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply,
     ],
   );
   const row = result.rows?.[0]?.result as Record<string, unknown> | undefined;
@@ -253,6 +262,7 @@ async function inspectDbObjects(client: DbClient): Promise<Omit<
     approveRpcExists: bool(row?.approveRpcExists),
     rejectRpcExists: bool(row?.rejectRpcExists),
     executeApprovedRpcExists: bool(row?.executeApprovedRpcExists),
+    verifyApplyRpcExists: bool(row?.verifyApplyRpcExists),
   };
 }
 
@@ -305,6 +315,7 @@ function blocked(
     approveRpcExists: false,
     rejectRpcExists: false,
     executeApprovedRpcExists: false,
+    verifyApplyRpcExists: false,
     migrationHistoryTableExists: false,
     migrationHistoryRecordExists: false,
     state: null,

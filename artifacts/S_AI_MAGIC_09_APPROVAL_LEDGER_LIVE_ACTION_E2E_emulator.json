@@ -1,0 +1,8 @@
+{
+  "final_status": "GREEN_AI_APPROVAL_LEDGER_LIVE_ACTION_E2E",
+  "android_runtime_smoke": "PASS",
+  "developer_control_e2e": "PASS",
+  "runtime_proof_required": true,
+  "fake_green_claimed": false,
+  "secrets_printed": false
+}

@@ -22,6 +22,7 @@ export type AiActionLedgerRpcSchemaCacheVerification = {
   approveRpcVisible: boolean;
   rejectRpcVisible: boolean;
   executeApprovedRpcVisible: boolean;
+  verifyApplyRpcVisible: boolean;
   noRpcExecuted: true;
   rawRowsPrinted: false;
   secretsPrinted: false;
@@ -61,6 +62,7 @@ function blocked(
     approveRpcVisible: false,
     rejectRpcVisible: false,
     executeApprovedRpcVisible: false,
+    verifyApplyRpcVisible: false,
     noRpcExecuted: true,
     rawRowsPrinted: false,
     secretsPrinted: false,
@@ -96,6 +98,7 @@ export function parseAiActionLedgerRpcOpenApiVisibility(source: string): Pick<
   | "approveRpcVisible"
   | "rejectRpcVisible"
   | "executeApprovedRpcVisible"
+  | "verifyApplyRpcVisible"
   | "postgrestSchemaCacheRpcVisible"
 > {
   const visible = (fn: string) => source.includes(`/rpc/${fn}`) || source.includes(fn);
@@ -104,18 +107,21 @@ export function parseAiActionLedgerRpcOpenApiVisibility(source: string): Pick<
   const approveRpcVisible = visible(AI_ACTION_LEDGER_RPC_FUNCTIONS.approve);
   const rejectRpcVisible = visible(AI_ACTION_LEDGER_RPC_FUNCTIONS.reject);
   const executeApprovedRpcVisible = visible(AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved);
+  const verifyApplyRpcVisible = visible(AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply);
   return {
     submitForApprovalRpcVisible,
     getStatusRpcVisible,
     approveRpcVisible,
     rejectRpcVisible,
     executeApprovedRpcVisible,
+    verifyApplyRpcVisible,
     postgrestSchemaCacheRpcVisible:
       submitForApprovalRpcVisible &&
       getStatusRpcVisible &&
       approveRpcVisible &&
       rejectRpcVisible &&
-      executeApprovedRpcVisible,
+      executeApprovedRpcVisible &&
+      verifyApplyRpcVisible,
   };
 }
 
@@ -139,6 +145,8 @@ export async function verifyAiActionLedgerRpcSchemaCache(
         return inspection.rejectRpcExists;
       case AI_ACTION_LEDGER_RPC_FUNCTIONS.executeApproved:
         return inspection.executeApprovedRpcExists;
+      case AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply:
+        return inspection.verifyApplyRpcExists;
       default:
         return false;
     }
@@ -150,6 +158,7 @@ export async function verifyAiActionLedgerRpcSchemaCache(
     approveRpcVisible: false,
     rejectRpcVisible: false,
     executeApprovedRpcVisible: false,
+    verifyApplyRpcVisible: false,
     postgrestSchemaCacheRpcVisible: false,
   };
   if (!directSqlFunctionsExist) {

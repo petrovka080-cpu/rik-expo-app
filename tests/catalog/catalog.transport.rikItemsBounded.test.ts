@@ -1,9 +1,15 @@
 const mockFrom = jest.fn();
+const mockCallCatalogTransportBffRead = jest.fn();
 
 jest.mock("../../src/lib/supabaseClient", () => ({
   supabase: {
     from: (...args: unknown[]) => mockFrom(...args),
   },
+}));
+
+jest.mock("../../src/lib/catalog/catalog.bff.client", () => ({
+  callCatalogTransportBffRead: (...args: unknown[]) =>
+    mockCallCatalogTransportBffRead(...args),
 }));
 
 import fs from "fs";
@@ -69,6 +75,9 @@ const getFunctionSource = (functionName: string) => {
 describe("catalog transport bounded rik_items and child list reads", () => {
   beforeEach(() => {
     mockFrom.mockReset();
+    mockCallCatalogTransportBffRead
+      .mockReset()
+      .mockResolvedValue({ status: "unavailable", reason: "BFF_CONTRACT_ONLY" });
   });
 
   it("bounds catalog rik_items fallback search as a deterministic preview page", async () => {

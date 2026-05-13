@@ -14,6 +14,7 @@ describe("AI action ledger migration state inspector S_DB_04B closeout", () => {
       approveRpcExists: true,
       rejectRpcExists: true,
       executeApprovedRpcExists: true,
+      verifyApplyRpcExists: true,
       migrationHistoryTableExists: true,
       migrationHistoryRecordExists: true,
       postgrestSchemaCacheRpcVisible: false,

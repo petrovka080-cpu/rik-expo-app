@@ -15,6 +15,7 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
       "/rpc/ai_action_ledger_approve_v1",
       "/rpc/ai_action_ledger_reject_v1",
       "/rpc/ai_action_ledger_execute_approved_v1",
+      "/rpc/ai_action_ledger_verify_apply_v1",
     ].join("\n");
 
     expect(parseAiActionLedgerPostgrestOpenApiVisibility(source)).toMatchObject({
@@ -24,6 +25,7 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
       approveRpcVisible: true,
       rejectRpcVisible: true,
       executeApprovedRpcVisible: true,
+      verifyApplyRpcVisible: true,
     });
   });
 
@@ -73,6 +75,18 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
     });
   });
 
+  it("classifies PGRST203 as obsolete overload ambiguity", () => {
+    expect(classifyAiActionLedgerPostgrestRpcProbe({
+      httpStatus: 300,
+      postgrestErrorCode: "PGRST203",
+      message: "Could not choose the best candidate function between overloaded signatures",
+    })).toMatchObject({
+      status: "BLOCKED_POSTGREST_RPC_AMBIGUOUS_OVERLOAD",
+      postgrestRpcVisible: false,
+      pgrst203: true,
+    });
+  });
+
   it("blocks when PostgREST URL/key are missing and never prints secrets", async () => {
     const result = await verifyAiActionLedgerPostgrestRpcVisibility(
       {},
@@ -90,17 +104,22 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
     expect(JSON.stringify(result)).not.toContain("postgres://");
   });
 
-  it("uses HTTP visibility probes without mutating ledger RPCs or service credentials", () => {
+  it("uses authenticated signature-aware HTTP probes without service credentials", () => {
     const source = fs.readFileSync(
       path.join(process.cwd(), "scripts/db/verifyAiActionLedgerPostgrestRpcVisibility.ts"),
       "utf8",
     );
 
     expect(source).toContain("/rest/v1");
-    expect(source).toContain("/rpc/${AI_ACTION_LEDGER_RPC_FUNCTIONS.getStatus}");
+    expect(source).toContain("/rpc/${params.fn}");
     expect(source).toContain("AI_ACTION_LEDGER_RPC_FUNCTIONS.getStatus");
+    expect(source).toContain("AI_ACTION_LEDGER_RPC_FUNCTIONS.verifyApply");
+    expect(source).toContain("signatureAwarePayload");
+    expect(source).toContain("all_6_rpc_signature_aware_probe_ok");
+    expect(source).toContain("pgrst203");
+    expect(source).toContain("old_stub_overloads");
+    expect(source).toContain("authenticated_execute_grant_ok");
     expect(source).not.toMatch(/\.rpc\s*\(/);
     expect(source).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY|auth\.admin|listUsers/i);
-    expect(source).not.toMatch(/submitForApproval\s*\(|approve\s*\(|reject\s*\(|executeApproved\s*\(/);
   });
 });
