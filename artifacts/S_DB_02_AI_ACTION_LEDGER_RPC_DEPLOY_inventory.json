@@ -1,0 +1,16 @@
+{
+  "wave": "S_DB_02_AI_ACTION_LEDGER_RPC_DEPLOY_AND_SCHEMA_CACHE_VERIFY",
+  "migration": "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
+  "preflight_script": "scripts/db/preflightAiActionLedgerMigration.ts",
+  "apply_script": "scripts/db/applyAiActionLedgerMigration.ts",
+  "verify_script": "scripts/db/verifyAiActionLedgerMigration.ts",
+  "runtime_probe": "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts",
+  "accepted_db_url_env_keys": [
+    "AI_ACTION_LEDGER_DATABASE_URL",
+    "DATABASE_URL",
+    "SUPABASE_DATABASE_URL",
+    "SUPABASE_DB_URL",
+    "POSTGRES_URL"
+  ],
+  "secrets_printed": false
+}
