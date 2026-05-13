@@ -28,8 +28,8 @@
   "fake_green": false,
   "blind_reapply": false,
   "android_runtime_smoke": "PASS",
-  "emulator_e2e": "NOT_RUN_DB_URL_NOT_AVAILABLE_IN_AGENT_PROCESS",
+  "emulator_e2e": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
   "blocker": "BLOCKED_DB_URL_NOT_APPROVED",
   "secondary_blocker": "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
-  "exact_reason": "The current agent process cannot see AI_ACTION_LEDGER_DATABASE_URL, so DB state inspect/history repair/schema cache verification cannot run here without printing or receiving the DB URL."
+  "exact_reason": "The current agent process cannot see AI_ACTION_LEDGER_DATABASE_URL, so DB state inspect/history repair/schema cache verification cannot run here; approval ledger E2E was run and confirmed the RPC functions are not deployed in the PostgREST schema cache."
 }
