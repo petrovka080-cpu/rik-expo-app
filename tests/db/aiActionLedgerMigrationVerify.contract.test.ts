@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import {
   AI_ACTION_LEDGER_VERIFY_QUERY,
   verifyAiActionLedgerMigrationPackage,
@@ -18,5 +21,26 @@ describe("AI action ledger migration verify package", () => {
       rawRowsPrinted: false,
       secretsPrinted: false,
     });
+  });
+
+  it("verifies every mounted runtime RPC needed by approval persistence", () => {
+    const source = fs.readFileSync(
+      path.join(
+        process.cwd(),
+        "supabase",
+        "migrations",
+        "20260513230000_ai_action_ledger_apply.sql",
+      ),
+      "utf8",
+    );
+
+    expect(source).toContain("ai_action_ledger_submit_for_approval_v1");
+    expect(source).toContain("ai_action_ledger_get_status_v1");
+    expect(source).toContain("ai_action_ledger_approve_v1");
+    expect(source).toContain("ai_action_ledger_reject_v1");
+    expect(source).toContain("ai_action_ledger_execute_approved_v1");
+    expect(source).toContain("'submitForApprovalRpcPresent'");
+    expect(source).toContain("'approveRpcPresent'");
+    expect(source).toContain("'rejectRpcPresent'");
   });
 });

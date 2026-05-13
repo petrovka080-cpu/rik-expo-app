@@ -1,0 +1,23 @@
+# S_AI_BACKEND_02_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_CLOSEOUT
+
+final_status: BLOCKED_LEDGER_RPC_NOT_DEPLOYED
+previous_blocker: BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND
+previous_blocker_closed: false
+migration_preflight_status: BLOCKED_DB_PREFLIGHT_FAILED
+migration_applied: false
+migration_verified: false
+persistent_backend: false
+submit_for_approval_persists_pending: false
+get_action_status_reads_persisted: false
+approve_reject_persist_status: false
+approval_inbox_reads_persisted: false
+approval_persistence_status: BLOCKED_LEDGER_RPC_NOT_DEPLOYED
+fake_local_approval: false
+fake_action_status: false
+fake_execution: false
+auth_admin_used: false
+list_users_used: false
+service_role_used: false
+seed_used: false
+mutations_created: 0
+exactReason: AI action ledger RPC functions are not deployed in the PostgREST schema cache.

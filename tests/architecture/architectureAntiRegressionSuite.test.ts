@@ -1849,6 +1849,55 @@ describe("architecture anti-regression suite", () => {
             "approval actor is outside company management scope",
           ].join("\n");
         }
+        if (relativePath === "supabase/migrations/20260513230000_ai_action_ledger_apply.sql") {
+          return [
+            "Additive only",
+            "Forward-fix plan",
+            "Rollback plan",
+            "Verify query: select public.ai_action_ledger_verify_apply_v1();",
+            "create index if not exists ai_action_ledger_org_hash_status_created_idx",
+            "create index if not exists ai_action_ledger_status_expires_idx",
+            "create policy ai_action_ledger_update_executed_company_scope",
+            "ai_action_ledger_actor_can_manage_company_v1",
+            "ai_action_ledger_submit_for_approval_v1",
+            "ai_action_ledger_get_status_v1",
+            "ai_action_ledger_approve_v1",
+            "ai_action_ledger_reject_v1",
+            "ai_action_ledger_execute_approved_v1",
+            "ai_action_ledger_find_by_idempotency_key_v1",
+            "ai_action_ledger_list_by_org_v1",
+            "'submitForApprovalRpcPresent'",
+            "'approveRpcPresent'",
+            "'rejectRpcPresent'",
+            "'rawRowsPrinted', false",
+            "'secretsPrinted', false",
+          ].join("\n");
+        }
+        if (relativePath === "scripts/db/preflightAiActionLedgerMigration.ts") {
+          return "preflightAiActionLedgerMigration\nresolveAiActionLedgerDatabaseUrlEnv";
+        }
+        if (relativePath === "scripts/db/applyAiActionLedgerMigration.ts") {
+          return "runAiActionLedgerMigrationApply\nBLOCKED_DB_PREFLIGHT_FAILED";
+        }
+        if (relativePath === "src/features/ai/actionLedger/aiActionLedgerRuntimeHealth.ts") {
+          return [
+            "probeAiActionLedgerRuntimeHealth",
+            "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+            "PGRST202",
+            "Could not find the function",
+            "schema cache",
+            "rawDbRowsExposed: false",
+          ].join("\n");
+        }
+        if (relativePath === "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts") {
+          return [
+            "runAiApprovalLedgerPersistenceMaestro",
+            "submit_for_approval_persists_pending",
+            "approve_reject_persist_status",
+            "fake_local_approval: false",
+            "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          ].join("\n");
+        }
         if (relativePath === "artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql") {
           return [
             "Additive proposal only",

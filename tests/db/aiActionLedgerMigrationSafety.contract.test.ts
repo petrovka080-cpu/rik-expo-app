@@ -20,6 +20,8 @@ describe("AI action ledger migration safety package", () => {
     expect(source).toContain("Additive only");
     expect(source).toContain("Apply only after explicit migration approval");
     expect(source).not.toMatch(/\b(drop|truncate|delete\s+from)\b/i);
+    expect(source).not.toMatch(/\bselect\s+\*/i);
+    expect(source).not.toMatch(/\breturning\s+\*/i);
     expect(source).not.toMatch(/\bservice_role\b|\bauth\.admin\b|\blistUsers\b/i);
 
     const packageResult = buildAiActionLedgerMigrationApplyPackage({ NODE_ENV: "test" });

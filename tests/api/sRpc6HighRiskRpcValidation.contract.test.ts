@@ -21,9 +21,11 @@ const read = (relativePath: string) =>
   readFileSync(join(root, relativePath), "utf8");
 const aiActionLedgerReadinessMigration =
   "supabase/migrations/20260513100000_ai_action_ledger_audit_rls_contract.sql";
+const aiActionLedgerApplyMigration =
+  "supabase/migrations/20260513230000_ai_action_ledger_apply.sql";
 
 const isApprovedAiActionLedgerReadinessPatch = (file: string) =>
-  file.replace(/\\/g, "/") === aiActionLedgerReadinessMigration;
+  [aiActionLedgerReadinessMigration, aiActionLedgerApplyMigration].includes(file.replace(/\\/g, "/"));
 
 const expectInvalid = (
   value: unknown,

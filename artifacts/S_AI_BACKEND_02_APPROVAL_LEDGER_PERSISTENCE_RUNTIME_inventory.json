@@ -1,0 +1,9 @@
+{
+  "wave": "S_AI_BACKEND_02_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_CLOSEOUT",
+  "runner": "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts",
+  "migration": "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
+  "runtime_mount": "src/features/ai/actionLedger/aiActionLedgerRuntimeMount.ts",
+  "runtime_health": "src/features/ai/actionLedger/aiActionLedgerRuntimeHealth.ts",
+  "approval_inbox_runtime": "src/features/ai/approvalInbox/approvalInboxRuntime.ts",
+  "secrets_printed": false
+}

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { AI_ACTION_LEDGER_APPLY_MIGRATION } from "./applyAiActionLedgerMigration";
+import { AI_ACTION_LEDGER_APPLY_MIGRATION } from "./aiActionLedgerMigrationShared";
 
 export const AI_ACTION_LEDGER_VERIFY_QUERY =
   "select public.ai_action_ledger_verify_apply_v1();";

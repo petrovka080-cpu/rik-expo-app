@@ -645,6 +645,12 @@ export type AiPersistentActionLedgerArchitectureSummary = {
   noUiModelProviderImport: boolean;
   noRawLedgerPayloadFields: boolean;
   e2eRunnerPresent: boolean;
+  migrationApplyPackagePresent: boolean;
+  persistenceRuntimeHealthPresent: boolean;
+  persistenceE2eRunnerPresent: boolean;
+  noSelectStarInApplyMigration: boolean;
+  exactRpcDeploymentBlockerClassified: boolean;
+  noServiceRoleInPersistenceRunner: boolean;
   findings: readonly string[];
 };
 
@@ -4937,6 +4943,31 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     safeReadProjectFile({ readFile, relativePath: AI_ACTION_LEDGER_WRITE_RPC_MIGRATION_PATH }) ?? "";
   const e2eRunnerSource =
     safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH }) ?? "";
+  const applyMigrationSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "supabase/migrations/20260513230000_ai_action_ledger_apply.sql",
+    }) ?? "";
+  const migrationPreflightSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "scripts/db/preflightAiActionLedgerMigration.ts",
+    }) ?? "";
+  const migrationApplySource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "scripts/db/applyAiActionLedgerMigration.ts",
+    }) ?? "";
+  const runtimeHealthSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/actionLedger/aiActionLedgerRuntimeHealth.ts",
+    }) ?? "";
+  const persistenceE2eRunnerSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts",
+    }) ?? "";
   const approvedExecutorGatewaySource =
     safeReadProjectFile({
       readFile,
@@ -5112,6 +5143,35 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     e2eRunnerSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND") &&
     e2eRunnerSource.includes("mutations_created: 0") &&
     e2eRunnerSource.includes("fake_local_approval: false");
+  const migrationApplyPackagePresent =
+    applyMigrationSource.includes("ai_action_ledger_submit_for_approval_v1") &&
+    applyMigrationSource.includes("ai_action_ledger_get_status_v1") &&
+    applyMigrationSource.includes("ai_action_ledger_approve_v1") &&
+    applyMigrationSource.includes("ai_action_ledger_reject_v1") &&
+    migrationPreflightSource.includes("preflightAiActionLedgerMigration") &&
+    migrationApplySource.includes("runAiActionLedgerMigrationApply") &&
+    migrationApplySource.includes("BLOCKED_DB_PREFLIGHT_FAILED");
+  const persistenceRuntimeHealthPresent =
+    runtimeHealthSource.includes("probeAiActionLedgerRuntimeHealth") &&
+    runtimeHealthSource.includes("BLOCKED_LEDGER_RPC_NOT_DEPLOYED") &&
+    runtimeHealthSource.includes("PGRST202") &&
+    runtimeHealthSource.includes("rawDbRowsExposed: false");
+  const persistenceE2eRunnerPresent =
+    persistenceE2eRunnerSource.includes("runAiApprovalLedgerPersistenceMaestro") &&
+    persistenceE2eRunnerSource.includes("submit_for_approval_persists_pending") &&
+    persistenceE2eRunnerSource.includes("approve_reject_persist_status") &&
+    persistenceE2eRunnerSource.includes("fake_local_approval: false") &&
+    persistenceE2eRunnerSource.includes("BLOCKED_LEDGER_RPC_NOT_DEPLOYED");
+  const noSelectStarInApplyMigration =
+    applyMigrationSource.length > 0 &&
+    !/\bselect\s+\*|\breturning\s+\*/i.test(applyMigrationSource);
+  const exactRpcDeploymentBlockerClassified =
+    persistenceE2eRunnerSource.includes("BLOCKED_LEDGER_RPC_NOT_DEPLOYED") &&
+    runtimeHealthSource.includes("Could not find the function") &&
+    runtimeHealthSource.includes("schema cache");
+  const noServiceRoleInPersistenceRunner =
+    persistenceE2eRunnerSource.length > 0 &&
+    !/SUPABASE_SERVICE_ROLE_KEY|auth\.admin|listUsers|\bservice_role\b/i.test(persistenceE2eRunnerSource);
   const findings = [
     ...(ledgerFilesPresent ? [] : ["ai_action_ledger_files_missing"]),
     ...(migrationProposalPresent ? [] : ["ai_action_ledger_migration_proposal_missing_or_unsafe"]),
@@ -5137,6 +5197,12 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
     ...(noUiModelProviderImport ? [] : ["ai_action_ledger_ui_model_provider_import_detected"]),
     ...(noRawLedgerPayloadFields ? [] : ["ai_action_ledger_raw_payload_field_detected"]),
     ...(e2eRunnerPresent ? [] : ["ai_action_ledger_e2e_runner_missing"]),
+    ...(migrationApplyPackagePresent ? [] : ["ai_action_ledger_apply_runtime_package_missing"]),
+    ...(persistenceRuntimeHealthPresent ? [] : ["ai_action_ledger_runtime_health_missing"]),
+    ...(persistenceE2eRunnerPresent ? [] : ["ai_action_ledger_persistence_e2e_runner_missing"]),
+    ...(noSelectStarInApplyMigration ? [] : ["ai_action_ledger_apply_select_star_detected"]),
+    ...(exactRpcDeploymentBlockerClassified ? [] : ["ai_action_ledger_rpc_deployment_blocker_not_classified"]),
+    ...(noServiceRoleInPersistenceRunner ? [] : ["ai_action_ledger_persistence_runner_service_role_detected"]),
   ];
 
   return {
@@ -5170,6 +5236,12 @@ export function evaluateAiPersistentActionLedgerGuardrail(params: {
       noUiModelProviderImport,
       noRawLedgerPayloadFields,
       e2eRunnerPresent,
+      migrationApplyPackagePresent,
+      persistenceRuntimeHealthPresent,
+      persistenceE2eRunnerPresent,
+      noSelectStarInApplyMigration,
+      exactRpcDeploymentBlockerClassified,
+      noServiceRoleInPersistenceRunner,
       findings,
     },
   };
@@ -8013,6 +8085,9 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_persistent_action_ledger_rpc_backend: ${report.aiPersistentActionLedger.rpcBackendAdapterPresent}`);
   console.info(`ai_persistent_action_ledger_write_rpc: ${report.aiPersistentActionLedger.writeRpcMountProposalPresent}`);
   console.info(`ai_persistent_action_ledger_no_fake_local: ${report.aiPersistentActionLedger.noFakeLocalApproval}`);
+  console.info(`ai_persistent_action_ledger_apply_package: ${report.aiPersistentActionLedger.migrationApplyPackagePresent}`);
+  console.info(`ai_persistent_action_ledger_runtime_health: ${report.aiPersistentActionLedger.persistenceRuntimeHealthPresent}`);
+  console.info(`ai_persistent_action_ledger_runtime_e2e: ${report.aiPersistentActionLedger.persistenceE2eRunnerPresent}`);
   console.info(`ai_approval_inbox_runtime: ${report.aiApprovalInboxRuntime.inboxFilesPresent}`);
   console.info(`ai_approval_inbox_persistent_ledger: ${report.aiApprovalInboxRuntime.persistentLedgerReadRequired}`);
   console.info(`ai_approval_inbox_review_panel_required: ${report.aiApprovalInboxRuntime.reviewPanelRequired}`);

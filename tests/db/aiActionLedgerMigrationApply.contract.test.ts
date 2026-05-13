@@ -4,6 +4,7 @@ import {
 import {
   AI_ACTION_LEDGER_APPLY_MIGRATION,
   buildAiActionLedgerMigrationApplyPackage,
+  runAiActionLedgerMigrationApply,
 } from "../../scripts/db/applyAiActionLedgerMigration";
 
 function approvedEnv(): Record<string, string> {
@@ -41,5 +42,25 @@ describe("AI action ledger migration apply approval package", () => {
       approvalValuesPrinted: false,
     });
     expect(result.exactReason).toContain("every exact owner approval flag");
+  });
+
+  it("does not attempt DB writes when the bounded apply DB URL is missing", async () => {
+    const result = await runAiActionLedgerMigrationApply(approvedEnv());
+
+    expect(result).toMatchObject({
+      status: "BLOCKED_DB_PREFLIGHT_FAILED",
+      migration: AI_ACTION_LEDGER_APPLY_MIGRATION,
+      databaseUrlEnv: "missing",
+      databaseUrlValuePrinted: false,
+      dbWriteAttempted: false,
+      sqlContentsPrinted: false,
+      rawRowsPrinted: false,
+      secretsPrinted: false,
+      destructiveMigration: false,
+      unboundedDml: false,
+      blocker: "BLOCKED_DB_PREFLIGHT_FAILED",
+    });
+    expect(JSON.stringify(result)).not.toContain("postgres://");
+    expect(JSON.stringify(result)).not.toContain("=true");
   });
 });
