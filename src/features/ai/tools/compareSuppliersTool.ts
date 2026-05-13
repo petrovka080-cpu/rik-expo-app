@@ -2,6 +2,11 @@ import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 import { readCompareSuppliersTransport } from "./transport/compareSuppliers.transport";
 import type { AiSupplierTransportItem } from "./transport/aiToolTransportTypes";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const COMPARE_SUPPLIERS_TOOL_NAME = "compare_suppliers" as const;
 export const COMPARE_SUPPLIERS_MAX_LIMIT = 10;
@@ -271,6 +276,21 @@ export async function runCompareSuppliersToolSafeRead(
       error: {
         code: "COMPARE_SUPPLIERS_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: COMPARE_SUPPLIERS_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: input.value.limit,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "COMPARE_SUPPLIERS_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

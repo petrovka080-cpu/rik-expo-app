@@ -1,0 +1,31 @@
+{
+  "wave": "S_AI_HARDEN_02_PER_TOOL_RATE_LIMIT_AND_BUDGET",
+  "final_status": "GREEN_AI_TOOL_RATE_LIMIT_BUDGET_READY",
+  "registered_tools": 9,
+  "rate_limit_policies": 9,
+  "budget_policies": 9,
+  "decision_engine_present": true,
+  "artifact_builder_present": true,
+  "tools_with_rate_scope": [
+    "search_catalog",
+    "compare_suppliers",
+    "get_warehouse_status",
+    "get_finance_summary",
+    "draft_request",
+    "draft_report",
+    "draft_act",
+    "submit_for_approval",
+    "get_action_status"
+  ],
+  "missing_rate_limit_policies": [],
+  "missing_budget_policies": [],
+  "invalid_rate_limit_policies": [],
+  "invalid_budget_policies": [],
+  "approval_tools_require_idempotency": true,
+  "unlimited_retries_allowed": false,
+  "enforcement_enabled_by_default": false,
+  "external_store_required_for_live_enforcement": true,
+  "production_env_mutation": false,
+  "credentials_printed": false,
+  "secrets_in_artifact": false
+}

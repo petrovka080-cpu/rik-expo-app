@@ -1,0 +1,14 @@
+{
+  "wave": "S_AI_HARDEN_02_PER_TOOL_RATE_LIMIT_AND_BUDGET",
+  "android_runtime_smoke": "PASS",
+  "android_runtime_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "command_center_task_stream_e2e": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+  "command_center_task_stream_e2e_exact_reason": "Explicit director E2E credentials are required; discovery and seed fallbacks are not allowed.",
+  "android_apk_rebuild": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "android_apk_rebuild_exact_reason": "EAS Free plan Android build quota exhausted until 2026-06-01.",
+  "mutations_created": 0,
+  "fake_green": false,
+  "credentials_in_cli_args": false,
+  "credentials_printed": false,
+  "secrets_in_artifact": false
+}

@@ -6,6 +6,8 @@ import {
 import { planAiToolUse, type AiToolPlan } from "../tools/aiToolPlanPolicy";
 import { AI_TOOL_REGISTRY } from "../tools/aiToolRegistry";
 import type { AiToolDefinition } from "../tools/aiToolTypes";
+import { getAiToolBudgetPolicy } from "../rateLimit/aiToolBudgetPolicy";
+import { decideAiToolRateLimit, type AiToolRateLimitDecision } from "../rateLimit/aiToolRateLimitDecision";
 import { loadAiTaskStreamRuntime } from "../taskStream/aiTaskStreamRuntime";
 import type {
   AiTaskStreamRuntimeEvidenceInput,
@@ -313,6 +315,10 @@ export type AgentBffVisibleTool = {
   riskLevel: AiToolDefinition["riskLevel"];
   approvalRequired: boolean;
   rateLimitScope: string;
+  maxRequestsPerMinute: number;
+  maxPayloadBytes: number;
+  maxResultLimit: number;
+  cooldownMs: number;
   cacheAllowed: boolean;
   evidenceRequired: boolean;
   routeMode: AiToolPlan["mode"];
@@ -322,6 +328,7 @@ export type AgentBffToolValidationDto = {
   toolName: string;
   valid: boolean;
   plan: AiToolPlan;
+  rateLimitDecision: AiToolRateLimitDecision;
   mutationCount: 0;
   executed: false;
 };
@@ -330,6 +337,7 @@ export type AgentBffToolPreviewDto = {
   toolName: string;
   previewAvailable: boolean;
   plan: AiToolPlan;
+  rateLimitDecision: AiToolRateLimitDecision;
   mutationCount: 0;
   executed: false;
   persisted: false;
@@ -1407,6 +1415,7 @@ function isToolVisibleForRole(toolName: string, role: AiUserRole): boolean {
 
 function toVisibleTool(tool: AiToolDefinition, role: AiUserRole): AgentBffVisibleTool | null {
   const plan = planAiToolUse({ toolName: tool.name, role });
+  const budget = getAiToolBudgetPolicy(tool.name);
   if (!plan.allowed) return null;
 
   return {
@@ -1415,7 +1424,11 @@ function toVisibleTool(tool: AiToolDefinition, role: AiUserRole): AgentBffVisibl
     domain: tool.domain,
     riskLevel: tool.riskLevel,
     approvalRequired: tool.approvalRequired,
-    rateLimitScope: tool.rateLimitScope,
+    rateLimitScope: plan.rateLimitDecision.rateLimitScope ?? tool.rateLimitScope,
+    maxRequestsPerMinute: plan.rateLimitDecision.maxRequestsPerMinute ?? 0,
+    maxPayloadBytes: budget?.maxPayloadBytes ?? 0,
+    maxResultLimit: budget?.maxResultLimit ?? 0,
+    cooldownMs: plan.rateLimitDecision.cooldownMs ?? 0,
     cacheAllowed: tool.cacheAllowed,
     evidenceRequired: tool.evidenceRequired,
     routeMode: plan.mode,
@@ -1449,6 +1462,10 @@ export function validateAgentBffTool(request: AgentBffToolRouteRequest): AgentBf
   if (!isToolVisibleForRole(request.toolName, auth.role)) return toolNotVisibleError();
 
   const plan = planAiToolUse({ toolName: request.toolName, role: auth.role });
+  const rateLimitDecision = decideAiToolRateLimit({
+    toolName: request.toolName,
+    role: auth.role,
+  });
 
   return {
     ok: true,
@@ -1460,6 +1477,7 @@ export function validateAgentBffTool(request: AgentBffToolRouteRequest): AgentBf
         toolName: request.toolName,
         valid: plan.allowed,
         plan,
+        rateLimitDecision,
         mutationCount: 0,
         executed: false,
       },
@@ -1474,6 +1492,10 @@ export function previewAgentBffTool(request: AgentBffToolRouteRequest): AgentBff
   if (!isToolVisibleForRole(request.toolName, auth.role)) return toolNotVisibleError();
 
   const plan = planAiToolUse({ toolName: request.toolName, role: auth.role });
+  const rateLimitDecision = decideAiToolRateLimit({
+    toolName: request.toolName,
+    role: auth.role,
+  });
 
   return {
     ok: true,
@@ -1485,6 +1507,7 @@ export function previewAgentBffTool(request: AgentBffToolRouteRequest): AgentBff
         toolName: request.toolName,
         previewAvailable: plan.allowed,
         plan,
+        rateLimitDecision,
         mutationCount: 0,
         executed: false,
         persisted: false,

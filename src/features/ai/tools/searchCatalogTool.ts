@@ -5,6 +5,11 @@ import {
 } from "./transport/searchCatalog.transport";
 import type { AiCatalogSearchTransportItem } from "./transport/aiToolTransportTypes";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const SEARCH_CATALOG_TOOL_NAME = "search_catalog" as const;
 export const SEARCH_CATALOG_ROUTE_SCOPE = "marketplace.catalog.search" as const;
@@ -244,6 +249,21 @@ export async function runSearchCatalogToolSafeRead(
       error: {
         code: "SEARCH_CATALOG_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: SEARCH_CATALOG_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: input.value.limit,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "SEARCH_CATALOG_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

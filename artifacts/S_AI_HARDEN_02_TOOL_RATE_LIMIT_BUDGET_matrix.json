@@ -1,0 +1,22 @@
+{
+  "final_status": "GREEN_AI_TOOL_RATE_LIMIT_BUDGET_READY",
+  "all_tools_have_rate_scope": true,
+  "all_tools_have_budget_policy": true,
+  "all_tools_have_max_payload": true,
+  "all_tools_have_max_result_limit": true,
+  "all_tools_have_role_scope": true,
+  "approval_tools_have_idempotency": true,
+  "audit_required": true,
+  "evidence_required": true,
+  "rate_decision_in_plan_policy": true,
+  "rate_decision_in_agent_bff": true,
+  "rate_decision_in_runtime_tools": true,
+  "unlimited_retries": false,
+  "production_env_mutation": false,
+  "direct_supabase_from_ui": false,
+  "model_provider_from_ui": false,
+  "credentials_printed": false,
+  "android_runtime_smoke": "PASS",
+  "emulator_e2e": "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+  "android_apk_rebuild": "BLOCKED_ANDROID_APK_BUILD_FAILED"
+}

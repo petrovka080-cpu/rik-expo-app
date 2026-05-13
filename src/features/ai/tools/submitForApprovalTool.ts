@@ -6,6 +6,11 @@ import {
   submitForApprovalTransport,
 } from "./transport/submitForApproval.transport";
 import { planAiToolUse } from "./aiToolPlanPolicy";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const SUBMIT_FOR_APPROVAL_TOOL_NAME = "submit_for_approval" as const;
 export const SUBMIT_FOR_APPROVAL_MAX_EVIDENCE_REFS = 20;
@@ -234,6 +239,23 @@ export async function runSubmitForApprovalToolGate(
       error: {
         code: "SUBMIT_FOR_APPROVAL_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: SUBMIT_FOR_APPROVAL_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: 1,
+    idempotencyKey: input.value.idempotency_key,
+    evidenceRefs: input.value.evidence_refs,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "SUBMIT_FOR_APPROVAL_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

@@ -219,6 +219,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "tools", "transport", "submitForApproval.transport.ts"),
       path.join(SRC, "features", "ai", "tools", "transport", "getActionStatus.transport.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiHarden02ToolRateLimitBudgetFiles = [
+      path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitPolicy.ts"),
+      path.join(SRC, "features", "ai", "rateLimit", "aiToolBudgetPolicy.ts"),
+      path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitDecision.ts"),
+      path.join(SRC, "features", "ai", "rateLimit", "aiToolRateLimitArtifacts.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiProduct01DailyCommandCenterFiles = [
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterScreen.tsx"),
       path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterTypes.ts"),
@@ -1070,6 +1076,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiSubmitForApprovalToolFiles).toBeLessThanOrEqual(1);
     expect(sAiGetActionStatusToolFiles).toBeLessThanOrEqual(1);
     expect(sAiHarden01ToolTransportBoundaryFiles).toBeLessThanOrEqual(10);
+    expect(sAiHarden02ToolRateLimitBudgetFiles).toBeLessThanOrEqual(4);
     expect(sAiProduct01DailyCommandCenterFiles).toBeLessThanOrEqual(6);
     expect(sAiProduct02TaskStreamRuntimeFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic01AppActionGraphInternalFirstFiles).toBeLessThanOrEqual(16);
@@ -1101,6 +1108,7 @@ describe("performance budget — bundle module count", () => {
         sAiSubmitForApprovalToolFiles -
         sAiGetActionStatusToolFiles -
         sAiHarden01ToolTransportBoundaryFiles -
+        sAiHarden02ToolRateLimitBudgetFiles -
         sAiProduct01DailyCommandCenterFiles -
         sAiProduct02TaskStreamRuntimeFiles -
         sAiMagic01AppActionGraphInternalFirstFiles -

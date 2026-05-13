@@ -6,6 +6,11 @@ import {
 import type {
   AiWarehouseStatusTransportRow,
 } from "./transport/aiToolTransportTypes";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const GET_WAREHOUSE_STATUS_TOOL_NAME = "get_warehouse_status" as const;
 export const GET_WAREHOUSE_STATUS_MAX_LIMIT = 20;
@@ -417,6 +422,21 @@ export async function runGetWarehouseStatusToolSafeRead(
       error: {
         code: "GET_WAREHOUSE_STATUS_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: GET_WAREHOUSE_STATUS_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: input.value.limit,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "GET_WAREHOUSE_STATUS_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

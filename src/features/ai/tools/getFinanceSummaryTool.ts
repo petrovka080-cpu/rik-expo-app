@@ -1,6 +1,11 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 import { readFinanceSummaryTransport } from "./transport/financeSummary.transport";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const GET_FINANCE_SUMMARY_TOOL_NAME = "get_finance_summary" as const;
 export const GET_FINANCE_SUMMARY_ROUTE_OPERATION = "director.finance.rpc.scope" as const;
@@ -314,6 +319,21 @@ export async function runGetFinanceSummaryToolSafeRead(
       error: {
         code: "GET_FINANCE_SUMMARY_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: GET_FINANCE_SUMMARY_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: 1,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "GET_FINANCE_SUMMARY_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

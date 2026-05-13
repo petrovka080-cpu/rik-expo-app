@@ -1,6 +1,11 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 import { markDraftActTransportBoundary } from "./transport/draftAct.transport";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export const DRAFT_ACT_TOOL_NAME = "draft_act" as const;
 export const DRAFT_ACT_MAX_WORK_ITEMS = 50;
@@ -337,6 +342,21 @@ export async function runDraftActToolDraftOnly(
       error: {
         code: "DRAFT_ACT_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+  const rateDecision = decideAiToolRateLimit({
+    toolName: DRAFT_ACT_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: 1,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "DRAFT_ACT_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

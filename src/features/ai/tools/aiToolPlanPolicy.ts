@@ -9,6 +9,10 @@ import {
 } from "./aiToolReadBindings";
 import { AI_TOOL_NAMES, getAiToolDefinition } from "./aiToolRegistry";
 import type { AiToolName } from "./aiToolTypes";
+import {
+  decideAiToolRateLimit,
+  type AiToolRateLimitDecision,
+} from "../rateLimit/aiToolRateLimitDecision";
 
 export type AiToolPlanMode =
   | "read_contract_plan"
@@ -46,6 +50,7 @@ export type AiToolPlan = {
   evidenceRequired: boolean;
   auditEvent: AiActionAuditEventType | null;
   rateLimitScope: string | null;
+  rateLimitDecision: AiToolRateLimitDecision;
   cacheAllowed: boolean;
   readBinding: AiSafeReadToolBinding | null;
   blockReason: AiToolPlanBlockReason | null;
@@ -123,6 +128,10 @@ function blockedPlan(params: {
     evidenceRequired: params.evidenceRequired ?? true,
     auditEvent: params.auditEvent ?? null,
     rateLimitScope: params.rateLimitScope ?? null,
+    rateLimitDecision: decideAiToolRateLimit({
+      toolName: params.toolName,
+      role: params.role,
+    }),
     cacheAllowed: params.cacheAllowed ?? false,
     readBinding: params.readBinding ?? null,
     blockReason: params.blockReason,
@@ -254,6 +263,10 @@ export function planAiToolUse(request: AiToolPlanRequest): AiToolPlan {
     evidenceRequired: tool.evidenceRequired,
     auditEvent: tool.auditEvent,
     rateLimitScope: tool.rateLimitScope,
+    rateLimitDecision: decideAiToolRateLimit({
+      toolName: tool.name,
+      role: request.role,
+    }),
     cacheAllowed: tool.cacheAllowed,
     readBinding,
     blockReason: null,

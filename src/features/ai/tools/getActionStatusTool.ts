@@ -6,6 +6,11 @@ import {
   type AiUserRole,
 } from "../policy/aiRolePolicy";
 import type { AiActionType } from "../policy/aiRiskPolicy";
+import {
+  decideAiToolRateLimit,
+  explainAiToolRateLimitBlock,
+  measureAiToolPayloadBytes,
+} from "../rateLimit/aiToolRateLimitDecision";
 import { planAiToolUse } from "./aiToolPlanPolicy";
 import {
   ledgerActionToToolAction,
@@ -297,6 +302,22 @@ export async function runGetActionStatusToolSafeRead(
       error: {
         code: "GET_ACTION_STATUS_INVALID_INPUT",
         message: input.message,
+      },
+    };
+  }
+
+  const rateDecision = decideAiToolRateLimit({
+    toolName: GET_ACTION_STATUS_TOOL_NAME,
+    role: request.auth.role,
+    payloadBytes: measureAiToolPayloadBytes(request.input),
+    requestedLimit: 1,
+  });
+  if (!rateDecision.allowed) {
+    return {
+      ok: false,
+      error: {
+        code: "GET_ACTION_STATUS_INVALID_INPUT",
+        message: explainAiToolRateLimitBlock(rateDecision),
       },
     };
   }

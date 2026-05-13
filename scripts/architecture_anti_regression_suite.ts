@@ -354,6 +354,22 @@ export type AiToolTransportBoundaryArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiToolRateLimitPolicyArchitectureSummary = {
+  policyFilesPresent: boolean;
+  allToolsHaveRateLimitScope: boolean;
+  allToolsHaveBudgetPolicy: boolean;
+  allToolsHaveMaxPayload: boolean;
+  allToolsHaveRoleScope: boolean;
+  approvalToolsRequireIdempotency: boolean;
+  toolPlanIncludesRateDecision: boolean;
+  agentBffExposesRateDecision: boolean;
+  runtimeToolsUseRateDecision: boolean;
+  noProviderImports: boolean;
+  noSupabaseImports: boolean;
+  noProductionEnvMutation: boolean;
+  findings: readonly string[];
+};
+
 export type AgentBffRouteShellArchitectureSummary = {
   shellPresent: boolean;
   allRoutesPresent: boolean;
@@ -775,6 +791,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolReadBindingsArchitecture: AiToolReadBindingsArchitectureSummary;
   aiToolPlanPolicyArchitecture: AiToolPlanPolicyArchitectureSummary;
   aiToolTransportBoundary: AiToolTransportBoundaryArchitectureSummary;
+  aiToolRateLimitPolicy: AiToolRateLimitPolicyArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
@@ -1024,6 +1041,10 @@ const AI_TOOL_TRANSPORT_FILES = [
   "src/features/ai/tools/transport/submitForApproval.transport.ts",
   "src/features/ai/tools/transport/getActionStatus.transport.ts",
 ] as const;
+const AI_TOOL_RATE_LIMIT_POLICY_PATH = "src/features/ai/rateLimit/aiToolRateLimitPolicy.ts";
+const AI_TOOL_BUDGET_POLICY_PATH = "src/features/ai/rateLimit/aiToolBudgetPolicy.ts";
+const AI_TOOL_RATE_LIMIT_DECISION_PATH = "src/features/ai/rateLimit/aiToolRateLimitDecision.ts";
+const AI_TOOL_RATE_LIMIT_ARTIFACTS_PATH = "src/features/ai/rateLimit/aiToolRateLimitArtifacts.ts";
 const AI_TOOL_RUNTIME_FILES = [
   "src/features/ai/tools/searchCatalogTool.ts",
   "src/features/ai/tools/compareSuppliersTool.ts",
@@ -2683,6 +2704,121 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
       noTransportProviderImports,
       noTransportSupabaseImports,
       boundedRequestContracts,
+      findings,
+    },
+  };
+}
+
+const aiToolRateLimitProviderPattern =
+  /\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider/i;
+const aiToolRateLimitSupabasePattern =
+  /@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i;
+const aiToolRateLimitEnvMutationPattern = /process\.env\.[A-Z0-9_]+\s*=/;
+
+function hasToolPolicyBlock(source: string | null | undefined, toolName: string, requiredText: string): boolean {
+  if (!source) return false;
+  const toolIndex = source.indexOf(`toolName: "${toolName}"`);
+  if (toolIndex < 0) return false;
+  const nextToolIndex = source.indexOf("toolName:", toolIndex + 1);
+  const block = source.slice(toolIndex, nextToolIndex < 0 ? undefined : nextToolIndex);
+  return block.includes(requiredText);
+}
+
+export function evaluateAiToolRateLimitPolicyGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiToolRateLimitPolicyArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const ratePolicySource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_RATE_LIMIT_POLICY_PATH });
+  const budgetPolicySource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_BUDGET_POLICY_PATH });
+  const decisionSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_RATE_LIMIT_DECISION_PATH });
+  const artifactsSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_RATE_LIMIT_ARTIFACTS_PATH });
+  const planPolicySource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_PLAN_POLICY_PATH });
+  const agentBffSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH });
+  const runtimeSources = AI_TOOL_RUNTIME_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const combinedRateLimitSource = [
+    ratePolicySource ?? "",
+    budgetPolicySource ?? "",
+    decisionSource ?? "",
+    artifactsSource ?? "",
+  ].join("\n");
+
+  const policyFilesPresent = Boolean(ratePolicySource && budgetPolicySource && decisionSource && artifactsSource);
+  const allToolsHaveRateLimitScope = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+    hasToolPolicyBlock(ratePolicySource, toolName, `rateLimitScope: "ai.tool.${toolName}"`),
+  );
+  const allToolsHaveBudgetPolicy = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+    Boolean(budgetPolicySource?.includes(`toolName: "${toolName}"`)),
+  );
+  const allToolsHaveMaxPayload = REQUIRED_AI_TOOL_NAMES.every((toolName) =>
+    hasToolPolicyBlock(budgetPolicySource, toolName, "maxPayloadBytes:"),
+  );
+  const allToolsHaveRoleScope =
+    Boolean(ratePolicySource?.includes("roleScoped: true")) &&
+    REQUIRED_AI_TOOL_NAMES.every((toolName) => hasToolPolicyBlock(ratePolicySource, toolName, "allowedRoles:"));
+  const approvalToolsRequireIdempotency =
+    hasToolPolicyBlock(ratePolicySource, "submit_for_approval", "idempotencyRequired: true") &&
+    hasToolPolicyBlock(budgetPolicySource, "submit_for_approval", "idempotencyRequired: true");
+  const toolPlanIncludesRateDecision =
+    Boolean(planPolicySource?.includes("rateLimitDecision")) &&
+    Boolean(planPolicySource?.includes("decideAiToolRateLimit"));
+  const agentBffExposesRateDecision =
+    Boolean(agentBffSource?.includes("rateLimitDecision")) &&
+    Boolean(agentBffSource?.includes("maxPayloadBytes")) &&
+    Boolean(agentBffSource?.includes("maxResultLimit"));
+  const runtimeToolsUseRateDecision = runtimeSources.every((entry) =>
+    Boolean(entry.source?.includes("decideAiToolRateLimit")),
+  );
+  const noProviderImports = !aiToolRateLimitProviderPattern.test(combinedRateLimitSource);
+  const noSupabaseImports = !aiToolRateLimitSupabasePattern.test(combinedRateLimitSource);
+  const noProductionEnvMutation = !aiToolRateLimitEnvMutationPattern.test(combinedRateLimitSource);
+  const runtimeBypassFindings = runtimeSources
+    .filter((entry) => !entry.source?.includes("decideAiToolRateLimit"))
+    .map((entry) => `ai_tool_runtime_bypasses_rate_policy:${entry.relativePath}`);
+  const findings = [
+    ...runtimeBypassFindings,
+    ...(noProviderImports ? [] : ["ai_tool_rate_limit_provider_import_detected"]),
+    ...(noSupabaseImports ? [] : ["ai_tool_rate_limit_supabase_import_detected"]),
+    ...(noProductionEnvMutation ? [] : ["ai_tool_rate_limit_env_mutation_detected"]),
+  ];
+  const errors = [
+    ...(policyFilesPresent ? [] : ["ai_tool_rate_limit_policy_files_missing"]),
+    ...(allToolsHaveRateLimitScope ? [] : ["registered_tool_missing_rateLimitScope"]),
+    ...(allToolsHaveBudgetPolicy ? [] : ["registered_tool_missing_budget_policy"]),
+    ...(allToolsHaveMaxPayload ? [] : ["registered_tool_missing_maxPayload"]),
+    ...(allToolsHaveRoleScope ? [] : ["registered_tool_missing_role_scope"]),
+    ...(approvalToolsRequireIdempotency ? [] : ["approval_tool_missing_idempotency"]),
+    ...(toolPlanIncludesRateDecision ? [] : ["tool_plan_missing_rate_decision"]),
+    ...(agentBffExposesRateDecision ? [] : ["agent_bff_missing_rate_decision_dto"]),
+    ...(runtimeToolsUseRateDecision ? [] : ["tool_execution_bypasses_rate_policy"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_tool_rate_limit_policy",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      policyFilesPresent,
+      allToolsHaveRateLimitScope,
+      allToolsHaveBudgetPolicy,
+      allToolsHaveMaxPayload,
+      allToolsHaveRoleScope,
+      approvalToolsRequireIdempotency,
+      toolPlanIncludesRateDecision,
+      agentBffExposesRateDecision,
+      runtimeToolsUseRateDecision,
+      noProviderImports,
+      noSupabaseImports,
+      noProductionEnvMutation,
       findings,
     },
   };
@@ -6480,6 +6616,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolReadBindingsArchitecture = evaluateAiToolReadBindingsArchitectureGuardrail({ projectRoot });
   const aiToolPlanPolicyArchitecture = evaluateAiToolPlanPolicyArchitectureGuardrail({ projectRoot });
   const aiToolTransportBoundary = evaluateAiToolTransportBoundaryGuardrail({ projectRoot });
+  const aiToolRateLimitPolicy = evaluateAiToolRateLimitPolicyGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
@@ -6522,6 +6659,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture.check,
     aiToolPlanPolicyArchitecture.check,
     aiToolTransportBoundary.check,
+    aiToolRateLimitPolicy.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
     aiAppActionGraphArchitecture.check,
@@ -6565,6 +6703,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolReadBindingsArchitecture: aiToolReadBindingsArchitecture.summary,
     aiToolPlanPolicyArchitecture: aiToolPlanPolicyArchitecture.summary,
     aiToolTransportBoundary: aiToolTransportBoundary.summary,
+    aiToolRateLimitPolicy: aiToolRateLimitPolicy.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
@@ -6628,6 +6767,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_tool_transport_boundary: ${report.aiToolTransportBoundary.transportFilesPresent}`);
   console.info(`ai_tool_transport_no_direct_bff: ${report.aiToolTransportBoundary.noToolDirectBffImports}`);
+  console.info(`ai_tool_rate_limit_policy: ${report.aiToolRateLimitPolicy.policyFilesPresent}`);
+  console.info(`ai_tool_rate_limit_runtime_gate: ${report.aiToolRateLimitPolicy.runtimeToolsUseRateDecision}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
