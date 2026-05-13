@@ -27,6 +27,7 @@ export const AI_ACTION_LEDGER_REQUIRED_POLICIES = [
 
 export type AiActionLedgerMigrationState =
   | "STATE_A_OBJECTS_AND_HISTORY_PRESENT"
+  | "STATE_READY_BUT_POSTGREST_SCHEMA_CACHE_STALE"
   | "STATE_B_OBJECTS_PRESENT_HISTORY_MISSING"
   | "STATE_C_OBJECTS_MISSING_HISTORY_MISSING"
   | "STATE_D_PARTIAL_OBJECTS_HISTORY_MISSING"
@@ -127,6 +128,9 @@ export function classifyAiActionLedgerMigrationState(
 
   if (objectsPresent && schemaCacheVisible && input.migrationHistoryRecordExists) {
     return "STATE_A_OBJECTS_AND_HISTORY_PRESENT";
+  }
+  if (objectsPresent && !schemaCacheVisible && input.migrationHistoryRecordExists) {
+    return "STATE_READY_BUT_POSTGREST_SCHEMA_CACHE_STALE";
   }
   if (input.migrationHistoryRecordExists && (!objectsPresent || !schemaCacheVisible)) {
     return "STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS";

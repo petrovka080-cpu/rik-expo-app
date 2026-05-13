@@ -29,7 +29,7 @@ describe("AI action ledger migration state inspection", () => {
       ...allObjects,
       migrationHistoryRecordExists: true,
       postgrestSchemaCacheRpcVisible: false,
-    })).toBe("STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS");
+    })).toBe("STATE_READY_BUT_POSTGREST_SCHEMA_CACHE_STALE");
     expect(classifyAiActionLedgerMigrationState({
       ...allObjects,
       migrationHistoryRecordExists: false,

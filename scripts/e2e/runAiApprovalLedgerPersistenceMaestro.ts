@@ -9,6 +9,7 @@ import type { AiActionLedgerRpcTransport } from "../../src/features/ai/actionLed
 import { loadApprovalInbox } from "../../src/features/ai/approvalInbox/approvalInboxRuntime";
 import { stableHashOpaqueId } from "../../src/features/ai/actionLedger/aiActionLedgerPolicy";
 import { preflightAiActionLedgerMigration } from "../db/preflightAiActionLedgerMigration";
+import { verifyAiActionLedgerPostgrestRpcVisibility } from "../db/verifyAiActionLedgerPostgrestRpcVisibility";
 import { loadAgentOwnerFlagsIntoEnv, parseAgentEnvFileValues } from "../env/checkRequiredAgentFlags";
 import { verifyAndroidInstalledBuildRuntime } from "../release/verifyAndroidInstalledBuildRuntime";
 import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
@@ -18,6 +19,8 @@ type ApprovalLedgerPersistenceStatus =
   | "BLOCKED_REQUIRED_OWNER_FLAGS_MISSING"
   | "BLOCKED_DB_PREFLIGHT_FAILED"
   | "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+  | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
+  | "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED"
   | "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
   | "BLOCKED_APPROVAL_LEDGER_EMULATOR_TARGETABILITY"
   | "BLOCKED_ANDROID_RUNTIME_SMOKE_FAILED";
@@ -61,6 +64,9 @@ type ApprovalLedgerPersistenceArtifact = {
   android_runtime_smoke: "PASS" | "BLOCKED_ANDROID_RUNTIME_SMOKE_FAILED" | "PASS_OR_EXACT_BLOCKER";
   emulator_e2e: "PASS" | ApprovalLedgerPersistenceStatus;
   approval_persistence_status: string;
+  sql_rpc_functions_exist: boolean | "unknown";
+  postgrest_rpc_visible: boolean | "unknown";
+  secondary_blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED" | null;
   blocker: Exclude<ApprovalLedgerPersistenceStatus, "GREEN_AI_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_READY"> | null;
   exactReason: string | null;
 };
@@ -121,6 +127,9 @@ function writeProof(artifact: ApprovalLedgerPersistenceArtifact): void {
     `${SERVICE_ROLE_USED_FIELD}: false`,
     "seed_used: false",
     `mutations_created: ${String(artifact.mutations_created)}`,
+    `sql_rpc_functions_exist: ${String(artifact.sql_rpc_functions_exist)}`,
+    `postgrest_rpc_visible: ${String(artifact.postgrest_rpc_visible)}`,
+    artifact.secondary_blocker ? `secondary_blocker: ${artifact.secondary_blocker}` : "secondary_blocker: null",
     artifact.exactReason ? `exactReason: ${artifact.exactReason}` : "exactReason: null",
   ];
   fs.writeFileSync(
@@ -198,6 +207,9 @@ function baseArtifact(params: {
     android_runtime_smoke: params.androidRuntimeSmoke ?? "PASS_OR_EXACT_BLOCKER",
     emulator_e2e: green ? "PASS" : params.status,
     approval_persistence_status: params.status,
+    sql_rpc_functions_exist: "unknown",
+    postgrest_rpc_visible: "unknown",
+    secondary_blocker: null,
     blocker: params.blocker,
     exactReason: params.exactReason,
     ...params.overrides,
@@ -341,6 +353,54 @@ export async function runAiApprovalLedgerPersistenceMaestro(): Promise<ApprovalL
     actorRole: "director",
   });
   if (health.status !== "GREEN_AI_ACTION_LEDGER_RUNTIME_HEALTH_READY") {
+    if (health.status === "BLOCKED_LEDGER_RPC_NOT_DEPLOYED") {
+      const visibility = await verifyAiActionLedgerPostgrestRpcVisibility(process.env, projectRoot);
+      if (visibility.directSqlFunctionsChecked && visibility.directSqlFunctionsExist && !visibility.postgrestRpcVisible) {
+        return baseArtifact({
+          status: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
+          preflightStatus: preflight.status,
+          persistentBackend: false,
+          blocker: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
+          androidRuntimeSmoke: androidSmoke.status,
+          exactReason: "SQL RPC functions exist, but PostgREST schema cache does not expose them yet.",
+          overrides: {
+            sql_rpc_functions_exist: true,
+            postgrest_rpc_visible: false,
+            secondary_blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          },
+        });
+      }
+      if (visibility.directSqlFunctionsChecked && !visibility.directSqlFunctionsExist) {
+        return baseArtifact({
+          status: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          preflightStatus: preflight.status,
+          persistentBackend: false,
+          blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          androidRuntimeSmoke: androidSmoke.status,
+          exactReason: "SQL RPC functions are missing in DB.",
+          overrides: {
+            sql_rpc_functions_exist: false,
+            postgrest_rpc_visible: visibility.postgrestRpcVisible,
+          },
+        });
+      }
+      if (visibility.status === "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED") {
+        return baseArtifact({
+          status: "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED",
+          preflightStatus: preflight.status,
+          persistentBackend: false,
+          blocker: "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED",
+          androidRuntimeSmoke: androidSmoke.status,
+          exactReason: visibility.exactReason,
+          overrides: {
+            sql_rpc_functions_exist: visibility.directSqlFunctionsChecked
+              ? visibility.directSqlFunctionsExist
+              : "unknown",
+            postgrest_rpc_visible: true,
+          },
+        });
+      }
+    }
     return baseArtifact({
       status:
         health.status === "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
