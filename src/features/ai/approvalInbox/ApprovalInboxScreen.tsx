@@ -29,6 +29,7 @@ export default function ApprovalInboxScreen(props: ApprovalInboxScreenProps) {
 
   return (
     <SafeAreaView testID="ai.approval.inbox.screen" style={styles.safe} edges={["top", "bottom"]}>
+      <View testID="ai.approval_inbox.screen" style={styles.runtimeInvisibleMarker} />
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.header}>
           <View style={styles.headerIcon}>
@@ -161,6 +162,11 @@ const styles = StyleSheet.create({
     color: "#854D0E",
     fontSize: 12,
     fontWeight: "900",
+  },
+  runtimeInvisibleMarker: {
+    width: 1,
+    height: 1,
+    opacity: 0.01,
   },
   section: {
     gap: 10,

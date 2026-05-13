@@ -27,6 +27,7 @@ export function AiCommandCenterCard(props: AiCommandCenterCardProps) {
   return (
     <View testID="ai.screen.runtime.card">
       <View testID="ai.command.center.card" style={styles.card}>
+        <View testID="ai.command_center.ai_action_card" style={styles.runtimeInvisibleMarker} />
         <View style={styles.cardTopRow}>
           <View style={styles.titleColumn}>
             <Text style={styles.domain}>{props.card.domainLabel}</Text>

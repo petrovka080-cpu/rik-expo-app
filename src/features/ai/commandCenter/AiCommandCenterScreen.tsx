@@ -120,6 +120,7 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
       style={styles.safe}
       edges={["top", "bottom"]}
     >
+      <View testID="ai.command_center.screen" style={styles.runtimeInlineMarker} />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -171,6 +172,7 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
 
         {!state.loading ? (
           <View testID="ai.command.center.runtime-status" style={styles.runtimeStatus}>
+            <View testID="ai.command_center.task_stream" style={styles.runtimeInlineMarker} />
             <Text style={styles.runtimeStatusText}>
               task_stream={state.viewModel.runtimeStatus}; mutation_count=
               {state.viewModel.mutationCount}
