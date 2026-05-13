@@ -21,6 +21,7 @@ import {
   evaluateAiRoleRiskApprovalControlPlaneGuardrail,
   evaluateAiRoleScreenEmulatorGateGuardrail,
   evaluateSubmitForApprovalAuditTrailGuardrail,
+  evaluateAiPolicyGateScaleProofGuardrail,
   evaluatePostInstallReleaseSignoffGateGuardrail,
   evaluateProductionRawLoopGuardrail,
   evaluateProductionReadonlyCanaryGuardrail,
@@ -2454,6 +2455,161 @@ describe("architecture anti-regression suite", () => {
         "submit_for_approval_not_pending_only",
         "submit_for_approval_can_final_execute",
         "submit_for_approval_fake_local_approval_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the deterministic AI policy gate scale proof", () => {
+    const passing = evaluateAiPolicyGateScaleProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("aiPolicyGateScaleProof.ts")) {
+          return [
+            "runAiPolicyGateScaleProof",
+            "evaluateAiPolicyGateScaleDecision",
+            "DECISION_TARGET = 10_000",
+            "planAiToolUse",
+            "AI_FORBIDDEN_ACTIONS",
+            "directExecutionAllowed: false",
+            "mutationCount: 0",
+            "modelCalls: 0",
+            "dbCalls: 0",
+            "externalFetches: 0",
+            ...[
+              "director",
+              "control",
+              "foreman",
+              "buyer",
+              "accountant",
+              "warehouse",
+              "contractor",
+              "office",
+              "unknown",
+              "director.dashboard",
+              "ai.command.center",
+              "buyer.main",
+              "market.home",
+              "accountant.main",
+              "foreman.main",
+              "foreman.subcontract",
+              "warehouse.main",
+              "contractor.main",
+              "office.hub",
+              "map.main",
+              "chat.main",
+              "reports.modal",
+              "safe_read",
+              "draft_only",
+              "submit_for_approval",
+              "approve",
+              "execute_approved",
+              "forbidden",
+            ].map((value) => `"${value}"`),
+          ].join("\n");
+        }
+        if (relativePath.endsWith("_matrix.json")) {
+          return JSON.stringify({
+            total_policy_decisions: 10530,
+            deterministic_10k_decisions: true,
+            unknown_role_denied: true,
+            contractor_own_records_only: true,
+            buyer_no_finance_mutation: true,
+            accountant_no_supplier_confirmation: true,
+            warehouse_no_finance_access: true,
+            foreman_no_full_company_finance: true,
+            director_control_no_silent_mutation: true,
+            forbidden_action_always_denied: true,
+            approval_required_never_direct_executes: true,
+            execute_approved_gate_only: true,
+            no_model_calls: true,
+            no_db_calls: true,
+            no_external_fetches: true,
+            mutation_count: 0,
+          });
+        }
+        if (relativePath.endsWith("_metrics.json")) {
+          return JSON.stringify({
+            modelCalls: 0,
+            dbCalls: 0,
+            externalFetches: 0,
+            mutations: 0,
+            explicitProof: {
+              unknownRoleDenied: true,
+              contractorOwnRecordsOnly: true,
+              buyerNoFinanceMutation: true,
+              accountantNoSupplierConfirmation: true,
+              warehouseNoFinanceAccess: true,
+              foremanNoFullCompanyFinance: true,
+              directorControlNoSilentMutation: true,
+              forbiddenAlwaysDenied: true,
+              approvalRequiredNeverDirectExecutes: true,
+              executeApprovedGateOnly: true,
+            },
+            toolPlanProof: {
+              noDirectToolExecution: true,
+              noToolMutation: true,
+              noToolProviderCall: true,
+              noToolDbAccess: true,
+              noToolRawRows: true,
+              noToolRawPromptStorage: true,
+            },
+          });
+        }
+        if (relativePath.endsWith("aiPolicyGateScaleArchitecture.contract.test.ts")) {
+          return "evaluateAiPolicyGateScaleProofGuardrail";
+        }
+        if (relativePath.includes("aiPolicyGate") || relativePath.endsWith("_inventory.json")) return "present";
+        if (relativePath.endsWith("_proof.md")) return "present";
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_policy_gate_scale_proof",
+      status: "pass",
+      errors: [],
+    });
+
+    const failing = evaluateAiPolicyGateScaleProofGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("aiPolicyGateScaleProof.ts")) return "runAiPolicyGateScaleProof";
+        if (relativePath.endsWith("_matrix.json")) {
+          return JSON.stringify({
+            total_policy_decisions: 120,
+            deterministic_10k_decisions: false,
+            forbidden_action_always_denied: false,
+            mutation_count: 1,
+          });
+        }
+        if (relativePath.endsWith("_metrics.json")) {
+          return JSON.stringify({
+            modelCalls: 1,
+            dbCalls: 1,
+            externalFetches: 1,
+            mutations: 1,
+            explicitProof: {
+              forbiddenAlwaysDenied: false,
+            },
+            toolPlanProof: {
+              noDirectToolExecution: false,
+            },
+          });
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "ai_policy_gate_scale_10k_proof_missing",
+        "ai_policy_gate_scale_model_call_detected",
+        "ai_policy_gate_scale_db_call_detected",
+        "ai_policy_gate_scale_external_fetch_detected",
+        "ai_policy_gate_scale_mutation_detected",
+        "ai_policy_gate_forbidden_action_not_denied",
+        "ai_policy_gate_tool_plan_direct_execution_gap",
       ]),
     );
   });

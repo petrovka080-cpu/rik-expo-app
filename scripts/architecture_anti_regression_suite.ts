@@ -387,6 +387,34 @@ export type SubmitForApprovalAuditArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiPolicyGateScaleProofArchitectureSummary = {
+  proofScriptPresent: boolean;
+  focusedTestsPresent: boolean;
+  architectureTestPresent: boolean;
+  artifactsPresent: boolean;
+  deterministic10kProof: boolean;
+  allRolesCovered: boolean;
+  allScreensCovered: boolean;
+  allActionsCovered: boolean;
+  noModelCalls: boolean;
+  noDbCalls: boolean;
+  noExternalFetches: boolean;
+  noMutations: boolean;
+  unknownRoleDenied: boolean;
+  contractorOwnRecordsOnly: boolean;
+  buyerNoFinanceMutation: boolean;
+  accountantNoSupplierConfirmation: boolean;
+  warehouseNoFinanceAccess: boolean;
+  foremanNoFullCompanyFinance: boolean;
+  directorControlNoSilentMutation: boolean;
+  forbiddenAlwaysDenied: boolean;
+  approvalRequiredNeverDirectExecutes: boolean;
+  executeApprovedGateOnly: boolean;
+  toolPlansNoDirectExecution: boolean;
+  toolPlansNoProviderOrDb: boolean;
+  findings: readonly string[];
+};
+
 export type AgentBffRouteShellArchitectureSummary = {
   shellPresent: boolean;
   allRoutesPresent: boolean;
@@ -810,6 +838,7 @@ export type ArchitectureAntiRegressionReport = {
   aiToolTransportBoundary: AiToolTransportBoundaryArchitectureSummary;
   aiToolRateLimitPolicy: AiToolRateLimitPolicyArchitectureSummary;
   submitForApprovalAuditTrail: SubmitForApprovalAuditArchitectureSummary;
+  aiPolicyGateScaleProof: AiPolicyGateScaleProofArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
@@ -1071,6 +1100,20 @@ const SUBMIT_FOR_APPROVAL_AUDIT_FILES = [
 ] as const;
 const SUBMIT_FOR_APPROVAL_AUDIT_E2E_RUNNER_PATH =
   "scripts/e2e/runAiSubmitForApprovalAuditMaestro.ts";
+const AI_POLICY_GATE_SCALE_PROOF_SCRIPT_PATH = "scripts/ai/aiPolicyGateScaleProof.ts";
+const AI_POLICY_GATE_SCALE_PROOF_TEST_FILES = [
+  "tests/ai/aiPolicyGateScaleProof.contract.test.ts",
+  "tests/ai/aiPolicyGateFuzz.contract.test.ts",
+  "tests/ai/aiPolicyGateForbiddenActions.contract.test.ts",
+] as const;
+const AI_POLICY_GATE_SCALE_PROOF_ARCHITECTURE_TEST_PATH =
+  "tests/architecture/aiPolicyGateScaleArchitecture.contract.test.ts";
+const AI_POLICY_GATE_SCALE_PROOF_ARTIFACT_FILES = [
+  "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_inventory.json",
+  "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_matrix.json",
+  "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_metrics.json",
+  "artifacts/S_AI_HARDEN_04_POLICY_GATE_SCALE_PROOF_proof.md",
+] as const;
 const AI_TOOL_RUNTIME_FILES = [
   "src/features/ai/tools/searchCatalogTool.ts",
   "src/features/ai/tools/compareSuppliersTool.ts",
@@ -2972,6 +3015,223 @@ export function evaluateSubmitForApprovalAuditTrailGuardrail(params: {
       noSupabaseImports,
       noRawPayloadFields,
       e2eRunnerPresent,
+      findings,
+    },
+  };
+}
+
+const AI_POLICY_GATE_SCALE_REQUIRED_ROLES = [
+  "director",
+  "control",
+  "foreman",
+  "buyer",
+  "accountant",
+  "warehouse",
+  "contractor",
+  "office",
+  "unknown",
+] as const;
+const AI_POLICY_GATE_SCALE_REQUIRED_SCREENS = [
+  "director.dashboard",
+  "ai.command.center",
+  "buyer.main",
+  "market.home",
+  "accountant.main",
+  "foreman.main",
+  "foreman.subcontract",
+  "warehouse.main",
+  "contractor.main",
+  "office.hub",
+  "map.main",
+  "chat.main",
+  "reports.modal",
+] as const;
+const AI_POLICY_GATE_SCALE_REQUIRED_ACTIONS = [
+  "safe_read",
+  "draft_only",
+  "submit_for_approval",
+  "approve",
+  "execute_approved",
+  "forbidden",
+] as const;
+
+function booleanRecordValue(record: Record<string, unknown> | null, key: string): boolean {
+  return recordValue(record, key) === true;
+}
+
+function numberRecordValue(record: Record<string, unknown> | null, key: string): number {
+  const value = recordValue(record, key);
+  return typeof value === "number" ? value : Number.NaN;
+}
+
+export function evaluateAiPolicyGateScaleProofGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiPolicyGateScaleProofArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const scriptSource = safeReadProjectFile({ readFile, relativePath: AI_POLICY_GATE_SCALE_PROOF_SCRIPT_PATH });
+  const focusedTestSources = AI_POLICY_GATE_SCALE_PROOF_TEST_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const architectureTestSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_POLICY_GATE_SCALE_PROOF_ARCHITECTURE_TEST_PATH,
+  });
+  const artifactSources = AI_POLICY_GATE_SCALE_PROOF_ARTIFACT_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const matrixRecord = parseJsonRecord(
+    artifactSources.find((entry) => entry.relativePath.endsWith("_matrix.json"))?.source ?? null,
+  );
+  const metricsRecord = parseJsonRecord(
+    artifactSources.find((entry) => entry.relativePath.endsWith("_metrics.json"))?.source ?? null,
+  );
+  const explicitProofRecord = recordChild(metricsRecord, "explicitProof");
+  const toolPlanProofRecord = recordChild(metricsRecord, "toolPlanProof");
+
+  const proofScriptPresent =
+    Boolean(scriptSource?.includes("runAiPolicyGateScaleProof")) &&
+    Boolean(scriptSource?.includes("evaluateAiPolicyGateScaleDecision")) &&
+    Boolean(scriptSource?.includes("DECISION_TARGET = 10_000"));
+  const focusedTestsPresent = focusedTestSources.every((entry) => Boolean(entry.source));
+  const architectureTestPresent = Boolean(architectureTestSource?.includes("evaluateAiPolicyGateScaleProofGuardrail"));
+  const artifactsPresent = artifactSources.every((entry) => Boolean(entry.source));
+  const deterministic10kProof =
+    numberRecordValue(matrixRecord, "total_policy_decisions") >= 10_000 &&
+    booleanRecordValue(matrixRecord, "deterministic_10k_decisions") &&
+    Boolean(scriptSource?.includes("DECISION_TARGET"));
+  const allRolesCovered = AI_POLICY_GATE_SCALE_REQUIRED_ROLES.every((role) => scriptSource?.includes(`"${role}"`));
+  const allScreensCovered = AI_POLICY_GATE_SCALE_REQUIRED_SCREENS.every((screenId) =>
+    scriptSource?.includes(`"${screenId}"`),
+  );
+  const allActionsCovered = AI_POLICY_GATE_SCALE_REQUIRED_ACTIONS.every((action) => scriptSource?.includes(`"${action}"`));
+  const noModelCalls =
+    booleanRecordValue(matrixRecord, "no_model_calls") &&
+    numberRecordValue(metricsRecord, "modelCalls") === 0 &&
+    Boolean(scriptSource?.includes("modelCalls: 0"));
+  const noDbCalls =
+    booleanRecordValue(matrixRecord, "no_db_calls") &&
+    numberRecordValue(metricsRecord, "dbCalls") === 0 &&
+    Boolean(scriptSource?.includes("dbCalls: 0"));
+  const noExternalFetches =
+    booleanRecordValue(matrixRecord, "no_external_fetches") &&
+    numberRecordValue(metricsRecord, "externalFetches") === 0 &&
+    Boolean(scriptSource?.includes("externalFetches: 0"));
+  const noMutations =
+    numberRecordValue(matrixRecord, "mutation_count") === 0 &&
+    numberRecordValue(metricsRecord, "mutations") === 0 &&
+    Boolean(scriptSource?.includes("mutationCount: 0"));
+  const unknownRoleDenied =
+    booleanRecordValue(matrixRecord, "unknown_role_denied") &&
+    booleanRecordValue(explicitProofRecord, "unknownRoleDenied");
+  const contractorOwnRecordsOnly =
+    booleanRecordValue(matrixRecord, "contractor_own_records_only") &&
+    booleanRecordValue(explicitProofRecord, "contractorOwnRecordsOnly");
+  const buyerNoFinanceMutation =
+    booleanRecordValue(matrixRecord, "buyer_no_finance_mutation") &&
+    booleanRecordValue(explicitProofRecord, "buyerNoFinanceMutation");
+  const accountantNoSupplierConfirmation =
+    booleanRecordValue(matrixRecord, "accountant_no_supplier_confirmation") &&
+    booleanRecordValue(explicitProofRecord, "accountantNoSupplierConfirmation");
+  const warehouseNoFinanceAccess =
+    booleanRecordValue(matrixRecord, "warehouse_no_finance_access") &&
+    booleanRecordValue(explicitProofRecord, "warehouseNoFinanceAccess");
+  const foremanNoFullCompanyFinance =
+    booleanRecordValue(matrixRecord, "foreman_no_full_company_finance") &&
+    booleanRecordValue(explicitProofRecord, "foremanNoFullCompanyFinance");
+  const directorControlNoSilentMutation =
+    booleanRecordValue(matrixRecord, "director_control_no_silent_mutation") &&
+    booleanRecordValue(explicitProofRecord, "directorControlNoSilentMutation");
+  const forbiddenAlwaysDenied =
+    booleanRecordValue(matrixRecord, "forbidden_action_always_denied") &&
+    booleanRecordValue(explicitProofRecord, "forbiddenAlwaysDenied") &&
+    Boolean(scriptSource?.includes("AI_FORBIDDEN_ACTIONS"));
+  const approvalRequiredNeverDirectExecutes =
+    booleanRecordValue(matrixRecord, "approval_required_never_direct_executes") &&
+    booleanRecordValue(explicitProofRecord, "approvalRequiredNeverDirectExecutes") &&
+    Boolean(scriptSource?.includes("directExecutionAllowed: false"));
+  const executeApprovedGateOnly =
+    booleanRecordValue(matrixRecord, "execute_approved_gate_only") &&
+    booleanRecordValue(explicitProofRecord, "executeApprovedGateOnly");
+  const toolPlansNoDirectExecution =
+    booleanRecordValue(toolPlanProofRecord, "noDirectToolExecution") &&
+    booleanRecordValue(toolPlanProofRecord, "noToolMutation") &&
+    Boolean(scriptSource?.includes("planAiToolUse"));
+  const toolPlansNoProviderOrDb =
+    booleanRecordValue(toolPlanProofRecord, "noToolProviderCall") &&
+    booleanRecordValue(toolPlanProofRecord, "noToolDbAccess") &&
+    booleanRecordValue(toolPlanProofRecord, "noToolRawRows") &&
+    booleanRecordValue(toolPlanProofRecord, "noToolRawPromptStorage");
+
+  const findings = [
+    ...(forbiddenAlwaysDenied ? [] : ["policy_gate_forbidden_action_gap"]),
+    ...(unknownRoleDenied && contractorOwnRecordsOnly ? [] : ["policy_gate_role_scope_gap"]),
+    ...(noModelCalls && noDbCalls && noExternalFetches && noMutations ? [] : ["policy_gate_side_effect_gap"]),
+  ];
+  const errors = [
+    ...(proofScriptPresent ? [] : ["ai_policy_gate_scale_proof_script_missing"]),
+    ...(focusedTestsPresent ? [] : ["ai_policy_gate_scale_focused_tests_missing"]),
+    ...(architectureTestPresent ? [] : ["ai_policy_gate_scale_architecture_test_missing"]),
+    ...(artifactsPresent ? [] : ["ai_policy_gate_scale_artifacts_missing"]),
+    ...(deterministic10kProof ? [] : ["ai_policy_gate_scale_10k_proof_missing"]),
+    ...(allRolesCovered ? [] : ["ai_policy_gate_scale_roles_missing"]),
+    ...(allScreensCovered ? [] : ["ai_policy_gate_scale_screens_missing"]),
+    ...(allActionsCovered ? [] : ["ai_policy_gate_scale_actions_missing"]),
+    ...(noModelCalls ? [] : ["ai_policy_gate_scale_model_call_detected"]),
+    ...(noDbCalls ? [] : ["ai_policy_gate_scale_db_call_detected"]),
+    ...(noExternalFetches ? [] : ["ai_policy_gate_scale_external_fetch_detected"]),
+    ...(noMutations ? [] : ["ai_policy_gate_scale_mutation_detected"]),
+    ...(unknownRoleDenied ? [] : ["ai_policy_gate_unknown_role_not_denied"]),
+    ...(contractorOwnRecordsOnly ? [] : ["ai_policy_gate_contractor_scope_gap"]),
+    ...(buyerNoFinanceMutation ? [] : ["ai_policy_gate_buyer_finance_mutation_gap"]),
+    ...(accountantNoSupplierConfirmation ? [] : ["ai_policy_gate_accountant_supplier_confirmation_gap"]),
+    ...(warehouseNoFinanceAccess ? [] : ["ai_policy_gate_warehouse_finance_gap"]),
+    ...(foremanNoFullCompanyFinance ? [] : ["ai_policy_gate_foreman_finance_gap"]),
+    ...(directorControlNoSilentMutation ? [] : ["ai_policy_gate_director_control_silent_mutation_gap"]),
+    ...(forbiddenAlwaysDenied ? [] : ["ai_policy_gate_forbidden_action_not_denied"]),
+    ...(approvalRequiredNeverDirectExecutes ? [] : ["ai_policy_gate_approval_required_direct_execution_gap"]),
+    ...(executeApprovedGateOnly ? [] : ["ai_policy_gate_execute_approved_not_gate_only"]),
+    ...(toolPlansNoDirectExecution ? [] : ["ai_policy_gate_tool_plan_direct_execution_gap"]),
+    ...(toolPlansNoProviderOrDb ? [] : ["ai_policy_gate_tool_plan_provider_or_db_gap"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_policy_gate_scale_proof",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      proofScriptPresent,
+      focusedTestsPresent,
+      architectureTestPresent,
+      artifactsPresent,
+      deterministic10kProof,
+      allRolesCovered,
+      allScreensCovered,
+      allActionsCovered,
+      noModelCalls,
+      noDbCalls,
+      noExternalFetches,
+      noMutations,
+      unknownRoleDenied,
+      contractorOwnRecordsOnly,
+      buyerNoFinanceMutation,
+      accountantNoSupplierConfirmation,
+      warehouseNoFinanceAccess,
+      foremanNoFullCompanyFinance,
+      directorControlNoSilentMutation,
+      forbiddenAlwaysDenied,
+      approvalRequiredNeverDirectExecutes,
+      executeApprovedGateOnly,
+      toolPlansNoDirectExecution,
+      toolPlansNoProviderOrDb,
       findings,
     },
   };
@@ -6771,6 +7031,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiToolTransportBoundary = evaluateAiToolTransportBoundaryGuardrail({ projectRoot });
   const aiToolRateLimitPolicy = evaluateAiToolRateLimitPolicyGuardrail({ projectRoot });
   const submitForApprovalAuditTrail = evaluateSubmitForApprovalAuditTrailGuardrail({ projectRoot });
+  const aiPolicyGateScaleProof = evaluateAiPolicyGateScaleProofGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
@@ -6815,6 +7076,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolTransportBoundary.check,
     aiToolRateLimitPolicy.check,
     submitForApprovalAuditTrail.check,
+    aiPolicyGateScaleProof.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
     aiAppActionGraphArchitecture.check,
@@ -6860,6 +7122,7 @@ export function runArchitectureAntiRegressionSuite(
     aiToolTransportBoundary: aiToolTransportBoundary.summary,
     aiToolRateLimitPolicy: aiToolRateLimitPolicy.summary,
     submitForApprovalAuditTrail: submitForApprovalAuditTrail.summary,
+    aiPolicyGateScaleProof: aiPolicyGateScaleProof.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
@@ -6927,6 +7190,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_rate_limit_runtime_gate: ${report.aiToolRateLimitPolicy.runtimeToolsUseRateDecision}`);
   console.info(`submit_for_approval_audit_trail: ${report.submitForApprovalAuditTrail.auditFilesPresent}`);
   console.info(`submit_for_approval_audit_event: ${report.submitForApprovalAuditTrail.auditEventRequired}`);
+  console.info(`ai_policy_gate_scale_proof: ${report.aiPolicyGateScaleProof.deterministic10kProof}`);
+  console.info(`ai_policy_gate_forbidden_denied: ${report.aiPolicyGateScaleProof.forbiddenAlwaysDenied}`);
   console.info(`agent_bff_route_shell_auth_required: ${report.agentBffRouteShellArchitecture.authRequired}`);
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);

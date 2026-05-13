@@ -1,0 +1,87 @@
+{
+  "wave": "S_AI_HARDEN_04_POLICY_GATE_SCALE_AND_FUZZ_PROOF",
+  "roles": [
+    "director",
+    "control",
+    "foreman",
+    "buyer",
+    "accountant",
+    "warehouse",
+    "contractor",
+    "office",
+    "unknown"
+  ],
+  "screens": [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+    "reports.modal"
+  ],
+  "actions": [
+    "safe_read",
+    "draft_only",
+    "submit_for_approval",
+    "approve",
+    "execute_approved",
+    "forbidden"
+  ],
+  "requiredRuntimeScreens": [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+    "reports.modal",
+    "documents.surface"
+  ],
+  "registeredRuntimeScreens": [
+    "director.dashboard",
+    "ai.command.center",
+    "buyer.main",
+    "market.home",
+    "accountant.main",
+    "foreman.main",
+    "foreman.subcontract",
+    "warehouse.main",
+    "contractor.main",
+    "office.hub",
+    "map.main",
+    "chat.main",
+    "reports.modal",
+    "documents.surface"
+  ],
+  "toolNames": [
+    "search_catalog",
+    "compare_suppliers",
+    "get_warehouse_status",
+    "get_finance_summary",
+    "draft_request",
+    "draft_report",
+    "draft_act",
+    "submit_for_approval",
+    "get_action_status"
+  ],
+  "policyModules": [
+    "src/features/ai/policy/aiRolePolicy.ts",
+    "src/features/ai/policy/aiRiskPolicy.ts",
+    "src/features/ai/screenRuntime/aiScreenRuntimeRegistry.ts",
+    "src/features/ai/tools/aiToolPlanPolicy.ts"
+  ],
+  "missingScreenRuntimeEntries": []
+}

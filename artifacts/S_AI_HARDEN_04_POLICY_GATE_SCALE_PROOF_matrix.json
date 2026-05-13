@@ -1,0 +1,19 @@
+{
+  "final_status": "GREEN_AI_POLICY_GATE_SCALE_PROOF_READY",
+  "deterministic_10k_decisions": true,
+  "total_policy_decisions": 10530,
+  "unknown_role_denied": true,
+  "contractor_own_records_only": true,
+  "buyer_no_finance_mutation": true,
+  "accountant_no_supplier_confirmation": true,
+  "warehouse_no_finance_access": true,
+  "foreman_no_full_company_finance": true,
+  "director_control_no_silent_mutation": true,
+  "forbidden_action_always_denied": true,
+  "approval_required_never_direct_executes": true,
+  "execute_approved_gate_only": true,
+  "no_model_calls": true,
+  "no_db_calls": true,
+  "no_external_fetches": true,
+  "mutation_count": 0
+}

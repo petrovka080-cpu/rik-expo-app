@@ -1,0 +1,67 @@
+{
+  "totalDecisions": 10530,
+  "allowedDecisions": 1890,
+  "blockedDecisions": 8640,
+  "decisionsByRole": {
+    "director": 1170,
+    "control": 1170,
+    "foreman": 1170,
+    "buyer": 1170,
+    "accountant": 1170,
+    "warehouse": 1170,
+    "contractor": 1170,
+    "office": 1170,
+    "unknown": 1170
+  },
+  "decisionsByScreen": {
+    "director.dashboard": 810,
+    "ai.command.center": 810,
+    "buyer.main": 810,
+    "market.home": 810,
+    "accountant.main": 810,
+    "foreman.main": 810,
+    "foreman.subcontract": 810,
+    "warehouse.main": 810,
+    "contractor.main": 810,
+    "office.hub": 810,
+    "map.main": 810,
+    "chat.main": 810,
+    "reports.modal": 810
+  },
+  "decisionsByAction": {
+    "safe_read": 1755,
+    "draft_only": 1755,
+    "submit_for_approval": 1755,
+    "approve": 1755,
+    "execute_approved": 1755,
+    "forbidden": 1755
+  },
+  "explicitProof": {
+    "unknownRoleDenied": true,
+    "contractorOwnRecordsOnly": true,
+    "buyerNoFinanceMutation": true,
+    "accountantNoSupplierConfirmation": true,
+    "warehouseNoFinanceAccess": true,
+    "foremanNoFullCompanyFinance": true,
+    "directorControlNoSilentMutation": true,
+    "forbiddenAlwaysDenied": true,
+    "approvalRequiredNeverDirectExecutes": true,
+    "executeApprovedGateOnly": true
+  },
+  "toolPlanProof": {
+    "totalToolRolePlans": 81,
+    "allowedPlans": 47,
+    "blockedPlans": 34,
+    "allRegisteredToolsPlanned": true,
+    "noDirectToolExecution": true,
+    "noToolMutation": true,
+    "noToolProviderCall": true,
+    "noToolDbAccess": true,
+    "noToolRawRows": true,
+    "noToolRawPromptStorage": true
+  },
+  "modelCalls": 0,
+  "dbCalls": 0,
+  "externalFetches": 0,
+  "mutations": 0
+}
