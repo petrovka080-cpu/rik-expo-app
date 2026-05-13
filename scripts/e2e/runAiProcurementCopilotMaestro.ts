@@ -99,6 +99,11 @@ function isSourceReady(): boolean {
   const actionPolicySource = readProjectFile(
     "src/features/ai/procurementCopilot/procurementCopilotActionPolicy.ts",
   );
+  const surfaceSource = readProjectFile(
+    "src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx",
+  );
+  const tabRouteSource = readProjectFile("app/(tabs)/ai.tsx");
+  const directRouteSource = readProjectFile("app/ai-procurement-copilot.tsx");
   return (
     shellSource.includes("GET /agent/procurement/copilot/context") &&
     shellSource.includes("POST /agent/procurement/copilot/plan") &&
@@ -108,7 +113,15 @@ function isSourceReady(): boolean {
     planSource.includes("previewProcurementSupplierMatch") &&
     draftSource.includes("buildProcurementDraftPreview") &&
     externalSource.includes("previewProcurementCopilotExternalIntel") &&
-    actionPolicySource.includes("previewProcurementCopilotSubmitForApproval")
+    actionPolicySource.includes("previewProcurementCopilotSubmitForApproval") &&
+    tabRouteSource.includes("procurementCopilot") &&
+    directRouteSource.includes("ProcurementCopilotRuntimeSurface") &&
+    directRouteSource.includes("ai-procurement-copilot") &&
+    surfaceSource.includes("ai.procurement.copilot.screen") &&
+    surfaceSource.includes("ai.procurement.copilot.context-loaded") &&
+    surfaceSource.includes("ai.procurement.copilot.empty-state") &&
+    surfaceSource.includes("ai.procurement.copilot.internal-first") &&
+    surfaceSource.includes("ai.procurement.copilot.approval-required")
   );
 }
 
@@ -184,6 +197,8 @@ function runCommand(
     encoding: "utf8",
     stdio: "pipe",
     shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
+    timeout: 120_000,
+    killSignal: "SIGTERM",
     env: {
       ...process.env,
       ...env,
@@ -201,38 +216,72 @@ function runCommand(
 }
 
 function flowLines(): string[] {
+  const targetLink =
+    "rik://ai-procurement-copilot?procurementRequestId=${MAESTRO_E2E_PROCUREMENT_REQUEST_ID}";
   return [
     `appId: ${appId}`,
     "name: AI Procurement Copilot Runtime",
     "---",
     "- launchApp:",
-    "    clearState: true",
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "auth.login.screen"',
-    "    timeout: 15000",
-    "- tapOn:",
-    '    id: "auth.login.email"',
-    "- inputText: ${MAESTRO_E2E_BUYER_EMAIL}",
-    "- tapOn:",
-    '    id: "auth.login.password"',
-    "- inputText: ${MAESTRO_E2E_BUYER_PASSWORD}",
-    "- hideKeyboard",
-    "- tapOn:",
-    '    id: "auth.login.submit"',
-    "- extendedWaitUntil:",
-    "    visible:",
-    '      id: "profile-edit-open"',
-    "    timeout: 30000",
-    '- openLink: "rik://ai?mode=command-center&procurementCopilot=1&procurementRequestId=${MAESTRO_E2E_PROCUREMENT_REQUEST_ID}"',
+    "    clearState: false",
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "auth.login.screen"',
+    "    commands:",
+    "      - extendedWaitUntil:",
+    "          visible:",
+    '            id: "auth.login.email"',
+    "          timeout: 15000",
+    "      - tapOn:",
+    '          id: "auth.login.email"',
+    "      - inputText: ${MAESTRO_E2E_BUYER_EMAIL}",
+    "      - tapOn:",
+    '          id: "auth.login.password"',
+    "      - inputText: ${MAESTRO_E2E_BUYER_PASSWORD}",
+    "      - hideKeyboard",
+    "      - tapOn:",
+    '          id: "auth.login.submit"',
+    "      - extendedWaitUntil:",
+    "          visible:",
+    '            id: "profile-edit-open"',
+    "          timeout: 30000",
+    "- stopApp",
+    `- openLink: "${targetLink}"`,
     "- extendedWaitUntil:",
     "    visible:",
     '      id: "ai.procurement.copilot.screen"',
     "    timeout: 30000",
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "ai.procurement.copilot.context-loaded"',
+    "    commands:",
+    "      - assertVisible:",
+    '          id: "ai.procurement.copilot.context-loaded"',
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "ai.procurement.copilot.empty-state"',
+    "    commands:",
+    "      - assertVisible:",
+    '          id: "ai.procurement.copilot.empty-state"',
     "- assertVisible:",
     '    id: "ai.procurement.copilot.internal-first"',
+    "- scrollUntilVisible:",
+    "    element:",
+    '      id: "ai.procurement.copilot.external-status"',
+    "    direction: DOWN",
+    "    timeout: 15000",
+    "    visibilityPercentage: 20",
     "- assertVisible:",
     '    id: "ai.procurement.copilot.external-status"',
+    "- scrollUntilVisible:",
+    "    element:",
+    '      id: "ai.procurement.copilot.approval-required"',
+    "    direction: DOWN",
+    "    timeout: 15000",
+    "    visibilityPercentage: 20",
     "- assertVisible:",
     '    id: "ai.procurement.copilot.approval-required"',
     "",
@@ -269,25 +318,7 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
   }
 
   const requestResolution = await resolveAiProcurementRuntimeRequest();
-  const requestReady = requestResolution.status === "loaded" && Boolean(requestResolution.requestId);
   const backendRuntimeReady = hasBackendContextRuntime(requestResolution);
-  if (!requestReady) {
-    return writeArtifact(
-      baseArtifact(
-        "BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE",
-        requestResolution.exactReason ??
-          "No real procurement request is available from explicit env or bounded runtime discovery.",
-        {
-          backend_copilot_runtime_source_ready: backendRuntimeReady,
-          test_request_source: requestResolution.source,
-          request_id_hash: requestResolution.requestIdHash,
-          real_request_discovery_bounded: requestResolution.boundedRead,
-          real_request_discovery_read_limit: requestResolution.readLimit,
-          real_request_item_count: requestResolution.itemCount,
-        },
-      ),
-    );
-  }
 
   const roleAuth = resolveExplicitAiRoleAuthEnv();
   if (!roleAuth.greenEligible || !roleAuth.env) {

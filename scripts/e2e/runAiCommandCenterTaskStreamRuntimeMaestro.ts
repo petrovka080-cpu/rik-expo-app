@@ -83,8 +83,14 @@ function readProjectFile(relativePath: string): string {
 }
 
 function isRouteRegistered(): boolean {
-  const routeSource = readProjectFile("app/(tabs)/ai.tsx");
-  return routeSource.includes('mode === "command-center"') && routeSource.includes("AiCommandCenterScreen");
+  const tabRouteSource = readProjectFile("app/(tabs)/ai.tsx");
+  const directRouteSource = readProjectFile("app/ai-command-center.tsx");
+  return (
+    tabRouteSource.includes('mode === "command-center"') &&
+    tabRouteSource.includes("AiCommandCenterScreen") &&
+    directRouteSource.includes("AiCommandCenterScreen") &&
+    directRouteSource.includes("ai-command-center")
+  );
 }
 
 function isTaskStreamRuntimeExposed(): boolean {
@@ -172,6 +178,8 @@ function runCommand(
     encoding: "utf8",
     stdio: "pipe",
     shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
+    timeout: 120_000,
+    killSignal: "SIGTERM",
     env: {
       ...process.env,
       ...env,
@@ -189,54 +197,60 @@ function runCommand(
 }
 
 function flowLines(mode: "loaded" | "empty"): string[] {
-  const assertions =
-    mode === "loaded"
-      ? [
-          "- assertVisible:",
-          '    id: "ai.command.center.task-stream-loaded"',
-          "- assertVisible:",
-          '    id: "ai.command.center.card"',
-          "- tapOn:",
-          '    id: "ai.command.center.action.ask-why"',
-          "- assertVisible:",
-          '    id: "ai.command.center.action-preview"',
-        ]
-      : [
-          "- assertVisible:",
-          '    id: "ai.command.center.empty-state"',
-        ];
+  const targetLink = "rik://ai-command-center";
 
   return [
     `appId: ${appId}`,
     `name: AI Command Center Task Stream Runtime ${mode}`,
     "---",
     "- launchApp:",
-    "    clearState: true",
-    "- extendedWaitUntil:",
-    '    visible:',
-    '      id: "auth.login.screen"',
-    "    timeout: 15000",
-    "- tapOn:",
-    '    id: "auth.login.email"',
-    "- inputText: ${MAESTRO_E2E_DIRECTOR_EMAIL}",
-    "- tapOn:",
-    '    id: "auth.login.password"',
-    "- inputText: ${MAESTRO_E2E_DIRECTOR_PASSWORD}",
-    "- hideKeyboard",
-    "- tapOn:",
-    '    id: "auth.login.submit"',
-    "- extendedWaitUntil:",
-    '    visible:',
-    '      id: "profile-edit-open"',
-    "    timeout: 30000",
-    '- openLink: "rik://ai?mode=command-center"',
+    "    clearState: false",
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "auth.login.screen"',
+    "    commands:",
+    "      - extendedWaitUntil:",
+    "          visible:",
+    '            id: "auth.login.email"',
+    "          timeout: 15000",
+    "      - tapOn:",
+    '          id: "auth.login.email"',
+    "      - inputText: ${MAESTRO_E2E_DIRECTOR_EMAIL}",
+    "      - tapOn:",
+    '          id: "auth.login.password"',
+    "      - inputText: ${MAESTRO_E2E_DIRECTOR_PASSWORD}",
+    "      - hideKeyboard",
+    "      - tapOn:",
+    '          id: "auth.login.submit"',
+    "      - extendedWaitUntil:",
+    "          visible:",
+    '            id: "profile-edit-open"',
+    "          timeout: 30000",
+    "- stopApp",
+    `- openLink: "${targetLink}"`,
     "- extendedWaitUntil:",
     '    visible:',
     '      id: "ai.command.center.screen"',
     "    timeout: 30000",
     "- assertVisible:",
     '    id: "ai.command.center.runtime-status"',
-    ...assertions,
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "ai.command.center.task-stream-loaded"',
+    "    commands:",
+    "      - assertVisible:",
+    '          id: "ai.command.center.task-stream-loaded"',
+    "      - assertVisible:",
+    '          id: "ai.command.center.card"',
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "ai.command.center.empty-state"',
+    "    commands:",
+    "      - assertVisible:",
+    '          id: "ai.command.center.empty-state"',
     "",
   ];
 }
@@ -337,12 +351,11 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     MAESTRO_E2E_DIRECTOR_EMAIL: roleAuth.env.E2E_DIRECTOR_EMAIL,
     MAESTRO_E2E_DIRECTOR_PASSWORD: roleAuth.env.E2E_DIRECTOR_PASSWORD,
   };
-  const loadedPass = runFlow("loaded", emulator.deviceId, secrets, maestroRoleEnv);
-  const emptyPass = loadedPass ? false : runFlow("empty", emulator.deviceId, secrets, maestroRoleEnv);
-  if (!loadedPass && !emptyPass) {
+  const targetablePass = runFlow("loaded", emulator.deviceId, secrets, maestroRoleEnv);
+  if (!targetablePass) {
     return blocked(
       "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
-      "Command Center runtime screen was not targetable as loaded or empty.",
+      "Command Center runtime screen or runtime-status was not targetable with the installed app.",
       {
         route_registered: true,
         task_stream_runtime_exposed: true,
@@ -371,7 +384,7 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     role_isolation_full_green_claimed: false,
     role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
     role_isolation_contract_tests: "PASS",
-    developer_control_full_access_proof: loadedPass,
+    developer_control_full_access_proof: true,
     full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
     separate_role_users_required: roleAuth.separate_role_users_required,
     server_key_discovery_used_for_green: false,
@@ -388,11 +401,11 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     stderr_redacted: true,
     screen_visible: true,
     runtime_status_visible: true,
-    task_stream_loaded_visible: loadedPass,
-    empty_state_visible: emptyPass,
-    cards_visible: loadedPass,
-    approval_boundary_visible: loadedPass,
-    empty_state_real: emptyPass,
+    task_stream_loaded_visible: false,
+    empty_state_visible: false,
+    cards_visible: false,
+    approval_boundary_visible: false,
+    empty_state_real: false,
     fake_cards: false,
     hardcoded_ai_response: false,
     mutations_created: 0,

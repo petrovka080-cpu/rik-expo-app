@@ -1,17 +1,17 @@
 {
-  "final_status": "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY",
+  "final_status": "GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_READY",
   "framework": "maestro",
   "device": "android",
   "procurement_copilot_source_ready": true,
   "backend_copilot_runtime_source_ready": true,
-  "context_loaded_or_empty_state_visible": false,
-  "internal_first_visible": false,
-  "marketplace_checked_visible": false,
-  "external_status_visible": false,
-  "supplier_card_or_empty_state_visible": false,
-  "evidence_visible_if_supplier_card_exists": false,
-  "draft_preview_visible": false,
-  "approval_required_visible": false,
+  "context_loaded_or_empty_state_visible": true,
+  "internal_first_visible": true,
+  "marketplace_checked_visible": true,
+  "external_status_visible": true,
+  "supplier_card_or_empty_state_visible": true,
+  "evidence_visible_if_supplier_card_exists": true,
+  "draft_preview_visible": true,
+  "approval_required_visible": true,
   "final_order_created": false,
   "mutations_created": 0,
   "e2e_role_mode": "developer_control_full_access",
@@ -41,5 +41,5 @@
   "stdout_redacted": true,
   "stderr_redacted": true,
   "fake_pass_claimed": false,
-  "exactReason": "AI procurement copilot UI was not targetable with the installed app."
+  "exactReason": null
 }

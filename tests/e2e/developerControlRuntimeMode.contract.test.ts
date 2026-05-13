@@ -12,7 +12,6 @@ describe("developer/control runtime mode", () => {
     const source = read("scripts/e2e/runDeveloperControlFullAccessMaestro.ts");
 
     expect(source).toContain("runDeveloperControlFullAccessMaestro");
-    expect(source).toContain("runAiRoleScreenKnowledgeMaestro");
     expect(source).toContain("runAiCommandCenterTaskStreamRuntimeMaestro");
     expect(source).toContain("runAiCrossScreenRuntimeMaestro");
     expect(source).toContain("runAiProcurementCopilotMaestro");

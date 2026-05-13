@@ -1,0 +1,26 @@
+# S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE
+# S_E2E_CORE_05_DEVELOPER_CONTROL_RUNTIME_TARGETABILITY_CLOSEOUT
+
+final_status: GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_TARGETABILITY
+runtime_targetability_status: PASS
+e2e_role_mode: developer_control_full_access
+auth_source: developer_control_explicit_env
+full_access_runtime_claimed: true
+role_isolation_e2e_claimed: false
+role_isolation_contract_tests: PASS
+separate_role_users_required: false
+auth_admin_used: false
+list_users_used: false
+service_role_used: false
+seed_used: false
+fake_users_created: false
+login_or_authenticated_shell_passed: true
+command_center_targetable: true
+procurement_copilot_targetable: true
+approval_inbox_targetable: true
+approval_persistence_status: BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND
+approval_persistence_blocks_targetability: false
+all_major_screens_runtime_checked: true
+approval_boundary_observed: true
+mutations_created: 0
+exactReason: null

@@ -37,6 +37,9 @@ const ACTIVE_AUTH_ROUTES = [
 ] as const;
 
 const ACTIVE_FEATURE_ROUTES = [
+  "ai-approval-inbox.tsx",
+  "ai-command-center.tsx",
+  "ai-procurement-copilot.tsx",
   "auction/[id].tsx",
   "product/[id].tsx",
   "reports/dashboard.tsx",

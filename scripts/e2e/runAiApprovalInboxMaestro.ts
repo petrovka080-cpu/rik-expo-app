@@ -73,6 +73,7 @@ function requiredTestIds(): readonly string[] {
     "ai.approval.inbox.screen",
     "ai.approval.inbox.status",
     "ai.approval.inbox.empty-state",
+    "ai.approval.persistence.blocked",
     "ai.approval.action-card",
     "ai.approval.action.status",
     "ai.approval.action.risk",
@@ -95,6 +96,7 @@ function sourceReady(): boolean {
   const screenSource = readProjectFile("src/features/ai/approvalInbox/ApprovalInboxScreen.tsx");
   const cardSource = readProjectFile("src/features/ai/approvalInbox/ApprovalActionCard.tsx");
   const reviewSource = readProjectFile("src/features/ai/approvalInbox/ApprovalReviewPanel.tsx");
+  const routeSource = readProjectFile("app/ai-approval-inbox.tsx");
   const shellSource = readProjectFile("src/features/ai/agent/agentBffRouteShell.ts");
   const uiSource = `${screenSource}\n${cardSource}\n${reviewSource}`;
   return (
@@ -105,6 +107,8 @@ function sourceReady(): boolean {
     runtimeSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND") &&
     runtimeSource.includes("reviewPanelRequired: true") &&
     shellSource.includes("AgentApprovalInboxEnvelope") &&
+    routeSource.includes("ApprovalInboxScreen") &&
+    routeSource.includes("ai-approval-inbox") &&
     requiredTestIds().every((testId) => uiSource.includes(testId))
   );
 }

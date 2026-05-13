@@ -2,34 +2,36 @@ appId: com.azisbek_dzhantaev.rikexpoapp
 name: AI Role Screen Knowledge Accountant
 ---
 - launchApp:
-    clearState: true
+    clearState: false
 - runFlow:
     when:
       visible: "Wait"
     commands:
       - tapOn: "Wait"
-- extendedWaitUntil:
-    visible:
-      id: "auth.login.screen"
-    timeout: 15000
-- extendedWaitUntil:
-    visible:
-      id: "auth.login.email"
-    timeout: 15000
-- tapOn:
-    id: "auth.login.email"
-- inputText: ${MAESTRO_E2E_ACCOUNTANT_EMAIL}
-- tapOn:
-    id: "auth.login.password"
-- inputText: ${MAESTRO_E2E_ACCOUNTANT_PASSWORD}
-- hideKeyboard
-- tapOn:
-    id: "auth.login.submit"
-- extendedWaitUntil:
-    visible:
-      id: "profile-edit-open"
-    timeout: 30000
 - openLink: "rik://ai?context=accountant"
+- runFlow:
+    when:
+      visible:
+        id: "auth.login.screen"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: "auth.login.email"
+          timeout: 15000
+      - tapOn:
+          id: "auth.login.email"
+      - inputText: ${MAESTRO_E2E_ACCOUNTANT_EMAIL}
+      - tapOn:
+          id: "auth.login.password"
+      - inputText: ${MAESTRO_E2E_ACCOUNTANT_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: "auth.login.submit"
+      - extendedWaitUntil:
+          visible:
+            id: "profile-edit-open"
+          timeout: 30000
+      - openLink: "rik://ai?context=accountant"
 - extendedWaitUntil:
     visible:
       id: "ai.assistant.screen"

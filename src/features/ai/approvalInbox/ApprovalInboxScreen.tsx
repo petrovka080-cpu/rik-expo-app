@@ -48,6 +48,11 @@ export default function ApprovalInboxScreen(props: ApprovalInboxScreenProps) {
 
         {viewModel.status !== "loaded" ? (
           <View testID="ai.approval.inbox.empty-state" style={styles.emptyBox}>
+            {viewModel.status === "blocked" ? (
+              <Text testID="ai.approval.persistence.blocked" style={styles.persistenceText}>
+                approval_persistence=blocked
+              </Text>
+            ) : null}
             <Text style={styles.emptyTitle}>{viewModel.emptyMessage}</Text>
             <Text style={styles.emptyText}>fake_actions=false</Text>
           </View>
@@ -151,6 +156,11 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontSize: 12,
     fontWeight: "800",
+  },
+  persistenceText: {
+    color: "#854D0E",
+    fontSize: 12,
+    fontWeight: "900",
   },
   section: {
     gap: 10,

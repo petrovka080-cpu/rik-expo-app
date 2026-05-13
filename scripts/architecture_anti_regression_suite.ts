@@ -737,6 +737,20 @@ export type DeveloperControlE2eModeArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type DeveloperControlRuntimeTargetabilityArchitectureSummary = {
+  runnerSeparatesTargetabilityFromRoleIsolation: boolean;
+  loginOrShellSupported: boolean;
+  commandCenterStableIdsChecked: boolean;
+  procurementEmptyStateAllowed: boolean;
+  approvalPersistenceNonBlocking: boolean;
+  roleIsolationNotClaimed: boolean;
+  noSeparateRoleRequirementInDeveloperMode: boolean;
+  noAuthAdminListUsersServiceRole: boolean;
+  noSeedOrFakeUsers: boolean;
+  targetabilityArtifactsPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiKnowledgePreviewE2eContractSummary = {
   deterministicPreviewPresent: boolean;
   roleMetadataIdsPresent: boolean;
@@ -927,6 +941,7 @@ export type ArchitectureAntiRegressionReport = {
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
   developerControlE2eMode: DeveloperControlE2eModeArchitectureSummary;
+  developerControlRuntimeTargetability: DeveloperControlRuntimeTargetabilityArchitectureSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
   postInstallReleaseSignoffGate: PostInstallReleaseSignoffGateSummary;
   componentDebt: {
@@ -1409,6 +1424,8 @@ const AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH =
   "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json";
 const DEVELOPER_CONTROL_E2E_MATRIX_ARTIFACT_PATH =
   "artifacts/S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_MODE_matrix.json";
+const DEVELOPER_CONTROL_TARGETABILITY_MATRIX_ARTIFACT_PATH =
+  "artifacts/S_E2E_CORE_05_DEVELOPER_CONTROL_TARGETABILITY_CLOSEOUT_matrix.json";
 const REQUIRED_AI_ROLE_SCREEN_FLOW_FILES = [
   "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
   "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
@@ -6214,6 +6231,149 @@ export function evaluateDeveloperControlE2eModeGuardrail(params: {
   };
 }
 
+export function evaluateDeveloperControlRuntimeTargetabilityGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: DeveloperControlRuntimeTargetabilityArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const resolverSource = safeReadProjectFile({ readFile, relativePath: AI_EXPLICIT_ROLE_AUTH_RESOLVER_PATH }) ?? "";
+  const runnerSource = safeReadProjectFile({ readFile, relativePath: DEVELOPER_CONTROL_E2E_RUNNER_PATH }) ?? "";
+  const roleRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH }) ?? "";
+  const commandRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts" }) ?? "";
+  const crossScreenRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH }) ?? "";
+  const procurementRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH }) ?? "";
+  const approvalRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_APPROVAL_INBOX_E2E_RUNNER_PATH }) ?? "";
+  const routeSource = safeReadProjectFile({ readFile, relativePath: "app/(tabs)/ai.tsx" }) ?? "";
+  const commandCenterRouteSource =
+    safeReadProjectFile({ readFile, relativePath: "app/ai-command-center.tsx" }) ?? "";
+  const procurementRouteSource =
+    safeReadProjectFile({ readFile, relativePath: "app/ai-procurement-copilot.tsx" }) ?? "";
+  const approvalRouteSource =
+    safeReadProjectFile({ readFile, relativePath: "app/ai-approval-inbox.tsx" }) ?? "";
+  const procurementSurfaceSource =
+    safeReadProjectFile({
+      readFile,
+      relativePath: "src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx",
+    }) ?? "";
+  const approvalScreenSource =
+    safeReadProjectFile({ readFile, relativePath: "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx" }) ?? "";
+  const artifactSource =
+    safeReadProjectFile({ readFile, relativePath: DEVELOPER_CONTROL_TARGETABILITY_MATRIX_ARTIFACT_PATH }) ?? "";
+  const artifact = parseJsonRecord(artifactSource);
+  const combinedSource = [
+    resolverSource,
+    runnerSource,
+    roleRunnerSource,
+    commandRunnerSource,
+    crossScreenRunnerSource,
+    procurementRunnerSource,
+    approvalRunnerSource,
+  ].join("\n");
+
+  const runnerSeparatesTargetabilityFromRoleIsolation =
+    runnerSource.includes("runtime_targetability_status") &&
+    runnerSource.includes("role_isolation_status") &&
+    runnerSource.includes("approval_persistence_status") &&
+    runnerSource.includes("approval_persistence_blocks_targetability");
+  const loginOrShellSupported =
+    [commandRunnerSource, crossScreenRunnerSource, procurementRunnerSource].every(
+      (source) =>
+        source.includes("clearState: false") &&
+        source.includes('id: "auth.login.screen"') &&
+        source.includes("runFlow:") &&
+        source.includes("profile-edit-open"),
+    ) &&
+    REQUIRED_AI_ROLE_SCREEN_FLOW_FILES.every((relativePath) => {
+      const flow = safeReadProjectFile({ readFile, relativePath }) ?? "";
+      return flow.includes("clearState: false") && flow.includes('id: "auth.login.screen"') && flow.includes("runFlow:");
+    });
+  const commandCenterStableIdsChecked =
+    commandRunnerSource.includes("rik://ai-command-center") &&
+    commandCenterRouteSource.includes("AiCommandCenterScreen") &&
+    commandRunnerSource.includes("ai.command.center.screen") &&
+    commandRunnerSource.includes("ai.command.center.runtime-status") &&
+    commandRunnerSource.includes("ai.command.center.task-stream-loaded") &&
+    commandRunnerSource.includes("ai.command.center.empty-state") &&
+    crossScreenRunnerSource.includes("ai.screen.runtime.screen");
+  const procurementEmptyStateAllowed =
+    routeSource.includes("procurementCopilot") &&
+    procurementRouteSource.includes("ProcurementCopilotRuntimeSurface") &&
+    procurementRunnerSource.includes("rik://ai-procurement-copilot") &&
+    procurementRunnerSource.includes("ai.procurement.copilot.context-loaded") &&
+    procurementRunnerSource.includes("ai.procurement.copilot.empty-state") &&
+    procurementSurfaceSource.includes("ai.procurement.copilot.empty-state") &&
+    procurementSurfaceSource.includes("fake_request=false") &&
+    !procurementRunnerSource.includes("if (!requestReady)");
+  const approvalPersistenceNonBlocking =
+    routeSource.includes("approvalInbox") &&
+    approvalRouteSource.includes("ApprovalInboxScreen") &&
+    approvalScreenSource.includes("ai.approval.persistence.blocked") &&
+    runnerSource.includes('approvalPersistenceStatus !== "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND"') &&
+    runnerSource.includes("approval_persistence_blocks_targetability: false");
+  const roleIsolationNotClaimed =
+    runnerSource.includes("role_isolation_e2e_claimed: false") &&
+    !runnerSource.includes("role_isolation_e2e_claimed: true") &&
+    recordValue(artifact, "role_isolation_e2e_claimed") !== true;
+  const noSeparateRoleRequirementInDeveloperMode =
+    resolverSource.includes("developer_control_full_access") &&
+    resolverSource.includes("separate_role_users_required: false") &&
+    runnerSource.includes("separate_role_users_required: false") &&
+    !runnerSource.includes("BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS");
+  const noAuthAdminListUsersServiceRole =
+    !/auth\.admin|listUsers\s*\(|service_role(?!_used|_discovery_used_for_green)|SUPABASE_SERVICE_ROLE_KEY/.test(
+      combinedSource,
+    );
+  const noSeedOrFakeUsers =
+    !/seed users|create fake user|fake role account|auth\.admin\.createUser|inviteUserByEmail/i.test(
+      combinedSource,
+    );
+  const targetabilityArtifactsPresent =
+    runnerSource.includes("S_E2E_CORE_05_DEVELOPER_CONTROL_TARGETABILITY_CLOSEOUT") &&
+    runnerSource.includes("GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_TARGETABILITY") &&
+    runnerSource.includes("previous_blocker_closed");
+
+  const findings = [
+    ...(runnerSeparatesTargetabilityFromRoleIsolation ? [] : ["targetability_not_separated_from_role_isolation"]),
+    ...(loginOrShellSupported ? [] : ["login_or_authenticated_shell_not_supported"]),
+    ...(commandCenterStableIdsChecked ? [] : ["command_center_stable_ids_not_checked"]),
+    ...(procurementEmptyStateAllowed ? [] : ["procurement_empty_state_not_allowed"]),
+    ...(approvalPersistenceNonBlocking ? [] : ["approval_persistence_blocks_targetability"]),
+    ...(roleIsolationNotClaimed ? [] : ["developer_control_claims_role_isolation"]),
+    ...(noSeparateRoleRequirementInDeveloperMode ? [] : ["developer_control_requires_separate_role_users"]),
+    ...(noAuthAdminListUsersServiceRole ? [] : ["auth_admin_listusers_or_service_role_detected"]),
+    ...(noSeedOrFakeUsers ? [] : ["seed_or_fake_users_detected"]),
+    ...(targetabilityArtifactsPresent ? [] : ["developer_control_targetability_artifacts_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "developer_control_runtime_targetability",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      runnerSeparatesTargetabilityFromRoleIsolation,
+      loginOrShellSupported,
+      commandCenterStableIdsChecked,
+      procurementEmptyStateAllowed,
+      approvalPersistenceNonBlocking,
+      roleIsolationNotClaimed,
+      noSeparateRoleRequirementInDeveloperMode,
+      noAuthAdminListUsersServiceRole,
+      noSeedOrFakeUsers,
+      targetabilityArtifactsPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAndroidEmulatorIosBuildSubmitGateGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -7670,6 +7830,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
   const developerControlE2eMode = evaluateDeveloperControlE2eModeGuardrail({ projectRoot });
+  const developerControlRuntimeTargetability = evaluateDeveloperControlRuntimeTargetabilityGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
   const postInstallReleaseSignoffGate = evaluatePostInstallReleaseSignoffGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
@@ -7719,6 +7880,7 @@ export function runArchitectureAntiRegressionSuite(
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
     developerControlE2eMode.check,
+    developerControlRuntimeTargetability.check,
     androidEmulatorIosBuildSubmitGate.check,
     postInstallReleaseSignoffGate.check,
     componentDebtCheck,
@@ -7769,6 +7931,7 @@ export function runArchitectureAntiRegressionSuite(
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
     developerControlE2eMode: developerControlE2eMode.summary,
+    developerControlRuntimeTargetability: developerControlRuntimeTargetability.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
     postInstallReleaseSignoffGate: postInstallReleaseSignoffGate.summary,
     componentDebt,
@@ -7863,6 +8026,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_explicit_role_secrets_e2e_gate_no_discovery: ${report.aiExplicitRoleSecretsE2eGate.noAuthDiscoveryGreenPath}`);
   console.info(`developer_control_e2e_mode: ${report.developerControlE2eMode.runnerPresent}`);
   console.info(`developer_control_role_isolation_claimed: ${!report.developerControlE2eMode.roleIsolationNotClaimed}`);
+  console.info(`developer_control_runtime_targetability: ${report.developerControlRuntimeTargetability.runnerSeparatesTargetabilityFromRoleIsolation}`);
+  console.info(`developer_control_approval_persistence_nonblocking: ${report.developerControlRuntimeTargetability.approvalPersistenceNonBlocking}`);
   console.info(`android_emulator_ios_build_submit_gate_runner: ${report.androidEmulatorIosBuildSubmitGate.releaseRunnerPresent}`);
   console.info(`android_emulator_ios_build_submit_gate_ios_submit_profile: ${report.androidEmulatorIosBuildSubmitGate.iosSubmitProfileUsed}`);
   console.info(`post_install_release_signoff_gate_android: ${report.postInstallReleaseSignoffGate.androidRuntimeSmokeProven}`);

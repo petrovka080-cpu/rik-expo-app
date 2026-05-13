@@ -351,6 +351,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "observability", "aiTraceRedaction.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceExportPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sE2eCore05DeveloperControlTargetabilityFiles = [
+      path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
+      path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1108,6 +1112,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
+    expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1272,7 +1277,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic08ApprovalLedgerBackendMountFiles -
         sAiHarden03SubmitForApprovalAuditFiles -
         sAiMagic08ApprovedProcurementExecutorFiles -
-        sAiObs01TraceObservabilityFiles,
+        sAiObs01TraceObservabilityFiles -
+        sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

@@ -1,0 +1,48 @@
+{
+  "final_status": "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_TARGETABILITY",
+  "e2e_role_mode": "developer_control_full_access",
+  "auth_source": "developer_control_explicit_env",
+  "single_account_runtime_allowed": true,
+  "full_access_runtime_claimed": true,
+  "role_isolation_e2e_claimed": false,
+  "role_isolation_contract_tests": "PASS",
+  "separate_role_users_required": false,
+  "auth_admin_used": false,
+  "list_users_used": false,
+  "seed_used": false,
+  "fake_users_created": false,
+  "previous_blocker": "BLOCKED_DEVELOPER_CONTROL_RUNTIME_TARGETABILITY",
+  "previous_blocker_closed": true,
+  "runtime_targetability_status": "PASS",
+  "role_isolation_status": "CONTRACT_ONLY_PASS",
+  "login_or_authenticated_shell_passed": true,
+  "command_center_targetable": true,
+  "procurement_copilot_targetable": true,
+  "approval_inbox_targetable": true,
+  "approval_persistence_status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
+  "approval_persistence_blocks_targetability": false,
+  "all_major_screens_runtime_checked": true,
+  "approval_boundary_observed": true,
+  "mutations_created": 0,
+  "android_runtime_smoke": "PASS_OR_EXACT_BLOCKER",
+  "child_statuses": [
+    {
+      "name": "command_center_task_stream",
+      "final_status": "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED"
+    },
+    {
+      "name": "cross_screen_runtime",
+      "final_status": "GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY"
+    },
+    {
+      "name": "procurement_copilot",
+      "final_status": "GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_READY"
+    },
+    {
+      "name": "approval_inbox",
+      "final_status": "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND"
+    }
+  ],
+  "exactReason": null,
+  "service_role_used": false
+}
