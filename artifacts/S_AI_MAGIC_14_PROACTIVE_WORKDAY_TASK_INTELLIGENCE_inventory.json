@@ -1,0 +1,43 @@
+{
+  "wave": "S_AI_MAGIC_14_PROACTIVE_WORKDAY_TASK_INTELLIGENCE",
+  "canonical_from_existing_runtime": true,
+  "engine": "src/features/ai/workday/aiWorkdayTaskEngine.ts",
+  "policy": "src/features/ai/workday/aiWorkdayTaskPolicy.ts",
+  "evidence": "src/features/ai/workday/aiWorkdayTaskEvidence.ts",
+  "ranking": "src/features/ai/workday/aiWorkdayTaskRanking.ts",
+  "bff_routes": "src/features/ai/agent/agentWorkdayTaskRoutes.ts",
+  "bff_contracts": "src/features/ai/agent/agentWorkdayTaskContracts.ts",
+  "command_center_surface": "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+  "runtime_runner": "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts",
+  "wave14_runner": "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceWave14Maestro.ts",
+  "contract": {
+    "contractId": "ai_workday_task_intelligence_v1",
+    "source": "runtime:ai_workday_task_intelligence_v1",
+    "backendFirst": true,
+    "roleScoped": true,
+    "evidenceRequired": true,
+    "internalFirst": true,
+    "readOnly": true,
+    "mutationCount": 0,
+    "dbWrites": 0,
+    "externalLiveFetch": false,
+    "providerCalled": false,
+    "finalExecution": 0,
+    "fakeCards": false,
+    "hardcodedAiAnswer": false
+  },
+  "empty_state_reason": "No eligible evidence-backed workday tasks were available in staging data.",
+  "required_flags": [
+    "S_AI_MAGIC_ROADMAP_APPROVED",
+    "S_AI_MAGIC_REQUIRE_ANDROID_EMULATOR_PROOF",
+    "S_AI_MAGIC_REQUIRE_EVIDENCE",
+    "S_AI_MAGIC_REQUIRE_ROLE_SCOPE",
+    "S_AI_MAGIC_REQUIRE_APPROVAL_FOR_HIGH_RISK",
+    "S_AI_ALLOW_SAFE_READ",
+    "S_AI_ALLOW_DRAFT_PREVIEW",
+    "S_AI_NO_FAKE_GREEN",
+    "S_AI_NO_FAKE_CARDS",
+    "S_AI_NO_SECRETS_PRINTING"
+  ],
+  "secrets_printed": false
+}

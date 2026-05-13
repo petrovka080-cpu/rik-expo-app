@@ -1,0 +1,10 @@
+{
+  "wave": "S_AI_MAGIC_14_PROACTIVE_WORKDAY_TASK_INTELLIGENCE",
+  "emulator_runtime_proof": "PASS",
+  "android_runtime_smoke": "PASS",
+  "command_center_workday_section_visible": true,
+  "workday_card_visible": false,
+  "workday_empty_state_visible": true,
+  "fake_emulator_pass": false,
+  "secrets_printed": false
+}
