@@ -1,0 +1,11 @@
+{
+  "wave": "S_AI_MAGIC_17_EXTERNAL_MARKET_INTELLIGENCE_CANARY",
+  "provider_registry": "src/features/ai/externalIntel/aiExternalProviderRegistry.ts",
+  "search_policy": "src/features/ai/externalIntel/aiExternalSearchPolicy.ts",
+  "citation_policy": "src/features/ai/externalIntel/aiExternalCitationPolicy.ts",
+  "supplier_candidate_preview": "src/features/ai/externalIntel/aiExternalSupplierCandidatePreview.ts",
+  "bff_shell": "src/features/ai/agent/agentBffRouteShell.ts",
+  "runtime_runner": "scripts/e2e/runAiExternalMarketIntelCanaryMaestro.ts",
+  "android_runtime_smoke": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "secrets_printed": false
+}

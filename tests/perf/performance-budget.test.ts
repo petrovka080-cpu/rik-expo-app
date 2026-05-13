@@ -383,6 +383,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurement", "aiSupplierDecisionPolicy.ts"),
       path.join(SRC, "features", "ai", "procurement", "aiProcurementEvidenceBuilder.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic17ExternalMarketIntelCanaryFiles = [
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalProviderRegistry.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalSearchPolicy.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalCitationPolicy.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalSupplierCandidatePreview.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1150,6 +1156,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic15RoleCopilotRuntimePackFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic16ProcurementLiveSupplierChainFiles).toBeLessThanOrEqual(3);
+    expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1321,6 +1328,7 @@ describe("performance budget — bundle module count", () => {
         sAiObs01TraceObservabilityFiles -
         sAiMagic15RoleCopilotRuntimePackFiles -
         sAiMagic16ProcurementLiveSupplierChainFiles -
+        sAiMagic17ExternalMarketIntelCanaryFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

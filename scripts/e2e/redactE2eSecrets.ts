@@ -1,4 +1,7 @@
-import { getExplicitAiRoleSecretKeys } from "./resolveExplicitAiRoleAuthEnv";
+import {
+  getDeveloperControlSecretKeys,
+  getExplicitAiRoleSecretKeys,
+} from "./resolveExplicitAiRoleAuthEnv";
 
 const JWT_PATTERN = /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g;
 const AUTHORIZATION_PATTERN = /\bAuthorization\s*:\s*(?:Bearer\s+)?[^\s"'<>]+/gi;
@@ -10,7 +13,7 @@ const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 export function collectExplicitE2eSecrets(
   env: NodeJS.ProcessEnv = process.env,
 ): readonly string[] {
-  return getExplicitAiRoleSecretKeys()
+  return [...new Set([...getExplicitAiRoleSecretKeys(), ...getDeveloperControlSecretKeys()])]
     .map((key) => String(env[key] ?? "").trim())
     .filter((value) => value.length > 0);
 }

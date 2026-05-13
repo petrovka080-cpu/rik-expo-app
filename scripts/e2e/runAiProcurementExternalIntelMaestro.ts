@@ -264,11 +264,15 @@ export async function runAiProcurementExternalIntelMaestro(): Promise<AiProcurem
   }
 
   const roleAuth = resolveExplicitAiRoleAuthEnv();
-  if (!roleAuth.greenEligible || !roleAuth.allRolesResolved || !roleAuth.env) {
+  if (
+    !roleAuth.greenEligible ||
+    !roleAuth.env ||
+    (roleAuth.separate_role_users_required && !roleAuth.allRolesResolved)
+  ) {
     return writeArtifact(
       baseArtifact(
         "BLOCKED_EXTERNAL_INTEL_EMULATOR_TARGETABILITY",
-        "Explicit AI role E2E credentials are required for procurement external intel UI proof.",
+        roleAuth.exactReason ?? "Explicit AI role E2E credentials are required for procurement external intel UI proof.",
         {
           backend_external_preview_runtime: backendStatus.ready,
           external_status: backendStatus.status,
@@ -357,7 +361,7 @@ export async function runAiProcurementExternalIntelMaestro(): Promise<AiProcurem
 
   return writeArtifact(
     baseArtifact("GREEN_AI_PROCUREMENT_EXTERNAL_INTEL_RUNTIME_READY", null, {
-      role_auth_source: "explicit_env",
+      role_auth_source: roleAuth.source,
       backend_external_preview_runtime: backendStatus.ready,
       external_status: backendStatus.status,
       test_request_source: requestResolution.source,

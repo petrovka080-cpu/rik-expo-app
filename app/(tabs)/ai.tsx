@@ -13,6 +13,7 @@ function AITabScreen() {
     approvalInbox?: string | string[];
     mode?: string | string[];
     procurementCopilot?: string | string[];
+    procurementExternalIntel?: string | string[];
     procurementRequestId?: string | string[];
   }>();
   const approvalInbox = Array.isArray(params.approvalInbox)
@@ -22,13 +23,16 @@ function AITabScreen() {
   const procurementCopilot = Array.isArray(params.procurementCopilot)
     ? params.procurementCopilot[0]
     : params.procurementCopilot;
+  const procurementExternalIntel = Array.isArray(params.procurementExternalIntel)
+    ? params.procurementExternalIntel[0]
+    : params.procurementExternalIntel;
   const procurementRequestId = Array.isArray(params.procurementRequestId)
     ? params.procurementRequestId[0]
     : params.procurementRequestId;
   if (approvalInbox === "1") {
     return <ApprovalInboxScreen viewModel={buildApprovalPersistenceBlockedViewModel()} />;
   }
-  if (procurementCopilot === "1") {
+  if (procurementCopilot === "1" || procurementExternalIntel === "1") {
     return <ProcurementCopilotRuntimeSurface requestId={procurementRequestId} />;
   }
   if (mode === "command-center") return <AiCommandCenterScreen />;

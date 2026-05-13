@@ -25,7 +25,7 @@ import type {
 } from "../appGraph/aiAppActionTypes";
 import { resolveInternalFirstDecision } from "../intelligence/internalFirstPolicy";
 import { resolveExternalIntel } from "../externalIntel/externalIntelResolver";
-import { createExternalIntelGateway } from "../externalIntel/ExternalIntelGateway";
+import { createExternalIntelGateway, type ExternalIntelGateway } from "../externalIntel/ExternalIntelGateway";
 import type {
   ExternalIntelCitation,
   ExternalIntelSearchPreviewInput,
@@ -40,9 +40,9 @@ import {
 import { resolveProcurementRequestContext } from "../procurement/procurementRequestContextResolver";
 import {
   previewProcurementSupplierMatch,
-  previewProcurementExternalSupplierCandidates,
   type ProcurementSupplierMatchEngineRequest,
 } from "../procurement/procurementSupplierMatchEngine";
+import { previewAiExternalSupplierCandidatesCanary } from "../externalIntel/aiExternalSupplierCandidatePreview";
 import type {
   ExternalSupplierCandidatesInput,
   ExternalSupplierCandidatesOutput,
@@ -329,6 +329,8 @@ export type AgentProcurementSupplierMatchRequest = AgentBffShellRequest & {
 
 export type AgentProcurementExternalSupplierCandidatesRequest = AgentBffShellRequest & {
   input: ExternalSupplierCandidatesInput;
+  sourcePolicyIds?: readonly string[];
+  externalGateway?: ExternalIntelGateway;
 };
 
 export type AgentProcurementDraftRequestPreviewRequest = AgentBffShellRequest & {
@@ -2107,9 +2109,11 @@ export async function previewAgentProcurementExternalSupplierCandidates(
 ): Promise<AgentProcurementEnvelope> {
   if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
 
-  const result = await previewProcurementExternalSupplierCandidates({
+  const result = await previewAiExternalSupplierCandidatesCanary({
     auth: request.auth,
     input: request.input,
+    sourcePolicyIds: request.sourcePolicyIds,
+    gateway: request.externalGateway,
   });
 
   return {

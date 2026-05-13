@@ -1,0 +1,20 @@
+# S_AI_MAGIC_17_EXTERNAL_MARKET_INTELLIGENCE_CANARY
+
+final_status: GREEN_AI_EXTERNAL_MARKET_INTELLIGENCE_CANARY_READY
+internal_first_proven: true
+marketplace_second: true
+external_live_fetch: false
+external_status: external_policy_not_enabled
+candidates_count: 0
+citations_present_if_results: true
+mutation_count: 0
+supplier_confirmed: false
+order_created: false
+warehouse_mutated: false
+payment_created: false
+android_runtime_smoke: PASS
+procurement_external_runtime_e2e: PASS
+fake_suppliers_created: false
+fake_external_results_created: false
+secrets_printed: false
+exact_reason: null

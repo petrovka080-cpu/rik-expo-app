@@ -19,9 +19,15 @@ describe("AI procurement external intel Maestro runner", () => {
     expect(runner).toContain('id: "ai.procurement.internal-first"');
     expect(runner).toContain('id: "ai.procurement.external.status"');
     expect(runner).toContain('id: "ai.procurement.approval-required"');
+    expect(read("app/(tabs)/ai.tsx")).toContain("procurementExternalIntel");
+    expect(read("src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx")).toContain(
+      'testID="ai.procurement.external.status"',
+    );
     expect(runner).toContain("mutations_created: 0");
     expect(runner).toContain("fake_external_results_created: false");
     expect(runner).toContain("fake_suppliers_created: false");
+    expect(runner).toContain("roleAuth.separate_role_users_required && !roleAuth.allRolesResolved");
+    expect(runner).toContain("role_auth_source: roleAuth.source");
     expect(runner).toContain("credentials_in_cli_args: false");
     expect(runner).toContain("redactE2eSecrets");
     expect(runner).not.toMatch(/auth\.admin|listUsers|service_role|AI_EXTERNAL_INTEL_SEARCH_API_KEY/i);

@@ -43,12 +43,14 @@ export default function ProcurementCopilotRuntimeSurface(
         </View>
 
         <View testID="ai.procurement.copilot.internal-first" style={styles.statusBox}>
+          <View testID="ai.procurement.internal-first" style={styles.runtimeInlineMarker} />
           <Text style={styles.statusText}>
             internal_app_first=true; mutation_count=0
           </Text>
         </View>
 
         <View testID="ai.procurement.copilot.external-status" style={styles.statusBox}>
+          <View testID="ai.procurement.external.status" style={styles.runtimeInlineMarker} />
           <Text style={styles.statusText}>
             external_intel_status=disabled; provider_called=false
           </Text>
@@ -72,6 +74,7 @@ export default function ProcurementCopilotRuntimeSurface(
         )}
 
         <View testID="ai.procurement.copilot.approval-required" style={styles.approvalBox}>
+          <View testID="ai.procurement.approval-required" style={styles.runtimeInlineMarker} />
           <Text style={styles.approvalText}>
             submit_for_approval requires approval; final_mutation_allowed=false
           </Text>
@@ -133,6 +136,10 @@ const styles = StyleSheet.create({
     color: "#075985",
     fontSize: 12,
     fontWeight: "800",
+  },
+  runtimeInlineMarker: {
+    width: 1,
+    height: 1,
   },
   panel: {
     borderRadius: 8,
