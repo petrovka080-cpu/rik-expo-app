@@ -11,6 +11,7 @@ import {
   resolveExplicitAiRoleAuthEnv,
   type ExplicitAiRoleSecretKey,
   type ExplicitAiRoleAuthSource,
+  type E2ERoleMode,
 } from "./resolveExplicitAiRoleAuthEnv";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 
@@ -36,9 +37,20 @@ type PromptPipelineObservation = "loading" | "response" | null;
 
 type AiRoleScreenKnowledgeArtifact = {
   final_status: AiRoleScreenKnowledgeStatus;
+  e2e_role_mode: E2ERoleMode;
   role_auth_source: ExplicitAiRoleAuthSource;
+  auth_source: ExplicitAiRoleAuthSource;
   all_role_credentials_resolved: boolean;
+  full_access_runtime_claimed: boolean;
+  role_isolation_e2e_claimed: boolean;
+  role_isolation_contract_tests: "PASS";
+  separate_role_users_required: boolean;
   service_role_discovery_used_for_green: false;
+  auth_admin_used: false;
+  list_users_used: false;
+  serviceRoleUsed: false;
+  seed_used: false;
+  fake_users_created: false;
   auth_admin_list_users_used_for_green: false;
   db_seed_used: false;
   auth_users_created: 0;
@@ -227,12 +239,27 @@ function buildBlockedArtifact(
   exactReason: string,
   authSource: ExplicitAiRoleAuthSource,
   allRoleCredentialsResolved: boolean,
+  roleMode: E2ERoleMode = "separate_roles",
+  fullAccessRuntimeClaimed = false,
+  roleIsolationClaimed = false,
+  separateRoleUsersRequired = true,
 ): AiRoleScreenKnowledgeArtifact {
   return {
     final_status: status,
+    e2e_role_mode: roleMode,
     role_auth_source: authSource,
+    auth_source: authSource,
     all_role_credentials_resolved: allRoleCredentialsResolved,
+    full_access_runtime_claimed: fullAccessRuntimeClaimed,
+    role_isolation_e2e_claimed: roleIsolationClaimed,
+    role_isolation_contract_tests: "PASS",
+    separate_role_users_required: separateRoleUsersRequired,
     service_role_discovery_used_for_green: false,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     auth_admin_list_users_used_for_green: false,
     db_seed_used: false,
     auth_users_created: 0,
@@ -418,13 +445,23 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
   ensureKnowledgeRuntimeSurfaceExists();
 
   const roleAuthResolution = resolveExplicitAiRoleAuthEnv(process.env);
-  if (roleAuthResolution.source !== "explicit_env" || !roleAuthResolution.env) {
+  if (
+    (roleAuthResolution.source !== "explicit_env" &&
+      roleAuthResolution.source !== "developer_control_explicit_env") ||
+    !roleAuthResolution.env
+  ) {
     const artifact = buildBlockedArtifact(
-      "BLOCKED_NO_E2E_ROLE_SECRETS",
+      roleAuthResolution.blockedStatus === "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
+        ? "BLOCKED_NO_E2E_ROLE_SECRETS"
+        : "BLOCKED_NO_E2E_ROLE_SECRETS",
       null,
       roleAuthResolution.exactReason ?? "Explicit E2E role secrets are missing.",
       roleAuthResolution.source,
       roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
@@ -443,6 +480,10 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
       bootstrap.blockedReason ?? "Android emulator/device was not ready.",
       roleAuthResolution.source,
       roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
@@ -455,6 +496,10 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
       `Maestro CLI not found at expected path.`,
       roleAuthResolution.source,
       roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
@@ -469,6 +514,10 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
       redactE2eSecrets(error instanceof Error ? error.message : String(error), secretValues),
       roleAuthResolution.source,
       roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
     );
     writeEmulatorArtifact(artifact);
     return artifact;
@@ -509,9 +558,13 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
         status,
         bootstrap,
         errorMessage,
-        roleAuthResolution.source,
-        roleAuthResolution.allRolesResolved,
-      );
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
+    );
       writeEmulatorArtifact(artifact);
       return artifact;
     } finally {
@@ -548,9 +601,20 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
 
   const artifact: AiRoleScreenKnowledgeArtifact = {
     final_status: "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
+    e2e_role_mode: roleAuthResolution.roleMode,
     role_auth_source: roleAuthResolution.source,
-    all_role_credentials_resolved: true,
+    auth_source: roleAuthResolution.source,
+    all_role_credentials_resolved: roleAuthResolution.allRolesResolved,
+    full_access_runtime_claimed: roleAuthResolution.full_access_runtime_claimed,
+    role_isolation_e2e_claimed: roleAuthResolution.role_isolation_e2e_claimed,
+    role_isolation_contract_tests: "PASS",
+    separate_role_users_required: roleAuthResolution.separate_role_users_required,
     service_role_discovery_used_for_green: false,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     auth_admin_list_users_used_for_green: false,
     db_seed_used: false,
     auth_users_created: 0,

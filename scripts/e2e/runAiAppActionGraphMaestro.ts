@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiAppActionGraphMaestroStatus =
   | "GREEN_AI_APP_ACTION_GRAPH_INTERNAL_FIRST_INTEL_READY"
@@ -19,7 +19,7 @@ export type AiAppActionGraphMaestroArtifact = {
   app_action_graph_source_ready: boolean;
   internal_first_policy_ready: boolean;
   external_live_fetch_enabled: false;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   role_isolation_full_green_claimed: boolean;
   developer_control_full_access_proof: boolean;
   admin_user_discovery_used_for_green: false;

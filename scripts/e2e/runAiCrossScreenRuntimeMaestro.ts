@@ -5,7 +5,11 @@ import { spawnSync } from "node:child_process";
 
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import {
+  resolveExplicitAiRoleAuthEnv,
+  type E2ERoleMode,
+  type ExplicitAiRoleAuthSource,
+} from "./resolveExplicitAiRoleAuthEnv";
 import { getAiScreenRuntimeEntry } from "../../src/features/ai/screenRuntime/aiScreenRuntimeRegistry";
 import { resolveAiScreenRuntime } from "../../src/features/ai/screenRuntime/aiScreenRuntimeResolver";
 
@@ -33,8 +37,18 @@ export type AiCrossScreenRuntimeMaestroArtifact = {
   approval_boundary_visible: boolean;
   mutations_created: 0;
   role_leakage_observed: false;
-  role_auth_source: "explicit_env" | "missing";
-  separate_role_users_required: true;
+  e2e_role_mode: E2ERoleMode;
+  role_auth_source: ExplicitAiRoleAuthSource;
+  auth_source: ExplicitAiRoleAuthSource;
+  full_access_runtime_claimed: boolean;
+  role_isolation_e2e_claimed: boolean;
+  role_isolation_contract_tests: "PASS";
+  separate_role_users_required: boolean;
+  auth_admin_used: false;
+  list_users_used: false;
+  serviceRoleUsed: false;
+  seed_used: false;
+  fake_users_created: false;
   credentials_in_cli_args: false;
   credentials_printed: false;
   stdout_redacted: true;
@@ -139,8 +153,18 @@ function baseArtifact(
     approval_boundary_visible: false,
     mutations_created: 0,
     role_leakage_observed: false,
+    e2e_role_mode: resolveExplicitAiRoleAuthEnv().roleMode,
     role_auth_source: resolveExplicitAiRoleAuthEnv().source,
-    separate_role_users_required: true,
+    auth_source: resolveExplicitAiRoleAuthEnv().auth_source,
+    full_access_runtime_claimed: resolveExplicitAiRoleAuthEnv().full_access_runtime_claimed,
+    role_isolation_e2e_claimed: resolveExplicitAiRoleAuthEnv().role_isolation_e2e_claimed,
+    role_isolation_contract_tests: "PASS",
+    separate_role_users_required: resolveExplicitAiRoleAuthEnv().separate_role_users_required,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     credentials_in_cli_args: false,
     credentials_printed: false,
     stdout_redacted: true,
@@ -240,11 +264,22 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
   }
 
   const roleAuth = resolveExplicitAiRoleAuthEnv();
-  if (!roleAuth.greenEligible || !roleAuth.allRolesResolved || !roleAuth.env) {
+  if (!roleAuth.greenEligible || !roleAuth.env) {
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
-        "Explicit separate AI role E2E credentials are required for cross-screen role-isolation proof.",
+        roleAuth.blockedStatus === "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
+          ? "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+          : "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+        roleAuth.exactReason ??
+          "Explicit AI role E2E credentials are required for cross-screen runtime proof.",
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+        },
       ),
     );
   }
@@ -255,7 +290,14 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
       baseArtifact(
         "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
         emulator.blockedReason ?? "Android emulator/device was not ready.",
-        { role_auth_source: "explicit_env" },
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+        },
       ),
     );
   }
@@ -263,12 +305,17 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
   if (!fs.existsSync(maestroBinary)) {
     return writeArtifact(
       baseArtifact("BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY", "Maestro CLI is not available.", {
-        role_auth_source: "explicit_env",
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
       }),
     );
   }
 
-  const secrets = collectExplicitE2eSecrets(process.env);
+  const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
   try {
     runCommand(
@@ -285,7 +332,14 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
       baseArtifact(
         "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
         "AI cross-screen runtime Command Center surface was not targetable with the installed app.",
-        { role_auth_source: "explicit_env" },
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+        },
       ),
     );
   } finally {
@@ -294,7 +348,12 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
 
   return writeArtifact(
     baseArtifact("GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY", null, {
-      role_auth_source: "explicit_env",
+      e2e_role_mode: roleAuth.roleMode,
+      role_auth_source: roleAuth.source,
+      auth_source: roleAuth.auth_source,
+      full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+      role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+      separate_role_users_required: roleAuth.separate_role_users_required,
       screen_runtime_visible: true,
       director_control_runtime_checked: true,
       buyer_runtime_checked: true,

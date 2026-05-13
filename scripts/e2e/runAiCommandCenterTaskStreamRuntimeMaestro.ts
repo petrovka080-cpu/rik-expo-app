@@ -5,10 +5,16 @@ import { spawnSync } from "node:child_process";
 
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
+import {
+  resolveExplicitAiRoleAuthEnv,
+  type E2ERoleMode,
+  type ExplicitAiRoleAuthSource,
+} from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiCommandCenterTaskStreamRuntimeStatus =
   | "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED"
   | "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+  | "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
   | "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS";
 
 export type AiCommandCenterTaskStreamRuntimeArtifact = {
@@ -19,11 +25,22 @@ export type AiCommandCenterTaskStreamRuntimeArtifact = {
   previous_blocker_closed: boolean;
   route_registered: boolean;
   task_stream_runtime_exposed: boolean;
-  role_auth_source: "explicit_env" | "missing";
+  e2e_role_mode: E2ERoleMode;
+  role_auth_source: ExplicitAiRoleAuthSource;
+  auth_source: ExplicitAiRoleAuthSource;
   role_isolation_full_green_claimed: false;
+  role_isolation_e2e_claimed: boolean;
+  role_isolation_contract_tests: "PASS";
   developer_control_full_access_proof: boolean;
+  full_access_runtime_claimed: boolean;
+  separate_role_users_required: boolean;
   server_key_discovery_used_for_green: false;
   admin_user_discovery_used_for_green: false;
+  auth_admin_used: false;
+  list_users_used: false;
+  serviceRoleUsed: false;
+  seed_used: false;
+  fake_users_created: false;
   db_seed_used: false;
   credentials_in_cli_args: false;
   credentials_printed: false;
@@ -82,13 +99,6 @@ function isTaskStreamRuntimeExposed(): boolean {
   );
 }
 
-function explicitDirectorAuthPresent(): boolean {
-  return Boolean(
-    String(process.env.E2E_DIRECTOR_EMAIL ?? "").trim() &&
-      String(process.env.E2E_DIRECTOR_PASSWORD ?? "").trim(),
-  );
-}
-
 function writeArtifact(
   artifact: AiCommandCenterTaskStreamRuntimeArtifact,
 ): AiCommandCenterTaskStreamRuntimeArtifact {
@@ -113,11 +123,22 @@ function blocked(
     previous_blocker_closed: isTaskStreamRuntimeExposed(),
     route_registered: isRouteRegistered(),
     task_stream_runtime_exposed: isTaskStreamRuntimeExposed(),
-    role_auth_source: explicitDirectorAuthPresent() ? "explicit_env" : "missing",
+    e2e_role_mode: "separate_roles",
+    role_auth_source: "missing",
+    auth_source: "missing",
     role_isolation_full_green_claimed: false,
+    role_isolation_e2e_claimed: false,
+    role_isolation_contract_tests: "PASS",
     developer_control_full_access_proof: false,
+    full_access_runtime_claimed: false,
+    separate_role_users_required: true,
     server_key_discovery_used_for_green: false,
     admin_user_discovery_used_for_green: false,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     db_seed_used: false,
     credentials_in_cli_args: false,
     credentials_printed: false,
@@ -229,16 +250,18 @@ function createFlowFile(mode: "loaded" | "empty"): string {
   return flowPath;
 }
 
-function runFlow(mode: "loaded" | "empty", deviceId: string, secrets: readonly string[]): boolean {
+function runFlow(
+  mode: "loaded" | "empty",
+  deviceId: string,
+  secrets: readonly string[],
+  roleEnv: Record<string, string>,
+): boolean {
   const flowPath = createFlowFile(mode);
   try {
     runCommand(
       maestroBinary,
       ["--device", deviceId, "test", flowPath],
-      {
-        MAESTRO_E2E_DIRECTOR_EMAIL: String(process.env.E2E_DIRECTOR_EMAIL ?? ""),
-        MAESTRO_E2E_DIRECTOR_PASSWORD: String(process.env.E2E_DIRECTOR_PASSWORD ?? ""),
-      },
+      roleEnv,
       secrets,
     );
     return true;
@@ -257,19 +280,40 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     );
   }
 
-  if (!explicitDirectorAuthPresent()) {
+  const roleAuth = resolveExplicitAiRoleAuthEnv();
+  if (!roleAuth.greenEligible || !roleAuth.env) {
     return blocked(
-      "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
-      "Explicit director E2E credentials are required; discovery and seed fallbacks are not allowed.",
+      roleAuth.blockedStatus === "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
+        ? "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
+        : "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS",
+      roleAuth.exactReason ?? "Explicit E2E credentials are required; discovery and seed fallbacks are not allowed.",
+      {
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+      },
     );
   }
 
-  const secrets = collectExplicitE2eSecrets(process.env);
+  const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const emulator = await ensureAndroidEmulatorReady({ projectRoot });
   if (emulator.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !emulator.deviceId) {
     return blocked(
       "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
       emulator.blockedReason ?? "Android emulator/device was not ready.",
+      {
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+      },
     );
   }
 
@@ -277,11 +321,24 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     return blocked(
       "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
       "Maestro CLI is not available.",
+      {
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+      },
     );
   }
 
-  const loadedPass = runFlow("loaded", emulator.deviceId, secrets);
-  const emptyPass = loadedPass ? false : runFlow("empty", emulator.deviceId, secrets);
+  const maestroRoleEnv = {
+    MAESTRO_E2E_DIRECTOR_EMAIL: roleAuth.env.E2E_DIRECTOR_EMAIL,
+    MAESTRO_E2E_DIRECTOR_PASSWORD: roleAuth.env.E2E_DIRECTOR_PASSWORD,
+  };
+  const loadedPass = runFlow("loaded", emulator.deviceId, secrets, maestroRoleEnv);
+  const emptyPass = loadedPass ? false : runFlow("empty", emulator.deviceId, secrets, maestroRoleEnv);
   if (!loadedPass && !emptyPass) {
     return blocked(
       "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
@@ -289,7 +346,13 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
       {
         route_registered: true,
         task_stream_runtime_exposed: true,
-        role_auth_source: "explicit_env",
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
       },
     );
   }
@@ -302,11 +365,22 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     previous_blocker_closed: true,
     route_registered: true,
     task_stream_runtime_exposed: true,
-    role_auth_source: "explicit_env",
+    e2e_role_mode: roleAuth.roleMode,
+    role_auth_source: roleAuth.source,
+    auth_source: roleAuth.auth_source,
     role_isolation_full_green_claimed: false,
+    role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+    role_isolation_contract_tests: "PASS",
     developer_control_full_access_proof: loadedPass,
+    full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+    separate_role_users_required: roleAuth.separate_role_users_required,
     server_key_discovery_used_for_green: false,
     admin_user_discovery_used_for_green: false,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     db_seed_used: false,
     credentials_in_cli_args: false,
     credentials_printed: false,

@@ -1,5 +1,6 @@
 import {
   getExplicitAiRoleSecretKeys,
+  getDeveloperControlSecretKeys,
   resolveExplicitAiRoleAuthEnv,
 } from "../../scripts/e2e/resolveExplicitAiRoleAuthEnv";
 import fs from "fs";
@@ -47,7 +48,9 @@ describe("resolveExplicitAiRoleAuthEnv", () => {
     expect(result.allRolesResolved).toBe(true);
     expect(result.blockedStatus).toBeNull();
     expect(result.rolesResolved).toEqual(["director", "foreman", "buyer", "accountant", "contractor"]);
-    expect(Object.keys(result.env ?? {}).sort()).toEqual([...REQUIRED_KEYS].sort());
+    expect(Object.keys(result.env ?? {}).sort()).toEqual(
+      [...new Set([...REQUIRED_KEYS, ...getDeveloperControlSecretKeys()])].sort(),
+    );
   });
 
   it("blocks green if any explicit role secret is missing", () => {

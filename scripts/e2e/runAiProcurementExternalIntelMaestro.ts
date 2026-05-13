@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 import { resolveAiProcurementRuntimeRequest } from "./resolveAiProcurementRuntimeRequest";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 import { createExternalIntelGateway } from "../../src/features/ai/externalIntel/ExternalIntelGateway";
 import { PROCUREMENT_EXTERNAL_SOURCE_POLICY_IDS } from "../../src/features/ai/externalIntel/externalSourceRegistry";
 
@@ -32,7 +32,7 @@ export type AiProcurementExternalIntelMaestroArtifact = {
   final_order_created: false;
   mutations_created: 0;
   external_status: "external_policy_not_enabled" | "external_provider_not_configured" | "loaded" | "empty" | "blocked" | "missing";
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   test_request_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
   request_id_hash: string | null;
   real_request_discovery_bounded: boolean;

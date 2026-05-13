@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { submitActionForApprovalBff } from "../../src/features/ai/actionLedger/aiActionLedgerBff";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiSubmitForApprovalAuditMaestroStatus =
   | "GREEN_AI_SUBMIT_FOR_APPROVAL_AUDIT_READY"
@@ -31,7 +31,7 @@ export type AiSubmitForApprovalAuditMaestroArtifact = {
   fake_local_approval: false;
   fake_action_status: false;
   direct_mutation_allowed: false;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   credentials_in_cli_args: false;
   credentials_printed: false;
   stdout_redacted: true;

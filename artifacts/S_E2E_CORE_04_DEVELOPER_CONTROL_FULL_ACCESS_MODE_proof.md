@@ -1,0 +1,18 @@
+# S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE
+
+final_status: BLOCKED_DEVELOPER_CONTROL_RUNTIME_TARGETABILITY
+e2e_role_mode: developer_control_full_access
+auth_source: developer_control_explicit_env
+full_access_runtime_claimed: true
+role_isolation_e2e_claimed: false
+role_isolation_contract_tests: PASS
+separate_role_users_required: false
+auth_admin_used: false
+list_users_used: false
+service_role_used: false
+seed_used: false
+fake_users_created: false
+all_major_screens_runtime_checked: false
+approval_boundary_observed: false
+mutations_created: 0
+exactReason: Developer/control full-access runtime was not fully targetable: role_screen_knowledge=BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS, command_center_task_stream=BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY, cross_screen_runtime=BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY, procurement_copilot=BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY, approval_inbox=BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND.

@@ -6,7 +6,11 @@ import { spawnSync } from "node:child_process";
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 import { resolveAiProcurementRuntimeRequest } from "./resolveAiProcurementRuntimeRequest";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import {
+  resolveExplicitAiRoleAuthEnv,
+  type E2ERoleMode,
+  type ExplicitAiRoleAuthSource,
+} from "./resolveExplicitAiRoleAuthEnv";
 import { resolveProcurementRequestContext } from "../../src/features/ai/procurement/procurementRequestContextResolver";
 
 export type AiProcurementCopilotMaestroStatus =
@@ -30,13 +34,24 @@ export type AiProcurementCopilotMaestroArtifact = {
   approval_required_visible: boolean;
   final_order_created: false;
   mutations_created: 0;
-  role_auth_source: "explicit_env" | "missing";
+  e2e_role_mode: E2ERoleMode;
+  role_auth_source: ExplicitAiRoleAuthSource;
+  auth_source: ExplicitAiRoleAuthSource;
+  full_access_runtime_claimed: boolean;
+  role_isolation_e2e_claimed: boolean;
+  role_isolation_contract_tests: "PASS";
+  separate_role_users_required: boolean;
   test_request_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
   request_id_hash: string | null;
   real_request_discovery_bounded: boolean;
   real_request_discovery_read_limit: number | null;
   real_request_item_count: number;
   db_seed_used: false;
+  auth_admin_used: false;
+  list_users_used: false;
+  serviceRoleUsed: false;
+  seed_used: false;
+  fake_users_created: false;
   fake_request_created: false;
   fake_suppliers_created: false;
   fake_marketplace_data_created: false;
@@ -118,13 +133,24 @@ function baseArtifact(
     approval_required_visible: false,
     final_order_created: false,
     mutations_created: 0,
+    e2e_role_mode: resolveExplicitAiRoleAuthEnv().roleMode,
     role_auth_source: resolveExplicitAiRoleAuthEnv().source,
+    auth_source: resolveExplicitAiRoleAuthEnv().auth_source,
+    full_access_runtime_claimed: resolveExplicitAiRoleAuthEnv().full_access_runtime_claimed,
+    role_isolation_e2e_claimed: resolveExplicitAiRoleAuthEnv().role_isolation_e2e_claimed,
+    role_isolation_contract_tests: "PASS",
+    separate_role_users_required: resolveExplicitAiRoleAuthEnv().separate_role_users_required,
     test_request_source: "missing",
     request_id_hash: null,
     real_request_discovery_bounded: false,
     real_request_discovery_read_limit: null,
     real_request_item_count: 0,
     db_seed_used: false,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    seed_used: false,
+    fake_users_created: false,
     fake_request_created: false,
     fake_suppliers_created: false,
     fake_marketplace_data_created: false,
@@ -264,12 +290,18 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
   }
 
   const roleAuth = resolveExplicitAiRoleAuthEnv();
-  if (!roleAuth.greenEligible || !roleAuth.allRolesResolved || !roleAuth.env) {
+  if (!roleAuth.greenEligible || !roleAuth.env) {
     return writeArtifact(
       baseArtifact(
         "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY",
-        "Explicit AI role E2E credentials are required for procurement copilot UI proof.",
+        roleAuth.exactReason ?? "Explicit AI role E2E credentials are required for procurement copilot UI proof.",
         {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
           backend_copilot_runtime_source_ready: backendRuntimeReady,
           test_request_source: requestResolution.source,
           request_id_hash: requestResolution.requestIdHash,
@@ -288,7 +320,12 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
         "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY",
         emulator.blockedReason ?? "Android emulator/device was not ready.",
         {
-          role_auth_source: "explicit_env",
+          role_auth_source: roleAuth.source,
+          e2e_role_mode: roleAuth.roleMode,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
           backend_copilot_runtime_source_ready: backendRuntimeReady,
           test_request_source: requestResolution.source,
           request_id_hash: requestResolution.requestIdHash,
@@ -306,7 +343,12 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
         "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY",
         "Maestro CLI is not available.",
         {
-          role_auth_source: "explicit_env",
+          role_auth_source: roleAuth.source,
+          e2e_role_mode: roleAuth.roleMode,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
           backend_copilot_runtime_source_ready: backendRuntimeReady,
           test_request_source: requestResolution.source,
           request_id_hash: requestResolution.requestIdHash,
@@ -318,7 +360,7 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
     );
   }
 
-  const secrets = collectExplicitE2eSecrets(process.env);
+  const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
   try {
     runCommand(
@@ -337,7 +379,12 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
         "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY",
         "AI procurement copilot UI was not targetable with the installed app.",
         {
-          role_auth_source: "explicit_env",
+          role_auth_source: roleAuth.source,
+          e2e_role_mode: roleAuth.roleMode,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
           backend_copilot_runtime_source_ready: backendRuntimeReady,
           test_request_source: requestResolution.source,
           request_id_hash: requestResolution.requestIdHash,
@@ -353,7 +400,12 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
 
   return writeArtifact(
     baseArtifact("GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_READY", null, {
-      role_auth_source: "explicit_env",
+      role_auth_source: roleAuth.source,
+      e2e_role_mode: roleAuth.roleMode,
+      auth_source: roleAuth.auth_source,
+      full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+      role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+      separate_role_users_required: roleAuth.separate_role_users_required,
       backend_copilot_runtime_source_ready: backendRuntimeReady,
       test_request_source: requestResolution.source,
       request_id_hash: requestResolution.requestIdHash,

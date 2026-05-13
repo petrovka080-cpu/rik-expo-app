@@ -1,0 +1,12 @@
+{
+  "wave": "S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE",
+  "runner": "scripts/e2e/runDeveloperControlFullAccessMaestro.ts",
+  "resolver": "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts",
+  "role_isolation_contract_tests": [
+    "tests/ai/approvalInboxRoleScope.contract.test.ts",
+    "tests/ai/aiPolicyGateScaleProof.contract.test.ts",
+    "tests/ai/aiPolicyGateFuzz.contract.test.ts",
+    "tests/architecture/aiPolicyGateScaleArchitecture.contract.test.ts"
+  ],
+  "secrets_printed": false
+}

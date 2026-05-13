@@ -624,6 +624,11 @@ describe("releaseGuard.shared", () => {
         "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
         "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
       ]);
+      expect(migrationPolicy.missingApprovalKeys).toEqual([
+        "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+        "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+      ]);
+      expect(migrationPolicy.approvalSatisfied).toBe(false);
       expect(migrationPolicy.nextSafeWave).toBe(
         "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL",
       );
@@ -641,6 +646,41 @@ describe("releaseGuard.shared", () => {
           productionDbApprovalRequired: true,
         }),
       );
+    });
+
+    it("does not add readiness blockers when exact owner DB approvals are enabled", () => {
+      const migrationPolicy = buildReleaseGuardMigrationPolicy({
+        changedFiles: ["supabase/migrations/20260501090000_s_load_11_warehouse_issue_queue_ready_rows_read_model.sql"],
+        approvalEnv: {
+          NODE_ENV: "test",
+          S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED: "true",
+          S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED: "true",
+        },
+        readFile: () => `
+          create table if not exists public.warehouse_issue_queue_ready_rows_v1 (
+            request_id integer primary key
+          );
+
+          create or replace function public.warehouse_issue_queue_rows_rebuild_v1()
+          returns void
+          language plpgsql
+          as $$
+          begin
+            insert into public.warehouse_issue_queue_ready_rows_v1 (request_id)
+            select id from public.requests;
+          end;
+          $$;
+        `,
+      });
+
+      expect(migrationPolicy.productionDbApprovalRequired).toBe(true);
+      expect(migrationPolicy.requiredApprovalKeys).toEqual([
+        "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+        "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+      ]);
+      expect(migrationPolicy.missingApprovalKeys).toEqual([]);
+      expect(migrationPolicy.approvalSatisfied).toBe(true);
+      expect(migrationPolicy.blockers).toEqual([]);
     });
 
     it("adds migration policy blockers to release readiness", () => {
@@ -665,6 +705,11 @@ describe("releaseGuard.shared", () => {
             "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
             "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
           ],
+          missingApprovalKeys: [
+            "S_PRODUCTION_MIGRATION_GAP_APPLY_OR_REPAIR_APPROVED",
+            "S_PROVIDERS_PRODUCTION_DB_WRITE_APPROVED",
+          ],
+          approvalSatisfied: false,
           nextSafeWave: "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL",
           risks: [],
           blockers: [

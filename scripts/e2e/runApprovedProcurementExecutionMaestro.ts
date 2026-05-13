@@ -7,7 +7,7 @@ import {
 import {
   redactAiE2eFixtureRecord,
 } from "../../src/features/ai/e2eFixtures/aiE2eFixtureRedaction";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiApprovedProcurementExecutionStatus =
   | "GREEN_AI_APPROVED_PROCUREMENT_EXECUTION_E2E"
@@ -26,7 +26,7 @@ export type AiApprovedProcurementExecutionArtifact = {
   explicit_fixtures_resolved: boolean;
   missing_fixture_keys: readonly string[];
   fixture_refs_redacted: Record<string, string> | null;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   ledger_rpc_runtime_mount_ready: boolean;
   procurement_bff_mutation_boundary_mounted: boolean;
   approval_inbox_ready: boolean;

@@ -2,6 +2,7 @@ import { execSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { loadAgentOwnerFlagsIntoEnv } from "../env/checkRequiredAgentFlags";
 import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/shared/release/releaseInfo";
 import { PROJECT_ROOT, loadReleaseConfigSummary } from "./releaseConfig.shared";
 import {
@@ -419,6 +420,7 @@ function buildBaseReport(
   const migrationPolicy = buildReleaseGuardMigrationPolicy({
     changedFiles,
     readFile: readCurrentFile,
+    approvalEnv: process.env,
   });
   const targetChannel = assertCanonicalChannel(args.channel);
   const expectedBranch = targetChannel ? getExpectedReleaseBranch(targetChannel) : null;
@@ -510,6 +512,7 @@ function runRequiredGates(): ReleaseGateResult[] {
 }
 
 function main() {
+  loadAgentOwnerFlagsIntoEnv(process.env, PROJECT_ROOT);
   const args = parseArgs(process.argv.slice(2));
   const repo = readRepoState();
   const commitRange = resolveReleaseGuardCommitRange({

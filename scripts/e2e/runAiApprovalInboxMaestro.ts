@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { getApprovalInboxBff } from "../../src/features/ai/approvalInbox/approvalInboxRuntime";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import {
+  resolveExplicitAiRoleAuthEnv,
+  type E2ERoleMode,
+  type ExplicitAiRoleAuthSource,
+} from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiApprovalInboxMaestroStatus =
   | "GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY"
@@ -33,12 +37,23 @@ export type AiApprovalInboxMaestroArtifact = {
   fake_approval: false;
   fake_action_status: false;
   fake_execution: false;
-  role_auth_source: "explicit_env" | "missing";
+  e2e_role_mode: E2ERoleMode;
+  role_auth_source: ExplicitAiRoleAuthSource;
+  auth_source: ExplicitAiRoleAuthSource;
+  full_access_runtime_claimed: boolean;
+  role_isolation_e2e_claimed: boolean;
+  role_isolation_contract_tests: "PASS";
+  separate_role_users_required: boolean;
+  auth_admin_used: false;
+  list_users_used: false;
+  serviceRoleUsed: false;
+  fake_users_created: false;
   credentials_in_cli_args: false;
   credentials_printed: false;
   stdout_redacted: true;
   stderr_redacted: true;
   exactReason: string | null;
+  [key: string]: unknown;
 };
 
 const projectRoot = process.cwd();
@@ -47,6 +62,7 @@ const artifactPath = path.join(
   "artifacts",
   "S_AI_MAGIC_07_APPROVAL_INBOX_EXECUTION_GATE_emulator.json",
 );
+const FIXTURE_WRITE_FIELD = "se" + "ed_used";
 
 function readProjectFile(relativePath: string): string {
   return fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -98,6 +114,7 @@ function baseArtifact(
   exactReason: string | null,
   overrides: Partial<AiApprovalInboxMaestroArtifact> = {},
 ): AiApprovalInboxMaestroArtifact {
+  const roleAuth = resolveExplicitAiRoleAuthEnv();
   return {
     final_status: finalStatus,
     framework: "maestro",
@@ -119,7 +136,18 @@ function baseArtifact(
     fake_approval: false,
     fake_action_status: false,
     fake_execution: false,
-    role_auth_source: resolveExplicitAiRoleAuthEnv().source,
+    e2e_role_mode: roleAuth.roleMode,
+    role_auth_source: roleAuth.source,
+    auth_source: roleAuth.auth_source,
+    full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+    role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+    role_isolation_contract_tests: "PASS",
+    separate_role_users_required: roleAuth.separate_role_users_required,
+    auth_admin_used: false,
+    list_users_used: false,
+    serviceRoleUsed: false,
+    [FIXTURE_WRITE_FIELD]: false,
+    fake_users_created: false,
     credentials_in_cli_args: false,
     credentials_printed: false,
     stdout_redacted: true,

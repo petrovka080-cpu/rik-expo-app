@@ -30,7 +30,7 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
   it("requires explicit role secrets and never uses discovery or DB-writing seed harnesses", () => {
     expect(source).toContain("resolveExplicitAiRoleAuthEnv");
     expect(source).toContain("BLOCKED_NO_E2E_ROLE_SECRETS");
-    expect(source).toContain('roleAuthResolution.source !== "explicit_env"');
+    expect(source).toContain('roleAuthResolution.source !== "developer_control_explicit_env"');
     expect(source).not.toContain("createMaestroCriticalBusinessSeed");
     expect(source).not.toContain("createTempUser");
     expect(source).not.toContain("resolveAiRoleScreenKnowledgeAuthEnv");

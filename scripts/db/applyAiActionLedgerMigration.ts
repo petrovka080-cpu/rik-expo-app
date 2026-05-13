@@ -2,6 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
+  REQUIRED_AGENT_OWNER_FLAGS,
+  loadAgentOwnerFlagsIntoEnv,
+} from "../env/checkRequiredAgentFlags";
+import {
   buildBoundedMigrationPlan,
   formatBoundedMigrationPlanForLog,
   normalizeMigrationFilename,
@@ -10,17 +14,7 @@ import {
 export const AI_ACTION_LEDGER_APPLY_MIGRATION =
   "20260513230000_ai_action_ledger_apply.sql";
 
-const APPLY_APPROVAL_FLAGS = [
-  "S_DB_MIGRATION_APPLY_APPROVED",
-  "S_PRODUCTION_DB_MIGRATION_APPLY_APPROVED",
-  "S_STAGING_DB_MIGRATION_APPLY_APPROVED",
-] as const;
-
-const ADDITIVE_APPROVAL_FLAGS = [
-  "S_ADDITIVE_MIGRATIONS_APPROVED",
-  "S_ADDITIVE_PRODUCTION_MIGRATIONS_APPROVED",
-  "S_ADDITIVE_STAGING_MIGRATIONS_APPROVED",
-] as const;
+const APPLY_APPROVAL_FLAGS = REQUIRED_AGENT_OWNER_FLAGS;
 
 type ApplyStatus =
   | "BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED"
@@ -43,8 +37,8 @@ function isEnabled(value: unknown): boolean {
   return value === "1" || value === "true" || value === "TRUE" || value === "yes";
 }
 
-function hasAnyEnabled(env: NodeJS.ProcessEnv, keys: readonly string[]): boolean {
-  return keys.some((key) => isEnabled(env[key]));
+function hasEveryEnabled(env: Record<string, string | undefined>, keys: readonly string[]): boolean {
+  return keys.every((key) => isEnabled(env[key]));
 }
 
 function readLocalMigration(projectRoot: string): { file: string; sqlSource: string } {
@@ -61,7 +55,7 @@ function readLocalMigration(projectRoot: string): { file: string; sqlSource: str
 }
 
 export function buildAiActionLedgerMigrationApplyPackage(
-  env: NodeJS.ProcessEnv = process.env,
+  env: Record<string, string | undefined> = process.env,
   projectRoot = process.cwd(),
 ): AiActionLedgerMigrationApplyPackage {
   const migration = readLocalMigration(projectRoot);
@@ -72,23 +66,21 @@ export function buildAiActionLedgerMigrationApplyPackage(
     remoteMigrations: [],
     destructiveApproval: false,
   });
-  const applyApproved = hasAnyEnabled(env, APPLY_APPROVAL_FLAGS);
-  const additiveApproved = hasAnyEnabled(env, ADDITIVE_APPROVAL_FLAGS);
-  const approved = applyApproved && additiveApproved;
+  const approved = hasEveryEnabled(env, APPLY_APPROVAL_FLAGS);
 
   if (!approved) {
     return {
       status: "BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED",
       migration: AI_ACTION_LEDGER_APPLY_MIGRATION,
       boundedPlan: formatBoundedMigrationPlanForLog(plan),
-      approvalFlagsChecked: [...APPLY_APPROVAL_FLAGS, ...ADDITIVE_APPROVAL_FLAGS],
+      approvalFlagsChecked: [...APPLY_APPROVAL_FLAGS],
       approvalValuesPrinted: false,
       dbWriteAttempted: false,
       sqlContentsPrinted: false,
       secretsPrinted: false,
       blocker: "BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED",
       exactReason:
-        "AI action ledger migration apply requires an existing DB migration apply approval flag and an additive migration approval flag.",
+        "AI action ledger migration apply requires every exact owner approval flag for DB apply, DB write, migration apply, verify, and rollback plan.",
     };
   }
 
@@ -96,7 +88,7 @@ export function buildAiActionLedgerMigrationApplyPackage(
     status: "GREEN_AI_ACTION_LEDGER_MIGRATION_PACKAGE_READY",
     migration: AI_ACTION_LEDGER_APPLY_MIGRATION,
     boundedPlan: formatBoundedMigrationPlanForLog(plan),
-    approvalFlagsChecked: [...APPLY_APPROVAL_FLAGS, ...ADDITIVE_APPROVAL_FLAGS],
+    approvalFlagsChecked: [...APPLY_APPROVAL_FLAGS],
     approvalValuesPrinted: false,
     dbWriteAttempted: false,
     sqlContentsPrinted: false,
@@ -107,6 +99,7 @@ export function buildAiActionLedgerMigrationApplyPackage(
 }
 
 function main(): void {
+  loadAgentOwnerFlagsIntoEnv(process.env);
   const result = buildAiActionLedgerMigrationApplyPackage();
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   process.exitCode =

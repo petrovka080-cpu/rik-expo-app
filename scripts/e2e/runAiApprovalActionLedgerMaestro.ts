@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 import { submitActionForApprovalBff } from "../../src/features/ai/actionLedger/aiActionLedgerBff";
 
 export type AiApprovalActionLedgerMaestroStatus =
@@ -29,7 +29,7 @@ export type AiApprovalActionLedgerMaestroArtifact = {
   fake_action_status: false;
   fake_execution: false;
   direct_mutation_allowed: false;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   credentials_in_cli_args: false;
   credentials_printed: false;
   stdout_redacted: true;

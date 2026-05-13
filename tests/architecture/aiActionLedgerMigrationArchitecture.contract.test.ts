@@ -23,8 +23,13 @@ describe("AI action ledger migration architecture package", () => {
       path.join(root, "scripts/db/applyAiActionLedgerMigration.ts"),
       "utf8",
     );
-    expect(applyRunner).toContain("S_DB_MIGRATION_APPLY_APPROVED");
-    expect(applyRunner).toContain("S_ADDITIVE_MIGRATIONS_APPROVED");
+    const flagChecker = fs.readFileSync(
+      path.join(root, "scripts/env/checkRequiredAgentFlags.ts"),
+      "utf8",
+    );
+    expect(applyRunner).toContain("REQUIRED_AGENT_OWNER_FLAGS");
+    expect(flagChecker).toContain("S_AI_ACTION_LEDGER_MIGRATION_APPLY_APPROVED");
+    expect(flagChecker).toContain("S_AI_ACTION_LEDGER_MIGRATION_VERIFY_APPROVED");
     expect(applyRunner).toContain("BLOCKED_APPROVAL_MIGRATION_NOT_APPROVED");
     expect(applyRunner).toContain("approvalValuesPrinted: false");
     expect(applyRunner).toContain("dbWriteAttempted: false");

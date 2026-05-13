@@ -6,7 +6,7 @@ import { spawnSync } from "node:child_process";
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 import { resolveAiProcurementRuntimeRequest } from "./resolveAiProcurementRuntimeRequest";
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 import { resolveProcurementRequestContext } from "../../src/features/ai/procurement/procurementRequestContextResolver";
 
 export type AiProcurementContextMaestroStatus =
@@ -28,7 +28,7 @@ export type AiProcurementContextMaestroArtifact = {
   approval_required_visible: boolean;
   final_order_created: false;
   mutations_created: 0;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   test_request_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
   request_context_source: "explicit_env" | "bounded_buyer_summary_rpc" | "missing";
   request_id_hash: string | null;

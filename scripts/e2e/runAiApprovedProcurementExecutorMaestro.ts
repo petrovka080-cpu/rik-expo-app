@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { resolveExplicitAiRoleAuthEnv } from "./resolveExplicitAiRoleAuthEnv";
+import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiApprovedProcurementExecutorMaestroStatus =
   | "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_READY"
@@ -33,7 +33,7 @@ export type AiApprovedProcurementExecutorMaestroArtifact = {
   fake_action_status: false;
   direct_mutation_from_ui: false;
   direct_supabase_from_ui: false;
-  role_auth_source: "explicit_env" | "missing";
+  role_auth_source: ExplicitAiRoleAuthSource;
   credentials_in_cli_args: false;
   credentials_printed: false;
   stdout_redacted: true;

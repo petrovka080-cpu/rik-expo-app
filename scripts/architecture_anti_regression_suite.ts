@@ -723,6 +723,20 @@ export type AiRoleScreenEmulatorGateSummary = {
   findings: readonly string[];
 };
 
+export type DeveloperControlE2eModeArchitectureSummary = {
+  resolverSupportsDeveloperControlMode: boolean;
+  runnerPresent: boolean;
+  existingRunnersModeAware: boolean;
+  singleAccountRuntimeAllowed: boolean;
+  roleIsolationNotClaimed: boolean;
+  roleIsolationContractTestsPresent: boolean;
+  separateUsersNotRequiredInDeveloperMode: boolean;
+  noAuthAdminListUsersServiceRole: boolean;
+  noSeedOrFakeUsers: boolean;
+  artifactFieldsPresent: boolean;
+  findings: readonly string[];
+};
+
 export type AiKnowledgePreviewE2eContractSummary = {
   deterministicPreviewPresent: boolean;
   roleMetadataIdsPresent: boolean;
@@ -912,6 +926,7 @@ export type ArchitectureAntiRegressionReport = {
   aiResponseSmokeNonBlockingContract: AiResponseSmokeNonBlockingContractSummary;
   aiRoleScreenEmulatorGate: AiRoleScreenEmulatorGateSummary;
   aiExplicitRoleSecretsE2eGate: AiRoleScreenEmulatorGateSummary;
+  developerControlE2eMode: DeveloperControlE2eModeArchitectureSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
   postInstallReleaseSignoffGate: PostInstallReleaseSignoffGateSummary;
   componentDebt: {
@@ -1121,6 +1136,8 @@ const AI_APPROVAL_ACTION_LEDGER_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovalActionLedgerMaestro.ts";
 const AI_APPROVAL_INBOX_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovalInboxMaestro.ts";
+const DEVELOPER_CONTROL_E2E_RUNNER_PATH =
+  "scripts/e2e/runDeveloperControlFullAccessMaestro.ts";
 const AI_APPROVED_PROCUREMENT_EXECUTOR_E2E_RUNNER_PATH =
   "scripts/e2e/runAiApprovedProcurementExecutorMaestro.ts";
 const AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH = "scripts/ai/scanAppActionGraphCoverage.ts";
@@ -1390,6 +1407,8 @@ const AI_EXPLICIT_ROLE_AUTH_RESOLVER_PATH = "scripts/e2e/resolveExplicitAiRoleAu
 const AI_E2E_SECRET_REDACTOR_PATH = "scripts/e2e/redactE2eSecrets.ts";
 const AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH =
   "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json";
+const DEVELOPER_CONTROL_E2E_MATRIX_ARTIFACT_PATH =
+  "artifacts/S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_MODE_matrix.json";
 const REQUIRED_AI_ROLE_SCREEN_FLOW_FILES = [
   "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
   "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
@@ -6086,6 +6105,115 @@ export function evaluateAiExplicitRoleSecretsE2eGateGuardrail(params: {
   };
 }
 
+export function evaluateDeveloperControlE2eModeGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: DeveloperControlE2eModeArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const resolverSource = safeReadProjectFile({ readFile, relativePath: AI_EXPLICIT_ROLE_AUTH_RESOLVER_PATH }) ?? "";
+  const runnerSource = safeReadProjectFile({ readFile, relativePath: DEVELOPER_CONTROL_E2E_RUNNER_PATH }) ?? "";
+  const modeAwareRunnerSources = [
+    AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH,
+    "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts",
+    AI_CROSS_SCREEN_RUNTIME_E2E_RUNNER_PATH,
+    AI_PROCUREMENT_COPILOT_E2E_RUNNER_PATH,
+    AI_APPROVAL_INBOX_E2E_RUNNER_PATH,
+  ].map((relativePath) => safeReadProjectFile({ readFile, relativePath }) ?? "");
+  const combinedSource = [resolverSource, runnerSource, ...modeAwareRunnerSources].join("\n");
+  const artifactSource =
+    safeReadProjectFile({ readFile, relativePath: DEVELOPER_CONTROL_E2E_MATRIX_ARTIFACT_PATH }) ?? "";
+  const artifact = parseJsonRecord(artifactSource);
+  const artifactRoleIsolationClaimed = recordValue(artifact, "role_isolation_e2e_claimed");
+  const artifactSeparateUsersRequired = recordValue(artifact, "separate_role_users_required");
+
+  const resolverSupportsDeveloperControlMode =
+    resolverSource.includes("developer_control_full_access") &&
+    resolverSource.includes("E2E_CONTROL_EMAIL") &&
+    resolverSource.includes("E2E_CONTROL_PASSWORD") &&
+    resolverSource.includes("E2E_DIRECTOR_EMAIL") &&
+    resolverSource.includes("full_access_runtime_claimed: true") &&
+    resolverSource.includes("role_isolation_e2e_claimed: false");
+  const runnerPresent =
+    runnerSource.includes("runDeveloperControlFullAccessMaestro") &&
+    runnerSource.includes("GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE_READY") &&
+    runnerSource.includes("role_isolation_e2e_claimed: false") &&
+    runnerSource.includes("mutations_created: 0");
+  const existingRunnersModeAware = modeAwareRunnerSources.every((source) =>
+    source.includes("developer_control") ||
+    source.includes("role_isolation_e2e_claimed") ||
+    source.includes("full_access_runtime_claimed"),
+  );
+  const singleAccountRuntimeAllowed =
+    resolverSource.includes("buildDeveloperControlEnv") &&
+    resolverSource.includes("E2E_BUYER_EMAIL: params.email") &&
+    runnerSource.includes("single_account_runtime_allowed: true");
+  const roleIsolationNotClaimed =
+    resolverSource.includes("roleIsolationClaimed: false") &&
+    runnerSource.includes("role_isolation_e2e_claimed: false") &&
+    artifactRoleIsolationClaimed !== true;
+  const roleIsolationContractTestsPresent = [
+    "tests/ai/approvalInboxRoleScope.contract.test.ts",
+    "tests/ai/aiPolicyGateScaleProof.contract.test.ts",
+    "tests/ai/aiPolicyGateFuzz.contract.test.ts",
+    "tests/architecture/aiPolicyGateScaleArchitecture.contract.test.ts",
+  ].every((relativePath) => Boolean(safeReadProjectFile({ readFile, relativePath })));
+  const separateUsersNotRequiredInDeveloperMode =
+    resolverSource.includes("separate_role_users_required: false") &&
+    runnerSource.includes("separate_role_users_required: false") &&
+    artifactSeparateUsersRequired !== true;
+  const noAuthAdminListUsersServiceRole =
+    !/auth\.admin|listUsers\s*\(|service_role(?!_used|_discovery_used_for_green)|SUPABASE_SERVICE_ROLE_KEY/.test(
+      combinedSource,
+    );
+  const noSeedOrFakeUsers =
+    !/seed users|create fake user|fake role account|auth\.admin\.createUser|inviteUserByEmail/i.test(
+      combinedSource,
+    );
+  const artifactFieldsPresent =
+    runnerSource.includes("S_E2E_CORE_04_DEVELOPER_CONTROL_FULL_ACCESS_MODE") &&
+    runnerSource.includes("auth_admin_used: false") &&
+    runnerSource.includes("list_users_used: false") &&
+    runnerSource.includes("SERVICE_ROLE_USED_FIELD") &&
+    runnerSource.includes("fake_users_created: false");
+
+  const findings = [
+    ...(resolverSupportsDeveloperControlMode ? [] : ["resolver_missing_developer_control_mode"]),
+    ...(runnerPresent ? [] : ["developer_control_runner_missing"]),
+    ...(existingRunnersModeAware ? [] : ["ai_e2e_runners_not_developer_control_aware"]),
+    ...(singleAccountRuntimeAllowed ? [] : ["single_account_runtime_not_allowed"]),
+    ...(roleIsolationNotClaimed ? [] : ["developer_control_claims_role_isolation"]),
+    ...(roleIsolationContractTestsPresent ? [] : ["role_isolation_contract_tests_missing"]),
+    ...(separateUsersNotRequiredInDeveloperMode ? [] : ["developer_control_requires_separate_role_users"]),
+    ...(noAuthAdminListUsersServiceRole ? [] : ["auth_admin_listusers_or_service_role_detected"]),
+    ...(noSeedOrFakeUsers ? [] : ["seed_or_fake_users_detected"]),
+    ...(artifactFieldsPresent ? [] : ["developer_control_artifact_fields_missing"]),
+  ];
+
+  return {
+    check: {
+      name: "developer_control_e2e_mode",
+      status: findings.length === 0 ? "pass" : "fail",
+      errors: findings,
+    },
+    summary: {
+      resolverSupportsDeveloperControlMode,
+      runnerPresent,
+      existingRunnersModeAware,
+      singleAccountRuntimeAllowed,
+      roleIsolationNotClaimed,
+      roleIsolationContractTestsPresent,
+      separateUsersNotRequiredInDeveloperMode,
+      noAuthAdminListUsersServiceRole,
+      noSeedOrFakeUsers,
+      artifactFieldsPresent,
+      findings,
+    },
+  };
+}
+
 export function evaluateAndroidEmulatorIosBuildSubmitGateGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -7541,6 +7669,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiResponseSmokeNonBlockingContract = evaluateAiResponseSmokeNonBlockingContractGuardrail({ projectRoot });
   const aiRoleScreenEmulatorGate = evaluateAiRoleScreenEmulatorGateGuardrail({ projectRoot });
   const aiExplicitRoleSecretsE2eGate = evaluateAiExplicitRoleSecretsE2eGateGuardrail({ projectRoot });
+  const developerControlE2eMode = evaluateDeveloperControlE2eModeGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
   const postInstallReleaseSignoffGate = evaluatePostInstallReleaseSignoffGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
@@ -7589,6 +7718,7 @@ export function runArchitectureAntiRegressionSuite(
     aiResponseSmokeNonBlockingContract.check,
     aiRoleScreenEmulatorGate.check,
     aiExplicitRoleSecretsE2eGate.check,
+    developerControlE2eMode.check,
     androidEmulatorIosBuildSubmitGate.check,
     postInstallReleaseSignoffGate.check,
     componentDebtCheck,
@@ -7638,6 +7768,7 @@ export function runArchitectureAntiRegressionSuite(
     aiResponseSmokeNonBlockingContract: aiResponseSmokeNonBlockingContract.summary,
     aiRoleScreenEmulatorGate: aiRoleScreenEmulatorGate.summary,
     aiExplicitRoleSecretsE2eGate: aiExplicitRoleSecretsE2eGate.summary,
+    developerControlE2eMode: developerControlE2eMode.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
     postInstallReleaseSignoffGate: postInstallReleaseSignoffGate.summary,
     componentDebt,
@@ -7730,6 +7861,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_role_screen_emulator_gate_fake_pass: ${report.aiRoleScreenEmulatorGate.fakePassClaimedFalse}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_auth_source: ${report.aiExplicitRoleSecretsE2eGate.roleAuthSourceExplicit}`);
   console.info(`ai_explicit_role_secrets_e2e_gate_no_discovery: ${report.aiExplicitRoleSecretsE2eGate.noAuthDiscoveryGreenPath}`);
+  console.info(`developer_control_e2e_mode: ${report.developerControlE2eMode.runnerPresent}`);
+  console.info(`developer_control_role_isolation_claimed: ${!report.developerControlE2eMode.roleIsolationNotClaimed}`);
   console.info(`android_emulator_ios_build_submit_gate_runner: ${report.androidEmulatorIosBuildSubmitGate.releaseRunnerPresent}`);
   console.info(`android_emulator_ios_build_submit_gate_ios_submit_profile: ${report.androidEmulatorIosBuildSubmitGate.iosSubmitProfileUsed}`);
   console.info(`post_install_release_signoff_gate_android: ${report.postInstallReleaseSignoffGate.androidRuntimeSmokeProven}`);

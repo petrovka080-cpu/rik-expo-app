@@ -91,6 +91,8 @@ export type ReleaseGuardMigrationPolicy = {
   highRiskFiles: string[];
   productionDbApprovalRequired: boolean;
   requiredApprovalKeys: string[];
+  missingApprovalKeys: string[];
+  approvalSatisfied: boolean;
   nextSafeWave: string | null;
   risks: SupabaseMigrationRisk[];
   blockers: string[];
@@ -277,6 +279,11 @@ export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
 ] as const;
 export const RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE =
   "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL";
+
+function isReleaseGuardApprovalEnabled(value: unknown): boolean {
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return normalized === "true" || normalized === "1" || normalized === "yes";
+}
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
@@ -517,6 +524,7 @@ export function analyzeSupabaseMigrationRisk(params: {
 export function buildReleaseGuardMigrationPolicy(params: {
   changedFiles: string[];
   readFile: (filePath: string) => string | null;
+  approvalEnv?: Record<string, string | undefined>;
 }): ReleaseGuardMigrationPolicy {
   const migrationFiles = dedupe(
     params.changedFiles.map(normalizePath).filter(isSupabaseMigrationPath),
@@ -546,15 +554,30 @@ export function buildReleaseGuardMigrationPolicy(params: {
     .filter((risk) => risk.productionDbApprovalRequired)
     .map((risk) => risk.filePath)
     .sort();
+  const requiredApprovalKeys =
+    highRiskFiles.length > 0 ? [...RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS] : [];
+  const approvalEnv = params.approvalEnv ?? process.env;
+  const missingApprovalKeys = requiredApprovalKeys.filter(
+    (key) => !isReleaseGuardApprovalEnabled(approvalEnv[key]),
+  );
+  const approvalSatisfied = highRiskFiles.length === 0 || missingApprovalKeys.length === 0;
+  const effectiveBlockers = approvalSatisfied
+    ? blockers.filter(
+        (blocker) =>
+          !blocker.includes("contains DML or read-model rebuild behavior and requires"),
+      )
+    : blockers;
 
   return {
     migrationFiles,
     highRiskFiles,
     productionDbApprovalRequired: highRiskFiles.length > 0,
-    requiredApprovalKeys: highRiskFiles.length > 0 ? [...RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS] : [],
+    requiredApprovalKeys,
+    missingApprovalKeys,
+    approvalSatisfied,
     nextSafeWave: highRiskFiles.length > 0 ? RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE : null,
     risks,
-    blockers,
+    blockers: effectiveBlockers,
   };
 }
 
