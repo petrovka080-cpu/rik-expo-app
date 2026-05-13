@@ -7,6 +7,13 @@ import { type AiDomain, type AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "../tools/aiToolPlanPolicy";
 import type { AiToolName } from "../tools/aiToolTypes";
 import {
+  AI_COMMAND_CENTER_RUNTIME_BUDGET,
+  enforceAiCommandCenterCardBudget,
+  normalizeAiCommandCenterPage,
+} from "./aiCommandCenterRuntimeBudget";
+import { AI_COMMAND_CENTER_REFRESH_POLICY } from "./aiCommandCenterRefreshPolicy";
+import { AI_COMMAND_CENTER_REALTIME_POLICY } from "./aiCommandCenterRealtimePolicy";
+import {
   AI_COMMAND_CENTER_ACTION_TEST_IDS,
   AI_COMMAND_CENTER_SUPPORTED_TOOL_NAMES,
   type AiCommandCenterAction,
@@ -127,6 +134,13 @@ function emptyViewModel(params: {
     roleScoped: true,
     readOnly: true,
     evidenceRequired: true,
+    maxCards: AI_COMMAND_CENTER_RUNTIME_BUDGET.maxCards,
+    paginationRequired: AI_COMMAND_CENTER_RUNTIME_BUDGET.paginationRequired,
+    refreshThrottleRequired: true,
+    realtimeSubscriptionEnabled: AI_COMMAND_CENTER_REALTIME_POLICY.realtimeEnabledByDefault,
+    perCardRealtimeSubscriptionAllowed: AI_COMMAND_CENTER_REALTIME_POLICY.perCardRealtimeSubscriptionAllowed,
+    pollingLoopAllowed: AI_COMMAND_CENTER_REFRESH_POLICY.pollingLoopAllowed,
+    taskStreamTimeoutMs: AI_COMMAND_CENTER_REFRESH_POLICY.requestTimeoutMs,
     mutationCount: 0,
     directMutationAllowed: false,
     directSupabaseFromUi: false,
@@ -413,9 +427,10 @@ export function buildAiCommandCenterViewModel(
     });
   }
 
+  const page = normalizeAiCommandCenterPage(input.page);
   const taskStream = getAgentTaskStream({
     auth: input.auth,
-    page: input.page ?? { limit: 50 },
+    page,
     sourceCards: input.sourceCards,
     runtimeEvidence: input.runtimeEvidence,
     screenId: "ai.command.center",
@@ -431,11 +446,11 @@ export function buildAiCommandCenterViewModel(
     });
   }
 
-  const cards = sortCards(
+  const cards = enforceAiCommandCenterCardBudget(sortCards(
     taskStream.data.cards.map((card) =>
       buildAiCommandCenterCardView({ card, role: input.auth!.role }),
     ),
-  );
+  ));
   const sections = buildSections(cards);
 
   return {
@@ -446,6 +461,13 @@ export function buildAiCommandCenterViewModel(
     roleScoped: true,
     readOnly: true,
     evidenceRequired: true,
+    maxCards: AI_COMMAND_CENTER_RUNTIME_BUDGET.maxCards,
+    paginationRequired: AI_COMMAND_CENTER_RUNTIME_BUDGET.paginationRequired,
+    refreshThrottleRequired: true,
+    realtimeSubscriptionEnabled: AI_COMMAND_CENTER_REALTIME_POLICY.realtimeEnabledByDefault,
+    perCardRealtimeSubscriptionAllowed: AI_COMMAND_CENTER_REALTIME_POLICY.perCardRealtimeSubscriptionAllowed,
+    pollingLoopAllowed: AI_COMMAND_CENTER_REFRESH_POLICY.pollingLoopAllowed,
+    taskStreamTimeoutMs: AI_COMMAND_CENTER_REFRESH_POLICY.requestTimeoutMs,
     mutationCount: 0,
     directMutationAllowed: false,
     directSupabaseFromUi: false,

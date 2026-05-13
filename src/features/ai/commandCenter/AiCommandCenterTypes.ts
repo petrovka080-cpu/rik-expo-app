@@ -88,6 +88,13 @@ export type AiCommandCenterViewModel = {
   roleScoped: true;
   readOnly: true;
   evidenceRequired: true;
+  maxCards: 20;
+  paginationRequired: true;
+  refreshThrottleRequired: true;
+  realtimeSubscriptionEnabled: false;
+  perCardRealtimeSubscriptionAllowed: false;
+  pollingLoopAllowed: false;
+  taskStreamTimeoutMs: 8000;
   mutationCount: 0;
   directMutationAllowed: false;
   directSupabaseFromUi: false;

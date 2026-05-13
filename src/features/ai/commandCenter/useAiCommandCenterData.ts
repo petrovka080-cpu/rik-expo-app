@@ -7,6 +7,7 @@ import {
   type AgentBffAuthContext,
   type AgentTaskStreamCard,
 } from "./buildAiCommandCenterViewModel";
+import { AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT } from "./aiCommandCenterRuntimeBudget";
 import type {
   AiCommandCenterDataState,
   AiCommandCenterViewModel,
@@ -30,7 +31,7 @@ function buildState(params: {
     viewModel: buildAiCommandCenterViewModel({
       auth: params.auth,
       sourceCards: params.sourceCards,
-      page: { limit: 50 },
+      page: { limit: AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT },
     }),
   };
 }

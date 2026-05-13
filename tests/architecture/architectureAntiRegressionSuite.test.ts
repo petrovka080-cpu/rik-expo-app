@@ -7,6 +7,7 @@ import {
   evaluateDirectSupabaseExceptionGuardrail,
   evaluateAiAppKnowledgeRegistryGuardrail,
   evaluateAiCommandCenterTaskStreamRuntimeGuardrail,
+  evaluateAiCommandCenterStateBudgetGuardrail,
   evaluateAiCrossScreenRuntimeMatrixGuardrail,
   evaluateAiExternalIntelGatewayGuardrail,
   evaluateAiApprovalInboxRuntimeGuardrail,
@@ -493,6 +494,129 @@ describe("architecture anti-regression suite", () => {
         "task_stream_runtime_evidence_requirement_missing",
         "command_center_fake_cards_detected",
         "command_center_ui_supabase_import_detected",
+      ]),
+    );
+  });
+
+  it("ratchets the Command Center state and realtime budget", () => {
+    const passingMatrix = JSON.stringify({
+      max_cards_lte_20: true,
+      pagination_required: true,
+      refresh_throttle_required: true,
+      refresh_timeout_required: true,
+      cancellation_required: true,
+      duplicate_in_flight_blocked: true,
+      realtime_enabled_by_default: false,
+      per_card_realtime_subscription_allowed: false,
+      polling_loop_allowed: false,
+      polling_loop_ceiling: 0,
+      task_stream_uses_budgeted_limit: true,
+      card_budget_enforced_in_view_model: true,
+      empty_state_real: true,
+      mutation_count: 0,
+    });
+    const passing = evaluateAiCommandCenterStateBudgetGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("aiCommandCenterRuntimeBudget.ts")) {
+          return "AI_COMMAND_CENTER_MAX_CARDS = 20\npaginationRequired: true\nmutationCount: 0";
+        }
+        if (relativePath.endsWith("aiCommandCenterRefreshPolicy.ts")) {
+          return [
+            "minRefreshIntervalMs: 30_000",
+            "requestTimeoutMs: 8_000",
+            "cancellationRequired: true",
+            "duplicateInFlightAllowed: false",
+          ].join("\n");
+        }
+        if (relativePath.endsWith("aiCommandCenterRealtimePolicy.ts")) {
+          return "realtimeEnabledByDefault: false\nperCardRealtimeSubscriptionAllowed: false";
+        }
+        if (relativePath === "scripts/ai/scanCommandCenterStateBudget.ts") {
+          return "scanCommandCenterStateBudget\nGREEN_AI_COMMAND_CENTER_STATE_BUDGET_READY";
+        }
+        if (relativePath === "scripts/e2e/runAiCommandCenterStateBudgetMaestro.ts") {
+          return "runAiCommandCenterStateBudgetMaestro\nBLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY";
+        }
+        if (relativePath.endsWith("_matrix.json")) {
+          return passingMatrix;
+        }
+        if (relativePath.includes("S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET")) {
+          return "{}";
+        }
+        if (relativePath.includes("commandCenter")) {
+          return [
+            "AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT",
+            "normalizeAiCommandCenterPage",
+            "enforceAiCommandCenterCardBudget",
+            "ai.command.center.empty-state",
+            "state.viewModel.empty",
+            "mutationCount: 0",
+          ].join("\n");
+        }
+        return "";
+      },
+    });
+
+    expect(passing.check).toEqual({
+      name: "ai_command_center_state_budget",
+      status: "pass",
+      errors: [],
+    });
+
+    const failingMatrix = JSON.stringify({
+      max_cards_lte_20: false,
+      pagination_required: false,
+      refresh_throttle_required: false,
+      refresh_timeout_required: false,
+      cancellation_required: false,
+      duplicate_in_flight_blocked: false,
+      realtime_enabled_by_default: true,
+      per_card_realtime_subscription_allowed: true,
+      task_stream_uses_budgeted_limit: false,
+      card_budget_enforced_in_view_model: false,
+      empty_state_real: false,
+      mutation_count: 1,
+    });
+    const failing = evaluateAiCommandCenterStateBudgetGuardrail({
+      projectRoot: process.cwd(),
+      readFile: (relativePath) => {
+        if (relativePath.endsWith("aiCommandCenterRuntimeBudget.ts")) {
+          return "AI_COMMAND_CENTER_MAX_CARDS = 50\npaginationRequired: false\nmutationCount: 1";
+        }
+        if (relativePath.endsWith("aiCommandCenterRefreshPolicy.ts")) {
+          return "minRefreshIntervalMs: 0\nrequestTimeoutMs: 60_000\ncancellationRequired: false\nduplicateInFlightAllowed: true";
+        }
+        if (relativePath.endsWith("aiCommandCenterRealtimePolicy.ts")) {
+          return "realtimeEnabledByDefault: true\nperCardRealtimeSubscriptionAllowed: true";
+        }
+        if (relativePath === "scripts/ai/scanCommandCenterStateBudget.ts") {
+          return "scanCommandCenterStateBudget";
+        }
+        if (relativePath === "scripts/e2e/runAiCommandCenterStateBudgetMaestro.ts") {
+          return "runAiCommandCenterStateBudgetMaestro";
+        }
+        if (relativePath.endsWith("_matrix.json")) {
+          return failingMatrix;
+        }
+        if (relativePath.includes("S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET")) {
+          return "{}";
+        }
+        if (relativePath.includes("commandCenter")) {
+          return "limit: 50\n.subscribe(\nsetInterval(\nmutationCount: 1";
+        }
+        return "";
+      },
+    });
+
+    expect(failing.check.status).toBe("fail");
+    expect(failing.check.errors).toEqual(
+      expect.arrayContaining([
+        "command_center_max_cards_not_bounded_to_20",
+        "command_center_realtime_subscription_detected",
+        "command_center_polling_loop_detected",
+        "command_center_task_stream_limit_not_budgeted",
+        "command_center_mutation_surface_detected",
       ]),
     );
   });

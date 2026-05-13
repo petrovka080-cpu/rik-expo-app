@@ -448,6 +448,28 @@ export type AiCommandCenterTaskStreamRuntimeArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiCommandCenterStateBudgetArchitectureSummary = {
+  budgetFilesPresent: boolean;
+  scannerPresent: boolean;
+  e2eRunnerPresent: boolean;
+  artifactsPresent: boolean;
+  maxCardsBounded: boolean;
+  paginationRequired: boolean;
+  refreshThrottleRequired: boolean;
+  refreshTimeoutRequired: boolean;
+  cancellationRequired: boolean;
+  duplicateInFlightBlocked: boolean;
+  realtimeDisabledByDefault: boolean;
+  perCardRealtimeDisabled: boolean;
+  noRealtimeSubscriptionInCommandCenter: boolean;
+  noPollingLoopInCommandCenter: boolean;
+  taskStreamUsesBudgetedLimit: boolean;
+  cardBudgetEnforced: boolean;
+  realEmptyState: boolean;
+  noMutationSurface: boolean;
+  findings: readonly string[];
+};
+
 export type AiAppActionGraphArchitectureSummary = {
   appGraphFilesPresent: boolean;
   domainGraphFilesPresent: boolean;
@@ -841,6 +863,7 @@ export type ArchitectureAntiRegressionReport = {
   aiPolicyGateScaleProof: AiPolicyGateScaleProofArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
+  aiCommandCenterStateBudget: AiCommandCenterStateBudgetArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
   aiProcurementContextEngine: AiProcurementContextEngineArchitectureSummary;
   aiExternalIntelGateway: AiExternalIntelGatewayArchitectureSummary;
@@ -931,6 +954,20 @@ const AI_COMMAND_CENTER_FILES = [
   "src/features/ai/commandCenter/AiCommandCenterActions.tsx",
   "src/features/ai/commandCenter/useAiCommandCenterData.ts",
   "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts",
+] as const;
+const AI_COMMAND_CENTER_STATE_BUDGET_FILES = [
+  "src/features/ai/commandCenter/aiCommandCenterRuntimeBudget.ts",
+  "src/features/ai/commandCenter/aiCommandCenterRefreshPolicy.ts",
+  "src/features/ai/commandCenter/aiCommandCenterRealtimePolicy.ts",
+] as const;
+const AI_COMMAND_CENTER_STATE_BUDGET_SCANNER_PATH = "scripts/ai/scanCommandCenterStateBudget.ts";
+const AI_COMMAND_CENTER_STATE_BUDGET_E2E_RUNNER_PATH =
+  "scripts/e2e/runAiCommandCenterStateBudgetMaestro.ts";
+const AI_COMMAND_CENTER_STATE_BUDGET_ARTIFACT_FILES = [
+  "artifacts/S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET_inventory.json",
+  "artifacts/S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET_matrix.json",
+  "artifacts/S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET_emulator.json",
+  "artifacts/S_AI_HARDEN_05_COMMAND_CENTER_STATE_BUDGET_proof.md",
 ] as const;
 const AI_TASK_STREAM_RUNTIME_FILES = [
   "src/features/ai/taskStream/aiTaskStreamRuntime.ts",
@@ -3436,6 +3473,146 @@ export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
       noModelProviderUiImport,
       noRawPayloadFields,
       unknownRoleDenied,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiCommandCenterStateBudgetGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiCommandCenterStateBudgetArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const budgetSources = AI_COMMAND_CENTER_STATE_BUDGET_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const runtimeBudgetSource =
+    budgetSources.find((entry) => entry.relativePath.endsWith("aiCommandCenterRuntimeBudget.ts"))?.source ?? "";
+  const refreshSource =
+    budgetSources.find((entry) => entry.relativePath.endsWith("aiCommandCenterRefreshPolicy.ts"))?.source ?? "";
+  const realtimeSource =
+    budgetSources.find((entry) => entry.relativePath.endsWith("aiCommandCenterRealtimePolicy.ts"))?.source ?? "";
+  const scannerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_COMMAND_CENTER_STATE_BUDGET_SCANNER_PATH }) ?? "";
+  const e2eRunnerSource =
+    safeReadProjectFile({ readFile, relativePath: AI_COMMAND_CENTER_STATE_BUDGET_E2E_RUNNER_PATH }) ?? "";
+  const artifactSources = AI_COMMAND_CENTER_STATE_BUDGET_ARTIFACT_FILES.map((relativePath) => ({
+    relativePath,
+    source: safeReadProjectFile({ readFile, relativePath }),
+  }));
+  const matrixRecord = parseJsonRecord(
+    artifactSources.find((entry) => entry.relativePath.endsWith("_matrix.json"))?.source ?? null,
+  );
+  const commandCenterSource = AI_COMMAND_CENTER_FILES.map(
+    (relativePath) => safeReadProjectFile({ readFile, relativePath }) ?? "",
+  ).join("\n");
+
+  const budgetFilesPresent = budgetSources.every((entry) => Boolean(entry.source));
+  const scannerPresent =
+    scannerSource.includes("scanCommandCenterStateBudget") &&
+    scannerSource.includes("GREEN_AI_COMMAND_CENTER_STATE_BUDGET_READY");
+  const e2eRunnerPresent =
+    e2eRunnerSource.includes("runAiCommandCenterStateBudgetMaestro") &&
+    e2eRunnerSource.includes("BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY");
+  const artifactsPresent = artifactSources.every((entry) => Boolean(entry.source));
+  const maxCardsBounded =
+    runtimeBudgetSource.includes("AI_COMMAND_CENTER_MAX_CARDS = 20") &&
+    booleanRecordValue(matrixRecord, "max_cards_lte_20");
+  const paginationRequired =
+    runtimeBudgetSource.includes("paginationRequired: true") &&
+    booleanRecordValue(matrixRecord, "pagination_required");
+  const refreshThrottleRequired =
+    refreshSource.includes("minRefreshIntervalMs: 30_000") &&
+    booleanRecordValue(matrixRecord, "refresh_throttle_required");
+  const refreshTimeoutRequired =
+    refreshSource.includes("requestTimeoutMs: 8_000") &&
+    booleanRecordValue(matrixRecord, "refresh_timeout_required");
+  const cancellationRequired =
+    refreshSource.includes("cancellationRequired: true") &&
+    booleanRecordValue(matrixRecord, "cancellation_required");
+  const duplicateInFlightBlocked =
+    refreshSource.includes("duplicateInFlightAllowed: false") &&
+    booleanRecordValue(matrixRecord, "duplicate_in_flight_blocked");
+  const realtimeDisabledByDefault =
+    realtimeSource.includes("realtimeEnabledByDefault: false") &&
+    recordValue(matrixRecord, "realtime_enabled_by_default") === false;
+  const perCardRealtimeDisabled =
+    realtimeSource.includes("perCardRealtimeSubscriptionAllowed: false") &&
+    recordValue(matrixRecord, "per_card_realtime_subscription_allowed") === false;
+  const noRealtimeSubscriptionInCommandCenter =
+    !/\.channel\s*\(|\.subscribe\s*\(|\bchannel\s*\(|\bsubscribe\s*\(/i.test(commandCenterSource);
+  const noPollingLoopInCommandCenter =
+    !/\bsetInterval\s*\(|\bwhile\s*\(\s*true\s*\)|\bfor\s*\(\s*;\s*;\s*\)/i.test(commandCenterSource);
+  const taskStreamUsesBudgetedLimit =
+    commandCenterSource.includes("AI_COMMAND_CENTER_DEFAULT_CARD_LIMIT") &&
+    commandCenterSource.includes("normalizeAiCommandCenterPage") &&
+    !commandCenterSource.includes("limit: 50") &&
+    booleanRecordValue(matrixRecord, "task_stream_uses_budgeted_limit");
+  const cardBudgetEnforced =
+    commandCenterSource.includes("enforceAiCommandCenterCardBudget") &&
+    booleanRecordValue(matrixRecord, "card_budget_enforced_in_view_model");
+  const realEmptyState =
+    commandCenterSource.includes("ai.command.center.empty-state") &&
+    commandCenterSource.includes("state.viewModel.empty") &&
+    booleanRecordValue(matrixRecord, "empty_state_real");
+  const noMutationSurface =
+    commandCenterSource.includes("mutationCount: 0") &&
+    !/mutationCount:\s*[1-9]/.test(commandCenterSource) &&
+    numberRecordValue(matrixRecord, "mutation_count") === 0;
+
+  const findings = [
+    ...(scannerPresent ? [] : ["command_center_state_budget_scanner_missing"]),
+    ...(e2eRunnerPresent ? [] : ["command_center_state_budget_e2e_runner_missing"]),
+    ...(artifactsPresent ? [] : ["command_center_state_budget_artifacts_missing"]),
+    ...(maxCardsBounded ? [] : ["command_center_max_cards_not_bounded_to_20"]),
+    ...(paginationRequired ? [] : ["command_center_pagination_not_required"]),
+    ...(refreshThrottleRequired ? [] : ["command_center_refresh_throttle_missing"]),
+    ...(refreshTimeoutRequired ? [] : ["command_center_refresh_timeout_missing"]),
+    ...(cancellationRequired ? [] : ["command_center_refresh_cancellation_missing"]),
+    ...(duplicateInFlightBlocked ? [] : ["command_center_duplicate_in_flight_allowed"]),
+    ...(realtimeDisabledByDefault ? [] : ["command_center_realtime_enabled_by_default"]),
+    ...(perCardRealtimeDisabled ? [] : ["command_center_per_card_realtime_allowed"]),
+    ...(noRealtimeSubscriptionInCommandCenter ? [] : ["command_center_realtime_subscription_detected"]),
+    ...(noPollingLoopInCommandCenter ? [] : ["command_center_polling_loop_detected"]),
+    ...(taskStreamUsesBudgetedLimit ? [] : ["command_center_task_stream_limit_not_budgeted"]),
+    ...(cardBudgetEnforced ? [] : ["command_center_card_budget_not_enforced"]),
+    ...(realEmptyState ? [] : ["command_center_empty_state_not_real"]),
+    ...(noMutationSurface ? [] : ["command_center_mutation_surface_detected"]),
+  ];
+  const errors = [
+    ...(budgetFilesPresent ? [] : ["command_center_state_budget_files_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_command_center_state_budget",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      budgetFilesPresent,
+      scannerPresent,
+      e2eRunnerPresent,
+      artifactsPresent,
+      maxCardsBounded,
+      paginationRequired,
+      refreshThrottleRequired,
+      refreshTimeoutRequired,
+      cancellationRequired,
+      duplicateInFlightBlocked,
+      realtimeDisabledByDefault,
+      perCardRealtimeDisabled,
+      noRealtimeSubscriptionInCommandCenter,
+      noPollingLoopInCommandCenter,
+      taskStreamUsesBudgetedLimit,
+      cardBudgetEnforced,
+      realEmptyState,
+      noMutationSurface,
       findings,
     },
   };
@@ -7034,6 +7211,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiPolicyGateScaleProof = evaluateAiPolicyGateScaleProofGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
+  const aiCommandCenterStateBudget = evaluateAiCommandCenterStateBudgetGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
   const aiProcurementContextEngine = evaluateAiProcurementContextEngineGuardrail({ projectRoot });
   const aiExternalIntelGateway = evaluateAiExternalIntelGatewayGuardrail({ projectRoot });
@@ -7079,6 +7257,7 @@ export function runArchitectureAntiRegressionSuite(
     aiPolicyGateScaleProof.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
+    aiCommandCenterStateBudget.check,
     aiAppActionGraphArchitecture.check,
     aiProcurementContextEngine.check,
     aiExternalIntelGateway.check,
@@ -7125,6 +7304,7 @@ export function runArchitectureAntiRegressionSuite(
     aiPolicyGateScaleProof: aiPolicyGateScaleProof.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
+    aiCommandCenterStateBudget: aiCommandCenterStateBudget.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
     aiProcurementContextEngine: aiProcurementContextEngine.summary,
     aiExternalIntelGateway: aiExternalIntelGateway.summary,
@@ -7196,6 +7376,9 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
   console.info(`ai_command_center_task_stream_no_fake_cards: ${report.aiCommandCenterTaskStreamRuntime.noFakeCards}`);
+  console.info(`ai_command_center_state_budget_max_cards: ${report.aiCommandCenterStateBudget.maxCardsBounded}`);
+  console.info(`ai_command_center_state_budget_no_realtime: ${report.aiCommandCenterStateBudget.noRealtimeSubscriptionInCommandCenter}`);
+  console.info(`ai_command_center_state_budget_no_polling_loop: ${report.aiCommandCenterStateBudget.noPollingLoopInCommandCenter}`);
   console.info(`ai_app_action_graph_architecture: ${report.aiAppActionGraphArchitecture.majorScreensRegistered}`);
   console.info(`ai_app_action_graph_external_live_fetch: ${report.aiAppActionGraphArchitecture.externalLiveFetchDisabled}`);
   console.info(`ai_procurement_context_engine: ${report.aiProcurementContextEngine.procurementFilesPresent}`);

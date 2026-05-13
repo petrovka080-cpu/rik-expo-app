@@ -1,0 +1,21 @@
+{
+  "final_status": "GREEN_AI_COMMAND_CENTER_STATE_BUDGET_READY",
+  "max_cards_lte_20": true,
+  "pagination_required": true,
+  "refresh_throttle_required": true,
+  "refresh_timeout_required": true,
+  "cancellation_required": true,
+  "duplicate_in_flight_blocked": true,
+  "realtime_enabled_by_default": false,
+  "per_card_realtime_subscription_allowed": false,
+  "polling_loop_allowed": false,
+  "polling_loop_ceiling": 0,
+  "task_stream_uses_budgeted_limit": true,
+  "card_budget_enforced_in_view_model": true,
+  "empty_state_real": true,
+  "mutation_count": 0,
+  "android_runtime_smoke": "PASS",
+  "android_apk_rebuild": "BLOCKED_ANDROID_APK_BUILD_FAILED",
+  "android_apk_rebuild_exact_reason": "EAS Free plan Android build quota exhausted until 2026-06-01.",
+  "emulator_e2e": "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+}

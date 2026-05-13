@@ -1,0 +1,19 @@
+{
+  "final_status": "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+  "framework": "maestro",
+  "device": "android",
+  "state_budget_green": true,
+  "role_auth_source": "missing",
+  "screen_visible": false,
+  "loaded_or_empty_state_visible": false,
+  "max_cards_lte_20": true,
+  "duplicate_cards_observed": false,
+  "realtime_subscription_observed": false,
+  "mutation_count": 0,
+  "fake_cards": false,
+  "credentials_in_cli_args": false,
+  "credentials_printed": false,
+  "stdout_redacted": true,
+  "stderr_redacted": true,
+  "exactReason": "Explicit director E2E credentials are required; discovery and seed fallbacks are not allowed."
+}

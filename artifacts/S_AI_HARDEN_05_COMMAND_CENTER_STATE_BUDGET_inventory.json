@@ -1,0 +1,20 @@
+{
+  "wave": "S_AI_HARDEN_05_COMMAND_CENTER_STATE_AND_REALTIME_BUDGET",
+  "sourceFiles": [
+    "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+    "src/features/ai/commandCenter/AiCommandCenterTypes.ts",
+    "src/features/ai/commandCenter/AiCommandCenterCards.tsx",
+    "src/features/ai/commandCenter/AiCommandCenterActions.tsx",
+    "src/features/ai/commandCenter/useAiCommandCenterData.ts",
+    "src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts",
+    "src/features/ai/commandCenter/aiCommandCenterRuntimeBudget.ts",
+    "src/features/ai/commandCenter/aiCommandCenterRefreshPolicy.ts",
+    "src/features/ai/commandCenter/aiCommandCenterRealtimePolicy.ts"
+  ],
+  "policyFiles": [
+    "src/features/ai/commandCenter/aiCommandCenterRuntimeBudget.ts",
+    "src/features/ai/commandCenter/aiCommandCenterRefreshPolicy.ts",
+    "src/features/ai/commandCenter/aiCommandCenterRealtimePolicy.ts"
+  ],
+  "scanner": "scripts/ai/scanCommandCenterStateBudget.ts"
+}
