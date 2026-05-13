@@ -1,4 +1,5 @@
 import { callWarehouseApiBffRead } from "../../../../screens/warehouse/warehouse.api.bff.client";
+import type { WarehouseApiBffCallDeps } from "../../../../screens/warehouse/warehouse.api.bff.client";
 import {
   type AiWarehouseStatusTransportResult,
   type AiWarehouseStatusTransportRow,
@@ -74,6 +75,7 @@ function parseBffStockPayload(
 export async function readWarehouseStatusTransport(params: {
   offset: number;
   limit: number;
+  deps?: WarehouseApiBffCallDeps;
 }): Promise<AiWarehouseStatusTransportResult> {
   const response = await callWarehouseApiBffRead({
     operation: WAREHOUSE_STATUS_TRANSPORT_ROUTE_OPERATION,
@@ -81,7 +83,7 @@ export async function readWarehouseStatusTransport(params: {
       p_offset: params.offset,
       p_limit: params.limit,
     },
-  });
+  }, params.deps);
 
   if (response.status === "unavailable") {
     throw new Error(`warehouse status read unavailable: ${response.reason}`);

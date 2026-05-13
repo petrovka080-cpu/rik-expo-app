@@ -1,0 +1,7 @@
+{
+  "wave": "S_AI_MAGIC_13_WORKDAY_LIVE_EVIDENCE_BRIDGE",
+  "android_runtime_smoke": "PASS",
+  "live_safe_read_attempted": true,
+  "workday_cards_created": 2,
+  "fake_emulator_pass": false
+}

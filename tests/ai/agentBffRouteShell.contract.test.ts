@@ -76,6 +76,7 @@ describe("agent BFF route shell", () => {
       "GET /agent/workday/tasks",
       "POST /agent/workday/tasks/:taskId/preview",
       "POST /agent/workday/tasks/:taskId/action-plan",
+      "GET /agent/workday/live-evidence-tasks",
       "GET /agent/tools",
       "POST /agent/tools/:name/validate",
       "POST /agent/tools/:name/preview",

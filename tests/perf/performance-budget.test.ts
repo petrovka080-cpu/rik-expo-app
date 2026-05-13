@@ -361,6 +361,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentWorkdayTaskContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentWorkdayTaskRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic13WorkdayLiveEvidenceBridgeFiles = [
+      path.join(SRC, "features", "ai", "workday", "aiWorkdayLiveEvidenceBridge.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWorkdayLiveEvidenceContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWorkdayLiveEvidenceRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiObs01TraceObservabilityFiles = [
       path.join(SRC, "features", "ai", "observability", "aiTraceTypes.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceRecorder.ts"),
@@ -971,6 +976,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_APPROVAL_02 adds one permanent get_action_status safe-read status tool module.
     // S_AI_PRODUCT_01 adds six permanent Daily Command Center product-layer modules.
     // S_AI_PRODUCT_02 adds four permanent Command Center task-stream runtime modules.
+    // S_AI_MAGIC_13 adds three permanent workday live-evidence bridge modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1128,6 +1134,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
+    expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
@@ -1296,6 +1303,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic08ApprovedProcurementExecutorFiles -
         sAiMagic10ScreenButtonActionMapFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
+        sAiMagic13WorkdayLiveEvidenceBridgeFiles -
         sAiObs01TraceObservabilityFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);

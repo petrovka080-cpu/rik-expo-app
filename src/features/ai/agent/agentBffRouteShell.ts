@@ -98,6 +98,11 @@ import {
   type AgentWorkdayTaskReadRouteRequest,
 } from "./agentWorkdayTaskRoutes";
 import {
+  AGENT_WORKDAY_LIVE_EVIDENCE_BFF_CONTRACT,
+  getAgentWorkdayLiveEvidenceTasks,
+  type AgentWorkdayLiveEvidenceRouteRequest,
+} from "./agentWorkdayLiveEvidenceRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -139,6 +144,8 @@ export {
   getAgentWorkdayTasks,
   planAgentWorkdayTaskAction,
   previewAgentWorkdayTask,
+  AGENT_WORKDAY_LIVE_EVIDENCE_BFF_CONTRACT,
+  getAgentWorkdayLiveEvidenceTasks,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -178,6 +185,7 @@ export type AgentBffRouteOperation =
   | "agent.workday.tasks.read"
   | "agent.workday.tasks.preview"
   | "agent.workday.tasks.action_plan"
+  | "agent.workday.live_evidence.read"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
@@ -223,6 +231,7 @@ export type AgentBffRouteDefinition = {
     | "AgentScreenRuntimeEnvelope"
     | "AgentScreenActionEnvelope"
     | "AgentWorkdayTaskEnvelope"
+    | "AgentWorkdayLiveEvidenceEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -257,6 +266,7 @@ export type AgentScreenActionPlanRequest = AgentScreenActionPlanRouteRequest;
 export type AgentWorkdayTasksRequest = AgentWorkdayTaskReadRouteRequest;
 export type AgentWorkdayTaskPreviewRequest = AgentWorkdayTaskPreviewRouteRequest;
 export type AgentWorkdayTaskActionPlanRequest = AgentWorkdayTaskActionPlanRouteRequest;
+export type AgentWorkdayLiveEvidenceRequest = AgentWorkdayLiveEvidenceRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1417,6 +1427,19 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentWorkdayTaskEnvelope",
+  },
+  {
+    operation: "agent.workday.live_evidence.read",
+    method: "GET",
+    endpoint: "GET /agent/workday/live-evidence-tasks",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentWorkdayLiveEvidenceEnvelope",
   },
   {
     operation: "agent.tools.list",

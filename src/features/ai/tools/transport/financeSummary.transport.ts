@@ -1,4 +1,5 @@
 import { callDirectorFinanceBffRpc } from "../../../../screens/director/director.finance.bff.client";
+import type { DirectorFinanceBffRpcCallDeps } from "../../../../screens/director/director.finance.bff.client";
 import type { DirectorFinanceBffRequestDto } from "../../../../screens/director/director.finance.bff.contract";
 import {
   type AiFinanceSummaryTransportInput,
@@ -106,8 +107,12 @@ function redactFinancePayload(payload: Record<string, unknown>): Record<string, 
 
 export async function readFinanceSummaryTransport(params: {
   input: AiFinanceSummaryTransportInput;
+  deps?: DirectorFinanceBffRpcCallDeps;
 }): Promise<AiFinanceSummaryTransportResult> {
-  const response = await callDirectorFinanceBffRpc(buildDirectorFinanceRequest(params.input));
+  const response = await callDirectorFinanceBffRpc(
+    buildDirectorFinanceRequest(params.input),
+    params.deps,
+  );
 
   if (response.status === "unavailable") {
     throw new Error(`finance summary read unavailable: ${response.reason}`);
