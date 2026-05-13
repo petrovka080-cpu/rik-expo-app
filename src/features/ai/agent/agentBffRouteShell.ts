@@ -119,6 +119,15 @@ import {
   type AgentDocumentSummaryPreviewRouteRequest,
 } from "./agentDocumentKnowledgeRoutes";
 import {
+  AGENT_FINANCE_COPILOT_BFF_CONTRACT,
+  draftAgentFinanceSummary,
+  getAgentFinanceDebts,
+  getAgentFinanceSummary,
+  previewAgentFinanceRisk,
+  type AgentFinanceCopilotEnvelope,
+  type AgentFinanceCopilotRouteRequest,
+} from "./agentFinanceCopilotRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -166,6 +175,11 @@ export {
   getAgentDocumentKnowledge,
   previewAgentDocumentSummary,
   searchAgentDocuments,
+  AGENT_FINANCE_COPILOT_BFF_CONTRACT,
+  draftAgentFinanceSummary,
+  getAgentFinanceDebts,
+  getAgentFinanceSummary,
+  previewAgentFinanceRisk,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -183,6 +197,7 @@ export {
 };
 
 export type { AgentDocumentKnowledgeEnvelope };
+export type { AgentFinanceCopilotEnvelope };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -211,6 +226,10 @@ export type AgentBffRouteOperation =
   | "agent.documents.knowledge.read"
   | "agent.documents.search.preview"
   | "agent.documents.summarize.preview"
+  | "agent.finance.summary.read"
+  | "agent.finance.debts.read"
+  | "agent.finance.risk_preview"
+  | "agent.finance.draft_summary"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
@@ -261,6 +280,7 @@ export type AgentBffRouteDefinition = {
     | "AgentWorkdayTaskEnvelope"
     | "AgentWorkdayLiveEvidenceEnvelope"
     | "AgentDocumentKnowledgeEnvelope"
+    | "AgentFinanceCopilotEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -299,6 +319,7 @@ export type AgentWorkdayLiveEvidenceRequest = AgentWorkdayLiveEvidenceRouteReque
 export type AgentDocumentKnowledgeRequest = AgentDocumentKnowledgeReadRouteRequest;
 export type AgentDocumentSearchRequest = AgentDocumentSearchRouteRequest;
 export type AgentDocumentSummaryPreviewRequest = AgentDocumentSummaryPreviewRouteRequest;
+export type AgentFinanceCopilotRequest = AgentFinanceCopilotRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1581,6 +1602,58 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentDocumentKnowledgeEnvelope",
+  },
+  {
+    operation: "agent.finance.summary.read",
+    method: "GET",
+    endpoint: "GET /agent/finance/summary",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFinanceCopilotEnvelope",
+  },
+  {
+    operation: "agent.finance.debts.read",
+    method: "GET",
+    endpoint: "GET /agent/finance/debts",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFinanceCopilotEnvelope",
+  },
+  {
+    operation: "agent.finance.risk_preview",
+    method: "POST",
+    endpoint: "POST /agent/finance/risk-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFinanceCopilotEnvelope",
+  },
+  {
+    operation: "agent.finance.draft_summary",
+    method: "POST",
+    endpoint: "POST /agent/finance/draft-summary",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFinanceCopilotEnvelope",
   },
   {
     operation: "agent.tools.list",

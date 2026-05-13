@@ -398,6 +398,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentDocumentKnowledgeContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentDocumentKnowledgeRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic07AccountantFinanceCopilotFiles = [
+      path.join(SRC, "features", "ai", "finance", "aiFinanceCopilotTypes.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiFinanceRiskEngine.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiDebtSummaryBuilder.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiAccountingEvidence.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiFinanceDraftSummary.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1167,6 +1176,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic16ProcurementLiveSupplierChainFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
+    expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1340,6 +1350,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic16ProcurementLiveSupplierChainFiles -
         sAiMagic17ExternalMarketIntelCanaryFiles -
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
+        sAiMagic07AccountantFinanceCopilotFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

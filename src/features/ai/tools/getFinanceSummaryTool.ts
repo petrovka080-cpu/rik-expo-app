@@ -1,6 +1,5 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
-import { readFinanceSummaryTransport } from "./transport/financeSummary.transport";
 import {
   decideAiToolRateLimit,
   explainAiToolRateLimitBlock,
@@ -197,6 +196,7 @@ function readArrayCount(record: Record<string, unknown>, keys: readonly string[]
 async function defaultReadFinanceSummary(params: {
   input: NormalizedGetFinanceSummaryInput;
 }): Promise<FinanceSummaryReadResult> {
+  const { readFinanceSummaryTransport } = await import("./transport/financeSummary.transport");
   return readFinanceSummaryTransport(params);
 }
 

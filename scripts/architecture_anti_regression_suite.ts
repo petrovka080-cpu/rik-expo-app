@@ -3657,6 +3657,10 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
     Boolean(shellSource?.includes("GET /agent/tools")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/validate")) &&
     Boolean(shellSource?.includes("POST /agent/tools/:name/preview")) &&
+    Boolean(shellSource?.includes("GET /agent/finance/summary")) &&
+    Boolean(shellSource?.includes("GET /agent/finance/debts")) &&
+    Boolean(shellSource?.includes("POST /agent/finance/risk-preview")) &&
+    Boolean(shellSource?.includes("POST /agent/finance/draft-summary")) &&
     Boolean(shellSource?.includes("POST /agent/action/submit-for-approval")) &&
     Boolean(shellSource?.includes("GET /agent/action/:actionId/status")) &&
     Boolean(shellSource?.includes("POST /agent/action/:actionId/approve")) &&
