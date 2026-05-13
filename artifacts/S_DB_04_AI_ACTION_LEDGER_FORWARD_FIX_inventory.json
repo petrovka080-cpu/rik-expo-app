@@ -1,0 +1,25 @@
+{
+  "wave": "S_DB_04_AI_ACTION_LEDGER_FORWARD_FIX_AND_RPC_VISIBILITY_CLOSEOUT",
+  "created_files": [
+    "supabase/migrations/20260513234500_ai_action_ledger_forward_fix.sql"
+  ],
+  "updated_files": [
+    "scripts/db/aiActionLedgerMigrationShared.ts",
+    "scripts/db/inspectAiActionLedgerMigrationState.ts",
+    "scripts/db/forwardFixAiActionLedgerPartialState.ts",
+    "tests/db/aiActionLedgerMigrationInspect.contract.test.ts",
+    "tests/db/aiActionLedgerPartialStateForwardFix.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/load/sLoadFix2Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts"
+  ],
+  "artifacts": [
+    "artifacts/S_DB_04_AI_ACTION_LEDGER_FORWARD_FIX_inventory.json",
+    "artifacts/S_DB_04_AI_ACTION_LEDGER_FORWARD_FIX_matrix.json",
+    "artifacts/S_DB_04_AI_ACTION_LEDGER_FORWARD_FIX_emulator.json",
+    "artifacts/S_DB_04_AI_ACTION_LEDGER_FORWARD_FIX_proof.md"
+  ],
+  "secrets_printed": false,
+  "raw_rows_printed": false,
+  "blind_reapply_used": false
+}

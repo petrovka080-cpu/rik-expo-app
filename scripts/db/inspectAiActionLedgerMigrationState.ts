@@ -20,7 +20,7 @@ export const AI_ACTION_LEDGER_REQUIRED_INDEXES = [
 
 export const AI_ACTION_LEDGER_REQUIRED_POLICIES = [
   "ai_action_ledger_select_company_scope",
-  "ai_action_ledger_insert_company_scope",
+  "ai_action_ledger_insert_pending_company_scope",
   "ai_action_ledger_update_approval_company_scope",
   "ai_action_ledger_update_executed_company_scope",
 ] as const;
@@ -30,7 +30,8 @@ export type AiActionLedgerMigrationState =
   | "STATE_B_OBJECTS_PRESENT_HISTORY_MISSING"
   | "STATE_C_OBJECTS_MISSING_HISTORY_MISSING"
   | "STATE_D_PARTIAL_OBJECTS_HISTORY_MISSING"
-  | "STATE_E_HISTORY_PRESENT_OBJECTS_MISSING";
+  | "STATE_E_HISTORY_PRESENT_OBJECTS_MISSING"
+  | "STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS";
 
 export type AiActionLedgerMigrationStateInspectionStatus =
   | "GREEN_AI_ACTION_LEDGER_MIGRATION_STATE_INSPECTED"
@@ -106,8 +107,12 @@ function functionsExist(input: Pick<
   );
 }
 
+type AiActionLedgerMigrationClassificationInput = AiActionLedgerMigrationStateBooleans & {
+  postgrestSchemaCacheRpcVisible?: boolean;
+};
+
 export function classifyAiActionLedgerMigrationState(
-  input: AiActionLedgerMigrationStateBooleans,
+  input: AiActionLedgerMigrationClassificationInput,
 ): AiActionLedgerMigrationState {
   const objectFlags = [
     input.tableExists,
@@ -118,9 +123,13 @@ export function classifyAiActionLedgerMigrationState(
   ];
   const objectsPresent = objectFlags.every(Boolean);
   const objectsMissing = objectFlags.every((value) => !value);
+  const schemaCacheVisible = input.postgrestSchemaCacheRpcVisible ?? true;
 
-  if (objectsPresent && input.migrationHistoryRecordExists) {
+  if (objectsPresent && schemaCacheVisible && input.migrationHistoryRecordExists) {
     return "STATE_A_OBJECTS_AND_HISTORY_PRESENT";
+  }
+  if (input.migrationHistoryRecordExists && (!objectsPresent || !schemaCacheVisible)) {
+    return "STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS";
   }
   if (objectsPresent && !input.migrationHistoryRecordExists) {
     return "STATE_B_OBJECTS_PRESENT_HISTORY_MISSING";
@@ -128,7 +137,7 @@ export function classifyAiActionLedgerMigrationState(
   if (objectsMissing && !input.migrationHistoryRecordExists) {
     return "STATE_C_OBJECTS_MISSING_HISTORY_MISSING";
   }
-  if (!objectsPresent && input.migrationHistoryRecordExists) {
+  if (objectsMissing && input.migrationHistoryRecordExists) {
     return "STATE_E_HISTORY_PRESENT_OBJECTS_MISSING";
   }
   return "STATE_D_PARTIAL_OBJECTS_HISTORY_MISSING";
@@ -328,7 +337,10 @@ export async function inspectAiActionLedgerMigrationState(
       inspectPostgrestSchemaCache(env, projectRoot),
     ]);
     const booleans = { ...objects, ...history };
-    const state = classifyAiActionLedgerMigrationState(booleans);
+    const state = classifyAiActionLedgerMigrationState({
+      ...booleans,
+      postgrestSchemaCacheRpcVisible,
+    });
     const allFunctionsExist = functionsExist(booleans);
     const objectsPresent =
       booleans.tableExists &&

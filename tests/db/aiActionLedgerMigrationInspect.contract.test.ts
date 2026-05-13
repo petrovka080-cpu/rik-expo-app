@@ -27,6 +27,11 @@ describe("AI action ledger migration state inspection", () => {
     })).toBe("STATE_A_OBJECTS_AND_HISTORY_PRESENT");
     expect(classifyAiActionLedgerMigrationState({
       ...allObjects,
+      migrationHistoryRecordExists: true,
+      postgrestSchemaCacheRpcVisible: false,
+    })).toBe("STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS");
+    expect(classifyAiActionLedgerMigrationState({
+      ...allObjects,
       migrationHistoryRecordExists: false,
     })).toBe("STATE_B_OBJECTS_PRESENT_HISTORY_MISSING");
     expect(classifyAiActionLedgerMigrationState({
@@ -51,7 +56,13 @@ describe("AI action ledger migration state inspection", () => {
       ...allObjects,
       submitRpcExists: false,
       migrationHistoryRecordExists: true,
-    })).toBe("STATE_E_HISTORY_PRESENT_OBJECTS_MISSING");
+    })).toBe("STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS");
+    expect(classifyAiActionLedgerMigrationState({
+      ...allObjects,
+      indexesExist: false,
+      policiesExist: false,
+      migrationHistoryRecordExists: true,
+    })).toBe("STATE_F_HISTORY_PRESENT_PARTIAL_OBJECTS");
   });
 
   it("blocks without an approved DB URL and does not print values or rows", async () => {
