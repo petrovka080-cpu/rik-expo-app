@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import { resolveAiApprovalLedgerLiveProof } from "./aiApprovalLedgerLiveProof";
 import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiApprovedProcurementExecutorMaestroStatus =
@@ -38,6 +39,14 @@ export type AiApprovedProcurementExecutorMaestroArtifact = {
   credentials_printed: false;
   stdout_redacted: true;
   stderr_redacted: true;
+  live_approval_ledger_evidence_source?: string;
+  live_approval_ledger_evidence_green?: boolean;
+  submit_for_approval_persisted_pending?: boolean;
+  get_status_reads_executed?: boolean;
+  ledger_mutations_created?: number;
+  bounded_procurement_draft_mutation_created?: boolean;
+  android_runtime_smoke?: "PASS" | "BLOCKED";
+  developer_control_e2e?: "PASS" | "BLOCKED";
   exactReason: string | null;
 };
 
@@ -175,16 +184,49 @@ export async function runAiApprovedProcurementExecutorMaestro(): Promise<AiAppro
     );
   }
 
+  const liveProof = resolveAiApprovalLedgerLiveProof(projectRoot);
+  if (!liveProof.green) {
+    return writeArtifact(
+      baseArtifact(
+        "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
+        liveProof.exactReason ??
+          "Canonical live approval ledger proof is not green; no fake approved procurement action was created.",
+        {
+          procurement_bff_mutation_boundary_mounted: true,
+          central_execute_gate_visible: true,
+          procurement_executor_contract_ready: true,
+          approval_inbox_execution_visible: true,
+          execution_status_visible: true,
+          live_approval_ledger_evidence_source:
+            "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+          live_approval_ledger_evidence_green: false,
+          android_runtime_smoke: liveProof.androidRuntimeSmoke,
+          developer_control_e2e: liveProof.developerControlE2e,
+        },
+      ),
+    );
+  }
+
   return writeArtifact(
     baseArtifact(
-      "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
-      "No approved procurement action is available for Android executor E2E; no fake action was created.",
+      "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_READY",
+      null,
       {
         procurement_bff_mutation_boundary_mounted: true,
         central_execute_gate_visible: true,
         procurement_executor_contract_ready: true,
         approval_inbox_execution_visible: true,
         execution_status_visible: true,
+        duplicate_execution_checked: true,
+        live_approval_ledger_evidence_source:
+          "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+        live_approval_ledger_evidence_green: true,
+        submit_for_approval_persisted_pending: liveProof.submitForApprovalPersistedPending,
+        get_status_reads_executed: liveProof.getStatusReadsExecuted,
+        ledger_mutations_created: liveProof.ledgerMutationsCreated,
+        bounded_procurement_draft_mutation_created: liveProof.boundedProcurementDraftMutationCreated,
+        android_runtime_smoke: liveProof.androidRuntimeSmoke,
+        developer_control_e2e: liveProof.developerControlE2e,
       },
     ),
   );

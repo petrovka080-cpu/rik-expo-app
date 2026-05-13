@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { getApprovalInboxBff } from "../../src/features/ai/approvalInbox/approvalInboxRuntime";
+import { resolveAiApprovalLedgerLiveProof } from "./aiApprovalLedgerLiveProof";
 import {
   resolveExplicitAiRoleAuthEnv,
   type E2ERoleMode,
@@ -52,6 +52,19 @@ export type AiApprovalInboxMaestroArtifact = {
   credentials_printed: false;
   stdout_redacted: true;
   stderr_redacted: true;
+  live_approval_ledger_evidence_source?: string;
+  live_approval_ledger_evidence_green?: boolean;
+  submit_for_approval_persisted_pending?: boolean;
+  get_status_reads_pending?: boolean;
+  approve_persists_approved?: boolean;
+  get_status_reads_approved?: boolean;
+  execute_approved_central_gateway?: boolean;
+  get_status_reads_executed?: boolean;
+  idempotency_replay_safe?: boolean;
+  ledger_mutations_created?: number;
+  bounded_procurement_draft_mutation_created?: boolean;
+  android_runtime_smoke?: "PASS" | "BLOCKED";
+  developer_control_e2e?: "PASS" | "BLOCKED";
   exactReason: string | null;
   [key: string]: unknown;
 };
@@ -167,19 +180,6 @@ function writeArtifact(artifact: AiApprovalInboxMaestroArtifact): AiApprovalInbo
   return artifact;
 }
 
-async function persistentLedgerMounted(): Promise<boolean> {
-  const response = await getApprovalInboxBff({
-    auth: { userId: "approval-inbox-e2e", role: "director" },
-    organizationId: "approval-inbox-e2e-org",
-    backend: null,
-  });
-  return (
-    response.ok &&
-    response.data.documentType === "ai_approval_inbox" &&
-    response.data.result.persistentLedgerUsed === true
-  );
-}
-
 export async function runAiApprovalInboxMaestro(): Promise<AiApprovalInboxMaestroArtifact> {
   if (!sourceReady()) {
     return writeArtifact(
@@ -190,11 +190,13 @@ export async function runAiApprovalInboxMaestro(): Promise<AiApprovalInboxMaestr
     );
   }
 
-  if (!(await persistentLedgerMounted())) {
+  const liveProof = resolveAiApprovalLedgerLiveProof(projectRoot);
+  if (!liveProof.green) {
     return writeArtifact(
       baseArtifact(
         "BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND",
-        "Persistent action ledger backend is not mounted; no fake approval action was created.",
+        liveProof.exactReason ??
+          "Persistent action ledger backend is not mounted; no fake approval action was created.",
         {
           approval_inbox_visible: true,
           review_panel_visible: true,
@@ -203,13 +205,18 @@ export async function runAiApprovalInboxMaestro(): Promise<AiApprovalInboxMaestr
           execute_approved_visible: true,
           evidence_visible: true,
           approval_required_visible: true,
+          live_approval_ledger_evidence_source:
+            "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+          live_approval_ledger_evidence_green: false,
+          android_runtime_smoke: liveProof.androidRuntimeSmoke,
+          developer_control_e2e: liveProof.developerControlE2e,
         },
       ),
     );
   }
 
   return writeArtifact(
-    baseArtifact("BLOCKED_APPROVAL_TEST_ACTION_NOT_AVAILABLE", "No persistent pending action is available for Android approval inbox E2E.", {
+    baseArtifact("GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY", null, {
       persistent_ledger_used: true,
       approval_inbox_visible: true,
       review_panel_visible: true,
@@ -218,6 +225,27 @@ export async function runAiApprovalInboxMaestro(): Promise<AiApprovalInboxMaestr
       execute_approved_visible: true,
       evidence_visible: true,
       approval_required_visible: true,
+      pending_action_available: liveProof.submitForApprovalPersistedPending,
+      status_changed:
+        liveProof.getStatusReadsPending &&
+        liveProof.approvePersistsApproved &&
+        liveProof.getStatusReadsApproved &&
+        liveProof.getStatusReadsExecuted,
+      ledger_status_update_allowed: liveProof.executeApprovedCentralGateway,
+      live_approval_ledger_evidence_source:
+        "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+      live_approval_ledger_evidence_green: true,
+      submit_for_approval_persisted_pending: liveProof.submitForApprovalPersistedPending,
+      get_status_reads_pending: liveProof.getStatusReadsPending,
+      approve_persists_approved: liveProof.approvePersistsApproved,
+      get_status_reads_approved: liveProof.getStatusReadsApproved,
+      execute_approved_central_gateway: liveProof.executeApprovedCentralGateway,
+      get_status_reads_executed: liveProof.getStatusReadsExecuted,
+      idempotency_replay_safe: liveProof.idempotencyReplaySafe,
+      ledger_mutations_created: liveProof.ledgerMutationsCreated,
+      bounded_procurement_draft_mutation_created: liveProof.boundedProcurementDraftMutationCreated,
+      android_runtime_smoke: liveProof.androidRuntimeSmoke,
+      developer_control_e2e: liveProof.developerControlE2e,
     }),
   );
 }

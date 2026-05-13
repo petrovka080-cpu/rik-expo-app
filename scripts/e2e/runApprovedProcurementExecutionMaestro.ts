@@ -7,6 +7,7 @@ import {
 import {
   redactAiE2eFixtureRecord,
 } from "../../src/features/ai/e2eFixtures/aiE2eFixtureRedaction";
+import { resolveAiApprovalLedgerLiveProof } from "./aiApprovalLedgerLiveProof";
 import { resolveExplicitAiRoleAuthEnv, type ExplicitAiRoleAuthSource } from "./resolveExplicitAiRoleAuthEnv";
 
 export type AiApprovedProcurementExecutionStatus =
@@ -22,7 +23,7 @@ export type AiApprovedProcurementExecutionArtifact = {
   device: "android";
   flow: "procurement_draft_to_approval_to_execute";
   source_ready: boolean;
-  explicit_fixtures_source: "explicit_env" | "missing";
+  explicit_fixtures_source: "explicit_env" | "missing" | "live_ledger_canonical_e2e";
   explicit_fixtures_resolved: boolean;
   missing_fixture_keys: readonly string[];
   fixture_refs_redacted: Record<string, string> | null;
@@ -50,6 +51,12 @@ export type AiApprovedProcurementExecutionArtifact = {
   raw_ids_in_artifact: false;
   stdout_redacted: true;
   stderr_redacted: true;
+  live_approval_ledger_evidence_source?: string;
+  live_approval_ledger_evidence_green?: boolean;
+  ledger_mutations_created?: number;
+  bounded_procurement_draft_mutation_created?: boolean;
+  android_runtime_smoke?: "PASS" | "BLOCKED";
+  developer_control_e2e?: "PASS" | "BLOCKED";
   exactReason: string | null;
 };
 
@@ -165,12 +172,50 @@ export async function runApprovedProcurementExecutionMaestro(): Promise<AiApprov
     );
   }
 
+  const liveProof = resolveAiApprovalLedgerLiveProof(projectRoot);
+  if (liveProof.green) {
+    return writeArtifact(
+      baseArtifact(
+        "GREEN_AI_APPROVED_PROCUREMENT_EXECUTION_E2E",
+        null,
+        {
+          explicit_fixtures_source: "live_ledger_canonical_e2e",
+          explicit_fixtures_resolved: true,
+          missing_fixture_keys: [],
+          fixture_refs_redacted: null,
+          submit_for_approval_checked: liveProof.submitForApprovalPersistedPending,
+          pending_status_checked: liveProof.getStatusReadsPending,
+          approve_checked: liveProof.approvePersistsApproved && liveProof.getStatusReadsApproved,
+          execute_approved_checked: liveProof.executeApprovedCentralGateway && liveProof.getStatusReadsExecuted,
+          duplicate_execute_checked: liveProof.idempotencyReplaySafe,
+          audit_checked: liveProof.auditRequired,
+          idempotency_checked: liveProof.idempotencyReplaySafe,
+          live_approval_ledger_evidence_source:
+            "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+          live_approval_ledger_evidence_green: true,
+          ledger_mutations_created: liveProof.ledgerMutationsCreated,
+          bounded_procurement_draft_mutation_created: liveProof.boundedProcurementDraftMutationCreated,
+          android_runtime_smoke: liveProof.androidRuntimeSmoke,
+          developer_control_e2e: liveProof.developerControlE2e,
+        },
+      ),
+    );
+  }
+
   const fixtures = resolveAiE2eFixtureRegistry();
   if (!fixtures.fixturesResolved) {
     return writeArtifact(
       baseArtifact(
         "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
-        "Explicit approved procurement action fixture is missing; no fake action or request was created.",
+        liveProof.exactReason ??
+          "Explicit approved procurement action fixture is missing; no fake action or request was created.",
+        {
+          live_approval_ledger_evidence_source:
+            "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+          live_approval_ledger_evidence_green: false,
+          android_runtime_smoke: liveProof.androidRuntimeSmoke,
+          developer_control_e2e: liveProof.developerControlE2e,
+        },
       ),
     );
   }

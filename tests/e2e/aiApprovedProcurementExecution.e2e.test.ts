@@ -24,7 +24,11 @@ describe("AI approved procurement execution E2E contract", () => {
     expect(artifact.duplicate_execution_creates_duplicate).toBe(false);
     expect(artifact.mutations_created).toBe(0);
     expect(artifact.raw_ids_in_artifact).toBe(false);
-    expect(artifact.exactReason).toEqual(expect.any(String));
+    if (artifact.final_status === "GREEN_AI_APPROVED_PROCUREMENT_EXECUTION_E2E") {
+      expect(artifact.exactReason).toBeNull();
+    } else {
+      expect(artifact.exactReason).toEqual(expect.any(String));
+    }
 
     const artifactPath = path.join(
       process.cwd(),

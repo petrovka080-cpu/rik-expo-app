@@ -18,7 +18,7 @@ login_or_authenticated_shell_passed: true
 command_center_targetable: true
 procurement_copilot_targetable: true
 approval_inbox_targetable: true
-approval_persistence_status: BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_FOUND
+approval_persistence_status: GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY
 approval_persistence_blocks_targetability: false
 all_major_screens_runtime_checked: true
 approval_boundary_observed: true

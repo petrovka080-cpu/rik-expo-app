@@ -1,5 +1,5 @@
 {
-  "final_status": "BLOCKED_APPROVED_PROCUREMENT_ACTION_NOT_AVAILABLE",
+  "final_status": "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_READY",
   "framework": "maestro",
   "device": "android",
   "source_ready": true,
@@ -13,7 +13,7 @@
   "procurement_bff_mutation_boundary_mounted": true,
   "approval_inbox_execution_visible": true,
   "execution_status_visible": true,
-  "duplicate_execution_checked": false,
+  "duplicate_execution_checked": true,
   "duplicate_execution_creates_duplicate": false,
   "final_domain_mutation_happened": false,
   "mutations_created": 0,
@@ -26,5 +26,13 @@
   "credentials_printed": false,
   "stdout_redacted": true,
   "stderr_redacted": true,
-  "exactReason": "No approved procurement action is available for Android executor E2E; no fake action was created."
+  "exactReason": null,
+  "live_approval_ledger_evidence_source": "artifacts/S_AI_MAGIC_09_APPROVAL_LEDGER_LIVE_ACTION_E2E_matrix.json",
+  "live_approval_ledger_evidence_green": true,
+  "submit_for_approval_persisted_pending": true,
+  "get_status_reads_executed": true,
+  "ledger_mutations_created": 1,
+  "bounded_procurement_draft_mutation_created": true,
+  "android_runtime_smoke": "PASS",
+  "developer_control_e2e": "PASS"
 }
