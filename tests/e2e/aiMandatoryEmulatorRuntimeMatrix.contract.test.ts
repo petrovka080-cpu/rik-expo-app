@@ -65,4 +65,21 @@ describe("S_AI_QA_01 mandatory emulator runtime matrix runner", () => {
     expect(source).toContain("S_AI_EMULATOR_ALLOW_DB_MUTATING_CHILD_RUNNERS");
     expect(source).toContain("mutations_created");
   });
+
+  it("hardens the gate with matrix slicing, bounded retry policy, and latency metrics", () => {
+    expect(source).toContain("S_AI_QA_02_EMULATOR_GATE_HARDENING");
+    expect(source).toContain("childRunnerSlices");
+    expect(source).toContain("blocking_slice_1");
+    expect(source).toContain("blocking_slice_2");
+    expect(source).toContain("blocking_slice_3");
+    expect(source).toContain("runAiMaestroWithRetry");
+    expect(source).toContain("probe_latency_ms");
+    expect(source).toContain("probe_latency_budget_ms");
+    expect(source).toContain("transport_retry_count");
+    expect(source).toContain("flake_retry_count");
+    expect(source).toContain("single_emulator_parallel_maestro: false");
+    expect(source).toContain("multi_device_parallel_supported: true");
+    expect(source).toContain("parallel_execution_used: false");
+    expect(source).toContain("deviceIds.length >= 2");
+  });
 });

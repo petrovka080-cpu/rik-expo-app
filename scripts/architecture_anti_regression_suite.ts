@@ -830,6 +830,16 @@ export type AiMandatoryEmulatorRuntimeGateSummary = {
   exactLlmAssertionsDisabled: boolean;
   responseSmokeNonBlocking: boolean;
   noFakePassPolicy: boolean;
+  coreReleaseArtifactNotOverwritten: boolean;
+  aiGateArtifactsIsolated: boolean;
+  maestroRetryPolicyPresent: boolean;
+  retryOnlyTransportFlakes: boolean;
+  assertionFailureNotRetried: boolean;
+  probeLatencyTracked: boolean;
+  probeFlakeRateTracked: boolean;
+  singleEmulatorParallelDisabled: boolean;
+  multiDeviceParallelSupported: boolean;
+  releaseGuardAiGateExtracted: boolean;
   artifactsPresent: boolean;
   artifactJsonValid: boolean;
   artifactStatusAccepted: boolean;
@@ -1479,6 +1489,12 @@ const AI_MANDATORY_EMULATOR_REBUILD_POLICY_PATH =
   "scripts/release/requireAndroidRebuildForAiSourceChanges.ts";
 const AI_MANDATORY_EMULATOR_BUILD_INSTALL_PATH =
   "scripts/release/buildInstallAndroidPreviewForEmulator.ts";
+const AI_MANDATORY_EMULATOR_RETRY_POLICY_PATH =
+  "scripts/e2e/aiMaestroRetryPolicy.ts";
+const AI_MANDATORY_EMULATOR_FLAKE_POLICY_PATH =
+  "scripts/e2e/aiEmulatorFlakePolicy.ts";
+const AI_MANDATORY_EMULATOR_RELEASE_EVALUATOR_PATH =
+  "scripts/release/aiMandatoryEmulatorGateEvaluation.ts";
 const AI_MANDATORY_EMULATOR_MATRIX_ARTIFACT_PATH =
   "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json";
 const AI_MANDATORY_EMULATOR_INVENTORY_ARTIFACT_PATH =
@@ -1487,6 +1503,14 @@ const AI_MANDATORY_EMULATOR_EMULATOR_ARTIFACT_PATH =
   "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json";
 const AI_MANDATORY_EMULATOR_PROOF_ARTIFACT_PATH =
   "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md";
+const AI_EMULATOR_GATE_HARDENING_ANDROID_BUILD_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json";
+const AI_EMULATOR_GATE_HARDENING_MATRIX_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json";
+const AI_EMULATOR_GATE_HARDENING_EMULATOR_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_emulator.json";
+const AI_EMULATOR_GATE_HARDENING_PROOF_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_proof.md";
 const AI_CONSTRUCTION_KNOWHOW_CORE_FILES = [
   "src/features/ai/constructionKnowhow/constructionKnowhowTypes.ts",
   "src/features/ai/constructionKnowhow/constructionKnowhowRegistry.ts",
@@ -1592,6 +1616,7 @@ const REQUIRED_AI_MANDATORY_EMULATOR_CHILD_RUNNERS = [
 const ALLOWED_AI_MANDATORY_EMULATOR_GATE_STATUSES = [
   "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
   "BLOCKED_AI_RUNTIME_EMULATOR_GATE",
+  "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_DIRTY_AI_WORKTREE",
   "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF",
   "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND",
 ] as const;
@@ -6347,14 +6372,39 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
   const matrixRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_MATRIX_RUNNER_PATH });
   const rebuildPolicySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_REBUILD_POLICY_PATH });
   const buildInstallSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_BUILD_INSTALL_PATH });
+  const retryPolicySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_RETRY_POLICY_PATH });
+  const flakePolicySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_FLAKE_POLICY_PATH });
+  const releaseEvaluatorSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_MANDATORY_EMULATOR_RELEASE_EVALUATOR_PATH,
+  });
   const releaseGuardSource = safeReadProjectFile({ readFile, relativePath: "scripts/release/releaseGuard.shared.ts" });
   const matrixSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_MATRIX_ARTIFACT_PATH });
   const inventorySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_INVENTORY_ARTIFACT_PATH });
   const emulatorSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_EMULATOR_ARTIFACT_PATH });
   const proofSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_PROOF_ARTIFACT_PATH });
+  const hardeningAndroidBuildSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_EMULATOR_GATE_HARDENING_ANDROID_BUILD_ARTIFACT_PATH,
+  });
+  const hardeningMatrixSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_EMULATOR_GATE_HARDENING_MATRIX_ARTIFACT_PATH,
+  });
+  const hardeningEmulatorSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_EMULATOR_GATE_HARDENING_EMULATOR_ARTIFACT_PATH,
+  });
+  const hardeningProofSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_EMULATOR_GATE_HARDENING_PROOF_ARTIFACT_PATH,
+  });
   const matrix = parseJsonRecord(matrixSource);
   const inventory = parseJsonRecord(inventorySource);
   const emulator = parseJsonRecord(emulatorSource);
+  const hardeningAndroidBuild = parseJsonRecord(hardeningAndroidBuildSource);
+  const hardeningMatrix = parseJsonRecord(hardeningMatrixSource);
+  const hardeningEmulator = parseJsonRecord(hardeningEmulatorSource);
   const finalStatus = recordString(matrix, "final_status");
   const exactReason = recordString(matrix, "exact_reason");
   const blockingChildRunner = recordString(matrix, "blocking_child_runner");
@@ -6365,6 +6415,14 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
   const mutationsCreated = recordValue(matrix, "mutations_created");
   const secretsPrinted = recordValue(matrix, "secrets_printed");
   const fakeGreenClaimed = recordValue(matrix, "fake_green_claimed");
+  const coreReleaseArtifactOverwritten = recordValue(hardeningMatrix, "core_release_artifact_overwritten");
+  const aiGateArtifactIsolated = recordValue(hardeningMatrix, "ai_gate_artifact_isolated");
+  const hardeningExactLlmAssertions = recordValue(hardeningMatrix, "exact_llm_text_assertions");
+  const hardeningLlmSmokeBlocking = recordValue(hardeningMatrix, "llm_response_smoke_blocking");
+  const hardeningSingleParallel = recordValue(hardeningMatrix, "single_emulator_parallel_maestro");
+  const hardeningMultiDeviceParallel = recordValue(hardeningMatrix, "multi_device_parallel_supported");
+  const hardeningLatencyTracked = recordValue(hardeningMatrix, "probe_latency_tracked");
+  const hardeningFlakeTracked = recordValue(hardeningMatrix, "probe_flake_rate_tracked");
 
   const matrixRunnerPresent =
     Boolean(matrixRunnerSource?.includes("runAiMandatoryEmulatorRuntimeMatrix")) &&
@@ -6387,7 +6445,11 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
   const releaseGuardIntegrated =
     Boolean(releaseGuardSource?.includes("aiMandatoryEmulatorRuntimeGate")) &&
     Boolean(releaseGuardSource?.includes("AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT")) &&
-    Boolean(releaseGuardSource?.includes("BLOCKED_AI_MANDATORY_EMULATOR_ARTIFACT_MISSING"));
+    Boolean(releaseEvaluatorSource?.includes("BLOCKED_AI_MANDATORY_EMULATOR_ARTIFACT_MISSING"));
+  const releaseGuardAiGateExtracted =
+    Boolean(releaseGuardSource?.includes("aiMandatoryEmulatorGateEvaluation")) &&
+    Boolean(releaseEvaluatorSource?.includes("evaluateAiMandatoryEmulatorRuntimeGate")) &&
+    Boolean(releaseEvaluatorSource?.includes("BLOCKED_AI_EMULATOR_GATE_HARDENING_ARTIFACT_MISSING"));
   const allRequiredChildRunnersReferenced = REQUIRED_AI_MANDATORY_EMULATOR_CHILD_RUNNERS.every((runner) =>
     Boolean(matrixRunnerSource?.includes(runner)),
   );
@@ -6411,8 +6473,54 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
     Boolean(matrixRunnerSource?.includes("fake_emulator_pass")) &&
     !Boolean(matrixRunnerSource?.includes("fake_emulator_pass: true")) &&
     fakeGreenClaimed !== true;
-  const artifactsPresent = Boolean(matrixSource && inventorySource && emulatorSource && proofSource);
-  const artifactJsonValid = Boolean(matrix && inventory && emulator);
+  const coreReleaseArtifactNotOverwritten =
+    coreReleaseArtifactOverwritten === false &&
+    !Boolean(buildInstallSource?.includes("writeCoreReleaseArtifacts")) &&
+    !Boolean(buildInstallSource?.includes("S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT"));
+  const aiGateArtifactsIsolated =
+    aiGateArtifactIsolated === true &&
+    Boolean(buildInstallSource?.includes("S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json"));
+  const maestroRetryPolicyPresent =
+    Boolean(retryPolicySource?.includes("AI_MAESTRO_MAX_RETRY_COUNT = 2")) &&
+    Boolean(retryPolicySource?.includes("AI_MAESTRO_BACKOFF_MS = [1000, 3000, 10000]")) &&
+    Boolean(retryPolicySource?.includes("wait-for-device")) &&
+    Boolean(retryPolicySource?.includes("sys.boot_completed"));
+  const retryOnlyTransportFlakes =
+    Boolean(flakePolicySource?.includes("shouldRetryAiEmulatorFailure")) &&
+    Boolean(flakePolicySource?.includes("transport_flake")) &&
+    Boolean(flakePolicySource?.includes("device_offline")) &&
+    Boolean(flakePolicySource?.includes("targetability_blocker"));
+  const assertionFailureNotRetried =
+    Boolean(flakePolicySource?.includes("ASSERTION_FAILED_NO_RETRY")) &&
+    Boolean(flakePolicySource?.includes("assertion_failed")) &&
+    Boolean(flakePolicySource?.includes("safety_blocker"));
+  const probeLatencyTracked =
+    hardeningLatencyTracked === true &&
+    Boolean(matrixRunnerSource?.includes("probe_latency_ms")) &&
+    Boolean(retryPolicySource?.includes("probe_latency_budget_ms"));
+  const probeFlakeRateTracked =
+    hardeningFlakeTracked === true &&
+    Boolean(matrixRunnerSource?.includes("flake_retry_count")) &&
+    Boolean(matrixRunnerSource?.includes("transport_retry_count"));
+  const singleEmulatorParallelDisabled =
+    hardeningSingleParallel === false &&
+    Boolean(matrixRunnerSource?.includes("single_emulator_parallel_maestro: false")) &&
+    Boolean(matrixRunnerSource?.includes("parallel_execution_used: false"));
+  const multiDeviceParallelSupported =
+    hardeningMultiDeviceParallel === true &&
+    Boolean(matrixRunnerSource?.includes("multi_device_parallel_supported: true")) &&
+    Boolean(matrixRunnerSource?.includes("deviceIds.length >= 2"));
+  const artifactsPresent = Boolean(
+    matrixSource &&
+      inventorySource &&
+      emulatorSource &&
+      proofSource &&
+      hardeningAndroidBuildSource &&
+      hardeningMatrixSource &&
+      hardeningEmulatorSource &&
+      hardeningProofSource,
+  );
+  const artifactJsonValid = Boolean(matrix && inventory && emulator && hardeningAndroidBuild && hardeningMatrix && hardeningEmulator);
   const allowedStatus = ALLOWED_AI_MANDATORY_EMULATOR_GATE_STATUSES.some((status) => status === finalStatus);
   const greenStatus = finalStatus === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY";
   const blockerHasExactReason = greenStatus || exactReason.length > 0 || blockingChildRunner.length > 0;
@@ -6445,6 +6553,16 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
     ...(exactLlmAssertionsDisabled ? [] : ["ai_mandatory_emulator_exact_llm_assertions_not_disabled"]),
     ...(responseSmokeNonBlocking ? [] : ["ai_mandatory_emulator_response_smoke_blocking"]),
     ...(noFakePassPolicy ? [] : ["ai_mandatory_emulator_no_fake_pass_policy_missing"]),
+    ...(coreReleaseArtifactNotOverwritten ? [] : ["ai_emulator_gate_core_release_artifact_overwrite_risk"]),
+    ...(aiGateArtifactsIsolated ? [] : ["ai_emulator_gate_artifact_isolation_missing"]),
+    ...(maestroRetryPolicyPresent ? [] : ["ai_emulator_gate_maestro_retry_policy_missing"]),
+    ...(retryOnlyTransportFlakes ? [] : ["ai_emulator_gate_retry_not_limited_to_transport_flakes"]),
+    ...(assertionFailureNotRetried ? [] : ["ai_emulator_gate_assertion_failure_retry_risk"]),
+    ...(probeLatencyTracked ? [] : ["ai_emulator_gate_probe_latency_not_tracked"]),
+    ...(probeFlakeRateTracked ? [] : ["ai_emulator_gate_probe_flake_rate_not_tracked"]),
+    ...(singleEmulatorParallelDisabled ? [] : ["ai_emulator_gate_single_emulator_parallel_risk"]),
+    ...(multiDeviceParallelSupported ? [] : ["ai_emulator_gate_multi_device_parallel_policy_missing"]),
+    ...(releaseGuardAiGateExtracted ? [] : ["ai_emulator_gate_release_guard_evaluator_not_extracted"]),
     ...(artifactsPresent ? [] : ["ai_mandatory_emulator_artifacts_missing"]),
     ...(artifactJsonValid ? [] : ["ai_mandatory_emulator_artifact_json_invalid"]),
     ...(artifactStatusAccepted ? [] : ["ai_mandatory_emulator_artifact_status_not_accepted"]),
@@ -6468,6 +6586,16 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
       exactLlmAssertionsDisabled,
       responseSmokeNonBlocking,
       noFakePassPolicy,
+      coreReleaseArtifactNotOverwritten,
+      aiGateArtifactsIsolated,
+      maestroRetryPolicyPresent,
+      retryOnlyTransportFlakes,
+      assertionFailureNotRetried,
+      probeLatencyTracked,
+      probeFlakeRateTracked,
+      singleEmulatorParallelDisabled,
+      multiDeviceParallelSupported,
+      releaseGuardAiGateExtracted,
       artifactsPresent,
       artifactJsonValid,
       artifactStatusAccepted,
@@ -6852,7 +6980,7 @@ export function evaluateDeveloperControlRuntimeTargetabilityGuardrail(params: {
   const loginOrShellSupported =
     [commandRunnerSource, crossScreenRunnerSource, procurementRunnerSource].every(
       (source) =>
-        source.includes("clearState: false") &&
+        source.includes("clearState: true") &&
         source.includes('id: "auth.login.screen"') &&
         source.includes("runFlow:") &&
         source.includes("profile-edit-open"),

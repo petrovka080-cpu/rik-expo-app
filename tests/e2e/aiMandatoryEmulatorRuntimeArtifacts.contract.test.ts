@@ -3,6 +3,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const prefix = "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE";
+const hardeningPrefix = "S_AI_QA_02_EMULATOR_GATE_HARDENING";
 
 function readJson(relativePath: string): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8")) as Record<string, unknown>;
@@ -49,5 +50,27 @@ describe("S_AI_QA_01 mandatory emulator runtime artifacts", () => {
     } else {
       expect(String(matrix.exact_reason ?? matrix.blocking_child_runner ?? "")).not.toHaveLength(0);
     }
+  });
+
+  it("writes isolated S_AI_QA_02 hardening artifacts without claiming Core release ownership", () => {
+    const androidBuild = readJson(`artifacts/${hardeningPrefix}_android_build.json`);
+    const matrix = readJson(`artifacts/${hardeningPrefix}_matrix.json`);
+    const emulator = readJson(`artifacts/${hardeningPrefix}_emulator.json`);
+    const proof = fs.readFileSync(path.join(root, `artifacts/${hardeningPrefix}_proof.md`), "utf8");
+
+    expect(androidBuild.core_release_artifact_overwritten).toBe(false);
+    expect(androidBuild.ai_gate_artifact_isolated).toBe(true);
+    expect(matrix.core_release_artifact_overwritten).toBe(false);
+    expect(matrix.ai_gate_artifact_isolated).toBe(true);
+    expect(matrix.retry_only_transport_flakes).toBe(true);
+    expect(matrix.assertion_failure_retried).toBe(false);
+    expect(matrix.probe_latency_tracked).toBe(true);
+    expect(matrix.probe_flake_rate_tracked).toBe(true);
+    expect(matrix.exact_llm_text_assertions).toBe(false);
+    expect(matrix.llm_response_smoke_blocking).toBe(false);
+    expect(matrix.single_emulator_parallel_maestro).toBe(false);
+    expect(matrix.multi_device_parallel_supported).toBe(true);
+    expect(emulator.fake_emulator_pass).toBe(false);
+    expect(proof).toContain("S_AI_QA_02 Emulator Gate Hardening And Artifact Isolation");
   });
 });

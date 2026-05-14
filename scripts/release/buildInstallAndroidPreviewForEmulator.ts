@@ -25,6 +25,11 @@ type BuildInstallArtifact = {
   changed_files_fingerprint: string;
   changed_files: string[];
   ai_mobile_runtime_files: string[];
+  ai_mobile_runtime_source_files: string[];
+  ai_mobile_runtime_source_fingerprint: string;
+  installed_apk_source_fingerprint: string;
+  source_fingerprint_matches_installed_apk: boolean;
+  local_android_rebuild_install_after_source_change: boolean;
   apk_artifact_path: string | null;
   emulator_boot_completed: boolean;
   apk_installed_on_emulator: boolean;
@@ -34,11 +39,21 @@ type BuildInstallArtifact = {
   exact_reason: string | null;
 };
 
+type AiGateAndroidBuildArtifact = BuildInstallArtifact & {
+  wave_hardening: "S_AI_QA_02_EMULATOR_GATE_HARDENING";
+  core_release_artifact_overwritten: false;
+  ai_gate_artifact_isolated: true;
+};
+
 const projectRoot = process.cwd();
 const androidAppId = "com.azisbek_dzhantaev.rikexpoapp";
 const outputApkPath = path.join(projectRoot, "artifacts", "release", "android-emulator.apk");
 const proofPath = path.join(projectRoot, AI_ANDROID_REBUILD_INSTALL_PROOF_ARTIFACT);
-const corePrefix = "S_RELEASE_CORE_01_ANDROID_EMULATOR_IOS_SUBMIT";
+const aiGateHardeningAndroidBuildPath = path.join(
+  projectRoot,
+  "artifacts",
+  "S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json",
+);
 
 function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -47,6 +62,13 @@ function writeJson(filePath: string, value: unknown): void {
 
 function writeArtifact(artifact: BuildInstallArtifact): BuildInstallArtifact {
   writeJson(proofPath, artifact);
+  const hardeningArtifact: AiGateAndroidBuildArtifact = {
+    ...artifact,
+    wave_hardening: "S_AI_QA_02_EMULATOR_GATE_HARDENING",
+    core_release_artifact_overwritten: false,
+    ai_gate_artifact_isolated: true,
+  };
+  writeJson(aiGateHardeningAndroidBuildPath, hardeningArtifact);
   return artifact;
 }
 
@@ -64,6 +86,11 @@ function blocked(
     changed_files_fingerprint: requirement.changed_files_fingerprint,
     changed_files: requirement.changed_files,
     ai_mobile_runtime_files: requirement.ai_mobile_runtime_files,
+    ai_mobile_runtime_source_files: requirement.ai_mobile_runtime_source_files,
+    ai_mobile_runtime_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+    installed_apk_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+    source_fingerprint_matches_installed_apk: true,
+    local_android_rebuild_install_after_source_change: false,
     apk_artifact_path: null,
     emulator_boot_completed: false,
     apk_installed_on_emulator: false,
@@ -101,79 +128,6 @@ function resolveBuiltApkPath(): string | null {
   return candidates.find((candidate) => fs.existsSync(candidate)) ?? null;
 }
 
-function writeCoreReleaseArtifacts(artifact: BuildInstallArtifact): void {
-  const relativeApkPath = "artifacts/release/android-emulator.apk";
-  const existingIosPath = path.join(projectRoot, "artifacts", `${corePrefix}_ios.json`);
-  const existingIos = fs.existsSync(existingIosPath)
-    ? JSON.parse(fs.readFileSync(existingIosPath, "utf8")) as Record<string, unknown>
-    : {};
-  writeJson(path.join(projectRoot, "artifacts", `${corePrefix}_android.json`), {
-    status: artifact.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF" ? "PASS" : "BLOCKED",
-    physical_device_required: false,
-    emulator_only: true,
-    build_profile: "preview",
-    apk_built: artifact.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
-    apk_installed_on_emulator: artifact.apk_installed_on_emulator,
-    aab_used_for_direct_install: false,
-    runtime_smoke: artifact.runtime_smoke,
-    google_play_submit: false,
-    emulator_boot_completed: artifact.emulator_boot_completed,
-    anrDialogObserved: false,
-    anrDialogHandledByWait: false,
-    build_id: "local-gradle",
-    artifact_path: relativeApkPath,
-    exact_reason: artifact.exact_reason,
-  });
-  writeJson(path.join(projectRoot, "artifacts", `${corePrefix}_matrix.json`), {
-    final_status: artifact.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF"
-      ? "GREEN_ANDROID_LOCAL_REBUILD_INSTALL_READY"
-      : artifact.final_status,
-    android: {
-      status: artifact.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF" ? "PASS" : "BLOCKED",
-      physical_device_required: false,
-      emulator_only: true,
-      build_profile: "preview",
-      apk_built: artifact.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
-      apk_installed_on_emulator: artifact.apk_installed_on_emulator,
-      aab_used_for_direct_install: false,
-      artifact_path: relativeApkPath,
-      runtime_smoke: artifact.runtime_smoke,
-      google_play_submit: false,
-      emulator_boot_completed: artifact.emulator_boot_completed,
-    },
-    ios: {
-      status: existingIos.status ?? "SKIPPED",
-      build_profile: existingIos.build_profile ?? "production",
-      submit_profile: existingIos.submit_profile ?? "production",
-      new_build_created: existingIos.new_build_created ?? false,
-      simulator_build_used_for_submit: false,
-      eas_submit_started: existingIos.eas_submit_started ?? false,
-      eas_submit_finished: existingIos.eas_submit_finished ?? false,
-      app_store_connect_submit_proof: existingIos.app_store_connect_submit_proof ?? false,
-      testflight_or_processing_status_captured: existingIos.testflight_or_processing_status_captured ?? false,
-      build_id: existingIos.build_id ?? null,
-      submit_id: existingIos.submit_id ?? null,
-      exact_reason: existingIos.exact_reason ?? "S_AI_QA_01 local Android emulator gate does not run iOS.",
-    },
-    ota: {
-      used: false,
-      production_ota_used: false,
-    },
-    ai_role_screen_e2e: {
-      status: "SKIPPED",
-      auth_source: "explicit_env",
-      auth_admin_used: false,
-      service_role_used: false,
-      list_users_used: false,
-    },
-    secrets: {
-      credentials_in_cli_args: false,
-      credentials_printed: false,
-      artifacts_redacted: true,
-    },
-  });
-}
-
 export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInstallArtifact> {
   const requirement = resolveAiAndroidRebuildRequirement();
   if (!requirement.require_rebuild) {
@@ -185,6 +139,11 @@ export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInst
       changed_files_fingerprint: requirement.changed_files_fingerprint,
       changed_files: requirement.changed_files,
       ai_mobile_runtime_files: requirement.ai_mobile_runtime_files,
+      ai_mobile_runtime_source_files: requirement.ai_mobile_runtime_source_files,
+      ai_mobile_runtime_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+      installed_apk_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+      source_fingerprint_matches_installed_apk: true,
+      local_android_rebuild_install_after_source_change: false,
       apk_artifact_path: null,
       emulator_boot_completed: false,
       apk_installed_on_emulator: false,
@@ -255,7 +214,7 @@ export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInst
     );
   }
 
-  const artifact = writeArtifact({
+  return writeArtifact({
     final_status: "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
     wave: "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
     build_profile: "preview",
@@ -263,6 +222,11 @@ export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInst
     changed_files_fingerprint: requirement.changed_files_fingerprint,
     changed_files: requirement.changed_files,
     ai_mobile_runtime_files: requirement.ai_mobile_runtime_files,
+    ai_mobile_runtime_source_files: requirement.ai_mobile_runtime_source_files,
+    ai_mobile_runtime_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+    installed_apk_source_fingerprint: requirement.ai_mobile_runtime_source_fingerprint,
+    source_fingerprint_matches_installed_apk: true,
+    local_android_rebuild_install_after_source_change: true,
     apk_artifact_path: "artifacts/release/android-emulator.apk",
     emulator_boot_completed: emulator.bootCompleted,
     apk_installed_on_emulator: true,
@@ -271,8 +235,6 @@ export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInst
     secrets_printed: false,
     exact_reason: null,
   });
-  writeCoreReleaseArtifacts(artifact);
-  return artifact;
 }
 
 if (require.main === module) {

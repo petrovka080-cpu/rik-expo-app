@@ -204,7 +204,7 @@ function flowLines(mode: "loaded" | "empty"): string[] {
     `name: AI Command Center Task Stream Runtime ${mode}`,
     "---",
     "- launchApp:",
-    "    clearState: false",
+    "    clearState: true",
     "- runFlow:",
     "    when:",
     "      visible:",

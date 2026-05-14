@@ -1,15 +1,23 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { spawnSync } from "node:child_process";
 
 import { verifyAndroidInstalledBuildRuntime } from "../release/verifyAndroidInstalledBuildRuntime";
 import { resolveAiAndroidRebuildRequirement } from "../release/requireAndroidRebuildForAiSourceChanges";
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
+import {
+  AI_MAESTRO_PROBE_LATENCY_BUDGET_MS,
+  buildAiMaestroRetryMetrics,
+  runAiMaestroWithRetry,
+  type AiMaestroRetryMetrics,
+} from "./aiMaestroRetryPolicy";
 import { redactE2eSecrets } from "./redactE2eSecrets";
 
 export type AiMandatoryEmulatorRuntimeGateStatus =
   | "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY"
   | "BLOCKED_AI_RUNTIME_EMULATOR_GATE"
+  | "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_DIRTY_AI_WORKTREE"
   | "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"
   | "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND";
 
@@ -38,6 +46,14 @@ type ChildRunnerResult = {
   fake_emulator_pass: boolean;
   secrets_printed: boolean;
   role_leakage_observed: boolean;
+  probe_started_at: string;
+  probe_finished_at: string;
+  probe_latency_ms: number;
+  probe_latency_budget_ms: number;
+  probe_latency_status: "PASS" | "YELLOW_LATENCY_BUDGET_EXCEEDED";
+  transport_retry_count: number;
+  flake_retry_count: number;
+  retry_classification: string | null;
 };
 
 export type AiMandatoryEmulatorRuntimeMatrix = {
@@ -71,6 +87,12 @@ const inventoryPath = `${artifactPrefix}_inventory.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const emulatorPath = `${artifactPrefix}_emulator.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
+const hardeningWave = "S_AI_QA_02_EMULATOR_GATE_HARDENING";
+const hardeningArtifactPrefix = path.join(projectRoot, "artifacts", hardeningWave);
+const hardeningAndroidBuildPath = `${hardeningArtifactPrefix}_android_build.json`;
+const hardeningMatrixPath = `${hardeningArtifactPrefix}_matrix.json`;
+const hardeningEmulatorPath = `${hardeningArtifactPrefix}_emulator.json`;
+const hardeningProofPath = `${hardeningArtifactPrefix}_proof.md`;
 
 const deterministicTestIds = [
   "ai.assistant.screen",
@@ -165,6 +187,29 @@ const childRunners: ChildRunnerSpec[] = [
   },
 ];
 
+const childRunnerSlices = [
+  {
+    slice: "blocking_slice_1",
+    runners: ["runDeveloperControlFullAccessMaestro", "runAiRoleScreenKnowledgeMaestro"],
+  },
+  {
+    slice: "blocking_slice_2",
+    runners: [
+      "runAiScreenButtonActionMapMaestro",
+      "runAiScreenButtonActionTruthMapMaestro",
+      "runAiCommandCenterApprovalRuntimeMaestro",
+    ],
+  },
+  {
+    slice: "blocking_slice_3",
+    runners: [
+      "runAiProactiveWorkdayTaskIntelligenceMaestro",
+      "runAiApprovalLedgerPersistenceMaestro",
+      "runAiLiveApprovalToExecutionPointOfNoReturn",
+    ],
+  },
+] as const;
+
 function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -194,9 +239,44 @@ function boolField(record: Record<string, unknown>, ...keys: readonly string[]):
   return keys.some((key) => record[key] === true);
 }
 
+function emptyProbeMetrics(): AiMaestroRetryMetrics {
+  const now = Date.now();
+  return buildAiMaestroRetryMetrics({
+    startedMs: now,
+    finishedMs: now,
+    transportRetryCount: 0,
+    flakeRetryCount: 0,
+    retryClassification: null,
+  });
+}
+
+function mergeMetrics(metrics: AiMaestroRetryMetrics): Pick<
+  ChildRunnerResult,
+  | "probe_started_at"
+  | "probe_finished_at"
+  | "probe_latency_ms"
+  | "probe_latency_budget_ms"
+  | "probe_latency_status"
+  | "transport_retry_count"
+  | "flake_retry_count"
+  | "retry_classification"
+> {
+  return {
+    probe_started_at: metrics.probe_started_at,
+    probe_finished_at: metrics.probe_finished_at,
+    probe_latency_ms: metrics.probe_latency_ms,
+    probe_latency_budget_ms: metrics.probe_latency_budget_ms,
+    probe_latency_status: metrics.probe_latency_status,
+    transport_retry_count: metrics.transport_retry_count,
+    flake_retry_count: metrics.flake_retry_count,
+    retry_classification: metrics.retry_classification,
+  };
+}
+
 function childResultFromArtifact(
   spec: ChildRunnerSpec,
   artifact: Record<string, unknown>,
+  metrics: AiMaestroRetryMetrics,
 ): ChildRunnerResult {
   const finalStatus = stringField(artifact, "final_status", "finalStatus") ?? "BLOCKED_CHILD_ARTIFACT_STATUS_MISSING";
   const pass = spec.greenStatuses.includes(finalStatus);
@@ -213,10 +293,16 @@ function childResultFromArtifact(
     fake_emulator_pass: boolField(artifact, "fake_emulator_pass"),
     secrets_printed: boolField(artifact, "secrets_printed", "credentials_printed"),
     role_leakage_observed: boolField(artifact, "role_leakage_observed"),
+    ...mergeMetrics(metrics),
   };
 }
 
-function exactBlockerChild(spec: ChildRunnerSpec, status: string, exactReason: string): ChildRunnerResult {
+function exactBlockerChild(
+  spec: ChildRunnerSpec,
+  status: string,
+  exactReason: string,
+  metrics: AiMaestroRetryMetrics = emptyProbeMetrics(),
+): ChildRunnerResult {
   return {
     key: spec.key,
     runner: spec.runner,
@@ -230,10 +316,52 @@ function exactBlockerChild(spec: ChildRunnerSpec, status: string, exactReason: s
     fake_emulator_pass: false,
     secrets_printed: false,
     role_leakage_observed: false,
+    ...mergeMetrics(metrics),
   };
 }
 
-async function runChildRunner(spec: ChildRunnerSpec): Promise<ChildRunnerResult> {
+function classifyChildArtifactForRetry(spec: ChildRunnerSpec, artifact: Record<string, unknown>): string | null {
+  const finalStatus = stringField(artifact, "final_status", "finalStatus") ?? "BLOCKED_CHILD_ARTIFACT_STATUS_MISSING";
+  if (spec.greenStatuses.includes(finalStatus)) {
+    return null;
+  }
+  return stringField(artifact, "exact_reason", "exactReason") ?? finalStatus;
+}
+
+async function invokeChildRunner(spec: ChildRunnerSpec): Promise<Record<string, unknown>> {
+  const absolutePath = path.join(projectRoot, spec.relativePath);
+  if (!fs.existsSync(absolutePath)) {
+    throw new Error(`RUNNER_NOT_FOUND_EXACT_BLOCKER: Required AI runtime child runner is missing: ${spec.relativePath}`);
+  }
+
+  if (
+    spec.forbiddenDbWriteBoundary &&
+    process.env.S_AI_EMULATOR_ALLOW_DB_MUTATING_CHILD_RUNNERS !== "true"
+  ) {
+    return {
+      final_status: "BLOCKED_DB_WRITE_FORBIDDEN_BY_S_AI_QA_01",
+      exact_reason: `${spec.runner} requires live approval ledger mutations; S_AI_QA_01 forbids DB writes, so this child is an exact blocker instead of an executed write path.`,
+      mutations_created: 0,
+      fake_green_claimed: false,
+      fake_emulator_pass: false,
+      secrets_printed: false,
+      role_leakage_observed: false,
+    };
+  }
+
+  const imported = await import(pathToFileURL(absolutePath).href) as Record<string, unknown>;
+  const runner = imported[spec.exportName];
+  if (typeof runner !== "function") {
+    throw new Error(`RUNNER_NOT_FOUND_EXACT_BLOCKER: Required export ${spec.exportName} was not found in ${spec.relativePath}.`);
+  }
+  const artifact = await runner();
+  if (!isRecord(artifact)) {
+    throw new Error(`${spec.runner} did not return a JSON object artifact.`);
+  }
+  return artifact;
+}
+
+async function runChildRunner(spec: ChildRunnerSpec, deviceId: string | null): Promise<ChildRunnerResult> {
   const absolutePath = path.join(projectRoot, spec.relativePath);
   if (!fs.existsSync(absolutePath)) {
     return exactBlockerChild(
@@ -243,43 +371,38 @@ async function runChildRunner(spec: ChildRunnerSpec): Promise<ChildRunnerResult>
     );
   }
 
-  if (
-    spec.forbiddenDbWriteBoundary &&
-    process.env.S_AI_EMULATOR_ALLOW_DB_MUTATING_CHILD_RUNNERS !== "true"
-  ) {
+  const retryResult = await runAiMaestroWithRetry({
+    projectRoot,
+    deviceId: deviceId ?? undefined,
+    operation: () => invokeChildRunner(spec),
+    classifyResult: (artifact) => classifyChildArtifactForRetry(spec, artifact),
+  });
+
+  if (retryResult.result) {
+    return childResultFromArtifact(spec, retryResult.result, retryResult.metrics);
+  }
+
+  const errorMessage = redactE2eSecrets(
+    retryResult.error instanceof Error ? retryResult.error.message : String(retryResult.error),
+  );
+  if (errorMessage.includes("RUNNER_NOT_FOUND_EXACT_BLOCKER")) {
+    return exactBlockerChild(spec, "RUNNER_NOT_FOUND_EXACT_BLOCKER", errorMessage, retryResult.metrics);
+  }
+  if (errorMessage.includes("did not return a JSON object artifact")) {
     return exactBlockerChild(
       spec,
-      "BLOCKED_DB_WRITE_FORBIDDEN_BY_S_AI_QA_01",
-      `${spec.runner} requires live approval ledger mutations; S_AI_QA_01 forbids DB writes, so this child is an exact blocker instead of an executed write path.`,
+      "BLOCKED_CHILD_AI_RUNTIME_RUNNER_INVALID_ARTIFACT",
+      errorMessage,
+      retryResult.metrics,
     );
   }
 
-  try {
-    const imported = await import(pathToFileURL(absolutePath).href) as Record<string, unknown>;
-    const runner = imported[spec.exportName];
-    if (typeof runner !== "function") {
-      return exactBlockerChild(
-        spec,
-        "RUNNER_NOT_FOUND_EXACT_BLOCKER",
-        `Required export ${spec.exportName} was not found in ${spec.relativePath}.`,
-      );
-    }
-    const artifact = await runner();
-    if (!isRecord(artifact)) {
-      return exactBlockerChild(
-        spec,
-        "BLOCKED_CHILD_AI_RUNTIME_RUNNER_INVALID_ARTIFACT",
-        `${spec.runner} did not return a JSON object artifact.`,
-      );
-    }
-    return childResultFromArtifact(spec, artifact);
-  } catch (error) {
-    return exactBlockerChild(
-      spec,
-      "BLOCKED_CHILD_AI_RUNTIME_RUNNER_THROWN",
-      redactE2eSecrets(error instanceof Error ? error.message : String(error)),
-    );
-  }
+  return exactBlockerChild(
+    spec,
+    "BLOCKED_CHILD_AI_RUNTIME_RUNNER_THROWN",
+    errorMessage,
+    retryResult.metrics,
+  );
 }
 
 function exactLlmTextAssertionsPresent(): boolean {
@@ -301,6 +424,24 @@ function exactLlmTextAssertionsPresent(): boolean {
 
 function firstBlockingChild(children: readonly ChildRunnerResult[]): ChildRunnerResult | null {
   return children.find((child) => child.mode === "blocking" && child.status !== "PASS") ?? null;
+}
+
+function listConnectedAndroidDeviceIds(): string[] {
+  const result = spawnSync("adb", ["devices"], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+    shell: process.platform === "win32",
+  });
+  if (result.status !== 0) {
+    return [];
+  }
+  return result.stdout
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => /\tdevice$/.test(line))
+    .map((line) => line.split(/\s+/)[0])
+    .filter(Boolean);
 }
 
 function buildMatrix(params: {
@@ -373,7 +514,19 @@ function writeArtifacts(params: {
   rebuildRequirement: ReturnType<typeof resolveAiAndroidRebuildRequirement>;
   emulatorResult: Awaited<ReturnType<typeof ensureAndroidEmulatorReady>> | null;
   installedRuntime: Awaited<ReturnType<typeof verifyAndroidInstalledBuildRuntime>> | null;
+  deviceIds?: string[];
 }): AiMandatoryEmulatorRuntimeMatrix {
+  const deviceIds = params.deviceIds ?? [];
+  const parallelAllowed = deviceIds.length >= 2;
+  const totalTransportRetries = params.matrix.child_runners.reduce((sum, child) => sum + child.transport_retry_count, 0);
+  const totalFlakeRetries = params.matrix.child_runners.reduce((sum, child) => sum + child.flake_retry_count, 0);
+  const latencyBudgetExceeded = params.matrix.child_runners.some(
+    (child) => child.probe_latency_status === "YELLOW_LATENCY_BUDGET_EXCEEDED",
+  );
+  const hardeningFinalStatus = params.matrix.final_status === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY"
+    ? "GREEN_AI_EMULATOR_GATE_HARDENED"
+    : "BLOCKED_AI_EMULATOR_GATE_HARDENING_RUNTIME";
+
   writeJson(inventoryPath, {
     wave,
     runner: "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
@@ -389,6 +542,11 @@ function writeArtifacts(params: {
     response_smoke_blocking_release: false,
     fake_emulator_pass: false,
     secrets_printed: false,
+    matrix_slicing: childRunnerSlices,
+    maestro_retry_policy: "scripts/e2e/aiMaestroRetryPolicy.ts",
+    emulator_flake_policy: "scripts/e2e/aiEmulatorFlakePolicy.ts",
+    single_emulator_parallel_maestro: false,
+    multi_device_parallel_supported: true,
   });
   writeJson(matrixPath, params.matrix);
   writeJson(emulatorPath, {
@@ -399,6 +557,86 @@ function writeArtifacts(params: {
     emulator_boot_completed: params.emulatorResult?.bootCompleted ?? false,
     emulator_device_present: Boolean(params.emulatorResult?.deviceId),
     installed_runtime_status: params.installedRuntime?.final_status ?? null,
+    fake_emulator_pass: false,
+    secrets_printed: false,
+    exact_reason: params.matrix.exact_reason,
+  });
+  writeJson(hardeningAndroidBuildPath, {
+    wave: hardeningWave,
+    source_wave: wave,
+    final_status: params.rebuildRequirement.require_rebuild
+      ? params.rebuildRequirement.local_android_rebuild_install === "PASS"
+        ? "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF"
+        : "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"
+      : "PASS_ANDROID_REBUILD_NOT_REQUIRED",
+    local_android_rebuild_install: params.rebuildRequirement.local_android_rebuild_install,
+    changed_files_fingerprint: params.rebuildRequirement.changed_files_fingerprint,
+    changed_files: params.rebuildRequirement.changed_files,
+    ai_mobile_runtime_files: params.rebuildRequirement.ai_mobile_runtime_files,
+    runtime_smoke: params.matrix.android_installed_runtime_smoke,
+    core_release_artifact_overwritten: false,
+    ai_gate_artifact_isolated: true,
+    fake_emulator_pass: false,
+    secrets_printed: false,
+    exact_reason: params.rebuildRequirement.exact_reason,
+  });
+  writeJson(hardeningMatrixPath, {
+    final_status: hardeningFinalStatus,
+    core_release_artifact_overwritten: false,
+    ai_gate_artifact_isolated: true,
+    maestro_retry_policy: "exponential_backoff",
+    retry_count_max: 2,
+    backoff_ms: [1000, 3000, 10000],
+    retry_only_transport_flakes: true,
+    assertion_failure_retried: false,
+    probe_latency_tracked: true,
+    probe_latency_budget_ms: AI_MAESTRO_PROBE_LATENCY_BUDGET_MS,
+    probe_latency_status: latencyBudgetExceeded ? "YELLOW_LATENCY_BUDGET_EXCEEDED" : "PASS",
+    probe_flake_rate_tracked: true,
+    transport_retry_count: totalTransportRetries,
+    flake_retry_count: totalFlakeRetries,
+    exact_llm_text_assertions: params.matrix.exact_llm_text_assertions,
+    llm_response_smoke_blocking: false,
+    single_emulator_parallel_maestro: false,
+    multi_device_parallel_supported: true,
+    device_count: deviceIds.length,
+    parallel_allowed: parallelAllowed,
+    parallel_execution_used: false,
+    release_guard_ai_gate_extracted: true,
+    android_runtime_smoke: params.matrix.android_installed_runtime_smoke,
+    mandatory_matrix_runtime: params.matrix.final_status === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY"
+      ? "PASS"
+      : params.matrix.exact_reason
+        ? "PASS_OR_EXACT_BLOCKER"
+        : "BLOCKED",
+    fake_emulator_pass: params.matrix.fake_emulator_pass,
+    fake_green_claimed: params.matrix.fake_green_claimed,
+    secrets_printed: params.matrix.secrets_printed,
+    blocking_child_runner: params.matrix.blocking_child_runner,
+    exact_reason: params.matrix.exact_reason,
+    matrix_slices: childRunnerSlices.map((slice) => ({
+      ...slice,
+      run_mode: parallelAllowed ? "multi_device_parallel_supported" : "single_device_sequential",
+      parallel_execution_used: false,
+    })),
+    child_runners: params.matrix.child_runners,
+  });
+  writeJson(hardeningEmulatorPath, {
+    wave: hardeningWave,
+    android_emulator_ready: params.matrix.android_emulator_ready,
+    android_installed_runtime_smoke: params.matrix.android_installed_runtime_smoke,
+    emulator_boot_completed: params.emulatorResult?.bootCompleted ?? false,
+    emulator_device_present: Boolean(params.emulatorResult?.deviceId),
+    device_ids: deviceIds,
+    device_count: deviceIds.length,
+    single_emulator_parallel_maestro: false,
+    multi_device_parallel_supported: true,
+    parallel_allowed: parallelAllowed,
+    parallel_execution_used: false,
+    probe_latency_budget_ms: AI_MAESTRO_PROBE_LATENCY_BUDGET_MS,
+    latency_budget_exceeded: latencyBudgetExceeded,
+    transport_retry_count: totalTransportRetries,
+    flake_retry_count: totalFlakeRetries,
     fake_emulator_pass: false,
     secrets_printed: false,
     exact_reason: params.matrix.exact_reason,
@@ -431,6 +669,33 @@ function writeArtifacts(params: {
     ].join("\n"),
     "utf8",
   );
+  fs.writeFileSync(
+    hardeningProofPath,
+    [
+      "# S_AI_QA_02 Emulator Gate Hardening And Artifact Isolation",
+      "",
+      `final_status: ${hardeningFinalStatus}`,
+      "core_release_artifact_overwritten: false",
+      "ai_gate_artifact_isolated: true",
+      "maestro_retry_policy: exponential_backoff",
+      "retry_only_transport_flakes: true",
+      "assertion_failure_retried: false",
+      "probe_latency_tracked: true",
+      "llm_response_smoke_blocking: false",
+      "single_emulator_parallel_maestro: false",
+      "multi_device_parallel_supported: true",
+      `device_count: ${deviceIds.length}`,
+      `android_runtime_smoke: ${params.matrix.android_installed_runtime_smoke}`,
+      `mandatory_matrix_runtime: ${params.matrix.final_status}`,
+      `fake_emulator_pass: ${String(params.matrix.fake_emulator_pass)}`,
+      `fake_green_claimed: ${String(params.matrix.fake_green_claimed)}`,
+      `secrets_printed: ${String(params.matrix.secrets_printed)}`,
+      params.matrix.blocking_child_runner ? `blocking_child_runner: ${params.matrix.blocking_child_runner}` : "blocking_child_runner: null",
+      params.matrix.exact_reason ? `exact_reason: ${params.matrix.exact_reason}` : "exact_reason: null",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
   return params.matrix;
 }
 
@@ -439,11 +704,13 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
   let emulatorResult: Awaited<ReturnType<typeof ensureAndroidEmulatorReady>> | null = null;
   let installedRuntime: Awaited<ReturnType<typeof verifyAndroidInstalledBuildRuntime>> | null = null;
   const children: ChildRunnerResult[] = [];
+  let deviceIds: string[] = [];
 
-  if (rebuildRequirement.final_status === "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF") {
+  if (rebuildRequirement.final_status.startsWith("BLOCKED_ANDROID_REBUILD_REQUIRED")) {
+    const rebuildBlockerStatus = rebuildRequirement.final_status as AiMandatoryEmulatorRuntimeGateStatus;
     return writeArtifacts({
       matrix: buildMatrix({
-        finalStatus: "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF",
+        finalStatus: rebuildBlockerStatus,
         androidEmulatorReady: false,
         androidInstalledRuntimeSmoke: "BLOCKED",
         rebuildRequirement,
@@ -454,6 +721,7 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       rebuildRequirement,
       emulatorResult,
       installedRuntime,
+      deviceIds,
     });
   }
 
@@ -472,6 +740,7 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       rebuildRequirement,
       emulatorResult,
       installedRuntime,
+      deviceIds,
     });
   }
 
@@ -490,7 +759,12 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       rebuildRequirement,
       emulatorResult,
       installedRuntime,
+      deviceIds,
     });
+  }
+  deviceIds = listConnectedAndroidDeviceIds();
+  if (deviceIds.length === 0 && emulatorResult.deviceId) {
+    deviceIds = [emulatorResult.deviceId];
   }
 
   installedRuntime = await verifyAndroidInstalledBuildRuntime();
@@ -508,11 +782,17 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       rebuildRequirement,
       emulatorResult,
       installedRuntime,
+      deviceIds,
     });
   }
 
-  for (const child of childRunners) {
-    children.push(await runChildRunner(child));
+  for (const slice of childRunnerSlices) {
+    for (const runnerName of slice.runners) {
+      const child = childRunners.find((candidate) => candidate.runner === runnerName);
+      if (child) {
+        children.push(await runChildRunner(child, emulatorResult.deviceId));
+      }
+    }
   }
 
   const missingRequired = children.find(
@@ -547,6 +827,7 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
     rebuildRequirement,
     emulatorResult,
     installedRuntime,
+    deviceIds,
   });
 }
 

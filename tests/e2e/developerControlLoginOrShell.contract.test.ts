@@ -8,19 +8,20 @@ function read(relativePath: string): string {
 }
 
 describe("developer/control login or shell targetability", () => {
-  it("does not require the login screen when the authenticated shell can open the runtime target", () => {
+  it("starts core AI runtime targetability flows from a clean login state", () => {
     const runners = [
       "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts",
       "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts",
       "scripts/e2e/runAiProcurementCopilotMaestro.ts",
+      "scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts",
     ].map(read);
 
     for (const runner of runners) {
-      expect(runner).toContain("clearState: false");
+      expect(runner).toContain("clearState: true");
       expect(runner).toContain("runFlow:");
       expect(runner).toContain('id: "auth.login.screen"');
       expect(runner).toContain("profile-edit-open");
-      expect(runner).not.toContain("clearState: true");
+      expect(runner).not.toContain("clearState: false");
     }
   });
 

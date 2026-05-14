@@ -7,7 +7,10 @@ import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/s
 import { PROJECT_ROOT, loadReleaseConfigSummary } from "./releaseConfig.shared";
 import {
   RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
+  AI_EMULATOR_GATE_HARDENING_MATRIX_ARTIFACT,
   AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT,
+  AI_QA03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_MATRIX_ARTIFACT,
+  AI_QA04_FRESH_IOS_BUILD_SIGNOFF_MATRIX_ARTIFACT,
   buildReleaseChangedFilesGitArgs,
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
@@ -439,6 +442,9 @@ function buildBaseReport(
   const aiMandatoryEmulatorRuntimeGate = evaluateAiMandatoryEmulatorRuntimeGate({
     changedFiles,
     matrixArtifactSource: readCurrentFile(AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT),
+    hardeningArtifactSource: readCurrentFile(AI_EMULATOR_GATE_HARDENING_MATRIX_ARTIFACT),
+    dualPlatformArtifactSource: readCurrentFile(AI_QA03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_MATRIX_ARTIFACT),
+    freshIosSignoffArtifactSource: readCurrentFile(AI_QA04_FRESH_IOS_BUILD_SIGNOFF_MATRIX_ARTIFACT),
   });
   const targetChannel = assertCanonicalChannel(args.channel);
   const expectedBranch = targetChannel ? getExpectedReleaseBranch(targetChannel) : null;

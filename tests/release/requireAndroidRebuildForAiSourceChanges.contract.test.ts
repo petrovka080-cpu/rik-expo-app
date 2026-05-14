@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   AI_ANDROID_REBUILD_INSTALL_PROOF_ARTIFACT,
   buildAiChangedFilesFingerprint,
+  buildAiMobileRuntimeSourceFingerprint,
   isAiMobileRuntimeRebuildPath,
   resolveAiAndroidRebuildRequirement,
 } from "../../scripts/release/requireAndroidRebuildForAiSourceChanges";
@@ -23,7 +24,28 @@ describe("Android rebuild policy for AI source changes", () => {
   });
 
   it("does not require a fresh APK rebuild for scripts-only changes, while keeping runtime smoke mandatory", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rik-ai-scripts-only-policy-"));
+    const proofPath = path.join(tempRoot, AI_ANDROID_REBUILD_INSTALL_PROOF_ARTIFACT);
+    const sourceFingerprint = buildAiMobileRuntimeSourceFingerprint({ projectRoot: tempRoot });
+    fs.mkdirSync(path.dirname(proofPath), { recursive: true });
+    fs.writeFileSync(
+      proofPath,
+      JSON.stringify({
+        final_status: "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
+        changed_files_fingerprint: buildAiChangedFilesFingerprint([
+          "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+          "tests/e2e/aiMandatoryEmulatorRuntimeMatrix.contract.test.ts",
+        ]),
+        ai_mobile_runtime_source_fingerprint: sourceFingerprint,
+        installed_apk_source_fingerprint: sourceFingerprint,
+        source_fingerprint_matches_installed_apk: true,
+        local_android_rebuild_install_after_source_change: true,
+        fake_emulator_pass: false,
+      }),
+    );
+
     const result = resolveAiAndroidRebuildRequirement({
+      projectRoot: tempRoot,
       changedFiles: [
         "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
         "tests/e2e/aiMandatoryEmulatorRuntimeMatrix.contract.test.ts",
@@ -34,18 +56,21 @@ describe("Android rebuild policy for AI source changes", () => {
     expect(result.require_rebuild).toBe(false);
     expect(result.installed_runtime_smoke_required).toBe(true);
     expect(result.local_android_rebuild_install).toBe("NOT_REQUIRED");
+    expect(result.source_fingerprint_matches_installed_apk).toBe(true);
   });
 
   it("blocks AI runtime source changes until matching local rebuild/install proof exists", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rik-ai-rebuild-policy-"));
     const changedFiles = ["src/features/ai/AIAssistantScreen.tsx"];
+    const sourceFingerprint = buildAiMobileRuntimeSourceFingerprint({ projectRoot: tempRoot, changedFiles });
     const blocked = resolveAiAndroidRebuildRequirement({
       projectRoot: tempRoot,
       changedFiles,
     });
 
-    expect(blocked.final_status).toBe("BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF");
+    expect(blocked.final_status).toBe("BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_DIRTY_AI_WORKTREE");
     expect(blocked.local_android_rebuild_install).toBe("BLOCKED");
+    expect(blocked.source_fingerprint_matches_installed_apk).toBe(false);
 
     const proofPath = path.join(tempRoot, AI_ANDROID_REBUILD_INSTALL_PROOF_ARTIFACT);
     fs.mkdirSync(path.dirname(proofPath), { recursive: true });
@@ -54,6 +79,10 @@ describe("Android rebuild policy for AI source changes", () => {
       JSON.stringify({
         final_status: "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
         changed_files_fingerprint: buildAiChangedFilesFingerprint(changedFiles),
+        ai_mobile_runtime_source_fingerprint: sourceFingerprint,
+        installed_apk_source_fingerprint: sourceFingerprint,
+        source_fingerprint_matches_installed_apk: true,
+        local_android_rebuild_install_after_source_change: true,
         fake_emulator_pass: false,
       }),
     );

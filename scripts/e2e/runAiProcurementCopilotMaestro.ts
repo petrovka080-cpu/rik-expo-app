@@ -222,7 +222,7 @@ function flowLines(): string[] {
     "name: AI Procurement Copilot Runtime",
     "---",
     "- launchApp:",
-    "    clearState: false",
+    "    clearState: true",
     "- runFlow:",
     "    when:",
     "      visible:",

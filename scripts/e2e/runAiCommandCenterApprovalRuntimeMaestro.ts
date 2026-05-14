@@ -199,7 +199,7 @@ function flowLines(): string[] {
     "name: AI Command Center Approval Runtime",
     "---",
     "- launchApp:",
-    "    clearState: false",
+    "    clearState: true",
     "- runFlow:",
     "    when:",
     "      visible:",

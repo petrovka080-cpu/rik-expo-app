@@ -219,7 +219,7 @@ function flowLines(): string[] {
     "name: AI Cross Screen Runtime Matrix",
     "---",
     "- launchApp:",
-    "    clearState: false",
+    "    clearState: true",
     "- runFlow:",
     "    when:",
     "      visible:",
