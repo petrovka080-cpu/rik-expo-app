@@ -42,8 +42,18 @@ describe("AI explicit role secrets E2E artifact", () => {
       artifact.final_status === "GREEN_AI_EXPLICIT_ROLE_SECRETS_E2E_CLOSEOUT" ||
       artifact.final_status === "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE"
     ) {
-      expect(artifact.role_auth_source).toBe("explicit_env");
-      expect(artifact.all_role_credentials_resolved).toBe(true);
+      expect(["explicit_env", "developer_control_explicit_env"]).toContain(
+        artifact.role_auth_source,
+      );
+      if (artifact.role_auth_source === "explicit_env") {
+        expect(artifact.all_role_credentials_resolved).toBe(true);
+      } else {
+        expect(artifact.e2e_role_mode).toBe("developer_control_full_access");
+        expect(artifact.all_role_credentials_resolved).toBe(false);
+        expect(artifact.full_access_runtime_claimed).toBe(true);
+        expect(artifact.role_isolation_e2e_claimed).toBe(false);
+        expect(artifact.separate_role_users_required).toBe(false);
+      }
       for (const role of REQUIRED_ROLES) {
         expect(artifact.flows?.[role]).toBe("PASS");
       }

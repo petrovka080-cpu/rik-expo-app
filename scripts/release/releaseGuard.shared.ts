@@ -98,6 +98,17 @@ export type ReleaseGuardMigrationPolicy = {
   blockers: string[];
 };
 
+export type AiMandatoryEmulatorRuntimeGatePolicy = {
+  required: boolean;
+  artifactPath: string;
+  finalStatus: string | null;
+  androidInstalledRuntimeSmoke: string | null;
+  fakeEmulatorPass: boolean | null;
+  secretsPrinted: boolean | null;
+  exactReason: string | null;
+  blockers: string[];
+};
+
 export type ReleaseMetadataFieldStatus =
   | "present"
   | "missing"
@@ -170,6 +181,7 @@ export type ReleaseGuardReport = {
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
   migrationPolicy: ReleaseGuardMigrationPolicy;
+  aiMandatoryEmulatorRuntimeGate: AiMandatoryEmulatorRuntimeGatePolicy;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   startupPolicy: ReleaseGuardStartupPolicyTruth;
   readiness: ReleaseGuardReadiness;
@@ -279,6 +291,8 @@ export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
 ] as const;
 export const RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE =
   "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL";
+export const AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT =
+  "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json";
 
 function isReleaseGuardApprovalEnabled(value: unknown): boolean {
   const normalized = String(value ?? "").trim().toLowerCase();
@@ -287,6 +301,106 @@ function isReleaseGuardApprovalEnabled(value: unknown): boolean {
 
 function normalizePath(filePath: string): string {
   return filePath.replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+export function isAiMandatoryEmulatorRuntimeGateRequiredPath(filePath: string): boolean {
+  const normalized = normalizePath(filePath);
+  return (
+    normalized.startsWith("src/features/ai/") ||
+    normalized.startsWith("src/screens/") ||
+    normalized.startsWith("src/components/") ||
+    normalized.startsWith("app/") ||
+    normalized.startsWith("src/navigation/") ||
+    normalized.startsWith("src/lib/navigation/") ||
+    normalized.startsWith("src/lib/entry/") ||
+    /^tests\/e2e\/.*\.ya?ml$/i.test(normalized) ||
+    normalized.startsWith("scripts/e2e/runAi") ||
+    normalized === "scripts/e2e/ensureAndroidEmulatorReady.ts" ||
+    normalized === "scripts/release/verifyAndroidInstalledBuildRuntime.ts" ||
+    normalized === "scripts/release/requireAndroidRebuildForAiSourceChanges.ts" ||
+    normalized === "scripts/release/buildInstallAndroidPreviewForEmulator.ts"
+  );
+}
+
+function safeParseJsonRecord(source: string | null): Record<string, unknown> | null {
+  if (!source) return null;
+  try {
+    const parsed: unknown = JSON.parse(source);
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function stringRecordValue(record: Record<string, unknown> | null, key: string): string | null {
+  const value = record?.[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function booleanRecordValue(record: Record<string, unknown> | null, key: string): boolean | null {
+  const value = record?.[key];
+  return typeof value === "boolean" ? value : null;
+}
+
+export function evaluateAiMandatoryEmulatorRuntimeGate(params: {
+  changedFiles: string[];
+  matrixArtifactSource: string | null;
+}): AiMandatoryEmulatorRuntimeGatePolicy {
+  const required = params.changedFiles.some(isAiMandatoryEmulatorRuntimeGateRequiredPath);
+  const artifactPath = AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT;
+  if (!required) {
+    return {
+      required: false,
+      artifactPath,
+      finalStatus: null,
+      androidInstalledRuntimeSmoke: null,
+      fakeEmulatorPass: null,
+      secretsPrinted: null,
+      exactReason: null,
+      blockers: [],
+    };
+  }
+
+  const matrix = safeParseJsonRecord(params.matrixArtifactSource);
+  if (!matrix) {
+    return {
+      required: true,
+      artifactPath,
+      finalStatus: null,
+      androidInstalledRuntimeSmoke: null,
+      fakeEmulatorPass: null,
+      secretsPrinted: null,
+      exactReason: null,
+      blockers: ["BLOCKED_AI_MANDATORY_EMULATOR_ARTIFACT_MISSING"],
+    };
+  }
+
+  const finalStatus = stringRecordValue(matrix, "final_status");
+  const androidInstalledRuntimeSmoke = stringRecordValue(matrix, "android_installed_runtime_smoke");
+  const exactReason = stringRecordValue(matrix, "exact_reason");
+  const fakeEmulatorPass = booleanRecordValue(matrix, "fake_emulator_pass");
+  const secretsPrinted = booleanRecordValue(matrix, "secrets_printed");
+  const blockers = [
+    ...(finalStatus === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY"
+      ? []
+      : [`${finalStatus ?? "BLOCKED_AI_RUNTIME_EMULATOR_GATE"}: ${exactReason ?? "AI mandatory emulator runtime gate is not green."}`]),
+    ...(androidInstalledRuntimeSmoke === "PASS" ? [] : ["BLOCKED_ANDROID_INSTALLED_RUNTIME_SMOKE_MISSING"]),
+    ...(fakeEmulatorPass === false ? [] : ["BLOCKED_AI_MANDATORY_EMULATOR_FAKE_PASS_FIELD_NOT_FALSE"]),
+    ...(secretsPrinted === false ? [] : ["BLOCKED_AI_MANDATORY_EMULATOR_SECRETS_PRINTED_FIELD_NOT_FALSE"]),
+  ];
+
+  return {
+    required: true,
+    artifactPath,
+    finalStatus,
+    androidInstalledRuntimeSmoke,
+    fakeEmulatorPass,
+    secretsPrinted,
+    exactReason,
+    blockers,
+  };
 }
 
 export function resolveReleaseGuardPath(projectRoot: string, filePath: string): string {
@@ -728,6 +842,7 @@ export function evaluateReleaseGuardReadiness(params: {
   gates: ReleaseGateResult[];
   classification: ReleaseAutomationClassification;
   migrationPolicy?: ReleaseGuardMigrationPolicy;
+  aiMandatoryEmulatorRuntimeGate?: AiMandatoryEmulatorRuntimeGatePolicy;
   runtimePolicy: ReleaseGuardRuntimePolicyTruth;
   startupPolicy: ReleaseGuardStartupPolicyTruth;
   targetChannel: string | null;
@@ -770,6 +885,10 @@ export function evaluateReleaseGuardReadiness(params: {
   }
 
   for (const blocker of params.migrationPolicy?.blockers ?? []) {
+    blockers.push(blocker);
+  }
+
+  for (const blocker of params.aiMandatoryEmulatorRuntimeGate?.blockers ?? []) {
     blockers.push(blocker);
   }
 

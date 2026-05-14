@@ -163,6 +163,35 @@ function adb(deviceId: string, args: readonly string[], capture = true): string 
   return runCommand("adb", ["-s", deviceId, ...args], capture);
 }
 
+function isRecoverableMaestroDeviceFailure(errorMessage: string): boolean {
+  return (
+    errorMessage.includes("device offline") ||
+    errorMessage.includes("Unable to launch app") ||
+    errorMessage.includes("device still authorizing") ||
+    errorMessage.includes("failed to connect to")
+  );
+}
+
+function waitForDeviceTransport(deviceId: string): void {
+  const deadline = Date.now() + 30000;
+  let lastError: unknown = null;
+  while (Date.now() < deadline) {
+    try {
+      runCommand("adb", ["-s", deviceId, "wait-for-device"], true);
+      const state = adb(deviceId, ["get-state"], true).trim();
+      if (state === "device") return;
+    } catch (error) {
+      lastError = error;
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1000);
+  }
+
+  if (lastError instanceof Error) {
+    throw lastError;
+  }
+  throw new Error(`Android device ${deviceId} did not recover to online state.`);
+}
+
 function allBlockedFlows(): Record<RoleFlowName, RoleFlowStatus> {
   return {
     director: "BLOCKED",
@@ -360,7 +389,7 @@ function buildResponseSmokeFlowSource(releaseGateFlowSource: string): string {
     "    element:",
     '      id: "ai.assistant.response"',
     "    direction: DOWN",
-    "    timeout: 90000",
+    "    timeout: 15000",
     "    visibilityPercentage: 20",
     "    centerElement: true",
     "- assertVisible:",
@@ -394,28 +423,35 @@ function runMaestroFlows(params: {
   maestroRoleEnv: Record<string, string>;
   secretValues: readonly string[];
 }): void {
-  runCommand(
-    maestroBinary,
-    [
-      "test",
-      "--device",
-      params.deviceId,
-      "--platform",
-      "android",
-      "--format",
-      "junit",
-      "--output",
-      params.reportPath,
-      "--debug-output",
-      params.debugOutputDir,
-      "--flatten-debug-output",
-      "--no-ansi",
-      ...params.flowPaths,
-    ],
-    true,
-    params.maestroRoleEnv,
-    params.secretValues,
-  );
+  const args = [
+    "test",
+    "--device",
+    params.deviceId,
+    "--platform",
+    "android",
+    "--format",
+    "junit",
+    "--output",
+    params.reportPath,
+    "--debug-output",
+    params.debugOutputDir,
+    "--flatten-debug-output",
+    "--no-ansi",
+    ...params.flowPaths,
+  ];
+
+  try {
+    runCommand(maestroBinary, args, true, params.maestroRoleEnv, params.secretValues);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (!isRecoverableMaestroDeviceFailure(errorMessage)) {
+      throw error;
+    }
+
+    waitForDeviceTransport(params.deviceId);
+    adb(params.deviceId, ["shell", "am", "force-stop", appId], true);
+    runCommand(maestroBinary, args, true, params.maestroRoleEnv, params.secretValues);
+  }
 }
 
 function dumpAndroidHierarchy(deviceId: string): string {
@@ -438,6 +474,96 @@ function observePromptPipeline(deviceId: string): PromptPipelineObservation {
   }
 
   return null;
+}
+
+function createPromptPipelineProbeFlowFile(role: RoleFlowName): string {
+  const flowPath = path.join(
+    os.tmpdir(),
+    `rik-ai-role-screen-prompt-pipeline-probe-${role}-${process.pid}-${Date.now()}.yaml`,
+  );
+  fs.writeFileSync(
+    flowPath,
+    [
+      `appId: ${appId}`,
+      `name: AI Role Screen Prompt Pipeline Probe ${role}`,
+      "---",
+      "- extendedWaitUntil:",
+      "    visible:",
+      '      id: "ai.assistant.screen"',
+      "    timeout: 30000",
+      "- scrollUntilVisible:",
+      "    element:",
+      '      id: "ai.assistant.response"',
+      "    direction: DOWN",
+      "    timeout: 45000",
+      "    visibilityPercentage: 20",
+      "    centerElement: true",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+  return flowPath;
+}
+
+function runPromptPipelineProbe(params: {
+  role: RoleFlowName;
+  deviceId: string;
+  maestroRoleEnv: Record<string, string>;
+  secretValues: readonly string[];
+}): PromptPipelineObservation {
+  const probePrompt = "delete data";
+  const deepLink = [
+    "rik://ai?",
+    `context=${encodeURIComponent(params.role)}`,
+    `prompt=${encodeURIComponent(probePrompt)}`,
+    "autoSend=1",
+  ].join("&");
+
+  adb(params.deviceId, [
+    "shell",
+    "am",
+    "start",
+    "-W",
+    "-S",
+    "-a",
+    "android.intent.action.VIEW",
+    "-d",
+    `'${deepLink}'`,
+  ], true);
+
+  const flowPath = createPromptPipelineProbeFlowFile(params.role);
+  const debugOutputDir = path.join(
+    os.tmpdir(),
+    `rik-ai-role-screen-prompt-pipeline-probe-${params.role}-${process.pid}-${Date.now()}`,
+  );
+  try {
+    runMaestroFlows({
+      deviceId: params.deviceId,
+      flowPaths: [flowPath],
+      reportPath: path.join(outputDir, `${params.role}-prompt-pipeline-probe-report.xml`),
+      debugOutputDir,
+      maestroRoleEnv: params.maestroRoleEnv,
+      secretValues: params.secretValues,
+    });
+    return observePromptPipeline(params.deviceId) ?? "response";
+  } catch {
+    const observed = observePromptPipeline(params.deviceId);
+    if (observed) return observed;
+  } finally {
+    fs.rmSync(flowPath, { force: true });
+    fs.rmSync(debugOutputDir, { recursive: true, force: true });
+  }
+
+  const deadline = Date.now() + 45000;
+  let lastObservation: PromptPipelineObservation = null;
+  while (Date.now() < deadline) {
+    lastObservation = observePromptPipeline(params.deviceId);
+    if (lastObservation) return lastObservation;
+    adb(params.deviceId, ["shell", "input", "swipe", "540", "1820", "540", "1520", "250"], true);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+  }
+
+  return lastObservation;
 }
 
 export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKnowledgeArtifact> {
@@ -544,7 +670,14 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
         secretValues,
       });
 
-      const promptPipelineObservation = observePromptPipeline(bootstrap.deviceId);
+      const promptPipelineObservation =
+        observePromptPipeline(bootstrap.deviceId) ??
+        runPromptPipelineProbe({
+          role,
+          deviceId: bootstrap.deviceId,
+          maestroRoleEnv,
+          secretValues,
+        });
       if (!promptPipelineObservation) {
         throw new Error(
           `AI prompt pipeline proof missing for ${role}: expected ai.assistant.loading or ai.assistant.response in Android hierarchy after send.`,

@@ -7,6 +7,7 @@ import { getExpectedReleaseBranch, isCanonicalReleaseChannel } from "../../src/s
 import { PROJECT_ROOT, loadReleaseConfigSummary } from "./releaseConfig.shared";
 import {
   RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
+  AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT,
   buildReleaseChangedFilesGitArgs,
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
@@ -15,6 +16,7 @@ import {
   buildReleaseGuardMigrationPolicy,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
+  evaluateAiMandatoryEmulatorRuntimeGate,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardCommitRange,
@@ -375,6 +377,17 @@ function printHumanReport(report: ReleaseGuardReport) {
     }
   }
 
+  if (report.aiMandatoryEmulatorRuntimeGate.required) {
+    console.info("");
+    console.info("AI mandatory emulator runtime gate:");
+    console.info(`- artifact: ${report.aiMandatoryEmulatorRuntimeGate.artifactPath}`);
+    console.info(`- final_status: ${report.aiMandatoryEmulatorRuntimeGate.finalStatus ?? "missing"}`);
+    console.info(
+      `- android_installed_runtime_smoke: ${report.aiMandatoryEmulatorRuntimeGate.androidInstalledRuntimeSmoke ?? "missing"}`,
+    );
+    console.info(`- exact_reason: ${report.aiMandatoryEmulatorRuntimeGate.exactReason ?? "null"}`);
+  }
+
   if (report.readiness.blockers.length > 0) {
     console.info("");
     console.info("Blockers:");
@@ -423,6 +436,10 @@ function buildBaseReport(
     readFile: readCurrentFile,
     approvalEnv,
   });
+  const aiMandatoryEmulatorRuntimeGate = evaluateAiMandatoryEmulatorRuntimeGate({
+    changedFiles,
+    matrixArtifactSource: readCurrentFile(AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT),
+  });
   const targetChannel = assertCanonicalChannel(args.channel);
   const expectedBranch = targetChannel ? getExpectedReleaseBranch(targetChannel) : null;
   const missingArtifacts = ensureArtifacts(args.requireArtifacts);
@@ -432,6 +449,7 @@ function buildBaseReport(
     gates,
     classification,
     migrationPolicy,
+    aiMandatoryEmulatorRuntimeGate,
     runtimePolicy: {
       resolvedRuntimeVersion: configSummary.runtimeVersion,
       runtimePolicy: configSummary.runtimePolicy,
@@ -479,6 +497,7 @@ function buildBaseReport(
     gates,
     classification,
     migrationPolicy,
+    aiMandatoryEmulatorRuntimeGate,
     runtimePolicy,
     startupPolicy,
     readiness,

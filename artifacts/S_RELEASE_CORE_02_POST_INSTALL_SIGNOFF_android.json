@@ -9,7 +9,7 @@
   "package_name": "com.azisbek_dzhantaev.rikexpoapp",
   "version_code": "13",
   "version_name": "1.0.0",
-  "build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
+  "build_id": "local-gradle",
   "build_profile": "preview",
   "commit_sha": null,
   "artifact_path": "artifacts/release/android-emulator.apk",

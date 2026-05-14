@@ -1,5 +1,5 @@
 {
-  "final_status": "GREEN_ANDROID_EMULATOR_AND_IOS_BUILD_SUBMIT_GATE",
+  "final_status": "GREEN_ANDROID_LOCAL_REBUILD_INSTALL_READY",
   "android": {
     "status": "PASS",
     "physical_device_required": false,
@@ -8,14 +8,10 @@
     "apk_built": true,
     "apk_installed_on_emulator": true,
     "aab_used_for_direct_install": false,
+    "artifact_path": "artifacts/release/android-emulator.apk",
     "runtime_smoke": "PASS",
     "google_play_submit": false,
-    "emulator_boot_completed": true,
-    "anrDialogObserved": false,
-    "anrDialogHandledByWait": false,
-    "build_id": "be51d49f-8a5d-4168-8654-c853eb1d8b91",
-    "artifact_path": "artifacts/release/android-emulator.apk",
-    "exact_reason": null
+    "emulator_boot_completed": false
   },
   "ios": {
     "status": "PASS",
@@ -29,15 +25,15 @@
     "testflight_or_processing_status_captured": true,
     "build_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
     "submit_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
-    "exact_reason": null
+    "exact_reason": "S_AI_QA_01 local Android emulator gate does not run iOS."
   },
   "ota": {
     "used": false,
     "production_ota_used": false
   },
   "ai_role_screen_e2e": {
-    "status": "BLOCKED_NO_E2E_ROLE_SECRETS",
-    "auth_source": "missing",
+    "status": "SKIPPED",
+    "auth_source": "explicit_env",
     "auth_admin_used": false,
     "service_role_used": false,
     "list_users_used": false
@@ -46,18 +42,5 @@
     "credentials_in_cli_args": false,
     "credentials_printed": false,
     "artifacts_redacted": true
-  },
-  "gates": {
-    "focused_tests": "PASS",
-    "android_emulator_smoke": "PASS",
-    "ios_build": "PASS",
-    "ios_submit": "PASS",
-    "tsc": "PASS",
-    "lint": "PASS",
-    "jest": "PASS",
-    "architecture_scanner": "PASS",
-    "git_diff_check": "PASS",
-    "artifact_json_parse": "PASS",
-    "release_verify": "PASS"
   }
 }

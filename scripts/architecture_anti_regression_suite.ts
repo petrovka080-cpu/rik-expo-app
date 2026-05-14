@@ -820,6 +820,27 @@ export type PostInstallReleaseSignoffGateSummary = {
   findings: readonly string[];
 };
 
+export type AiMandatoryEmulatorRuntimeGateSummary = {
+  matrixRunnerPresent: boolean;
+  rebuildPolicyPresent: boolean;
+  buildInstallRunnerPresent: boolean;
+  releaseGuardIntegrated: boolean;
+  allRequiredChildRunnersReferenced: boolean;
+  deterministicTestIdsLocked: boolean;
+  exactLlmAssertionsDisabled: boolean;
+  responseSmokeNonBlocking: boolean;
+  noFakePassPolicy: boolean;
+  artifactsPresent: boolean;
+  artifactJsonValid: boolean;
+  artifactStatusAccepted: boolean;
+  androidInstalledRuntimeSmokePassOrExactBlocker: boolean;
+  fakeEmulatorPassFalse: boolean;
+  mutationsCreatedZero: boolean;
+  secretsNotPrinted: boolean;
+  blockerHasExactReason: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -950,6 +971,7 @@ export type ArchitectureAntiRegressionReport = {
   developerControlRuntimeTargetability: DeveloperControlRuntimeTargetabilityArchitectureSummary;
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
   postInstallReleaseSignoffGate: PostInstallReleaseSignoffGateSummary;
+  aiMandatoryEmulatorRuntimeGate: AiMandatoryEmulatorRuntimeGateSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -1424,6 +1446,20 @@ const REQUIRED_AI_APP_KNOWLEDGE_INTENTS = [
 ] as const;
 const AI_EMULATOR_BOOTSTRAP_RUNNER_PATH = "scripts/e2e/ensureAndroidEmulatorReady.ts";
 const AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH = "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts";
+const AI_MANDATORY_EMULATOR_MATRIX_RUNNER_PATH =
+  "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts";
+const AI_MANDATORY_EMULATOR_REBUILD_POLICY_PATH =
+  "scripts/release/requireAndroidRebuildForAiSourceChanges.ts";
+const AI_MANDATORY_EMULATOR_BUILD_INSTALL_PATH =
+  "scripts/release/buildInstallAndroidPreviewForEmulator.ts";
+const AI_MANDATORY_EMULATOR_MATRIX_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json";
+const AI_MANDATORY_EMULATOR_INVENTORY_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_inventory.json";
+const AI_MANDATORY_EMULATOR_EMULATOR_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json";
+const AI_MANDATORY_EMULATOR_PROOF_ARTIFACT_PATH =
+  "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md";
 const AI_EXPLICIT_ROLE_AUTH_RESOLVER_PATH = "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts";
 const AI_E2E_SECRET_REDACTOR_PATH = "scripts/e2e/redactE2eSecrets.ts";
 const AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH =
@@ -1454,6 +1490,24 @@ const ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES = [
   "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
   "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
   "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
+] as const;
+const REQUIRED_AI_MANDATORY_EMULATOR_CHILD_RUNNERS = [
+  "ensureAndroidEmulatorReady",
+  "verifyAndroidInstalledBuildRuntime",
+  "runDeveloperControlFullAccessMaestro",
+  "runAiRoleScreenKnowledgeMaestro",
+  "runAiScreenButtonActionMapMaestro",
+  "runAiScreenButtonActionTruthMapMaestro",
+  "runAiCommandCenterApprovalRuntimeMaestro",
+  "runAiProactiveWorkdayTaskIntelligenceMaestro",
+  "runAiApprovalLedgerPersistenceMaestro",
+  "runAiLiveApprovalToExecutionPointOfNoReturn",
+] as const;
+const ALLOWED_AI_MANDATORY_EMULATOR_GATE_STATUSES = [
+  "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+  "BLOCKED_AI_RUNTIME_EMULATOR_GATE",
+  "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF",
+  "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND",
 ] as const;
 const RELEASE_ANDROID_IOS_RUNNER_PATH = "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts";
 const RELEASE_OUTPUT_REDACTOR_PATH = "scripts/release/redactReleaseOutput.ts";
@@ -6072,7 +6126,9 @@ export function evaluateAiRoleScreenEmulatorGateGuardrail(params: {
   const mutationsCreatedZero = mutationsCreated === 0;
   const approvalRequiredObserved = approvalRequiredObservedValue === true;
   const roleLeakageNotObserved = roleLeakageObservedValue === false;
-  const roleAuthSourceExplicit = roleAuthSource === "explicit_env";
+  const roleAuthSourceExplicit =
+    roleAuthSource === "explicit_env" ||
+    roleAuthSource === "developer_control_explicit_env";
   const noAuthDiscoveryGreenPath =
     serviceRoleDiscoveryUsedForGreen === false &&
     authAdminListUsersUsedForGreen === false &&
@@ -6183,6 +6239,151 @@ export function evaluateAiRoleScreenEmulatorGateGuardrail(params: {
       credentialsNotPrinted,
       stdoutStderrRedacted,
       blockedStatusHasExactReason,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiMandatoryEmulatorRuntimeGateSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const matrixRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_MATRIX_RUNNER_PATH });
+  const rebuildPolicySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_REBUILD_POLICY_PATH });
+  const buildInstallSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_BUILD_INSTALL_PATH });
+  const releaseGuardSource = safeReadProjectFile({ readFile, relativePath: "scripts/release/releaseGuard.shared.ts" });
+  const matrixSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_MATRIX_ARTIFACT_PATH });
+  const inventorySource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_INVENTORY_ARTIFACT_PATH });
+  const emulatorSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_EMULATOR_ARTIFACT_PATH });
+  const proofSource = safeReadProjectFile({ readFile, relativePath: AI_MANDATORY_EMULATOR_PROOF_ARTIFACT_PATH });
+  const matrix = parseJsonRecord(matrixSource);
+  const inventory = parseJsonRecord(inventorySource);
+  const emulator = parseJsonRecord(emulatorSource);
+  const finalStatus = recordString(matrix, "final_status");
+  const exactReason = recordString(matrix, "exact_reason");
+  const blockingChildRunner = recordString(matrix, "blocking_child_runner");
+  const androidInstalledRuntimeSmoke = recordString(matrix, "android_installed_runtime_smoke");
+  const fakeEmulatorPass = recordValue(matrix, "fake_emulator_pass");
+  const exactLlmTextAssertions = recordValue(matrix, "exact_llm_text_assertions");
+  const responseSmokeBlocking = recordValue(inventory, "response_smoke_blocking_release");
+  const mutationsCreated = recordValue(matrix, "mutations_created");
+  const secretsPrinted = recordValue(matrix, "secrets_printed");
+  const fakeGreenClaimed = recordValue(matrix, "fake_green_claimed");
+
+  const matrixRunnerPresent =
+    Boolean(matrixRunnerSource?.includes("runAiMandatoryEmulatorRuntimeMatrix")) &&
+    Boolean(matrixRunnerSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(matrixRunnerSource?.includes("verifyAndroidInstalledBuildRuntime")) &&
+    Boolean(matrixRunnerSource?.includes("RUNNER_NOT_FOUND_EXACT_BLOCKER")) &&
+    Boolean(matrixRunnerSource?.includes("BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"));
+  const rebuildPolicyPresent =
+    Boolean(rebuildPolicySource?.includes("resolveAiAndroidRebuildRequirement")) &&
+    Boolean(rebuildPolicySource?.includes("src/features/ai/")) &&
+    (Boolean(rebuildPolicySource?.includes("tests/e2e")) ||
+      Boolean(rebuildPolicySource?.includes("tests\\/e2e"))) &&
+    Boolean(rebuildPolicySource?.includes("BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"));
+  const buildInstallRunnerPresent =
+    Boolean(buildInstallSource?.includes("buildInstallAndroidPreviewForEmulator")) &&
+    Boolean(buildInstallSource?.includes(":app:assembleRelease")) &&
+    Boolean(buildInstallSource?.includes("adb")) &&
+    Boolean(buildInstallSource?.includes("install")) &&
+    Boolean(buildInstallSource?.includes("fake_emulator_pass: false"));
+  const releaseGuardIntegrated =
+    Boolean(releaseGuardSource?.includes("aiMandatoryEmulatorRuntimeGate")) &&
+    Boolean(releaseGuardSource?.includes("AI_MANDATORY_EMULATOR_RUNTIME_GATE_MATRIX_ARTIFACT")) &&
+    Boolean(releaseGuardSource?.includes("BLOCKED_AI_MANDATORY_EMULATOR_ARTIFACT_MISSING"));
+  const allRequiredChildRunnersReferenced = REQUIRED_AI_MANDATORY_EMULATOR_CHILD_RUNNERS.every((runner) =>
+    Boolean(matrixRunnerSource?.includes(runner)),
+  );
+  const deterministicTestIdsLocked = [
+    "ai.assistant.screen",
+    "ai.assistant.input",
+    "ai.assistant.send",
+    "ai.knowledge.preview",
+    "ai.command_center.task_stream",
+    "ai.approval_inbox.screen",
+    "ai.screen.actions.preview",
+    "ai.workday.section",
+  ].every((testId) => Boolean(matrixRunnerSource?.includes(testId)) || Boolean(inventorySource?.includes(testId)));
+  const exactLlmAssertionsDisabled =
+    Boolean(matrixRunnerSource?.includes("exactLlmTextAssertionsPresent")) &&
+    exactLlmTextAssertions !== true;
+  const responseSmokeNonBlocking =
+    Boolean(matrixRunnerSource?.includes("PASS_OR_EXACT_BLOCKER")) &&
+    responseSmokeBlocking === false;
+  const noFakePassPolicy =
+    Boolean(matrixRunnerSource?.includes("fake_emulator_pass")) &&
+    !Boolean(matrixRunnerSource?.includes("fake_emulator_pass: true")) &&
+    fakeGreenClaimed !== true;
+  const artifactsPresent = Boolean(matrixSource && inventorySource && emulatorSource && proofSource);
+  const artifactJsonValid = Boolean(matrix && inventory && emulator);
+  const allowedStatus = ALLOWED_AI_MANDATORY_EMULATOR_GATE_STATUSES.some((status) => status === finalStatus);
+  const greenStatus = finalStatus === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY";
+  const blockerHasExactReason = greenStatus || exactReason.length > 0 || blockingChildRunner.length > 0;
+  const fakeEmulatorPassFalse = fakeEmulatorPass === false;
+  const mutationsCreatedZero = mutationsCreated === 0;
+  const secretsNotPrinted = secretsPrinted === false;
+  const androidInstalledRuntimeSmokePassOrExactBlocker =
+    androidInstalledRuntimeSmoke === "PASS" || (!greenStatus && blockerHasExactReason);
+  const artifactStatusAccepted =
+    allowedStatus &&
+    fakeEmulatorPassFalse &&
+    exactLlmTextAssertions !== true &&
+    mutationsCreatedZero &&
+    secretsNotPrinted &&
+    blockerHasExactReason;
+
+  const findings = [
+    ...(fakeEmulatorPass === true ? ["mandatory_gate_fake_emulator_pass_claimed"] : []),
+    ...(exactLlmTextAssertions === true ? ["mandatory_gate_exact_llm_assertion_enabled"] : []),
+    ...(mutationsCreated !== undefined && mutationsCreated !== 0 ? ["mandatory_gate_mutation_count_nonzero"] : []),
+    ...(secretsPrinted === true ? ["mandatory_gate_secrets_printed"] : []),
+  ];
+  const errors = [
+    ...(matrixRunnerPresent ? [] : [`missing_or_incomplete_runner:${AI_MANDATORY_EMULATOR_MATRIX_RUNNER_PATH}`]),
+    ...(rebuildPolicyPresent ? [] : [`missing_or_incomplete_runner:${AI_MANDATORY_EMULATOR_REBUILD_POLICY_PATH}`]),
+    ...(buildInstallRunnerPresent ? [] : [`missing_or_incomplete_runner:${AI_MANDATORY_EMULATOR_BUILD_INSTALL_PATH}`]),
+    ...(releaseGuardIntegrated ? [] : ["ai_mandatory_emulator_runtime_gate_release_guard_missing"]),
+    ...(allRequiredChildRunnersReferenced ? [] : ["ai_mandatory_emulator_child_runner_missing"]),
+    ...(deterministicTestIdsLocked ? [] : ["ai_mandatory_emulator_deterministic_testids_missing"]),
+    ...(exactLlmAssertionsDisabled ? [] : ["ai_mandatory_emulator_exact_llm_assertions_not_disabled"]),
+    ...(responseSmokeNonBlocking ? [] : ["ai_mandatory_emulator_response_smoke_blocking"]),
+    ...(noFakePassPolicy ? [] : ["ai_mandatory_emulator_no_fake_pass_policy_missing"]),
+    ...(artifactsPresent ? [] : ["ai_mandatory_emulator_artifacts_missing"]),
+    ...(artifactJsonValid ? [] : ["ai_mandatory_emulator_artifact_json_invalid"]),
+    ...(artifactStatusAccepted ? [] : ["ai_mandatory_emulator_artifact_status_not_accepted"]),
+    ...(androidInstalledRuntimeSmokePassOrExactBlocker ? [] : ["ai_mandatory_emulator_installed_runtime_smoke_missing"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_mandatory_emulator_runtime_gate",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      matrixRunnerPresent,
+      rebuildPolicyPresent,
+      buildInstallRunnerPresent,
+      releaseGuardIntegrated,
+      allRequiredChildRunnersReferenced,
+      deterministicTestIdsLocked,
+      exactLlmAssertionsDisabled,
+      responseSmokeNonBlocking,
+      noFakePassPolicy,
+      artifactsPresent,
+      artifactJsonValid,
+      artifactStatusAccepted,
+      androidInstalledRuntimeSmokePassOrExactBlocker,
+      fakeEmulatorPassFalse,
+      mutationsCreatedZero,
+      secretsNotPrinted,
+      blockerHasExactReason,
       findings,
     },
   };
@@ -7917,6 +8118,7 @@ export function runArchitectureAntiRegressionSuite(
   const developerControlRuntimeTargetability = evaluateDeveloperControlRuntimeTargetabilityGuardrail({ projectRoot });
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
   const postInstallReleaseSignoffGate = evaluatePostInstallReleaseSignoffGateGuardrail({ projectRoot });
+  const aiMandatoryEmulatorRuntimeGate = evaluateAiMandatoryEmulatorRuntimeGateGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -7967,6 +8169,7 @@ export function runArchitectureAntiRegressionSuite(
     developerControlRuntimeTargetability.check,
     androidEmulatorIosBuildSubmitGate.check,
     postInstallReleaseSignoffGate.check,
+    aiMandatoryEmulatorRuntimeGate.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -8018,6 +8221,7 @@ export function runArchitectureAntiRegressionSuite(
     developerControlRuntimeTargetability: developerControlRuntimeTargetability.summary,
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
     postInstallReleaseSignoffGate: postInstallReleaseSignoffGate.summary,
+    aiMandatoryEmulatorRuntimeGate: aiMandatoryEmulatorRuntimeGate.summary,
     componentDebt,
     checks,
     safety: {
@@ -8119,6 +8323,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`android_emulator_ios_build_submit_gate_ios_submit_profile: ${report.androidEmulatorIosBuildSubmitGate.iosSubmitProfileUsed}`);
   console.info(`post_install_release_signoff_gate_android: ${report.postInstallReleaseSignoffGate.androidRuntimeSmokeProven}`);
   console.info(`post_install_release_signoff_gate_ios: ${report.postInstallReleaseSignoffGate.iosSubmitStatusProven}`);
+  console.info(`ai_mandatory_emulator_runtime_gate: ${report.aiMandatoryEmulatorRuntimeGate.artifactStatusAccepted}`);
+  console.info(`ai_mandatory_emulator_runtime_gate_fake_pass: ${report.aiMandatoryEmulatorRuntimeGate.fakeEmulatorPassFalse}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 
