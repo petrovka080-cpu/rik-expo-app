@@ -137,6 +137,15 @@ import {
   type AgentWarehouseCopilotRouteRequest,
 } from "./agentWarehouseCopilotRoutes";
 import {
+  AGENT_FIELD_WORK_COPILOT_BFF_CONTRACT,
+  draftAgentFieldAct,
+  draftAgentFieldReport,
+  getAgentFieldContext,
+  planAgentFieldAction,
+  type AgentFieldWorkCopilotEnvelope,
+  type AgentFieldWorkCopilotRouteRequest,
+} from "./agentFieldWorkCopilotRoutes";
+import {
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -194,6 +203,11 @@ export {
   getAgentWarehouseMovements,
   getAgentWarehouseStatus,
   previewAgentWarehouseRisk,
+  AGENT_FIELD_WORK_COPILOT_BFF_CONTRACT,
+  draftAgentFieldAct,
+  draftAgentFieldReport,
+  getAgentFieldContext,
+  planAgentFieldAction,
   AI_ACTION_LEDGER_BFF_CONTRACT,
   approveActionLedgerBff,
   executeApprovedActionLedgerBff,
@@ -213,6 +227,7 @@ export {
 export type { AgentDocumentKnowledgeEnvelope };
 export type { AgentFinanceCopilotEnvelope };
 export type { AgentWarehouseCopilotEnvelope };
+export type { AgentFieldWorkCopilotEnvelope };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -249,6 +264,10 @@ export type AgentBffRouteOperation =
   | "agent.warehouse.movements.read"
   | "agent.warehouse.risk_preview"
   | "agent.warehouse.draft_action"
+  | "agent.field.context.read"
+  | "agent.field.draft_report"
+  | "agent.field.draft_act"
+  | "agent.field.action_plan"
   | "agent.app_graph.screen.read"
   | "agent.app_graph.action.read"
   | "agent.app_graph.resolve"
@@ -301,6 +320,7 @@ export type AgentBffRouteDefinition = {
     | "AgentDocumentKnowledgeEnvelope"
     | "AgentFinanceCopilotEnvelope"
     | "AgentWarehouseCopilotEnvelope"
+    | "AgentFieldWorkCopilotEnvelope"
     | "AgentActionLedgerEnvelope"
     | "AgentApprovalInboxEnvelope";
 };
@@ -341,6 +361,7 @@ export type AgentDocumentSearchRequest = AgentDocumentSearchRouteRequest;
 export type AgentDocumentSummaryPreviewRequest = AgentDocumentSummaryPreviewRouteRequest;
 export type AgentFinanceCopilotRequest = AgentFinanceCopilotRouteRequest;
 export type AgentWarehouseCopilotRequest = AgentWarehouseCopilotRouteRequest;
+export type AgentFieldWorkCopilotRequest = AgentFieldWorkCopilotRouteRequest;
 
 export type AgentAppGraphScreenRequest = AgentBffShellRequest & {
   screenId: string;
@@ -1727,6 +1748,58 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentWarehouseCopilotEnvelope",
+  },
+  {
+    operation: "agent.field.context.read",
+    method: "GET",
+    endpoint: "GET /agent/field/context",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFieldWorkCopilotEnvelope",
+  },
+  {
+    operation: "agent.field.draft_report",
+    method: "POST",
+    endpoint: "POST /agent/field/draft-report",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFieldWorkCopilotEnvelope",
+  },
+  {
+    operation: "agent.field.draft_act",
+    method: "POST",
+    endpoint: "POST /agent/field/draft-act",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFieldWorkCopilotEnvelope",
+  },
+  {
+    operation: "agent.field.action_plan",
+    method: "POST",
+    endpoint: "POST /agent/field/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentFieldWorkCopilotEnvelope",
   },
   {
     operation: "agent.tools.list",

@@ -416,6 +416,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic09FieldWorkCopilotFiles = [
+      path.join(SRC, "features", "ai", "field", "aiFieldWorkCopilotTypes.ts"),
+      path.join(SRC, "features", "ai", "field", "aiForemanReportDraftEngine.ts"),
+      path.join(SRC, "features", "ai", "field", "aiContractorActDraftEngine.ts"),
+      path.join(SRC, "features", "ai", "field", "aiFieldEvidencePolicy.ts"),
+      path.join(SRC, "features", "ai", "field", "aiFieldRoleScope.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1187,6 +1196,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1362,6 +1372,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sAiMagic07AccountantFinanceCopilotFiles -
         sAiMagic08WarehouseOperationsCopilotFiles -
+        sAiMagic09FieldWorkCopilotFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

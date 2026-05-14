@@ -222,6 +222,12 @@ const isApprovedAiDraftReportToolPatch = (file: string) =>
     "tests/ai/draftReportTool.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiFieldWorkCopilotPatch = (file: string) =>
+  [
+    "src/features/ai/field/aiForemanReportDraftEngine.ts",
+    "tests/ai/aiForemanReportDraftEngine.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -336,6 +342,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         !isApprovedAiDraftReportToolPatch(file) &&
+        !isApprovedAiFieldWorkCopilotPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
