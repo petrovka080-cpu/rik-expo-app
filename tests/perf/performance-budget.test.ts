@@ -425,6 +425,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic24AgentBffRuntimeMountFiles = [
+      path.join(SRC, "features", "ai", "agent", "agentRuntimeBudgetPolicy.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentRuntimeErrors.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentRuntimeGateway.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentRuntimeRedaction.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1197,6 +1203,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1373,6 +1380,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic07AccountantFinanceCopilotFiles -
         sAiMagic08WarehouseOperationsCopilotFiles -
         sAiMagic09FieldWorkCopilotFiles -
+        sAiMagic24AgentBffRuntimeMountFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });
