@@ -33,7 +33,7 @@ describe("agent BFF route shell no-mutation architecture", () => {
   it("keeps all route definitions auth-required and non-mutating", () => {
     expect(AGENT_BFF_ROUTE_SHELL_CONTRACT.mutationCount).toBe(0);
     expect(AGENT_BFF_ROUTE_SHELL_CONTRACT.executionEnabled).toBe(false);
-    expect(AGENT_BFF_ROUTE_DEFINITIONS).toHaveLength(51);
+    expect(AGENT_BFF_ROUTE_DEFINITIONS).toHaveLength(55);
     expect(AGENT_BFF_ROUTE_DEFINITIONS.every((route) => route.authRequired)).toBe(true);
     expect(AGENT_BFF_ROUTE_DEFINITIONS.every((route) => route.mutates === false)).toBe(true);
     expect(AGENT_BFF_ROUTE_DEFINITIONS.every((route) => route.executesTool === false)).toBe(true);

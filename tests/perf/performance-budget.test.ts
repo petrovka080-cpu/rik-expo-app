@@ -407,6 +407,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiMagic08WarehouseOperationsCopilotFiles = [
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseCopilotTypes.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseStatusEngine.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseRiskPolicy.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseDraftActions.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseEvidenceBuilder.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1177,6 +1186,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1351,6 +1361,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic17ExternalMarketIntelCanaryFiles -
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sAiMagic07AccountantFinanceCopilotFiles -
+        sAiMagic08WarehouseOperationsCopilotFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

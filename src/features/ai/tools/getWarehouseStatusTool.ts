@@ -1,8 +1,5 @@
 import type { AiUserRole } from "../policy/aiRolePolicy";
 import { planAiToolUse } from "./aiToolPlanPolicy";
-import {
-  readWarehouseStatusTransport,
-} from "./transport/warehouseStatus.transport";
 import type {
   AiWarehouseStatusTransportRow,
 } from "./transport/aiToolTransportTypes";
@@ -454,7 +451,9 @@ export async function runGetWarehouseStatusToolSafeRead(
 
   try {
     const offset = parseCursorOffset(input.value.cursor);
-    const readWarehouseStatus = request.readWarehouseStatus ?? readWarehouseStatusTransport;
+    const readWarehouseStatus =
+      request.readWarehouseStatus ??
+      (await import("./transport/warehouseStatus.transport")).readWarehouseStatusTransport;
     const readResult = await readWarehouseStatus({ offset, limit: input.value.limit });
     const filteredRows = readResult.rows.filter((row) => rowMatchesInput(row, input.value));
     const items = filteredRows.slice(0, input.value.limit).map(toWarehouseStatusItem);
