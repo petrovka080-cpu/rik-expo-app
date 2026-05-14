@@ -17,18 +17,10 @@ import { supportsAssistantActionMode, tryRunAssistantAction } from "./assistantA
 import { loadAssistantScopedFacts, type AssistantScopedFacts } from "./assistantScopeContext";
 import { isAssistantConfigured, sendAssistantMessage } from "./assistantClient";
 import {
-  getAssistantContextLabel,
-  getAssistantContextQuickPrompts,
-  getAssistantGreeting,
-  getAssistantQuickPrompts,
-  normalizeAssistantContext,
-  normalizeAssistantRole,
+  getAssistantContextLabel, getAssistantContextQuickPrompts, getAssistantGreeting,
+  getAssistantQuickPrompts, normalizeAssistantContext, normalizeAssistantRole,
 } from "./assistantPrompts";
-import {
-  clearAssistantMessages,
-  loadAssistantMessages,
-  saveAssistantMessages,
-} from "./assistantStorage";
+import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -325,11 +317,18 @@ export default function AIAssistantScreen() {
   }
 
   const hasAnyUserPrompt = messages.some((candidate) => candidate.role === "user");
+  const hasLatestAssistantReply =
+    hasAnyUserPrompt &&
+    messages.length > 0 &&
+    messages[messages.length - 1]?.role === "assistant";
   const knowledgePreview = scopedFacts?.knowledgePreview ?? null;
 
   return (
     <SafeAreaView testID="ai.assistant.screen" style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        {hasLatestAssistantReply ? (
+          <View testID="ai.assistant.response" style={styles.runtimeInlineMarker} />
+        ) : null}
         <View style={styles.header}>
           <Pressable style={styles.headerIconButton} onPress={() => safeBack(router, backFallbackRoute)}>
             <Ionicons name="arrow-back" size={20} color="#0F172A" />

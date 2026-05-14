@@ -205,6 +205,10 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "600",
   },
+  runtimeInlineMarker: {
+    width: 1,
+    height: 1,
+  },
   composer: {
     flexDirection: "row",
     alignItems: "flex-end",

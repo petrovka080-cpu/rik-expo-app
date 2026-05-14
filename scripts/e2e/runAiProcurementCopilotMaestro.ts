@@ -216,8 +216,7 @@ function runCommand(
 }
 
 function flowLines(): string[] {
-  const targetLink =
-    "rik://ai-procurement-copilot?procurementRequestId=${MAESTRO_E2E_PROCUREMENT_REQUEST_ID}";
+  const targetLink = "rik://ai-procurement-copilot";
   return [
     `appId: ${appId}`,
     "name: AI Procurement Copilot Runtime",
@@ -400,7 +399,6 @@ export async function runAiProcurementCopilotMaestro(): Promise<AiProcurementCop
       {
         MAESTRO_E2E_BUYER_EMAIL: roleAuth.env.E2E_BUYER_EMAIL,
         MAESTRO_E2E_BUYER_PASSWORD: roleAuth.env.E2E_BUYER_PASSWORD,
-        MAESTRO_E2E_PROCUREMENT_REQUEST_ID: requestResolution.requestId ?? "",
       },
       secrets,
     );

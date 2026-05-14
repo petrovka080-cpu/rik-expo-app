@@ -437,6 +437,19 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "mcp", "aiMcpSecurityPolicy.ts"),
       path.join(SRC, "features", "ai", "mcp", "aiMcpApprovalPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiPro02ConstructionKnowhowEngineFiles = [
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionKnowhowTypes.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionKnowhowRegistry.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionDomainPlaybooks.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionRoleAdvisor.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionDecisionCardEngine.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionEvidenceComposer.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionRiskClassifier.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionExternalIntelPolicy.ts"),
+      path.join(SRC, "features", "ai", "constructionKnowhow", "constructionProfessionalSafetyBoundary.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1042,6 +1055,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_PRODUCT_01 adds six permanent Daily Command Center product-layer modules.
     // S_AI_PRODUCT_02 adds four permanent Command Center task-stream runtime modules.
     // S_AI_MAGIC_13 adds three permanent workday live-evidence bridge modules.
+    // S_AI_PRO_02 adds 11 permanent construction know-how engine/BFF modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1211,6 +1225,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
+    expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1389,6 +1404,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic09FieldWorkCopilotFiles -
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -
+        sAiPro02ConstructionKnowhowEngineFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });

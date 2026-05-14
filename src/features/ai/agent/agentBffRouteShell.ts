@@ -119,6 +119,22 @@ import {
   type AgentDocumentSummaryPreviewRouteRequest,
 } from "./agentDocumentKnowledgeRoutes";
 import {
+  AGENT_CONSTRUCTION_KNOWHOW_BFF_CONTRACT,
+  analyzeAgentConstructionKnowhow,
+  createAgentConstructionDecisionCard,
+  getAgentConstructionKnowhowDomains,
+  getAgentConstructionKnowhowRoleProfile,
+  planAgentConstructionKnowhowAction,
+  previewAgentConstructionExternalIntel,
+  type AgentConstructionKnowhowActionPlanRequest as AgentConstructionKnowhowActionPlanRouteRequest,
+  type AgentConstructionKnowhowAnalyzeRequest as AgentConstructionKnowhowAnalyzeRouteRequest,
+  type AgentConstructionKnowhowDecisionCardRequest as AgentConstructionKnowhowDecisionCardRouteRequest,
+  type AgentConstructionKnowhowDomainsRequest as AgentConstructionKnowhowDomainsRouteRequest,
+  type AgentConstructionKnowhowEnvelope,
+  type AgentConstructionKnowhowExternalPreviewRequest as AgentConstructionKnowhowExternalPreviewRouteRequest,
+  type AgentConstructionKnowhowRoleProfileRequest as AgentConstructionKnowhowRoleProfileRouteRequest,
+} from "./agentConstructionKnowhowRoutes";
+import {
   AGENT_FINANCE_COPILOT_BFF_CONTRACT,
   draftAgentFinanceSummary,
   getAgentFinanceDebts,
@@ -193,6 +209,13 @@ export {
   getAgentDocumentKnowledge,
   previewAgentDocumentSummary,
   searchAgentDocuments,
+  AGENT_CONSTRUCTION_KNOWHOW_BFF_CONTRACT,
+  analyzeAgentConstructionKnowhow,
+  createAgentConstructionDecisionCard,
+  getAgentConstructionKnowhowDomains,
+  getAgentConstructionKnowhowRoleProfile,
+  planAgentConstructionKnowhowAction,
+  previewAgentConstructionExternalIntel,
   AGENT_FINANCE_COPILOT_BFF_CONTRACT,
   draftAgentFinanceSummary,
   getAgentFinanceDebts,
@@ -225,6 +248,7 @@ export {
 };
 
 export type { AgentDocumentKnowledgeEnvelope };
+export type { AgentConstructionKnowhowEnvelope };
 export type { AgentFinanceCopilotEnvelope };
 export type { AgentWarehouseCopilotEnvelope };
 export type { AgentFieldWorkCopilotEnvelope };
@@ -256,6 +280,12 @@ export type AgentBffRouteOperation =
   | "agent.documents.knowledge.read"
   | "agent.documents.search.preview"
   | "agent.documents.summarize.preview"
+  | "agent.construction_knowhow.domains.read"
+  | "agent.construction_knowhow.role_profile.read"
+  | "agent.construction_knowhow.analyze.preview"
+  | "agent.construction_knowhow.decision_card.preview"
+  | "agent.construction_knowhow.action_plan.preview"
+  | "agent.construction_knowhow.external_preview"
   | "agent.finance.summary.read"
   | "agent.finance.debts.read"
   | "agent.finance.risk_preview"
@@ -318,6 +348,7 @@ export type AgentBffRouteDefinition = {
     | "AgentWorkdayTaskEnvelope"
     | "AgentWorkdayLiveEvidenceEnvelope"
     | "AgentDocumentKnowledgeEnvelope"
+    | "AgentConstructionKnowhowEnvelope"
     | "AgentFinanceCopilotEnvelope"
     | "AgentWarehouseCopilotEnvelope"
     | "AgentFieldWorkCopilotEnvelope"
@@ -359,6 +390,12 @@ export type AgentWorkdayLiveEvidenceRequest = AgentWorkdayLiveEvidenceRouteReque
 export type AgentDocumentKnowledgeRequest = AgentDocumentKnowledgeReadRouteRequest;
 export type AgentDocumentSearchRequest = AgentDocumentSearchRouteRequest;
 export type AgentDocumentSummaryPreviewRequest = AgentDocumentSummaryPreviewRouteRequest;
+export type AgentConstructionKnowhowDomainsRequest = AgentConstructionKnowhowDomainsRouteRequest;
+export type AgentConstructionKnowhowRoleProfileRequest = AgentConstructionKnowhowRoleProfileRouteRequest;
+export type AgentConstructionKnowhowAnalyzeRequest = AgentConstructionKnowhowAnalyzeRouteRequest;
+export type AgentConstructionKnowhowDecisionCardRequest = AgentConstructionKnowhowDecisionCardRouteRequest;
+export type AgentConstructionKnowhowActionPlanRequest = AgentConstructionKnowhowActionPlanRouteRequest;
+export type AgentConstructionKnowhowExternalPreviewRequest = AgentConstructionKnowhowExternalPreviewRouteRequest;
 export type AgentFinanceCopilotRequest = AgentFinanceCopilotRouteRequest;
 export type AgentWarehouseCopilotRequest = AgentWarehouseCopilotRouteRequest;
 export type AgentFieldWorkCopilotRequest = AgentFieldWorkCopilotRouteRequest;
@@ -1644,6 +1681,84 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     callsDatabaseDirectly: false,
     exposesForbiddenTools: false,
     responseEnvelope: "AgentDocumentKnowledgeEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.domains.read",
+    method: "GET",
+    endpoint: "GET /agent/construction-knowhow/domains",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.role_profile.read",
+    method: "GET",
+    endpoint: "GET /agent/construction-knowhow/role-profile/:roleId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.analyze.preview",
+    method: "POST",
+    endpoint: "POST /agent/construction-knowhow/analyze",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.decision_card.preview",
+    method: "POST",
+    endpoint: "POST /agent/construction-knowhow/decision-card",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.action_plan.preview",
+    method: "POST",
+    endpoint: "POST /agent/construction-knowhow/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
+  },
+  {
+    operation: "agent.construction_knowhow.external_preview",
+    method: "POST",
+    endpoint: "POST /agent/construction-knowhow/external-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentConstructionKnowhowEnvelope",
   },
   {
     operation: "agent.finance.summary.read",

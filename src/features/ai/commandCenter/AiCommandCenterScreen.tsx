@@ -20,6 +20,8 @@ import type {
   AiCommandCenterCardView,
 } from "./AiCommandCenterTypes";
 import { buildAiScreenActionPreviewSummary } from "../screenActions/aiScreenActionResolver";
+import { buildConstructionKnowhowPreviewCard } from "../constructionKnowhow/constructionDecisionCardEngine";
+import { toConstructionKnowhowRoleId } from "../constructionKnowhow/constructionRoleAdvisor";
 
 type ActionPanel = {
   title: string;
@@ -102,6 +104,10 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
     auth: state.auth,
     screenId: "ai.command_center",
   });
+  const constructionKnowhowCard = useMemo(
+    () => buildConstructionKnowhowPreviewCard(toConstructionKnowhowRoleId(state.auth?.role ?? "unknown")),
+    [state.auth?.role],
+  );
 
   const handleAction = useCallback(
     (card: AiCommandCenterCardView, action: AiCommandCenterActionView) => {
@@ -158,6 +164,34 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
           </Text>
           <Text testID="ai.screen.actions.approval_required" style={styles.screenActionText}>
             approval_required={screenActionSummary.approvalRequiredCount}
+          </Text>
+        </View>
+
+        <View testID="ai.construction.knowhow.preview" style={styles.constructionSurface}>
+          <Text testID="ai.construction.knowhow.role" style={styles.constructionMeta}>
+            role={constructionKnowhowCard.rolePerspective}; mutation_count=
+            {constructionKnowhowCard.mutationCount}
+          </Text>
+          <Text testID="ai.construction.knowhow.domain" style={styles.constructionTitle}>
+            domain={constructionKnowhowCard.domain}
+          </Text>
+          <Text testID="ai.construction.knowhow.evidence" style={styles.constructionMeta}>
+            evidence_refs={constructionKnowhowCard.evidenceRefs.length}; raw_rows=false
+          </Text>
+          <Text testID="ai.construction.knowhow.risk" style={styles.constructionMeta}>
+            risk={constructionKnowhowCard.riskLevel}; urgency={constructionKnowhowCard.urgency}
+          </Text>
+          <Text testID="ai.construction.knowhow.safe_actions" style={styles.constructionMeta}>
+            safe_actions={constructionKnowhowCard.recommendedActions.safeRead.length}
+          </Text>
+          <Text testID="ai.construction.knowhow.draft_actions" style={styles.constructionMeta}>
+            draft_actions={constructionKnowhowCard.recommendedActions.draftOnly.length}
+          </Text>
+          <Text testID="ai.construction.knowhow.approval_required" style={styles.constructionMeta}>
+            approval_required={constructionKnowhowCard.recommendedActions.approvalRequired.length}
+          </Text>
+          <Text testID="ai.construction.knowhow.external_status" style={styles.constructionMeta}>
+            external_status={constructionKnowhowCard.externalIntelStatus}; mobile_fetch=false
           </Text>
         </View>
 
@@ -382,6 +416,26 @@ const styles = StyleSheet.create({
   screenActionText: {
     color: "#365314",
     fontSize: 12,
+    fontWeight: "800",
+  },
+  constructionSurface: {
+    marginTop: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 9,
+    gap: 4,
+  },
+  constructionTitle: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
+  constructionMeta: {
+    color: "#334155",
+    fontSize: 11,
     fontWeight: "800",
   },
   workdaySurface: {

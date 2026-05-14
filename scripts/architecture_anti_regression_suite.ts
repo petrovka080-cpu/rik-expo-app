@@ -841,6 +841,32 @@ export type AiMandatoryEmulatorRuntimeGateSummary = {
   findings: readonly string[];
 };
 
+export type AiConstructionKnowhowArchitectureSummary = {
+  coreFilesPresent: boolean;
+  domainPlaybooksRegistered: boolean;
+  rolesRegistered: boolean;
+  professionalDecisionCardContract: boolean;
+  allDomainsHaveEvidencePolicy: boolean;
+  allRolesHaveBoundaries: boolean;
+  internalFirstExternalSecond: boolean;
+  externalPreviewOnly: boolean;
+  highRiskRequiresApproval: boolean;
+  bffContractsPresent: boolean;
+  deterministicUiTestIdsMounted: boolean;
+  emulatorRunnerPresent: boolean;
+  artifactsPresent: boolean;
+  artifactJsonValid: boolean;
+  artifactStatusAccepted: boolean;
+  noDirectExecution: boolean;
+  noDomainMutation: boolean;
+  noMobileExternalFetch: boolean;
+  noDirectSupabaseFromUi: boolean;
+  noRawPromptProviderRows: boolean;
+  noProviderChange: boolean;
+  noFakeProfessionalData: boolean;
+  findings: readonly string[];
+};
+
 export type ArchitectureGuardrailCheck = {
   name: string;
   status: GuardrailStatus;
@@ -972,6 +998,7 @@ export type ArchitectureAntiRegressionReport = {
   androidEmulatorIosBuildSubmitGate: AndroidEmulatorIosBuildSubmitGateSummary;
   postInstallReleaseSignoffGate: PostInstallReleaseSignoffGateSummary;
   aiMandatoryEmulatorRuntimeGate: AiMandatoryEmulatorRuntimeGateSummary;
+  aiConstructionKnowhowArchitecture: AiConstructionKnowhowArchitectureSummary;
   componentDebt: {
     reportOnly: true;
     godComponentLineThreshold: number;
@@ -1460,6 +1487,65 @@ const AI_MANDATORY_EMULATOR_EMULATOR_ARTIFACT_PATH =
   "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json";
 const AI_MANDATORY_EMULATOR_PROOF_ARTIFACT_PATH =
   "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md";
+const AI_CONSTRUCTION_KNOWHOW_CORE_FILES = [
+  "src/features/ai/constructionKnowhow/constructionKnowhowTypes.ts",
+  "src/features/ai/constructionKnowhow/constructionKnowhowRegistry.ts",
+  "src/features/ai/constructionKnowhow/constructionDomainPlaybooks.ts",
+  "src/features/ai/constructionKnowhow/constructionRoleAdvisor.ts",
+  "src/features/ai/constructionKnowhow/constructionDecisionCardEngine.ts",
+  "src/features/ai/constructionKnowhow/constructionEvidenceComposer.ts",
+  "src/features/ai/constructionKnowhow/constructionRiskClassifier.ts",
+  "src/features/ai/constructionKnowhow/constructionExternalIntelPolicy.ts",
+  "src/features/ai/constructionKnowhow/constructionProfessionalSafetyBoundary.ts",
+] as const;
+const AI_CONSTRUCTION_KNOWHOW_BFF_FILES = [
+  "src/features/ai/agent/agentConstructionKnowhowRoutes.ts",
+  "src/features/ai/agent/agentConstructionKnowhowContracts.ts",
+] as const;
+const AI_CONSTRUCTION_KNOWHOW_EMULATOR_RUNNER_PATH =
+  "scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts";
+const AI_CONSTRUCTION_KNOWHOW_MATRIX_ARTIFACT_PATH =
+  "artifacts/S_AI_PRO_02_CONSTRUCTION_KNOWHOW_ENGINE_matrix.json";
+const AI_CONSTRUCTION_KNOWHOW_INVENTORY_ARTIFACT_PATH =
+  "artifacts/S_AI_PRO_02_CONSTRUCTION_KNOWHOW_ENGINE_inventory.json";
+const AI_CONSTRUCTION_KNOWHOW_EMULATOR_ARTIFACT_PATH =
+  "artifacts/S_AI_PRO_02_CONSTRUCTION_KNOWHOW_ENGINE_emulator.json";
+const AI_CONSTRUCTION_KNOWHOW_PROOF_ARTIFACT_PATH =
+  "artifacts/S_AI_PRO_02_CONSTRUCTION_KNOWHOW_ENGINE_proof.md";
+const REQUIRED_AI_CONSTRUCTION_KNOWHOW_DOMAINS = [
+  "project_planning",
+  "bim_information_management",
+  "procurement",
+  "supplier_selection",
+  "warehouse_material_flow",
+  "field_execution",
+  "quality_control",
+  "document_control",
+  "finance_cost_control",
+  "accounting",
+  "contractor_management",
+  "real_estate_due_diligence",
+  "approval_workflow",
+] as const;
+const REQUIRED_AI_CONSTRUCTION_KNOWHOW_ROLES = [
+  "director_control",
+  "buyer",
+  "warehouse",
+  "accountant",
+  "foreman",
+  "contractor",
+] as const;
+const REQUIRED_AI_CONSTRUCTION_KNOWHOW_TEST_IDS = [
+  "ai.construction.knowhow.preview",
+  "ai.construction.knowhow.role",
+  "ai.construction.knowhow.domain",
+  "ai.construction.knowhow.evidence",
+  "ai.construction.knowhow.risk",
+  "ai.construction.knowhow.safe_actions",
+  "ai.construction.knowhow.draft_actions",
+  "ai.construction.knowhow.approval_required",
+  "ai.construction.knowhow.external_status",
+] as const;
 const AI_EXPLICIT_ROLE_AUTH_RESOLVER_PATH = "scripts/e2e/resolveExplicitAiRoleAuthEnv.ts";
 const AI_E2E_SECRET_REDACTOR_PATH = "scripts/e2e/redactE2eSecrets.ts";
 const AI_ROLE_SCREEN_EMULATOR_ARTIFACT_PATH =
@@ -3723,6 +3809,12 @@ export function evaluateAgentBffRouteShellArchitectureGuardrail(params: {
     Boolean(shellSource?.includes("POST /agent/field/draft-report")) &&
     Boolean(shellSource?.includes("POST /agent/field/draft-act")) &&
     Boolean(shellSource?.includes("POST /agent/field/action-plan")) &&
+    Boolean(shellSource?.includes("GET /agent/construction-knowhow/domains")) &&
+    Boolean(shellSource?.includes("GET /agent/construction-knowhow/role-profile/:roleId")) &&
+    Boolean(shellSource?.includes("POST /agent/construction-knowhow/analyze")) &&
+    Boolean(shellSource?.includes("POST /agent/construction-knowhow/decision-card")) &&
+    Boolean(shellSource?.includes("POST /agent/construction-knowhow/action-plan")) &&
+    Boolean(shellSource?.includes("POST /agent/construction-knowhow/external-preview")) &&
     Boolean(shellSource?.includes("POST /agent/action/submit-for-approval")) &&
     Boolean(shellSource?.includes("GET /agent/action/:actionId/status")) &&
     Boolean(shellSource?.includes("POST /agent/action/:actionId/approve")) &&
@@ -6389,6 +6481,196 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
   };
 }
 
+export function evaluateAiConstructionKnowhowArchitectureGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiConstructionKnowhowArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const coreSources = AI_CONSTRUCTION_KNOWHOW_CORE_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }),
+  );
+  const bffSources = AI_CONSTRUCTION_KNOWHOW_BFF_FILES.map((relativePath) =>
+    safeReadProjectFile({ readFile, relativePath }),
+  );
+  const commandCenterSource = safeReadProjectFile({
+    readFile,
+    relativePath: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+  });
+  const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH });
+  const runnerSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_CONSTRUCTION_KNOWHOW_EMULATOR_RUNNER_PATH,
+  });
+  const matrixSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_CONSTRUCTION_KNOWHOW_MATRIX_ARTIFACT_PATH,
+  });
+  const inventorySource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_CONSTRUCTION_KNOWHOW_INVENTORY_ARTIFACT_PATH,
+  });
+  const emulatorSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_CONSTRUCTION_KNOWHOW_EMULATOR_ARTIFACT_PATH,
+  });
+  const proofSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_CONSTRUCTION_KNOWHOW_PROOF_ARTIFACT_PATH,
+  });
+  const constructionSource = [...coreSources, ...bffSources, commandCenterSource, runnerSource]
+    .filter(Boolean)
+    .join("\n");
+  const source = [constructionSource, shellSource].filter(Boolean).join("\n");
+  const matrix = parseJsonRecord(matrixSource);
+  const inventory = parseJsonRecord(inventorySource);
+  const emulator = parseJsonRecord(emulatorSource);
+  const finalStatus = recordString(matrix, "final_status");
+  const exactReason = recordString(matrix, "exact_reason");
+  const coreFilesPresent = coreSources.every(Boolean);
+  const domainPlaybooksRegistered = REQUIRED_AI_CONSTRUCTION_KNOWHOW_DOMAINS.every((domain) =>
+    source.includes(domain),
+  );
+  const rolesRegistered = REQUIRED_AI_CONSTRUCTION_KNOWHOW_ROLES.every((role) =>
+    source.includes(role),
+  );
+  const professionalDecisionCardContract =
+    source.includes("ConstructionDecisionCard") &&
+    source.includes("professionalAssessment") &&
+    source.includes("recommendedActions") &&
+    source.includes("mutationCount: 0") &&
+    source.includes("dbWrites: 0");
+  const allDomainsHaveEvidencePolicy =
+    source.includes("evidenceRequired: true") &&
+    source.includes("internalDataSources") &&
+    source.includes("riskRules");
+  const allRolesHaveBoundaries =
+    source.includes("directExecutionWithoutApproval: false") &&
+    source.includes("domainMutationAllowed: false") &&
+    source.includes("roleIsolationClaimed: false");
+  const internalFirstExternalSecond =
+    source.includes("internalFirst") &&
+    source.includes("resolveConstructionExternalIntelPolicy");
+  const externalPreviewOnly =
+    source.includes("citations_required_preview_only") &&
+    source.includes("previewOnly: true") &&
+    source.includes("externalLiveFetch: false");
+  const highRiskRequiresApproval =
+    source.includes("highRiskRequiresApproval: true") &&
+    source.includes("approvalRequired");
+  const bffContractsPresent =
+    bffSources.every(Boolean) &&
+    source.includes("GET /agent/construction-knowhow/domains") &&
+    source.includes("GET /agent/construction-knowhow/role-profile/:roleId") &&
+    source.includes("POST /agent/construction-knowhow/analyze") &&
+    source.includes("POST /agent/construction-knowhow/decision-card") &&
+    source.includes("POST /agent/construction-knowhow/action-plan") &&
+    source.includes("POST /agent/construction-knowhow/external-preview") &&
+    Boolean(shellSource?.includes("AgentConstructionKnowhowEnvelope"));
+  const deterministicUiTestIdsMounted = REQUIRED_AI_CONSTRUCTION_KNOWHOW_TEST_IDS.every((testId) =>
+    Boolean(commandCenterSource?.includes(testId)) || Boolean(runnerSource?.includes(testId)),
+  );
+  const emulatorRunnerPresent =
+    Boolean(runnerSource?.includes("runAiConstructionKnowhowEngineMaestro")) &&
+    Boolean(runnerSource?.includes("ensureAndroidEmulatorReady")) &&
+    Boolean(runnerSource?.includes("verifyAndroidInstalledBuildRuntime")) &&
+    REQUIRED_AI_CONSTRUCTION_KNOWHOW_TEST_IDS.every((testId) => Boolean(runnerSource?.includes(testId)));
+  const artifactsPresent = Boolean(matrixSource && inventorySource && emulatorSource && proofSource);
+  const artifactJsonValid = Boolean(matrix && inventory && emulator);
+  const artifactStatusAccepted =
+    finalStatus === "GREEN_AI_CONSTRUCTION_KNOWHOW_ENGINE_READY" ||
+    (finalStatus === "BLOCKED_CONSTRUCTION_KNOWHOW_RUNTIME_TARGETABILITY" && exactReason.length > 0);
+  const noDirectExecution =
+    recordValue(matrix, "direct_execution") !== true &&
+    !/\bexecuteTool\b|\brunTool\b|\binvokeTool\b/i.test(constructionSource);
+  const noDomainMutation =
+    recordValue(matrix, "domain_mutation") !== true &&
+    !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(/.test(constructionSource);
+  const noMobileExternalFetch =
+    recordValue(matrix, "mobile_external_fetch") !== true &&
+    !/\bfetch\s*\(|\bXMLHttpRequest\b/i.test(commandCenterSource ?? "");
+  const noDirectSupabaseFromUi =
+    recordValue(matrix, "direct_supabase_from_ui") !== true &&
+    !/@supabase\/supabase-js|\bsupabase\b/i.test(commandCenterSource ?? "");
+  const noRawPromptProviderRows =
+    recordValue(matrix, "raw_rows_returned") !== true &&
+    recordValue(matrix, "raw_prompt_returned") !== true &&
+    !/\brawPrompt\b|\bproviderPayload\b|\brawDbRows\b/i.test(constructionSource);
+  const noProviderChange =
+    recordValue(matrix, "model_provider_changed") !== true &&
+    recordValue(matrix, "gpt_enabled") !== true &&
+    recordValue(matrix, "gemini_removed") !== true &&
+    !/\bopenai\b|\bgpt-|LegacyGeminiModelProvider|AiModelGateway/i.test(constructionSource);
+  const noFakeProfessionalData =
+    recordValue(matrix, "fake_ai_answer") !== true &&
+    recordValue(matrix, "fake_professional_advice") !== true &&
+    recordValue(matrix, "fake_suppliers") !== true &&
+    recordValue(matrix, "fake_documents") !== true &&
+    !/fake professional advice|fake supplier|fake document|hardcoded ai response/i.test(constructionSource);
+  const findings = [
+    ...(noDirectExecution ? [] : ["construction_knowhow_direct_execution_detected"]),
+    ...(noDomainMutation ? [] : ["construction_knowhow_domain_mutation_detected"]),
+    ...(noMobileExternalFetch ? [] : ["construction_knowhow_mobile_external_fetch_detected"]),
+    ...(noDirectSupabaseFromUi ? [] : ["construction_knowhow_direct_supabase_ui_detected"]),
+    ...(noRawPromptProviderRows ? [] : ["construction_knowhow_raw_prompt_provider_or_rows_detected"]),
+    ...(noProviderChange ? [] : ["construction_knowhow_provider_change_detected"]),
+    ...(noFakeProfessionalData ? [] : ["construction_knowhow_fake_professional_data_detected"]),
+  ];
+  const errors = [
+    ...(coreFilesPresent ? [] : ["construction_knowhow_core_files_missing"]),
+    ...(domainPlaybooksRegistered ? [] : ["construction_knowhow_domain_playbooks_missing"]),
+    ...(rolesRegistered ? [] : ["construction_knowhow_roles_missing"]),
+    ...(professionalDecisionCardContract ? [] : ["construction_knowhow_decision_card_contract_missing"]),
+    ...(allDomainsHaveEvidencePolicy ? [] : ["construction_knowhow_evidence_policy_missing"]),
+    ...(allRolesHaveBoundaries ? [] : ["construction_knowhow_role_boundaries_missing"]),
+    ...(internalFirstExternalSecond ? [] : ["construction_knowhow_internal_first_policy_missing"]),
+    ...(externalPreviewOnly ? [] : ["construction_knowhow_external_preview_policy_missing"]),
+    ...(highRiskRequiresApproval ? [] : ["construction_knowhow_high_risk_approval_missing"]),
+    ...(bffContractsPresent ? [] : ["construction_knowhow_bff_contracts_missing"]),
+    ...(deterministicUiTestIdsMounted ? [] : ["construction_knowhow_deterministic_testids_missing"]),
+    ...(emulatorRunnerPresent ? [] : ["construction_knowhow_emulator_runner_missing"]),
+    ...(artifactsPresent ? [] : ["construction_knowhow_artifacts_missing"]),
+    ...(artifactJsonValid ? [] : ["construction_knowhow_artifact_json_invalid"]),
+    ...(artifactStatusAccepted ? [] : ["construction_knowhow_artifact_status_not_accepted"]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_construction_knowhow_architecture",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      coreFilesPresent,
+      domainPlaybooksRegistered,
+      rolesRegistered,
+      professionalDecisionCardContract,
+      allDomainsHaveEvidencePolicy,
+      allRolesHaveBoundaries,
+      internalFirstExternalSecond,
+      externalPreviewOnly,
+      highRiskRequiresApproval,
+      bffContractsPresent,
+      deterministicUiTestIdsMounted,
+      emulatorRunnerPresent,
+      artifactsPresent,
+      artifactJsonValid,
+      artifactStatusAccepted,
+      noDirectExecution,
+      noDomainMutation,
+      noMobileExternalFetch,
+      noDirectSupabaseFromUi,
+      noRawPromptProviderRows,
+      noProviderChange,
+      noFakeProfessionalData,
+      findings,
+    },
+  };
+}
+
 export function evaluateAiExplicitRoleSecretsE2eGateGuardrail(params: {
   projectRoot: string;
   readFile?: ReadFile;
@@ -8119,6 +8401,7 @@ export function runArchitectureAntiRegressionSuite(
   const androidEmulatorIosBuildSubmitGate = evaluateAndroidEmulatorIosBuildSubmitGateGuardrail({ projectRoot });
   const postInstallReleaseSignoffGate = evaluatePostInstallReleaseSignoffGateGuardrail({ projectRoot });
   const aiMandatoryEmulatorRuntimeGate = evaluateAiMandatoryEmulatorRuntimeGateGuardrail({ projectRoot });
+  const aiConstructionKnowhowArchitecture = evaluateAiConstructionKnowhowArchitectureGuardrail({ projectRoot });
   const componentDebt = scanComponentDebt(projectRoot);
   const componentDebtCheck: ArchitectureGuardrailCheck = {
     name: "component_debt_report",
@@ -8170,6 +8453,7 @@ export function runArchitectureAntiRegressionSuite(
     androidEmulatorIosBuildSubmitGate.check,
     postInstallReleaseSignoffGate.check,
     aiMandatoryEmulatorRuntimeGate.check,
+    aiConstructionKnowhowArchitecture.check,
     componentDebtCheck,
   ] as const;
   const failed = checks.some((check) => check.status === "fail");
@@ -8222,6 +8506,7 @@ export function runArchitectureAntiRegressionSuite(
     androidEmulatorIosBuildSubmitGate: androidEmulatorIosBuildSubmitGate.summary,
     postInstallReleaseSignoffGate: postInstallReleaseSignoffGate.summary,
     aiMandatoryEmulatorRuntimeGate: aiMandatoryEmulatorRuntimeGate.summary,
+    aiConstructionKnowhowArchitecture: aiConstructionKnowhowArchitecture.summary,
     componentDebt,
     checks,
     safety: {
@@ -8325,6 +8610,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`post_install_release_signoff_gate_ios: ${report.postInstallReleaseSignoffGate.iosSubmitStatusProven}`);
   console.info(`ai_mandatory_emulator_runtime_gate: ${report.aiMandatoryEmulatorRuntimeGate.artifactStatusAccepted}`);
   console.info(`ai_mandatory_emulator_runtime_gate_fake_pass: ${report.aiMandatoryEmulatorRuntimeGate.fakeEmulatorPassFalse}`);
+  console.info(`ai_construction_knowhow_architecture: ${report.aiConstructionKnowhowArchitecture.artifactStatusAccepted}`);
+  console.info(`ai_construction_knowhow_testids: ${report.aiConstructionKnowhowArchitecture.deterministicUiTestIdsMounted}`);
   console.info(`component_god_count_report_only: ${report.componentDebt.godComponentCount}`);
 }
 
