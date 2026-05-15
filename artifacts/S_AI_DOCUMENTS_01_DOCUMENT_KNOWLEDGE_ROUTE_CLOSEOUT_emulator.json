@@ -1,0 +1,7 @@
+{
+  "wave": "S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT",
+  "android_runtime_smoke": "PASS",
+  "document_knowledge_route_closeout_runtime_proof": "PASS",
+  "fake_green_claimed": false,
+  "secrets_printed": false
+}

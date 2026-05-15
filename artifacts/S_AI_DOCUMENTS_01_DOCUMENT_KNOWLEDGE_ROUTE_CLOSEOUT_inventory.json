@@ -1,0 +1,22 @@
+{
+  "wave": "S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT",
+  "artifacts": [
+    "artifacts/S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT_inventory.json",
+    "artifacts/S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT_matrix.json",
+    "artifacts/S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT_emulator.json",
+    "artifacts/S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT_proof.md"
+  ],
+  "route_registry": "src/features/ai/documents/aiDocumentRouteRegistry.ts",
+  "evidence_resolver": "src/features/ai/documents/aiDocumentEvidenceResolver.ts",
+  "knowledge_policy": "src/features/ai/documents/aiDocumentKnowledgePolicy.ts",
+  "forbidden_action_policy": "src/features/ai/documents/aiDocumentForbiddenActionPolicy.ts",
+  "runner": "scripts/e2e/runAiDocumentKnowledgeRouteCloseoutMaestro.ts",
+  "documents_main_ui_route_registered": false,
+  "canonical_alias": "agent.documents.knowledge",
+  "no_ui_rewrite": true,
+  "no_signing": true,
+  "no_final_submit": true,
+  "no_document_deletion": true,
+  "no_fake_docs": true,
+  "secrets_printed": false
+}

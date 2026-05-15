@@ -490,6 +490,11 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "director", "aiDirectorRiskPriorityScoring.ts"),
       path.join(SRC, "features", "ai", "director", "aiDirectorApprovalCandidate.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiDocuments01DocumentKnowledgeRouteCloseoutFiles = [
+      path.join(SRC, "features", "ai", "documents", "aiDocumentRouteRegistry.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentKnowledgePolicy.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentForbiddenActionPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic24AgentBffRuntimeMountFiles = [
       path.join(SRC, "features", "ai", "agent", "agentRuntimeBudgetPolicy.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeErrors.ts"),
@@ -1325,6 +1330,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiForeman01FieldCloseoutFiles).toBeLessThanOrEqual(4);
     expect(sAiDirector01ExecutiveControlCenterFiles).toBeLessThanOrEqual(4);
+    expect(sAiDocuments01DocumentKnowledgeRouteCloseoutFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
@@ -1518,6 +1524,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic09FieldWorkCopilotFiles -
         sAiForeman01FieldCloseoutFiles -
         sAiDirector01ExecutiveControlCenterFiles -
+        sAiDocuments01DocumentKnowledgeRouteCloseoutFiles -
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -
         sAiPro02ConstructionKnowhowEngineFiles -

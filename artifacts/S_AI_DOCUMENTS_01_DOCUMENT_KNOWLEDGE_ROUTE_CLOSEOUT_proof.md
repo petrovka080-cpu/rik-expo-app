@@ -1,0 +1,21 @@
+# S_AI_DOCUMENTS_01_DOCUMENT_KNOWLEDGE_ROUTE_CLOSEOUT
+
+final_status: GREEN_AI_DOCUMENT_KNOWLEDGE_ROUTE_READY
+documents_main_ui_route_registered: false
+documents_main_closed_by_canonical_alias: true
+route_registry_ready: true
+document_knowledge_bff_ready: true
+document_search_bff_ready: true
+document_summary_preview_bff_ready: true
+approval_bff_ready: true
+evidence_resolver_ready: true
+knowledge_policy_ready: true
+forbidden_policy_ready: true
+document_sources_returned: 3
+evidence_refs_returned: 6
+no_signing: true
+no_final_submit: true
+no_document_deletion: true
+mutation_count: 0
+android_runtime_smoke: PASS
+exact_reason: none
