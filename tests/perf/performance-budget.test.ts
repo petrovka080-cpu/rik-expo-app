@@ -479,6 +479,14 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiAudit02AllScreenButtonRoleActionMapFiles = [
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenButtonRoleActionTypes.ts"),
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenButtonRoleActionRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenButtonOpportunityClassifier.ts"),
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenForbiddenActionPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenBffCoverageClassifier.ts"),
+      path.join(SRC, "features", "ai", "screenAudit", "aiScreenAuditSummary.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1260,6 +1268,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
+    expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1443,6 +1452,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -
         sAiPro02ConstructionKnowhowEngineFiles -
+        sAiAudit02AllScreenButtonRoleActionMapFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });
