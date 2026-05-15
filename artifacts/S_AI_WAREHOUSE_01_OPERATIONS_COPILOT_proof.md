@@ -1,0 +1,19 @@
+# S_AI_WAREHOUSE_01_OPERATIONS_COPILOT
+
+final_status: GREEN_AI_WAREHOUSE_OPERATIONS_COPILOT_READY
+live_warehouse_safe_read_available: true
+status_loaded: true
+risk_cards_created: 1
+risk_signals_created: 3
+evidence_resolver_ready: true
+risk_classifier_ready: true
+draft_action_planner_ready: true
+approval_candidate_ready: true
+movement_summary_ready: true
+draft_action_ready: true
+mutation_count: 0
+stock_mutated: false
+reservation_created: false
+movement_created: false
+android_runtime_smoke: PASS
+exact_reason: none

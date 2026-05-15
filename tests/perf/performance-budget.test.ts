@@ -457,6 +457,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentWarehouseCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiWarehouse01OperationsCopilotFiles = [
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseEvidenceResolver.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseRiskClassifier.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseDraftActionPlanner.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseApprovalCandidate.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic09FieldWorkCopilotFiles = [
       path.join(SRC, "features", "ai", "field", "aiFieldWorkCopilotTypes.ts"),
       path.join(SRC, "features", "ai", "field", "aiForemanReportDraftEngine.ts"),
@@ -1296,6 +1302,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiWarehouse01OperationsCopilotFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
@@ -1485,6 +1492,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sAiMagic07AccountantFinanceCopilotFiles -
         sAiMagic08WarehouseOperationsCopilotFiles -
+        sAiWarehouse01OperationsCopilotFiles -
         sAiMagic09FieldWorkCopilotFiles -
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -

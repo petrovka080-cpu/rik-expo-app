@@ -9,6 +9,13 @@ import {
   getAgentWarehouseStatus,
   previewAgentWarehouseRisk,
 } from "../../src/features/ai/agent/agentWarehouseCopilotRoutes";
+import { buildAiWarehouseApprovalCandidate } from "../../src/features/ai/warehouse/aiWarehouseApprovalCandidate";
+import { planAiWarehouseDraftActions } from "../../src/features/ai/warehouse/aiWarehouseDraftActionPlanner";
+import {
+  resolveAiWarehouseEvidence,
+  type AiWarehouseOperationsScreenId,
+} from "../../src/features/ai/warehouse/aiWarehouseEvidenceResolver";
+import { classifyAiWarehouseStockMovementRisk } from "../../src/features/ai/warehouse/aiWarehouseRiskClassifier";
 import type {
   WarehouseStatusReader,
   WarehouseStatusSourceRow,
@@ -26,11 +33,9 @@ import { verifyAndroidInstalledBuildRuntime } from "../release/verifyAndroidInst
 
 type AiWarehouseOperationsCopilotStatus =
   | "GREEN_AI_WAREHOUSE_OPERATIONS_COPILOT_READY"
-  | "GREEN_AI_WAREHOUSE_OPERATIONS_EMPTY_STATE_READY"
-  | "BLOCKED_AI_WAREHOUSE_OPERATIONS_APPROVAL_MISSING"
-  | "BLOCKED_AI_WAREHOUSE_OPERATIONS_AUTH_MISSING"
-  | "BLOCKED_REAL_WAREHOUSE_STATUS_NOT_AVAILABLE"
-  | "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE";
+  | "BLOCKED_AI_WAREHOUSE_EVIDENCE_ROUTE_MISSING"
+  | "BLOCKED_AI_WAREHOUSE_APPROVAL_ROUTE_MISSING"
+  | "BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY";
 
 type AiWarehouseOperationsCopilotMatrix = {
   final_status: AiWarehouseOperationsCopilotStatus;
@@ -39,12 +44,20 @@ type AiWarehouseOperationsCopilotMatrix = {
   developer_control_full_access: true;
   role_isolation_e2e_claimed: false;
   warehouse_bff_routes_ready: boolean;
+  warehouse_main_covered: boolean;
+  warehouse_incoming_covered: boolean;
+  warehouse_issue_covered: boolean;
   live_warehouse_safe_read_attempted: boolean;
   live_warehouse_safe_read_available: boolean;
   status_loaded: boolean;
   movement_summary_ready: boolean;
   risk_cards_created: number;
-  honest_empty_state: boolean;
+  risk_signals_created: number;
+  evidence_resolver_ready: boolean;
+  risk_classifier_ready: boolean;
+  draft_action_planner_ready: boolean;
+  approval_candidate_ready: boolean;
+  approval_route_action_ids: readonly string[];
   risk_preview_ready: boolean;
   draft_action_ready: boolean;
   evidence_required: true;
@@ -61,6 +74,9 @@ type AiWarehouseOperationsCopilotMatrix = {
   stock_mutated: false;
   reservation_created: false;
   movement_created: false;
+  final_issue_allowed: false;
+  final_receive_allowed: false;
+  direct_stock_mutation_allowed: false;
   raw_rows_returned: false;
   raw_prompt_returned: false;
   raw_provider_payload_returned: false;
@@ -94,23 +110,17 @@ type SupabaseAuthClient = {
 };
 
 const projectRoot = process.cwd();
-const wave = "S_AI_MAGIC_08_WAREHOUSE_OPERATIONS_COPILOT";
+const wave = "S_AI_WAREHOUSE_01_OPERATIONS_COPILOT";
 const artifactPrefix = path.join(projectRoot, "artifacts", wave);
 const inventoryPath = `${artifactPrefix}_inventory.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const emulatorPath = `${artifactPrefix}_emulator.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
 
-const REQUIRED_FLAGS = [
-  "S_AI_MAGIC_WAVES_APPROVED",
-  "S_AI_MAGIC_REQUIRE_ANDROID_EMULATOR_PROOF",
-  "S_AI_MAGIC_REQUIRE_EVIDENCE",
-  "S_AI_MAGIC_REQUIRE_ROLE_SCOPE",
-  "S_AI_ALLOW_SAFE_READ",
-  "S_AI_ALLOW_DRAFT_PREVIEW",
-  "S_AI_NO_FAKE_GREEN",
-  "S_AI_NO_FAKE_CARDS",
-  "S_AI_NO_SECRETS_PRINTING",
+const WAREHOUSE_OPERATION_SCREENS: readonly AiWarehouseOperationsScreenId[] = [
+  "warehouse.main",
+  "warehouse.incoming",
+  "warehouse.issue",
 ] as const;
 
 function writeJson(filePath: string, value: unknown): void {
@@ -129,16 +139,8 @@ function loadEnvFilesIntoProcess(): void {
   }
 }
 
-function envEnabled(key: string): boolean {
-  return ["true", "1", "yes"].includes(String(process.env[key] ?? "").trim().toLowerCase());
-}
-
 function envText(key: string): string {
   return String(process.env[key] ?? "").trim();
-}
-
-function flagsReady(): boolean {
-  return REQUIRED_FLAGS.every((key) => envEnabled(key));
 }
 
 function sanitizeReason(value: unknown): string {
@@ -162,12 +164,20 @@ function baseMatrix(
     developer_control_full_access: true,
     role_isolation_e2e_claimed: false,
     warehouse_bff_routes_ready: false,
+    warehouse_main_covered: false,
+    warehouse_incoming_covered: false,
+    warehouse_issue_covered: false,
     live_warehouse_safe_read_attempted: false,
     live_warehouse_safe_read_available: false,
     status_loaded: false,
     movement_summary_ready: false,
     risk_cards_created: 0,
-    honest_empty_state: false,
+    risk_signals_created: 0,
+    evidence_resolver_ready: false,
+    risk_classifier_ready: false,
+    draft_action_planner_ready: false,
+    approval_candidate_ready: false,
+    approval_route_action_ids: [],
     risk_preview_ready: false,
     draft_action_ready: false,
     evidence_required: true,
@@ -184,6 +194,9 @@ function baseMatrix(
     stock_mutated: false,
     reservation_created: false,
     movement_created: false,
+    final_issue_allowed: false,
+    final_receive_allowed: false,
+    direct_stock_mutation_allowed: false,
     raw_rows_returned: false,
     raw_prompt_returned: false,
     raw_provider_payload_returned: false,
@@ -209,12 +222,17 @@ function writeProof(matrix: AiWarehouseOperationsCopilotMatrix): void {
   fs.writeFileSync(
     proofPath,
     [
-      "# S_AI_MAGIC_08_WAREHOUSE_OPERATIONS_COPILOT",
+      `# ${wave}`,
       "",
       `final_status: ${matrix.final_status}`,
       `live_warehouse_safe_read_available: ${String(matrix.live_warehouse_safe_read_available)}`,
       `status_loaded: ${String(matrix.status_loaded)}`,
       `risk_cards_created: ${matrix.risk_cards_created}`,
+      `risk_signals_created: ${matrix.risk_signals_created}`,
+      `evidence_resolver_ready: ${String(matrix.evidence_resolver_ready)}`,
+      `risk_classifier_ready: ${String(matrix.risk_classifier_ready)}`,
+      `draft_action_planner_ready: ${String(matrix.draft_action_planner_ready)}`,
+      `approval_candidate_ready: ${String(matrix.approval_candidate_ready)}`,
       `movement_summary_ready: ${String(matrix.movement_summary_ready)}`,
       `draft_action_ready: ${String(matrix.draft_action_ready)}`,
       `mutation_count: ${matrix.mutation_count}`,
@@ -237,7 +255,10 @@ function persistArtifacts(matrix: AiWarehouseOperationsCopilotMatrix): void {
       path.relative(projectRoot, filePath).replace(/\\/g, "/"),
     ),
     backend_first: true,
+    screens: WAREHOUSE_OPERATION_SCREENS,
     safe_read_only: true,
+    draft_only: true,
+    approval_required_for_stock_movements: true,
     mutation_count: 0,
     db_writes: 0,
     secrets_printed: false,
@@ -354,16 +375,9 @@ function buildWarehouseReader(accessToken: string): WarehouseStatusReader {
 async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
   loadEnvFilesIntoProcess();
 
-  if (!flagsReady()) {
-    return baseMatrix(
-      "BLOCKED_AI_WAREHOUSE_OPERATIONS_APPROVAL_MISSING",
-      `Missing required approval flags: ${REQUIRED_FLAGS.filter((key) => !envEnabled(key)).join(", ")}`,
-    );
-  }
-
   const android = await verifyAndroidInstalledBuildRuntime();
   if (android.final_status !== "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF") {
-    return baseMatrix("BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE", android.exact_reason, {
+    return baseMatrix("BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY", android.exact_reason, {
       android_runtime_smoke: "BLOCKED",
     });
   }
@@ -373,7 +387,7 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
   const authSecret = resolveAuthSecret();
   if (!supabaseUrl || !anonKey || !authSecret) {
     return baseMatrix(
-      "BLOCKED_AI_WAREHOUSE_OPERATIONS_AUTH_MISSING",
+      "BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY",
       "Supabase public URL, anon key, or explicit developer/control warehouse credentials are missing.",
       { android_runtime_smoke: "PASS" },
     );
@@ -386,7 +400,7 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
   const signIn = await client.auth.signInWithPassword(authSecret);
   if (signIn.error || !signIn.data.user || !signIn.data.session) {
     return baseMatrix(
-      "BLOCKED_AI_WAREHOUSE_OPERATIONS_AUTH_MISSING",
+      "BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY",
       "Developer/control account could not authenticate for warehouse copilot proof.",
       { android_runtime_smoke: "PASS" },
     );
@@ -414,7 +428,7 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
       draft.data.documentType !== "agent_warehouse_draft_action"
     ) {
       return baseMatrix(
-        "BLOCKED_REAL_WAREHOUSE_STATUS_NOT_AVAILABLE",
+        "BLOCKED_AI_WAREHOUSE_EVIDENCE_ROUTE_MISSING",
         "Warehouse copilot BFF route returned an auth or route envelope blocker.",
         {
           android_runtime_smoke: "PASS",
@@ -430,7 +444,7 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
 
     if (statusResult.status === "blocked") {
       return baseMatrix(
-        "BLOCKED_REAL_WAREHOUSE_STATUS_NOT_AVAILABLE",
+        "BLOCKED_AI_WAREHOUSE_EVIDENCE_ROUTE_MISSING",
         statusResult.blockedReason ?? "Warehouse status safe-read was blocked.",
         {
           android_runtime_smoke: "PASS",
@@ -441,21 +455,85 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
     }
 
     const statusLoaded = statusResult.status === "loaded";
-    const emptyState = statusResult.status === "empty" || statusResult.riskCards.length === 0;
-    const finalStatus: AiWarehouseOperationsCopilotStatus = statusLoaded
-      ? "GREEN_AI_WAREHOUSE_OPERATIONS_COPILOT_READY"
-      : "GREEN_AI_WAREHOUSE_OPERATIONS_EMPTY_STATE_READY";
+    const evidenceInput = { ...input, warehouseStatus: statusResult.warehouseStatus };
+    const screenProofs = await Promise.all(
+      WAREHOUSE_OPERATION_SCREENS.map(async (screenId) => {
+        const evidence = await resolveAiWarehouseEvidence({ auth, screenId, input: evidenceInput });
+        const riskProof = classifyAiWarehouseStockMovementRisk(evidence);
+        const draftProof = await planAiWarehouseDraftActions({ auth, evidence, risk: riskProof });
+        const approval = buildAiWarehouseApprovalCandidate({
+          auth,
+          evidence,
+          risk: riskProof,
+          draft: draftProof,
+        });
+        return { screenId, evidence, riskProof, draftProof, approval };
+      }),
+    );
+    const evidenceReady = statusLoaded && screenProofs.every((proof) => proof.evidence.status === "loaded");
+    const riskReady = screenProofs.every((proof) => proof.riskProof.status === "classified");
+    const draftReady = screenProofs.every((proof) => proof.draftProof.status === "planned");
+    const approvalReady = screenProofs.every((proof) => proof.approval.status === "ready");
+    if (!evidenceReady || !riskReady || !draftReady) {
+      const incompleteProof = screenProofs.find(
+        (proof) => proof.evidence.exactReason || proof.riskProof.exactReason || proof.draftProof.exactReason,
+      );
+      return baseMatrix(
+        "BLOCKED_AI_WAREHOUSE_EVIDENCE_ROUTE_MISSING",
+        incompleteProof?.evidence.exactReason ??
+          incompleteProof?.riskProof.exactReason ??
+          incompleteProof?.draftProof.exactReason ??
+          "Warehouse evidence, risk, or draft proof is incomplete.",
+        {
+          android_runtime_smoke: "PASS",
+          warehouse_bff_routes_ready: true,
+          live_warehouse_safe_read_attempted: true,
+          live_warehouse_safe_read_available: statusLoaded,
+          status_loaded: statusLoaded,
+          evidence_resolver_ready: evidenceReady,
+          risk_classifier_ready: riskReady,
+          draft_action_planner_ready: draftReady,
+        },
+      );
+    }
+    if (!approvalReady) {
+      return baseMatrix(
+        "BLOCKED_AI_WAREHOUSE_APPROVAL_ROUTE_MISSING",
+        screenProofs.find((proof) => proof.approval.blocker)?.approval.blocker ??
+          "Warehouse approval candidate route is missing.",
+        {
+          android_runtime_smoke: "PASS",
+          warehouse_bff_routes_ready: true,
+          live_warehouse_safe_read_attempted: true,
+          live_warehouse_safe_read_available: statusLoaded,
+          status_loaded: statusLoaded,
+          evidence_resolver_ready: evidenceReady,
+          risk_classifier_ready: riskReady,
+          draft_action_planner_ready: draftReady,
+        },
+      );
+    }
+    const riskSignalCount = screenProofs.reduce((sum, proof) => sum + proof.riskProof.riskSignals.length, 0);
+    const approvalActionIds = screenProofs.map((proof) => proof.approval.actionId);
 
-    return baseMatrix(finalStatus, null, {
+    return baseMatrix("GREEN_AI_WAREHOUSE_OPERATIONS_COPILOT_READY", null, {
       android_runtime_smoke: "PASS",
       role_scoped: statusResult.roleScoped,
       warehouse_bff_routes_ready: true,
+      warehouse_main_covered: true,
+      warehouse_incoming_covered: true,
+      warehouse_issue_covered: true,
       live_warehouse_safe_read_attempted: true,
       live_warehouse_safe_read_available: statusLoaded,
       status_loaded: statusLoaded,
       movement_summary_ready: movementResult.status === "preview",
       risk_cards_created: statusResult.riskCards.length,
-      honest_empty_state: emptyState,
+      risk_signals_created: riskSignalCount,
+      evidence_resolver_ready: evidenceReady,
+      risk_classifier_ready: riskReady,
+      draft_action_planner_ready: draftReady,
+      approval_candidate_ready: approvalReady,
+      approval_route_action_ids: approvalActionIds,
       risk_preview_ready: riskResult.status === "preview" || riskResult.status === "empty",
       draft_action_ready: draftResult.status === "draft" || draftResult.status === "empty",
       all_cards_have_evidence: statusResult.allCardsHaveEvidence,
@@ -463,7 +541,7 @@ async function run(): Promise<AiWarehouseOperationsCopilotMatrix> {
       all_cards_have_known_tool: statusResult.allCardsHaveKnownTool,
     });
   } catch (error) {
-    return baseMatrix("BLOCKED_REAL_WAREHOUSE_STATUS_NOT_AVAILABLE", sanitizeReason(error), {
+    return baseMatrix("BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY", sanitizeReason(error), {
       android_runtime_smoke: "PASS",
       live_warehouse_safe_read_attempted: true,
     });
@@ -485,7 +563,7 @@ if (require.main === module) {
       if (!matrix.final_status.startsWith("GREEN_")) process.exitCode = 1;
     })
     .catch((error) => {
-      const matrix = baseMatrix("BLOCKED_REAL_WAREHOUSE_STATUS_NOT_AVAILABLE", sanitizeReason(error));
+      const matrix = baseMatrix("BLOCKED_AI_WAREHOUSE_RUNTIME_TARGETABILITY", sanitizeReason(error));
       persistArtifacts(matrix);
       console.info(JSON.stringify(matrix, null, 2));
       process.exitCode = 1;

@@ -1,0 +1,6 @@
+{
+  "wave": "S_AI_WAREHOUSE_01_OPERATIONS_COPILOT",
+  "android_runtime_smoke": "PASS",
+  "warehouse_copilot_runtime_proof": "PASS",
+  "fake_emulator_pass": false
+}
