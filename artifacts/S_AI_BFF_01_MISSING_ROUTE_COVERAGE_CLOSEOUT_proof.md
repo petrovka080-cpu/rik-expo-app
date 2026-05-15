@@ -1,0 +1,22 @@
+# S_AI_BFF_01_MISSING_ROUTE_COVERAGE_CLOSEOUT
+
+final_status: GREEN_AI_BFF_ROUTE_COVERAGE_MAP_READY
+exact_reason: null
+actions_audited: 112
+safe_read_actions: 28
+draft_only_actions: 28
+approval_required_actions: 28
+forbidden_actions: 28
+covered_actions: 74
+missing_but_documented_actions: 10
+documented_missing_routes: 10
+forbidden_route_sentinels: 28
+audited_missing_routes: 38
+unmounted_existing_routes: 0
+direct_client_access_findings: 0
+no_secrets: true
+no_raw_rows: true
+no_db_writes: true
+no_provider_calls: true
+no_ui_changes: true
+no_fake_green: true
