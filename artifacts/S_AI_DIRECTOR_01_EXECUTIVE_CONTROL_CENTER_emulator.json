@@ -1,0 +1,6 @@
+{
+  "wave": "S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER",
+  "android_runtime_smoke": "PASS",
+  "director_executive_control_center_runtime_proof": "PASS",
+  "fake_emulator_pass": false
+}

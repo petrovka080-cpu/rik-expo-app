@@ -1,0 +1,224 @@
+{
+  "mode": "verify",
+  "timestamp": "2026-05-15T21:51:55.911Z",
+  "repo": {
+    "gitBranch": "main",
+    "headCommit": "47d89e80132bdfb5ecd4206c8b8db20d09b758b4",
+    "originMainCommit": "47d89e80132bdfb5ecd4206c8b8db20d09b758b4",
+    "worktreeClean": false,
+    "envFilePolicyValid": true,
+    "trackedEnvFiles": [
+      ".env.example"
+    ],
+    "unsafeTrackedEnvFiles": [],
+    "headMatchesOriginMain": true,
+    "localCommitsAheadOriginMain": 0,
+    "originMainCommitsAheadHead": 0,
+    "syncStatus": "synced",
+    "syncAction": "none",
+    "requiredSyncApprovalKeys": []
+  },
+  "gates": [
+    {
+      "name": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "expo-lint",
+      "command": "npx expo lint",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "architecture-anti-regression",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest-run-in-band",
+      "command": "npm test -- --runInBand",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest",
+      "command": "npm test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "classification": {
+    "kind": "runtime-ota",
+    "changeClass": "js-logic",
+    "files": [
+      "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_emulator.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_inventory.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_matrix.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_proof.md",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json",
+      "artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json",
+      "scripts/e2e/runAiForemanFieldCloseoutMaestro.ts",
+      "src/features/ai/foreman/aiFieldCloseoutDraftEngine.ts",
+      "src/features/ai/foreman/aiForemanApprovalCandidate.ts",
+      "src/features/ai/foreman/aiForemanEvidenceResolver.ts",
+      "src/features/ai/foreman/aiForemanMissingEvidenceChecklist.ts",
+      "tests/ai/aiFieldCloseoutDraftEngine.contract.test.ts",
+      "tests/ai/aiForemanApprovalCandidate.contract.test.ts",
+      "tests/ai/aiForemanEvidenceResolver.contract.test.ts",
+      "tests/ai/aiForemanMissingEvidenceChecklist.contract.test.ts",
+      "tests/architecture/aiForemanNoFinalSubmit.contract.test.ts",
+      "tests/e2e/aiForemanFieldCloseoutMaestro.contract.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "nonRuntimeFiles": [
+      "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_emulator.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_inventory.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_matrix.json",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_proof.md",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json",
+      "artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json",
+      "scripts/e2e/runAiForemanFieldCloseoutMaestro.ts",
+      "tests/ai/aiFieldCloseoutDraftEngine.contract.test.ts",
+      "tests/ai/aiForemanApprovalCandidate.contract.test.ts",
+      "tests/ai/aiForemanEvidenceResolver.contract.test.ts",
+      "tests/ai/aiForemanMissingEvidenceChecklist.contract.test.ts",
+      "tests/architecture/aiForemanNoFinalSubmit.contract.test.ts",
+      "tests/e2e/aiForemanFieldCloseoutMaestro.contract.test.ts",
+      "tests/perf/performance-budget.test.ts"
+    ],
+    "runtimeFiles": [
+      "src/features/ai/foreman/aiFieldCloseoutDraftEngine.ts",
+      "src/features/ai/foreman/aiForemanApprovalCandidate.ts",
+      "src/features/ai/foreman/aiForemanEvidenceResolver.ts",
+      "src/features/ai/foreman/aiForemanMissingEvidenceChecklist.ts"
+    ],
+    "buildRequiredFiles": [],
+    "reasons": [
+      "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_emulator.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_inventory.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE_proof.md is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "scripts/e2e/runAiForemanFieldCloseoutMaestro.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/features/ai/foreman/aiFieldCloseoutDraftEngine.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/features/ai/foreman/aiForemanApprovalCandidate.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/features/ai/foreman/aiForemanEvidenceResolver.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "src/features/ai/foreman/aiForemanMissingEvidenceChecklist.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "tests/ai/aiFieldCloseoutDraftEngine.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/ai/aiForemanApprovalCandidate.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/ai/aiForemanEvidenceResolver.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/ai/aiForemanMissingEvidenceChecklist.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/architecture/aiForemanNoFinalSubmit.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/e2e/aiForemanFieldCloseoutMaestro.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/perf/performance-budget.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped."
+    ],
+    "packageJsonMutationKind": "none"
+  },
+  "migrationPolicy": {
+    "migrationFiles": [],
+    "highRiskFiles": [],
+    "productionDbApprovalRequired": false,
+    "requiredApprovalKeys": [],
+    "missingApprovalKeys": [],
+    "approvalSatisfied": true,
+    "nextSafeWave": null,
+    "risks": [],
+    "blockers": []
+  },
+  "aiMandatoryEmulatorRuntimeGate": {
+    "required": true,
+    "artifactPath": "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+    "finalStatus": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+    "androidInstalledRuntimeSmoke": "PASS",
+    "fakeEmulatorPass": false,
+    "secretsPrinted": false,
+    "exactReason": null,
+    "blockers": [],
+    "hardeningArtifactPath": "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+    "hardeningFinalStatus": "GREEN_AI_EMULATOR_GATE_HARDENED",
+    "hardeningCoreReleaseArtifactOverwritten": false,
+    "hardeningAiGateArtifactIsolated": true
+  },
+  "runtimePolicy": {
+    "resolvedRuntimeVersion": "policy:fingerprint",
+    "runtimePolicy": "policy:fingerprint",
+    "runtimeVersionStrategy": "fingerprint",
+    "runtimePolicyValid": true,
+    "runtimePolicyReason": "runtimeVersion uses the fingerprint policy.",
+    "runtimeProofConsistent": true,
+    "runtimeProofReason": "release extra truth matches the configured runtime policy.",
+    "buildRequired": false
+  },
+  "startupPolicy": {
+    "updatesEnabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "startupPolicyValid": true,
+    "startupPolicyReason": "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000."
+  },
+  "readiness": {
+    "status": "fail",
+    "otaDisposition": "block",
+    "blockers": [
+      "Worktree is dirty. Release automation requires a clean repository state."
+    ]
+  },
+  "requiredArtifacts": [],
+  "missingArtifacts": [],
+  "targetChannel": null,
+  "expectedBranch": null,
+  "releaseMessage": null,
+  "rolloutPercentage": null,
+  "commitRange": "HEAD^..HEAD",
+  "otaPublish": null,
+  "releaseMetadata": {
+    "gitSha": "present",
+    "appVersion": "present",
+    "buildLineage": "present",
+    "runtimeVersion": "present",
+    "channel": "missing",
+    "branch": "missing",
+    "platform": "not_applicable",
+    "otaDisposition": "blocked",
+    "rollbackReady": false,
+    "sentrySourceMaps": "not_applicable",
+    "binarySourceMapsProven": "not_applicable",
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "otaPublished": false,
+    "easUpdateTriggered": false,
+    "missing": [
+      "channel",
+      "branch"
+    ],
+    "warnings": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "wave": "S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER",
+  "artifacts": [
+    "artifacts/S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER_inventory.json",
+    "artifacts/S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER_matrix.json",
+    "artifacts/S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER_emulator.json",
+    "artifacts/S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER_proof.md"
+  ],
+  "backend_first": true,
+  "screens": [
+    "director.dashboard",
+    "director.finance",
+    "director.reports",
+    "ai.command_center"
+  ],
+  "domains": [
+    "procurement",
+    "warehouse",
+    "finance",
+    "foreman"
+  ],
+  "safe_read_only": true,
+  "approval_required_only": true,
+  "no_direct_execute": true,
+  "mutation_count": 0,
+  "db_writes": 0,
+  "secrets_printed": false
+}

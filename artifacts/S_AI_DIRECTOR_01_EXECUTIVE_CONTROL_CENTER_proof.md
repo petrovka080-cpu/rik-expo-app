@@ -1,0 +1,17 @@
+# S_AI_DIRECTOR_01_EXECUTIVE_CONTROL_CENTER
+
+final_status: GREEN_AI_DIRECTOR_EXECUTIVE_CONTROL_CENTER_READY
+evidence_resolver_ready: true
+risk_priority_scoring_ready: true
+next_action_selector_ready: true
+approval_candidate_ready: true
+approval_route_action_ids: ai.command_center.approval,director.finance.approval,director.reports.approval
+procurement_next_action_ready: true
+warehouse_next_action_ready: true
+finance_next_action_ready: true
+foreman_next_action_ready: true
+mutation_count: 0
+no_direct_execute: true
+no_direct_finance_procurement_warehouse_mutation: true
+android_runtime_smoke: PASS
+exact_reason: none
