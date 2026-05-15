@@ -1,0 +1,14 @@
+{
+  "wave": "S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF",
+  "android_runtime_smoke": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "mandatory_ai_matrix": "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+  "ios_build_signoff": "scripts/release/verifyIosAiRuntimeBuildSignoff.ts",
+  "ios_build_profile": "production",
+  "store_or_testflight_compatible_required": true,
+  "simulator_build_allowed": false,
+  "app_store_connect_submit_approved": true,
+  "fake_ios_pass": false,
+  "fake_emulator_pass": false,
+  "no_ota_as_native_replacement": true,
+  "secrets_printed": false
+}

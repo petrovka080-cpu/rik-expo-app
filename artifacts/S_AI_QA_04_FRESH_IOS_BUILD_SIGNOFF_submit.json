@@ -1,0 +1,19 @@
+{
+  "final_status": "GREEN_IOS_APP_STORE_CONNECT_SUBMIT_PROOF",
+  "submission_id": "49fe5597-8b91-4df8-851e-65f93a76a9a1",
+  "submissionId": "49fe5597-8b91-4df8-851e-65f93a76a9a1",
+  "ios_build_id": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
+  "buildId": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
+  "platform": "IOS",
+  "status": "SUBMITTED_TO_APP_STORE_CONNECT",
+  "build_git_commit_hash": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "current_head_commit": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "submit_matches_current_head": true,
+  "submit_finished": true,
+  "app_store_connect_upload_observed": true,
+  "app_store_connect_submit_proof": true,
+  "testflight_or_processing_status_captured": true,
+  "testflight_or_processing_status": "uploaded_to_app_store_connect_processing",
+  "fake_submit_pass": false,
+  "secrets_printed": false
+}

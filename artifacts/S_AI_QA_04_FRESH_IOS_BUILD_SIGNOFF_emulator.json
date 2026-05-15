@@ -1,0 +1,8 @@
+{
+  "wave": "S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF",
+  "android_runtime_smoke": "PASS",
+  "android_final_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "mandatory_ai_runtime_matrix": "PASS",
+  "fake_emulator_pass": false,
+  "exact_reason": null
+}

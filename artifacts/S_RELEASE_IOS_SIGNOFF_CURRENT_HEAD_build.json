@@ -1,0 +1,17 @@
+{
+  "final_status": "GREEN_IOS_BUILD_CURRENT_HEAD",
+  "buildId": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
+  "platform": "IOS",
+  "status": "FINISHED",
+  "buildProfile": "production",
+  "distribution": "STORE",
+  "appVersion": "1.0.0",
+  "appBuildVersion": "43",
+  "runtimeVersion": "be945428a984869a2cd7eac50f188296f9ed7cbc",
+  "gitCommitHash": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "currentHead": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "buildMatchesCurrentHead": true,
+  "buildUrlPresent": true,
+  "isForIosSimulator": false,
+  "secretsPrinted": false
+}

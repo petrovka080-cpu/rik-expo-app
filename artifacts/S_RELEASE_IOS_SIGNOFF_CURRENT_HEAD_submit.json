@@ -1,0 +1,15 @@
+{
+  "final_status": "GREEN_IOS_APP_STORE_CONNECT_SUBMIT_PROOF",
+  "submissionId": "49fe5597-8b91-4df8-851e-65f93a76a9a1",
+  "platform": "IOS",
+  "status": "SUBMITTED_TO_APP_STORE_CONNECT",
+  "buildId": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
+  "buildGitCommitHash": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "currentHead": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "submitMatchesCurrentHead": true,
+  "appStoreConnectUploadObserved": true,
+  "testFlightOrProcessingStatus": "uploaded_to_app_store_connect_processing",
+  "easSubmitListAvailable": false,
+  "easSubmitListExactReason": "eas-cli 18.7.0 does not expose submit:list; proof captured from successful eas submit --id output.",
+  "secretsPrinted": false
+}

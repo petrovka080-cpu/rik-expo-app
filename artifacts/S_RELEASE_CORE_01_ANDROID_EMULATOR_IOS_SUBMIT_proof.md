@@ -7,7 +7,7 @@
 - Android APK installed on emulator: true
 - Android emulator smoke: PASS
 - iOS status: PASS
-- iOS build id: f335fefc-0ab1-4939-947f-0f11c6d1bdda
+- iOS build id: b1d7e8ab-5bd0-4339-a12e-165b3d489c84
 - iOS submit finished: true
 - AI role-screen e2e: BLOCKED_NO_E2E_ROLE_SECRETS
 - OTA used: false

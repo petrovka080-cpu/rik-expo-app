@@ -1,7 +1,7 @@
 {
   "final_status": "GREEN_IOS_BUILD_SUBMIT_SIGNOFF",
   "new_build_created": true,
-  "build_id": "f335fefc-0ab1-4939-947f-0f11c6d1bdda",
+  "build_id": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
   "build_status": "FINISHED",
   "build_profile": "production",
   "submit_profile": "production",
@@ -12,10 +12,10 @@
   "testflight_or_processing_status_captured": true,
   "simulator_build_used_for_submit": false,
   "fake_submit_pass": false,
-  "build_git_commit": "289c3cef2d2f395a31be6faf1a284e4099d2678d",
-  "current_head_commit": "5d5b7a7d9e634b4281efaf37181c306db72afe3e",
+  "build_git_commit": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "current_head_commit": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
   "post_build_commits_non_runtime_only": true,
   "runtime_version": "be945428a984869a2cd7eac50f188296f9ed7cbc",
-  "app_build_version": "40",
+  "app_build_version": "43",
   "exact_reason": null
 }

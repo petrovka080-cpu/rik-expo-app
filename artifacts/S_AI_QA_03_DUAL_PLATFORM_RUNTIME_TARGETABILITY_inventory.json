@@ -1,0 +1,13 @@
+{
+  "wave": "S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY",
+  "android_rebuild_policy": "scripts/release/requireAndroidRebuildForAiSourceChanges.ts",
+  "android_build_install": "scripts/release/buildInstallAndroidPreviewForEmulator.ts",
+  "android_runtime_smoke": "scripts/release/verifyAndroidInstalledBuildRuntime.ts",
+  "developer_control_runtime": "scripts/e2e/runDeveloperControlFullAccessMaestro.ts",
+  "mandatory_ai_matrix": "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+  "ios_build_signoff": "scripts/release/verifyIosAiRuntimeBuildSignoff.ts",
+  "fake_emulator_pass": false,
+  "fake_ios_pass": false,
+  "no_ota_as_native_replacement": true,
+  "secrets_printed": false
+}
