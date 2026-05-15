@@ -1,0 +1,24 @@
+# S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_HARDENING
+
+final_status: GREEN_AI_TRACE_BUDGET_REDACTION_HARDENING_READY
+exact_reason: null
+audited_actions: 112
+trace_envelopes: 112
+budgeted_actions: 112
+missing_trace_id_actions: 0
+duplicate_trace_ids: 0
+missing_budget_actions: 0
+unsafe_budget_actions: 0
+provider_redaction_findings: 4
+artifact_scrub_findings: 0
+source_safety_findings: 0
+artifacts_scanned: 16
+no_secrets: true
+no_raw_rows: true
+no_raw_prompts: true
+no_raw_provider_payloads: true
+no_db_writes: true
+no_provider_calls: true
+no_provider_switch: true
+no_ui_changes: true
+no_fake_green: true

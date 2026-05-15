@@ -1327,17 +1327,29 @@ const AI_TRACE_OBSERVABILITY_FILES = [
   "src/features/ai/observability/aiTraceRecorder.ts",
   "src/features/ai/observability/aiTraceRedaction.ts",
   "src/features/ai/observability/aiTraceExportPolicy.ts",
+  "src/features/ai/observability/aiTraceEnvelope.ts",
+  "src/features/ai/observability/aiBudgetPolicy.ts",
+  "src/features/ai/observability/aiProviderPayloadRedaction.ts",
+  "src/features/ai/observability/aiArtifactScrubPolicy.ts",
 ] as const;
 const AI_TRACE_OBSERVABILITY_TEST_FILES = [
   "tests/ai/aiTraceRecorder.contract.test.ts",
   "tests/ai/aiTraceRedaction.contract.test.ts",
   "tests/ai/aiTraceNoSecrets.contract.test.ts",
+  "tests/ai/aiTraceEnvelope.contract.test.ts",
+  "tests/ai/aiBudgetPolicy.contract.test.ts",
+  "tests/ai/aiProviderPayloadRedaction.contract.test.ts",
+  "tests/ai/aiArtifactScrubPolicy.contract.test.ts",
   "tests/architecture/aiTraceObservabilityArchitecture.contract.test.ts",
+  "tests/architecture/aiNoRawProviderPayloadArtifacts.contract.test.ts",
 ] as const;
 const AI_TRACE_OBSERVABILITY_ARTIFACT_FILES = [
   "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_inventory.json",
   "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_matrix.json",
   "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_proof.md",
+  "artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_inventory.json",
+  "artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_matrix.json",
+  "artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_proof.md",
 ] as const;
 const REQUIRED_AI_TRACE_EVENT_NAMES = [
   "ai.tool.plan.created",

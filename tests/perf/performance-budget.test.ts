@@ -396,6 +396,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "observability", "aiTraceRedaction.ts"),
       path.join(SRC, "features", "ai", "observability", "aiTraceExportPolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiObservability01TraceBudgetRedactionFiles = [
+      path.join(SRC, "features", "ai", "observability", "aiTraceEnvelope.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiBudgetPolicy.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiProviderPayloadRedaction.ts"),
+      path.join(SRC, "features", "ai", "observability", "aiArtifactScrubPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic15RoleCopilotRuntimePackFiles = [
       path.join(SRC, "features", "ai", "roles", "aiRoleCopilotProfiles.ts"),
       path.join(SRC, "features", "ai", "roles", "aiRoleCopilotPolicy.ts"),
@@ -1275,6 +1281,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
+    expect(sAiObservability01TraceBudgetRedactionFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic15RoleCopilotRuntimePackFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic16ProcurementLiveSupplierChainFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
@@ -1462,6 +1469,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
         sAiMagic13WorkdayLiveEvidenceBridgeFiles -
         sAiObs01TraceObservabilityFiles -
+        sAiObservability01TraceBudgetRedactionFiles -
         sAiMagic15RoleCopilotRuntimePackFiles -
         sAiMagic16ProcurementLiveSupplierChainFiles -
         sAiMagic17ExternalMarketIntelCanaryFiles -
