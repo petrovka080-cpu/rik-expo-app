@@ -153,6 +153,11 @@ function resolveRuntimeName(operation: AgentBffRouteOperation): AiRuntimeTranspo
   if (operation.startsWith("agent.external_intel.") || operation.startsWith("agent.intel.")) {
     return "external_intel";
   }
+  if (operation.startsWith("agent.documents.")) return "document_knowledge";
+  if (operation.startsWith("agent.construction_knowhow.")) return "construction_knowhow";
+  if (operation.startsWith("agent.finance.")) return "finance_copilot";
+  if (operation.startsWith("agent.warehouse.")) return "warehouse_copilot";
+  if (operation.startsWith("agent.field.")) return "field_work_copilot";
   if (operation.startsWith("agent.procurement.")) return "procurement_copilot";
   if (
     operation.startsWith("agent.screen_runtime.") ||

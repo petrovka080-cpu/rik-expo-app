@@ -6,23 +6,18 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
-      "scripts/e2e/runAiDocumentKnowledgeRouteCloseoutMaestro.ts",
-      "src/features/ai/documents/aiDocumentEvidenceResolver.ts",
-      "src/features/ai/documents/aiDocumentForbiddenActionPolicy.ts",
-      "src/features/ai/documents/aiDocumentKnowledgePolicy.ts",
-      "src/features/ai/documents/aiDocumentRouteRegistry.ts",
-      "tests/ai/aiDocumentEvidenceResolver.contract.test.ts",
-      "tests/ai/aiDocumentKnowledgePolicy.contract.test.ts",
-      "tests/ai/aiDocumentRouteRegistry.contract.test.ts",
-      "tests/architecture/aiDocumentsNoSigningNoDeletion.contract.test.ts",
-      "tests/e2e/aiDocumentKnowledgeRouteCloseoutMaestro.contract.test.ts",
-      "tests/perf/performance-budget.test.ts"
+      "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts",
+      "scripts/architecture_anti_regression_suite.ts",
+      "src/features/ai/agent/agentRuntimeGateway.ts",
+      "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+      "tests/ai/aiDomainRuntimeTransportCloseout.contract.test.ts",
+      "tests/ai/aiToolTransportBoundary.contract.test.ts",
+      "tests/architecture/aiDomainRuntimeNoCommandCenterFallback.contract.test.ts",
+      "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
-      "src/features/ai/documents/aiDocumentEvidenceResolver.ts",
-      "src/features/ai/documents/aiDocumentForbiddenActionPolicy.ts",
-      "src/features/ai/documents/aiDocumentKnowledgePolicy.ts",
-      "src/features/ai/documents/aiDocumentRouteRegistry.ts"
+      "src/features/ai/agent/agentRuntimeGateway.ts",
+      "src/features/ai/tools/transport/aiToolTransportTypes.ts"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1137,8 +1132,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "8ccfe5fbd5829ebe8dae5cf2c42306b24cdb88785c1f66c754ffbe67b9eddbf0",
-    "installed_apk_source_fingerprint": "8ccfe5fbd5829ebe8dae5cf2c42306b24cdb88785c1f66c754ffbe67b9eddbf0",
+    "ai_mobile_runtime_source_fingerprint": "6faa002cbe77465300a42b4979ce42d2da890d934f434a9f4039cf5d61ed0667",
+    "installed_apk_source_fingerprint": "6faa002cbe77465300a42b4979ce42d2da890d934f434a9f4039cf5d61ed0667",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1146,7 +1141,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "4667bdace582985b5cd108c3f3913fe5c81ba7c13882795f61de978b2f7274e4",
+    "changed_files_fingerprint": "34a49646a7f257652bb59e6f48920cbdfd42e2ac97ea1996d3ec8d6c7233835a",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

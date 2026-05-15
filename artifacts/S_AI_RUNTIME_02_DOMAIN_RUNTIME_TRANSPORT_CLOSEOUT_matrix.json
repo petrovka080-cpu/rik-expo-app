@@ -1,0 +1,172 @@
+{
+  "wave": "S_AI_RUNTIME_02_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT",
+  "final_status": "GREEN_AI_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT_READY",
+  "exact_reason": null,
+  "group_count": 5,
+  "mounted_route_count": 76,
+  "route_count": 76,
+  "groups": [
+    {
+      "domain": "documents",
+      "operationPrefix": "agent.documents.",
+      "expectedRuntimeName": "document_knowledge",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 3,
+      "routeCount": 3,
+      "routes": [
+        "agent.documents.knowledge.read",
+        "agent.documents.search.preview",
+        "agent.documents.summarize.preview"
+      ],
+      "endpoints": [
+        "GET /agent/documents/knowledge",
+        "POST /agent/documents/search",
+        "POST /agent/documents/summarize-preview"
+      ],
+      "missingRouteCount": false,
+      "allRoutesMounted": true,
+      "explicitRuntimeTransport": true,
+      "commandCenterFallback": false,
+      "mutates": false,
+      "executesTool": false,
+      "directDatabaseAccess": false,
+      "providerCalls": false,
+      "rawRowsExposed": false,
+      "rawProviderPayloadExposed": false
+    },
+    {
+      "domain": "construction_knowhow",
+      "operationPrefix": "agent.construction_knowhow.",
+      "expectedRuntimeName": "construction_knowhow",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 6,
+      "routeCount": 6,
+      "routes": [
+        "agent.construction_knowhow.domains.read",
+        "agent.construction_knowhow.role_profile.read",
+        "agent.construction_knowhow.analyze.preview",
+        "agent.construction_knowhow.decision_card.preview",
+        "agent.construction_knowhow.action_plan.preview",
+        "agent.construction_knowhow.external_preview"
+      ],
+      "endpoints": [
+        "GET /agent/construction-knowhow/domains",
+        "GET /agent/construction-knowhow/role-profile/:roleId",
+        "POST /agent/construction-knowhow/analyze",
+        "POST /agent/construction-knowhow/decision-card",
+        "POST /agent/construction-knowhow/action-plan",
+        "POST /agent/construction-knowhow/external-preview"
+      ],
+      "missingRouteCount": false,
+      "allRoutesMounted": true,
+      "explicitRuntimeTransport": true,
+      "commandCenterFallback": false,
+      "mutates": false,
+      "executesTool": false,
+      "directDatabaseAccess": false,
+      "providerCalls": false,
+      "rawRowsExposed": false,
+      "rawProviderPayloadExposed": false
+    },
+    {
+      "domain": "finance",
+      "operationPrefix": "agent.finance.",
+      "expectedRuntimeName": "finance_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "routes": [
+        "agent.finance.summary.read",
+        "agent.finance.debts.read",
+        "agent.finance.risk_preview",
+        "agent.finance.draft_summary"
+      ],
+      "endpoints": [
+        "GET /agent/finance/summary",
+        "GET /agent/finance/debts",
+        "POST /agent/finance/risk-preview",
+        "POST /agent/finance/draft-summary"
+      ],
+      "missingRouteCount": false,
+      "allRoutesMounted": true,
+      "explicitRuntimeTransport": true,
+      "commandCenterFallback": false,
+      "mutates": false,
+      "executesTool": false,
+      "directDatabaseAccess": false,
+      "providerCalls": false,
+      "rawRowsExposed": false,
+      "rawProviderPayloadExposed": false
+    },
+    {
+      "domain": "warehouse",
+      "operationPrefix": "agent.warehouse.",
+      "expectedRuntimeName": "warehouse_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "routes": [
+        "agent.warehouse.status.read",
+        "agent.warehouse.movements.read",
+        "agent.warehouse.risk_preview",
+        "agent.warehouse.draft_action"
+      ],
+      "endpoints": [
+        "GET /agent/warehouse/status",
+        "GET /agent/warehouse/movements",
+        "POST /agent/warehouse/risk-preview",
+        "POST /agent/warehouse/draft-action"
+      ],
+      "missingRouteCount": false,
+      "allRoutesMounted": true,
+      "explicitRuntimeTransport": true,
+      "commandCenterFallback": false,
+      "mutates": false,
+      "executesTool": false,
+      "directDatabaseAccess": false,
+      "providerCalls": false,
+      "rawRowsExposed": false,
+      "rawProviderPayloadExposed": false
+    },
+    {
+      "domain": "field",
+      "operationPrefix": "agent.field.",
+      "expectedRuntimeName": "field_work_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "routes": [
+        "agent.field.context.read",
+        "agent.field.draft_report",
+        "agent.field.draft_act",
+        "agent.field.action_plan"
+      ],
+      "endpoints": [
+        "GET /agent/field/context",
+        "POST /agent/field/draft-report",
+        "POST /agent/field/draft-act",
+        "POST /agent/field/action-plan"
+      ],
+      "missingRouteCount": false,
+      "allRoutesMounted": true,
+      "explicitRuntimeTransport": true,
+      "commandCenterFallback": false,
+      "mutates": false,
+      "executesTool": false,
+      "directDatabaseAccess": false,
+      "providerCalls": false,
+      "rawRowsExposed": false,
+      "rawProviderPayloadExposed": false
+    }
+  ],
+  "no_command_center_fallback": true,
+  "all_domain_routes_mounted": true,
+  "all_domain_routes_explicit": true,
+  "no_db_writes": true,
+  "no_direct_database_access": true,
+  "no_provider_calls": true,
+  "no_raw_rows": true,
+  "no_raw_provider_payloads": true,
+  "no_ui_changes": true,
+  "no_fake_green": true
+}

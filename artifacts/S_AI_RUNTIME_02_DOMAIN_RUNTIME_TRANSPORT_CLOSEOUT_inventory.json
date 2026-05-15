@@ -1,0 +1,32 @@
+{
+  "wave": "S_AI_RUNTIME_02_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT",
+  "source_files": [
+    "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "scripts/architecture_anti_regression_suite.ts",
+    "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts"
+  ],
+  "test_files": [
+    "tests/ai/aiToolTransportBoundary.contract.test.ts",
+    "tests/ai/aiDomainRuntimeTransportCloseout.contract.test.ts",
+    "tests/architecture/aiDomainRuntimeNoCommandCenterFallback.contract.test.ts",
+    "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
+  ],
+  "domains": [
+    "documents",
+    "construction_knowhow",
+    "finance",
+    "warehouse",
+    "field"
+  ],
+  "runtime_transports": [
+    "document_knowledge",
+    "construction_knowhow",
+    "finance_copilot",
+    "warehouse_copilot",
+    "field_work_copilot"
+  ],
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}

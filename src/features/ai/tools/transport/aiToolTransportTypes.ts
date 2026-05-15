@@ -14,6 +14,11 @@ export type AiRuntimeTransportName =
   | "task_stream"
   | "command_center"
   | "procurement_copilot"
+  | "document_knowledge"
+  | "construction_knowhow"
+  | "finance_copilot"
+  | "warehouse_copilot"
+  | "field_work_copilot"
   | "external_intel"
   | "screen_runtime"
   | "approval_inbox"
@@ -298,6 +303,81 @@ export const AI_RUNTIME_TRANSPORT_CONTRACTS = Object.freeze([
     runtimeName: "procurement_copilot",
     boundary: "runtime_preview_transport",
     routeScope: "agent.procurement_copilot.preview",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "document_knowledge",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.documents.knowledge",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "construction_knowhow",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.construction_knowhow",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "finance_copilot",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.finance_copilot",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "warehouse_copilot",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.warehouse_copilot",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "field_work_copilot",
+    boundary: "runtime_preview_transport",
+    routeScope: "agent.field_work_copilot",
     boundedRequest: true,
     dtoOnly: true,
     redactionRequired: true,
