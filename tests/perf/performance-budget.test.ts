@@ -478,6 +478,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentFieldWorkCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiForeman01FieldCloseoutFiles = [
+      path.join(SRC, "features", "ai", "foreman", "aiForemanEvidenceResolver.ts"),
+      path.join(SRC, "features", "ai", "foreman", "aiFieldCloseoutDraftEngine.ts"),
+      path.join(SRC, "features", "ai", "foreman", "aiForemanMissingEvidenceChecklist.ts"),
+      path.join(SRC, "features", "ai", "foreman", "aiForemanApprovalCandidate.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic24AgentBffRuntimeMountFiles = [
       path.join(SRC, "features", "ai", "agent", "agentRuntimeBudgetPolicy.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeErrors.ts"),
@@ -1311,6 +1317,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiWarehouse01OperationsCopilotFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiForeman01FieldCloseoutFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
@@ -1502,6 +1509,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic08WarehouseOperationsCopilotFiles -
         sAiWarehouse01OperationsCopilotFiles -
         sAiMagic09FieldWorkCopilotFiles -
+        sAiForeman01FieldCloseoutFiles -
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -
         sAiPro02ConstructionKnowhowEngineFiles -

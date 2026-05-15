@@ -1,0 +1,6 @@
+{
+  "wave": "S_AI_FOREMAN_01_FIELD_CLOSEOUT_DRAFT_ENGINE",
+  "android_runtime_smoke": "PASS",
+  "foreman_field_closeout_runtime_proof": "PASS",
+  "fake_emulator_pass": false
+}
