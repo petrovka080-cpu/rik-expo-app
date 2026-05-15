@@ -10,7 +10,7 @@ export type AiActionLedgerPostgrestRpcVisibilityStatus =
   | "GREEN_RPC_VISIBLE_AND_CALLABLE"
   | "GREEN_RPC_VISIBLE_AUTH_REQUIRED"
   | "GREEN_RPC_VISIBLE_SIGNATURE_MISMATCH_ONLY"
-  | "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+  | "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING"
   | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
   | "BLOCKED_POSTGREST_RPC_AMBIGUOUS_OVERLOAD"
   | "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED"
@@ -658,7 +658,7 @@ export async function verifyAiActionLedgerPostgrestRpcVisibility(
   };
   if (directSqlFunctionsChecked && !directSqlFunctionsExist) {
     return baseResult(
-      "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+      "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING",
       "SQL RPC functions are missing in DB.",
       {
         directSqlFunctionsChecked,

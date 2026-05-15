@@ -1,0 +1,13 @@
+{
+  "wave": "S_DB_04B_POSTGREST_SCHEMA_CACHE_VISIBILITY_CLOSEOUT",
+  "schema_reload_notified": true,
+  "postgrest_schema_reload_notified": true,
+  "reload_method": "NOTIFY pgrst, 'reload schema'",
+  "bounded_poll_used": true,
+  "sql_rpc_functions_preexisted": true,
+  "created_or_altered_objects": false,
+  "destructive_sql": false,
+  "unbounded_dml": false,
+  "raw_rows_printed": false,
+  "secrets_printed": false
+}

@@ -13,7 +13,9 @@ describe("AI approval ledger persistence runner PostgREST blocker classification
     expect(source).toContain("secondary_blocker");
     expect(source).toContain("SQL RPC functions exist, but PostgREST schema cache does not expose them yet.");
     expect(source).toContain("SQL RPC functions are missing in DB.");
+    expect(source).toContain("BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING");
     expect(source).toContain("BLOCKED_POSTGREST_RPC_PERMISSION_DENIED");
+    expect(source).toContain("BLOCKED_POSTGREST_NETWORK_ERROR");
   });
 
   it("keeps the persistence runner away from service credentials and seed paths", () => {

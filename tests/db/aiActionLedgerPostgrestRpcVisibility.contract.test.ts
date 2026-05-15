@@ -119,6 +119,8 @@ describe("AI action ledger PostgREST RPC visibility verifier", () => {
     expect(source).toContain("pgrst203");
     expect(source).toContain("old_stub_overloads");
     expect(source).toContain("authenticated_execute_grant_ok");
+    expect(source).toContain("BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING");
+    expect(source).not.toContain("status: \"BLOCKED_LEDGER_RPC_NOT_DEPLOYED\"");
     expect(source).not.toMatch(/\.rpc\s*\(/);
     expect(source).not.toMatch(/SUPABASE_SERVICE_ROLE_KEY|auth\.admin|listUsers/i);
   });

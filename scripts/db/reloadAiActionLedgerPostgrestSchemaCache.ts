@@ -13,7 +13,8 @@ export type AiActionLedgerPostgrestSchemaCacheReloadStatus =
   | "GREEN_AI_ACTION_LEDGER_RPC_VISIBLE_IN_POSTGREST"
   | "BLOCKED_DB_URL_NOT_APPROVED"
   | "BLOCKED_REQUIRED_OWNER_FLAGS_MISSING"
-  | "BLOCKED_AI_ACTION_LEDGER_DB_OBJECT_REGRESSION"
+  | "BLOCKED_AI_ACTION_LEDGER_DB_OBJECTS_REGRESSED_AFTER_S_DB_04A"
+  | "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING"
   | "BLOCKED_POSTGREST_SCHEMA_CACHE_RELOAD_FAILED"
   | "BLOCKED_POSTGREST_SCHEMA_CACHE_RELOAD_NOT_OBSERVED"
   | "BLOCKED_POSTGREST_URL_OR_KEY_MISSING"
@@ -25,15 +26,21 @@ export type AiActionLedgerPostgrestSchemaCacheReloadArtifact = {
   db_objects_present: boolean;
   indexes_exist: boolean;
   policies_exist: boolean;
+  rls_enabled: boolean;
   sql_rpc_functions_exist: boolean;
+  migration_history_record_exists: boolean;
   postgrest_schema_reload_notified: boolean;
   postgrest_rpc_visible: boolean;
   postgrest_rpc_callable: boolean;
+  postgrest_rpc_callable_or_auth_required: boolean;
   postgrest_visibility_status: AiActionLedgerPostgrestRpcVisibility["status"] | null;
   old_apply_used: false;
   blind_reapply_used: false;
+  created_or_altered_objects: false;
   destructive_sql: false;
   unbounded_dml: false;
+  bounded_poll_used: boolean;
+  reload_method: "NOTIFY pgrst, 'reload schema'";
   raw_rows_printed: false;
   secrets_printed: false;
   fake_green_claimed: false;
@@ -59,10 +66,12 @@ const artifactPrefix = path.join(
   "S_DB_04B_POSTGREST_SCHEMA_CACHE_VISIBILITY",
 );
 const inventoryPath = `${artifactPrefix}_inventory.json`;
+const reloadPath = `${artifactPrefix}_reload.json`;
 const matrixPath = `${artifactPrefix}_matrix.json`;
 const emulatorPath = `${artifactPrefix}_emulator.json`;
 const proofPath = `${artifactPrefix}_proof.md`;
 const RELOAD_SQL = "select pg_notify('pgrst', 'reload schema')";
+const RELOAD_METHOD = "NOTIFY pgrst, 'reload schema'" as const;
 const OWNER_FLAGS_FOR_SCHEMA_CACHE_RELOAD = REQUIRED_AGENT_OWNER_FLAGS.filter(
   (key) => key !== "S_AI_ACTION_LEDGER_MIGRATION_ROLLBACK_PLAN_APPROVED",
 );
@@ -90,6 +99,12 @@ function writeArtifacts(artifact: AiActionLedgerPostgrestSchemaCacheReloadArtifa
     runner: "scripts/db/reloadAiActionLedgerPostgrestSchemaCache.ts",
     verifier: "scripts/db/verifyAiActionLedgerPostgrestRpcVisibility.ts",
     inspector: "scripts/db/inspectAiActionLedgerMigrationState.ts",
+    db_objects_present: artifact.db_objects_present,
+    indexes_exist: artifact.indexes_exist,
+    policies_exist: artifact.policies_exist,
+    rls_enabled: artifact.rls_enabled,
+    sql_rpc_functions_exist: artifact.sql_rpc_functions_exist,
+    migration_history_record_exists: artifact.migration_history_record_exists,
     old_apply_used: false,
     blind_reapply_used: false,
     destructive_sql: false,
@@ -97,7 +112,21 @@ function writeArtifacts(artifact: AiActionLedgerPostgrestSchemaCacheReloadArtifa
     raw_rows_printed: false,
     secrets_printed: false,
   };
+  const reload = {
+    wave: "S_DB_04B_POSTGREST_SCHEMA_CACHE_VISIBILITY_CLOSEOUT",
+    schema_reload_notified: artifact.postgrest_schema_reload_notified,
+    postgrest_schema_reload_notified: artifact.postgrest_schema_reload_notified,
+    reload_method: artifact.reload_method,
+    bounded_poll_used: artifact.bounded_poll_used,
+    sql_rpc_functions_preexisted: artifact.sql_rpc_functions_exist,
+    created_or_altered_objects: false,
+    destructive_sql: false,
+    unbounded_dml: false,
+    raw_rows_printed: false,
+    secrets_printed: false,
+  };
   writeJson(inventoryPath, inventory);
+  writeJson(reloadPath, reload);
   writeJson(matrixPath, artifact);
   writeJson(emulatorPath, artifact);
   fs.writeFileSync(
@@ -109,12 +138,18 @@ function writeArtifacts(artifact: AiActionLedgerPostgrestSchemaCacheReloadArtifa
       `db_objects_present: ${String(artifact.db_objects_present)}`,
       `indexes_exist: ${String(artifact.indexes_exist)}`,
       `policies_exist: ${String(artifact.policies_exist)}`,
+      `rls_enabled: ${String(artifact.rls_enabled)}`,
       `sql_rpc_functions_exist: ${String(artifact.sql_rpc_functions_exist)}`,
+      `migration_history_record_exists: ${String(artifact.migration_history_record_exists)}`,
       `postgrest_schema_reload_notified: ${String(artifact.postgrest_schema_reload_notified)}`,
+      `reload_method: ${artifact.reload_method}`,
+      `bounded_poll_used: ${String(artifact.bounded_poll_used)}`,
       `postgrest_rpc_visible: ${String(artifact.postgrest_rpc_visible)}`,
+      `postgrest_rpc_callable_or_auth_required: ${String(artifact.postgrest_rpc_callable_or_auth_required)}`,
       `postgrest_visibility_status: ${artifact.postgrest_visibility_status ?? "null"}`,
       "old_apply_used: false",
       "blind_reapply_used: false",
+      "created_or_altered_objects: false",
       "destructive_sql: false",
       "unbounded_dml: false",
       "raw_rows_printed: false",
@@ -136,15 +171,21 @@ function artifact(
     db_objects_present: false,
     indexes_exist: false,
     policies_exist: false,
+    rls_enabled: false,
     sql_rpc_functions_exist: false,
+    migration_history_record_exists: false,
     postgrest_schema_reload_notified: false,
     postgrest_rpc_visible: false,
     postgrest_rpc_callable: false,
+    postgrest_rpc_callable_or_auth_required: false,
     postgrest_visibility_status: null,
     old_apply_used: false,
     blind_reapply_used: false,
+    created_or_altered_objects: false,
     destructive_sql: false,
     unbounded_dml: false,
+    bounded_poll_used: false,
+    reload_method: RELOAD_METHOD,
     raw_rows_printed: false,
     secrets_printed: false,
     fake_green_claimed: false,
@@ -178,6 +219,9 @@ function statusFromVisibility(
   }
   if (visibility.status === "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED") {
     return "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED";
+  }
+  if (visibility.status === "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING") {
+    return "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING";
   }
   return "BLOCKED_POSTGREST_NETWORK_ERROR";
 }
@@ -213,13 +257,15 @@ export async function reloadAiActionLedgerPostgrestSchemaCache(
     !before.functionsExist
   ) {
     return artifact(
-      "BLOCKED_AI_ACTION_LEDGER_DB_OBJECT_REGRESSION",
+      "BLOCKED_AI_ACTION_LEDGER_DB_OBJECTS_REGRESSED_AFTER_S_DB_04A",
       "AI action ledger DB objects are not fully present; S_DB_04B refuses cache reload as a regression.",
       {
         db_objects_present: Boolean(before.objectsPresent),
         indexes_exist: Boolean(before.indexesExist),
         policies_exist: Boolean(before.policiesExist),
+        rls_enabled: Boolean(before.rlsEnabled),
         sql_rpc_functions_exist: Boolean(before.functionsExist),
+        migration_history_record_exists: Boolean(before.migrationHistoryRecordExists),
         postgrest_rpc_visible: Boolean(before.postgrestSchemaCacheRpcVisible),
       },
     );
@@ -238,7 +284,9 @@ export async function reloadAiActionLedgerPostgrestSchemaCache(
         db_objects_present: true,
         indexes_exist: true,
         policies_exist: true,
+        rls_enabled: true,
         sql_rpc_functions_exist: true,
+        migration_history_record_exists: true,
       },
     );
   } finally {
@@ -278,11 +326,17 @@ export async function reloadAiActionLedgerPostgrestSchemaCache(
       db_objects_present: true,
       indexes_exist: true,
       policies_exist: true,
+      rls_enabled: true,
       sql_rpc_functions_exist: true,
+      migration_history_record_exists: true,
       postgrest_schema_reload_notified: true,
       postgrest_rpc_visible: Boolean(lastVisibility?.postgrestRpcVisible),
       postgrest_rpc_callable: Boolean(lastVisibility?.postgrestRpcCallable),
+      postgrest_rpc_callable_or_auth_required: Boolean(
+        lastVisibility?.postgrestRpcCallable || lastVisibility?.postgrestAuthRequired,
+      ),
       postgrest_visibility_status: lastVisibility?.status ?? null,
+      bounded_poll_used: true,
     },
   );
 }

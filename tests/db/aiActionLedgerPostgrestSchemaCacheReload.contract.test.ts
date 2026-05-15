@@ -10,6 +10,8 @@ describe("AI action ledger PostgREST schema-cache reload runner", () => {
     const withoutComments = source.replace(/\/\/.*$/gm, "").toLowerCase();
 
     expect(source).toContain("select pg_notify('pgrst', 'reload schema')");
+    expect(source).toContain("reloadPath");
+    expect(source).toContain("_reload.json");
     expect(source).toContain("verifyAiActionLedgerPostgrestRpcVisibility");
     expect(source).toContain("inspectAiActionLedgerMigrationState");
     expect(source).not.toContain("applyAiActionLedgerMigration.ts");
@@ -29,8 +31,11 @@ describe("AI action ledger PostgREST schema-cache reload runner", () => {
     expect(source).toContain("BLOCKED_POSTGREST_SCHEMA_CACHE_RELOAD_NOT_OBSERVED");
     expect(source).toContain("old_apply_used: false");
     expect(source).toContain("blind_reapply_used: false");
+    expect(source).toContain("created_or_altered_objects: false");
     expect(source).toContain("destructive_sql: false");
     expect(source).toContain("unbounded_dml: false");
     expect(source).toContain("fake_green_claimed: false");
+    expect(source).toContain("postgrest_rpc_callable_or_auth_required");
+    expect(source).toContain("migration_history_record_exists");
   });
 });

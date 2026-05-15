@@ -18,9 +18,11 @@ type ApprovalLedgerPersistenceStatus =
   | "GREEN_AI_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_READY"
   | "BLOCKED_REQUIRED_OWNER_FLAGS_MISSING"
   | "BLOCKED_DB_PREFLIGHT_FAILED"
-  | "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+  | "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING"
   | "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
+  | "BLOCKED_POSTGREST_SCHEMA_CACHE_RELOAD_NOT_OBSERVED"
   | "BLOCKED_POSTGREST_RPC_PERMISSION_DENIED"
+  | "BLOCKED_POSTGREST_NETWORK_ERROR"
   | "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
   | "BLOCKED_APPROVAL_LEDGER_EMULATOR_TARGETABILITY"
   | "BLOCKED_ANDROID_RUNTIME_SMOKE_FAILED";
@@ -372,15 +374,32 @@ export async function runAiApprovalLedgerPersistenceMaestro(): Promise<ApprovalL
       }
       if (visibility.directSqlFunctionsChecked && !visibility.directSqlFunctionsExist) {
         return baseArtifact({
-          status: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          status: "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING",
           preflightStatus: preflight.status,
           persistentBackend: false,
-          blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
+          blocker: "BLOCKED_AI_ACTION_LEDGER_SQL_RPC_MISSING",
           androidRuntimeSmoke: androidSmoke.status,
           exactReason: "SQL RPC functions are missing in DB.",
           overrides: {
             sql_rpc_functions_exist: false,
             postgrest_rpc_visible: visibility.postgrestRpcVisible,
+          },
+        });
+      }
+      if (visibility.status === "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE") {
+        return baseArtifact({
+          status: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
+          preflightStatus: preflight.status,
+          persistentBackend: false,
+          blocker: "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE",
+          androidRuntimeSmoke: androidSmoke.status,
+          exactReason: "SQL RPC functions exist in DB, but PostgREST schema cache does not expose them yet.",
+          overrides: {
+            sql_rpc_functions_exist: visibility.directSqlFunctionsChecked
+              ? visibility.directSqlFunctionsExist
+              : "unknown",
+            postgrest_rpc_visible: false,
+            secondary_blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED",
           },
         });
       }
@@ -400,20 +419,39 @@ export async function runAiApprovalLedgerPersistenceMaestro(): Promise<ApprovalL
           },
         });
       }
+      if (visibility.status === "BLOCKED_POSTGREST_NETWORK_ERROR") {
+        return baseArtifact({
+          status: "BLOCKED_POSTGREST_NETWORK_ERROR",
+          preflightStatus: preflight.status,
+          persistentBackend: false,
+          blocker: "BLOCKED_POSTGREST_NETWORK_ERROR",
+          androidRuntimeSmoke: androidSmoke.status,
+          exactReason: visibility.exactReason,
+          overrides: {
+            sql_rpc_functions_exist: visibility.directSqlFunctionsChecked
+              ? visibility.directSqlFunctionsExist
+              : "unknown",
+            postgrest_rpc_visible: visibility.postgrestRpcVisible,
+          },
+        });
+      }
     }
     return baseArtifact({
       status:
         health.status === "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
-          ? "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+          ? "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
           : "BLOCKED_APPROVAL_LEDGER_EMULATOR_TARGETABILITY",
       preflightStatus: preflight.status,
       persistentBackend: false,
       blocker:
         health.status === "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
-          ? "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+          ? "BLOCKED_POSTGREST_SCHEMA_CACHE_STALE"
           : "BLOCKED_APPROVAL_LEDGER_EMULATOR_TARGETABILITY",
       androidRuntimeSmoke: androidSmoke.status,
       exactReason: health.exactReason,
+      ...(health.status === "BLOCKED_LEDGER_RPC_NOT_DEPLOYED"
+        ? { overrides: { secondary_blocker: "BLOCKED_LEDGER_RPC_NOT_DEPLOYED" } }
+        : {}),
     });
   }
 

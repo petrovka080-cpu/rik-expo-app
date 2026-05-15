@@ -1,0 +1,18 @@
+{
+  "wave": "S_DB_04B_POSTGREST_SCHEMA_CACHE_VISIBILITY_CLOSEOUT",
+  "runner": "scripts/db/reloadAiActionLedgerPostgrestSchemaCache.ts",
+  "verifier": "scripts/db/verifyAiActionLedgerPostgrestRpcVisibility.ts",
+  "inspector": "scripts/db/inspectAiActionLedgerMigrationState.ts",
+  "db_objects_present": true,
+  "indexes_exist": true,
+  "policies_exist": true,
+  "rls_enabled": true,
+  "sql_rpc_functions_exist": true,
+  "migration_history_record_exists": true,
+  "old_apply_used": false,
+  "blind_reapply_used": false,
+  "destructive_sql": false,
+  "unbounded_dml": false,
+  "raw_rows_printed": false,
+  "secrets_printed": false
+}
