@@ -1,0 +1,3450 @@
+{
+  "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+  "source_audit_inventory": "artifacts/S_AI_AUDIT_02_ALL_SCREEN_BUTTON_ROLE_ACTION_MAP_inventory.json",
+  "source_registry": "src/features/ai/screenAudit/aiScreenButtonRoleActionRegistry.ts",
+  "action_ledger_bff": "src/features/ai/actionLedger/aiActionLedgerBff.ts",
+  "action_ledger_rpc_contract": "src/features/ai/actionLedger/aiActionLedgerRpcTypes.ts",
+  "router": "src/features/ai/approvalRouter/aiApprovalActionRouter.ts",
+  "redaction": "src/features/ai/approvalRouter/aiApprovalActionPayloadRedaction.ts",
+  "evidence_policy": "src/features/ai/approvalRouter/aiApprovalActionEvidencePolicy.ts",
+  "summary": {
+    "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+    "finalStatus": "GREEN_AI_APPROVAL_ACTION_ROUTER_READY",
+    "exactReason": null,
+    "auditedActions": 112,
+    "approvalRequiredActions": 28,
+    "routedActions": 28,
+    "submitRoutes": 27,
+    "ledgerDecisionRoutes": 1,
+    "evidenceMissingActions": [],
+    "routeMissingActions": [],
+    "directExecuteFindings": [],
+    "ledgerRpcVisible": true,
+    "executeOnlyAfterApproved": true,
+    "redactionSafeActions": 28,
+    "noSecrets": true,
+    "noRawRows": true,
+    "noRawPrompts": true,
+    "noRawProviderPayloads": true,
+    "noDbWrites": true,
+    "noProviderCalls": true,
+    "noUiChanges": true,
+    "noFakeGreen": true
+  },
+  "route_entries": [
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "director.dashboard",
+      "actionId": "director.dashboard.approval",
+      "actionLabel": "Submit director decision pack for approval",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "auditPrimaryDomain": "control",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "director.dashboard",
+        "domain": "control",
+        "summary": "Submit director decision pack for approval (director.dashboard) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "director.dashboard",
+          "actionId": "director.dashboard.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit director decision pack for approval",
+          "roleScope": [
+            "control",
+            "director"
+          ],
+          "primaryDomain": "control",
+          "evidenceSources": [
+            "approval_policy",
+            "finance_summary",
+            "ledger_status",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "director_control_center"
+        },
+        "evidenceRefs": [
+          "audit:director.dashboard:director.dashboard.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.dashboard:approval_policy",
+          "evidence:director.dashboard:finance_summary",
+          "evidence:director.dashboard:ledger_status",
+          "evidence:director.dashboard:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:director.dashboard:director.dashboard.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:director.dashboard:director.dashboard.approval:submit_request:1e5zjuu",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:director.dashboard:director.dashboard.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.dashboard:approval_policy",
+          "evidence:director.dashboard:finance_summary",
+          "evidence:director.dashboard:ledger_status",
+          "evidence:director.dashboard:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:director.dashboard:director.dashboard.approval:submit_request:1e5zjuu",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "director.finance",
+      "actionId": "director.finance.approval",
+      "actionLabel": "Submit finance decision for approval",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "auditPrimaryDomain": "finance",
+      "domain": "finance",
+      "mutationRisk": "approval_required",
+      "actionType": "change_payment_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_payment_status",
+        "screenId": "director.finance",
+        "domain": "finance",
+        "summary": "Submit finance decision for approval (director.finance) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "director.finance",
+          "actionId": "director.finance.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit finance decision for approval",
+          "roleScope": [
+            "control",
+            "director"
+          ],
+          "primaryDomain": "finance",
+          "evidenceSources": [
+            "approval_policy",
+            "finance_summary",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "finance_copilot"
+        },
+        "evidenceRefs": [
+          "audit:director.finance:director.finance.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.finance:approval_policy",
+          "evidence:director.finance:finance_summary",
+          "evidence:director.finance:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:director.finance:director.finance.approval:change_payment_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:director.finance:director.finance.approval:change_payment_status:1bs1vo3",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:director.finance:director.finance.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.finance:approval_policy",
+          "evidence:director.finance:finance_summary",
+          "evidence:director.finance:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:director.finance:director.finance.approval:change_payment_status:1bs1vo3",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "director.reports",
+      "actionId": "director.reports.approval",
+      "actionLabel": "Submit report package for approval",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "auditPrimaryDomain": "reports",
+      "domain": "reports",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "director.reports",
+        "domain": "reports",
+        "summary": "Submit report package for approval (director.reports) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "director.reports",
+          "actionId": "director.reports.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit report package for approval",
+          "roleScope": [
+            "control",
+            "director"
+          ],
+          "primaryDomain": "reports",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "report_summary"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "director_control_center"
+        },
+        "evidenceRefs": [
+          "audit:director.reports:director.reports.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.reports:approval_policy",
+          "evidence:director.reports:document_metadata",
+          "evidence:director.reports:report_summary"
+        ],
+        "idempotencyKey": "ai_approval_router:director.reports:director.reports.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:director.reports:director.reports.approval:send_document:zcjh3l",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:director.reports:director.reports.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:director.reports:approval_policy",
+          "evidence:director.reports:document_metadata",
+          "evidence:director.reports:report_summary"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:director.reports:director.reports.approval:send_document:zcjh3l",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "ai.command_center",
+      "actionId": "ai.command_center.approval",
+      "actionLabel": "Submit command center action for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "control",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "ai.command_center",
+        "domain": "control",
+        "summary": "Submit command center action for approval (ai.command_center) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "ai.command_center",
+          "actionId": "ai.command_center.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit command center action for approval",
+          "roleScope": [
+            "accountant",
+            "admin",
+            "buyer",
+            "contractor",
+            "control",
+            "director",
+            "foreman",
+            "office",
+            "warehouse"
+          ],
+          "primaryDomain": "control",
+          "evidenceSources": [
+            "ledger_status",
+            "role_policy",
+            "screen_state",
+            "tool_contract"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "approval_ledger_hardening"
+        },
+        "evidenceRefs": [
+          "audit:ai.command_center:ai.command_center.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:ai.command_center:ledger_status",
+          "evidence:ai.command_center:role_policy",
+          "evidence:ai.command_center:screen_state",
+          "evidence:ai.command_center:tool_contract"
+        ],
+        "idempotencyKey": "ai_approval_router:ai.command_center:ai.command_center.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:ai.command_center:ai.command_center.approval:submit_request:w73c4t",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:ai.command_center:ai.command_center.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:ai.command_center:ledger_status",
+          "evidence:ai.command_center:role_policy",
+          "evidence:ai.command_center:screen_state",
+          "evidence:ai.command_center:tool_contract"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:ai.command_center:ai.command_center.approval:submit_request:w73c4t",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "approval.inbox",
+      "actionId": "approval.inbox.approval",
+      "actionLabel": "Approve or reject through ledger RPC",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "auditPrimaryDomain": "control",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "ledger_decision",
+      "ledgerRoute": {
+        "kind": "ledger_decision",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": false
+      },
+      "ledgerSubmitPayload": null,
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:approval.inbox:approval.inbox.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/approval-inbox/:actionId/approve",
+          "bff:POST /agent/approval-inbox/:actionId/execute-approved",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:approval.inbox:approval_policy",
+          "evidence:approval.inbox:ledger_status",
+          "evidence:approval.inbox:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:approval.inbox:approval.inbox.approval:submit_request:17av82n",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Approval inbox actions remain ledger decision routes and can execute only through approved ledger status."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "buyer.main",
+      "actionId": "buyer.main.approval",
+      "actionLabel": "Submit buyer request for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "auditPrimaryDomain": "procurement",
+      "domain": "procurement",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "buyer.main",
+        "domain": "procurement",
+        "summary": "Submit buyer request for approval (buyer.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "buyer.main",
+          "actionId": "buyer.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit buyer request for approval",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "procurement",
+          "evidenceSources": [
+            "approval_policy",
+            "procurement_context",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "procurement_execution"
+        },
+        "evidenceRefs": [
+          "audit:buyer.main:buyer.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.main:approval_policy",
+          "evidence:buyer.main:procurement_context",
+          "evidence:buyer.main:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:buyer.main:buyer.main.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:buyer.main:buyer.main.approval:confirm_supplier:qd5wsj",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:buyer.main:buyer.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.main:approval_policy",
+          "evidence:buyer.main:procurement_context",
+          "evidence:buyer.main:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:buyer.main:buyer.main.approval:confirm_supplier:qd5wsj",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "buyer.requests",
+      "actionId": "buyer.requests.approval",
+      "actionLabel": "Submit buyer proposal pack",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "auditPrimaryDomain": "procurement",
+      "domain": "procurement",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "buyer.requests",
+        "domain": "procurement",
+        "summary": "Submit buyer proposal pack (buyer.requests) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "buyer.requests",
+          "actionId": "buyer.requests.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit buyer proposal pack",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "procurement",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "procurement_context"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "procurement_execution"
+        },
+        "evidenceRefs": [
+          "audit:buyer.requests:buyer.requests.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.requests:approval_policy",
+          "evidence:buyer.requests:document_metadata",
+          "evidence:buyer.requests:procurement_context"
+        ],
+        "idempotencyKey": "ai_approval_router:buyer.requests:buyer.requests.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:buyer.requests:buyer.requests.approval:confirm_supplier:p644dd",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:buyer.requests:buyer.requests.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.requests:approval_policy",
+          "evidence:buyer.requests:document_metadata",
+          "evidence:buyer.requests:procurement_context"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:buyer.requests:buyer.requests.approval:confirm_supplier:p644dd",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "buyer.request.detail",
+      "actionId": "buyer.request.detail.approval",
+      "actionLabel": "Submit detailed supplier decision",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "auditPrimaryDomain": "procurement",
+      "domain": "procurement",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "buyer.request.detail",
+        "domain": "procurement",
+        "summary": "Submit detailed supplier decision (buyer.request.detail) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "buyer.request.detail",
+          "actionId": "buyer.request.detail.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit detailed supplier decision",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "procurement",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "procurement_context"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "procurement_execution"
+        },
+        "evidenceRefs": [
+          "audit:buyer.request.detail:buyer.request.detail.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.request.detail:approval_policy",
+          "evidence:buyer.request.detail:document_metadata",
+          "evidence:buyer.request.detail:procurement_context"
+        ],
+        "idempotencyKey": "ai_approval_router:buyer.request.detail:buyer.request.detail.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:buyer.request.detail:buyer.request.detail.approval:confirm_supplier:18wlyhl",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:buyer.request.detail:buyer.request.detail.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:buyer.request.detail:approval_policy",
+          "evidence:buyer.request.detail:document_metadata",
+          "evidence:buyer.request.detail:procurement_context"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:buyer.request.detail:buyer.request.detail.approval:confirm_supplier:18wlyhl",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "procurement.copilot",
+      "actionId": "procurement.copilot.approval",
+      "actionLabel": "Prepare copilot submit-for-approval preview",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "auditPrimaryDomain": "procurement",
+      "domain": "procurement",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "procurement.copilot",
+        "domain": "procurement",
+        "summary": "Prepare copilot submit-for-approval preview (procurement.copilot) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "procurement.copilot",
+          "actionId": "procurement.copilot.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Prepare copilot submit-for-approval preview",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "procurement",
+          "evidenceSources": [
+            "approval_policy",
+            "procurement_context",
+            "tool_contract"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/copilot/submit-for-approval-preview",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "procurement_execution"
+        },
+        "evidenceRefs": [
+          "audit:procurement.copilot:procurement.copilot.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/copilot/submit-for-approval-preview",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:procurement.copilot:approval_policy",
+          "evidence:procurement.copilot:procurement_context",
+          "evidence:procurement.copilot:tool_contract"
+        ],
+        "idempotencyKey": "ai_approval_router:procurement.copilot:procurement.copilot.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:procurement.copilot:procurement.copilot.approval:confirm_supplier:urckay",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:procurement.copilot:procurement.copilot.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/copilot/submit-for-approval-preview",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:procurement.copilot:approval_policy",
+          "evidence:procurement.copilot:procurement_context",
+          "evidence:procurement.copilot:tool_contract"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:procurement.copilot:procurement.copilot.approval:confirm_supplier:urckay",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "market.home",
+      "actionId": "market.home.approval",
+      "actionLabel": "Submit marketplace-backed request",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "marketplace",
+      "domain": "marketplace",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "market.home",
+        "domain": "marketplace",
+        "summary": "Submit marketplace-backed request (market.home) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "market.home",
+          "actionId": "market.home.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit marketplace-backed request",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "marketplace",
+          "evidenceSources": [
+            "procurement_context",
+            "screen_state",
+            "tool_contract"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "market_supplier_intel"
+        },
+        "evidenceRefs": [
+          "audit:market.home:market.home.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:market.home:procurement_context",
+          "evidence:market.home:screen_state",
+          "evidence:market.home:tool_contract"
+        ],
+        "idempotencyKey": "ai_approval_router:market.home:market.home.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:market.home:market.home.approval:confirm_supplier:hwrsae",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:market.home:market.home.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:market.home:procurement_context",
+          "evidence:market.home:screen_state",
+          "evidence:market.home:tool_contract"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:market.home:market.home.approval:confirm_supplier:hwrsae",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "supplier.showcase",
+      "actionId": "supplier.showcase.approval",
+      "actionLabel": "Submit supplier recommendation",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "marketplace",
+      "domain": "marketplace",
+      "mutationRisk": "approval_required",
+      "actionType": "confirm_supplier",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "confirm_supplier",
+        "screenId": "supplier.showcase",
+        "domain": "marketplace",
+        "summary": "Submit supplier recommendation (supplier.showcase) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "supplier.showcase",
+          "actionId": "supplier.showcase.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit supplier recommendation",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "marketplace",
+          "evidenceSources": [
+            "procurement_context",
+            "screen_state",
+            "tool_contract"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "market_supplier_intel"
+        },
+        "evidenceRefs": [
+          "audit:supplier.showcase:supplier.showcase.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:supplier.showcase:procurement_context",
+          "evidence:supplier.showcase:screen_state",
+          "evidence:supplier.showcase:tool_contract"
+        ],
+        "idempotencyKey": "ai_approval_router:supplier.showcase:supplier.showcase.approval:confirm_supplier:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:supplier.showcase:supplier.showcase.approval:confirm_supplier:sfnho2",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:supplier.showcase:supplier.showcase.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/procurement/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:supplier.showcase:procurement_context",
+          "evidence:supplier.showcase:screen_state",
+          "evidence:supplier.showcase:tool_contract"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:supplier.showcase:supplier.showcase.approval:confirm_supplier:sfnho2",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "warehouse.main",
+      "actionId": "warehouse.main.approval",
+      "actionLabel": "Submit warehouse action for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "warehouse"
+      ],
+      "auditPrimaryDomain": "warehouse",
+      "domain": "warehouse",
+      "mutationRisk": "approval_required",
+      "actionType": "change_warehouse_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_warehouse_status",
+        "screenId": "warehouse.main",
+        "domain": "warehouse",
+        "summary": "Submit warehouse action for approval (warehouse.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "warehouse.main",
+          "actionId": "warehouse.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit warehouse action for approval",
+          "roleScope": [
+            "control",
+            "director",
+            "warehouse"
+          ],
+          "primaryDomain": "warehouse",
+          "evidenceSources": [
+            "approval_policy",
+            "screen_state",
+            "warehouse_status"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "warehouse_copilot"
+        },
+        "evidenceRefs": [
+          "audit:warehouse.main:warehouse.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.main:approval_policy",
+          "evidence:warehouse.main:screen_state",
+          "evidence:warehouse.main:warehouse_status"
+        ],
+        "idempotencyKey": "ai_approval_router:warehouse.main:warehouse.main.approval:change_warehouse_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:warehouse.main:warehouse.main.approval:change_warehouse_status:zocdaq",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:warehouse.main:warehouse.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.main:approval_policy",
+          "evidence:warehouse.main:screen_state",
+          "evidence:warehouse.main:warehouse_status"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:warehouse.main:warehouse.main.approval:change_warehouse_status:zocdaq",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "warehouse.incoming",
+      "actionId": "warehouse.incoming.approval",
+      "actionLabel": "Submit incoming exception for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "warehouse"
+      ],
+      "auditPrimaryDomain": "warehouse",
+      "domain": "warehouse",
+      "mutationRisk": "approval_required",
+      "actionType": "change_warehouse_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_warehouse_status",
+        "screenId": "warehouse.incoming",
+        "domain": "warehouse",
+        "summary": "Submit incoming exception for approval (warehouse.incoming) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "warehouse.incoming",
+          "actionId": "warehouse.incoming.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit incoming exception for approval",
+          "roleScope": [
+            "control",
+            "director",
+            "warehouse"
+          ],
+          "primaryDomain": "warehouse",
+          "evidenceSources": [
+            "approval_policy",
+            "screen_state",
+            "warehouse_status"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "warehouse_copilot"
+        },
+        "evidenceRefs": [
+          "audit:warehouse.incoming:warehouse.incoming.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.incoming:approval_policy",
+          "evidence:warehouse.incoming:screen_state",
+          "evidence:warehouse.incoming:warehouse_status"
+        ],
+        "idempotencyKey": "ai_approval_router:warehouse.incoming:warehouse.incoming.approval:change_warehouse_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:warehouse.incoming:warehouse.incoming.approval:change_warehouse_status:5ffut4",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:warehouse.incoming:warehouse.incoming.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.incoming:approval_policy",
+          "evidence:warehouse.incoming:screen_state",
+          "evidence:warehouse.incoming:warehouse_status"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:warehouse.incoming:warehouse.incoming.approval:change_warehouse_status:5ffut4",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "warehouse.issue",
+      "actionId": "warehouse.issue.approval",
+      "actionLabel": "Submit warehouse issue request",
+      "roleScope": [
+        "director",
+        "control",
+        "warehouse"
+      ],
+      "auditPrimaryDomain": "warehouse",
+      "domain": "warehouse",
+      "mutationRisk": "approval_required",
+      "actionType": "change_warehouse_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_warehouse_status",
+        "screenId": "warehouse.issue",
+        "domain": "warehouse",
+        "summary": "Submit warehouse issue request (warehouse.issue) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "warehouse.issue",
+          "actionId": "warehouse.issue.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit warehouse issue request",
+          "roleScope": [
+            "control",
+            "director",
+            "warehouse"
+          ],
+          "primaryDomain": "warehouse",
+          "evidenceSources": [
+            "approval_policy",
+            "screen_state",
+            "warehouse_status"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "warehouse_copilot"
+        },
+        "evidenceRefs": [
+          "audit:warehouse.issue:warehouse.issue.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.issue:approval_policy",
+          "evidence:warehouse.issue:screen_state",
+          "evidence:warehouse.issue:warehouse_status"
+        ],
+        "idempotencyKey": "ai_approval_router:warehouse.issue:warehouse.issue.approval:change_warehouse_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:warehouse.issue:warehouse.issue.approval:change_warehouse_status:jus968",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:warehouse.issue:warehouse.issue.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:warehouse.issue:approval_policy",
+          "evidence:warehouse.issue:screen_state",
+          "evidence:warehouse.issue:warehouse_status"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:warehouse.issue:warehouse.issue.approval:change_warehouse_status:jus968",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "accountant.main",
+      "actionId": "accountant.main.approval",
+      "actionLabel": "Submit finance document for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "accountant"
+      ],
+      "auditPrimaryDomain": "finance",
+      "domain": "finance",
+      "mutationRisk": "approval_required",
+      "actionType": "change_payment_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_payment_status",
+        "screenId": "accountant.main",
+        "domain": "finance",
+        "summary": "Submit finance document for approval (accountant.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "accountant.main",
+          "actionId": "accountant.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit finance document for approval",
+          "roleScope": [
+            "accountant",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "finance",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "finance_summary"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "finance_copilot"
+        },
+        "evidenceRefs": [
+          "audit:accountant.main:accountant.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.main:approval_policy",
+          "evidence:accountant.main:document_metadata",
+          "evidence:accountant.main:finance_summary"
+        ],
+        "idempotencyKey": "ai_approval_router:accountant.main:accountant.main.approval:change_payment_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:accountant.main:accountant.main.approval:change_payment_status:1cwywu6",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:accountant.main:accountant.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.main:approval_policy",
+          "evidence:accountant.main:document_metadata",
+          "evidence:accountant.main:finance_summary"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:accountant.main:accountant.main.approval:change_payment_status:1cwywu6",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "accountant.payment",
+      "actionId": "accountant.payment.approval",
+      "actionLabel": "Submit payment for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "accountant"
+      ],
+      "auditPrimaryDomain": "finance",
+      "domain": "finance",
+      "mutationRisk": "approval_required",
+      "actionType": "change_payment_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_payment_status",
+        "screenId": "accountant.payment",
+        "domain": "finance",
+        "summary": "Submit payment for approval (accountant.payment) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "accountant.payment",
+          "actionId": "accountant.payment.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit payment for approval",
+          "roleScope": [
+            "accountant",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "finance",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "finance_summary"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "finance_copilot"
+        },
+        "evidenceRefs": [
+          "audit:accountant.payment:accountant.payment.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.payment:approval_policy",
+          "evidence:accountant.payment:document_metadata",
+          "evidence:accountant.payment:finance_summary"
+        ],
+        "idempotencyKey": "ai_approval_router:accountant.payment:accountant.payment.approval:change_payment_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:accountant.payment:accountant.payment.approval:change_payment_status:12g6kjr",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:accountant.payment:accountant.payment.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.payment:approval_policy",
+          "evidence:accountant.payment:document_metadata",
+          "evidence:accountant.payment:finance_summary"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:accountant.payment:accountant.payment.approval:change_payment_status:12g6kjr",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "accountant.history",
+      "actionId": "accountant.history.approval",
+      "actionLabel": "Submit accounting correction request",
+      "roleScope": [
+        "director",
+        "control",
+        "accountant"
+      ],
+      "auditPrimaryDomain": "finance",
+      "domain": "finance",
+      "mutationRisk": "approval_required",
+      "actionType": "change_payment_status",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "change_payment_status",
+        "screenId": "accountant.history",
+        "domain": "finance",
+        "summary": "Submit accounting correction request (accountant.history) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "accountant.history",
+          "actionId": "accountant.history.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit accounting correction request",
+          "roleScope": [
+            "accountant",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "finance",
+          "evidenceSources": [
+            "document_metadata",
+            "finance_summary",
+            "ledger_status"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "finance_copilot"
+        },
+        "evidenceRefs": [
+          "audit:accountant.history:accountant.history.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.history:document_metadata",
+          "evidence:accountant.history:finance_summary",
+          "evidence:accountant.history:ledger_status"
+        ],
+        "idempotencyKey": "ai_approval_router:accountant.history:accountant.history.approval:change_payment_status:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:accountant.history:accountant.history.approval:change_payment_status:teta5b",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:accountant.history:accountant.history.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:accountant.history:document_metadata",
+          "evidence:accountant.history:finance_summary",
+          "evidence:accountant.history:ledger_status"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:accountant.history:accountant.history.approval:change_payment_status:teta5b",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.approval",
+      "actionLabel": "Submit foreman request for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "projects",
+      "domain": "projects",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "foreman.main",
+        "domain": "projects",
+        "summary": "Submit foreman request for approval (foreman.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "foreman.main",
+          "actionId": "foreman.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit foreman request for approval",
+          "roleScope": [
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "projects",
+          "evidenceSources": [
+            "procurement_context",
+            "screen_state",
+            "warehouse_status"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "foreman_closeout"
+        },
+        "evidenceRefs": [
+          "audit:foreman.main:foreman.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.main:procurement_context",
+          "evidence:foreman.main:screen_state",
+          "evidence:foreman.main:warehouse_status"
+        ],
+        "idempotencyKey": "ai_approval_router:foreman.main:foreman.main.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:foreman.main:foreman.main.approval:submit_request:thtip0",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:foreman.main:foreman.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.main:procurement_context",
+          "evidence:foreman.main:screen_state",
+          "evidence:foreman.main:warehouse_status"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:foreman.main:foreman.main.approval:submit_request:thtip0",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.approval",
+      "actionLabel": "Submit quick request for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "procurement",
+      "domain": "procurement",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "foreman.ai.quick_modal",
+        "domain": "procurement",
+        "summary": "Submit quick request for approval (foreman.ai.quick_modal) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "foreman.ai.quick_modal",
+          "actionId": "foreman.ai.quick_modal.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit quick request for approval",
+          "roleScope": [
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "procurement",
+          "evidenceSources": [
+            "approval_policy",
+            "procurement_context",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "foreman_closeout"
+        },
+        "evidenceRefs": [
+          "audit:foreman.ai.quick_modal:foreman.ai.quick_modal.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.ai.quick_modal:approval_policy",
+          "evidence:foreman.ai.quick_modal:procurement_context",
+          "evidence:foreman.ai.quick_modal:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:foreman.ai.quick_modal:foreman.ai.quick_modal.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:foreman.ai.quick_modal:foreman.ai.quick_modal.approval:submit_request:1jloe0n",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:foreman.ai.quick_modal:foreman.ai.quick_modal.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.ai.quick_modal:approval_policy",
+          "evidence:foreman.ai.quick_modal:procurement_context",
+          "evidence:foreman.ai.quick_modal:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:foreman.ai.quick_modal:foreman.ai.quick_modal.approval:submit_request:1jloe0n",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.approval",
+      "actionLabel": "Submit subcontract progress",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "subcontracts",
+      "domain": "subcontracts",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "foreman.subcontract",
+        "domain": "subcontracts",
+        "summary": "Submit subcontract progress (foreman.subcontract) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "foreman.subcontract",
+          "actionId": "foreman.subcontract.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit subcontract progress",
+          "roleScope": [
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "subcontracts",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "foreman_closeout"
+        },
+        "evidenceRefs": [
+          "audit:foreman.subcontract:foreman.subcontract.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.subcontract:approval_policy",
+          "evidence:foreman.subcontract:document_metadata",
+          "evidence:foreman.subcontract:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:foreman.subcontract:foreman.subcontract.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:foreman.subcontract:foreman.subcontract.approval:send_document:w56vko",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:foreman.subcontract:foreman.subcontract.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:foreman.subcontract:approval_policy",
+          "evidence:foreman.subcontract:document_metadata",
+          "evidence:foreman.subcontract:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:foreman.subcontract:foreman.subcontract.approval:send_document:w56vko",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "contractor.main",
+      "actionId": "contractor.main.approval",
+      "actionLabel": "Submit contractor progress for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "contractor"
+      ],
+      "auditPrimaryDomain": "subcontracts",
+      "domain": "subcontracts",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "contractor.main",
+        "domain": "subcontracts",
+        "summary": "Submit contractor progress for approval (contractor.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "contractor.main",
+          "actionId": "contractor.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit contractor progress for approval",
+          "roleScope": [
+            "contractor",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "subcontracts",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "foreman_closeout"
+        },
+        "evidenceRefs": [
+          "audit:contractor.main:contractor.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:contractor.main:approval_policy",
+          "evidence:contractor.main:document_metadata",
+          "evidence:contractor.main:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:contractor.main:contractor.main.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:contractor.main:contractor.main.approval:send_document:1yjsyv3",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:contractor.main:contractor.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:contractor.main:approval_policy",
+          "evidence:contractor.main:document_metadata",
+          "evidence:contractor.main:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:contractor.main:contractor.main.approval:send_document:1yjsyv3",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.approval",
+      "actionLabel": "Submit report for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "reports",
+      "domain": "reports",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "reports.modal",
+        "domain": "reports",
+        "summary": "Submit report for approval (reports.modal) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit report for approval",
+          "roleScope": [
+            "accountant",
+            "admin",
+            "buyer",
+            "contractor",
+            "control",
+            "director",
+            "foreman",
+            "office",
+            "warehouse"
+          ],
+          "primaryDomain": "reports",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "report_summary"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "director_control_center"
+        },
+        "evidenceRefs": [
+          "audit:reports.modal:reports.modal.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:reports.modal:approval_policy",
+          "evidence:reports.modal:document_metadata",
+          "evidence:reports.modal:report_summary"
+        ],
+        "idempotencyKey": "ai_approval_router:reports.modal:reports.modal.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:reports.modal:reports.modal.approval:send_document:1q7tl9d",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:reports.modal:reports.modal.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:reports.modal:approval_policy",
+          "evidence:reports.modal:document_metadata",
+          "evidence:reports.modal:report_summary"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:reports.modal:reports.modal.approval:send_document:1q7tl9d",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "documents.main",
+      "actionId": "documents.main.approval",
+      "actionLabel": "Submit document change for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "documents",
+      "domain": "documents",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "documents.main",
+        "domain": "documents",
+        "summary": "Submit document change for approval (documents.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "documents.main",
+          "actionId": "documents.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit document change for approval",
+          "roleScope": [
+            "accountant",
+            "admin",
+            "buyer",
+            "contractor",
+            "control",
+            "director",
+            "foreman",
+            "office",
+            "warehouse"
+          ],
+          "primaryDomain": "documents",
+          "evidenceSources": [
+            "approval_policy",
+            "document_metadata",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "route_missing_or_not_registered",
+          "recommendedNextWave": "screen_runtime_bff_coverage"
+        },
+        "evidenceRefs": [
+          "audit:documents.main:documents.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:documents.main:approval_policy",
+          "evidence:documents.main:document_metadata",
+          "evidence:documents.main:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:documents.main:documents.main.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:documents.main:documents.main.approval:send_document:18swcwc",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:documents.main:documents.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:documents.main:approval_policy",
+          "evidence:documents.main:document_metadata",
+          "evidence:documents.main:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:documents.main:documents.main.approval:send_document:18swcwc",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "chat.main",
+      "actionId": "chat.main.approval",
+      "actionLabel": "Submit chat evidence for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "chat",
+      "domain": "chat",
+      "mutationRisk": "approval_required",
+      "actionType": "send_document",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "send_document",
+        "screenId": "chat.main",
+        "domain": "chat",
+        "summary": "Submit chat evidence for approval (chat.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "chat.main",
+          "actionId": "chat.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit chat evidence for approval",
+          "roleScope": [
+            "accountant",
+            "admin",
+            "buyer",
+            "contractor",
+            "control",
+            "director",
+            "foreman",
+            "office",
+            "warehouse"
+          ],
+          "primaryDomain": "chat",
+          "evidenceSources": [
+            "chat_thread",
+            "document_metadata",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "screen_runtime_bff_coverage"
+        },
+        "evidenceRefs": [
+          "audit:chat.main:chat.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:chat.main:chat_thread",
+          "evidence:chat.main:document_metadata",
+          "evidence:chat.main:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:chat.main:chat.main.approval:send_document:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:chat.main:chat.main.approval:send_document:1yacrhs",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:chat.main:chat.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:chat.main:chat_thread",
+          "evidence:chat.main:document_metadata",
+          "evidence:chat.main:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:chat.main:chat.main.approval:send_document:1yacrhs",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "map.main",
+      "actionId": "map.main.approval",
+      "actionLabel": "Submit site context for approval",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "auditPrimaryDomain": "map",
+      "domain": "map",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "map.main",
+        "domain": "map",
+        "summary": "Submit site context for approval (map.main) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "map.main",
+          "actionId": "map.main.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit site context for approval",
+          "roleScope": [
+            "buyer",
+            "control",
+            "director",
+            "foreman"
+          ],
+          "primaryDomain": "map",
+          "evidenceSources": [
+            "map_context",
+            "role_policy",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "screen_runtime_bff_coverage"
+        },
+        "evidenceRefs": [
+          "audit:map.main:map.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:map.main:map_context",
+          "evidence:map.main:role_policy",
+          "evidence:map.main:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:map.main:map.main.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:map.main:map.main.approval:submit_request:1kzh42j",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:map.main:map.main.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:map.main:map_context",
+          "evidence:map.main:role_policy",
+          "evidence:map.main:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:map.main:map.main.approval:submit_request:1kzh42j",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "office.hub",
+      "actionId": "office.hub.approval",
+      "actionLabel": "Submit office access change",
+      "roleScope": [
+        "director",
+        "control",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "control",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "office.hub",
+        "domain": "control",
+        "summary": "Submit office access change (office.hub) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "office.hub",
+          "actionId": "office.hub.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit office access change",
+          "roleScope": [
+            "admin",
+            "control",
+            "director",
+            "office"
+          ],
+          "primaryDomain": "control",
+          "evidenceSources": [
+            "office_directory",
+            "role_policy",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "security_admin_review"
+        },
+        "evidenceRefs": [
+          "audit:office.hub:office.hub.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:office.hub:office_directory",
+          "evidence:office.hub:role_policy",
+          "evidence:office.hub:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:office.hub:office.hub.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:office.hub:office.hub.approval:submit_request:410h99",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:office.hub:office.hub.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:office.hub:office_directory",
+          "evidence:office.hub:role_policy",
+          "evidence:office.hub:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:office.hub:office.hub.approval:submit_request:410h99",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "security.screen",
+      "actionId": "security.screen.approval",
+      "actionLabel": "Submit security change request",
+      "roleScope": [
+        "director",
+        "control",
+        "admin"
+      ],
+      "auditPrimaryDomain": "security",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "security.screen",
+        "domain": "control",
+        "summary": "Submit security change request (security.screen) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "security.screen",
+          "actionId": "security.screen.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Submit security change request",
+          "roleScope": [
+            "admin",
+            "control",
+            "director"
+          ],
+          "primaryDomain": "security",
+          "evidenceSources": [
+            "approval_policy",
+            "role_policy",
+            "screen_state"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "security_admin_review"
+        },
+        "evidenceRefs": [
+          "audit:security.screen:security.screen.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:security.screen:approval_policy",
+          "evidence:security.screen:role_policy",
+          "evidence:security.screen:screen_state"
+        ],
+        "idempotencyKey": "ai_approval_router:security.screen:security.screen.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:security.screen:security.screen.approval:submit_request:1i5ap7e",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:security.screen:security.screen.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:security.screen:approval_policy",
+          "evidence:security.screen:role_policy",
+          "evidence:security.screen:screen_state"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:security.screen:security.screen.approval:submit_request:1i5ap7e",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    },
+    {
+      "wave": "S_AI_APPROVAL_01_ACTION_ROUTER_FROM_AUDIT",
+      "screenId": "screen.runtime",
+      "actionId": "screen.runtime.approval",
+      "actionLabel": "Prepare approval-gated runtime action",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "auditPrimaryDomain": "screen_runtime",
+      "domain": "control",
+      "mutationRisk": "approval_required",
+      "actionType": "submit_request",
+      "routeStatus": "ready",
+      "routeKind": "submit_for_approval",
+      "ledgerRoute": {
+        "kind": "submit_for_approval",
+        "submitEndpoint": "POST /agent/action/submit-for-approval",
+        "statusEndpoint": "GET /agent/action/:actionId/status",
+        "approveEndpoint": "POST /agent/action/:actionId/approve",
+        "rejectEndpoint": "POST /agent/action/:actionId/reject",
+        "executeApprovedEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "rpcSubmitFunction": "ai_action_ledger_submit_for_approval_v1",
+        "rpcExecuteApprovedFunction": "ai_action_ledger_execute_approved_v1",
+        "ledgerBacked": true,
+        "roleResolvedServerSide": true,
+        "organizationScopeResolvedServerSide": true,
+        "directExecuteAllowed": false,
+        "submitPayloadRequired": true
+      },
+      "ledgerSubmitPayload": {
+        "endpoint": "POST /agent/action/submit-for-approval",
+        "actionType": "submit_request",
+        "screenId": "screen.runtime",
+        "domain": "control",
+        "summary": "Prepare approval-gated runtime action (screen.runtime) requires approval ledger review.",
+        "redactedPayload": {
+          "source": "ai_all_screen_button_role_action_audit_v1",
+          "screenId": "screen.runtime",
+          "actionId": "screen.runtime.approval",
+          "actionKind": "approval_required",
+          "mutationRisk": "approval_required",
+          "label": "Prepare approval-gated runtime action",
+          "roleScope": [
+            "accountant",
+            "admin",
+            "buyer",
+            "contractor",
+            "control",
+            "director",
+            "foreman",
+            "office",
+            "warehouse"
+          ],
+          "primaryDomain": "screen_runtime",
+          "evidenceSources": [
+            "role_policy",
+            "screen_state",
+            "tool_contract"
+          ],
+          "existingBffRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+            "POST /agent/screen-runtime/:screenId/action-plan"
+          ],
+          "routeStatus": "registered",
+          "recommendedNextWave": "screen_runtime_bff_coverage"
+        },
+        "evidenceRefs": [
+          "audit:screen.runtime:screen.runtime.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:screen.runtime:role_policy",
+          "evidence:screen.runtime:screen_state",
+          "evidence:screen.runtime:tool_contract"
+        ],
+        "idempotencyKey": "ai_approval_router:screen.runtime:screen.runtime.approval:submit_request:1cqyubz",
+        "requiresApproval": true,
+        "auditTraceId": "ai_approval_trace:screen.runtime:screen.runtime.approval:submit_request:1wqh4gz",
+        "directExecuteAllowed": false,
+        "providerCalled": false,
+        "dbWriteInRouter": false
+      },
+      "evidencePolicy": {
+        "ok": true,
+        "requiredEvidenceKinds": [
+          "audit_action",
+          "domain_evidence",
+          "approval_route"
+        ],
+        "missingEvidenceKinds": [],
+        "evidenceRefs": [
+          "audit:screen.runtime:screen.runtime.approval",
+          "bff:POST /agent/action/submit-for-approval",
+          "bff:POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+          "evidence:screen.runtime:role_policy",
+          "evidence:screen.runtime:screen_state",
+          "evidence:screen.runtime:tool_contract"
+        ],
+        "maxEvidenceRefs": 20,
+        "evidenceBacked": true
+      },
+      "payloadSafety": {
+        "redacted": true,
+        "forbiddenKeys": [],
+        "rawPromptExposed": false,
+        "rawProviderPayloadExposed": false,
+        "rawDbRowsExposed": false,
+        "credentialsExposed": false
+      },
+      "executionPolicy": {
+        "executeEndpoint": "POST /agent/action/:actionId/execute-approved",
+        "requiresApprovedStatus": true,
+        "allowedStatuses": [
+          "approved"
+        ],
+        "directExecuteAllowed": false,
+        "domainExecutorRequiredAfterApproval": true
+      },
+      "auditTraceId": "ai_approval_trace:screen.runtime:screen.runtime.approval:submit_request:1wqh4gz",
+      "noDirectExecutePath": true,
+      "finalExecutionInRouter": false,
+      "dbWritesInRouter": false,
+      "providerCallsInRouter": false,
+      "rationale": "Audited approval-required action is converted to a redacted ledger submit payload without execution."
+    }
+  ],
+  "safeguards": {
+    "ui_changed": false,
+    "db_writes_used": false,
+    "provider_called": false,
+    "secrets_printed": false,
+    "raw_rows_printed": false,
+    "raw_prompts_printed": false,
+    "raw_provider_payloads_printed": false,
+    "direct_execute_allowed": false,
+    "fake_green_claimed": false
+  }
+}

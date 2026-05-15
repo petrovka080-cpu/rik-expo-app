@@ -493,6 +493,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "bffCoverage", "aiBffRouteCoverageVerifier.ts"),
       path.join(SRC, "features", "ai", "bffCoverage", "aiBffMissingRoutePlanner.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiApproval01ActionRouterFiles = [
+      path.join(SRC, "features", "ai", "approvalRouter", "aiApprovalActionRouterTypes.ts"),
+      path.join(SRC, "features", "ai", "approvalRouter", "aiApprovalActionRouter.ts"),
+      path.join(SRC, "features", "ai", "approvalRouter", "aiApprovalActionPayloadRedaction.ts"),
+      path.join(SRC, "features", "ai", "approvalRouter", "aiApprovalActionEvidencePolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sE2eCore05DeveloperControlTargetabilityFiles = [
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
@@ -1276,6 +1282,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
+    expect(sAiApproval01ActionRouterFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(
       tsFiles -
@@ -1461,6 +1468,7 @@ describe("performance budget — bundle module count", () => {
         sAiPro02ConstructionKnowhowEngineFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -
+        sAiApproval01ActionRouterFiles -
         sE2eCore05DeveloperControlTargetabilityFiles,
     ).toBeLessThanOrEqual(1300);
   });
