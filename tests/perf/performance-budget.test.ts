@@ -285,6 +285,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurement", "aiProcurementRiskSignals.ts"),
       path.join(SRC, "features", "ai", "procurement", "aiProcurementDecisionCard.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProcurement04InternalFirstDecisionEngineFiles = [
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementDecisionEngine.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementEvidenceCard.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementApprovalCandidate.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementInternalExternalBoundary.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic03ExternalIntelGatewayFiles = [
       path.join(SRC, "features", "ai", "externalIntel", "externalIntelProvider.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "externalIntelProviderFlags.ts"),
@@ -1278,6 +1284,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiAssistant02ScreenLocalRoleAssistantFiles).toBeLessThanOrEqual(8);
     expect(sAiLayout01SafeRuntimeFiles).toBeLessThanOrEqual(5);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
+    expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
@@ -1466,6 +1473,7 @@ describe("performance budget — bundle module count", () => {
         sAiAssistant02ScreenLocalRoleAssistantFiles -
         sAiLayout01SafeRuntimeFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
+        sAiProcurement04InternalFirstDecisionEngineFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
         sAiMagic13WorkdayLiveEvidenceBridgeFiles -
         sAiObs01TraceObservabilityFiles -

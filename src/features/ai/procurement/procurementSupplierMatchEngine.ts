@@ -97,7 +97,12 @@ function toCatalogMaterialIds(params: {
   const fallbackItemRefs = params.items.map((item, index) =>
     item.materialLabel ? hashOpaqueId("material_label", `${index}:${item.materialLabel}`) : "",
   );
-  return uniqueProcurementRefs([...params.catalogItemIds, ...fallbackItemRefs]).slice(0, 20);
+  const materialLabels = params.items.map((item) => item.materialLabel);
+  return uniqueProcurementRefs([
+    ...params.catalogItemIds,
+    ...materialLabels,
+    ...fallbackItemRefs,
+  ]).slice(0, 20);
 }
 
 function mapSupplierCard(card: CompareSupplierCard): SupplierMatchPreviewResult["output"]["supplierCards"][number] {
