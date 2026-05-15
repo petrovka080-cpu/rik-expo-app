@@ -314,7 +314,6 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    "- stopApp",
     '- openLink: "rik://ai-command-center"',
     "- extendedWaitUntil:",
     "    visible:",

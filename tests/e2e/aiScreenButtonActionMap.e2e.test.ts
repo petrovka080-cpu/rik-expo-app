@@ -9,7 +9,8 @@ describe("AI screen button action map E2E contract", () => {
 
     expect(runner).toContain("runAiScreenButtonActionMapMaestro");
     expect(runner).toContain("verifyAndroidInstalledBuildRuntime");
-    expect(runner).toContain("ensureAndroidEmulatorReady");
+    expect(runner).toContain("ensureAndroidMaestroDriverReady");
+    expect(runner).toContain("runMaestroTestWithDriverRepair");
     expect(runner).toContain("developer_control_full_access");
     expect(runner).toContain("ai.screen.actions.preview");
     expect(runner).toContain("ai.screen.actions.role");

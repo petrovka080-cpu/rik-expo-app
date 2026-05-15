@@ -1,9 +1,9 @@
-{
+﻿{
   "status": "GREEN",
   "checkedAt": "2026-04-16T07:33:57.497Z",
   "targetUser": {
     "id": "9adc5ab1-31fa-41be-8a00-17eadbb37c39",
-    "email": "petrovka080@gmail.com"
+    "email": "<redacted-email>"
   },
   "testedRoles": [
     "buyer",
@@ -45,7 +45,7 @@
       "can_access_all_office_routes": true,
       "can_impersonate_for_mutations": true,
       "expires_at": "2026-05-16T07:33:40.81117+00:00",
-      "reason": "H1.8 developer verification break-glass for petrovka080@gmail.com"
+      "reason": "H1.8 developer verification break-glass for <redacted-email>"
     },
     "initialContext": {
       "reason": "H1.8 runtime verifier temporary account",

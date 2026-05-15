@@ -6,7 +6,7 @@ Final status: GREEN
 
 H1.8 adds a production-safe developer break-glass override for exactly one seeded developer account:
 
-- user: `petrovka080@gmail.com`
+- user: `<redacted-email>`
 - user_id: `9adc5ab1-31fa-41be-8a00-17eadbb37c39`
 
 The override is server-side validated, can be disabled, has a 30-day TTL, supports only explicit allowed roles, and writes audit rows for effective-role selection, denial, disable, and RPC use.

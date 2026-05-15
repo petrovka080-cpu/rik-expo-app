@@ -9,12 +9,15 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
 
   it("runs Maestro only after the emulator bootstrap is ready", () => {
     expect(source).toContain("ensureAndroidEmulatorReady");
+    expect(source).toContain("ensureAndroidMaestroDriverReady");
     expect(source).toContain('bootstrap.final_status !== "GREEN_ANDROID_EMULATOR_READY"');
+    expect(source).toContain('maestroPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY"');
     expect(source).toContain("ensureAppInstalledAndLaunchable");
     expect(source).toContain("maestroBinary");
-    expect(source).toContain("--device");
+    expect(source).toContain("runMaestroTestWithDriverRepair");
+    expect(source).toContain("deviceId: params.deviceId");
     expect(source).toContain("flowPaths: [path.join(flowDir, filename)]");
-    expect(source).toContain("...params.flowPaths");
+    expect(source).toContain("flowPaths: params.flowPaths");
     expect(source).toContain("classifyMaestroFailure");
   });
 

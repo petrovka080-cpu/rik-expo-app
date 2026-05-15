@@ -38,7 +38,8 @@ describe("S11 Command Center and Approval Inbox runtime contract", () => {
 
   it("verifies Android targetability through Maestro and live ledger evidence without creating UI mutations", () => {
     expect(runnerSource).toContain("verifyAndroidInstalledBuildRuntime");
-    expect(runnerSource).toContain("ensureAndroidEmulatorReady");
+    expect(runnerSource).toContain("ensureAndroidMaestroDriverReady");
+    expect(runnerSource).toContain("runMaestroTestWithDriverRepair");
     expect(runnerSource).toContain("resolveAiApprovalLedgerLiveProof");
     expect(runnerSource).toContain('id: "ai.command_center.screen"');
     expect(runnerSource).toContain('id: "ai.command_center.task_stream"');

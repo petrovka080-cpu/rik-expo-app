@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
-import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
-import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
+import {
+  ensureAndroidMaestroDriverReady,
+  runMaestroTestWithDriverRepair,
+} from "./ensureAndroidMaestroDriverReady";
+import { collectExplicitE2eSecrets } from "./redactE2eSecrets";
 import {
   resolveExplicitAiRoleAuthEnv,
   type E2ERoleMode,
@@ -23,6 +25,9 @@ type AiProactiveWorkdayStatus =
   | "BLOCKED_PROACTIVE_WORKDAY_E2E_APPROVAL_MISSING"
   | "BLOCKED_PROACTIVE_WORKDAY_BACKEND_CONTRACT"
   | "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
   | "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY";
 
 type AiProactiveWorkdayArtifact = {
@@ -240,35 +245,6 @@ function writeArtifacts(artifact: AiProactiveWorkdayArtifact): AiProactiveWorkda
   return artifact;
 }
 
-function runCommand(
-  command: string,
-  args: readonly string[],
-  env: Record<string, string>,
-  secrets: readonly string[],
-): string {
-  const result = spawnSync(command, [...args], {
-    cwd: projectRoot,
-    encoding: "utf8",
-    stdio: "pipe",
-    shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
-    timeout: 120_000,
-    killSignal: "SIGTERM",
-    env: {
-      ...process.env,
-      ...env,
-      MAESTRO_CLI_NO_ANALYTICS: "1",
-      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
-    },
-  });
-  const stdout = redactE2eSecrets(result.stdout ?? "", secrets);
-  const stderr = redactE2eSecrets(result.stderr ?? "", secrets);
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`Command failed: ${command} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
-  }
-  return stdout.trim();
-}
-
 function loginFlowLines(): string[] {
   return [
     "- launchApp:",
@@ -304,7 +280,6 @@ function flowLines(mode: "card" | "empty"): string[] {
     `name: AI Proactive Workday Task Intelligence ${mode}`,
     "---",
     ...loginFlowLines(),
-    "- stopApp",
     '- openLink: "rik://ai-command-center"',
     "- extendedWaitUntil:",
     "    visible:",
@@ -345,18 +320,65 @@ function createFlowFile(mode: "card" | "empty"): string {
   return flowPath;
 }
 
-function runFlow(
+function classifyMaestroFailure(error: unknown): {
+  status: Extract<
+    AiProactiveWorkdayStatus,
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+    | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
+    | "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY"
+  >;
+  exactReason: string;
+} {
+  const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      exactReason: "Proactive workday proof did not reach UI assertions because Android/ADB runtime was unstable.",
+    };
+  }
+  if (/retry_attempted=true|first_attempt_driver_failure=true|after retry/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+      exactReason: "Proactive workday proof ran on the API34 Maestro gate with driver cleanup and one retry, but Maestro Android driver was still unavailable before UI assertions.",
+    };
+  }
+  if (/Assertion is false|assertVisible|No visible element|Element .* not found|View .* not found|not visible|id: "ai\.|id: "auth\./i.test(message)) {
+    return {
+      status: "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY",
+      exactReason: "Command Center proactive workday section was reachable, but the requested workday card or empty-state assertion was not visible.",
+    };
+  }
+  if (/DEADLINE_EXCEEDED|Unable to launch app|UNAVAILABLE|gRPC server|Connection reset|ETIMEDOUT|timed out|timeout|Maestro Android driver/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+      exactReason: "Proactive workday proof did not reach UI assertions because Maestro Android driver was unavailable.",
+    };
+  }
+  return {
+    status: "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY",
+    exactReason: "Command Center proactive workday section was not targetable in Android hierarchy.",
+  };
+}
+
+async function runFlow(
   mode: "card" | "empty",
-  deviceId: string,
   roleEnv: Record<string, string>,
   secrets: readonly string[],
-): boolean {
+): Promise<{ passed: true } | { passed: false; failure: ReturnType<typeof classifyMaestroFailure> }> {
   const flowPath = createFlowFile(mode);
   try {
-    runCommand(maestroBinary, ["--device", deviceId, "test", flowPath], roleEnv, secrets);
-    return true;
-  } catch {
-    return false;
+    await runMaestroTestWithDriverRepair({
+      projectRoot,
+      runId: `proactive_workday_${mode}_${Date.now()}`,
+      flowPaths: [flowPath],
+      env: roleEnv,
+      secrets,
+      maestroBinary,
+    });
+    return { passed: true };
+  } catch (error) {
+    return { passed: false, failure: classifyMaestroFailure(error) };
   } finally {
     fs.rmSync(flowPath, { force: true });
   }
@@ -405,23 +427,22 @@ export async function runAiProactiveWorkdayTaskIntelligenceMaestro(): Promise<Ai
     );
   }
 
+  const maestroPreflight = await ensureAndroidMaestroDriverReady({ projectRoot });
+  if (maestroPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY") {
+    return writeArtifacts(
+      buildArtifact(
+        "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        maestroPreflight.exact_reason ?? "Android API34 Maestro emulator/device was not ready.",
+      ),
+    );
+  }
+
   const androidRuntime = await verifyAndroidInstalledBuildRuntime();
   if (androidRuntime.final_status !== "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF") {
     return writeArtifacts(
       buildArtifact(
         "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE",
         androidRuntime.exact_reason ?? "Android installed runtime smoke did not pass.",
-      ),
-    );
-  }
-
-  const emulator = await ensureAndroidEmulatorReady({ projectRoot });
-  if (emulator.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !emulator.deviceId) {
-    return writeArtifacts(
-      buildArtifact(
-        "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE",
-        emulator.blockedReason ?? "Android emulator/device was not ready.",
-        { android_runtime_smoke: "PASS" },
       ),
     );
   }
@@ -439,8 +460,34 @@ export async function runAiProactiveWorkdayTaskIntelligenceMaestro(): Promise<Ai
     MAESTRO_E2E_DIRECTOR_PASSWORD: roleAuth.env.E2E_DIRECTOR_PASSWORD,
   };
   const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
-  const cardVisible = runFlow("card", emulator.deviceId, roleEnv, secrets);
-  const emptyVisible = cardVisible ? false : runFlow("empty", emulator.deviceId, roleEnv, secrets);
+  const cardProof = await runFlow("card", roleEnv, secrets);
+  if (
+    !cardProof.passed &&
+    cardProof.failure.status !== "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY"
+  ) {
+    return writeArtifacts(
+      buildArtifact(cardProof.failure.status, cardProof.failure.exactReason, {
+        android_runtime_smoke: "PASS",
+        emulator_runtime_proof: "BLOCKED",
+      }),
+    );
+  }
+  const emptyProof = cardProof.passed ? null : await runFlow("empty", roleEnv, secrets);
+  const cardVisible = cardProof.passed;
+  const emptyVisible = emptyProof?.passed === true;
+
+  if (
+    emptyProof &&
+    !emptyProof.passed &&
+    emptyProof.failure.status !== "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY"
+  ) {
+    return writeArtifacts(
+      buildArtifact(emptyProof.failure.status, emptyProof.failure.exactReason, {
+        android_runtime_smoke: "PASS",
+        emulator_runtime_proof: "BLOCKED",
+      }),
+    );
+  }
 
   if (!cardVisible && !emptyVisible) {
     return writeArtifacts(

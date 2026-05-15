@@ -119,6 +119,10 @@ function runCommand(command: string, args: readonly string[], cwd: string, secre
   return stdout.trim();
 }
 
+function forceCleanRebuildRequested(): boolean {
+  return String(process.env.S_AI_EMULATOR_FORCE_REBUILD_FOR_RUNTIME_PROOF ?? "").trim().toLowerCase() === "true";
+}
+
 function resolveBuiltApkPath(): string | null {
   const candidates = [
     path.join(projectRoot, "android", "app", "build", "outputs", "apk", "release", "app-release.apk"),
@@ -166,7 +170,10 @@ export async function buildInstallAndroidPreviewForEmulator(): Promise<BuildInst
   }
 
   try {
-    runCommand(gradle, [":app:assembleRelease"], androidDir, secrets);
+    const gradleArgs = forceCleanRebuildRequested()
+      ? [":app:clean", ":app:assembleRelease"]
+      : [":app:assembleRelease"];
+    runCommand(gradle, gradleArgs, androidDir, secrets);
   } catch (error) {
     return blocked(
       "BLOCKED_ANDROID_APK_BUILD_FAILED",

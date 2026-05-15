@@ -196,6 +196,22 @@ function proofMatchesCurrentChangeSet(params: {
   );
 }
 
+function proofMatchesCurrentSourceFingerprint(params: {
+  projectRoot: string;
+  proofArtifactPath: string;
+  sourceFingerprint: string;
+}): boolean {
+  const proof = readJsonRecord(path.join(params.projectRoot, params.proofArtifactPath));
+  return (
+    proof?.final_status === "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF" &&
+    proof?.installed_apk_source_fingerprint === params.sourceFingerprint &&
+    proof?.ai_mobile_runtime_source_fingerprint === params.sourceFingerprint &&
+    proof?.source_fingerprint_matches_installed_apk === true &&
+    proof?.local_android_rebuild_install_after_source_change === true &&
+    proof?.fake_emulator_pass === false
+  );
+}
+
 function readInstalledApkSourceFingerprint(projectRoot: string, proofArtifactPath: string): string | null {
   const proof = readJsonRecord(path.join(projectRoot, proofArtifactPath));
   const fingerprint = proof?.installed_apk_source_fingerprint;
@@ -233,6 +249,11 @@ export function resolveAiAndroidRebuildRequirement(params: {
         projectRoot,
         proofArtifactPath,
         changedFilesFingerprint,
+        sourceFingerprint: aiMobileRuntimeSourceFingerprint,
+      }) ||
+      proofMatchesCurrentSourceFingerprint({
+        projectRoot,
+        proofArtifactPath,
         sourceFingerprint: aiMobileRuntimeSourceFingerprint,
       })
     : false;

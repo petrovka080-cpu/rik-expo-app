@@ -157,6 +157,7 @@ function resolveRuntimeName(operation: AgentBffRouteOperation): AiRuntimeTranspo
   if (
     operation.startsWith("agent.screen_runtime.") ||
     operation.startsWith("agent.screen_actions.") ||
+    operation.startsWith("agent.screen_assistant.") ||
     operation.startsWith("agent.app_graph.")
   ) {
     return "screen_runtime";

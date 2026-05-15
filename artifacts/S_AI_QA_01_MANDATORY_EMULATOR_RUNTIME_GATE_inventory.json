@@ -1,0 +1,103 @@
+{
+  "wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
+  "runner": "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+  "rebuild_policy": "scripts/release/requireAndroidRebuildForAiSourceChanges.ts",
+  "android_rebuild_install": "scripts/release/buildInstallAndroidPreviewForEmulator.ts",
+  "deterministic_test_ids": [
+    "ai.assistant.screen",
+    "ai.assistant.input",
+    "ai.assistant.send",
+    "ai.assistant.loading",
+    "ai.assistant.response",
+    "ai.knowledge.preview",
+    "ai.command_center.screen",
+    "ai.command_center.task_stream",
+    "ai.approval_inbox.screen",
+    "ai.screen.actions.preview",
+    "ai.workday.section",
+    "ai.workday.empty_state"
+  ],
+  "child_runners": [
+    {
+      "runner": "runDeveloperControlFullAccessMaestro",
+      "path": "scripts/e2e/runDeveloperControlFullAccessMaestro.ts",
+      "artifact_path": "artifacts/S_E2E_CORE_05_DEVELOPER_CONTROL_TARGETABILITY_CLOSEOUT_matrix.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiRoleScreenKnowledgeMaestro",
+      "path": "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+      "artifact_path": "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiScreenButtonActionMapMaestro",
+      "path": "scripts/e2e/runAiScreenButtonActionMapMaestro.ts",
+      "artifact_path": "artifacts/S_AI_MAGIC_10_SCREEN_BUTTON_ACTION_INTELLIGENCE_MAP_matrix.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiScreenButtonActionTruthMapMaestro",
+      "path": "scripts/e2e/runAiScreenButtonActionTruthMapMaestro.ts",
+      "artifact_path": "artifacts/S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP_matrix.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiCommandCenterApprovalRuntimeMaestro",
+      "path": "scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts",
+      "artifact_path": "artifacts/S_AI_MAGIC_11_COMMAND_CENTER_APPROVAL_RUNTIME_emulator.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiProactiveWorkdayTaskIntelligenceMaestro",
+      "path": "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts",
+      "artifact_path": "artifacts/S_AI_MAGIC_12_PROACTIVE_WORKDAY_TASK_INTELLIGENCE_matrix.json",
+      "mode": "blocking"
+    },
+    {
+      "runner": "runAiApprovalLedgerPersistenceMaestro",
+      "path": "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts",
+      "artifact_path": "artifacts/S_AI_BACKEND_02_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_matrix.json",
+      "mode": "pass_or_exact_blocker"
+    },
+    {
+      "runner": "runAiLiveApprovalToExecutionPointOfNoReturn",
+      "path": "scripts/e2e/runAiLiveApprovalToExecutionPointOfNoReturn.ts",
+      "artifact_path": "artifacts/S_AI_MAGIC_11_LIVE_APPROVAL_TO_EXECUTION_matrix.json",
+      "mode": "pass_or_exact_blocker"
+    }
+  ],
+  "exact_llm_text_assertions_allowed": false,
+  "response_smoke_blocking_release": false,
+  "fake_emulator_pass": false,
+  "secrets_printed": false,
+  "matrix_slicing": [
+    {
+      "slice": "blocking_slice_1",
+      "runners": [
+        "runDeveloperControlFullAccessMaestro",
+        "runAiRoleScreenKnowledgeMaestro"
+      ]
+    },
+    {
+      "slice": "blocking_slice_2",
+      "runners": [
+        "runAiScreenButtonActionMapMaestro",
+        "runAiScreenButtonActionTruthMapMaestro",
+        "runAiCommandCenterApprovalRuntimeMaestro"
+      ]
+    },
+    {
+      "slice": "blocking_slice_3",
+      "runners": [
+        "runAiProactiveWorkdayTaskIntelligenceMaestro",
+        "runAiApprovalLedgerPersistenceMaestro",
+        "runAiLiveApprovalToExecutionPointOfNoReturn"
+      ]
+    }
+  ],
+  "maestro_retry_policy": "scripts/e2e/aiMaestroRetryPolicy.ts",
+  "emulator_flake_policy": "scripts/e2e/aiEmulatorFlakePolicy.ts",
+  "single_emulator_parallel_maestro": false,
+  "multi_device_parallel_supported": true
+}

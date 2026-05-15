@@ -95,6 +95,43 @@ describe("Android rebuild policy for AI source changes", () => {
     expect(passed.local_android_rebuild_install).toBe("PASS");
   });
 
+  it("accepts an installed APK proof when source fingerprint still matches after script-only gate edits", () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "rik-ai-rebuild-source-proof-"));
+    const originalChangedFiles = ["src/features/ai/AIAssistantScreen.tsx"];
+    const currentChangedFiles = [
+      ...originalChangedFiles,
+      "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+      "tests/e2e/aiMandatoryEmulatorRuntimeMatrix.contract.test.ts",
+    ];
+    const sourceFingerprint = buildAiMobileRuntimeSourceFingerprint({
+      projectRoot: tempRoot,
+      changedFiles: currentChangedFiles,
+    });
+    const proofPath = path.join(tempRoot, AI_ANDROID_REBUILD_INSTALL_PROOF_ARTIFACT);
+    fs.mkdirSync(path.dirname(proofPath), { recursive: true });
+    fs.writeFileSync(
+      proofPath,
+      JSON.stringify({
+        final_status: "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
+        changed_files_fingerprint: buildAiChangedFilesFingerprint(originalChangedFiles),
+        ai_mobile_runtime_source_fingerprint: sourceFingerprint,
+        installed_apk_source_fingerprint: sourceFingerprint,
+        source_fingerprint_matches_installed_apk: true,
+        local_android_rebuild_install_after_source_change: true,
+        fake_emulator_pass: false,
+      }),
+    );
+
+    const result = resolveAiAndroidRebuildRequirement({
+      projectRoot: tempRoot,
+      changedFiles: currentChangedFiles,
+    });
+
+    expect(result.final_status).toBe("PASS_ANDROID_REBUILD_PROOF_PRESENT");
+    expect(result.local_android_rebuild_install).toBe("PASS");
+    expect(result.source_fingerprint_matches_installed_apk).toBe(true);
+  });
+
   it("requires a fresh S_AI_QA_01 matrix artifact in release guard for AI runtime or AI gate script changes", () => {
     expect(isAiMandatoryEmulatorRuntimeGateRequiredPath("src/features/ai/AIAssistantScreen.tsx")).toBe(true);
     expect(isAiMandatoryEmulatorRuntimeGateRequiredPath("scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts")).toBe(true);

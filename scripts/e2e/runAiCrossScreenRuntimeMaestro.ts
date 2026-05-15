@@ -1,10 +1,12 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
-import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
-import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
+import {
+  ensureAndroidMaestroDriverReady,
+  runMaestroTestWithDriverRepair,
+} from "./ensureAndroidMaestroDriverReady";
+import { collectExplicitE2eSecrets } from "./redactE2eSecrets";
 import {
   resolveExplicitAiRoleAuthEnv,
   type E2ERoleMode,
@@ -17,7 +19,10 @@ export type AiCrossScreenRuntimeMaestroStatus =
   | "GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY"
   | "BLOCKED_SCREEN_RUNTIME_SOURCE_NOT_AVAILABLE"
   | "BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS"
-  | "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY";
+  | "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
 
 export type AiCrossScreenRuntimeMaestroArtifact = {
   final_status: AiCrossScreenRuntimeMaestroStatus;
@@ -183,33 +188,45 @@ function writeArtifact(
   return artifact;
 }
 
-function runCommand(
-  command: string,
-  args: readonly string[],
-  env: Record<string, string>,
-  secrets: readonly string[],
-): string {
-  const result = spawnSync(command, [...args], {
-    cwd: projectRoot,
-    encoding: "utf8",
-    stdio: "pipe",
-    shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
-    timeout: 120_000,
-    killSignal: "SIGTERM",
-    env: {
-      ...process.env,
-      ...env,
-      MAESTRO_CLI_NO_ANALYTICS: "1",
-      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
-    },
-  });
-  const stdout = redactE2eSecrets(result.stdout ?? "", secrets);
-  const stderr = redactE2eSecrets(result.stderr ?? "", secrets);
-  if (result.error) throw result.error;
-  if (result.status !== 0) {
-    throw new Error(`Command failed: ${command} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
+function classifyMaestroFailure(error: unknown, fallback: string): {
+  status: Extract<
+    AiCrossScreenRuntimeMaestroStatus,
+    | "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+    | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
+  >;
+  exactReason: string;
+} {
+  const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      exactReason: "AI cross-screen runtime proof did not reach UI assertions because Android/ADB runtime was unstable.",
+    };
   }
-  return stdout.trim();
+  if (/retry_attempted=true|first_attempt_driver_failure=true|after retry/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+      exactReason: "AI cross-screen runtime proof ran on the API34 Maestro gate with driver cleanup and one retry, but Maestro Android driver was still unavailable before UI assertions.",
+    };
+  }
+  if (/Assertion is false|assertVisible|No visible element|Element .* not found|View .* not found|not visible|id: "ai\.|id: "auth\./i.test(message)) {
+    return {
+      status: "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+      exactReason: fallback,
+    };
+  }
+  if (/DEADLINE_EXCEEDED|Unable to launch app|UNAVAILABLE|gRPC server|Connection reset|ETIMEDOUT|timed out|timeout|Maestro Android driver/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+      exactReason: "AI cross-screen runtime proof did not reach UI assertions because Maestro Android driver was unavailable.",
+    };
+  }
+  return {
+    status: "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+    exactReason: fallback,
+  };
 }
 
 function flowLines(): string[] {
@@ -242,7 +259,6 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    "- stopApp",
     `- openLink: "${targetLink}"`,
     "- extendedWaitUntil:",
     "    visible:",
@@ -305,12 +321,12 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
     );
   }
 
-  const emulator = await ensureAndroidEmulatorReady({ projectRoot });
-  if (emulator.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !emulator.deviceId) {
+  const maestroPreflight = await ensureAndroidMaestroDriverReady({ projectRoot });
+  if (maestroPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY") {
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
-        emulator.blockedReason ?? "Android emulator/device was not ready.",
+        "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        maestroPreflight.exact_reason ?? "Android API34 Maestro emulator/device was not ready.",
         {
           e2e_role_mode: roleAuth.roleMode,
           role_auth_source: roleAuth.source,
@@ -325,7 +341,7 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
 
   if (!fs.existsSync(maestroBinary)) {
     return writeArtifact(
-      baseArtifact("BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY", "Maestro CLI is not available.", {
+      baseArtifact("BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE", "Maestro CLI is not available.", {
         e2e_role_mode: roleAuth.roleMode,
         role_auth_source: roleAuth.source,
         auth_source: roleAuth.auth_source,
@@ -339,20 +355,27 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
   const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
   try {
-    runCommand(
-      maestroBinary,
-      ["--device", emulator.deviceId, "test", flowPath],
-      {
+    await runMaestroTestWithDriverRepair({
+      projectRoot,
+      runId: `cross_screen_runtime_${Date.now()}`,
+      flowPaths: [flowPath],
+      env: {
         MAESTRO_E2E_BUYER_EMAIL: roleAuth.env.E2E_BUYER_EMAIL,
         MAESTRO_E2E_BUYER_PASSWORD: roleAuth.env.E2E_BUYER_PASSWORD,
       },
       secrets,
+      maestroBinary,
+      preflight: maestroPreflight,
+    });
+  } catch (error) {
+    const failure = classifyMaestroFailure(
+      error,
+      "AI cross-screen runtime Command Center surface was not targetable with the installed app.",
     );
-  } catch {
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
-        "AI cross-screen runtime Command Center surface was not targetable with the installed app.",
+        failure.status,
+        failure.exactReason,
         {
           e2e_role_mode: roleAuth.roleMode,
           role_auth_source: roleAuth.source,

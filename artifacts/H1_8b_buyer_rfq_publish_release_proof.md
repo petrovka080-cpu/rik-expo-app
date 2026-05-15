@@ -16,7 +16,7 @@ H1.8 added the developer override layer, but `buyer_rfq_create_and_publish_v1` s
 - Rewired `buyer_rfq_actor_is_buyer_v1()` to the RFQ context.
 - Rewired the actual `buyer_rfq_create_and_publish_v1(...)` RPC to use that context directly.
 - Kept RFQ publish buyer-only: no `contractor` allow-list was added.
-- Set the seeded developer override for `petrovka080@gmail.com` to `active_effective_role='buyer'` when enabled and unexpired.
+- Set the seeded developer override for `<redacted-email>` to `active_effective_role='buyer'` when enabled and unexpired.
 - Fixed helper volatility: RFQ override-aware helpers are `volatile` because the override resolver writes audit rows.
 
 ## Exact files changed

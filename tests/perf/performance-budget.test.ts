@@ -279,6 +279,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurement", "procurementEvidenceBuilder.ts"),
       path.join(SRC, "features", "ai", "procurement", "procurementRedaction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProcurement03InternalFirstIntelligenceFiles = [
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementRequestUnderstanding.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiInternalSupplierRanker.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementRiskSignals.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiProcurementDecisionCard.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic03ExternalIntelGatewayFiles = [
       path.join(SRC, "features", "ai", "externalIntel", "externalIntelProvider.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "externalIntelProviderFlags.ts"),
@@ -353,6 +359,23 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentScreenActionContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentScreenActionRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiAssistant02ScreenLocalRoleAssistantFiles = [
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiScreenLocalAssistantTypes.ts"),
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiScreenLocalAssistantOrchestrator.ts"),
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiScreenLocalContextResolver.ts"),
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiRoleScreenBoundary.ts"),
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiAssistantEvidencePlanner.ts"),
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiAssistantSameScreenOutputPolicy.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentScreenAssistantContracts.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentScreenAssistantRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiLayout01SafeRuntimeFiles = [
+      path.join(SRC, "components", "ai", "runtime", "AiScreenRuntimePanel.tsx"),
+      path.join(SRC, "components", "ai", "runtime", "AiSafeKeyboardShell.tsx"),
+      path.join(SRC, "components", "ai", "runtime", "AiBoundedFlatList.tsx"),
+      path.join(SRC, "components", "ai", "runtime", "AiScreenScrollShell.tsx"),
+      path.join(SRC, "components", "ai", "runtime", "AiComposerBar.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
@@ -388,6 +411,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "externalIntel", "aiExternalSearchPolicy.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "aiExternalCitationPolicy.ts"),
       path.join(SRC, "features", "ai", "externalIntel", "aiExternalSupplierCandidatePreview.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiExternal02CitedMarketPreviewFiles = [
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalSourceTrustPolicy.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiCitedExternalSearchGateway.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalSupplierCitationPreview.ts"),
+      path.join(SRC, "features", "ai", "externalIntel", "aiExternalIntelRedaction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic18DocumentPdfKnowledgeLayerFiles = [
       path.join(SRC, "features", "ai", "documents", "aiDocumentKnowledgeTypes.ts"),
@@ -1048,6 +1077,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_CORE_03 adds nine permanent AI app knowledge registry and bridge files.
     // S_AI_TOOLS_06 adds one permanent finance summary SAFE_READ tool module.
     // S_AI_DRAFT_01 adds one permanent draft_request DRAFT_ONLY tool module.
+    // S_AI_LAYOUT_01 adds five permanent hook-free AI runtime layout primitives.
     // S_AI_DRAFT_02 adds one permanent draft_report DRAFT_ONLY tool module.
     // S_AI_DRAFT_03 adds one permanent draft_act DRAFT_ONLY tool module.
     // S_AI_APPROVAL_01 adds one permanent submit_for_approval approval-gate tool module.
@@ -1213,12 +1243,16 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic08ApprovalLedgerBackendMountFiles).toBeLessThanOrEqual(5);
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
     expect(sAiMagic10ScreenButtonActionMapFiles).toBeLessThanOrEqual(6);
+    expect(sAiAssistant02ScreenLocalRoleAssistantFiles).toBeLessThanOrEqual(8);
+    expect(sAiLayout01SafeRuntimeFiles).toBeLessThanOrEqual(5);
+    expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic13WorkdayLiveEvidenceBridgeFiles).toBeLessThanOrEqual(3);
     expect(sAiObs01TraceObservabilityFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic15RoleCopilotRuntimePackFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic16ProcurementLiveSupplierChainFiles).toBeLessThanOrEqual(3);
     expect(sAiMagic17ExternalMarketIntelCanaryFiles).toBeLessThanOrEqual(4);
+    expect(sAiExternal02CitedMarketPreviewFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
@@ -1392,12 +1426,16 @@ describe("performance budget — bundle module count", () => {
         sAiHarden03SubmitForApprovalAuditFiles -
         sAiMagic08ApprovedProcurementExecutorFiles -
         sAiMagic10ScreenButtonActionMapFiles -
+        sAiAssistant02ScreenLocalRoleAssistantFiles -
+        sAiLayout01SafeRuntimeFiles -
+        sAiProcurement03InternalFirstIntelligenceFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -
         sAiMagic13WorkdayLiveEvidenceBridgeFiles -
         sAiObs01TraceObservabilityFiles -
         sAiMagic15RoleCopilotRuntimePackFiles -
         sAiMagic16ProcurementLiveSupplierChainFiles -
         sAiMagic17ExternalMarketIntelCanaryFiles -
+        sAiExternal02CitedMarketPreviewFiles -
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sAiMagic07AccountantFinanceCopilotFiles -
         sAiMagic08WarehouseOperationsCopilotFiles -

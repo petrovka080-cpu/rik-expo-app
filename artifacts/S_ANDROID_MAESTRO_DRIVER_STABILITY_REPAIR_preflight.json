@@ -1,0 +1,49 @@
+{
+  "wave": "S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR",
+  "runId": "proactive_workday_empty_1778847678381_preflight",
+  "startedAt": "2026-05-15T12:21:18.381Z",
+  "finishedAt": "2026-05-15T12:21:24.777Z",
+  "final_status": "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY",
+  "exact_reason": null,
+  "preferred_avd_name": "Medium_Phone_API_34_Maestro",
+  "selected_avd": "Pixel_7_API_34",
+  "selected_serial": "emulator-5556",
+  "selected_android_api_level": "34",
+  "selected_device_model": "sdk_gphone64_x86_64",
+  "avds_found": [
+    "Medium_Phone_API_36.1",
+    "Pixel_7_API_34"
+  ],
+  "connected_devices_before": [
+    "emulator-5554",
+    "emulator-5556"
+  ],
+  "connected_devices_after": [
+    "emulator-5554",
+    "emulator-5556"
+  ],
+  "maestro_version": "2.4.0",
+  "adb_version": "Android Debug Bridge version 1.0.41 | Version 36.0.0-13206524 | Installed as C:\\Users\\User\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe | Running on Windows 10.0.26200",
+  "adb_path": "present_redacted",
+  "emulator_path": "present_redacted",
+  "maestro_path": "present_redacted",
+  "maestro_driver_startup_timeout_ms": 180000,
+  "port_7001_preflight": [
+    "TCP    127.0.0.1:7001         127.0.0.1:56684        TIME_WAIT       0",
+    "TCP    127.0.0.1:7001         127.0.0.1:56825        TIME_WAIT       0"
+  ],
+  "port_7001_after_cleanup": [
+    "TCP    127.0.0.1:7001         127.0.0.1:56684        TIME_WAIT       0",
+    "TCP    127.0.0.1:7001         127.0.0.1:56825        TIME_WAIT       0"
+  ],
+  "stale_maestro_processes_killed": 0,
+  "port_7001_maestro_processes_killed": 0,
+  "device_maestro_packages_before": [],
+  "device_maestro_packages_uninstalled": [],
+  "device_maestro_packages_reinstalled": false,
+  "app_install_status": "ALREADY_INSTALLED",
+  "app_installed_on_selected_device": true,
+  "explicit_device_serial_used": true,
+  "fake_green_claimed": false,
+  "artifact_path": "artifacts\\S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json"
+}

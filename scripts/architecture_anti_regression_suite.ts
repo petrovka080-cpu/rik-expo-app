@@ -1139,6 +1139,10 @@ const AI_PROCUREMENT_CONTEXT_ENGINE_FILES = [
   "src/features/ai/procurement/procurementInternalFirstEngine.ts",
   "src/features/ai/procurement/procurementSupplierMatchEngine.ts",
   "src/features/ai/procurement/procurementDraftPlanBuilder.ts",
+  "src/features/ai/procurement/aiProcurementRequestUnderstanding.ts",
+  "src/features/ai/procurement/aiInternalSupplierRanker.ts",
+  "src/features/ai/procurement/aiProcurementRiskSignals.ts",
+  "src/features/ai/procurement/aiProcurementDecisionCard.ts",
   "src/features/ai/procurement/procurementEvidenceBuilder.ts",
   "src/features/ai/procurement/procurementRedaction.ts",
 ] as const;
@@ -1599,6 +1603,9 @@ const ALLOWED_AI_ROLE_SCREEN_EMULATOR_BLOCKED_STATUSES = [
   "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE",
   "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT",
   "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED",
+  "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+  "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+  "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
   "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE",
 ] as const;
 const REQUIRED_AI_MANDATORY_EMULATOR_CHILD_RUNNERS = [
@@ -1619,6 +1626,12 @@ const ALLOWED_AI_MANDATORY_EMULATOR_GATE_STATUSES = [
   "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_DIRTY_AI_WORKTREE",
   "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF",
   "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND",
+  "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF",
+  "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+  "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+  "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+  "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_STALE",
+  "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_NOT_RECORDED",
 ] as const;
 const RELEASE_ANDROID_IOS_RUNNER_PATH = "scripts/release/runAndroidEmulatorAndIosSubmitGate.ts";
 const RELEASE_OUTPUT_REDACTOR_PATH = "scripts/release/redactReleaseOutput.ts";
@@ -4371,8 +4384,12 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
   const procurementFilesPresent = procurementSources.every((source) => source.length > 0);
   const bffRoutesPresent =
     shellSource.includes("GET /agent/procurement/request-context/:requestId") &&
+    shellSource.includes("GET /agent/procurement/request-understanding/:requestId") &&
+    shellSource.includes("POST /agent/procurement/internal-supplier-rank") &&
+    shellSource.includes("POST /agent/procurement/decision-card") &&
     shellSource.includes("POST /agent/procurement/supplier-match/preview") &&
     shellSource.includes("POST /agent/procurement/draft-request/preview") &&
+    shellSource.includes("POST /agent/procurement/draft-request-preview") &&
     shellSource.includes("POST /agent/procurement/submit-for-approval") &&
     shellSource.includes("AGENT_PROCUREMENT_BFF_CONTRACT");
   const requestContextResolverPresent =

@@ -15,12 +15,17 @@ export type DeveloperControlFullAccessRuntimeStatus =
   | "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
   | "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY"
   | "BLOCKED_APPROVAL_INBOX_EMULATOR_TARGETABILITY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
   | "BLOCKED_ANDROID_APK_BUILD_FAILED"
   | "BLOCKED_ANDROID_RUNTIME_SMOKE_FAILED";
 
 type ChildRuntimeStatus = {
   name: string;
   final_status: string;
+  exactReason?: string | null;
 };
 
 export type DeveloperControlFullAccessRuntimeArtifact = {
@@ -195,6 +200,37 @@ function isGreen(status: string): boolean {
   return status.startsWith("GREEN_");
 }
 
+function infrastructureBlockerStatus(
+  children: readonly ChildRuntimeStatus[],
+): Exclude<
+  DeveloperControlFullAccessRuntimeStatus,
+  "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE_READY" | "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_TARGETABILITY"
+> | null {
+  for (const status of [
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF",
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+    "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+  ] as const) {
+    if (children.some((child) => child.final_status === status)) {
+      return status;
+    }
+  }
+  return null;
+}
+
+function describeBlockedChildren(children: readonly ChildRuntimeStatus[]): string {
+  const blockedChildren = children.filter((child) => !isGreen(child.final_status));
+  if (blockedChildren.length === 0) return "role isolation contracts missing";
+  return blockedChildren
+    .map((child) => (
+      child.exactReason
+        ? `${child.name}=${child.final_status} (${child.exactReason})`
+        : `${child.name}=${child.final_status}`
+    ))
+    .join("; ");
+}
+
 export async function runDeveloperControlFullAccessMaestro(): Promise<DeveloperControlFullAccessRuntimeArtifact> {
   const auth = resolveExplicitAiRoleAuthEnv();
   if (
@@ -214,10 +250,26 @@ export async function runDeveloperControlFullAccessMaestro(): Promise<DeveloperC
   const procurementCopilot = await runAiProcurementCopilotMaestro();
   const approvalInbox = await runAiApprovalInboxMaestro();
   const childStatuses = [
-    { name: "command_center_task_stream", final_status: commandCenter.final_status },
-    { name: "cross_screen_runtime", final_status: crossScreen.final_status },
-    { name: "procurement_copilot", final_status: procurementCopilot.final_status },
-    { name: "approval_inbox", final_status: approvalInbox.final_status },
+    {
+      name: "command_center_task_stream",
+      final_status: commandCenter.final_status,
+      exactReason: commandCenter.exactReason,
+    },
+    {
+      name: "cross_screen_runtime",
+      final_status: crossScreen.final_status,
+      exactReason: crossScreen.exactReason,
+    },
+    {
+      name: "procurement_copilot",
+      final_status: procurementCopilot.final_status,
+      exactReason: procurementCopilot.exactReason,
+    },
+    {
+      name: "approval_inbox",
+      final_status: approvalInbox.final_status,
+      exactReason: approvalInbox.exactReason,
+    },
   ];
   const roleIsolationContracts = roleIsolationContractsPass() ? "PASS" : "BLOCKED";
   const loginOrAuthenticatedShellPassed =
@@ -254,22 +306,21 @@ export async function runDeveloperControlFullAccessMaestro(): Promise<DeveloperC
   };
 
   if (!runtimeTargetable || roleIsolationContracts !== "PASS") {
+    const infrastructureBlocker = infrastructureBlockerStatus(childStatuses);
     const finalBlocker: Exclude<
       DeveloperControlFullAccessRuntimeStatus,
       "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE_READY" | "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_TARGETABILITY"
-    > = !commandCenterTargetable
-      ? "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
-      : !procurementCopilotTargetable
-        ? "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY"
-        : !approvalInboxTargetable
-          ? "BLOCKED_APPROVAL_INBOX_EMULATOR_TARGETABILITY"
-          : "BLOCKED_DEVELOPER_CONTROL_RUNTIME_TARGETABILITY";
+    > = infrastructureBlocker ??
+      (!commandCenterTargetable
+        ? "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY"
+        : !procurementCopilotTargetable
+          ? "BLOCKED_PROCUREMENT_COPILOT_EMULATOR_TARGETABILITY"
+          : !approvalInboxTargetable
+            ? "BLOCKED_APPROVAL_INBOX_EMULATOR_TARGETABILITY"
+            : "BLOCKED_DEVELOPER_CONTROL_RUNTIME_TARGETABILITY");
     return blocked(
       finalBlocker,
-      `Developer/control full-access runtime was not fully targetable: ${childStatuses
-        .filter((child) => !isGreen(child.final_status))
-        .map((child) => `${child.name}=${child.final_status}`)
-        .join(", ") || "role isolation contracts missing"}.`,
+      `Developer/control full-access runtime blocked by current child results: ${describeBlockedChildren(childStatuses)}.`,
       childStatuses,
       "developer_control_explicit_env",
       true,

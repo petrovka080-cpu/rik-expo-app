@@ -20,6 +20,9 @@ type AiScreenButtonActionTruthMapStatus =
   | "GREEN_AI_SCREEN_BUTTON_ACTION_TRUTH_MAP_READY"
   | "BLOCKED_AI_MAGIC_ROADMAP_APPROVAL_MISSING"
   | "BLOCKED_SCREEN_ACTION_TRUTH_MAP_CONTRACT"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
   | "BLOCKED_SCREEN_ACTION_RUNTIME_TARGETABILITY";
 
 type AiScreenButtonActionTruthMapArtifact = {
@@ -277,9 +280,16 @@ export async function runAiScreenButtonActionTruthMapMaestro(): Promise<AiScreen
 
   const runtimeProof = await runAiScreenButtonActionMapMaestro();
   if (runtimeProof.final_status !== "GREEN_AI_SCREEN_BUTTON_ACTION_INTELLIGENCE_MAP_READY") {
+    const propagatedStatus = [
+      "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+      "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+      "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+    ].includes(runtimeProof.final_status)
+      ? runtimeProof.final_status as AiScreenButtonActionTruthMapStatus
+      : "BLOCKED_SCREEN_ACTION_RUNTIME_TARGETABILITY";
     return writeArtifacts(
       buildArtifact(
-        "BLOCKED_SCREEN_ACTION_RUNTIME_TARGETABILITY",
+        propagatedStatus,
         runtimeProof.exact_reason ?? "Screen action Command Center preview was not targetable.",
         {
           android_runtime_smoke: runtimeProof.android_runtime_smoke,

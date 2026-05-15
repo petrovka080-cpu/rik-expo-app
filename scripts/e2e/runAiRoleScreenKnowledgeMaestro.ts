@@ -8,6 +8,10 @@ import {
   type AndroidEmulatorReadyResult,
 } from "./ensureAndroidEmulatorReady";
 import {
+  ensureAndroidMaestroDriverReady,
+  runMaestroTestWithDriverRepair,
+} from "./ensureAndroidMaestroDriverReady";
+import {
   resolveExplicitAiRoleAuthEnv,
   type ExplicitAiRoleSecretKey,
   type ExplicitAiRoleAuthSource,
@@ -24,6 +28,9 @@ export type AiRoleScreenKnowledgeStatus =
   | "BLOCKED_AI_ASSISTANT_SURFACE_NOT_TARGETABLE"
   | "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT"
   | "BLOCKED_AI_ROLE_SCREEN_ASSERTION_FAILED"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
   | "BLOCKED_MAESTRO_AUTH_FLOW_RUNTIME_FAILURE";
 
 export type AiRoleScreenResponseSmokeStatus =
@@ -231,6 +238,18 @@ function buildMaestroPrefixedRoleEnv(
 }
 
 function classifyMaestroFailure(errorMessage: string): AiRoleScreenKnowledgeStatus {
+  if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(errorMessage)) {
+    return "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
+  }
+
+  if (/retry_attempted=true|first_attempt_driver_failure=true|after retry/i.test(errorMessage)) {
+    return "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY";
+  }
+
+  if (/DEADLINE_EXCEEDED|Unable to launch app|UNAVAILABLE|gRPC server|Connection reset|ETIMEDOUT|timed out|timeout|Maestro Android driver/i.test(errorMessage)) {
+    return "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE";
+  }
+
   if (errorMessage.includes("auth.login.")) {
     return "BLOCKED_LOGIN_SCREEN_NOT_TARGETABLE_WITHOUT_STABLE_TESTIDS";
   }
@@ -415,43 +434,25 @@ function createResponseSmokeFlowFiles(): string[] {
   });
 }
 
-function runMaestroFlows(params: {
+async function runMaestroFlows(params: {
   deviceId: string;
   flowPaths: readonly string[];
   reportPath: string;
   debugOutputDir: string;
   maestroRoleEnv: Record<string, string>;
   secretValues: readonly string[];
-}): void {
-  const args = [
-    "test",
-    "--device",
-    params.deviceId,
-    "--platform",
-    "android",
-    "--format",
-    "junit",
-    "--output",
-    params.reportPath,
-    "--debug-output",
-    params.debugOutputDir,
-    "--flatten-debug-output",
-    "--no-ansi",
-    ...params.flowPaths,
-  ];
-
-  try {
-    runCommand(maestroBinary, args, true, params.maestroRoleEnv, params.secretValues);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (!isRecoverableMaestroDeviceFailure(errorMessage)) {
-      throw error;
-    }
-
-    waitForDeviceTransport(params.deviceId);
-    adb(params.deviceId, ["shell", "am", "force-stop", appId], true);
-    runCommand(maestroBinary, args, true, params.maestroRoleEnv, params.secretValues);
-  }
+}): Promise<void> {
+  void params.debugOutputDir;
+  await runMaestroTestWithDriverRepair({
+    projectRoot,
+    runId: `role_screen_knowledge_${Date.now()}`,
+    flowPaths: params.flowPaths,
+    env: params.maestroRoleEnv,
+    secrets: params.secretValues,
+    maestroBinary,
+    deviceId: params.deviceId,
+    reportPath: params.reportPath,
+  });
 }
 
 function dumpAndroidHierarchy(deviceId: string): string {
@@ -505,12 +506,12 @@ function createPromptPipelineProbeFlowFile(role: RoleFlowName): string {
   return flowPath;
 }
 
-function runPromptPipelineProbe(params: {
+async function runPromptPipelineProbe(params: {
   role: RoleFlowName;
   deviceId: string;
   maestroRoleEnv: Record<string, string>;
   secretValues: readonly string[];
-}): PromptPipelineObservation {
+}): Promise<PromptPipelineObservation> {
   const probePrompt = "delete data";
   const deepLink = [
     "rik://ai?",
@@ -537,7 +538,7 @@ function runPromptPipelineProbe(params: {
     `rik-ai-role-screen-prompt-pipeline-probe-${params.role}-${process.pid}-${Date.now()}`,
   );
   try {
-    runMaestroFlows({
+    await runMaestroFlows({
       deviceId: params.deviceId,
       flowPaths: [flowPath],
       reportPath: path.join(outputDir, `${params.role}-prompt-pipeline-probe-report.xml`),
@@ -598,6 +599,22 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     ...roleAuthResolution.env,
   });
   const maestroRoleEnv = buildMaestroPrefixedRoleEnv(roleAuthResolution.env);
+  const maestroPreflight = await ensureAndroidMaestroDriverReady({ projectRoot });
+  if (maestroPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY") {
+    const artifact = buildBlockedArtifact(
+      "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      null,
+      maestroPreflight.exact_reason ?? "Android API34 Maestro emulator/device was not ready.",
+      roleAuthResolution.source,
+      roleAuthResolution.allRolesResolved,
+      roleAuthResolution.roleMode,
+      roleAuthResolution.full_access_runtime_claimed,
+      roleAuthResolution.role_isolation_e2e_claimed,
+      roleAuthResolution.separate_role_users_required,
+    );
+    writeEmulatorArtifact(artifact);
+    return artifact;
+  }
   const bootstrap = await ensureAndroidEmulatorReady({ projectRoot });
   if (bootstrap.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !bootstrap.deviceId) {
     const artifact = buildBlockedArtifact(
@@ -661,7 +678,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
     );
 
     try {
-      runMaestroFlows({
+      await runMaestroFlows({
         deviceId: bootstrap.deviceId,
         flowPaths: [path.join(flowDir, filename)],
         reportPath: role === "director" ? reportFile : path.join(outputDir, `${role}-report.xml`),
@@ -672,7 +689,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
 
       const promptPipelineObservation =
         observePromptPipeline(bootstrap.deviceId) ??
-        runPromptPipelineProbe({
+        await runPromptPipelineProbe({
           role,
           deviceId: bootstrap.deviceId,
           maestroRoleEnv,
@@ -714,7 +731,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
   );
   try {
     const responseSmokeFlowFiles = createResponseSmokeFlowFiles();
-    runMaestroFlows({
+    await runMaestroFlows({
       deviceId: bootstrap.deviceId,
       flowPaths: responseSmokeFlowFiles,
       reportPath: responseSmokeReportFile,

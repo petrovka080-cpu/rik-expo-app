@@ -26,6 +26,14 @@ import type {
 import { resolveInternalFirstDecision } from "../intelligence/internalFirstPolicy";
 import { resolveExternalIntel } from "../externalIntel/externalIntelResolver";
 import { createExternalIntelGateway, type ExternalIntelGateway } from "../externalIntel/ExternalIntelGateway";
+import {
+  createAiCitedExternalSearchGateway,
+  type AiCitedExternalSearchPreviewOutput,
+} from "../externalIntel/aiCitedExternalSearchGateway";
+import {
+  previewAiExternalSupplierCitationPreview,
+  type AiExternalSupplierCitationPreviewOutput,
+} from "../externalIntel/aiExternalSupplierCitationPreview";
 import type {
   ExternalIntelCitation,
   ExternalIntelSearchPreviewInput,
@@ -37,6 +45,21 @@ import {
   buildProcurementDraftPreview,
   type ProcurementDraftPlanBuilderRequest,
 } from "../procurement/procurementDraftPlanBuilder";
+import {
+  buildAiProcurementRequestUnderstandingFromContext,
+  understandAiProcurementRequest,
+  type AiProcurementRequestUnderstanding,
+} from "../procurement/aiProcurementRequestUnderstanding";
+import {
+  rankAiInternalSuppliers,
+  type AiInternalSupplierRankRequest,
+  type AiInternalSupplierRankResult,
+} from "../procurement/aiInternalSupplierRanker";
+import {
+  buildAiProcurementDecisionCard,
+  buildAiProcurementDecisionCardWithDraftPreview,
+  type AiProcurementDecisionCard,
+} from "../procurement/aiProcurementDecisionCard";
 import { resolveProcurementRequestContext } from "../procurement/procurementRequestContextResolver";
 import {
   previewProcurementSupplierMatch,
@@ -94,6 +117,20 @@ import {
   type AgentScreenActionPlanRouteRequest,
   type AgentScreenActionReadRouteRequest,
 } from "./agentScreenActionRoutes";
+import {
+  AGENT_SCREEN_ASSISTANT_BFF_CONTRACT,
+  askAgentScreenAssistant,
+  getAgentScreenAssistantContext,
+  planAgentScreenAssistantAction,
+  previewAgentScreenAssistantDraft,
+  previewAgentScreenAssistantSubmitForApproval,
+  type AgentScreenAssistantActionPlanRouteRequest,
+  type AgentScreenAssistantAskRouteRequest,
+  type AgentScreenAssistantContextRouteRequest,
+  type AgentScreenAssistantDraftPreviewRouteRequest,
+  type AgentScreenAssistantEnvelope,
+  type AgentScreenAssistantSubmitForApprovalPreviewRouteRequest,
+} from "./agentScreenAssistantRoutes";
 import {
   AGENT_WORKDAY_TASK_BFF_CONTRACT,
   getAgentWorkdayTasks,
@@ -199,6 +236,12 @@ export {
   getAgentScreenActions,
   planAgentScreenAction,
   previewAgentScreenActionIntent,
+  AGENT_SCREEN_ASSISTANT_BFF_CONTRACT,
+  askAgentScreenAssistant,
+  getAgentScreenAssistantContext,
+  planAgentScreenAssistantAction,
+  previewAgentScreenAssistantDraft,
+  previewAgentScreenAssistantSubmitForApproval,
   AGENT_WORKDAY_TASK_BFF_CONTRACT,
   getAgentWorkdayTasks,
   planAgentWorkdayTaskAction,
@@ -252,6 +295,7 @@ export type { AgentConstructionKnowhowEnvelope };
 export type { AgentFinanceCopilotEnvelope };
 export type { AgentWarehouseCopilotEnvelope };
 export type { AgentFieldWorkCopilotEnvelope };
+export type { AgentScreenAssistantEnvelope };
 
 export type AgentBffRouteShellContractId = "agent_bff_route_shell_v1";
 export type AgentBffRouteShellDocumentType = "agent_bff_route_shell";
@@ -304,9 +348,15 @@ export type AgentBffRouteOperation =
   | "agent.intel.compare"
   | "agent.external_intel.sources.read"
   | "agent.external_intel.search.preview"
+  | "agent.external_intel.cited_search.preview"
   | "agent.procurement.request_context.read"
+  | "agent.procurement.request_understanding.read"
+  | "agent.procurement.internal_supplier_rank.preview"
+  | "agent.procurement.decision_card.preview"
+  | "agent.procurement.draft_request.internal_first_preview"
   | "agent.procurement.supplier_match.preview"
   | "agent.procurement.external_supplier_candidates.preview"
+  | "agent.procurement.external_supplier.preview"
   | "agent.procurement.draft_request.preview"
   | "agent.procurement.submit_for_approval"
   | "agent.procurement.live_supplier_chain.preview"
@@ -321,7 +371,12 @@ export type AgentBffRouteOperation =
   | "agent.screen_runtime.action_plan"
   | "agent.screen_actions.read"
   | "agent.screen_actions.intent_preview"
-  | "agent.screen_actions.action_plan";
+  | "agent.screen_actions.action_plan"
+  | "agent.screen_assistant.context.read"
+  | "agent.screen_assistant.ask.preview"
+  | "agent.screen_assistant.action_plan"
+  | "agent.screen_assistant.draft_preview"
+  | "agent.screen_assistant.submit_for_approval.preview";
 
 export type AgentBffHttpMethod = "GET" | "POST";
 
@@ -345,6 +400,7 @@ export type AgentBffRouteDefinition = {
     | "AgentProcurementEnvelope"
     | "AgentScreenRuntimeEnvelope"
     | "AgentScreenActionEnvelope"
+    | "AgentScreenAssistantEnvelope"
     | "AgentWorkdayTaskEnvelope"
     | "AgentWorkdayLiveEvidenceEnvelope"
     | "AgentDocumentKnowledgeEnvelope"
@@ -383,6 +439,12 @@ export type AgentApprovalInboxDecisionRequest = ApprovalInboxDecisionRequest;
 export type AgentScreenActionsRequest = AgentScreenActionReadRouteRequest;
 export type AgentScreenActionIntentPreviewRequest = AgentScreenActionIntentPreviewRouteRequest;
 export type AgentScreenActionPlanRequest = AgentScreenActionPlanRouteRequest;
+export type AgentScreenAssistantContextRequest = AgentScreenAssistantContextRouteRequest;
+export type AgentScreenAssistantAskRequest = AgentScreenAssistantAskRouteRequest;
+export type AgentScreenAssistantActionPlanRequest = AgentScreenAssistantActionPlanRouteRequest;
+export type AgentScreenAssistantDraftPreviewRequest = AgentScreenAssistantDraftPreviewRouteRequest;
+export type AgentScreenAssistantSubmitForApprovalPreviewRequest =
+  AgentScreenAssistantSubmitForApprovalPreviewRouteRequest;
 export type AgentWorkdayTasksRequest = AgentWorkdayTaskReadRouteRequest;
 export type AgentWorkdayTaskPreviewRequest = AgentWorkdayTaskPreviewRouteRequest;
 export type AgentWorkdayTaskActionPlanRequest = AgentWorkdayTaskActionPlanRouteRequest;
@@ -433,12 +495,27 @@ export type AgentExternalIntelSearchPreviewRequest = AgentBffShellRequest & {
   input: ExternalIntelSearchPreviewInput;
 };
 
+export type AgentExternalIntelCitedSearchPreviewRequest = AgentBffShellRequest & {
+  input: ExternalIntelSearchPreviewInput;
+};
+
 export type AgentProcurementRequestContextRequest = AgentBffShellRequest & {
   requestId: string;
   screenId: string;
   cursor?: string | null;
   organizationId?: string;
   requestSnapshot?: ProcurementSafeRequestSnapshot | null;
+};
+
+export type AgentProcurementRequestUnderstandingRequest = AgentProcurementRequestContextRequest;
+
+export type AgentProcurementInternalSupplierRankRequest = AgentBffShellRequest &
+  Omit<AiInternalSupplierRankRequest, "auth">;
+
+export type AgentProcurementDecisionCardRequest = AgentBffShellRequest & {
+  context: ProcurementRequestContext;
+  understanding?: AiProcurementRequestUnderstanding | null;
+  supplierRank?: AiInternalSupplierRankResult | null;
 };
 
 export type AgentProcurementSupplierMatchRequest = AgentBffShellRequest & {
@@ -456,8 +533,18 @@ export type AgentProcurementExternalSupplierCandidatesRequest = AgentBffShellReq
   externalGateway?: ExternalIntelGateway;
 };
 
+export type AgentProcurementExternalSupplierPreviewRequest =
+  AgentProcurementExternalSupplierCandidatesRequest;
+
 export type AgentProcurementDraftRequestPreviewRequest = AgentBffShellRequest & {
   input: ProcurementDraftPlanBuilderRequest["input"];
+};
+
+export type AgentProcurementInternalFirstDraftRequestPreviewRequest = AgentBffShellRequest & {
+  input?: ProcurementDraftPlanBuilderRequest["input"];
+  context?: ProcurementRequestContext | null;
+  understanding?: AiProcurementRequestUnderstanding | null;
+  supplierRank?: AiInternalSupplierRankResult | null;
 };
 
 export type AgentProcurementSubmitForApprovalRequest = AgentBffShellRequest & {
@@ -636,9 +723,23 @@ export type AgentExternalIntelSearchPreviewDto = {
   dbAccessedDirectly: false;
 };
 
+export type AgentExternalIntelCitedSearchPreviewDto = {
+  contractId: "agent_external_intel_bff_v1";
+  documentType: "agent_external_intel_cited_search_preview";
+  endpoint: "POST /agent/external-intel/cited-search-preview";
+  result: AiCitedExternalSearchPreviewOutput;
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: boolean;
+  dbAccessedDirectly: false;
+};
+
 export type AgentExternalIntelDto =
   | AgentExternalIntelSourcesDto
-  | AgentExternalIntelSearchPreviewDto;
+  | AgentExternalIntelSearchPreviewDto
+  | AgentExternalIntelCitedSearchPreviewDto;
 
 export type AgentProcurementRequestContextDto = {
   contractId: "agent_procurement_bff_v1";
@@ -648,6 +749,50 @@ export type AgentProcurementRequestContextDto = {
   roleScoped: true;
   readOnly: true;
   evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentProcurementRequestUnderstandingDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_request_understanding";
+  endpoint: "GET /agent/procurement/request-understanding/:requestId";
+  result: AiProcurementRequestUnderstanding;
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  internalFirst: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentProcurementInternalSupplierRankDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_internal_supplier_rank";
+  endpoint: "POST /agent/procurement/internal-supplier-rank";
+  result: AiInternalSupplierRankResult;
+  toolBoundary: "search_catalog_and_compare_suppliers_only";
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  internalFirst: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentProcurementDecisionCardDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_decision_card";
+  endpoint: "POST /agent/procurement/decision-card";
+  result: AiProcurementDecisionCard;
+  runtimeBoundary: "internal_first_supplier_rank_risk_decision_card";
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  approvalRequired: true;
   mutationCount: 0;
   providerCalled: false;
   dbAccessedDirectly: false;
@@ -680,6 +825,19 @@ export type AgentProcurementExternalSupplierCandidatesDto = {
   dbAccessedDirectly: false;
 };
 
+export type AgentProcurementExternalSupplierPreviewDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_external_supplier_preview";
+  endpoint: "POST /agent/procurement/external-supplier-preview";
+  result: AiExternalSupplierCitationPreviewOutput;
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
 export type AgentProcurementDraftRequestPreviewDto = {
   contractId: "agent_procurement_bff_v1";
   documentType: "agent_procurement_draft_request_preview";
@@ -689,6 +847,21 @@ export type AgentProcurementDraftRequestPreviewDto = {
   roleScoped: true;
   readOnly: true;
   evidenceBacked: true;
+  mutationCount: 0;
+  providerCalled: false;
+  dbAccessedDirectly: false;
+};
+
+export type AgentProcurementInternalFirstDraftRequestPreviewDto = {
+  contractId: "agent_procurement_bff_v1";
+  documentType: "agent_procurement_internal_first_draft_request_preview";
+  endpoint: "POST /agent/procurement/draft-request-preview";
+  result: ProcurementDraftPreviewOutput;
+  toolBoundary: "draft_request_only";
+  roleScoped: true;
+  readOnly: true;
+  evidenceBacked: true;
+  internalFirst: true;
   mutationCount: 0;
   providerCalled: false;
   dbAccessedDirectly: false;
@@ -786,9 +959,14 @@ export type AgentProcurementLiveSupplierChainDto = {
 
 export type AgentProcurementDto =
   | AgentProcurementRequestContextDto
+  | AgentProcurementRequestUnderstandingDto
+  | AgentProcurementInternalSupplierRankDto
+  | AgentProcurementDecisionCardDto
   | AgentProcurementSupplierMatchDto
   | AgentProcurementExternalSupplierCandidatesDto
+  | AgentProcurementExternalSupplierPreviewDto
   | AgentProcurementDraftRequestPreviewDto
+  | AgentProcurementInternalFirstDraftRequestPreviewDto
   | AgentProcurementSubmitForApprovalDto
   | AgentProcurementLiveSupplierChainDto
   | AgentProcurementCopilotContextDto
@@ -1062,6 +1240,7 @@ export const AGENT_EXTERNAL_INTEL_BFF_CONTRACT = Object.freeze({
   endpoints: [
     "GET /agent/external-intel/sources",
     "POST /agent/external-intel/search/preview",
+    "POST /agent/external-intel/cited-search-preview",
   ],
   liveEnabled: false,
   provider: "disabled",
@@ -1083,9 +1262,14 @@ export const AGENT_PROCUREMENT_BFF_CONTRACT = Object.freeze({
   documentType: "agent_procurement",
   endpoints: [
     "GET /agent/procurement/request-context/:requestId",
+    "GET /agent/procurement/request-understanding/:requestId",
+    "POST /agent/procurement/internal-supplier-rank",
+    "POST /agent/procurement/decision-card",
     "POST /agent/procurement/supplier-match/preview",
     "POST /agent/procurement/external-supplier-candidates/preview",
+    "POST /agent/procurement/external-supplier-preview",
     "POST /agent/procurement/draft-request/preview",
+    "POST /agent/procurement/draft-request-preview",
     "POST /agent/procurement/submit-for-approval",
     "POST /agent/procurement/live-supplier-chain/preview",
     "POST /agent/procurement/live-supplier-chain/draft",
@@ -1345,6 +1529,71 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     responseEnvelope: "AgentScreenActionEnvelope",
   },
   {
+    operation: "agent.screen_assistant.context.read",
+    method: "GET",
+    endpoint: "GET /agent/screen-assistant/:screenId/context",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenAssistantEnvelope",
+  },
+  {
+    operation: "agent.screen_assistant.ask.preview",
+    method: "POST",
+    endpoint: "POST /agent/screen-assistant/:screenId/ask",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenAssistantEnvelope",
+  },
+  {
+    operation: "agent.screen_assistant.action_plan",
+    method: "POST",
+    endpoint: "POST /agent/screen-assistant/:screenId/action-plan",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenAssistantEnvelope",
+  },
+  {
+    operation: "agent.screen_assistant.draft_preview",
+    method: "POST",
+    endpoint: "POST /agent/screen-assistant/:screenId/draft-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenAssistantEnvelope",
+  },
+  {
+    operation: "agent.screen_assistant.submit_for_approval.preview",
+    method: "POST",
+    endpoint: "POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentScreenAssistantEnvelope",
+  },
+  {
     operation: "agent.external_intel.sources.read",
     method: "GET",
     endpoint: "GET /agent/external-intel/sources",
@@ -1371,9 +1620,61 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     responseEnvelope: "AgentExternalIntelEnvelope",
   },
   {
+    operation: "agent.external_intel.cited_search.preview",
+    method: "POST",
+    endpoint: "POST /agent/external-intel/cited-search-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentExternalIntelEnvelope",
+  },
+  {
     operation: "agent.procurement.request_context.read",
     method: "GET",
     endpoint: "GET /agent/procurement/request-context/:requestId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.request_understanding.read",
+    method: "GET",
+    endpoint: "GET /agent/procurement/request-understanding/:requestId",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.internal_supplier_rank.preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/internal-supplier-rank",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.decision_card.preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/decision-card",
     authRequired: true,
     roleFiltered: true,
     mutates: false,
@@ -1410,9 +1711,35 @@ export const AGENT_BFF_ROUTE_DEFINITIONS = Object.freeze([
     responseEnvelope: "AgentProcurementEnvelope",
   },
   {
+    operation: "agent.procurement.external_supplier.preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/external-supplier-preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
     operation: "agent.procurement.draft_request.preview",
     method: "POST",
     endpoint: "POST /agent/procurement/draft-request/preview",
+    authRequired: true,
+    roleFiltered: true,
+    mutates: false,
+    executesTool: false,
+    callsModelProvider: false,
+    callsDatabaseDirectly: false,
+    exposesForbiddenTools: false,
+    responseEnvelope: "AgentProcurementEnvelope",
+  },
+  {
+    operation: "agent.procurement.draft_request.internal_first_preview",
+    method: "POST",
+    endpoint: "POST /agent/procurement/draft-request-preview",
     authRequired: true,
     roleFiltered: true,
     mutates: false,
@@ -2425,12 +2752,46 @@ export async function previewAgentExternalIntelSearch(
   };
 }
 
+export async function previewAgentExternalIntelCitedSearch(
+  request: AgentExternalIntelCitedSearchPreviewRequest,
+): Promise<AgentExternalIntelEnvelope> {
+  if (!isAuthenticated(request.auth)) return externalIntelAuthRequiredError();
+
+  const gateway = createAiCitedExternalSearchGateway();
+  const result = await gateway.citedSearchPreview(request.input);
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_EXTERNAL_INTEL_BFF_CONTRACT.contractId,
+      documentType: "agent_external_intel_cited_search_preview",
+      endpoint: "POST /agent/external-intel/cited-search-preview",
+      result,
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: result.providerCalled,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
 function procurementAuthRequiredError(): AgentProcurementEnvelope {
   return {
     ok: false,
     error: {
       code: "AGENT_PROCUREMENT_AUTH_REQUIRED",
       message: "Agent procurement route requires authenticated role context",
+    },
+  };
+}
+
+function procurementInvalidInputError(message: string): AgentProcurementEnvelope {
+  return {
+    ok: false,
+    error: {
+      code: "AGENT_PROCUREMENT_INVALID_INPUT",
+      message,
     },
   };
 }
@@ -2460,6 +2821,102 @@ export function getAgentProcurementRequestContext(
       roleScoped: true,
       readOnly: true,
       evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export function getAgentProcurementRequestUnderstanding(
+  request: AgentProcurementRequestUnderstandingRequest,
+): AgentProcurementEnvelope {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = understandAiProcurementRequest({
+    auth: request.auth,
+    requestId: request.requestId,
+    screenId: request.screenId,
+    cursor: request.cursor,
+    organizationId: request.organizationId,
+    requestSnapshot: request.requestSnapshot,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_request_understanding",
+      endpoint: "GET /agent/procurement/request-understanding/:requestId",
+      result,
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      internalFirst: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export async function previewAgentProcurementInternalSupplierRank(
+  request: AgentProcurementInternalSupplierRankRequest,
+): Promise<AgentProcurementEnvelope> {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = await rankAiInternalSuppliers({
+    auth: request.auth,
+    context: request.context,
+    location: request.location,
+    limit: request.limit,
+    searchCatalogItems: request.searchCatalogItems,
+    listSuppliers: request.listSuppliers,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_internal_supplier_rank",
+      endpoint: "POST /agent/procurement/internal-supplier-rank",
+      result,
+      toolBoundary: "search_catalog_and_compare_suppliers_only",
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      internalFirst: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+export function previewAgentProcurementDecisionCard(
+  request: AgentProcurementDecisionCardRequest,
+): AgentProcurementEnvelope {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = buildAiProcurementDecisionCard({
+    context: request.context,
+    understanding:
+      request.understanding ?? buildAiProcurementRequestUnderstandingFromContext(request.context),
+    supplierRank: request.supplierRank ?? null,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_decision_card",
+      endpoint: "POST /agent/procurement/decision-card",
+      result,
+      runtimeBoundary: "internal_first_supplier_rank_risk_decision_card",
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      approvalRequired: true,
       mutationCount: 0,
       providerCalled: false,
       dbAccessedDirectly: false,
@@ -2529,6 +2986,35 @@ export async function previewAgentProcurementExternalSupplierCandidates(
   };
 }
 
+export async function previewAgentProcurementExternalSupplierPreview(
+  request: AgentProcurementExternalSupplierPreviewRequest,
+): Promise<AgentProcurementEnvelope> {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  const result = await previewAiExternalSupplierCitationPreview({
+    auth: request.auth,
+    input: request.input,
+    sourcePolicyIds: request.sourcePolicyIds,
+    gateway: request.externalGateway,
+  });
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_external_supplier_preview",
+      endpoint: "POST /agent/procurement/external-supplier-preview",
+      result,
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
 export async function previewAgentProcurementDraftRequest(
   request: AgentProcurementDraftRequestPreviewRequest,
 ): Promise<AgentProcurementEnvelope> {
@@ -2550,6 +3036,75 @@ export async function previewAgentProcurementDraftRequest(
       roleScoped: true,
       readOnly: true,
       evidenceBacked: true,
+      mutationCount: 0,
+      providerCalled: false,
+      dbAccessedDirectly: false,
+    },
+  };
+}
+
+function blockedInternalFirstDraftPreview(
+  reason: string,
+  evidenceRefs: readonly string[] = [],
+): ProcurementDraftPreviewOutput {
+  return {
+    status: "blocked",
+    draftPreview: {
+      title: "Procurement draft preview",
+      items: [],
+      notes: [],
+    },
+    missingFields: [reason],
+    riskFlags: ["draft_blocked"],
+    evidenceRefs: evidenceRefs.filter((ref) => ref.trim().length > 0),
+    requiresApproval: true,
+    nextAction: "submit_for_approval",
+  };
+}
+
+export async function previewAgentProcurementInternalFirstDraftRequest(
+  request: AgentProcurementInternalFirstDraftRequestPreviewRequest,
+): Promise<AgentProcurementEnvelope> {
+  if (!isAuthenticated(request.auth)) return procurementAuthRequiredError();
+
+  let result: ProcurementDraftPreviewOutput;
+  if (request.input) {
+    const draft = await buildProcurementDraftPreview({
+      auth: request.auth,
+      input: request.input,
+    });
+    result = draft.output;
+  } else {
+    if (!request.context) {
+      return procurementInvalidInputError(
+        "Internal-first draft preview requires either a draft input or procurement context.",
+      );
+    }
+    const withDraft = await buildAiProcurementDecisionCardWithDraftPreview({
+      auth: request.auth,
+      context: request.context,
+      understanding:
+        request.understanding ??
+        buildAiProcurementRequestUnderstandingFromContext(request.context),
+      supplierRank: request.supplierRank ?? null,
+    });
+    result =
+      withDraft.draftPreview ??
+      blockedInternalFirstDraftPreview("decision_card_not_ready", withDraft.card.evidenceRefs);
+  }
+
+  return {
+    ok: true,
+    data: {
+      contractId: AGENT_PROCUREMENT_BFF_CONTRACT.contractId,
+      documentType: "agent_procurement_internal_first_draft_request_preview",
+      endpoint: "POST /agent/procurement/draft-request-preview",
+      result,
+      toolBoundary: "draft_request_only",
+      roleScoped: true,
+      readOnly: true,
+      evidenceBacked: true,
+      internalFirst: true,
       mutationCount: 0,
       providerCalled: false,
       dbAccessedDirectly: false,

@@ -33,18 +33,6 @@ export function classifyAiEmulatorFailure(input: unknown): AiEmulatorFailureKind
   }
 
   if (
-    /(testid|test id|stable testid|targetability|not targetable|not fully targetable|no visible element|element not found|view not found|id .*not found)/.test(
-      message,
-    )
-  ) {
-    return "targetability_blocker";
-  }
-
-  if (/\b(assertion failed|assertvisible|assert visible|expect\(.*\)|expected|received|maestro assertion)\b/.test(message)) {
-    return "assertion_failed";
-  }
-
-  if (
     /\b(device offline|offline device|unauthorized|no devices\/emulators found|no device|device not found|adb: device|sys\.boot_completed.*0)\b/.test(
       message,
     )
@@ -58,6 +46,18 @@ export function classifyAiEmulatorFailure(input: unknown): AiEmulatorFailureKind
     )
   ) {
     return "transport_flake";
+  }
+
+  if (
+    /(testid|test id|stable testid|targetability|not targetable|not fully targetable|no visible element|element not found|view not found|id .*not found)/.test(
+      message,
+    )
+  ) {
+    return "targetability_blocker";
+  }
+
+  if (/\b(assertion failed|assertvisible|assert visible|expect\(.*\)|expected|received|maestro assertion)\b/.test(message)) {
+    return "assertion_failed";
   }
 
   return "unknown";

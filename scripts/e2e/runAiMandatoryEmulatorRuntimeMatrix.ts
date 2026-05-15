@@ -7,6 +7,10 @@ import { verifyAndroidInstalledBuildRuntime } from "../release/verifyAndroidInst
 import { resolveAiAndroidRebuildRequirement } from "../release/requireAndroidRebuildForAiSourceChanges";
 import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
 import {
+  ensureAndroidMaestroDriverReady,
+  type AndroidMaestroDriverPreflightArtifact,
+} from "./ensureAndroidMaestroDriverReady";
+import {
   AI_MAESTRO_PROBE_LATENCY_BUDGET_MS,
   buildAiMaestroRetryMetrics,
   runAiMaestroWithRetry,
@@ -19,14 +23,26 @@ export type AiMandatoryEmulatorRuntimeGateStatus =
   | "BLOCKED_AI_RUNTIME_EMULATOR_GATE"
   | "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_DIRTY_AI_WORKTREE"
   | "BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"
-  | "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND";
+  | "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
+  | "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_STALE"
+  | "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_NOT_RECORDED";
 
 type ChildRunnerMode = "blocking" | "pass_or_exact_blocker";
+type ChildRunnerResultSource =
+  | "current_process_return"
+  | "current_process_throw"
+  | "current_process_synthetic_exact_blocker"
+  | "missing_runner";
 
 type ChildRunnerSpec = {
   key: string;
   runner: string;
   relativePath: string;
+  artifactRelativePath: string;
   exportName: string;
   greenStatuses: readonly string[];
   mode: ChildRunnerMode;
@@ -54,6 +70,12 @@ type ChildRunnerResult = {
   transport_retry_count: number;
   flake_retry_count: number;
   retry_classification: string | null;
+  child_command: string;
+  child_exit_code: number | null;
+  artifact_path: string | null;
+  artifact_mtime: string | null;
+  result_source: ChildRunnerResultSource;
+  stale_artifact_used: boolean;
 };
 
 export type AiMandatoryEmulatorRuntimeMatrix = {
@@ -77,7 +99,16 @@ export type AiMandatoryEmulatorRuntimeMatrix = {
   blocking_child_runner: string | null;
   exact_reason: string | null;
   fake_green_claimed: boolean;
+  selected_maestro_avd_name: string | null;
+  selected_maestro_serial: string | null;
+  selected_android_api_level: string | null;
+  maestro_version: string | null;
+  maestro_driver_startup_timeout_ms: number;
+  driver_preflight_artifact: string | null;
+  explicit_device_serial_used: boolean;
+  device_maestro_packages_reinstalled: boolean;
   child_runners: ChildRunnerResult[];
+  child_runner_results: ChildRunnerResult[];
 };
 
 const projectRoot = process.cwd();
@@ -93,6 +124,10 @@ const hardeningAndroidBuildPath = `${hardeningArtifactPrefix}_android_build.json
 const hardeningMatrixPath = `${hardeningArtifactPrefix}_matrix.json`;
 const hardeningEmulatorPath = `${hardeningArtifactPrefix}_emulator.json`;
 const hardeningProofPath = `${hardeningArtifactPrefix}_proof.md`;
+const freshnessWave = "S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION";
+const freshnessPath = path.join(projectRoot, "artifacts", `${freshnessWave}_freshness.json`);
+const driverRepairWave = "S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR";
+const driverRepairMatrixPath = path.join(projectRoot, "artifacts", `${driverRepairWave}_matrix.json`);
 
 const deterministicTestIds = [
   "ai.assistant.screen",
@@ -114,6 +149,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "developer_control_e2e",
     runner: "runDeveloperControlFullAccessMaestro",
     relativePath: "scripts/e2e/runDeveloperControlFullAccessMaestro.ts",
+    artifactRelativePath: "artifacts/S_E2E_CORE_05_DEVELOPER_CONTROL_TARGETABILITY_CLOSEOUT_matrix.json",
     exportName: "runDeveloperControlFullAccessMaestro",
     greenStatuses: [
       "GREEN_DEVELOPER_CONTROL_FULL_ACCESS_RUNTIME_MODE_READY",
@@ -125,6 +161,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "role_screen_knowledge_e2e",
     runner: "runAiRoleScreenKnowledgeMaestro",
     relativePath: "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
     exportName: "runAiRoleScreenKnowledgeMaestro",
     greenStatuses: [
       "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE",
@@ -136,6 +173,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "screen_action_runtime_e2e",
     runner: "runAiScreenButtonActionMapMaestro",
     relativePath: "scripts/e2e/runAiScreenButtonActionMapMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_MAGIC_10_SCREEN_BUTTON_ACTION_INTELLIGENCE_MAP_matrix.json",
     exportName: "runAiScreenButtonActionMapMaestro",
     greenStatuses: ["GREEN_AI_SCREEN_BUTTON_ACTION_INTELLIGENCE_MAP_READY"],
     mode: "blocking",
@@ -144,6 +182,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "screen_action_truth_map_e2e",
     runner: "runAiScreenButtonActionTruthMapMaestro",
     relativePath: "scripts/e2e/runAiScreenButtonActionTruthMapMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP_matrix.json",
     exportName: "runAiScreenButtonActionTruthMapMaestro",
     greenStatuses: ["GREEN_AI_SCREEN_BUTTON_ACTION_TRUTH_MAP_READY"],
     mode: "blocking",
@@ -152,6 +191,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "command_center_runtime_e2e",
     runner: "runAiCommandCenterApprovalRuntimeMaestro",
     relativePath: "scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_MAGIC_11_COMMAND_CENTER_APPROVAL_RUNTIME_emulator.json",
     exportName: "runAiCommandCenterApprovalRuntimeMaestro",
     greenStatuses: ["GREEN_AI_COMMAND_CENTER_APPROVAL_RUNTIME_READY"],
     mode: "blocking",
@@ -160,6 +200,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "proactive_workday_runtime_e2e",
     runner: "runAiProactiveWorkdayTaskIntelligenceMaestro",
     relativePath: "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_MAGIC_12_PROACTIVE_WORKDAY_TASK_INTELLIGENCE_matrix.json",
     exportName: "runAiProactiveWorkdayTaskIntelligenceMaestro",
     greenStatuses: [
       "GREEN_AI_PROACTIVE_WORKDAY_TASK_INTELLIGENCE_READY",
@@ -171,6 +212,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "approval_ledger_e2e",
     runner: "runAiApprovalLedgerPersistenceMaestro",
     relativePath: "scripts/e2e/runAiApprovalLedgerPersistenceMaestro.ts",
+    artifactRelativePath: "artifacts/S_AI_BACKEND_02_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_matrix.json",
     exportName: "runAiApprovalLedgerPersistenceMaestro",
     greenStatuses: ["GREEN_AI_APPROVAL_LEDGER_PERSISTENCE_RUNTIME_READY"],
     mode: "pass_or_exact_blocker",
@@ -180,6 +222,7 @@ const childRunners: ChildRunnerSpec[] = [
     key: "live_approval_execution_e2e",
     runner: "runAiLiveApprovalToExecutionPointOfNoReturn",
     relativePath: "scripts/e2e/runAiLiveApprovalToExecutionPointOfNoReturn.ts",
+    artifactRelativePath: "artifacts/S_AI_MAGIC_11_LIVE_APPROVAL_TO_EXECUTION_matrix.json",
     exportName: "runAiLiveApprovalToExecutionPointOfNoReturn",
     greenStatuses: ["GREEN_AI_LIVE_APPROVAL_TO_EXECUTION_POINT_OF_NO_RETURN"],
     mode: "pass_or_exact_blocker",
@@ -273,6 +316,20 @@ function mergeMetrics(metrics: AiMaestroRetryMetrics): Pick<
   };
 }
 
+function childRunnerCommand(spec: ChildRunnerSpec): string {
+  return `npx tsx ${spec.relativePath}`;
+}
+
+function childArtifactPath(spec: ChildRunnerSpec): string {
+  return path.join(projectRoot, spec.artifactRelativePath);
+}
+
+function childArtifactMtime(spec: ChildRunnerSpec): string | null {
+  const artifactPath = childArtifactPath(spec);
+  if (!fs.existsSync(artifactPath)) return null;
+  return fs.statSync(artifactPath).mtime.toISOString();
+}
+
 function childResultFromArtifact(
   spec: ChildRunnerSpec,
   artifact: Record<string, unknown>,
@@ -293,6 +350,12 @@ function childResultFromArtifact(
     fake_emulator_pass: boolField(artifact, "fake_emulator_pass"),
     secrets_printed: boolField(artifact, "secrets_printed", "credentials_printed"),
     role_leakage_observed: boolField(artifact, "role_leakage_observed"),
+    child_command: childRunnerCommand(spec),
+    child_exit_code: null,
+    artifact_path: spec.artifactRelativePath,
+    artifact_mtime: childArtifactMtime(spec),
+    result_source: "current_process_return",
+    stale_artifact_used: false,
     ...mergeMetrics(metrics),
   };
 }
@@ -302,6 +365,7 @@ function exactBlockerChild(
   status: string,
   exactReason: string,
   metrics: AiMaestroRetryMetrics = emptyProbeMetrics(),
+  resultSource: ChildRunnerResultSource = "current_process_synthetic_exact_blocker",
 ): ChildRunnerResult {
   return {
     key: spec.key,
@@ -316,6 +380,12 @@ function exactBlockerChild(
     fake_emulator_pass: false,
     secrets_printed: false,
     role_leakage_observed: false,
+    child_command: childRunnerCommand(spec),
+    child_exit_code: resultSource === "current_process_throw" || resultSource === "missing_runner" ? 1 : null,
+    artifact_path: spec.artifactRelativePath,
+    artifact_mtime: childArtifactMtime(spec),
+    result_source: resultSource,
+    stale_artifact_used: false,
     ...mergeMetrics(metrics),
   };
 }
@@ -323,6 +393,14 @@ function exactBlockerChild(
 function classifyChildArtifactForRetry(spec: ChildRunnerSpec, artifact: Record<string, unknown>): string | null {
   const finalStatus = stringField(artifact, "final_status", "finalStatus") ?? "BLOCKED_CHILD_ARTIFACT_STATUS_MISSING";
   if (spec.greenStatuses.includes(finalStatus)) {
+    return null;
+  }
+  if (
+    finalStatus === "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF" ||
+    finalStatus === "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY" ||
+    finalStatus === "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE" ||
+    finalStatus === "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
+  ) {
     return null;
   }
   return stringField(artifact, "exact_reason", "exactReason") ?? finalStatus;
@@ -368,6 +446,8 @@ async function runChildRunner(spec: ChildRunnerSpec, deviceId: string | null): P
       spec,
       "RUNNER_NOT_FOUND_EXACT_BLOCKER",
       `Required AI runtime child runner is missing: ${spec.relativePath}`,
+      emptyProbeMetrics(),
+      "missing_runner",
     );
   }
 
@@ -386,7 +466,7 @@ async function runChildRunner(spec: ChildRunnerSpec, deviceId: string | null): P
     retryResult.error instanceof Error ? retryResult.error.message : String(retryResult.error),
   );
   if (errorMessage.includes("RUNNER_NOT_FOUND_EXACT_BLOCKER")) {
-    return exactBlockerChild(spec, "RUNNER_NOT_FOUND_EXACT_BLOCKER", errorMessage, retryResult.metrics);
+    return exactBlockerChild(spec, "RUNNER_NOT_FOUND_EXACT_BLOCKER", errorMessage, retryResult.metrics, "missing_runner");
   }
   if (errorMessage.includes("did not return a JSON object artifact")) {
     return exactBlockerChild(
@@ -394,6 +474,7 @@ async function runChildRunner(spec: ChildRunnerSpec, deviceId: string | null): P
       "BLOCKED_CHILD_AI_RUNTIME_RUNNER_INVALID_ARTIFACT",
       errorMessage,
       retryResult.metrics,
+      "current_process_throw",
     );
   }
 
@@ -402,6 +483,7 @@ async function runChildRunner(spec: ChildRunnerSpec, deviceId: string | null): P
     "BLOCKED_CHILD_AI_RUNTIME_RUNNER_THROWN",
     errorMessage,
     retryResult.metrics,
+    "current_process_throw",
   );
 }
 
@@ -424,6 +506,35 @@ function exactLlmTextAssertionsPresent(): boolean {
 
 function firstBlockingChild(children: readonly ChildRunnerResult[]): ChildRunnerResult | null {
   return children.find((child) => child.mode === "blocking" && child.status !== "PASS") ?? null;
+}
+
+function matrixStatusForChildBlocker(child: ChildRunnerResult | null): AiMandatoryEmulatorRuntimeGateStatus | null {
+  if (!child) return null;
+  for (const status of [
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF",
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY",
+    "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+    "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+  ] as const) {
+    if (child.final_status === status) {
+      return status;
+    }
+  }
+
+  const reason = `${child.final_status} ${child.exact_reason ?? ""}`;
+  if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(reason)) {
+    return "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
+  }
+  if (/ADB deep links and UI ids are visible, but Maestro Android driver failed before UI assertions/i.test(reason)) {
+    return "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF";
+  }
+  if (/retry_attempted=true|first_attempt_driver_failure=true|after retry/i.test(reason)) {
+    return "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY";
+  }
+  if (/command_timeout|grpc_unavailable|DEADLINE_EXCEEDED|UNAVAILABLE|gRPC server|Connection reset|ETIMEDOUT|timed out|timeout|Maestro Android driver/i.test(reason)) {
+    return "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE";
+  }
+  return null;
 }
 
 function listConnectedAndroidDeviceIds(): string[] {
@@ -453,6 +564,7 @@ function buildMatrix(params: {
   blockingChildRunner: string | null;
   exactReason: string | null;
   exactLlmTextAssertions?: boolean;
+  driverPreflight?: AndroidMaestroDriverPreflightArtifact | null;
 }): AiMandatoryEmulatorRuntimeMatrix {
   const childByKey = new Map(params.children.map((child) => [child.key, child]));
   const proactive = childByKey.get("proactive_workday_runtime_e2e");
@@ -501,7 +613,20 @@ function buildMatrix(params: {
     blocking_child_runner: params.blockingChildRunner,
     exact_reason: params.exactReason,
     fake_green_claimed: fakeGreenClaim,
+    selected_maestro_avd_name: params.driverPreflight?.selected_avd ?? null,
+    selected_maestro_serial: params.driverPreflight?.selected_serial ?? null,
+    selected_android_api_level: params.driverPreflight?.selected_android_api_level ?? null,
+    maestro_version: params.driverPreflight?.maestro_version ?? null,
+    maestro_driver_startup_timeout_ms: params.driverPreflight?.maestro_driver_startup_timeout_ms ?? 180000,
+    driver_preflight_artifact: params.driverPreflight?.artifact_path ?? null,
+    explicit_device_serial_used: params.driverPreflight?.explicit_device_serial_used ?? false,
+    device_maestro_packages_reinstalled: Boolean(params.driverPreflight && params.children.length > 0),
     child_runners: params.children.map((child) => ({
+      ...child,
+      fake_green_claimed: child.fake_green_claimed,
+      fake_emulator_pass: child.fake_emulator_pass,
+    })),
+    child_runner_results: params.children.map((child) => ({
       ...child,
       fake_green_claimed: child.fake_green_claimed,
       fake_emulator_pass: child.fake_emulator_pass,
@@ -509,12 +634,62 @@ function buildMatrix(params: {
   };
 }
 
+function writeFreshnessAudit(params: {
+  matrix: AiMandatoryEmulatorRuntimeMatrix;
+  emulatorResult: Awaited<ReturnType<typeof ensureAndroidEmulatorReady>> | null;
+  driverPreflight?: AndroidMaestroDriverPreflightArtifact | null;
+  deviceIds: readonly string[];
+  runId?: string;
+  startedAt?: string;
+}): void {
+  const finishedAt = new Date().toISOString();
+  const startedAt = params.startedAt ?? finishedAt;
+  const runId = params.runId ?? `${freshnessWave}_${startedAt.replace(/[:.]/g, "")}`;
+  writeJson(freshnessPath, {
+    wave: freshnessWave,
+    parent_runner: "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
+    runId,
+    startedAt,
+    finishedAt,
+    adb_device_id: params.driverPreflight?.selected_serial ?? params.emulatorResult?.deviceId ?? params.deviceIds[0] ?? null,
+    emulator_serial: params.driverPreflight?.selected_serial ?? params.emulatorResult?.deviceId ?? null,
+    selected_maestro_avd_name: params.driverPreflight?.selected_avd ?? null,
+    selected_android_api_level: params.driverPreflight?.selected_android_api_level ?? null,
+    maestro_version: params.driverPreflight?.maestro_version ?? null,
+    driver_preflight_artifact: params.driverPreflight?.artifact_path ?? null,
+    final_status: params.matrix.final_status,
+    blocking_child_runner: params.matrix.blocking_child_runner,
+    exact_reason: params.matrix.exact_reason,
+    child_runner_results: params.matrix.child_runners.map((child) => ({
+      key: child.key,
+      runner: child.runner,
+      child_runner_command: child.child_command,
+      child_exitCode: child.child_exit_code,
+      child_exit_code: child.child_exit_code,
+      child_final_status: child.final_status,
+      child_status: child.status,
+      child_exact_reason: child.exact_reason,
+      child_artifact_path: child.artifact_path,
+      child_artifact_mtime: child.artifact_mtime,
+      result_source: child.result_source,
+      result_came_from_current_process: child.result_source.startsWith("current_process"),
+      stale_artifact_used: child.stale_artifact_used,
+      probe_started_at: child.probe_started_at,
+      probe_finished_at: child.probe_finished_at,
+      retry_classification: child.retry_classification,
+    })),
+  });
+}
+
 function writeArtifacts(params: {
   matrix: AiMandatoryEmulatorRuntimeMatrix;
   rebuildRequirement: ReturnType<typeof resolveAiAndroidRebuildRequirement>;
   emulatorResult: Awaited<ReturnType<typeof ensureAndroidEmulatorReady>> | null;
+  driverPreflight?: AndroidMaestroDriverPreflightArtifact | null;
   installedRuntime: Awaited<ReturnType<typeof verifyAndroidInstalledBuildRuntime>> | null;
   deviceIds?: string[];
+  runId?: string;
+  startedAt?: string;
 }): AiMandatoryEmulatorRuntimeMatrix {
   const deviceIds = params.deviceIds ?? [];
   const parallelAllowed = deviceIds.length >= 2;
@@ -536,6 +711,7 @@ function writeArtifacts(params: {
     child_runners: childRunners.map((child) => ({
       runner: child.runner,
       path: child.relativePath,
+      artifact_path: child.artifactRelativePath,
       mode: child.mode,
     })),
     exact_llm_text_assertions_allowed: false,
@@ -549,6 +725,35 @@ function writeArtifacts(params: {
     multi_device_parallel_supported: true,
   });
   writeJson(matrixPath, params.matrix);
+  writeFreshnessAudit({
+    matrix: params.matrix,
+    emulatorResult: params.emulatorResult,
+    driverPreflight: params.driverPreflight,
+    deviceIds,
+    runId: params.runId,
+    startedAt: params.startedAt,
+  });
+  writeJson(driverRepairMatrixPath, {
+    final_status: params.matrix.final_status === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY"
+      ? "GREEN_AI_RUNTIME_EMULATOR_GATE"
+      : params.matrix.final_status,
+    maestro_version: params.driverPreflight?.maestro_version ?? params.matrix.maestro_version,
+    selected_avd: params.driverPreflight?.selected_avd ?? params.matrix.selected_maestro_avd_name,
+    selected_maestro_avd_name: params.driverPreflight?.selected_avd ?? params.matrix.selected_maestro_avd_name,
+    selected_maestro_serial: params.driverPreflight?.selected_serial ?? params.matrix.selected_maestro_serial,
+    android_api_level: params.driverPreflight?.selected_android_api_level ?? params.matrix.selected_android_api_level,
+    selected_android_api_level: params.driverPreflight?.selected_android_api_level ?? params.matrix.selected_android_api_level,
+    maestro_driver_startup_timeout_ms: params.driverPreflight?.maestro_driver_startup_timeout_ms ?? 180000,
+    port_7001_preflight: params.driverPreflight?.port_7001_preflight ?? [],
+    port_7001_after_cleanup: params.driverPreflight?.port_7001_after_cleanup ?? [],
+    stale_maestro_processes_killed: params.driverPreflight?.stale_maestro_processes_killed ?? 0,
+    port_7001_maestro_processes_killed: params.driverPreflight?.port_7001_maestro_processes_killed ?? 0,
+    device_maestro_packages_reinstalled: params.matrix.device_maestro_packages_reinstalled,
+    explicit_device_serial_used: params.matrix.explicit_device_serial_used,
+    driver_preflight_artifact: params.driverPreflight?.artifact_path ?? params.matrix.driver_preflight_artifact,
+    child_runner_results: params.matrix.child_runner_results,
+    fake_green_claimed: false,
+  });
   writeJson(emulatorPath, {
     wave,
     android_emulator_ready: params.matrix.android_emulator_ready,
@@ -557,6 +762,9 @@ function writeArtifacts(params: {
     emulator_boot_completed: params.emulatorResult?.bootCompleted ?? false,
     emulator_device_present: Boolean(params.emulatorResult?.deviceId),
     installed_runtime_status: params.installedRuntime?.final_status ?? null,
+    selected_maestro_avd_name: params.driverPreflight?.selected_avd ?? params.matrix.selected_maestro_avd_name,
+    selected_maestro_serial: params.driverPreflight?.selected_serial ?? params.matrix.selected_maestro_serial,
+    selected_android_api_level: params.driverPreflight?.selected_android_api_level ?? params.matrix.selected_android_api_level,
     fake_emulator_pass: false,
     secrets_printed: false,
     exact_reason: params.matrix.exact_reason,
@@ -620,6 +828,7 @@ function writeArtifacts(params: {
       parallel_execution_used: false,
     })),
     child_runners: params.matrix.child_runners,
+    child_runner_results: params.matrix.child_runner_results,
   });
   writeJson(hardeningEmulatorPath, {
     wave: hardeningWave,
@@ -700,8 +909,11 @@ function writeArtifacts(params: {
 }
 
 export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatoryEmulatorRuntimeMatrix> {
+  const startedAt = new Date().toISOString();
+  const runId = `${freshnessWave}_${startedAt.replace(/[:.]/g, "")}`;
   const rebuildRequirement = resolveAiAndroidRebuildRequirement();
   let emulatorResult: Awaited<ReturnType<typeof ensureAndroidEmulatorReady>> | null = null;
+  let driverPreflight: AndroidMaestroDriverPreflightArtifact | null = null;
   let installedRuntime: Awaited<ReturnType<typeof verifyAndroidInstalledBuildRuntime>> | null = null;
   const children: ChildRunnerResult[] = [];
   let deviceIds: string[] = [];
@@ -722,6 +934,8 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       emulatorResult,
       installedRuntime,
       deviceIds,
+      runId,
+      startedAt,
     });
   }
 
@@ -741,6 +955,33 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       emulatorResult,
       installedRuntime,
       deviceIds,
+      runId,
+      startedAt,
+    });
+  }
+
+  driverPreflight = await ensureAndroidMaestroDriverReady({ projectRoot, runId: `${runId}_driver_preflight` });
+  if (driverPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY") {
+    return writeArtifacts({
+      matrix: buildMatrix({
+        finalStatus: driverPreflight.final_status === "BLOCKED_ANDROID_MAESTRO_API34_AVD_NOT_AVAILABLE"
+          ? "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_RETRY"
+          : "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        androidEmulatorReady: false,
+        androidInstalledRuntimeSmoke: "BLOCKED",
+        rebuildRequirement,
+        children,
+        blockingChildRunner: "ensureAndroidMaestroDriverReady",
+        exactReason: driverPreflight.exact_reason ?? "Android API34 Maestro driver preflight did not become ready.",
+        driverPreflight,
+      }),
+      rebuildRequirement,
+      emulatorResult,
+      driverPreflight,
+      installedRuntime,
+      deviceIds,
+      runId,
+      startedAt,
     });
   }
 
@@ -755,16 +996,23 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
         children,
         blockingChildRunner: "ensureAndroidEmulatorReady",
         exactReason: emulatorResult.blockedReason ?? "Android emulator/device was not ready.",
+        driverPreflight,
       }),
       rebuildRequirement,
       emulatorResult,
+      driverPreflight,
       installedRuntime,
       deviceIds,
+      runId,
+      startedAt,
     });
   }
   deviceIds = listConnectedAndroidDeviceIds();
   if (deviceIds.length === 0 && emulatorResult.deviceId) {
     deviceIds = [emulatorResult.deviceId];
+  }
+  if (driverPreflight.selected_serial && !deviceIds.includes(driverPreflight.selected_serial)) {
+    deviceIds = [driverPreflight.selected_serial, ...deviceIds];
   }
 
   installedRuntime = await verifyAndroidInstalledBuildRuntime();
@@ -778,20 +1026,41 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
         children,
         blockingChildRunner: "verifyAndroidInstalledBuildRuntime",
         exactReason: installedRuntime.exact_reason ?? "Android installed runtime smoke did not pass.",
+        driverPreflight,
       }),
       rebuildRequirement,
       emulatorResult,
+      driverPreflight,
       installedRuntime,
       deviceIds,
+      runId,
+      startedAt,
     });
   }
 
-  for (const slice of childRunnerSlices) {
-    for (const runnerName of slice.runners) {
-      const child = childRunners.find((candidate) => candidate.runner === runnerName);
-      if (child) {
-        children.push(await runChildRunner(child, emulatorResult.deviceId));
-      }
+  const scheduledRunnerNames = childRunnerSlices.flatMap((slice) => [...slice.runners]);
+  let fatalInfrastructureBlocker: ChildRunnerResult | null = null;
+  for (const runnerName of scheduledRunnerNames) {
+    const child = childRunners.find((candidate) => candidate.runner === runnerName);
+    if (!child) continue;
+    if (fatalInfrastructureBlocker) {
+      const blockerStatus = matrixStatusForChildBlocker(fatalInfrastructureBlocker) ?? "BLOCKED_AI_RUNTIME_EMULATOR_GATE";
+      children.push(
+        exactBlockerChild(
+          child,
+          blockerStatus,
+          `${child.runner} was not executed because ${fatalInfrastructureBlocker.runner} already returned ${fatalInfrastructureBlocker.final_status}: ${fatalInfrastructureBlocker.exact_reason ?? "Android/Maestro runtime was unavailable"}.`,
+          emptyProbeMetrics(),
+          "current_process_synthetic_exact_blocker",
+        ),
+      );
+      continue;
+    }
+
+    const childResult = await runChildRunner(child, driverPreflight.selected_serial ?? emulatorResult.deviceId);
+    children.push(childResult);
+    if (matrixStatusForChildBlocker(childResult)) {
+      fatalInfrastructureBlocker = childResult;
     }
   }
 
@@ -799,20 +1068,35 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
     (child) => child.mode === "blocking" && child.final_status === "RUNNER_NOT_FOUND_EXACT_BLOCKER",
   );
   const blockingChild = firstBlockingChild(children);
+  const childResultsNotRecorded = children.length !== childRunners.length;
+  const staleChild = children.find((child) => child.stale_artifact_used);
   const mutationsCreated = children.reduce((sum, child) => sum + child.mutations_created, 0);
   const safetyBlocker = children.find(
     (child) => child.fake_green_claimed || child.fake_emulator_pass || child.secrets_printed || child.role_leakage_observed,
   );
+  const infrastructureBlockerStatus = matrixStatusForChildBlocker(blockingChild);
   const exactReason =
+    (childResultsNotRecorded
+      ? `Mandatory matrix child results were not fully recorded: expected ${childRunners.length}, got ${children.length}.`
+      : null) ??
+    (staleChild
+      ? `Mandatory matrix refused stale child result for ${staleChild.runner}; result_source=${staleChild.result_source}.`
+      : null) ??
     missingRequired?.exact_reason ??
     blockingChild?.exact_reason ??
     safetyBlocker?.exact_reason ??
     (mutationsCreated > 0 ? "AI mandatory emulator matrix observed runtime mutations; S_AI_QA_01 requires zero mutations." : null);
-  const finalStatus: AiMandatoryEmulatorRuntimeGateStatus = missingRequired
-    ? "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND"
-    : blockingChild || safetyBlocker || mutationsCreated > 0
-      ? "BLOCKED_AI_RUNTIME_EMULATOR_GATE"
-      : "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY";
+  const finalStatus: AiMandatoryEmulatorRuntimeGateStatus = childResultsNotRecorded
+    ? "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_NOT_RECORDED"
+    : staleChild
+      ? "BLOCKED_MANDATORY_MATRIX_CHILD_RESULTS_STALE"
+      : missingRequired
+        ? "BLOCKED_CHILD_AI_RUNTIME_RUNNER_NOT_FOUND"
+        : infrastructureBlockerStatus
+          ? infrastructureBlockerStatus
+          : blockingChild || safetyBlocker || mutationsCreated > 0
+            ? "BLOCKED_AI_RUNTIME_EMULATOR_GATE"
+            : "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY";
 
   return writeArtifacts({
     matrix: buildMatrix({
@@ -821,13 +1105,17 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
       androidInstalledRuntimeSmoke: "PASS",
       rebuildRequirement,
       children,
-      blockingChildRunner: missingRequired?.runner ?? blockingChild?.runner ?? safetyBlocker?.runner ?? null,
+      blockingChildRunner: missingRequired?.runner ?? staleChild?.runner ?? blockingChild?.runner ?? safetyBlocker?.runner ?? null,
       exactReason,
+      driverPreflight,
     }),
     rebuildRequirement,
     emulatorResult,
+    driverPreflight,
     installedRuntime,
     deviceIds,
+    runId,
+    startedAt,
   });
 }
 

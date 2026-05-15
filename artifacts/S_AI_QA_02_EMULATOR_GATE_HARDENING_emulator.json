@@ -1,0 +1,23 @@
+{
+  "wave": "S_AI_QA_02_EMULATOR_GATE_HARDENING",
+  "android_emulator_ready": true,
+  "android_installed_runtime_smoke": "PASS",
+  "emulator_boot_completed": false,
+  "emulator_device_present": true,
+  "device_ids": [
+    "emulator-5554",
+    "emulator-5556"
+  ],
+  "device_count": 2,
+  "single_emulator_parallel_maestro": false,
+  "multi_device_parallel_supported": true,
+  "parallel_allowed": true,
+  "parallel_execution_used": false,
+  "probe_latency_budget_ms": 30000,
+  "latency_budget_exceeded": true,
+  "transport_retry_count": 0,
+  "flake_retry_count": 0,
+  "fake_emulator_pass": false,
+  "secrets_printed": false,
+  "exact_reason": null
+}

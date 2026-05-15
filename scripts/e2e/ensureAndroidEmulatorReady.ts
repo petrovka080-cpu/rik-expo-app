@@ -99,6 +99,17 @@ export function parseAdbDevices(output: string): string[] {
     .filter(Boolean);
 }
 
+function selectConnectedDevice(initialDevices: readonly string[], env: NodeJS.ProcessEnv): string | null {
+  const requestedDevice = String(
+    env.S_ANDROID_MAESTRO_SERIAL ??
+      env.E2E_ANDROID_DEVICE_ID ??
+      env.ANDROID_SERIAL ??
+      "",
+  ).trim();
+  if (requestedDevice && initialDevices.includes(requestedDevice)) return requestedDevice;
+  return initialDevices[0] ?? null;
+}
+
 export function parseAvdList(output: string): string[] {
   return output
     .split(/\r?\n/)
@@ -273,7 +284,7 @@ export async function ensureAndroidEmulatorReady(
   const initialDevices = parseAdbDevices(runRequired(adbPath, ["devices"], runCommand));
   const deviceBefore: AndroidDeviceState = initialDevices.length > 0 ? "connected" : "none";
   if (initialDevices.length > 0) {
-    const deviceId = initialDevices[0];
+    const deviceId = selectConnectedDevice(initialDevices, env) ?? initialDevices[0];
     const animationsDisabled = disableAnimations({ adbPath, deviceId, runCommand });
     const result = makeResult({
       final_status: "GREEN_ANDROID_EMULATOR_READY",

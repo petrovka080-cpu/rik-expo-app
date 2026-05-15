@@ -6,7 +6,7 @@ Status: IN PROGRESS
 
 H1.8 adds a server-owned break-glass layer for one known developer account:
 
-- target user: `petrovka080@gmail.com`
+- target user: `<redacted-email>`
 - target user id: `9adc5ab1-31fa-41be-8a00-17eadbb37c39`
 - storage: `public.developer_access_overrides`
 - audit: `public.developer_override_audit_log`

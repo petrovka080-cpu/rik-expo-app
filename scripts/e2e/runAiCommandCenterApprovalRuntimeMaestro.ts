@@ -6,7 +6,10 @@ import { spawnSync } from "node:child_process";
 import { parseAgentEnvFileValues } from "../env/checkRequiredAgentFlags";
 import { verifyAndroidInstalledBuildRuntime } from "../release/verifyAndroidInstalledBuildRuntime";
 import { resolveAiApprovalLedgerLiveProof } from "./aiApprovalLedgerLiveProof";
-import { ensureAndroidEmulatorReady } from "./ensureAndroidEmulatorReady";
+import {
+  ensureAndroidMaestroDriverReady,
+  runMaestroTestWithDriverRepair,
+} from "./ensureAndroidMaestroDriverReady";
 import { collectExplicitE2eSecrets, redactE2eSecrets } from "./redactE2eSecrets";
 import {
   resolveExplicitAiRoleAuthEnv,
@@ -19,7 +22,10 @@ export type AiCommandCenterApprovalRuntimeStatus =
   | "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY"
   | "BLOCKED_CONTROL_ACCOUNT_ENV_MISSING"
   | "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE"
-  | "BLOCKED_APPROVAL_LEDGER_LIVE_PROOF_MISSING";
+  | "BLOCKED_APPROVAL_LEDGER_LIVE_PROOF_MISSING"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF"
+  | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+  | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
 
 export type AiCommandCenterApprovalRuntimeArtifact = {
   final_status: AiCommandCenterApprovalRuntimeStatus;
@@ -53,6 +59,11 @@ export type AiCommandCenterApprovalRuntimeArtifact = {
   credentials_in_cli_args: false;
   stdout_redacted: true;
   stderr_redacted: true;
+  adb_deeplink_proof_attempted: boolean;
+  adb_command_center_ids_visible: boolean;
+  adb_approval_inbox_ids_visible: boolean;
+  adb_deeplink_proof_succeeded: boolean;
+  emulator_serial: string | null;
   exactReason: string | null;
 };
 
@@ -72,6 +83,21 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
+const defaultAdbBinary = path.join(
+  process.env.LOCALAPPDATA ?? "",
+  "Android",
+  "Sdk",
+  "platform-tools",
+  process.platform === "win32" ? "adb.exe" : "adb",
+);
+
+type AdbDeepLinkProof = {
+  attempted: boolean;
+  succeeded: boolean;
+  commandCenterIdsVisible: boolean;
+  approvalInboxIdsVisible: boolean;
+  exactReason: string | null;
+};
 
 function readProjectFile(relativePath: string): string {
   return fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -159,38 +185,200 @@ function baseArtifact(
     credentials_in_cli_args: false,
     stdout_redacted: true,
     stderr_redacted: true,
+    adb_deeplink_proof_attempted: false,
+    adb_command_center_ids_visible: false,
+    adb_approval_inbox_ids_visible: false,
+    adb_deeplink_proof_succeeded: false,
+    emulator_serial: null,
     exactReason,
     ...overrides,
   };
 }
 
-function runCommand(
-  command: string,
-  args: readonly string[],
-  env: Record<string, string>,
-  secrets: readonly string[],
-): string {
-  const result = spawnSync(command, [...args], {
+function resolveAdbBinary(): string {
+  const explicit = process.env.ADB_PATH;
+  if (explicit && fs.existsSync(explicit)) return explicit;
+  if (fs.existsSync(defaultAdbBinary)) return defaultAdbBinary;
+  return "adb";
+}
+
+function runAdbCommand(deviceId: string, args: readonly string[], timeout = 45_000): string {
+  const command = resolveAdbBinary();
+  const result = spawnSync(command, ["-s", deviceId, ...args], {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: "pipe",
     shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
-    timeout: 120_000,
+    timeout,
     killSignal: "SIGTERM",
-    env: {
-      ...process.env,
-      ...env,
-      MAESTRO_CLI_NO_ANALYTICS: "1",
-      MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
-    },
   });
-  const stdout = redactE2eSecrets(result.stdout ?? "", secrets);
-  const stderr = redactE2eSecrets(result.stderr ?? "", secrets);
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
   if (result.error) throw result.error;
   if (result.status !== 0) {
-    throw new Error(`Command failed: ${command} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
+    throw new Error(`ADB command failed: adb -s ${deviceId} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
   }
   return stdout.trim();
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function hasUiId(xml: string, id: string): boolean {
+  return xml.includes(id);
+}
+
+function hasSystemAnrDialog(xml: string): boolean {
+  return /Application Not Responding|isn'?t responding|aerr_close|aerr_wait/i.test(xml);
+}
+
+async function dumpUiAutomatorXml(deviceId: string): Promise<string> {
+  runAdbCommand(deviceId, ["shell", "uiautomator", "dump", "/sdcard/rik-window.xml"], 30_000);
+  return runAdbCommand(deviceId, ["exec-out", "cat", "/sdcard/rik-window.xml"], 30_000);
+}
+
+async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkProof> {
+  try {
+    runAdbCommand(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://ai-command-center",
+        appId,
+      ],
+    );
+    await sleep(2_000);
+    const commandCenterXml = await dumpUiAutomatorXml(deviceId);
+    if (hasSystemAnrDialog(commandCenterXml)) {
+      return {
+        attempted: true,
+        succeeded: false,
+        commandCenterIdsVisible: false,
+        approvalInboxIdsVisible: false,
+        exactReason: "Android system ANR dialog blocked ADB deep link proof before Maestro assertions.",
+      };
+    }
+    const commandCenterIdsVisible =
+      hasUiId(commandCenterXml, "ai.command_center.screen") &&
+      hasUiId(commandCenterXml, "ai.command_center.task_stream");
+
+    runAdbCommand(
+      deviceId,
+      [
+        "shell",
+        "am",
+        "start",
+        "-W",
+        "-a",
+        "android.intent.action.VIEW",
+        "-d",
+        "rik://ai-approval-inbox",
+        appId,
+      ],
+    );
+    await sleep(2_000);
+    const approvalInboxXml = await dumpUiAutomatorXml(deviceId);
+    if (hasSystemAnrDialog(approvalInboxXml)) {
+      return {
+        attempted: true,
+        succeeded: false,
+        commandCenterIdsVisible,
+        approvalInboxIdsVisible: false,
+        exactReason: "Android system ANR dialog blocked ADB deep link proof before Maestro assertions.",
+      };
+    }
+    const approvalInboxIdsVisible =
+      hasUiId(approvalInboxXml, "ai.approval_inbox.screen") &&
+      hasUiId(approvalInboxXml, "ai.approval.inbox.status");
+
+    return {
+      attempted: true,
+      succeeded: commandCenterIdsVisible && approvalInboxIdsVisible,
+      commandCenterIdsVisible,
+      approvalInboxIdsVisible,
+      exactReason: commandCenterIdsVisible && approvalInboxIdsVisible
+        ? null
+        : "ADB deep link proof did not confirm Command Center and Approval Inbox UI ids before Maestro assertions.",
+    };
+  } catch (error) {
+    return {
+      attempted: true,
+      succeeded: false,
+      commandCenterIdsVisible: false,
+      approvalInboxIdsVisible: false,
+      exactReason: `ADB deep link proof failed before Maestro assertions: ${redactE2eSecrets(
+        error instanceof Error ? error.message : String(error),
+      )}`,
+    };
+  }
+}
+
+function adbProofOverrides(
+  proof: AdbDeepLinkProof,
+  deviceId: string,
+): Pick<
+  AiCommandCenterApprovalRuntimeArtifact,
+  | "adb_deeplink_proof_attempted"
+  | "adb_command_center_ids_visible"
+  | "adb_approval_inbox_ids_visible"
+  | "adb_deeplink_proof_succeeded"
+  | "emulator_serial"
+> {
+  return {
+    adb_deeplink_proof_attempted: proof.attempted,
+    adb_command_center_ids_visible: proof.commandCenterIdsVisible,
+    adb_approval_inbox_ids_visible: proof.approvalInboxIdsVisible,
+    adb_deeplink_proof_succeeded: proof.succeeded,
+    emulator_serial: deviceId,
+  };
+}
+
+function classifyMaestroFailure(error: unknown, adbProof: AdbDeepLinkProof): {
+  status: Extract<
+    AiCommandCenterApprovalRuntimeStatus,
+    | "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY"
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF"
+    | "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE"
+    | "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE"
+  >;
+  exactReason: string;
+} {
+  const message = error instanceof Error ? error.stack ?? error.message : String(error);
+  if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(message)) {
+    return {
+      status: "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      exactReason: "ADB deep links and UI ids were checked, but Android/ADB runtime became unstable before Maestro UI assertions.",
+    };
+  }
+  if (/Assertion is false|assertVisible|No visible element|Element .* not found|View .* not found|not visible|id: "ai\.|id: "auth\./i.test(message)) {
+    return {
+      status: "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY",
+      exactReason: "Command Center or Approval Inbox S11 runtime UI assertion ran, but expected testIDs were not targetable.",
+    };
+  }
+  if (/DEADLINE_EXCEEDED|Unable to launch app|UNAVAILABLE|gRPC server|Connection reset|ETIMEDOUT|timed out|timeout|Maestro Android driver/i.test(message)) {
+    if (adbProof.succeeded) {
+      return {
+        status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF",
+        exactReason: "ADB deep links and UI ids are visible, but Maestro Android driver failed before UI assertions.",
+      };
+    }
+    return {
+      status: "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE",
+      exactReason: "Command Center or Approval Inbox S11 runtime proof did not reach UI assertions because Maestro Android driver was unavailable.",
+    };
+  }
+  return {
+    status: "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY",
+    exactReason: "Command Center or Approval Inbox S11 runtime testIDs were not targetable after Maestro UI assertions.",
+  };
 }
 
 function flowLines(): string[] {
@@ -222,7 +410,6 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    "- stopApp",
     '- openLink: "rik://ai-command-center"',
     "- extendedWaitUntil:",
     "    visible:",
@@ -230,7 +417,6 @@ function flowLines(): string[] {
     "    timeout: 30000",
     "- assertVisible:",
     '    id: "ai.command_center.task_stream"',
-    "- stopApp",
     '- openLink: "rik://ai-approval-inbox"',
     "- extendedWaitUntil:",
     "    visible:",
@@ -288,6 +474,16 @@ export async function runAiCommandCenterApprovalRuntimeMaestro(): Promise<AiComm
     );
   }
 
+  const maestroPreflight = await ensureAndroidMaestroDriverReady({ projectRoot });
+  if (maestroPreflight.final_status !== "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY" || !maestroPreflight.selected_serial) {
+    return writeArtifact(
+      baseArtifact(
+        "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE",
+        maestroPreflight.exact_reason ?? "Android API34 Maestro emulator/device was not ready.",
+      ),
+    );
+  }
+
   const androidRuntime = await verifyAndroidInstalledBuildRuntime();
   if (androidRuntime.final_status !== "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF") {
     return writeArtifact(
@@ -298,12 +494,13 @@ export async function runAiCommandCenterApprovalRuntimeMaestro(): Promise<AiComm
     );
   }
 
-  const emulator = await ensureAndroidEmulatorReady({ projectRoot });
-  if (emulator.final_status !== "GREEN_ANDROID_EMULATOR_READY" || !emulator.deviceId) {
+  const adbProof = await collectAdbDeepLinkProof(maestroPreflight.selected_serial);
+  if (!adbProof.succeeded) {
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_ANDROID_RUNTIME_NOT_AVAILABLE",
-        emulator.blockedReason ?? "Android emulator/device was not ready.",
+        "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        adbProof.exactReason ?? "ADB deep link proof did not confirm UI ids before Maestro assertions.",
+        adbProofOverrides(adbProof, maestroPreflight.selected_serial),
       ),
     );
   }
@@ -311,8 +508,9 @@ export async function runAiCommandCenterApprovalRuntimeMaestro(): Promise<AiComm
   if (!fs.existsSync(maestroBinary)) {
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY",
-        "Maestro CLI is not available.",
+        "BLOCKED_ANDROID_MAESTRO_DRIVER_UNAVAILABLE_AFTER_ADB_PROOF",
+        "ADB deep links and UI ids are visible, but Maestro CLI is not available before UI assertions.",
+        adbProofOverrides(adbProof, maestroPreflight.selected_serial),
       ),
     );
   }
@@ -320,20 +518,25 @@ export async function runAiCommandCenterApprovalRuntimeMaestro(): Promise<AiComm
   const secrets = collectExplicitE2eSecrets({ ...process.env, ...roleAuth.env });
   const flowPath = createFlowFile();
   try {
-    runCommand(
-      maestroBinary,
-      ["--device", emulator.deviceId, "test", flowPath],
-      {
+    await runMaestroTestWithDriverRepair({
+      projectRoot,
+      runId: `command_center_approval_runtime_${Date.now()}`,
+      flowPaths: [flowPath],
+      env: {
         MAESTRO_E2E_DIRECTOR_EMAIL: roleAuth.env.E2E_DIRECTOR_EMAIL,
         MAESTRO_E2E_DIRECTOR_PASSWORD: roleAuth.env.E2E_DIRECTOR_PASSWORD,
       },
       secrets,
-    );
-  } catch {
+      maestroBinary,
+      preflight: maestroPreflight,
+    });
+  } catch (error) {
+    const failure = classifyMaestroFailure(error, adbProof);
     return writeArtifact(
       baseArtifact(
-        "BLOCKED_COMMAND_CENTER_APPROVAL_RUNTIME_TARGETABILITY",
-        "Command Center or Approval Inbox S11 runtime testIDs were not targetable in Android hierarchy.",
+        failure.status,
+        failure.exactReason,
+        adbProofOverrides(adbProof, maestroPreflight.selected_serial),
       ),
     );
   } finally {
@@ -358,6 +561,7 @@ export async function runAiCommandCenterApprovalRuntimeMaestro(): Promise<AiComm
       developer_control_full_access: true,
       e2e_role_mode: "developer_control_full_access",
       auth_source: "developer_control_explicit_env",
+      ...adbProofOverrides(adbProof, maestroPreflight.selected_serial),
     }),
   );
 }

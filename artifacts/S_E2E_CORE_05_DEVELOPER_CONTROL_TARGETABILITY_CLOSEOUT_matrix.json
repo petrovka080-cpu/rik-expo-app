@@ -28,19 +28,23 @@
   "child_statuses": [
     {
       "name": "command_center_task_stream",
-      "final_status": "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED"
+      "final_status": "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED",
+      "exactReason": null
     },
     {
       "name": "cross_screen_runtime",
-      "final_status": "GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY"
+      "final_status": "GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY",
+      "exactReason": null
     },
     {
       "name": "procurement_copilot",
-      "final_status": "GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_READY"
+      "final_status": "GREEN_AI_PROCUREMENT_COPILOT_RUNTIME_READY",
+      "exactReason": null
     },
     {
       "name": "approval_inbox",
-      "final_status": "GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY"
+      "final_status": "GREEN_AI_APPROVAL_INBOX_EXECUTION_GATE_READY",
+      "exactReason": null
     }
   ],
   "exactReason": null,
