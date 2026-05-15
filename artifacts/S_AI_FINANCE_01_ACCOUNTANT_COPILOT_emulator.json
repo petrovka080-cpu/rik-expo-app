@@ -1,0 +1,6 @@
+{
+  "wave": "S_AI_FINANCE_01_ACCOUNTANT_COPILOT",
+  "android_runtime_smoke": "PASS",
+  "finance_copilot_runtime_proof": "PASS",
+  "fake_emulator_pass": false
+}

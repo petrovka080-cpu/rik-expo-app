@@ -448,6 +448,12 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentFinanceCopilotRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiFinance01AccountantCopilotFiles = [
+      path.join(SRC, "features", "ai", "finance", "aiFinanceEvidenceResolver.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiPaymentRiskClassifier.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiPaymentDraftRationale.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiFinanceApprovalCandidate.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic08WarehouseOperationsCopilotFiles = [
       path.join(SRC, "features", "ai", "warehouse", "aiWarehouseCopilotTypes.ts"),
       path.join(SRC, "features", "ai", "warehouse", "aiWarehouseStatusEngine.ts"),
@@ -1301,6 +1307,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiExternal02CitedMarketPreviewFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic18DocumentPdfKnowledgeLayerFiles).toBeLessThanOrEqual(7);
     expect(sAiMagic07AccountantFinanceCopilotFiles).toBeLessThanOrEqual(7);
+    expect(sAiFinance01AccountantCopilotFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic08WarehouseOperationsCopilotFiles).toBeLessThanOrEqual(7);
     expect(sAiWarehouse01OperationsCopilotFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic09FieldWorkCopilotFiles).toBeLessThanOrEqual(7);
@@ -1491,6 +1498,7 @@ describe("performance budget — bundle module count", () => {
         sAiExternal02CitedMarketPreviewFiles -
         sAiMagic18DocumentPdfKnowledgeLayerFiles -
         sAiMagic07AccountantFinanceCopilotFiles -
+        sAiFinance01AccountantCopilotFiles -
         sAiMagic08WarehouseOperationsCopilotFiles -
         sAiWarehouse01OperationsCopilotFiles -
         sAiMagic09FieldWorkCopilotFiles -

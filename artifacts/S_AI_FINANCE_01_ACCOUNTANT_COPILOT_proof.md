@@ -1,0 +1,22 @@
+# S_AI_FINANCE_01_ACCOUNTANT_COPILOT
+
+final_status: GREEN_AI_FINANCE_ACCOUNTANT_COPILOT_READY
+live_finance_safe_read_available: true
+summary_loaded: true
+debt_cards_created: 2
+risk_signals_created: 9
+evidence_resolver_ready: true
+payment_risk_classifier_ready: true
+payment_draft_rationale_ready: true
+approval_candidate_ready: true
+risk_preview_ready: true
+draft_summary_ready: true
+mutation_count: 0
+payment_created: false
+posting_created: false
+invoice_mutated: false
+direct_payment_allowed: false
+direct_finance_posting_allowed: false
+ledger_bypass_allowed: false
+android_runtime_smoke: PASS
+exact_reason: none

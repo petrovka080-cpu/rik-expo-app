@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-describe("AI accountant finance copilot runner contract", () => {
+describe("AI finance accountant copilot maestro contract", () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), "scripts/e2e/runAiAccountantFinanceCopilotMaestro.ts"),
     "utf8",

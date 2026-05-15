@@ -1,9 +1,9 @@
 {
   "wave": "S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION",
   "parent_runner": "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
-  "runId": "S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_2026-05-15T190412104Z",
-  "startedAt": "2026-05-15T19:04:12.104Z",
-  "finishedAt": "2026-05-15T19:19:23.119Z",
+  "runId": "S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_2026-05-15T195012188Z",
+  "startedAt": "2026-05-15T19:50:12.188Z",
+  "finishedAt": "2026-05-15T20:05:17.425Z",
   "adb_device_id": "emulator-5556",
   "emulator_serial": "emulator-5556",
   "selected_maestro_avd_name": "Pixel_7_API_34",
@@ -24,12 +24,12 @@
       "child_status": "PASS",
       "child_exact_reason": null,
       "child_artifact_path": "artifacts/S_E2E_CORE_05_DEVELOPER_CONTROL_TARGETABILITY_CLOSEOUT_matrix.json",
-      "child_artifact_mtime": "2026-05-15T19:07:14.654Z",
+      "child_artifact_mtime": "2026-05-15T19:53:13.317Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:04:19.522Z",
-      "probe_finished_at": "2026-05-15T19:07:14.654Z",
+      "probe_started_at": "2026-05-15T19:50:19.648Z",
+      "probe_finished_at": "2026-05-15T19:53:13.319Z",
       "retry_classification": null
     },
     {
@@ -42,12 +42,12 @@
       "child_status": "PASS",
       "child_exact_reason": null,
       "child_artifact_path": "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
-      "child_artifact_mtime": "2026-05-15T19:15:40.032Z",
+      "child_artifact_mtime": "2026-05-15T20:01:41.856Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:07:14.655Z",
-      "probe_finished_at": "2026-05-15T19:15:40.032Z",
+      "probe_started_at": "2026-05-15T19:53:13.320Z",
+      "probe_finished_at": "2026-05-15T20:01:41.856Z",
       "retry_classification": null
     },
     {
@@ -60,12 +60,12 @@
       "child_status": "PASS",
       "child_exact_reason": null,
       "child_artifact_path": "artifacts/S_AI_MAGIC_10_SCREEN_BUTTON_ACTION_INTELLIGENCE_MAP_matrix.json",
-      "child_artifact_mtime": "2026-05-15T19:16:14.533Z",
+      "child_artifact_mtime": "2026-05-15T20:02:15.797Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:15:40.033Z",
-      "probe_finished_at": "2026-05-15T19:16:14.534Z",
+      "probe_started_at": "2026-05-15T20:01:41.856Z",
+      "probe_finished_at": "2026-05-15T20:02:15.798Z",
       "retry_classification": null
     },
     {
@@ -78,12 +78,12 @@
       "child_status": "PASS",
       "child_exact_reason": null,
       "child_artifact_path": "artifacts/S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP_matrix.json",
-      "child_artifact_mtime": "2026-05-15T19:16:48.703Z",
+      "child_artifact_mtime": "2026-05-15T20:02:50.083Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:16:14.535Z",
-      "probe_finished_at": "2026-05-15T19:16:48.704Z",
+      "probe_started_at": "2026-05-15T20:02:15.799Z",
+      "probe_finished_at": "2026-05-15T20:02:50.084Z",
       "retry_classification": null
     },
     {
@@ -96,12 +96,12 @@
       "child_status": "PASS",
       "child_exact_reason": null,
       "child_artifact_path": "artifacts/S_AI_MAGIC_11_COMMAND_CENTER_APPROVAL_RUNTIME_emulator.json",
-      "child_artifact_mtime": "2026-05-15T19:17:54.094Z",
+      "child_artifact_mtime": "2026-05-15T20:03:47.631Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:16:48.705Z",
-      "probe_finished_at": "2026-05-15T19:17:48.351Z",
+      "probe_started_at": "2026-05-15T20:02:50.085Z",
+      "probe_finished_at": "2026-05-15T20:03:47.631Z",
       "retry_classification": null
     },
     {
@@ -114,12 +114,12 @@
       "child_status": "PASS",
       "child_exact_reason": "No eligible evidence-backed workday tasks were available in staging data.",
       "child_artifact_path": "artifacts/S_AI_MAGIC_12_PROACTIVE_WORKDAY_TASK_INTELLIGENCE_matrix.json",
-      "child_artifact_mtime": "2026-05-15T19:19:23.113Z",
+      "child_artifact_mtime": "2026-05-15T20:05:17.419Z",
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:17:48.352Z",
-      "probe_finished_at": "2026-05-15T19:19:23.114Z",
+      "probe_started_at": "2026-05-15T20:03:47.632Z",
+      "probe_finished_at": "2026-05-15T20:05:17.420Z",
       "retry_classification": null
     },
     {
@@ -136,8 +136,8 @@
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:19:23.114Z",
-      "probe_finished_at": "2026-05-15T19:19:23.116Z",
+      "probe_started_at": "2026-05-15T20:05:17.421Z",
+      "probe_finished_at": "2026-05-15T20:05:17.422Z",
       "retry_classification": "UNKNOWN_NO_RETRY"
     },
     {
@@ -154,8 +154,8 @@
       "result_source": "current_process_return",
       "result_came_from_current_process": true,
       "stale_artifact_used": false,
-      "probe_started_at": "2026-05-15T19:19:23.116Z",
-      "probe_finished_at": "2026-05-15T19:19:23.116Z",
+      "probe_started_at": "2026-05-15T20:05:17.423Z",
+      "probe_finished_at": "2026-05-15T20:05:17.423Z",
       "retry_classification": "UNKNOWN_NO_RETRY"
     }
   ]
