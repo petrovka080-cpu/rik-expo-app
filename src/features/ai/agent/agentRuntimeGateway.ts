@@ -15,6 +15,10 @@ import {
   type AgentRuntimeGatewayError,
 } from "./agentRuntimeErrors";
 import {
+  getAgentRuntimeTransportRegistryEntry,
+  resolveAgentRuntimeTransportName,
+} from "./agentRuntimeTransportRegistry";
+import {
   redactAgentRuntimePayload,
   type AgentRuntimeRedactionResult,
 } from "./agentRuntimeRedaction";
@@ -145,39 +149,17 @@ function getRouteDefinition(operation: AgentBffRouteOperation): AgentBffRouteDef
   return route;
 }
 
-function resolveRuntimeName(operation: AgentBffRouteOperation): AiRuntimeTransportName {
-  if (operation.includes("execute_approved")) return "approved_executor";
-  if (operation.startsWith("agent.approval_inbox.") || operation.startsWith("agent.action.")) {
-    return "approval_inbox";
-  }
-  if (operation.startsWith("agent.external_intel.") || operation.startsWith("agent.intel.")) {
-    return "external_intel";
-  }
-  if (operation.startsWith("agent.documents.")) return "document_knowledge";
-  if (operation.startsWith("agent.construction_knowhow.")) return "construction_knowhow";
-  if (operation.startsWith("agent.finance.")) return "finance_copilot";
-  if (operation.startsWith("agent.warehouse.")) return "warehouse_copilot";
-  if (operation.startsWith("agent.field.")) return "field_work_copilot";
-  if (operation.startsWith("agent.procurement.")) return "procurement_copilot";
-  if (
-    operation.startsWith("agent.screen_runtime.") ||
-    operation.startsWith("agent.screen_actions.") ||
-    operation.startsWith("agent.screen_assistant.") ||
-    operation.startsWith("agent.app_graph.")
-  ) {
-    return "screen_runtime";
-  }
-  if (operation.startsWith("agent.task_stream.") || operation.startsWith("agent.workday.")) {
-    return "task_stream";
-  }
-  return "command_center";
-}
-
 function getRuntimeTransport(operation: AgentBffRouteOperation): AiRuntimeTransportContract {
-  const runtimeName = resolveRuntimeName(operation);
+  const registryEntry = getAgentRuntimeTransportRegistryEntry(operation);
+  const runtimeName = resolveAgentRuntimeTransportName(operation);
   const contract = listAiRuntimeTransportContracts().find((entry) => entry.runtimeName === runtimeName);
   if (!contract) {
     throw new Error(`Agent runtime transport contract is not mounted: ${runtimeName}`);
+  }
+  if (contract.boundary !== registryEntry.expectedBoundary) {
+    throw new Error(
+      `Agent runtime transport boundary drift for ${runtimeName}: expected ${registryEntry.expectedBoundary}, got ${contract.boundary}`,
+    );
   }
   return contract;
 }

@@ -2,6 +2,7 @@
   "wave": "S_AI_RUNTIME_02_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT",
   "source_files": [
     "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
     "src/features/ai/agent/agentRuntimeGateway.ts",
     "scripts/architecture_anti_regression_suite.ts",
     "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts"

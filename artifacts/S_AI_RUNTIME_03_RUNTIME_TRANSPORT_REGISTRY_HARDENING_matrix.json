@@ -1,0 +1,90 @@
+{
+  "wave": "S_AI_RUNTIME_03_RUNTIME_TRANSPORT_REGISTRY_HARDENING",
+  "final_status": "GREEN_AI_RUNTIME_TRANSPORT_REGISTRY_HARDENING_READY",
+  "exact_reason": null,
+  "route_count": 76,
+  "registry_entry_count": 12,
+  "fallback_entry_count": 1,
+  "runtime_contract_count": 12,
+  "all_registry_runtime_contracts_mounted": true,
+  "all_registry_boundaries_aligned": true,
+  "all_gateway_mounts_match_registry": true,
+  "no_domain_command_center_fallback": true,
+  "all_domain_groups_explicit": true,
+  "missing_runtime_contracts": [],
+  "boundary_drifts": [],
+  "route_drifts": [],
+  "domain_checks": [
+    {
+      "domain": "documents",
+      "operationPrefix": "agent.documents.",
+      "expectedRuntimeName": "document_knowledge",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 3,
+      "routeCount": 3,
+      "allRoutesExplicit": true,
+      "commandCenterFallback": false
+    },
+    {
+      "domain": "construction_knowhow",
+      "operationPrefix": "agent.construction_knowhow.",
+      "expectedRuntimeName": "construction_knowhow",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 6,
+      "routeCount": 6,
+      "allRoutesExplicit": true,
+      "commandCenterFallback": false
+    },
+    {
+      "domain": "finance",
+      "operationPrefix": "agent.finance.",
+      "expectedRuntimeName": "finance_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "allRoutesExplicit": true,
+      "commandCenterFallback": false
+    },
+    {
+      "domain": "warehouse",
+      "operationPrefix": "agent.warehouse.",
+      "expectedRuntimeName": "warehouse_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "allRoutesExplicit": true,
+      "commandCenterFallback": false
+    },
+    {
+      "domain": "field",
+      "operationPrefix": "agent.field.",
+      "expectedRuntimeName": "field_work_copilot",
+      "expectedBoundary": "runtime_preview_transport",
+      "minRouteCount": 4,
+      "routeCount": 4,
+      "allRoutesExplicit": true,
+      "commandCenterFallback": false
+    }
+  ],
+  "runtime_route_counts": {
+    "approval_inbox": 10,
+    "approved_executor": 2,
+    "screen_runtime": 14,
+    "external_intel": 4,
+    "procurement_copilot": 17,
+    "task_stream": 5,
+    "document_knowledge": 3,
+    "construction_knowhow": 6,
+    "finance_copilot": 4,
+    "warehouse_copilot": 4,
+    "field_work_copilot": 4,
+    "command_center": 3
+  },
+  "no_db_writes": true,
+  "no_direct_database_access": true,
+  "no_provider_calls": true,
+  "no_raw_rows": true,
+  "no_raw_provider_payloads": true,
+  "no_ui_changes": true,
+  "no_fake_green": true
+}

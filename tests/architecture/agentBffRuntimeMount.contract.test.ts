@@ -8,6 +8,7 @@ import {
 
 const files = [
   "src/features/ai/agent/agentRuntimeGateway.ts",
+  "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
   "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
   "src/features/ai/agent/agentRuntimeRedaction.ts",
   "src/features/ai/agent/agentRuntimeErrors.ts",

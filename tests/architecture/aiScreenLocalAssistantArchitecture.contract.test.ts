@@ -45,9 +45,12 @@ describe("AI screen-local assistant architecture", () => {
   it("mounts screen assistant routes through the agent shell and runtime gateway", () => {
     const shell = read("src/features/ai/agent/agentBffRouteShell.ts");
     const gateway = read("src/features/ai/agent/agentRuntimeGateway.ts");
+    const transportRegistry = read("src/features/ai/agent/agentRuntimeTransportRegistry.ts");
 
     expect(shell).toContain("agent.screen_assistant.context.read");
     expect(shell).toContain("AgentScreenAssistantEnvelope");
-    expect(gateway).toContain('operation.startsWith("agent.screen_assistant.")');
+    expect(gateway).toContain("resolveAgentRuntimeTransportName");
+    expect(transportRegistry).toContain('{ kind: "prefix", value: "agent.screen_assistant." }');
+    expect(transportRegistry).toContain('runtimeName: "screen_runtime"');
   });
 });

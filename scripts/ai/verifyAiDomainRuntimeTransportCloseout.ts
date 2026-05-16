@@ -9,10 +9,10 @@ import {
   getAgentRuntimeGatewayMount,
   listAgentRuntimeGatewayMounts,
 } from "../../src/features/ai/agent/agentRuntimeGateway";
-import type {
-  AiRuntimeTransportContract,
-  AiRuntimeTransportName,
-} from "../../src/features/ai/tools/transport/aiToolTransportTypes";
+import {
+  AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS,
+  type AiExplicitDomainRuntimeTransportGroup,
+} from "../../src/features/ai/agent/agentRuntimeTransportRegistry";
 
 export const AI_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT_WAVE =
   "S_AI_RUNTIME_02_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT" as const;
@@ -22,13 +22,7 @@ export type AiDomainRuntimeTransportCloseoutFinalStatus =
   | "BLOCKED_AI_DOMAIN_RUNTIME_TRANSPORT_INCOMPLETE"
   | "BLOCKED_AI_DOMAIN_RUNTIME_COMMAND_CENTER_FALLBACK";
 
-export type AiDomainRuntimeGroup = {
-  domain: "documents" | "construction_knowhow" | "finance" | "warehouse" | "field";
-  operationPrefix: string;
-  expectedRuntimeName: AiRuntimeTransportName;
-  expectedBoundary: AiRuntimeTransportContract["boundary"];
-  minRouteCount: number;
-};
+export type AiDomainRuntimeGroup = AiExplicitDomainRuntimeTransportGroup;
 
 export type AiDomainRuntimeGroupMatrix = AiDomainRuntimeGroup & {
   routeCount: number;
@@ -66,43 +60,8 @@ export type AiDomainRuntimeTransportCloseoutMatrix = {
   no_fake_green: true;
 };
 
-export const AI_DOMAIN_RUNTIME_GROUPS: readonly AiDomainRuntimeGroup[] = [
-  {
-    domain: "documents",
-    operationPrefix: "agent.documents.",
-    expectedRuntimeName: "document_knowledge",
-    expectedBoundary: "runtime_preview_transport",
-    minRouteCount: 3,
-  },
-  {
-    domain: "construction_knowhow",
-    operationPrefix: "agent.construction_knowhow.",
-    expectedRuntimeName: "construction_knowhow",
-    expectedBoundary: "runtime_preview_transport",
-    minRouteCount: 6,
-  },
-  {
-    domain: "finance",
-    operationPrefix: "agent.finance.",
-    expectedRuntimeName: "finance_copilot",
-    expectedBoundary: "runtime_preview_transport",
-    minRouteCount: 4,
-  },
-  {
-    domain: "warehouse",
-    operationPrefix: "agent.warehouse.",
-    expectedRuntimeName: "warehouse_copilot",
-    expectedBoundary: "runtime_preview_transport",
-    minRouteCount: 4,
-  },
-  {
-    domain: "field",
-    operationPrefix: "agent.field.",
-    expectedRuntimeName: "field_work_copilot",
-    expectedBoundary: "runtime_preview_transport",
-    minRouteCount: 4,
-  },
-] as const;
+export const AI_DOMAIN_RUNTIME_GROUPS: readonly AiDomainRuntimeGroup[] =
+  AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS;
 
 const projectRoot = process.cwd();
 const artifactPrefix = path.join(projectRoot, "artifacts", AI_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT_WAVE);
@@ -206,6 +165,7 @@ function writeArtifacts(matrix: AiDomainRuntimeTransportCloseoutMatrix): void {
     wave: AI_DOMAIN_RUNTIME_TRANSPORT_CLOSEOUT_WAVE,
     source_files: [
       "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+      "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
       "src/features/ai/agent/agentRuntimeGateway.ts",
       "scripts/architecture_anti_regression_suite.ts",
       "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts",

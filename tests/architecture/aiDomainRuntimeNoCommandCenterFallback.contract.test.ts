@@ -3,19 +3,16 @@ import {
   type AgentBffRouteOperation,
 } from "../../src/features/ai/agent/agentBffRouteShell";
 import { getAgentRuntimeGatewayMount } from "../../src/features/ai/agent/agentRuntimeGateway";
-
-const DOMAIN_RUNTIME_PREFIXES = [
-  "agent.documents.",
-  "agent.construction_knowhow.",
-  "agent.finance.",
-  "agent.warehouse.",
-  "agent.field.",
-] as const;
+import { AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS } from "../../src/features/ai/agent/agentRuntimeTransportRegistry";
 
 describe("AI domain runtime transport fallback boundary", () => {
   it("does not route domain BFF operations through the generic command center runtime", () => {
     const domainOperations = AGENT_BFF_ROUTE_DEFINITIONS
-      .filter((route) => DOMAIN_RUNTIME_PREFIXES.some((prefix) => route.operation.startsWith(prefix)))
+      .filter((route) =>
+        AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS.some((group) =>
+          route.operation.startsWith(group.operationPrefix),
+        ),
+      )
       .map((route) => route.operation);
 
     expect(domainOperations.length).toBeGreaterThanOrEqual(21);

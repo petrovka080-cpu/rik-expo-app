@@ -1,0 +1,23 @@
+{
+  "wave": "S_AI_RUNTIME_03_RUNTIME_TRANSPORT_REGISTRY_HARDENING",
+  "source_files": [
+    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+    "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts",
+    "scripts/ai/verifyAiRuntimeTransportRegistryHardening.ts"
+  ],
+  "test_files": [
+    "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
+    "tests/ai/aiDomainRuntimeTransportCloseout.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts",
+    "tests/architecture/aiDomainRuntimeNoCommandCenterFallback.contract.test.ts",
+    "tests/architecture/agentBffRuntimeMount.contract.test.ts"
+  ],
+  "registry_entries": 12,
+  "runtime_contracts": 12,
+  "route_count": 76,
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}
