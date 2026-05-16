@@ -330,6 +330,9 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "tests/scale/bffReadonlyRuntimeConfig.test.ts",
       "tests/scale/bffStagingServerBoundary.test.ts",
     ]);
+    const sRouteErrorBoundaryCoverageAllowedDirtyFiles = new Set([
+      "scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -345,6 +348,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sCatalogTransportBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sWarehouseApiBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sAssistantStoreBffReadRoutingAllowedDirtyFiles.has(file) &&
+        !sRouteErrorBoundaryCoverageAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

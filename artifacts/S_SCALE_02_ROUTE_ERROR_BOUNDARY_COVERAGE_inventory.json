@@ -1,0 +1,371 @@
+[
+  {
+    "route": "_layout.tsx",
+    "kind": "layout_route",
+    "hasBoundary": false,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "navigation layout/provider route; leaf screen routes own the screen boundary"
+  },
+  {
+    "route": "(tabs)/_layout.tsx",
+    "kind": "layout_route",
+    "hasBoundary": false,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "navigation layout/provider route; leaf screen routes own the screen boundary"
+  },
+  {
+    "route": "(tabs)/add.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/ai.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/auctions.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/chat.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/market.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/_layout.tsx",
+    "kind": "layout_route",
+    "hasBoundary": false,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "navigation layout/provider route; leaf screen routes own the screen boundary"
+  },
+  {
+    "route": "(tabs)/office/accountant.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/buyer.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/contractor.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/director.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/foreman.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/index.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/reports.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/security.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/office/warehouse.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/profile.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/request/[id].tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/supplierMap.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "(tabs)/suppliers-map.tsx",
+    "kind": "alias_reexport",
+    "hasBoundary": false,
+    "targetRoute": "(tabs)/supplierMap.tsx",
+    "targetHasBoundary": true,
+    "coveredByBoundaryOrException": true,
+    "reason": "deep-link alias re-exports a canonical screen route with withScreenErrorBoundary"
+  },
+  {
+    "route": "+not-found.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "ai-approval-inbox.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "ai-command-center.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "ai-procurement-copilot.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "auction/[id].tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "auth/_layout.tsx",
+    "kind": "layout_route",
+    "hasBoundary": false,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "navigation layout/provider route; leaf screen routes own the screen boundary"
+  },
+  {
+    "route": "auth/login.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "auth/register.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "auth/reset.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "calculator/_webStyleGuard.tsx",
+    "kind": "utility_route",
+    "hasBoundary": false,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "web style utility component, not a routable user screen"
+  },
+  {
+    "route": "calculator/index.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "chat/index.tsx",
+    "kind": "alias_reexport",
+    "hasBoundary": false,
+    "targetRoute": "(tabs)/chat.tsx",
+    "targetHasBoundary": true,
+    "coveredByBoundaryOrException": true,
+    "reason": "deep-link alias re-exports a canonical screen route with withScreenErrorBoundary"
+  },
+  {
+    "route": "index.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "pdf-viewer.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "product/[id].tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "reports/ai-assistant.tsx",
+    "kind": "alias_reexport",
+    "hasBoundary": false,
+    "targetRoute": "(tabs)/ai.tsx",
+    "targetHasBoundary": true,
+    "coveredByBoundaryOrException": true,
+    "reason": "deep-link alias re-exports a canonical screen route with withScreenErrorBoundary"
+  },
+  {
+    "route": "reports/dashboard.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "seller.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "sign-in.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  },
+  {
+    "route": "supplierShowcase.tsx",
+    "kind": "screen_route",
+    "hasBoundary": true,
+    "targetRoute": null,
+    "targetHasBoundary": null,
+    "coveredByBoundaryOrException": true,
+    "reason": "leaf screen route is wrapped with withScreenErrorBoundary"
+  }
+]

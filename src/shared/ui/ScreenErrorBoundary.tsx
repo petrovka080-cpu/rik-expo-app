@@ -1,6 +1,8 @@
 import React from "react";
+import { router, type Href } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { safeBack, type SafeBackRouterLike } from "../../lib/navigation/safeBack";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ScreenBoundaryScreen =
@@ -44,6 +46,13 @@ type ScreenErrorBoundaryState = {
   error: Error | null;
   retryNonce: number;
 };
+
+const SCREEN_ERROR_FALLBACK_ROUTE = "/" as Href;
+
+const isScreenErrorDebugEnabled = () =>
+  typeof __DEV__ !== "undefined" &&
+  __DEV__ &&
+  String(process.env.EXPO_PUBLIC_SCREEN_ERROR_DEBUG ?? "").trim() === "1";
 
 const getErrorDetails = (error: unknown) => {
   if (error instanceof Error) {
@@ -89,6 +98,7 @@ class ScreenErrorBoundary extends React.Component<
         owner: "screen_boundary",
         severity: "error",
         retryAllowed: true,
+        backAvailable: true,
         componentStack: String(info.componentStack || "").trim().slice(0, 2000),
       },
     });
@@ -117,6 +127,29 @@ class ScreenErrorBoundary extends React.Component<
     }));
   };
 
+  handleBack = () => {
+    const navigationResult = safeBack(
+      router as SafeBackRouterLike,
+      SCREEN_ERROR_FALLBACK_ROUTE,
+    );
+    recordPlatformObservability({
+      screen: this.props.screen,
+      surface: "screen_boundary",
+      category: "ui",
+      event: "screen_error_back",
+      result: "success",
+      fallbackUsed: navigationResult === "fallback",
+      extra: {
+        module: this.props.screen,
+        route: this.props.route,
+        role: this.props.screen,
+        owner: "screen_boundary",
+        severity: "info",
+        navigationResult,
+      },
+    });
+  };
+
   render() {
     if (this.state.hasError) {
       return (
@@ -124,14 +157,19 @@ class ScreenErrorBoundary extends React.Component<
           <View style={styles.card}>
             <Text style={styles.title}>{this.props.title || "Произошла ошибка"}</Text>
             <Text style={styles.subtitle}>
-              Экран не удалось отрисовать. Попробуйте снова.
+              Экран не удалось отрисовать. Попробуйте снова или вернитесь назад.
             </Text>
-            {__DEV__ && this.state.error?.message ? (
+            {isScreenErrorDebugEnabled() && this.state.error?.message ? (
               <Text style={styles.details}>{this.state.error.message}</Text>
             ) : null}
-            <Pressable onPress={this.handleRetry} style={styles.button}>
-              <Text style={styles.buttonText}>Попробовать снова</Text>
-            </Pressable>
+            <View style={styles.actions}>
+              <Pressable onPress={this.handleRetry} style={styles.primaryButton}>
+                <Text style={styles.primaryButtonText}>Попробовать снова</Text>
+              </Pressable>
+              <Pressable onPress={this.handleBack} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>Назад</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       );
@@ -179,7 +217,7 @@ const styles = StyleSheet.create({
   card: {
     width: "100%",
     maxWidth: 420,
-    borderRadius: 18,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.12)",
     backgroundColor: "#111827",
@@ -201,16 +239,32 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
   },
-  button: {
+  actions: {
     marginTop: 6,
-    borderRadius: 14,
+    gap: 8,
+  },
+  primaryButton: {
+    borderRadius: 8,
     backgroundColor: "#22C55E",
     paddingVertical: 13,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonText: {
+  primaryButtonText: {
     color: "#04110A",
+    fontSize: 14,
+    fontWeight: "800",
+  },
+  secondaryButton: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "rgba(203,213,225,0.45)",
+    paddingVertical: 13,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonText: {
+    color: "#E5E7EB",
     fontSize: 14,
     fontWeight: "800",
   },

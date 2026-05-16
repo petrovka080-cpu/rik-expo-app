@@ -1,0 +1,75 @@
+{
+  "wave": "S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_CLOSEOUT",
+  "checkedAt": "2026-05-16T18:02:37.168Z",
+  "status": "PASS",
+  "framework": "maestro",
+  "device": "android",
+  "targetResults": [
+    {
+      "screenId": "buyer.main",
+      "route": "(tabs)/office/buyer.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "accountant.main",
+      "route": "(tabs)/office/accountant.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "route": "(tabs)/office/warehouse.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "route": "(tabs)/office/director.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "foreman.main",
+      "route": "(tabs)/office/foreman.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "approval.inbox",
+      "route": "ai-approval-inbox.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "documents.route",
+      "route": "pdf-viewer.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    },
+    {
+      "screenId": "ai.assistant",
+      "route": "(tabs)/ai.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "boundaryWrapperRecorded": true
+    }
+  ],
+  "routeBoundaryVerifierPassed": true,
+  "androidRuntimeSmoke": "PASS",
+  "androidRuntimeSource": "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_matrix.json",
+  "noBlankWhiteScreen": true,
+  "noRawStackVisible": true,
+  "noSecretsPrinted": true,
+  "noDbWrites": true,
+  "hiddenTestIdShimsAdded": false,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}

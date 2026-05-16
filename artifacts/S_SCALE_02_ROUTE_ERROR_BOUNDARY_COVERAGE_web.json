@@ -1,0 +1,102 @@
+{
+  "wave": "S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_CLOSEOUT",
+  "checkedAt": "2026-05-16T17:50:17.185Z",
+  "status": "PASS",
+  "baseUrl": "http://localhost:8099",
+  "webServerStartedByVerifier": false,
+  "targetResults": [
+    {
+      "screenId": "buyer.main",
+      "path": "/office/buyer",
+      "finalUrl": "http://localhost:8099/office/buyer",
+      "loaded": true,
+      "bodyLength": 217,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "accountant.main",
+      "path": "/office/accountant",
+      "finalUrl": "http://localhost:8099/office/accountant",
+      "loaded": true,
+      "bodyLength": 865,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "path": "/office/warehouse",
+      "finalUrl": "http://localhost:8099/office/warehouse",
+      "loaded": true,
+      "bodyLength": 204,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "path": "/office/director",
+      "finalUrl": "http://localhost:8099/auth/login",
+      "loaded": true,
+      "bodyLength": 56,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "foreman.main",
+      "path": "/office/foreman",
+      "finalUrl": "http://localhost:8099/office/foreman",
+      "loaded": true,
+      "bodyLength": 101,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "documents.route",
+      "path": "/pdf-viewer",
+      "finalUrl": "http://localhost:8099/pdf-viewer",
+      "loaded": true,
+      "bodyLength": 113,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "approval.inbox",
+      "path": "/ai-approval-inbox",
+      "finalUrl": "http://localhost:8099/ai-approval-inbox",
+      "loaded": true,
+      "bodyLength": 226,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    },
+    {
+      "screenId": "ai.assistant",
+      "path": "/ai",
+      "finalUrl": "http://localhost:8099/ai",
+      "loaded": true,
+      "bodyLength": 3696,
+      "whiteScreen": false,
+      "errorOverlayVisible": false,
+      "routeBoundaryRecorded": true
+    }
+  ],
+  "routeBoundaryVerifierPassed": true,
+  "noWhiteScreenNormalBoot": true,
+  "safeErrorBoundaryFallbackProof": "react_contract_test",
+  "errorInjectionHarness": "verifier_only_no_ui_hook",
+  "noRawStackVisible": true,
+  "noSecretsPrinted": true,
+  "noProviderCall": true,
+  "noDbWrites": true,
+  "hiddenTestIdShimsAdded": false,
+  "nonBlockingConsoleErrors": [
+    "[pdf-viewer] viewer_missing_session {platform: web, sessionId: }"
+  ],
+  "errors": []
+}

@@ -53,9 +53,10 @@ describe("ScreenErrorBoundary", () => {
     ).toBe(true);
 
     shouldThrow = false;
-    const retryNode = renderer.root.find(
+    const retryNode = renderer.root.findAll(
       (node: ReactTestInstance) => typeof node.props?.onPress === "function",
-    );
+    )[0];
+    expect(retryNode).toBeTruthy();
     await act(async () => {
       retryNode.props.onPress();
     });
