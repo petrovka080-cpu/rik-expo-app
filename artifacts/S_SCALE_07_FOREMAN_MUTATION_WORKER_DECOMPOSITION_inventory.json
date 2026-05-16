@@ -1,0 +1,65 @@
+[
+  {
+    "file": "src/lib/offline/mutation.types.ts",
+    "role": "types",
+    "requiredExports": [
+      "ForemanMutationWorkerDeps",
+      "ForemanMutationWorkerResult"
+    ],
+    "missingExports": [],
+    "importsReactOrHooks": false,
+    "importsSupabase": false
+  },
+  {
+    "file": "src/lib/offline/mutation.retryPolicy.ts",
+    "role": "policy",
+    "requiredExports": [
+      "FOREMAN_DRAIN_BATCH_SIZE",
+      "FOREMAN_MUTATION_FLUSH_LOOP_CEILING",
+      "FOREMAN_MUTATION_REPLAY_POLICY",
+      "FOREMAN_RETRY_POLICY",
+      "normalizeForemanMutationLoopIterationLimit"
+    ],
+    "missingExports": [],
+    "importsReactOrHooks": false,
+    "importsSupabase": false
+  },
+  {
+    "file": "src/lib/offline/mutationQueue.ts",
+    "role": "keys",
+    "requiredExports": [
+      "extractSubmittedRequestId",
+      "getForemanDraftKeyFromSnapshot",
+      "getForemanDraftQueueKeysFromSnapshot",
+      "getForemanPendingCountForSnapshot"
+    ],
+    "missingExports": [],
+    "importsReactOrHooks": false,
+    "importsSupabase": false
+  },
+  {
+    "file": "src/lib/offline/mutation.telemetry.ts",
+    "role": "telemetry",
+    "requiredExports": [
+      "pushForemanMutationStageTelemetry",
+      "reportForemanPostSubmitCleanupFailure",
+      "toErrorText",
+      "toForemanOfflineState",
+      "trackForemanMutationBacklog"
+    ],
+    "missingExports": [],
+    "importsReactOrHooks": false,
+    "importsSupabase": false
+  },
+  {
+    "file": "src/lib/offline/offlineConflictClassifier.ts",
+    "role": "conflict",
+    "requiredExports": [
+      "deriveForemanConflictFromFailure",
+      "shouldHoldForemanReplayForAttention"
+    ],
+    "missingExports": [],
+    "importsReactOrHooks": false,
+    "importsSupabase": false
+  }
+]

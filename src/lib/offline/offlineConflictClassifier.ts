@@ -21,6 +21,19 @@
  */
 
 import type { ForemanLocalDraftSnapshot } from "../../screens/foreman/foreman.localDraft";
+import { normalizeAppError } from "../errors/appError";
+import { recordPlatformObservability } from "../observability/platformObservability";
+import {
+  classifyForemanSyncError,
+  type ForemanDraftConflictType,
+} from "./foremanSyncRuntime";
+import {
+  areForemanLocalDraftSnapshotsEqual,
+  compareForemanLocalDraftSnapshotsByVersion,
+} from "../../screens/foreman/foreman.localDraft.version";
+import { classifyOfflineMutationErrorKind } from "./mutation.conflict";
+import { getForemanMutationQueueSummary } from "./mutationQueue";
+import type { ForemanMutationWorkerDeps } from "./mutation.types";
 
 // ─── Conflict Class Taxonomy ──────────────────────────────────────────────────
 //
@@ -339,4 +352,171 @@ export const mapConflictClassToExistingType = (
     default:
       return "retryable_sync_failure";
   }
+};
+
+export const isAttentionRequiredForemanConflict = (
+  conflictType: ForemanDraftConflictType,
+) =>
+  conflictType === "stale_local_snapshot" ||
+  conflictType === "server_terminal_conflict" ||
+  conflictType === "validation_conflict" ||
+  conflictType === "remote_divergence_requires_attention";
+
+export const shouldHoldForemanReplayForAttention = (params: {
+  conflictType: ForemanDraftConflictType;
+  attentionNeeded: boolean;
+  entryDraftKey: string | null;
+  entryRequestId: string | null;
+  queueDraftKey: string | null;
+  snapshotRequestId: string | null;
+  recoverableRequestId: string | null;
+}) => {
+  if (!params.attentionNeeded) return false;
+  if (!isAttentionRequiredForemanConflict(params.conflictType)) return false;
+
+  const entryKeys = new Set(
+    [params.entryDraftKey, params.entryRequestId]
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean),
+  );
+  if (!entryKeys.size) return true;
+
+  return [
+    params.queueDraftKey,
+    params.snapshotRequestId,
+    params.recoverableRequestId,
+  ]
+    .map((value) => String(value ?? "").trim())
+    .filter(Boolean)
+    .some((value) => entryKeys.has(value));
+};
+
+export const deriveForemanConflictFromFailure = async (params: {
+  deps: ForemanMutationWorkerDeps;
+  snapshot: ForemanLocalDraftSnapshot | null;
+  requestId: string | null;
+  error: unknown;
+}) => {
+  const normalized = classifyOfflineMutationErrorKind(params.error);
+  const classified = classifyForemanSyncError(params.error);
+  let conflictType = classified.conflictType;
+  let remoteSnapshot: ForemanLocalDraftSnapshot | null = null;
+  let remoteStatus: string | null = null;
+
+  if (params.requestId && params.deps.inspectRemoteDraft) {
+    try {
+      const remote = await params.deps.inspectRemoteDraft({
+        requestId: params.requestId,
+        localSnapshot: params.snapshot,
+      });
+      remoteSnapshot = remote.snapshot;
+      remoteStatus = remote.status;
+      if (remote.isTerminal) {
+        conflictType = "server_terminal_conflict";
+      } else if (
+        conflictType === "retryable_sync_failure" &&
+        remote.snapshot &&
+        params.snapshot
+      ) {
+        const versionCompare = compareForemanLocalDraftSnapshotsByVersion(
+          params.snapshot,
+          remote.snapshot,
+          { ignoreUpdatedAt: true },
+        );
+        const remoteDiverged =
+          versionCompare.source === "server_revision" &&
+          versionCompare.equal === true
+            ? false
+            : !areForemanLocalDraftSnapshotsEqual(
+                params.snapshot,
+                remote.snapshot,
+                {
+                  ignoreUpdatedAt: true,
+                  ignoreLastError: true,
+                },
+              );
+        if (remoteDiverged) {
+          conflictType = "remote_divergence_requires_attention";
+        }
+
+        if (
+          conflictType === "retryable_sync_failure" ||
+          conflictType === "remote_divergence_requires_attention"
+        ) {
+          try {
+            const pendingSummary = await getForemanMutationQueueSummary();
+            const pendingCount =
+              pendingSummary.pendingCount + pendingSummary.inflightCount;
+            const o5Classification = classifyForemanConflict({
+              localSnapshot: params.snapshot,
+              remoteSnapshot: remote.snapshot,
+              remoteStatus: remote.status,
+              remoteIsTerminal: remote.isTerminal,
+              remoteMissing: remote.snapshot == null,
+              pendingCount,
+              requestIdKnown: Boolean(params.requestId),
+            });
+
+            if (
+              o5Classification.conflictClass ===
+              "local_queue_pending_against_new_remote"
+            ) {
+              conflictType = "remote_divergence_requires_attention";
+              recordPlatformObservability({
+                screen: "foreman",
+                surface: "offline_conflict",
+                category: "ui",
+                event: "conflict_c3_detected",
+                result: "error",
+                errorClass: "local_queue_pending_against_new_remote",
+                extra: {
+                  requestId: params.requestId,
+                  localBaseRevision: o5Classification.localBaseRevision,
+                  remoteBaseRevision: o5Classification.remoteBaseRevision,
+                  pendingCount: o5Classification.pendingCount,
+                  revisionAdvanced: o5Classification.revisionAdvanced,
+                  deterministic: o5Classification.deterministic,
+                  reason: o5Classification.reason,
+                },
+              });
+            }
+          } catch (classificationError) {
+            void classificationError;
+          }
+        }
+      }
+    } catch (error) {
+      const appError = normalizeAppError(
+        error,
+        "foreman_mutation_worker_remote_inspection",
+        "warn",
+      );
+      recordPlatformObservability({
+        screen: "foreman",
+        surface: "offline_mutation_worker",
+        category: "fetch",
+        event: "remote_draft_inspection_failed",
+        result: "error",
+        sourceKind: "offline:foreman_draft",
+        errorStage: appError.context,
+        errorClass: appError.code,
+        errorMessage: appError.message,
+        extra: {
+          requestId: params.requestId,
+          appErrorCode: appError.code,
+          appErrorContext: appError.context,
+          appErrorSeverity: appError.severity,
+        },
+      });
+    }
+  }
+
+  return {
+    ...classified,
+    errorKind: normalized.errorKind,
+    message: normalized.message,
+    conflictType,
+    remoteSnapshot,
+    remoteStatus,
+  };
 };

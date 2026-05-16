@@ -1,42 +1,29 @@
 import type { RequestRecord } from "../api/types";
 import {
-  classifyForemanSyncError,
-  type ForemanDraftConflictType,
   type ForemanDraftSyncStage,
   type ForemanDraftSyncTriggerSource,
 } from "./foremanSyncRuntime";
-import {
-  recordPlatformOfflineTelemetry,
-  type PlatformOfflineFailureClass,
-  type PlatformOfflineQueueAction,
-} from "./platformOffline.observability";
 import { recordPlatformObservability } from "../observability/platformObservability";
-import { trackQueueBacklogMetric } from "../observability/queueBacklogMetrics";
 import { normalizeAppError } from "../errors/appError";
-import type { PlatformOfflineSyncStatus } from "./platformOffline.model";
-import type { RequestDraftMeta } from "../../screens/foreman/foreman.types";
 import {
   getForemanDurableDraftState,
-  markForemanDurableDraftQueued,
   markForemanDurableDraftSyncFailed,
   markForemanDurableDraftSyncStarted,
   markForemanDurableDraftSyncSucceeded,
   patchForemanDurableDraftRecoveryState,
-  pushForemanDurableDraftTelemetry,
+  markForemanDurableDraftQueued,
 } from "../../screens/foreman/foreman.durableDraft.store";
 import {
   type ForemanLocalDraftSnapshot,
-  type ForemanLocalDraftSyncResult,
 } from "../../screens/foreman/foreman.localDraft";
-import {
-  areForemanLocalDraftSnapshotsEqual,
-  compareForemanLocalDraftSnapshotsByVersion,
-} from "../../screens/foreman/foreman.localDraft.version";
 import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "../../screens/foreman/foreman.localDraft.constants";
 import {
   clearForemanMutationsForDraft,
+  extractSubmittedRequestId,
+  getForemanDraftKeyFromSnapshot,
+  getForemanDraftQueueKeysFromSnapshot,
   getForemanMutationQueueSummary,
-  getForemanPendingMutationCountForDraftKeys,
+  getForemanPendingCountForSnapshot,
   markForemanMutationConflicted,
   markForemanMutationFailedNonRetryable,
   markForemanMutationInflight,
@@ -46,167 +33,44 @@ import {
   removeForemanMutationById,
   resetInflightForemanMutations,
 } from "./mutationQueue";
+import { isOfflineMutationConflictKind } from "./mutation.conflict";
 import {
-  classifyOfflineMutationErrorKind,
-  isOfflineMutationConflictKind,
-} from "./mutation.conflict";
-import {
-  getOfflineMutationRetryPolicy,
+  FOREMAN_DRAIN_BATCH_SIZE,
+  FOREMAN_MUTATION_REPLAY_POLICY,
+  FOREMAN_RETRY_POLICY,
+  normalizeForemanMutationLoopIterationLimit,
   resolveOfflineMutationFailureDecision,
 } from "./mutation.retryPolicy";
-import { recordOfflineMutationEvent } from "./mutation.telemetry";
+import {
+  pushForemanMutationStageTelemetry,
+  recordOfflineMutationEvent,
+  reportForemanPostSubmitCleanupFailure,
+  toErrorText,
+  toForemanOfflineState,
+  trackForemanMutationBacklog,
+} from "./mutation.telemetry";
 import {
   classifyReplayFailure,
   recordReplayFailure,
   recordReplaySuccess,
   requestOfflineReplay,
   shouldAllowReplay,
-  type OfflineReplayPolicy,
 } from "./offlineReplayCoordinator";
-import { classifyForemanConflict } from "./offlineConflictClassifier";
+import {
+  classifyForemanConflict,
+  deriveForemanConflictFromFailure,
+  shouldHoldForemanReplayForAttention,
+} from "./offlineConflictClassifier";
+import type {
+  ForemanMutationWorkerDeps,
+  ForemanMutationWorkerResult,
+} from "./mutation.types";
 
-type ForemanMutationWorkerResult = {
-  processedCount: number;
-  remainingCount: number;
-  requestId: string | null;
-  submitted: RequestRecord | null;
-  failed: boolean;
-  errorMessage: string | null;
-  // O3.2: backpressure observability
-  batchLimitReached: boolean;
-  drainDurationMs: number | null;
-};
-
-type ForemanMutationWorkerDeps = {
-  getSnapshot: () => ForemanLocalDraftSnapshot | null;
-  buildRequestDraftMeta: () => RequestDraftMeta;
-  persistSnapshot: (
-    snapshot: ForemanLocalDraftSnapshot | null,
-  ) => void | Promise<void>;
-  applySnapshotToBoundary: (
-    snapshot: ForemanLocalDraftSnapshot | null,
-    options?: {
-      restoreHeader?: boolean;
-      clearWhenEmpty?: boolean;
-      restoreSource?: "none" | "snapshot" | "remoteDraft";
-      restoreIdentity?: string | null;
-    },
-  ) => void | Promise<void>;
-  onSubmitted?: (
-    requestId: string,
-    submitted: RequestRecord | null,
-  ) => void | Promise<void>;
-  getNetworkOnline?: () => boolean | null;
-  inspectRemoteDraft?: (params: {
-    requestId: string;
-    localSnapshot: ForemanLocalDraftSnapshot | null;
-  }) => Promise<{
-    snapshot: ForemanLocalDraftSnapshot | null;
-    status: string | null;
-    isTerminal: boolean;
-  }>;
-  syncSnapshot: (params: {
-    snapshot: ForemanLocalDraftSnapshot;
-    headerMeta: RequestDraftMeta;
-    mutationKind?:
-      | "catalog_add"
-      | "calc_add"
-      | "ai_local_add"
-      | "qty_update"
-      | "row_remove"
-      | "whole_cancel"
-      | "submit"
-      | "background_sync";
-    localBeforeCount?: number | null;
-    localAfterCount?: number | null;
-  }) => Promise<ForemanLocalDraftSyncResult>;
-  loopIterationLimit?: number | null;
-};
-
-const toErrorText = (error: unknown) =>
-  error instanceof Error ? error.message : String(error);
-
-const FOREMAN_RETRY_POLICY = getOfflineMutationRetryPolicy("foreman_default");
-
-// O3.2: Maximum items processed in a single runFlush pass.
-// After FOREMAN_DRAIN_BATCH_SIZE items, runFlush exits with batchLimitReached=true
-// and the coordinator re-triggers on remaining work — preventing resume burst.
-export const FOREMAN_DRAIN_BATCH_SIZE = 3;
-export const FOREMAN_MUTATION_FLUSH_LOOP_CEILING = 1_000;
-export const FOREMAN_MUTATION_REPLAY_POLICY = {
-  queueKey: "foreman_draft",
-  owner: "foreman_mutation_worker",
-  concurrencyLimit: 1,
-  ordering: "created_at_fifo",
-  backpressure: "coalesce_triggers_and_rerun_once",
-} as const satisfies OfflineReplayPolicy;
-
-const getDraftKeyFromSnapshot = (snapshot: ForemanLocalDraftSnapshot | null) =>
-  String(snapshot?.requestId ?? FOREMAN_LOCAL_ONLY_REQUEST_ID).trim() ||
-  FOREMAN_LOCAL_ONLY_REQUEST_ID;
-
-const getDraftQueueKeysFromSnapshot = (
-  snapshot: ForemanLocalDraftSnapshot | null,
-) => {
-  const requestId = String(snapshot?.requestId ?? "").trim();
-  return requestId
-    ? [requestId, FOREMAN_LOCAL_ONLY_REQUEST_ID]
-    : [FOREMAN_LOCAL_ONLY_REQUEST_ID];
-};
-
-const getPendingCountForSnapshot = async (
-  snapshot: ForemanLocalDraftSnapshot | null,
-) =>
-  await getForemanPendingMutationCountForDraftKeys(
-    getDraftQueueKeysFromSnapshot(snapshot),
-  );
-
-const normalizeLoopIterationLimit = (value: number | null | undefined) => {
-  const limit = Number(value);
-  return Number.isInteger(limit) && limit > 0
-    ? limit
-    : FOREMAN_MUTATION_FLUSH_LOOP_CEILING;
-};
-
-const toOfflineState = (isOnline: boolean | null | undefined) => {
-  if (isOnline === true) return "online" as const;
-  if (isOnline === false) return "offline" as const;
-  return "unknown" as const;
-};
-
-const extractSubmittedRequestId = (value: unknown): string | null => {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const requestId = String((value as { id?: unknown }).id ?? "").trim();
-  return requestId || null;
-};
-
-const reportPostSubmitCleanupFailure = (params: {
-  error: unknown;
-  requestId: string;
-  draftKey: string;
-  triggerSource: ForemanDraftSyncTriggerSource;
-}) => {
-  recordPlatformObservability({
-    screen: "foreman",
-    surface: "draft_sync",
-    category: "ui",
-    event: "post_submit_cleanup_failed_after_server_accept",
-    result: "error",
-    errorClass: params.error instanceof Error ? params.error.name : undefined,
-    errorMessage:
-      params.error instanceof Error
-        ? params.error.message
-        : String(params.error ?? "post_submit_cleanup_failed"),
-    extra: {
-      owner: "mutation_worker",
-      requestId: params.requestId,
-      draftKey: params.draftKey,
-      triggerSource: params.triggerSource,
-      stage: "post_submit_cleanup",
-      serverAccepted: true,
-    },
-  });
-};
+export {
+  FOREMAN_DRAIN_BATCH_SIZE,
+  FOREMAN_MUTATION_FLUSH_LOOP_CEILING,
+  FOREMAN_MUTATION_REPLAY_POLICY,
+} from "./mutation.retryPolicy";
 
 const syncSnapshotWithWorker = async (
   deps: ForemanMutationWorkerDeps,
@@ -222,290 +86,13 @@ const syncSnapshotWithWorker = async (
   });
 };
 
-const pushStageTelemetry = async (params: {
-  stage: ForemanDraftSyncStage;
-  result: "progress" | "success" | "retryable_failure" | "terminal_failure";
-  draftKey: string;
-  requestId: string | null;
-  localOnlyDraftKey: boolean;
-  attemptNumber: number;
-  queueSizeBefore: number | null;
-  queueSizeAfter: number | null;
-  coalescedCount: number;
-  offlineState: "online" | "offline" | "unknown";
-  triggerSource: ForemanDraftSyncTriggerSource;
-  errorClass?: string | null;
-  errorCode?: string | null;
-  conflictType?: ForemanDraftConflictType;
-  recoveryAction?:
-    | "retry_now"
-    | "restore_local"
-    | "rehydrate_server"
-    | "discard_local"
-    | "clear_failed_queue"
-    | null;
-}) => {
-  await pushForemanDurableDraftTelemetry({
-    stage: params.stage,
-    result: params.result,
-    draftKey: params.draftKey,
-    requestId: params.requestId,
-    localOnlyDraftKey: params.localOnlyDraftKey,
-    attemptNumber: params.attemptNumber,
-    queueSizeBefore: params.queueSizeBefore,
-    queueSizeAfter: params.queueSizeAfter,
-    coalescedCount: params.coalescedCount,
-    conflictType: params.conflictType ?? "none",
-    recoveryAction: params.recoveryAction ?? null,
-    errorClass: params.errorClass ?? null,
-    errorCode: params.errorCode ?? null,
-    offlineState: params.offlineState,
-    triggerSource: params.triggerSource,
-  });
-
-  const queueAction: PlatformOfflineQueueAction =
-    params.stage === "hydrate"
-      ? "hydrate"
-      : params.stage === "enqueue"
-        ? params.coalescedCount > 0
-          ? "coalesce"
-          : "enqueue"
-        : params.result === "terminal_failure"
-          ? "sync_failed_terminal"
-          : params.result === "retryable_failure"
-            ? "sync_retry_wait"
-            : params.result === "success"
-              ? "sync_success"
-              : "sync_start";
-
-  const syncStatus: PlatformOfflineSyncStatus =
-    params.result === "terminal_failure"
-      ? "failed_terminal"
-      : params.result === "retryable_failure"
-        ? "retry_wait"
-        : params.stage === "enqueue"
-          ? "queued"
-          : params.stage === "flush_start" ||
-              params.stage === "prepare_snapshot" ||
-              params.stage === "sync_rpc"
-            ? "syncing"
-            : params.stage === "hydrate"
-              ? "dirty_local"
-              : params.result === "success"
-                ? "synced"
-                : "idle";
-
-  const failureClass: PlatformOfflineFailureClass =
-    params.result === "terminal_failure"
-      ? "failed_terminal"
-      : params.result === "retryable_failure"
-        ? params.offlineState === "offline"
-          ? "offline_wait"
-          : "retryable_sync_failure"
-        : "none";
-
-  recordPlatformOfflineTelemetry({
-    contourKey: "foreman_draft",
-    entityKey: params.requestId ?? params.draftKey,
-    syncStatus,
-    queueAction,
-    coalesced: params.coalescedCount > 0,
-    retryCount: Math.max(0, params.attemptNumber - 1),
-    pendingCount: Math.max(
-      0,
-      Number(params.queueSizeAfter ?? params.queueSizeBefore ?? 0) || 0,
-    ),
-    failureClass,
-    triggerKind:
-      params.triggerSource === "submit" || params.triggerSource === "focus"
-        ? "unknown"
-        : params.triggerSource,
-    networkKnownOffline: params.offlineState === "offline",
-    restoredAfterReopen:
-      params.stage === "hydrate" && params.result === "success",
-    manualRetry: params.triggerSource === "manual_retry",
-    durationMs: null,
-  });
-};
-
-const trackForemanMutationBacklog = (
-  summary: Awaited<ReturnType<typeof getForemanMutationQueueSummary>>,
-  event: string,
-  extra?: Record<string, unknown>,
-) => {
-  trackQueueBacklogMetric({
-    queue: "foreman_mutation",
-    event,
-    size: summary.activeCount,
-    oldestAgeMs: summary.oldestActiveAgeMs,
-    processingCount: summary.inflightCount,
-    failedCount: summary.failedCount + summary.failedNonRetryableCount + summary.conflictedCount,
-    retryScheduledCount: summary.retryScheduledCount,
-    coalescedCount: summary.coalescedCount,
-    extra: {
-      totalCount: summary.totalCount,
-      pendingCount: summary.pendingCount,
-      ...extra,
-    },
-  });
-};
-
-const isAttentionRequiredConflict = (conflictType: ForemanDraftConflictType) =>
-  conflictType === "stale_local_snapshot" ||
-  conflictType === "server_terminal_conflict" ||
-  conflictType === "validation_conflict" ||
-  conflictType === "remote_divergence_requires_attention";
-
-const shouldHoldReplayForAttention = (params: {
-  conflictType: ForemanDraftConflictType;
-  attentionNeeded: boolean;
-  entryDraftKey: string | null;
-  entryRequestId: string | null;
-  queueDraftKey: string | null;
-  snapshotRequestId: string | null;
-  recoverableRequestId: string | null;
-}) => {
-  if (!params.attentionNeeded) return false;
-  if (!isAttentionRequiredConflict(params.conflictType)) return false;
-
-  const entryKeys = new Set(
-    [params.entryDraftKey, params.entryRequestId]
-      .map((value) => String(value ?? "").trim())
-      .filter(Boolean),
-  );
-  if (!entryKeys.size) return true;
-
-  return [params.queueDraftKey, params.snapshotRequestId, params.recoverableRequestId]
-    .map((value) => String(value ?? "").trim())
-    .filter(Boolean)
-    .some((value) => entryKeys.has(value));
-};
-
-const deriveConflictFromFailure = async (params: {
-  deps: ForemanMutationWorkerDeps;
-  snapshot: ForemanLocalDraftSnapshot | null;
-  requestId: string | null;
-  error: unknown;
-}) => {
-  const normalized = classifyOfflineMutationErrorKind(params.error);
-  const classified = classifyForemanSyncError(params.error);
-  let conflictType = classified.conflictType;
-  let remoteSnapshot: ForemanLocalDraftSnapshot | null = null;
-  let remoteStatus: string | null = null;
-
-  if (params.requestId && params.deps.inspectRemoteDraft) {
-    try {
-      const remote = await params.deps.inspectRemoteDraft({
-        requestId: params.requestId,
-        localSnapshot: params.snapshot,
-      });
-      remoteSnapshot = remote.snapshot;
-      remoteStatus = remote.status;
-      if (remote.isTerminal) {
-        conflictType = "server_terminal_conflict";
-      } else if (conflictType === "retryable_sync_failure" && remote.snapshot && params.snapshot) {
-        const versionCompare = compareForemanLocalDraftSnapshotsByVersion(params.snapshot, remote.snapshot, {
-          ignoreUpdatedAt: true,
-        });
-        const remoteDiverged =
-          versionCompare.source === "server_revision" && versionCompare.equal === true
-            ? false
-            : !areForemanLocalDraftSnapshotsEqual(params.snapshot, remote.snapshot, {
-                ignoreUpdatedAt: true,
-                ignoreLastError: true,
-              });
-        if (remoteDiverged) {
-          conflictType = "remote_divergence_requires_attention";
-        }
-
-        // ── O5.2: C3 explicit detection — pending queue against advanced remote revision ──
-        // Runs only when conflictType is still retryable (not already upgraded above).
-        // classifyForemanConflict is pure/stateless — no side effects.
-        if (conflictType === "retryable_sync_failure" || conflictType === "remote_divergence_requires_attention") {
-          try {
-            const pendingSummary = await getForemanMutationQueueSummary();
-            const pendingCount = pendingSummary.pendingCount + pendingSummary.inflightCount;
-            const o5Classification = classifyForemanConflict({
-              localSnapshot: params.snapshot,
-              remoteSnapshot: remote.snapshot,
-              remoteStatus: remote.status,
-              remoteIsTerminal: remote.isTerminal,
-              remoteMissing: remote.snapshot == null,
-              pendingCount,
-              requestIdKnown: Boolean(params.requestId),
-            });
-
-            if (o5Classification.conflictClass === "local_queue_pending_against_new_remote") {
-              // C3: upgrade to attention-required — pending queue must not blind-replay
-              conflictType = "remote_divergence_requires_attention";
-              recordPlatformObservability({
-                screen: "foreman",
-                surface: "offline_conflict",
-                category: "ui",
-                event: "conflict_c3_detected",
-                result: "error",
-                errorClass: "local_queue_pending_against_new_remote",
-                extra: {
-                  requestId: params.requestId,
-                  localBaseRevision: o5Classification.localBaseRevision,
-                  remoteBaseRevision: o5Classification.remoteBaseRevision,
-                  pendingCount: o5Classification.pendingCount,
-                  revisionAdvanced: o5Classification.revisionAdvanced,
-                  deterministic: o5Classification.deterministic,
-                  reason: o5Classification.reason,
-                },
-              });
-            }
-          } catch (classificationError) {
-            void classificationError;
-            // O5.2 classifier is best-effort — primary conflict path is unaffected
-          }
-        }
-      }
-    } catch (error) {
-      const appError = normalizeAppError(
-        error,
-        "foreman_mutation_worker_remote_inspection",
-        "warn",
-      );
-      recordPlatformObservability({
-        screen: "foreman",
-        surface: "offline_mutation_worker",
-        category: "fetch",
-        event: "remote_draft_inspection_failed",
-        result: "error",
-        sourceKind: "offline:foreman_draft",
-        errorStage: appError.context,
-        errorClass: appError.code,
-        errorMessage: appError.message,
-        extra: {
-          requestId: params.requestId,
-          appErrorCode: appError.code,
-          appErrorContext: appError.context,
-          appErrorSeverity: appError.severity,
-        },
-      });
-      // Remote inspection is best-effort. Primary failure classification stays based on sync error.
-    }
-  }
-
-  return {
-    ...classified,
-    errorKind: normalized.errorKind,
-    message: normalized.message,
-    conflictType,
-    remoteSnapshot,
-    remoteStatus,
-  };
-};
-
 const runFlush = async (
   deps: ForemanMutationWorkerDeps,
   triggerSourceOverride?: ForemanDraftSyncTriggerSource | null,
 ): Promise<ForemanMutationWorkerResult> => {
   const circuitDecision = shouldAllowReplay();
   if (!circuitDecision.allow) {
-    const remainingCount = await getPendingCountForSnapshot(deps.getSnapshot());
+    const remainingCount = await getForemanPendingCountForSnapshot(deps.getSnapshot());
     recordPlatformObservability({
       screen: "foreman",
       surface: "offline_replay_circuit",
@@ -538,13 +125,13 @@ const runFlush = async (
   let latestRequestId: string | null = null;
   let latestSubmitted: RequestRecord | null = null;
   const drainStartedAt = Date.now();
-  const loopIterationLimit = normalizeLoopIterationLimit(deps.loopIterationLimit);
+  const loopIterationLimit = normalizeForemanMutationLoopIterationLimit(deps.loopIterationLimit);
 
   for (let loopIteration = 0; loopIteration < loopIterationLimit; loopIteration += 1) {
-    // O3.2: Bounded drain — exit after FOREMAN_DRAIN_BATCH_SIZE items per pass.
+    // O3.2: Bounded drain РІР‚вЂќ exit after FOREMAN_DRAIN_BATCH_SIZE items per pass.
     // The coordinator re-triggers if items remain, yielding the JS thread between passes.
     if (processedCount >= FOREMAN_DRAIN_BATCH_SIZE) {
-      const remainingCount = await getPendingCountForSnapshot(deps.getSnapshot());
+      const remainingCount = await getForemanPendingCountForSnapshot(deps.getSnapshot());
       recordPlatformObservability({
         screen: "foreman",
         surface: "offline_mutation_worker",
@@ -577,7 +164,7 @@ const runFlush = async (
     if (!entry) {
       return {
         processedCount,
-        remainingCount: await getPendingCountForSnapshot(deps.getSnapshot()),
+        remainingCount: await getForemanPendingCountForSnapshot(deps.getSnapshot()),
         requestId: latestRequestId,
         submitted: latestSubmitted,
         failed: false,
@@ -593,7 +180,7 @@ const runFlush = async (
     const entryRequestId =
       String(entry.payload.requestId ?? "").trim() || null;
     if (
-      shouldHoldReplayForAttention({
+      shouldHoldForemanReplayForAttention({
         conflictType: durableStateBeforeInflight.conflictType,
         attentionNeeded: durableStateBeforeInflight.attentionNeeded,
         entryDraftKey,
@@ -647,21 +234,21 @@ const runFlush = async (
       getForemanMutationQueueSummary([
         entry.payload.draftKey,
       ]),
-      getPendingCountForSnapshot(snapshot),
+      getForemanPendingCountForSnapshot(snapshot),
     ]);
     trackForemanMutationBacklog(queueSummaryBefore, "foreman_mutation_backlog_before_flush", {
       draftKey: entry.payload.draftKey,
       triggerSource: triggerSourceOverride ?? entry.payload.triggerSource,
     });
     const attemptNumber = inflight.attemptCount;
-    const offlineState = toOfflineState(deps.getNetworkOnline?.());
+    const offlineState = toForemanOfflineState(deps.getNetworkOnline?.());
     const effectiveTriggerSource =
       triggerSourceOverride ?? entry.payload.triggerSource;
 
-    // ── P6.3e: Terminal-request guard ──────────────────────────
+    // РІвЂќР‚РІвЂќР‚ P6.3e: Terminal-request guard РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚РІвЂќР‚
     // Before attempting to sync, check if the request is already terminal
     // on the server. If so, remove the mutation and clean up instead of
-    // syncing — which would fail and write recovery state back into the
+    // syncing РІР‚вЂќ which would fail and write recovery state back into the
     // durable store, overwriting any prior cleanup.
     const requestIdForGuard =
       String(snapshot?.requestId ?? entry.payload.requestId ?? "").trim() || null;
@@ -743,7 +330,7 @@ const runFlush = async (
             errorKind: "remote_divergence",
             serverVersionHint: replayConflict.remoteBaseRevision,
           });
-          const pendingCountAfter = await getPendingCountForSnapshot(snapshot);
+          const pendingCountAfter = await getForemanPendingCountForSnapshot(snapshot);
           await markForemanDurableDraftSyncFailed(
             snapshot,
             message,
@@ -775,7 +362,7 @@ const runFlush = async (
               deterministic: replayConflict.deterministic,
             },
           });
-          await pushStageTelemetry({
+          await pushForemanMutationStageTelemetry({
             stage: "prepare_snapshot",
             result: "terminal_failure",
             draftKey: entry.payload.draftKey,
@@ -792,7 +379,7 @@ const runFlush = async (
             errorClass: "local_queue_pending_against_new_remote",
             errorCode: "offline_c3_pre_sync",
           });
-          await pushStageTelemetry({
+          await pushForemanMutationStageTelemetry({
             stage: "finalize",
             result: "terminal_failure",
             draftKey: entry.payload.draftKey,
@@ -853,7 +440,7 @@ const runFlush = async (
       queueDraftKey: entry.payload.draftKey,
       triggerSource: effectiveTriggerSource,
     });
-    await pushStageTelemetry({
+    await pushForemanMutationStageTelemetry({
       stage: "flush_start",
       result: "progress",
       draftKey: entry.payload.draftKey,
@@ -894,7 +481,7 @@ const runFlush = async (
         queueDraftKey: null,
         triggerSource: effectiveTriggerSource,
       });
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage: "cleanup",
         result: "success",
         draftKey: entry.payload.draftKey,
@@ -920,7 +507,7 @@ const runFlush = async (
         String(snapshot?.requestId ?? entry.payload.requestId ?? "").trim() ||
         latestRequestId ||
         null;
-      const errorInfo = await deriveConflictFromFailure({
+      const errorInfo = await deriveForemanConflictFromFailure({
         deps,
         snapshot,
         requestId,
@@ -975,7 +562,7 @@ const runFlush = async (
         deps.getSnapshot() ??
         getForemanDurableDraftState().snapshot ??
         snapshot;
-      const pendingCount = await getPendingCountForSnapshot(failedSnapshot);
+      const pendingCount = await getForemanPendingCountForSnapshot(failedSnapshot);
       await markForemanDurableDraftSyncFailed(
         failedSnapshot,
         message,
@@ -992,7 +579,7 @@ const runFlush = async (
               : failedSnapshot,
         },
       );
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage,
         result:
           decision.lifecycleStatus === "retry_scheduled"
@@ -1018,7 +605,7 @@ const runFlush = async (
             : errorInfo.errorClass,
         errorCode: errorInfo.errorCode,
       });
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage: "finalize",
         result:
           decision.lifecycleStatus === "retry_scheduled"
@@ -1059,8 +646,8 @@ const runFlush = async (
     try {
       const previousDraftKey =
         String(inflight.payload.draftKey ?? "").trim() ||
-        getDraftKeyFromSnapshot(snapshot);
-      await pushStageTelemetry({
+        getForemanDraftKeyFromSnapshot(snapshot);
+      await pushForemanMutationStageTelemetry({
         stage: "prepare_snapshot",
         result: "progress",
         draftKey: previousDraftKey,
@@ -1077,7 +664,7 @@ const runFlush = async (
         triggerSource: effectiveTriggerSource,
       });
 
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage: "sync_rpc",
         result: "progress",
         draftKey: previousDraftKey,
@@ -1111,7 +698,7 @@ const runFlush = async (
         latestRequestId !== FOREMAN_LOCAL_ONLY_REQUEST_ID
       ) {
         await rekeyForemanMutations(previousDraftKey, latestRequestId);
-        await pushStageTelemetry({
+        await pushForemanMutationStageTelemetry({
           stage: "rekey",
           result: "success",
           draftKey: latestRequestId,
@@ -1171,10 +758,10 @@ const runFlush = async (
       }
 
       const queueSummaryKeys = result.snapshot
-        ? getDraftQueueKeysFromSnapshot(result.snapshot)
+        ? getForemanDraftQueueKeysFromSnapshot(result.snapshot)
         : [requestKeyForCleanup];
       const [remainingCount, queueSummaryAfter] = await Promise.all([
-        getPendingCountForSnapshot(result.snapshot ?? null),
+        getForemanPendingCountForSnapshot(result.snapshot ?? null),
         getForemanMutationQueueSummary(queueSummaryKeys),
       ]);
       await markForemanDurableDraftSyncSucceeded(
@@ -1194,7 +781,7 @@ const runFlush = async (
         triggerSource: effectiveTriggerSource,
         processedCount,
       });
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage: "cleanup",
         result: "success",
         draftKey: latestRequestId ?? entry.payload.draftKey,
@@ -1208,7 +795,7 @@ const runFlush = async (
         offlineState,
         triggerSource: effectiveTriggerSource,
       });
-      await pushStageTelemetry({
+      await pushForemanMutationStageTelemetry({
         stage: "finalize",
         result: "success",
         draftKey: latestRequestId ?? entry.payload.draftKey,
@@ -1227,7 +814,7 @@ const runFlush = async (
         try {
           await deps.onSubmitted?.(latestRequestId, latestSubmitted);
         } catch (error) {
-          reportPostSubmitCleanupFailure({
+          reportForemanPostSubmitCleanupFailure({
             error,
             requestId: latestRequestId,
             draftKey: entry.payload.draftKey,
@@ -1316,9 +903,9 @@ export const markForemanSnapshotQueued = async (
     triggerSource?: ForemanDraftSyncTriggerSource;
   },
 ) => {
-  const pendingCount = await getPendingCountForSnapshot(snapshot);
+  const pendingCount = await getForemanPendingCountForSnapshot(snapshot);
   await markForemanDurableDraftQueued(snapshot, pendingCount, {
-    queueDraftKey: options?.queueDraftKey ?? getDraftKeyFromSnapshot(snapshot),
+    queueDraftKey: options?.queueDraftKey ?? getForemanDraftKeyFromSnapshot(snapshot),
     triggerSource: options?.triggerSource ?? "unknown",
   });
   return pendingCount;
@@ -1334,7 +921,7 @@ export const clearForemanMutationQueueTail = async (params: {
   if (requestId && requestId !== FOREMAN_LOCAL_ONLY_REQUEST_ID) {
     await clearForemanMutationsForDraft(requestId);
   }
-  const pendingCount = await getPendingCountForSnapshot(params.snapshot);
+  const pendingCount = await getForemanPendingCountForSnapshot(params.snapshot);
   await patchForemanDurableDraftRecoveryState({
     snapshot: params.snapshot,
     syncStatus: params.snapshot ? "dirty_local" : "idle",

@@ -1,5 +1,6 @@
 import type { OfflineMutationErrorKind, OfflineMutationLifecycleStatus } from "./mutation.types";
 import { isOfflineMutationRetryLifecycleStatus } from "./mutation.types";
+import type { OfflineReplayPolicy } from "./offlineReplayCoordinator";
 
 export type OfflineMutationRetryPolicyName = "foreman_default" | "contractor_default";
 
@@ -40,6 +41,28 @@ const POLICIES: Record<OfflineMutationRetryPolicyName, OfflineMutationRetryPolic
 export const getOfflineMutationRetryPolicy = (
   name: OfflineMutationRetryPolicyName,
 ): OfflineMutationRetryPolicy => POLICIES[name];
+
+export const FOREMAN_RETRY_POLICY =
+  getOfflineMutationRetryPolicy("foreman_default");
+
+export const FOREMAN_DRAIN_BATCH_SIZE = 3;
+export const FOREMAN_MUTATION_FLUSH_LOOP_CEILING = 1_000;
+export const FOREMAN_MUTATION_REPLAY_POLICY = {
+  queueKey: "foreman_draft",
+  owner: "foreman_mutation_worker",
+  concurrencyLimit: 1,
+  ordering: "created_at_fifo",
+  backpressure: "coalesce_triggers_and_rerun_once",
+} as const satisfies OfflineReplayPolicy;
+
+export const normalizeForemanMutationLoopIterationLimit = (
+  value: number | null | undefined,
+) => {
+  const limit = Number(value);
+  return Number.isInteger(limit) && limit > 0
+    ? limit
+    : FOREMAN_MUTATION_FLUSH_LOOP_CEILING;
+};
 
 export const computeOfflineMutationBackoffMs = (
   attemptCount: number,
@@ -100,4 +123,3 @@ export const shouldProcessOfflineMutationNow = (params: {
   const now = Number.isFinite(params.now ?? NaN) ? Number(params.now) : Date.now();
   return now >= Number(params.nextRetryAt);
 };
-

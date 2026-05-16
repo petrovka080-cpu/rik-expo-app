@@ -7,6 +7,8 @@ import {
 import { createSerializedQueuePersistence } from "./queuePersistenceSerializer";
 import type { ForemanDraftSyncTriggerSource } from "./foremanSyncRuntime";
 import type { ForemanDraftMutationKind } from "../../screens/foreman/foreman.draftBoundary.helpers";
+import type { ForemanLocalDraftSnapshot } from "../../screens/foreman/foreman.localDraft";
+import { FOREMAN_LOCAL_ONLY_REQUEST_ID } from "../../screens/foreman/foreman.localDraft.constants";
 import {
   getOfflineMutationRetryPolicy,
   shouldProcessOfflineMutationNow,
@@ -403,6 +405,34 @@ export const getForemanMutationQueueSummary = async (
       oldestActiveAgeMs: oldestActiveCreatedAt == null ? 0 : Math.max(0, Date.now() - oldestActiveCreatedAt),
     };
   });
+};
+
+export const getForemanDraftKeyFromSnapshot = (
+  snapshot: ForemanLocalDraftSnapshot | null,
+) =>
+  String(snapshot?.requestId ?? FOREMAN_LOCAL_ONLY_REQUEST_ID).trim() ||
+  FOREMAN_LOCAL_ONLY_REQUEST_ID;
+
+export const getForemanDraftQueueKeysFromSnapshot = (
+  snapshot: ForemanLocalDraftSnapshot | null,
+) => {
+  const requestId = String(snapshot?.requestId ?? "").trim();
+  return requestId
+    ? [requestId, FOREMAN_LOCAL_ONLY_REQUEST_ID]
+    : [FOREMAN_LOCAL_ONLY_REQUEST_ID];
+};
+
+export const getForemanPendingCountForSnapshot = async (
+  snapshot: ForemanLocalDraftSnapshot | null,
+) =>
+  await getForemanPendingMutationCountForDraftKeys(
+    getForemanDraftQueueKeysFromSnapshot(snapshot),
+  );
+
+export const extractSubmittedRequestId = (value: unknown): string | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const requestId = String((value as { id?: unknown }).id ?? "").trim();
+  return requestId || null;
 };
 
 export const resetInflightForemanMutations = async (): Promise<ForemanMutationQueueEntry[]> => {

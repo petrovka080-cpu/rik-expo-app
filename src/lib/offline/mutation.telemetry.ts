@@ -1,4 +1,18 @@
 import { recordPlatformObservability } from "../observability/platformObservability";
+import { trackQueueBacklogMetric } from "../observability/queueBacklogMetrics";
+import type { PlatformOfflineSyncStatus } from "./platformOffline.model";
+import {
+  recordPlatformOfflineTelemetry,
+  type PlatformOfflineFailureClass,
+  type PlatformOfflineQueueAction,
+} from "./platformOffline.observability";
+import type {
+  ForemanDraftConflictType,
+  ForemanDraftSyncStage,
+  ForemanDraftSyncTriggerSource,
+} from "./foremanSyncRuntime";
+import { pushForemanDurableDraftTelemetry } from "../../screens/foreman/foreman.durableDraft.store";
+import type { getForemanMutationQueueSummary } from "./mutationQueue";
 import type {
   OfflineMutationErrorKind,
   OfflineMutationLifecycleStatus,
@@ -153,4 +167,174 @@ export const summarizeOfflineMutationTelemetryEvents = (
     retryExhaustedCount: events.filter((event) => event.action === "retry_exhausted").length,
     dedupeSuppressedCount: events.filter((event) => event.action === "dedupe_suppressed").length,
   };
+};
+
+export const toErrorText = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
+export const toForemanOfflineState = (
+  isOnline: boolean | null | undefined,
+) => {
+  if (isOnline === true) return "online" as const;
+  if (isOnline === false) return "offline" as const;
+  return "unknown" as const;
+};
+
+export const reportForemanPostSubmitCleanupFailure = (params: {
+  error: unknown;
+  requestId: string;
+  draftKey: string;
+  triggerSource: ForemanDraftSyncTriggerSource;
+}) => {
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "draft_sync",
+    category: "ui",
+    event: "post_submit_cleanup_failed_after_server_accept",
+    result: "error",
+    errorClass: params.error instanceof Error ? params.error.name : undefined,
+    errorMessage:
+      params.error instanceof Error
+        ? params.error.message
+        : String(params.error ?? "post_submit_cleanup_failed"),
+    extra: {
+      owner: "mutation_worker",
+      requestId: params.requestId,
+      draftKey: params.draftKey,
+      triggerSource: params.triggerSource,
+      stage: "post_submit_cleanup",
+      serverAccepted: true,
+    },
+  });
+};
+
+export const pushForemanMutationStageTelemetry = async (params: {
+  stage: ForemanDraftSyncStage;
+  result: "progress" | "success" | "retryable_failure" | "terminal_failure";
+  draftKey: string;
+  requestId: string | null;
+  localOnlyDraftKey: boolean;
+  attemptNumber: number;
+  queueSizeBefore: number | null;
+  queueSizeAfter: number | null;
+  coalescedCount: number;
+  offlineState: "online" | "offline" | "unknown";
+  triggerSource: ForemanDraftSyncTriggerSource;
+  errorClass?: string | null;
+  errorCode?: string | null;
+  conflictType?: ForemanDraftConflictType;
+  recoveryAction?:
+    | "retry_now"
+    | "restore_local"
+    | "rehydrate_server"
+    | "discard_local"
+    | "clear_failed_queue"
+    | null;
+}) => {
+  await pushForemanDurableDraftTelemetry({
+    stage: params.stage,
+    result: params.result,
+    draftKey: params.draftKey,
+    requestId: params.requestId,
+    localOnlyDraftKey: params.localOnlyDraftKey,
+    attemptNumber: params.attemptNumber,
+    queueSizeBefore: params.queueSizeBefore,
+    queueSizeAfter: params.queueSizeAfter,
+    coalescedCount: params.coalescedCount,
+    conflictType: params.conflictType ?? "none",
+    recoveryAction: params.recoveryAction ?? null,
+    errorClass: params.errorClass ?? null,
+    errorCode: params.errorCode ?? null,
+    offlineState: params.offlineState,
+    triggerSource: params.triggerSource,
+  });
+
+  const queueAction: PlatformOfflineQueueAction =
+    params.stage === "hydrate"
+      ? "hydrate"
+      : params.stage === "enqueue"
+        ? params.coalescedCount > 0
+          ? "coalesce"
+          : "enqueue"
+        : params.result === "terminal_failure"
+          ? "sync_failed_terminal"
+          : params.result === "retryable_failure"
+            ? "sync_retry_wait"
+            : params.result === "success"
+              ? "sync_success"
+              : "sync_start";
+
+  const syncStatus: PlatformOfflineSyncStatus =
+    params.result === "terminal_failure"
+      ? "failed_terminal"
+      : params.result === "retryable_failure"
+        ? "retry_wait"
+        : params.stage === "enqueue"
+          ? "queued"
+          : params.stage === "flush_start" ||
+              params.stage === "prepare_snapshot" ||
+              params.stage === "sync_rpc"
+            ? "syncing"
+            : params.stage === "hydrate"
+              ? "dirty_local"
+              : params.result === "success"
+                ? "synced"
+                : "idle";
+
+  const failureClass: PlatformOfflineFailureClass =
+    params.result === "terminal_failure"
+      ? "failed_terminal"
+      : params.result === "retryable_failure"
+        ? params.offlineState === "offline"
+          ? "offline_wait"
+          : "retryable_sync_failure"
+        : "none";
+
+  recordPlatformOfflineTelemetry({
+    contourKey: "foreman_draft",
+    entityKey: params.requestId ?? params.draftKey,
+    syncStatus,
+    queueAction,
+    coalesced: params.coalescedCount > 0,
+    retryCount: Math.max(0, params.attemptNumber - 1),
+    pendingCount: Math.max(
+      0,
+      Number(params.queueSizeAfter ?? params.queueSizeBefore ?? 0) || 0,
+    ),
+    failureClass,
+    triggerKind:
+      params.triggerSource === "submit" || params.triggerSource === "focus"
+        ? "unknown"
+        : params.triggerSource,
+    networkKnownOffline: params.offlineState === "offline",
+    restoredAfterReopen:
+      params.stage === "hydrate" && params.result === "success",
+    manualRetry: params.triggerSource === "manual_retry",
+    durationMs: null,
+  });
+};
+
+export const trackForemanMutationBacklog = (
+  summary: Awaited<ReturnType<typeof getForemanMutationQueueSummary>>,
+  event: string,
+  extra?: Record<string, unknown>,
+) => {
+  trackQueueBacklogMetric({
+    queue: "foreman_mutation",
+    event,
+    size: summary.activeCount,
+    oldestAgeMs: summary.oldestActiveAgeMs,
+    processingCount: summary.inflightCount,
+    failedCount:
+      summary.failedCount +
+      summary.failedNonRetryableCount +
+      summary.conflictedCount,
+    retryScheduledCount: summary.retryScheduledCount,
+    coalescedCount: summary.coalescedCount,
+    extra: {
+      totalCount: summary.totalCount,
+      pendingCount: summary.pendingCount,
+      ...extra,
+    },
+  });
 };
