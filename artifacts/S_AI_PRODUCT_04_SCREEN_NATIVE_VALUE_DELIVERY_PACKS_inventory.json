@@ -1,0 +1,253 @@
+{
+  "wave": "S_AI_PRODUCT_04_SCREEN_NATIVE_VALUE_DELIVERY_PACKS",
+  "screens": [
+    {
+      "screenId": "accountant.main",
+      "coverageGroup": "accountant.main",
+      "domain": "finance",
+      "roleScope": [
+        "accountant"
+      ]
+    },
+    {
+      "screenId": "accountant.payment",
+      "coverageGroup": "accountant.payment",
+      "domain": "finance",
+      "roleScope": [
+        "accountant"
+      ]
+    },
+    {
+      "screenId": "accountant.history",
+      "coverageGroup": "accountant.history",
+      "domain": "finance",
+      "roleScope": [
+        "accountant"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "coverageGroup": "buyer.main",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "coverageGroup": "buyer.requests",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "coverageGroup": "buyer.request.detail",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "coverageGroup": "procurement.copilot",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "coverageGroup": "market.home",
+      "domain": "market",
+      "roleScope": [
+        "buyer",
+        "office"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "coverageGroup": "supplier.showcase",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "coverageGroup": "warehouse.main",
+      "domain": "warehouse",
+      "roleScope": [
+        "warehouse"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "coverageGroup": "warehouse.incoming",
+      "domain": "warehouse",
+      "roleScope": [
+        "warehouse"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "coverageGroup": "warehouse.issue",
+      "domain": "warehouse",
+      "roleScope": [
+        "warehouse"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "coverageGroup": "director.dashboard",
+      "domain": "control",
+      "roleScope": [
+        "director"
+      ]
+    },
+    {
+      "screenId": "director.finance",
+      "coverageGroup": "director.finance",
+      "domain": "control",
+      "roleScope": [
+        "director"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "coverageGroup": "director.reports",
+      "domain": "control",
+      "roleScope": [
+        "director"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "coverageGroup": "ai.command_center",
+      "domain": "command_center",
+      "roleScope": [
+        "director",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "foreman"
+      ]
+    },
+    {
+      "screenId": "approval.inbox",
+      "coverageGroup": "approval.inbox",
+      "domain": "approval",
+      "roleScope": [
+        "director"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "coverageGroup": "foreman.main",
+      "domain": "projects",
+      "roleScope": [
+        "foreman"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "coverageGroup": "foreman.ai.quick_modal",
+      "domain": "projects",
+      "roleScope": [
+        "foreman"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "coverageGroup": "foreman.subcontract",
+      "domain": "projects",
+      "roleScope": [
+        "foreman"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "coverageGroup": "contractor.main",
+      "domain": "projects",
+      "roleScope": [
+        "contractor"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "coverageGroup": "documents",
+      "domain": "documents",
+      "roleScope": [
+        "office",
+        "accountant",
+        "director"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "coverageGroup": "documents",
+      "domain": "documents",
+      "roleScope": [
+        "office",
+        "accountant",
+        "director"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "coverageGroup": "reports.modal",
+      "domain": "reports",
+      "roleScope": [
+        "office",
+        "director",
+        "foreman"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "coverageGroup": "chat.main",
+      "domain": "chat",
+      "roleScope": [
+        "office"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "coverageGroup": "map.main",
+      "domain": "logistics",
+      "roleScope": [
+        "buyer",
+        "warehouse",
+        "office"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "coverageGroup": "office.hub",
+      "domain": "office",
+      "roleScope": [
+        "office"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "coverageGroup": "security.screen",
+      "domain": "security",
+      "roleScope": [
+        "security",
+        "admin"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "coverageGroup": "screen.runtime",
+      "domain": "runtime",
+      "roleScope": [
+        "admin",
+        "developer"
+      ]
+    }
+  ],
+  "coverageGroups": 28
+}

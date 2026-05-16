@@ -1,0 +1,16 @@
+{
+  "wave": "S_AI_PRODUCT_04_SCREEN_NATIVE_VALUE_DELIVERY_PACKS",
+  "final_status": "GREEN_AI_SCREEN_NATIVE_VALUE_DELIVERY_MAESTRO_TARGETABLE",
+  "checks": {
+    "Android AI screen has stable target": true,
+    "Screen-native pack is rendered": true,
+    "Chat can answer from screen-native pack": true,
+    "Policy blocks direct mutation": true,
+    "Major screen ids represented": true,
+    "Provider disabled for targetability proof": true
+  },
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}

@@ -420,6 +420,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "director", "aiDirectorTodayDecisionAssistant.ts"),
       path.join(SRC, "features", "ai", "documents", "aiDocumentReadySummaryAssistant.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct04ScreenNativeValueDeliveryFiles = [
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantTypes.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantHydrator.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantEngine.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeQuestionAnswerEngine.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeUserCopy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
@@ -1357,6 +1366,7 @@ describe("performance budget — bundle module count", () => {
     expect(sWebAiAssistant02FullHeightReadyProposalsFiles).toBeLessThanOrEqual(12);
     expect(sAiProcurement05BuyerInboxReadyBuyOptionsFiles).toBeLessThanOrEqual(5);
     expect(sAiProduct03RealRoleScreenAssistantsFiles).toBeLessThanOrEqual(12);
+    expect(sAiProduct04ScreenNativeValueDeliveryFiles).toBeLessThanOrEqual(7);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
@@ -1555,6 +1565,7 @@ describe("performance budget — bundle module count", () => {
         sWebAiAssistant02FullHeightReadyProposalsFiles -
         sAiProcurement05BuyerInboxReadyBuyOptionsFiles -
         sAiProduct03RealRoleScreenAssistantsFiles -
+        sAiProduct04ScreenNativeValueDeliveryFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
         sAiProcurement04InternalFirstDecisionEngineFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -

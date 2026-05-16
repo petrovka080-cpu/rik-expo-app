@@ -1,0 +1,29 @@
+{
+  "wave": "S_AI_PRODUCT_04_SCREEN_NATIVE_VALUE_DELIVERY_PACKS",
+  "final_status": "GREEN_AI_SCREEN_NATIVE_VALUE_DELIVERY_WEB_READY",
+  "checks": {
+    "buyer ready options visible": true,
+    "accountant payment summary visible": true,
+    "warehouse risk block visible": true,
+    "foreman closeout block visible": true,
+    "director decision queue visible": true,
+    "documents summary visible": true,
+    "chat answers from screen context": true,
+    "chat full height": true,
+    "input visible": true,
+    "debug panels hidden": true,
+    "no provider unavailable copy": true,
+    "no fake data": true,
+    "no direct mutation path": true,
+    "no provider call": true
+  },
+  "providerCalled": false,
+  "providerCallUrls": [],
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "pageErrors": [],
+  "fakeGreenClaimed": false
+}

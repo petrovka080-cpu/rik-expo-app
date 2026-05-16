@@ -1,8 +1,8 @@
 {
   "wave": "S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR",
-  "runId": "proactive_workday_empty_1778922003197_preflight",
-  "startedAt": "2026-05-16T09:00:03.197Z",
-  "finishedAt": "2026-05-16T09:00:09.963Z",
+  "runId": "proactive_workday_empty_1778926161036_preflight",
+  "startedAt": "2026-05-16T10:09:21.036Z",
+  "finishedAt": "2026-05-16T10:09:26.808Z",
   "final_status": "GREEN_ANDROID_MAESTRO_DRIVER_PREFLIGHT_READY",
   "exact_reason": null,
   "preferred_avd_name": "Medium_Phone_API_34_Maestro",
@@ -29,12 +29,12 @@
   "maestro_path": "present_redacted",
   "maestro_driver_startup_timeout_ms": 180000,
   "port_7001_preflight": [
-    "TCP    127.0.0.1:7001         127.0.0.1:53705        TIME_WAIT       0",
-    "TCP    127.0.0.1:7001         127.0.0.1:65016        TIME_WAIT       0"
+    "TCP    127.0.0.1:7001         127.0.0.1:63930        TIME_WAIT       0",
+    "TCP    127.0.0.1:7001         127.0.0.1:65411        TIME_WAIT       0"
   ],
   "port_7001_after_cleanup": [
-    "TCP    127.0.0.1:7001         127.0.0.1:53705        TIME_WAIT       0",
-    "TCP    127.0.0.1:7001         127.0.0.1:65016        TIME_WAIT       0"
+    "TCP    127.0.0.1:7001         127.0.0.1:63930        TIME_WAIT       0",
+    "TCP    127.0.0.1:7001         127.0.0.1:65411        TIME_WAIT       0"
   ],
   "stale_maestro_processes_killed": 0,
   "port_7001_maestro_processes_killed": 0,

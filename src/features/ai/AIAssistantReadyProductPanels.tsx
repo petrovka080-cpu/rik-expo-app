@@ -15,6 +15,7 @@ import type { ProcurementReadyBuyOptionBundle } from "./procurement/aiProcuremen
 import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcurementReadyBuyOptionTypes";
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
 import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
+import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 
@@ -50,6 +51,7 @@ export function AIAssistantProductHeader({
 export function AIAssistantReadyProductPanels({
   resolvedUserContext,
   readyProposals,
+  screenNativeAssistantPack,
   roleScreenAssistantPack,
   readyBuyBundle,
   approvedSupplierBundle,
@@ -64,6 +66,7 @@ export function AIAssistantReadyProductPanels({
     "debugReason" | "userFacingNotice" | "userFacingScopeLabel"
   >;
   readyProposals: AiReadyProposal[];
+  screenNativeAssistantPack: AiScreenNativeAssistantPack | null;
   roleScreenAssistantPack: AiRoleScreenAssistantPack | null;
   readyBuyBundle: ProcurementReadyBuyOptionBundle | null;
   approvedSupplierBundle: ProcurementReadySupplierProposalBundle | null;
@@ -77,7 +80,84 @@ export function AIAssistantReadyProductPanels({
 
   return (
     <>
-      {roleScreenAssistantPack ? (
+      {screenNativeAssistantPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_native_value_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenNativeAssistantPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{screenNativeAssistantPack.summary}</Text>
+          {screenNativeAssistantPack.today ? (
+            <View style={styles.roleAssistantMetricRow}>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.count ?? screenNativeAssistantPack.readyOptions.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>в срезе</Text>
+              </View>
+              {screenNativeAssistantPack.today.amountLabel ? (
+                <View style={styles.roleAssistantMetric}>
+                  <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.amountLabel}</Text>
+                  <Text style={styles.roleAssistantMetricLabel}>сумма</Text>
+                </View>
+              ) : null}
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.criticalCount ?? screenNativeAssistantPack.criticalItems.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>критич.</Text>
+              </View>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.pendingApprovalCount ?? screenNativeAssistantPack.nextActions.filter((action) => action.requiresApproval).length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>approval</Text>
+              </View>
+            </View>
+          ) : null}
+          {screenNativeAssistantPack.criticalItems.length > 0 || screenNativeAssistantPack.readyOptions.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Критические пункты и варианты</Text>
+              {screenNativeAssistantPack.criticalItems.slice(0, 2).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.reason}</Text>
+                </View>
+              ))}
+              {screenNativeAssistantPack.readyOptions.slice(0, 3).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.description}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {screenNativeAssistantPack.risks.length > 0 || screenNativeAssistantPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Риски и недостающие данные</Text>
+              {screenNativeAssistantPack.risks.slice(0, 2).map((risk) => (
+                <Text key={risk.id} style={styles.roleAssistantRiskText}>{`${risk.title}: ${risk.reason}`}</Text>
+              ))}
+              {screenNativeAssistantPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{`Не хватает: ${item.label}`}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {screenNativeAssistantPack.nextActions.slice(0, 5).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(action.label)}
+                testID="ai.screen_native_value.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {!screenNativeAssistantPack && roleScreenAssistantPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.role_screen_assistant_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>

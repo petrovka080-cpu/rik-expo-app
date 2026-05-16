@@ -6,6 +6,7 @@ import type { AssistantContext, AssistantMessage, AssistantRole } from "./assist
 import { getAiAssistantDeterministicAnswer } from "./assistantUx/aiAssistantDeterministicAnswers";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
+import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
@@ -96,6 +97,7 @@ export async function sendAssistantMessage(options: {
   message: string;
   history: AssistantMessage[];
   scopedFactsSummary?: string | null;
+  screenNativeAssistantPack?: AiScreenNativeAssistantPack | null;
   roleScreenAssistantPack?: AiRoleScreenAssistantPack | null;
   scopeKey?: string | null;
   sourceKinds?: string[] | null;
@@ -108,6 +110,7 @@ export async function sendAssistantMessage(options: {
     message,
     history,
     scopedFactsSummary,
+    screenNativeAssistantPack,
     roleScreenAssistantPack,
     scopeKey,
     sourceKinds,
@@ -119,6 +122,7 @@ export async function sendAssistantMessage(options: {
     context,
     message,
     scopedFactsSummary,
+    screenNativeAssistantPack,
     roleScreenAssistantPack,
   });
 

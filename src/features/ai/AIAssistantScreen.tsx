@@ -39,10 +39,8 @@ import {
 import {
   buildProcurementReadyBuyBundleFromSearchParams,
 } from "./procurement/aiProcurementRequestOptionHydrator";
-import {
-  describeAiRoleScreenAssistantPack,
-  getAiRoleScreenAssistantPack,
-} from "./realAssistants/aiRoleScreenAssistantEngine";
+import { getAiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantEngine";
+import { describeAiScreenNativeAssistantPack, getAiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantEngine";
 import { getAiScreenReadyProposals } from "./screenProposals/aiScreenReadyProposalEngine";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -179,13 +177,24 @@ export default function AIAssistantScreen() {
     }),
     [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
   );
-  const roleScreenAssistantSummary = useMemo(
-    () => describeAiRoleScreenAssistantPack(roleScreenAssistantPack),
-    [roleScreenAssistantPack],
+  const screenNativeAssistantPack = useMemo(
+    () => getAiScreenNativeAssistantPack({
+      role,
+      context: assistantContext,
+      screenId: firstParam(params.screenId) || resolvedUserContext.screenId,
+      searchParams: params,
+      scopedFactsSummary: scopedFacts?.summary ?? null,
+      readyBuyBundle,
+    }),
+    [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
+  );
+  const screenNativeAssistantSummary = useMemo(
+    () => describeAiScreenNativeAssistantPack(screenNativeAssistantPack),
+    [screenNativeAssistantPack],
   );
   const assistantFactsSummary = useMemo(
-    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, roleScreenAssistantSummary].filter(Boolean).join("\n\n") || null,
-    [readyBuyFactsSummary, roleScreenAssistantSummary, scopedFacts?.summary],
+    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, screenNativeAssistantSummary].filter(Boolean).join("\n\n") || null,
+    [readyBuyFactsSummary, screenNativeAssistantSummary, scopedFacts?.summary],
   );
   const assistantVoiceScreen = useMemo(
     () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
@@ -315,6 +324,7 @@ export default function AIAssistantScreen() {
             message: text,
             history: nextHistory.filter((item) => item.role !== "user" || item.id !== userMessage.id),
             scopedFactsSummary: assistantFactsSummary,
+            screenNativeAssistantPack,
             roleScreenAssistantPack,
             scopeKey: scopedFacts?.scopeKey ?? null,
             sourceKinds: scopedFacts?.sourceKinds ?? null,
@@ -336,7 +346,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, input, loading, messages, role, roleScreenAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, input, loading, messages, role, roleScreenAssistantPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -393,6 +403,7 @@ export default function AIAssistantScreen() {
           <AIAssistantReadyProductPanels
             resolvedUserContext={resolvedUserContext}
             readyProposals={readyProposals}
+            screenNativeAssistantPack={screenNativeAssistantPack}
             roleScreenAssistantPack={roleScreenAssistantPack}
             readyBuyBundle={readyBuyBundle}
             approvedSupplierBundle={approvedSupplierBundle}
