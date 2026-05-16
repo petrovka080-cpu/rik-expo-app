@@ -499,6 +499,7 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentRuntimeBudgetPolicy.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeErrors.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeGateway.ts"),
+      path.join(SRC, "features", "ai", "agent", "agentRuntimeRoutePolicyRegistry.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeTransportRegistry.ts"),
       path.join(SRC, "features", "ai", "agent", "agentRuntimeRedaction.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1332,7 +1333,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiForeman01FieldCloseoutFiles).toBeLessThanOrEqual(4);
     expect(sAiDirector01ExecutiveControlCenterFiles).toBeLessThanOrEqual(4);
     expect(sAiDocuments01DocumentKnowledgeRouteCloseoutFiles).toBeLessThanOrEqual(3);
-    expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(5);
+    expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(6);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);

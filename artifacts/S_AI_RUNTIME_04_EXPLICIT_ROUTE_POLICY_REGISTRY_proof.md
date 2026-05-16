@@ -1,0 +1,19 @@
+# S_AI_RUNTIME_04_EXPLICIT_ROUTE_POLICY_REGISTRY
+
+final_status: GREEN_AI_RUNTIME_ROUTE_POLICY_REGISTRY_READY
+exact_reason: none
+route_count: 76
+explicit_route_policy_count: 76
+all_routes_have_explicit_policy: true
+no_extra_explicit_route_policies: true
+no_duplicate_explicit_route_policies: true
+all_budget_policies_use_explicit_registry: true
+actual_submit_routes_approval_ledger: true
+tool_routes_optional_or_blocked_reason: true
+no_db_writes: true
+no_direct_database_access: true
+no_provider_calls: true
+no_raw_rows: true
+no_raw_provider_payloads: true
+no_ui_changes: true
+no_fake_green: true

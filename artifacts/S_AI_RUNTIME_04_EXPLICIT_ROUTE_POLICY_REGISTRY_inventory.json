@@ -1,0 +1,20 @@
+{
+  "wave": "S_AI_RUNTIME_04_EXPLICIT_ROUTE_POLICY_REGISTRY",
+  "source_files": [
+    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
+    "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "scripts/ai/verifyAiRuntimeRoutePolicyRegistry.ts"
+  ],
+  "test_files": [
+    "tests/ai/agentRuntimeRoutePolicyRegistry.contract.test.ts",
+    "tests/ai/agentRuntimeBudgetPolicy.contract.test.ts",
+    "tests/architecture/aiRuntimeRoutePolicyNoHeuristicFallback.contract.test.ts",
+    "tests/architecture/agentBffRuntimeMount.contract.test.ts"
+  ],
+  "route_count": 76,
+  "explicit_route_policy_count": 76,
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}

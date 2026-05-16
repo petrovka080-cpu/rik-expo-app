@@ -3,22 +3,20 @@
   "source_wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "final_status": "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "33d283065974d2b694d0ce9ef62f63958ba030788aed53ea584ffca0a0e47582",
+  "changed_files_fingerprint": "2070ba94f82fe851bcf737a3d2f56a262d017ba771f07ab23bd435c242b58bd2",
   "changed_files": [
-    "scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts",
-    "scripts/ai/verifyAiRuntimeTransportRegistryHardening.ts",
-    "src/features/ai/agent/agentRuntimeGateway.ts",
-    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-    "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
+    "scripts/ai/verifyAiRuntimeRoutePolicyRegistry.ts",
+    "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
+    "tests/ai/agentRuntimeBudgetPolicy.contract.test.ts",
+    "tests/ai/agentRuntimeRoutePolicyRegistry.contract.test.ts",
     "tests/architecture/agentBffRuntimeMount.contract.test.ts",
-    "tests/architecture/aiDomainRuntimeNoCommandCenterFallback.contract.test.ts",
-    "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts",
-    "tests/architecture/aiScreenLocalAssistantArchitecture.contract.test.ts",
+    "tests/architecture/aiRuntimeRoutePolicyNoHeuristicFallback.contract.test.ts",
     "tests/perf/performance-budget.test.ts"
   ],
   "ai_mobile_runtime_files": [
-    "src/features/ai/agent/agentRuntimeGateway.ts",
-    "src/features/ai/agent/agentRuntimeTransportRegistry.ts"
+    "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
   ],
   "runtime_smoke": "PASS",
   "core_release_artifact_overwritten": false,

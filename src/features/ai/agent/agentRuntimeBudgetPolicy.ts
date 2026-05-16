@@ -11,18 +11,17 @@ import {
 import { getAiToolRateLimitPolicy } from "../rateLimit/aiToolRateLimitPolicy";
 import { AI_TOOL_NAMES } from "../tools/aiToolRegistry";
 import type { AiToolName } from "../tools/aiToolTypes";
+import {
+  getAgentRuntimeRoutePolicyRegistryEntry,
+  listAgentRuntimeRoutePolicyRegistryEntries,
+  type AgentRuntimeEvidencePolicy,
+  type AgentRuntimeRouteClass,
+} from "./agentRuntimeRoutePolicyRegistry";
 
-export type AgentRuntimeRouteClass =
-  | "read"
-  | "preview"
-  | "draft"
-  | "approval_ledger"
-  | "approved_executor"
-  | "tool_registry";
-
-export type AgentRuntimeEvidencePolicy =
-  | "required"
-  | "optional_or_blocked_reason";
+export type {
+  AgentRuntimeEvidencePolicy,
+  AgentRuntimeRouteClass,
+} from "./agentRuntimeRoutePolicyRegistry";
 
 export type AgentRuntimeRouteBudgetPolicy = {
   operation: AgentBffRouteOperation;
@@ -45,6 +44,8 @@ export type AgentRuntimeRouteBudgetPolicy = {
   resultLimitRequired: true;
   timeoutRequired: true;
   routeScoped: true;
+  explicitPolicyRequired: true;
+  policySource: "explicit_route_policy_registry";
 };
 
 const ROUTE_CLASS_DEFAULTS: Record<
@@ -74,6 +75,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
   preview: {
     maxRequestsPerMinute: 30,
@@ -88,6 +91,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
   draft: {
     maxRequestsPerMinute: 20,
@@ -102,6 +107,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
   approval_ledger: {
     maxRequestsPerMinute: 12,
@@ -116,6 +123,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
   approved_executor: {
     maxRequestsPerMinute: 6,
@@ -130,6 +139,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
   tool_registry: {
     maxRequestsPerMinute: 90,
@@ -144,58 +155,29 @@ const ROUTE_CLASS_DEFAULTS: Record<
     resultLimitRequired: true,
     timeoutRequired: true,
     routeScoped: true,
+    explicitPolicyRequired: true,
+    policySource: "explicit_route_policy_registry",
   },
 };
-
-function classifyAgentRuntimeRoute(operation: AgentBffRouteOperation): AgentRuntimeRouteClass {
-  if (operation.startsWith("agent.tools.")) return "tool_registry";
-  if (operation.includes("execute_approved")) return "approved_executor";
-  if (operation.startsWith("agent.action.") || operation.startsWith("agent.approval_inbox.")) {
-    return "approval_ledger";
-  }
-  if (operation.includes("draft")) return "draft";
-  if (
-    operation.includes("preview") ||
-    operation.includes("action_plan") ||
-    operation.includes("plan") ||
-    operation.includes("compare")
-  ) {
-    return "preview";
-  }
-  return "read";
-}
-
-function operationRequiresIdempotency(operation: AgentBffRouteOperation): boolean {
-  return operation.includes("submit_for_approval") || operation.includes("execute_approved");
-}
-
-function operationRequiresAudit(operation: AgentBffRouteOperation): boolean {
-  return (
-    operation.startsWith("agent.action.") ||
-    operation.startsWith("agent.approval_inbox.") ||
-    operation.includes("submit_for_approval") ||
-    operation.includes("draft")
-  );
-}
-
-function operationEvidencePolicy(operation: AgentBffRouteOperation): AgentRuntimeEvidencePolicy {
-  return operation.startsWith("agent.tools.") ? "optional_or_blocked_reason" : "required";
-}
 
 export function buildAgentRuntimeRouteBudgetPolicy(
   route: AgentBffRouteDefinition,
 ): AgentRuntimeRouteBudgetPolicy {
-  const routeClass = classifyAgentRuntimeRoute(route.operation);
+  const routePolicy = getAgentRuntimeRoutePolicyRegistryEntry(route.operation);
+  if (!routePolicy) {
+    throw new Error(`Agent runtime route policy is missing: ${route.operation}`);
+  }
+
   return {
     operation: route.operation,
     endpoint: route.endpoint,
     method: route.method,
-    routeClass,
+    routeClass: routePolicy.routeClass,
     routeScope: route.operation,
-    ...ROUTE_CLASS_DEFAULTS[routeClass],
-    idempotencyRequired: operationRequiresIdempotency(route.operation),
-    auditRequired: operationRequiresAudit(route.operation),
-    evidencePolicy: operationEvidencePolicy(route.operation),
+    ...ROUTE_CLASS_DEFAULTS[routePolicy.routeClass],
+    idempotencyRequired: routePolicy.idempotencyRequired,
+    auditRequired: routePolicy.auditRequired,
+    evidencePolicy: routePolicy.evidencePolicy,
   };
 }
 
@@ -232,16 +214,29 @@ export function allAgentRuntimeToolsHaveBudgetAndRatePolicy(): boolean {
 
 export function buildAgentRuntimeBudgetPolicyMatrix() {
   const routePolicies = listAgentRuntimeRouteBudgetPolicies();
+  const explicitPolicies = listAgentRuntimeRoutePolicyRegistryEntries();
   const toolBudgets = listAiToolBudgetPolicies();
 
   return {
     route_count: AGENT_BFF_ROUTE_DEFINITIONS.length,
     route_budget_count: routePolicies.length,
+    explicit_route_policy_count: explicitPolicies.length,
     all_routes_have_budget: allAgentRuntimeRoutesHaveBudgetPolicy(),
+    all_routes_have_explicit_policy: AGENT_BFF_ROUTE_DEFINITIONS.every((route) =>
+      explicitPolicies.some((policy) => policy.operation === route.operation),
+    ),
+    no_extra_explicit_route_policies: explicitPolicies.every((policy) =>
+      AGENT_BFF_ROUTE_DEFINITIONS.some((route) => route.operation === policy.operation),
+    ),
     all_routes_have_payload_limit: routePolicies.every((policy) => policy.payloadLimitRequired),
     all_routes_have_result_limit: routePolicies.every((policy) => policy.resultLimitRequired),
     all_routes_have_timeout: routePolicies.every((policy) => policy.timeoutRequired),
     all_routes_are_route_scoped: routePolicies.every((policy) => policy.routeScoped),
+    all_routes_use_explicit_policy_source: routePolicies.every(
+      (policy) =>
+        policy.explicitPolicyRequired &&
+        policy.policySource === "explicit_route_policy_registry",
+    ),
     all_routes_have_evidence_policy: routePolicies.every(
       (policy) => policy.evidenceOrBlockedReasonRequired,
     ),

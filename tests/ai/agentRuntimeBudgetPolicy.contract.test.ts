@@ -18,10 +18,13 @@ describe("Agent runtime budget policy", () => {
     expect(allAgentRuntimeRoutesHaveBudgetPolicy()).toBe(true);
     expect(matrix).toMatchObject({
       all_routes_have_budget: true,
+      all_routes_have_explicit_policy: true,
+      no_extra_explicit_route_policies: true,
       all_routes_have_payload_limit: true,
       all_routes_have_result_limit: true,
       all_routes_have_timeout: true,
       all_routes_are_route_scoped: true,
+      all_routes_use_explicit_policy_source: true,
       all_routes_have_evidence_policy: true,
       all_tools_have_budget: true,
       all_tools_have_rate_policy: true,
@@ -45,6 +48,11 @@ describe("Agent runtime budget policy", () => {
     expect(getAgentRuntimeRouteBudgetPolicy("agent.task_stream.read")).toMatchObject({
       idempotencyRequired: false,
       routeClass: "read",
+    });
+    expect(getAgentRuntimeRouteBudgetPolicy("agent.procurement.submit_for_approval")).toMatchObject({
+      idempotencyRequired: true,
+      auditRequired: true,
+      routeClass: "approval_ledger",
     });
   });
 
