@@ -1,0 +1,1644 @@
+{
+  "wave": "S_AI_PRODUCT_06_ROLE_EMPATHY_MAGIC_LOGIC_BLUEPRINT",
+  "final_status": "GREEN_AI_ROLE_MAGIC_QA_EXPECTATIONS_READY",
+  "roles_with_five_questions": 12,
+  "plans": [
+    {
+      "roleId": "buyer",
+      "questions": [
+        {
+          "roleId": "buyer",
+          "question": "What should I open first?",
+          "expectedContext": [
+            "buyer.requests",
+            "approval status",
+            "supplier options"
+          ],
+          "answerMustInclude": [
+            "priority",
+            "ready options",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "buyer",
+          "question": "Which requests already have buy options?",
+          "expectedContext": [
+            "buyer.requests",
+            "procurement evidence"
+          ],
+          "answerMustInclude": [
+            "request",
+            "supplier",
+            "missing data"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "buyer",
+          "question": "Why is one supplier better than another?",
+          "expectedContext": [
+            "supplier history",
+            "coverage",
+            "risk"
+          ],
+          "answerMustInclude": [
+            "coverage",
+            "risk",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "buyer",
+          "question": "What is missing before supplier choice?",
+          "expectedContext": [
+            "missing prices",
+            "delivery",
+            "documents"
+          ],
+          "answerMustInclude": [
+            "missing data",
+            "approval"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "buyer",
+          "question": "Draft a supplier request.",
+          "expectedContext": [
+            "request items",
+            "supplier context"
+          ],
+          "answerMustInclude": [
+            "draft",
+            "not final",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "approval status",
+        "buyer.main",
+        "buyer.request.detail",
+        "buyer.requests",
+        "coverage",
+        "delivery",
+        "documents",
+        "market.home",
+        "missing prices",
+        "procurement evidence",
+        "procurement.copilot",
+        "request items",
+        "risk",
+        "supplier context",
+        "supplier history",
+        "supplier options",
+        "supplier.showcase"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "draft",
+        "ready_options",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "accountant",
+      "questions": [
+        {
+          "roleId": "accountant",
+          "question": "What is critical in payments today?",
+          "expectedContext": [
+            "payment queue",
+            "documents",
+            "approval status"
+          ],
+          "answerMustInclude": [
+            "critical",
+            "amount",
+            "documents"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "accountant",
+          "question": "Prepare today's payment report.",
+          "expectedContext": [
+            "finance summary",
+            "payment history"
+          ],
+          "answerMustInclude": [
+            "summary",
+            "total",
+            "approval"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "accountant",
+          "question": "Which payments lack documents?",
+          "expectedContext": [
+            "documents",
+            "payment queue"
+          ],
+          "answerMustInclude": [
+            "missing documents",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "accountant",
+          "question": "Why is this payment risky?",
+          "expectedContext": [
+            "supplier history",
+            "amount",
+            "document status"
+          ],
+          "answerMustInclude": [
+            "risk",
+            "history",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "accountant",
+          "question": "Make rationale for director.",
+          "expectedContext": [
+            "payment",
+            "request",
+            "approval policy"
+          ],
+          "answerMustInclude": [
+            "rationale",
+            "director",
+            "approval"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "accountant.history",
+        "accountant.main",
+        "accountant.payment",
+        "amount",
+        "approval policy",
+        "approval status",
+        "document status",
+        "documents",
+        "finance summary",
+        "payment",
+        "payment history",
+        "payment queue",
+        "request",
+        "supplier history"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "financial_rationale",
+        "risk_report",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "warehouse",
+      "questions": [
+        {
+          "roleId": "warehouse",
+          "question": "What is risky in warehouse today?",
+          "expectedContext": [
+            "stock",
+            "incoming",
+            "issue requests"
+          ],
+          "answerMustInclude": [
+            "deficit",
+            "incoming",
+            "risk"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "warehouse",
+          "question": "What cannot be issued?",
+          "expectedContext": [
+            "stock balance",
+            "confirmed incoming"
+          ],
+          "answerMustInclude": [
+            "cannot issue",
+            "deficit",
+            "approval"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "warehouse",
+          "question": "Which incoming items are disputed?",
+          "expectedContext": [
+            "incoming",
+            "documents",
+            "request"
+          ],
+          "answerMustInclude": [
+            "discrepancy",
+            "document"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "warehouse",
+          "question": "Where are documents missing?",
+          "expectedContext": [
+            "delivery documents",
+            "incoming"
+          ],
+          "answerMustInclude": [
+            "missing documents",
+            "checklist"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "warehouse",
+          "question": "Prepare incoming verification.",
+          "expectedContext": [
+            "incoming items",
+            "evidence"
+          ],
+          "answerMustInclude": [
+            "draft",
+            "verification",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "confirmed incoming",
+        "delivery documents",
+        "documents",
+        "evidence",
+        "incoming",
+        "incoming items",
+        "issue requests",
+        "request",
+        "stock",
+        "stock balance",
+        "warehouse.incoming",
+        "warehouse.issue",
+        "warehouse.main"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "draft",
+        "missing_data_checklist",
+        "risk_report"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "foreman",
+      "questions": [
+        {
+          "roleId": "foreman",
+          "question": "What can be closed today?",
+          "expectedContext": [
+            "work status",
+            "evidence",
+            "materials"
+          ],
+          "answerMustInclude": [
+            "closeout",
+            "missing evidence",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "foreman",
+          "question": "Which photos are missing?",
+          "expectedContext": [
+            "photo evidence",
+            "work zones"
+          ],
+          "answerMustInclude": [
+            "photos",
+            "missing evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "foreman",
+          "question": "Draft an act for this work.",
+          "expectedContext": [
+            "work",
+            "evidence",
+            "approval"
+          ],
+          "answerMustInclude": [
+            "draft act",
+            "not signed"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "foreman",
+          "question": "Which checks or norms apply?",
+          "expectedContext": [
+            "knowledge base",
+            "checklist"
+          ],
+          "answerMustInclude": [
+            "source",
+            "checklist",
+            "not invented"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "foreman",
+          "question": "What should I write to the contractor?",
+          "expectedContext": [
+            "remarks",
+            "missing documents"
+          ],
+          "answerMustInclude": [
+            "draft message",
+            "contractor"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "approval",
+        "checklist",
+        "evidence",
+        "foreman.ai.quick_modal",
+        "foreman.main",
+        "foreman.subcontract",
+        "knowledge base",
+        "materials",
+        "missing documents",
+        "photo evidence",
+        "remarks",
+        "work",
+        "work status",
+        "work zones"
+      ],
+      "preparedOutputs": [
+        "construction_guidance",
+        "draft",
+        "missing_data_checklist",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "contractor",
+      "questions": [
+        {
+          "roleId": "contractor",
+          "question": "What should I submit today?",
+          "expectedContext": [
+            "subcontract status",
+            "remarks"
+          ],
+          "answerMustInclude": [
+            "submit",
+            "documents",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "contractor",
+          "question": "Why was the act not accepted?",
+          "expectedContext": [
+            "act status",
+            "remarks"
+          ],
+          "answerMustInclude": [
+            "remarks",
+            "acceptance blocker"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "contractor",
+          "question": "Which documents should I attach?",
+          "expectedContext": [
+            "document requirements"
+          ],
+          "answerMustInclude": [
+            "documents",
+            "missing"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "contractor",
+          "question": "What blocks acceptance?",
+          "expectedContext": [
+            "evidence",
+            "remarks"
+          ],
+          "answerMustInclude": [
+            "blocker",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "contractor",
+          "question": "Draft a reply to foreman.",
+          "expectedContext": [
+            "foreman message",
+            "subcontract context"
+          ],
+          "answerMustInclude": [
+            "draft reply",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "act status",
+        "contractor.main",
+        "document requirements",
+        "evidence",
+        "foreman message",
+        "remarks",
+        "subcontract context",
+        "subcontract status"
+      ],
+      "preparedOutputs": [
+        "draft",
+        "missing_data_checklist",
+        "risk_report",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "director",
+      "questions": [
+        {
+          "roleId": "director",
+          "question": "What needs my decision today?",
+          "expectedContext": [
+            "approval inbox",
+            "cross-domain risks"
+          ],
+          "answerMustInclude": [
+            "decision",
+            "risk",
+            "approval"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "director",
+          "question": "What blocks work?",
+          "expectedContext": [
+            "procurement",
+            "warehouse",
+            "foreman"
+          ],
+          "answerMustInclude": [
+            "blocker",
+            "domain",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "director",
+          "question": "Which approvals are critical?",
+          "expectedContext": [
+            "ledger",
+            "risk"
+          ],
+          "answerMustInclude": [
+            "approval",
+            "critical",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "director",
+          "question": "Why is this payment risky?",
+          "expectedContext": [
+            "finance",
+            "documents"
+          ],
+          "answerMustInclude": [
+            "payment",
+            "risk",
+            "documents"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "director",
+          "question": "Which supplier is better and why?",
+          "expectedContext": [
+            "supplier comparison",
+            "request"
+          ],
+          "answerMustInclude": [
+            "supplier",
+            "coverage",
+            "risk"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "ai.command_center",
+        "approval inbox",
+        "approval.inbox",
+        "cross-domain risks",
+        "director.dashboard",
+        "director.finance",
+        "director.reports",
+        "documents",
+        "finance",
+        "foreman",
+        "ledger",
+        "procurement",
+        "request",
+        "risk",
+        "supplier comparison",
+        "warehouse"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "decision_queue",
+        "draft",
+        "risk_report"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "office",
+      "questions": [
+        {
+          "roleId": "office",
+          "question": "What is stuck today?",
+          "expectedContext": [
+            "documents",
+            "requests",
+            "tasks"
+          ],
+          "answerMustInclude": [
+            "stuck",
+            "overdue",
+            "next action"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "office",
+          "question": "Which documents need processing?",
+          "expectedContext": [
+            "document queue"
+          ],
+          "answerMustInclude": [
+            "documents",
+            "processing"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "office",
+          "question": "Which requests are stale?",
+          "expectedContext": [
+            "request age",
+            "status"
+          ],
+          "answerMustInclude": [
+            "stale",
+            "request"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "office",
+          "question": "Draft a reminder.",
+          "expectedContext": [
+            "assignee",
+            "missing data"
+          ],
+          "answerMustInclude": [
+            "draft reminder",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "office",
+          "question": "What should go to approval?",
+          "expectedContext": [
+            "approval policy",
+            "work queue"
+          ],
+          "answerMustInclude": [
+            "approval",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "approval policy",
+        "assignee",
+        "document queue",
+        "documents",
+        "missing data",
+        "office.hub",
+        "reports.modal",
+        "request age",
+        "requests",
+        "status",
+        "tasks",
+        "work queue"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "draft",
+        "missing_data_checklist",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "documents",
+      "questions": [
+        {
+          "roleId": "documents",
+          "question": "What is important in this document?",
+          "expectedContext": [
+            "document summary",
+            "linked objects"
+          ],
+          "answerMustInclude": [
+            "summary",
+            "important"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "documents",
+          "question": "Which request is it linked to?",
+          "expectedContext": [
+            "links",
+            "metadata"
+          ],
+          "answerMustInclude": [
+            "linked",
+            "request"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "documents",
+          "question": "What is missing?",
+          "expectedContext": [
+            "evidence",
+            "document metadata"
+          ],
+          "answerMustInclude": [
+            "missing evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "documents",
+          "question": "What are the risks?",
+          "expectedContext": [
+            "terms",
+            "obligations"
+          ],
+          "answerMustInclude": [
+            "risk",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "documents",
+          "question": "Draft a comment.",
+          "expectedContext": [
+            "document summary"
+          ],
+          "answerMustInclude": [
+            "draft comment",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "document metadata",
+        "document summary",
+        "documents.main",
+        "evidence",
+        "linked objects",
+        "links",
+        "metadata",
+        "obligations",
+        "reports.modal",
+        "terms"
+      ],
+      "preparedOutputs": [
+        "draft",
+        "ready_options",
+        "risk_report",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "chat",
+      "questions": [
+        {
+          "roleId": "chat",
+          "question": "What did we decide?",
+          "expectedContext": [
+            "conversation",
+            "decisions"
+          ],
+          "answerMustInclude": [
+            "summary",
+            "decision"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "chat",
+          "question": "Who should do what?",
+          "expectedContext": [
+            "messages",
+            "roles"
+          ],
+          "answerMustInclude": [
+            "Buyer",
+            "Warehouse",
+            "Director"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "chat",
+          "question": "What are the risks?",
+          "expectedContext": [
+            "discussion",
+            "risks"
+          ],
+          "answerMustInclude": [
+            "risk",
+            "missing data"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "chat",
+          "question": "What should go to approval?",
+          "expectedContext": [
+            "decisions",
+            "approval policy"
+          ],
+          "answerMustInclude": [
+            "approval",
+            "candidate"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "chat",
+          "question": "Make a director summary.",
+          "expectedContext": [
+            "conversation",
+            "tasks"
+          ],
+          "answerMustInclude": [
+            "director",
+            "summary"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "approval policy",
+        "chat.main",
+        "conversation",
+        "decisions",
+        "discussion",
+        "messages",
+        "risks",
+        "roles",
+        "tasks"
+      ],
+      "preparedOutputs": [
+        "approval_candidate",
+        "decision_queue",
+        "risk_report",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "map",
+      "questions": [
+        {
+          "roleId": "map",
+          "question": "Who is closer to the object?",
+          "expectedContext": [
+            "supplier location",
+            "object location"
+          ],
+          "answerMustInclude": [
+            "closer",
+            "evidence"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "map",
+          "question": "How does delivery affect deadline?",
+          "expectedContext": [
+            "route",
+            "deadline"
+          ],
+          "answerMustInclude": [
+            "delivery",
+            "deadline",
+            "risk"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "map",
+          "question": "Which suppliers are nearby?",
+          "expectedContext": [
+            "map",
+            "supplier evidence"
+          ],
+          "answerMustInclude": [
+            "nearby",
+            "supplier"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "map",
+          "question": "Where is logistics risk?",
+          "expectedContext": [
+            "route",
+            "request"
+          ],
+          "answerMustInclude": [
+            "logistics risk"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "map",
+          "question": "Draft a delivery request.",
+          "expectedContext": [
+            "missing logistics data"
+          ],
+          "answerMustInclude": [
+            "draft",
+            "delivery",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "deadline",
+        "map",
+        "map.main",
+        "missing logistics data",
+        "object location",
+        "request",
+        "route",
+        "supplier evidence",
+        "supplier location"
+      ],
+      "preparedOutputs": [
+        "draft",
+        "logistics_insight",
+        "ready_options",
+        "risk_report"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "security",
+      "questions": [
+        {
+          "roleId": "security",
+          "question": "Where is permission risk?",
+          "expectedContext": [
+            "role matrix",
+            "policy"
+          ],
+          "answerMustInclude": [
+            "role",
+            "risk"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "security",
+          "question": "Who attempted forbidden action?",
+          "expectedContext": [
+            "audit",
+            "action policy"
+          ],
+          "answerMustInclude": [
+            "forbidden",
+            "attempt"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "security",
+          "question": "Is there a privileged green path?",
+          "expectedContext": [
+            "transport",
+            "policy"
+          ],
+          "answerMustInclude": [
+            "privileged path",
+            "not used"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "security",
+          "question": "Which approvals are suspicious?",
+          "expectedContext": [
+            "ledger",
+            "history"
+          ],
+          "answerMustInclude": [
+            "approval",
+            "suspicious"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "security",
+          "question": "Build a security report.",
+          "expectedContext": [
+            "risk roles",
+            "forbidden attempts"
+          ],
+          "answerMustInclude": [
+            "draft report",
+            "not final"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "action policy",
+        "audit",
+        "forbidden attempts",
+        "history",
+        "ledger",
+        "policy",
+        "risk roles",
+        "role matrix",
+        "security.screen",
+        "transport"
+      ],
+      "preparedOutputs": [
+        "decision_queue",
+        "draft",
+        "risk_report"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    },
+    {
+      "roleId": "runtime_admin",
+      "questions": [
+        {
+          "roleId": "runtime_admin",
+          "question": "Why is matrix red?",
+          "expectedContext": [
+            "runner",
+            "artifact"
+          ],
+          "answerMustInclude": [
+            "blocker",
+            "artifact"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "runtime_admin",
+          "question": "Which child runner failed?",
+          "expectedContext": [
+            "runtime matrix"
+          ],
+          "answerMustInclude": [
+            "runner",
+            "failed"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "runtime_admin",
+          "question": "Is this targetability or driver?",
+          "expectedContext": [
+            "targetability",
+            "driver status"
+          ],
+          "answerMustInclude": [
+            "targetability",
+            "driver"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "runtime_admin",
+          "question": "Where is the artifact?",
+          "expectedContext": [
+            "artifact path"
+          ],
+          "answerMustInclude": [
+            "artifact"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        },
+        {
+          "roleId": "runtime_admin",
+          "question": "What should I check first?",
+          "expectedContext": [
+            "blocker",
+            "route",
+            "transport"
+          ],
+          "answerMustInclude": [
+            "first check",
+            "transport"
+          ],
+          "forbiddenCopy": [
+            "module unavailable",
+            "provider unavailable",
+            "AI keys are not configured",
+            "safe guide mode",
+            "raw policy dump",
+            "raw runtime transport",
+            "raw BFF debug"
+          ]
+        }
+      ],
+      "screenContextSources": [
+        "artifact",
+        "artifact path",
+        "blocker",
+        "driver status",
+        "route",
+        "runner",
+        "runtime matrix",
+        "screen.runtime",
+        "targetability",
+        "transport"
+      ],
+      "preparedOutputs": [
+        "draft",
+        "ready_options",
+        "risk_report",
+        "summary"
+      ],
+      "answersFromScreenContext": true,
+      "providerCallAllowed": false,
+      "dbWriteAllowed": false,
+      "forbiddenCopyHidden": true
+    }
+  ],
+  "issues": [],
+  "answers_from_screen_context": true,
+  "provider_called": false,
+  "db_writes_used": false,
+  "fake_green_claimed": false
+}

@@ -429,6 +429,27 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeAssistantPolicy.ts"),
       path.join(SRC, "features", "ai", "screenNative", "aiScreenNativeUserCopy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct06RoleEmpathyMagicLogicBlueprintFiles = [
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicBlueprintTypes.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicBlueprintRegistry.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicOpportunityScorer.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicButtonCoveragePlanner.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicQuestionAnswerPlan.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicSafetyPolicy.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicButtonClickContract.ts"),
+      path.join(SRC, "features", "ai", "roleMagic", "aiRoleMagicQaExpectations.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct07ScreenNativeWorkflowExecutionFiles = [
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowTypes.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowHydrator.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowEngine.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowButtonResolver.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowQuestionAnswerEngine.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowUserCopy.ts"),
+      path.join(SRC, "features", "ai", "screenWorkflows", "aiScreenWorkflowButtonContract.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
@@ -1367,6 +1388,8 @@ describe("performance budget — bundle module count", () => {
     expect(sAiProcurement05BuyerInboxReadyBuyOptionsFiles).toBeLessThanOrEqual(5);
     expect(sAiProduct03RealRoleScreenAssistantsFiles).toBeLessThanOrEqual(12);
     expect(sAiProduct04ScreenNativeValueDeliveryFiles).toBeLessThanOrEqual(7);
+    expect(sAiProduct06RoleEmpathyMagicLogicBlueprintFiles).toBeLessThanOrEqual(8);
+    expect(sAiProduct07ScreenNativeWorkflowExecutionFiles).toBeLessThanOrEqual(9);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
@@ -1566,6 +1589,8 @@ describe("performance budget — bundle module count", () => {
         sAiProcurement05BuyerInboxReadyBuyOptionsFiles -
         sAiProduct03RealRoleScreenAssistantsFiles -
         sAiProduct04ScreenNativeValueDeliveryFiles -
+        sAiProduct06RoleEmpathyMagicLogicBlueprintFiles -
+        sAiProduct07ScreenNativeWorkflowExecutionFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
         sAiProcurement04InternalFirstDecisionEngineFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -

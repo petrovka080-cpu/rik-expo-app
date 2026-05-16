@@ -1,0 +1,16 @@
+{
+  "wave": "S_AI_PRODUCT_07_SCREEN_NATIVE_WORKFLOW_EXECUTION_PACKS",
+  "final_status": "GREEN_AI_SCREEN_WORKFLOW_BUTTON_COVERAGE_READY",
+  "ok": true,
+  "screensChecked": 28,
+  "buttonsChecked": 112,
+  "safeReadButtons": 28,
+  "draftOnlyButtons": 28,
+  "approvalRequiredButtons": 28,
+  "forbiddenButtons": 28,
+  "clickableOrExactBlocked": true,
+  "approvalRequiredActionsRouteToLedger": true,
+  "forbiddenActionsHaveUserReason": true,
+  "directDangerousMutationPathsFound": 0,
+  "issues": []
+}

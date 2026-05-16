@@ -16,6 +16,7 @@ import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcureme
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
 import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
+import type { AiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 
@@ -52,6 +53,7 @@ export function AIAssistantReadyProductPanels({
   resolvedUserContext,
   readyProposals,
   screenNativeAssistantPack,
+  screenWorkflowPack,
   roleScreenAssistantPack,
   readyBuyBundle,
   approvedSupplierBundle,
@@ -67,6 +69,7 @@ export function AIAssistantReadyProductPanels({
   >;
   readyProposals: AiReadyProposal[];
   screenNativeAssistantPack: AiScreenNativeAssistantPack | null;
+  screenWorkflowPack: AiScreenWorkflowPack | null;
   roleScreenAssistantPack: AiRoleScreenAssistantPack | null;
   readyBuyBundle: ProcurementReadyBuyOptionBundle | null;
   approvedSupplierBundle: ProcurementReadySupplierProposalBundle | null;
@@ -149,6 +152,56 @@ export function AIAssistantReadyProductPanels({
                 style={styles.roleAssistantActionChip}
                 onPress={() => onReadyProposalPress(action.label)}
                 testID="ai.screen_native_value.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
+      {screenWorkflowPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_workflow_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Workflow AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenWorkflowPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{screenWorkflowPack.userGoal}</Text>
+          {screenWorkflowPack.readyBlocks.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Prepared work</Text>
+              {screenWorkflowPack.readyBlocks.slice(0, 2).map((block) => (
+                <View key={block.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{block.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{block.body}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {screenWorkflowPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Missing data / blockers</Text>
+              {screenWorkflowPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{item.label}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {screenWorkflowPack.actions.slice(0, 6).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(
+                  action.actionKind === "forbidden"
+                    ? `${action.label}: ${action.forbiddenReason ?? action.exactBlocker ?? "forbidden"}`
+                    : action.label,
+                )}
+                testID="ai.screen_workflow.action"
               >
                 <Text style={styles.roleAssistantActionText}>{action.label}</Text>
               </Pressable>

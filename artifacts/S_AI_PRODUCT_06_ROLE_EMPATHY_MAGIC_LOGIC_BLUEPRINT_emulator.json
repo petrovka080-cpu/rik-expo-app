@@ -1,0 +1,21 @@
+{
+  "wave": "S_AI_PRODUCT_06_ROLE_EMPATHY_MAGIC_LOGIC_BLUEPRINT",
+  "final_status": "GREEN_AI_ROLE_MAGIC_BLUEPRINT_MAESTRO_TARGETABLE",
+  "checks": {
+    "AI assistant opens on key roles": true,
+    "role-native output visible": true,
+    "critical buttons targetable": true,
+    "approval-required buttons do not execute directly": true,
+    "forbidden buttons show reason": true,
+    "debug hidden": true,
+    "tab route registered": true,
+    "qa source context ready": true
+  },
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "fakeGreenClaimed": false
+}

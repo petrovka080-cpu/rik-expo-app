@@ -1,0 +1,2261 @@
+{
+  "wave": "S_AI_PRODUCT_06_ROLE_EMPATHY_MAGIC_LOGIC_BLUEPRINT",
+  "final_status": "GREEN_AI_ROLE_MAGIC_BUTTON_CLICK_COVERAGE_READY",
+  "actions_checked": 116,
+  "approval_actions_checked": 29,
+  "plans": [
+    {
+      "roleId": "buyer",
+      "actions": [
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.main",
+          "actionId": "buyer.main.approval",
+          "label": "Submit buyer request for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.main",
+          "actionId": "buyer.main.draft",
+          "label": "Draft procurement request",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/draft-request/preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.main",
+          "actionId": "buyer.main.forbidden",
+          "label": "Confirm supplier directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:buyer.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Supplier confirmation requires approval-backed decision and cannot be direct AI output.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.main",
+          "actionId": "buyer.main.safe_read",
+          "label": "Explain buyer workload",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/procurement/request-context/:requestId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.requests",
+          "actionId": "buyer.requests.approval",
+          "label": "Submit buyer proposal pack",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.requests",
+          "actionId": "buyer.requests.draft",
+          "label": "Draft buyer proposal rationale",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/decision-card",
+            "POST /agent/procurement/draft-request/preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.requests",
+          "actionId": "buyer.requests.forbidden",
+          "label": "Create purchase order directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:buyer.requests:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Purchase order creation is a final procurement mutation and requires the approved execution path.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.requests",
+          "actionId": "buyer.requests.safe_read",
+          "label": "Compare request options",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/procurement/request-understanding/:requestId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.request.detail",
+          "actionId": "buyer.request.detail.approval",
+          "label": "Submit detailed supplier decision",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.request.detail",
+          "actionId": "buyer.request.detail.draft",
+          "label": "Draft request decision card",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/decision-card",
+            "POST /agent/procurement/supplier-match/preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.request.detail",
+          "actionId": "buyer.request.detail.forbidden",
+          "label": "Finalize supplier from detail view",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:buyer.request.detail:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "AI recommendation must remain evidence-backed and approval-gated before final supplier selection.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "buyer.request.detail",
+          "actionId": "buyer.request.detail.safe_read",
+          "label": "Explain request detail evidence",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/procurement/request-context/:requestId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "procurement.copilot",
+          "actionId": "procurement.copilot.approval",
+          "label": "Prepare copilot submit-for-approval preview",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/copilot/submit-for-approval-preview",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "procurement.copilot",
+          "actionId": "procurement.copilot.draft",
+          "label": "Draft copilot request preview",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/copilot/draft-preview",
+            "POST /agent/procurement/copilot/plan",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "procurement.copilot",
+          "actionId": "procurement.copilot.forbidden",
+          "label": "Create order from copilot",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:procurement.copilot:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Copilot output is evidence and draft only until approval ledger execution.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "procurement.copilot",
+          "actionId": "procurement.copilot.safe_read",
+          "label": "Explain procurement copilot plan",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/procurement/copilot/context",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "market.home",
+          "actionId": "market.home.approval",
+          "label": "Submit marketplace-backed request",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "market.home",
+          "actionId": "market.home.draft",
+          "label": "Draft request from marketplace item",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/draft-request-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "market.home",
+          "actionId": "market.home.forbidden",
+          "label": "Create external supplier without citation",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:market.home:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "External supplier creation requires citation/evidence and cannot be invented by AI.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "market.home",
+          "actionId": "market.home.safe_read",
+          "label": "Compare marketplace supplier options",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/external-intel/sources",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/market/listing-context/:listingId"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "supplier.showcase",
+          "actionId": "supplier.showcase.approval",
+          "label": "Submit supplier recommendation",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/procurement/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "supplier.showcase",
+          "actionId": "supplier.showcase.draft",
+          "label": "Draft supplier comparison note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/procurement/external-supplier-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "supplier.showcase",
+          "actionId": "supplier.showcase.forbidden",
+          "label": "Confirm supplier directly from showcase",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:supplier.showcase:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "buyer",
+          "screenId": "supplier.showcase",
+          "actionId": "supplier.showcase.safe_read",
+          "label": "Summarize supplier showcase evidence",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/external-intel/sources",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/supplier-showcase/:supplierId/context"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 6,
+      "draftOnlyActions": 6,
+      "approvalRequiredActions": 6,
+      "forbiddenActions": 6
+    },
+    {
+      "roleId": "accountant",
+      "actions": [
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.main",
+          "actionId": "accountant.main.approval",
+          "label": "Submit finance document for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.main",
+          "actionId": "accountant.main.draft",
+          "label": "Draft finance document note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/finance/draft-summary",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.main",
+          "actionId": "accountant.main.forbidden",
+          "label": "Create payment directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:accountant.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Payments require human-controlled approval and finance posting boundaries.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.main",
+          "actionId": "accountant.main.safe_read",
+          "label": "Explain accountant workload",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/finance/debts",
+            "GET /agent/finance/summary",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.payment",
+          "actionId": "accountant.payment.approval",
+          "label": "Submit payment for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [
+            "POST /agent/finance/payment/submit-for-approval"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.payment",
+          "actionId": "accountant.payment.draft",
+          "label": "Draft payment approval rationale",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/finance/draft-summary",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.payment",
+          "actionId": "accountant.payment.forbidden",
+          "label": "Apply payment directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:accountant.payment:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Direct payment application is forbidden for AI and must remain a human/approval flow.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.payment",
+          "actionId": "accountant.payment.safe_read",
+          "label": "Explain payment form status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/finance/debts",
+            "GET /agent/finance/summary",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.history",
+          "actionId": "accountant.history.approval",
+          "label": "Submit accounting correction request",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.history",
+          "actionId": "accountant.history.draft",
+          "label": "Draft accounting history note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/finance/draft-summary",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.history",
+          "actionId": "accountant.history.forbidden",
+          "label": "Rewrite payment history directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:accountant.history:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Accounting history is immutable evidence; AI cannot alter ledger history.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "accountant",
+          "screenId": "accountant.history",
+          "actionId": "accountant.history.safe_read",
+          "label": "Summarize accountant history",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/action/:actionId/status",
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/finance/summary",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 3,
+      "draftOnlyActions": 3,
+      "approvalRequiredActions": 3,
+      "forbiddenActions": 3
+    },
+    {
+      "roleId": "warehouse",
+      "actions": [
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.main",
+          "actionId": "warehouse.main.approval",
+          "label": "Submit warehouse action for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.main",
+          "actionId": "warehouse.main.draft",
+          "label": "Draft warehouse restock action",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview",
+            "POST /agent/warehouse/draft-action"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.main",
+          "actionId": "warehouse.main.forbidden",
+          "label": "Mutate stock balance directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:warehouse.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.main",
+          "actionId": "warehouse.main.safe_read",
+          "label": "Explain warehouse stock status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/warehouse/movements",
+            "GET /agent/warehouse/status"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.incoming",
+          "actionId": "warehouse.incoming.approval",
+          "label": "Submit incoming exception for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.incoming",
+          "actionId": "warehouse.incoming.draft",
+          "label": "Draft incoming receipt note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview",
+            "POST /agent/warehouse/draft-action"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.incoming",
+          "actionId": "warehouse.incoming.forbidden",
+          "label": "Receive incoming stock directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:warehouse.incoming:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.incoming",
+          "actionId": "warehouse.incoming.safe_read",
+          "label": "Explain incoming receipt status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/warehouse/movements",
+            "GET /agent/warehouse/status"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.issue",
+          "actionId": "warehouse.issue.approval",
+          "label": "Submit warehouse issue request",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.issue",
+          "actionId": "warehouse.issue.draft",
+          "label": "Draft issue request rationale",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview",
+            "POST /agent/warehouse/draft-action"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.issue",
+          "actionId": "warehouse.issue.forbidden",
+          "label": "Issue stock directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:warehouse.issue:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "warehouse",
+          "screenId": "warehouse.issue",
+          "actionId": "warehouse.issue.safe_read",
+          "label": "Explain warehouse issue queue",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/warehouse/movements",
+            "GET /agent/warehouse/status"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 3,
+      "draftOnlyActions": 3,
+      "approvalRequiredActions": 3,
+      "forbiddenActions": 3
+    },
+    {
+      "roleId": "foreman",
+      "actions": [
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.main",
+          "actionId": "foreman.main.approval",
+          "label": "Submit foreman request for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.main",
+          "actionId": "foreman.main.draft",
+          "label": "Draft material request",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/field/draft-act",
+            "POST /agent/field/draft-report",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.main",
+          "actionId": "foreman.main.forbidden",
+          "label": "Approve own field request",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:foreman.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Foreman can draft and submit, but cannot self-approve or execute.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.main",
+          "actionId": "foreman.main.safe_read",
+          "label": "Explain foreman object status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/field/context",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/warehouse/status"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.ai.quick_modal",
+          "actionId": "foreman.ai.quick_modal.approval",
+          "label": "Submit quick request for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.ai.quick_modal",
+          "actionId": "foreman.ai.quick_modal.draft",
+          "label": "Draft quick material request",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/field/draft-report",
+            "POST /agent/procurement/draft-request/preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.ai.quick_modal",
+          "actionId": "foreman.ai.quick_modal.forbidden",
+          "label": "Execute quick modal request directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:foreman.ai.quick_modal:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Quick modal AI cannot bypass approval ledger or write procurement records.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.ai.quick_modal",
+          "actionId": "foreman.ai.quick_modal.safe_read",
+          "label": "Explain quick modal suggestion",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/field/context",
+            "GET /agent/procurement/request-context/:requestId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.subcontract",
+          "actionId": "foreman.subcontract.approval",
+          "label": "Submit subcontract progress",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.subcontract",
+          "actionId": "foreman.subcontract.draft",
+          "label": "Draft subcontract act",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/field/draft-act",
+            "POST /agent/field/draft-report",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.subcontract",
+          "actionId": "foreman.subcontract.forbidden",
+          "label": "Sign subcontract directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:foreman.subcontract:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Contract signing is a forbidden final action for AI.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "foreman",
+          "screenId": "foreman.subcontract",
+          "actionId": "foreman.subcontract.safe_read",
+          "label": "Explain subcontract progress",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/field/context",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 3,
+      "draftOnlyActions": 3,
+      "approvalRequiredActions": 3,
+      "forbiddenActions": 3
+    },
+    {
+      "roleId": "contractor",
+      "actions": [
+        {
+          "roleId": "contractor",
+          "screenId": "contractor.main",
+          "actionId": "contractor.main.approval",
+          "label": "Submit contractor progress for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "contractor",
+          "screenId": "contractor.main",
+          "actionId": "contractor.main.draft",
+          "label": "Draft contractor progress report",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/field/draft-act",
+            "POST /agent/field/draft-report",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "contractor",
+          "screenId": "contractor.main",
+          "actionId": "contractor.main.forbidden",
+          "label": "Read cross-role finance data",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:contractor.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Contractor scope is own-records only and cannot expose finance or other contractor rows.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "contractor",
+          "screenId": "contractor.main",
+          "actionId": "contractor.main.safe_read",
+          "label": "Explain contractor own-work status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/field/context",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 1,
+      "draftOnlyActions": 1,
+      "approvalRequiredActions": 1,
+      "forbiddenActions": 1
+    },
+    {
+      "roleId": "director",
+      "actions": [
+        {
+          "roleId": "director",
+          "screenId": "director.dashboard",
+          "actionId": "director.dashboard.approval",
+          "label": "Submit director decision pack for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.dashboard",
+          "actionId": "director.dashboard.draft",
+          "label": "Draft executive control summary",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/finance/draft-summary",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.dashboard",
+          "actionId": "director.dashboard.forbidden",
+          "label": "Execute final cross-domain mutation directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:director.dashboard:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.dashboard",
+          "actionId": "director.dashboard.safe_read",
+          "label": "Explain cross-domain executive status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/finance/summary",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/task-stream"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.finance",
+          "actionId": "director.finance.approval",
+          "label": "Submit finance decision for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.finance",
+          "actionId": "director.finance.draft",
+          "label": "Draft finance summary with evidence",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/finance/draft-summary",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.finance",
+          "actionId": "director.finance.forbidden",
+          "label": "Post finance transaction directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:director.finance:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Finance posting is a final accounting mutation and cannot be performed by AI directly.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.finance",
+          "actionId": "director.finance.safe_read",
+          "label": "Explain finance dashboard deltas",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/finance/debts",
+            "GET /agent/finance/summary",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.reports",
+          "actionId": "director.reports.approval",
+          "label": "Submit report package for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.reports",
+          "actionId": "director.reports.draft",
+          "label": "Draft director report narrative",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/documents/summarize-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.reports",
+          "actionId": "director.reports.forbidden",
+          "label": "Publish final report directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:director.reports:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "AI can draft reports, but publication is a final action requiring human approval.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "director.reports",
+          "actionId": "director.reports.safe_read",
+          "label": "Summarize director reports status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/documents/knowledge",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "ai.command_center",
+          "actionId": "ai.command_center.approval",
+          "label": "Submit command center action for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "director",
+          "screenId": "ai.command_center",
+          "actionId": "ai.command_center.draft",
+          "label": "Draft a command center action plan",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "ai.command_center",
+          "actionId": "ai.command_center.forbidden",
+          "label": "Execute command center action without ledger",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:ai.command_center:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Command Center execution must use persisted approval ledger state.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "ai.command_center",
+          "actionId": "ai.command_center.safe_read",
+          "label": "Explain current command center task",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/action/:actionId/status",
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId",
+            "GET /agent/task-stream"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "approval.inbox",
+          "actionId": "approval.inbox.approval",
+          "label": "Approve or reject through ledger RPC",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/approval-inbox/:actionId/approve",
+            "POST /agent/approval-inbox/:actionId/execute-approved",
+            "POST /agent/approval-inbox/:actionId/reject",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "director",
+          "screenId": "approval.inbox",
+          "actionId": "approval.inbox.draft",
+          "label": "Draft revision note for approver",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/approval-inbox/:actionId/edit-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "approval.inbox",
+          "actionId": "approval.inbox.forbidden",
+          "label": "Execute preview without approval ledger",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:approval.inbox:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "director",
+          "screenId": "approval.inbox",
+          "actionId": "approval.inbox.safe_read",
+          "label": "Explain approval inbox evidence",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/approval-inbox",
+            "GET /agent/approval-inbox/:actionId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 5,
+      "draftOnlyActions": 5,
+      "approvalRequiredActions": 5,
+      "forbiddenActions": 5
+    },
+    {
+      "roleId": "office",
+      "actions": [
+        {
+          "roleId": "office",
+          "screenId": "office.hub",
+          "actionId": "office.hub.approval",
+          "label": "Submit office access change",
+          "actionKind": "approval_required",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [
+            "POST /agent/office/access-change/submit-for-approval"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "office",
+          "screenId": "office.hub",
+          "actionId": "office.hub.draft",
+          "label": "Draft office collaboration note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "office",
+          "screenId": "office.hub",
+          "actionId": "office.hub.forbidden",
+          "label": "Change user role directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:office.hub:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Role and permission changes are explicitly forbidden to AI direct actions.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "office",
+          "screenId": "office.hub",
+          "actionId": "office.hub.safe_read",
+          "label": "Explain office role context",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "office",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.approval",
+          "label": "Submit report for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "office",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.draft",
+          "label": "Draft report from visible evidence",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/documents/summarize-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "office",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.forbidden",
+          "label": "Publish report directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:reports.modal:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Report publication requires explicit human approval.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "office",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.safe_read",
+          "label": "Explain report modal status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/documents/knowledge",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 2,
+      "draftOnlyActions": 2,
+      "approvalRequiredActions": 2,
+      "forbiddenActions": 2
+    },
+    {
+      "roleId": "documents",
+      "actions": [
+        {
+          "roleId": "documents",
+          "screenId": "documents.main",
+          "actionId": "documents.main.approval",
+          "label": "Submit document change for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "documents",
+          "screenId": "documents.main",
+          "actionId": "documents.main.draft",
+          "label": "Draft document note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/documents/search",
+            "POST /agent/documents/summarize-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "documents",
+          "screenId": "documents.main",
+          "actionId": "documents.main.forbidden",
+          "label": "Send final document directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:documents.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "AI can draft and summarize documents but cannot send final documents directly.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "documents",
+          "screenId": "documents.main",
+          "actionId": "documents.main.safe_read",
+          "label": "Summarize document evidence",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/documents/knowledge",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/documents/:documentId/context"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "documents",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.approval",
+          "label": "Submit report for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "documents",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.draft",
+          "label": "Draft report from visible evidence",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/documents/summarize-preview",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "documents",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.forbidden",
+          "label": "Publish report directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:reports.modal:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Report publication requires explicit human approval.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "documents",
+          "screenId": "reports.modal",
+          "actionId": "reports.modal.safe_read",
+          "label": "Explain report modal status",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/documents/knowledge",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 2,
+      "draftOnlyActions": 2,
+      "approvalRequiredActions": 2,
+      "forbiddenActions": 2
+    },
+    {
+      "roleId": "chat",
+      "actions": [
+        {
+          "roleId": "chat",
+          "screenId": "chat.main",
+          "actionId": "chat.main.approval",
+          "label": "Submit chat evidence for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "chat",
+          "screenId": "chat.main",
+          "actionId": "chat.main.draft",
+          "label": "Draft chat reply",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "chat",
+          "screenId": "chat.main",
+          "actionId": "chat.main.forbidden",
+          "label": "Send chat message directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:chat.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "AI may draft chat content, but sending is a user action.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "chat",
+          "screenId": "chat.main",
+          "actionId": "chat.main.safe_read",
+          "label": "Explain chat context",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/chat/thread-context/:threadId"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 1,
+      "draftOnlyActions": 1,
+      "approvalRequiredActions": 1,
+      "forbiddenActions": 1
+    },
+    {
+      "roleId": "map",
+      "actions": [
+        {
+          "roleId": "map",
+          "screenId": "map.main",
+          "actionId": "map.main.approval",
+          "label": "Submit site context for approval",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "map",
+          "screenId": "map.main",
+          "actionId": "map.main.draft",
+          "label": "Draft site context note",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/field/draft-report",
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "map",
+          "screenId": "map.main",
+          "actionId": "map.main.forbidden",
+          "label": "Create real estate record directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:map.main:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Map AI cannot create map or real-estate records without approval and evidence.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "map",
+          "screenId": "map.main",
+          "actionId": "map.main.safe_read",
+          "label": "Explain map object context",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/map/object-context/:objectId"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 1,
+      "draftOnlyActions": 1,
+      "approvalRequiredActions": 1,
+      "forbiddenActions": 1
+    },
+    {
+      "roleId": "security",
+      "actions": [
+        {
+          "roleId": "security",
+          "screenId": "security.screen",
+          "actionId": "security.screen.approval",
+          "label": "Submit security change request",
+          "actionKind": "approval_required",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview"
+          ],
+          "documentedMissingRoutes": [
+            "POST /agent/security/submit-for-approval"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "security",
+          "screenId": "security.screen",
+          "actionId": "security.screen.draft",
+          "label": "Draft security review note",
+          "actionKind": "draft_only",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview"
+          ],
+          "documentedMissingRoutes": [
+            "POST /agent/security/draft-review"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "security",
+          "screenId": "security.screen",
+          "actionId": "security.screen.forbidden",
+          "label": "Enroll or unenroll factor directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:security.screen:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "security",
+          "screenId": "security.screen",
+          "actionId": "security.screen.safe_read",
+          "label": "Explain security screen status",
+          "actionKind": "safe_read",
+          "routeDisposition": "documented_missing",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [
+            "GET /agent/security/context"
+          ],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 1,
+      "draftOnlyActions": 1,
+      "approvalRequiredActions": 1,
+      "forbiddenActions": 1
+    },
+    {
+      "roleId": "runtime_admin",
+      "actions": [
+        {
+          "roleId": "runtime_admin",
+          "screenId": "screen.runtime",
+          "actionId": "screen.runtime.approval",
+          "label": "Prepare approval-gated runtime action",
+          "actionKind": "approval_required",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/action/submit-for-approval",
+            "POST /agent/screen-assistant/:screenId/submit-for-approval-preview",
+            "POST /agent/screen-runtime/:screenId/action-plan"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": true
+        },
+        {
+          "roleId": "runtime_admin",
+          "screenId": "screen.runtime",
+          "actionId": "screen.runtime.draft",
+          "label": "Draft screen runtime action plan",
+          "actionKind": "draft_only",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "POST /agent/screen-actions/:screenId/action-plan",
+            "POST /agent/screen-assistant/:screenId/draft-preview",
+            "POST /agent/screen-runtime/:screenId/intent-preview"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        },
+        {
+          "roleId": "runtime_admin",
+          "screenId": "screen.runtime",
+          "actionId": "screen.runtime.forbidden",
+          "label": "Write screen state directly",
+          "actionKind": "forbidden",
+          "routeDisposition": "forbidden_no_route_allowed",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [
+            "NO_ROUTE_ALLOWED:screen.runtime:direct-final-mutation"
+          ],
+          "userFacingBlockedReason": "Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.",
+          "approvalRequired": false
+        },
+        {
+          "roleId": "runtime_admin",
+          "screenId": "screen.runtime",
+          "actionId": "screen.runtime.safe_read",
+          "label": "Read screen runtime context",
+          "actionKind": "safe_read",
+          "routeDisposition": "covered",
+          "mountedRoutes": [
+            "GET /agent/app-graph/screen/:screenId",
+            "GET /agent/screen-actions/:screenId",
+            "GET /agent/screen-assistant/:screenId/context",
+            "GET /agent/screen-runtime/:screenId"
+          ],
+          "documentedMissingRoutes": [],
+          "forbiddenRouteSentinels": [],
+          "userFacingBlockedReason": null,
+          "approvalRequired": false
+        }
+      ],
+      "missingActionIds": [],
+      "safeReadActions": 1,
+      "draftOnlyActions": 1,
+      "approvalRequiredActions": 1,
+      "forbiddenActions": 1
+    }
+  ],
+  "issues": [],
+  "provider_called": false,
+  "db_writes_used": false,
+  "fake_green_claimed": false
+}

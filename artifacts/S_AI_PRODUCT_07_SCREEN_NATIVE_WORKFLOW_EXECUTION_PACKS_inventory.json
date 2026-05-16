@@ -1,0 +1,1144 @@
+{
+  "wave": "S_AI_PRODUCT_07_SCREEN_NATIVE_WORKFLOW_EXECUTION_PACKS",
+  "screens": [
+    {
+      "screenId": "director.dashboard",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "director.dashboard.safe_read",
+          "label": "Explain cross-domain executive status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "director.dashboard.draft",
+          "label": "Draft executive control summary",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/finance/draft-summary"
+        },
+        {
+          "id": "director.dashboard.approval",
+          "label": "Submit director decision pack for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "director.dashboard.forbidden",
+          "label": "Execute final cross-domain mutation directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:director.dashboard:direct-final-mutation",
+          "forbiddenReason": "Director AI can prepare and submit evidence, but final mutation must go through the approval ledger."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "director.finance",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "director.finance.safe_read",
+          "label": "Explain finance dashboard deltas",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "director.finance.draft",
+          "label": "Draft finance summary with evidence",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/finance/draft-summary"
+        },
+        {
+          "id": "director.finance.approval",
+          "label": "Submit finance decision for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "director.finance.forbidden",
+          "label": "Post finance transaction directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:director.finance:direct-final-mutation",
+          "forbiddenReason": "Finance posting is a final accounting mutation and cannot be performed by AI directly."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "director.reports",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "director.reports.safe_read",
+          "label": "Summarize director reports status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "director.reports.draft",
+          "label": "Draft director report narrative",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/documents/summarize-preview"
+        },
+        {
+          "id": "director.reports.approval",
+          "label": "Submit report package for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "director.reports.forbidden",
+          "label": "Publish final report directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:director.reports:direct-final-mutation",
+          "forbiddenReason": "AI can draft reports, but publication is a final action requiring human approval."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "ai.command_center",
+      "domain": "command_center",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "ai.command_center.safe_read",
+          "label": "Explain current command center task",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/action/:actionId/status"
+        },
+        {
+          "id": "ai.command_center.draft",
+          "label": "Draft a command center action plan",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "ai.command_center.approval",
+          "label": "Submit command center action for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "ai.command_center.forbidden",
+          "label": "Execute command center action without ledger",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:ai.command_center:direct-final-mutation",
+          "forbiddenReason": "Command Center execution must use persisted approval ledger state."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "approval.inbox",
+      "domain": "approval",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "approval.inbox.safe_read",
+          "label": "Explain approval inbox evidence",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "approval.inbox.draft",
+          "label": "Draft revision note for approver",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/approval-inbox/:actionId/edit-preview"
+        },
+        {
+          "id": "approval.inbox.approval",
+          "label": "Approve or reject through ledger RPC",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "approval.inbox.forbidden",
+          "label": "Execute preview without approval ledger",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:approval.inbox:direct-final-mutation",
+          "forbiddenReason": "Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "buyer.main",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "buyer.main.safe_read",
+          "label": "Explain buyer workload",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "buyer.main.draft",
+          "label": "Draft procurement request",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/draft-request/preview"
+        },
+        {
+          "id": "buyer.main.approval",
+          "label": "Submit buyer request for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "buyer.main.forbidden",
+          "label": "Confirm supplier directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:buyer.main:direct-final-mutation",
+          "forbiddenReason": "Supplier confirmation requires approval-backed decision and cannot be direct AI output."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "buyer.requests",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "buyer.requests.safe_read",
+          "label": "Compare request options",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "buyer.requests.draft",
+          "label": "Draft buyer proposal rationale",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/decision-card"
+        },
+        {
+          "id": "buyer.requests.approval",
+          "label": "Submit buyer proposal pack",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "buyer.requests.forbidden",
+          "label": "Create purchase order directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:buyer.requests:direct-final-mutation",
+          "forbiddenReason": "Purchase order creation is a final procurement mutation and requires the approved execution path."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "buyer.request.detail.safe_read",
+          "label": "Explain request detail evidence",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "buyer.request.detail.draft",
+          "label": "Draft request decision card",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/decision-card"
+        },
+        {
+          "id": "buyer.request.detail.approval",
+          "label": "Submit detailed supplier decision",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "buyer.request.detail.forbidden",
+          "label": "Finalize supplier from detail view",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:buyer.request.detail:direct-final-mutation",
+          "forbiddenReason": "AI recommendation must remain evidence-backed and approval-gated before final supplier selection."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "procurement.copilot",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "procurement.copilot.safe_read",
+          "label": "Explain procurement copilot plan",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "procurement.copilot.draft",
+          "label": "Draft copilot request preview",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/copilot/draft-preview"
+        },
+        {
+          "id": "procurement.copilot.approval",
+          "label": "Prepare copilot submit-for-approval preview",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "procurement.copilot.forbidden",
+          "label": "Create order from copilot",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:procurement.copilot:direct-final-mutation",
+          "forbiddenReason": "Copilot output is evidence and draft only until approval ledger execution."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "market.home",
+      "domain": "market",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "market.home.safe_read",
+          "label": "Compare marketplace supplier options",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/market/listing-context/:listingId"
+        },
+        {
+          "id": "market.home.draft",
+          "label": "Draft request from marketplace item",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/draft-request-preview"
+        },
+        {
+          "id": "market.home.approval",
+          "label": "Submit marketplace-backed request",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "market.home.forbidden",
+          "label": "Create external supplier without citation",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:market.home:direct-final-mutation",
+          "forbiddenReason": "External supplier creation requires citation/evidence and cannot be invented by AI."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "supplier.showcase",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "supplier.showcase.safe_read",
+          "label": "Summarize supplier showcase evidence",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/supplier-showcase/:supplierId/context"
+        },
+        {
+          "id": "supplier.showcase.draft",
+          "label": "Draft supplier comparison note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/procurement/external-supplier-preview"
+        },
+        {
+          "id": "supplier.showcase.approval",
+          "label": "Submit supplier recommendation",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "supplier.showcase.forbidden",
+          "label": "Confirm supplier directly from showcase",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:supplier.showcase:direct-final-mutation",
+          "forbiddenReason": "Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "warehouse.main",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "warehouse.main.safe_read",
+          "label": "Explain warehouse stock status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "warehouse.main.draft",
+          "label": "Draft warehouse restock action",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "warehouse.main.approval",
+          "label": "Submit warehouse action for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "warehouse.main.forbidden",
+          "label": "Mutate stock balance directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:warehouse.main:direct-final-mutation",
+          "forbiddenReason": "Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "warehouse.incoming.safe_read",
+          "label": "Explain incoming receipt status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "warehouse.incoming.draft",
+          "label": "Draft incoming receipt note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "warehouse.incoming.approval",
+          "label": "Submit incoming exception for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "warehouse.incoming.forbidden",
+          "label": "Receive incoming stock directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:warehouse.incoming:direct-final-mutation",
+          "forbiddenReason": "Receiving stock is a warehouse mutation and cannot be executed by AI screen audit."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "warehouse.issue",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "warehouse.issue.safe_read",
+          "label": "Explain warehouse issue queue",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "warehouse.issue.draft",
+          "label": "Draft issue request rationale",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "warehouse.issue.approval",
+          "label": "Submit warehouse issue request",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "warehouse.issue.forbidden",
+          "label": "Issue stock directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:warehouse.issue:direct-final-mutation",
+          "forbiddenReason": "Warehouse issue flows are mutating RPCs and cannot be executed by AI directly."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "accountant.main",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "accountant.main.safe_read",
+          "label": "Explain accountant workload",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "accountant.main.draft",
+          "label": "Draft finance document note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/finance/draft-summary"
+        },
+        {
+          "id": "accountant.main.approval",
+          "label": "Submit finance document for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "accountant.main.forbidden",
+          "label": "Create payment directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:accountant.main:direct-final-mutation",
+          "forbiddenReason": "Payments require human-controlled approval and finance posting boundaries."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "accountant.payment",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "accountant.payment.safe_read",
+          "label": "Explain payment form status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "accountant.payment.draft",
+          "label": "Draft payment approval rationale",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/finance/draft-summary"
+        },
+        {
+          "id": "accountant.payment.approval",
+          "label": "Submit payment for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/finance/payment/submit-for-approval"
+        },
+        {
+          "id": "accountant.payment.forbidden",
+          "label": "Apply payment directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:accountant.payment:direct-final-mutation",
+          "forbiddenReason": "Direct payment application is forbidden for AI and must remain a human/approval flow."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "accountant.history",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "accountant.history.safe_read",
+          "label": "Summarize accountant history",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/action/:actionId/status"
+        },
+        {
+          "id": "accountant.history.draft",
+          "label": "Draft accounting history note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/finance/draft-summary"
+        },
+        {
+          "id": "accountant.history.approval",
+          "label": "Submit accounting correction request",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "accountant.history.forbidden",
+          "label": "Rewrite payment history directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:accountant.history:direct-final-mutation",
+          "forbiddenReason": "Accounting history is immutable evidence; AI cannot alter ledger history."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "foreman.main",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "foreman.main.safe_read",
+          "label": "Explain foreman object status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "foreman.main.draft",
+          "label": "Draft material request",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/field/draft-act"
+        },
+        {
+          "id": "foreman.main.approval",
+          "label": "Submit foreman request for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "foreman.main.forbidden",
+          "label": "Approve own field request",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:foreman.main:direct-final-mutation",
+          "forbiddenReason": "Foreman can draft and submit, but cannot self-approve or execute."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "foreman.ai.quick_modal.safe_read",
+          "label": "Explain quick modal suggestion",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "foreman.ai.quick_modal.draft",
+          "label": "Draft quick material request",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/field/draft-report"
+        },
+        {
+          "id": "foreman.ai.quick_modal.approval",
+          "label": "Submit quick request for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "foreman.ai.quick_modal.forbidden",
+          "label": "Execute quick modal request directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:foreman.ai.quick_modal:direct-final-mutation",
+          "forbiddenReason": "Quick modal AI cannot bypass approval ledger or write procurement records."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "foreman.subcontract.safe_read",
+          "label": "Explain subcontract progress",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "foreman.subcontract.draft",
+          "label": "Draft subcontract act",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/field/draft-act"
+        },
+        {
+          "id": "foreman.subcontract.approval",
+          "label": "Submit subcontract progress",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "foreman.subcontract.forbidden",
+          "label": "Sign subcontract directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:foreman.subcontract:direct-final-mutation",
+          "forbiddenReason": "Contract signing is a forbidden final action for AI."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "contractor.main",
+      "domain": "projects",
+      "roleScope": [
+        "contractor",
+        "control",
+        "director"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "contractor.main.safe_read",
+          "label": "Explain contractor own-work status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "contractor.main.draft",
+          "label": "Draft contractor progress report",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/field/draft-act"
+        },
+        {
+          "id": "contractor.main.approval",
+          "label": "Submit contractor progress for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "contractor.main.forbidden",
+          "label": "Read cross-role finance data",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:contractor.main:direct-final-mutation",
+          "forbiddenReason": "Contractor scope is own-records only and cannot expose finance or other contractor rows."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "reports.modal",
+      "domain": "reports",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "reports.modal.safe_read",
+          "label": "Explain report modal status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "reports.modal.draft",
+          "label": "Draft report from visible evidence",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/documents/summarize-preview"
+        },
+        {
+          "id": "reports.modal.approval",
+          "label": "Submit report for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "reports.modal.forbidden",
+          "label": "Publish report directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:reports.modal:direct-final-mutation",
+          "forbiddenReason": "Report publication requires explicit human approval."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "documents.main",
+      "domain": "documents",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "documents.main.safe_read",
+          "label": "Summarize document evidence",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context"
+        },
+        {
+          "id": "documents.main.draft",
+          "label": "Draft document note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/documents/search"
+        },
+        {
+          "id": "documents.main.approval",
+          "label": "Submit document change for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "documents.main.forbidden",
+          "label": "Send final document directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:documents.main:direct-final-mutation",
+          "forbiddenReason": "AI can draft and summarize documents but cannot send final documents directly."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "chat.main",
+      "domain": "chat",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "chat.main.safe_read",
+          "label": "Explain chat context",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/chat/thread-context/:threadId"
+        },
+        {
+          "id": "chat.main.draft",
+          "label": "Draft chat reply",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "chat.main.approval",
+          "label": "Submit chat evidence for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "chat.main.forbidden",
+          "label": "Send chat message directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:chat.main:direct-final-mutation",
+          "forbiddenReason": "AI may draft chat content, but sending is a user action."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "map.main",
+      "domain": "logistics",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "map.main.safe_read",
+          "label": "Explain map object context",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/map/object-context/:objectId"
+        },
+        {
+          "id": "map.main.draft",
+          "label": "Draft site context note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/field/draft-report"
+        },
+        {
+          "id": "map.main.approval",
+          "label": "Submit site context for approval",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "map.main.forbidden",
+          "label": "Create real estate record directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:map.main:direct-final-mutation",
+          "forbiddenReason": "Map AI cannot create map or real-estate records without approval and evidence."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "office.hub",
+      "domain": "office",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "office"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "office.hub.safe_read",
+          "label": "Explain office role context",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "office.hub.draft",
+          "label": "Draft office collaboration note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "office.hub.approval",
+          "label": "Submit office access change",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/office/access-change/submit-for-approval"
+        },
+        {
+          "id": "office.hub.forbidden",
+          "label": "Change user role directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:office.hub:direct-final-mutation",
+          "forbiddenReason": "Role and permission changes are explicitly forbidden to AI direct actions."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "security.screen",
+      "domain": "security",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "security"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "security.screen.safe_read",
+          "label": "Explain security screen status",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/security/context"
+        },
+        {
+          "id": "security.screen.draft",
+          "label": "Draft security review note",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/draft-review"
+        },
+        {
+          "id": "security.screen.approval",
+          "label": "Submit security change request",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval",
+          "exactBlocker": "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/submit-for-approval"
+        },
+        {
+          "id": "security.screen.forbidden",
+          "label": "Enroll or unenroll factor directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:security.screen:direct-final-mutation",
+          "forbiddenReason": "Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution."
+        }
+      ],
+      "qaExamples": 5
+    },
+    {
+      "screenId": "screen.runtime",
+      "domain": "runtime",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "developer",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "readyBlocks": 4,
+      "actions": [
+        {
+          "id": "screen.runtime.safe_read",
+          "label": "Read screen runtime context",
+          "actionKind": "safe_read",
+          "routeOrHandler": "GET /agent/app-graph/screen/:screenId"
+        },
+        {
+          "id": "screen.runtime.draft",
+          "label": "Draft screen runtime action plan",
+          "actionKind": "draft_only",
+          "routeOrHandler": "POST /agent/screen-actions/:screenId/action-plan"
+        },
+        {
+          "id": "screen.runtime.approval",
+          "label": "Prepare approval-gated runtime action",
+          "actionKind": "approval_required",
+          "routeOrHandler": "POST /agent/action/submit-for-approval",
+          "approvalRoute": "POST /agent/action/submit-for-approval"
+        },
+        {
+          "id": "screen.runtime.forbidden",
+          "label": "Write screen state directly",
+          "actionKind": "forbidden",
+          "exactBlocker": "NO_ROUTE_ALLOWED:screen.runtime:direct-final-mutation",
+          "forbiddenReason": "Screen runtime is read-only and plan-only; no UI or DB mutation is allowed."
+        }
+      ],
+      "qaExamples": 5
+    }
+  ],
+  "policyIssues": [],
+  "buttonIssues": []
+}

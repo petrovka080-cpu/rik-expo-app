@@ -1,0 +1,29 @@
+{
+  "wave": "S_AI_PRODUCT_07_SCREEN_NATIVE_WORKFLOW_EXECUTION_PACKS",
+  "final_status": "GREEN_AI_SCREEN_WORKFLOW_EXECUTION_WEB_READY",
+  "checks": {
+    "web route source exists": true,
+    "debug panels hidden": true,
+    "chat full-height source": true,
+    "accountant pack visible and buttons clickable": true,
+    "buyer pack visible and buttons clickable": true,
+    "warehouse pack visible and buttons clickable": true,
+    "director pack visible and buttons clickable": true,
+    "foreman pack visible and buttons clickable": true,
+    "documents pack visible and buttons clickable": true,
+    "chat pack visible and action extraction visible": true,
+    "forbidden actions show user-facing reason": true,
+    "approval-required actions route to approval ledger": true,
+    "no direct dangerous mutation": true,
+    "AI answers role/screen questions from context": true,
+    "no provider/key/module-unavailable copy": true,
+    "workflow UI mounted": true
+  },
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "fakeGreenClaimed": false
+}

@@ -1,0 +1,823 @@
+{
+  "wave": "S_AI_PRODUCT_06_ROLE_EMPATHY_MAGIC_LOGIC_BLUEPRINT",
+  "requiredRoles": [
+    "buyer",
+    "accountant",
+    "warehouse",
+    "foreman",
+    "contractor",
+    "director",
+    "office",
+    "documents",
+    "chat",
+    "map",
+    "security",
+    "runtime_admin"
+  ],
+  "roles": [
+    {
+      "roleId": "buyer",
+      "roleLabel": "Buyer / procurement",
+      "screens": [
+        "buyer.main",
+        "buyer.requests",
+        "buyer.request.detail",
+        "procurement.copilot",
+        "market.home",
+        "supplier.showcase"
+      ],
+      "preparedWork": [
+        {
+          "id": "buyer.priority_queue",
+          "title": "Prioritized procurement queue",
+          "outputType": "summary",
+          "dataNeeded": [
+            "request status",
+            "director approval",
+            "deadline",
+            "items"
+          ]
+        },
+        {
+          "id": "buyer.ready_options",
+          "title": "Internal-first buy options",
+          "outputType": "ready_options",
+          "dataNeeded": [
+            "request items",
+            "internal suppliers",
+            "supplier history"
+          ]
+        },
+        {
+          "id": "buyer.supplier_request",
+          "title": "Supplier request draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "missing prices",
+            "delivery window",
+            "supplier contact evidence"
+          ]
+        },
+        {
+          "id": "buyer.approval_candidate",
+          "title": "Supplier choice approval candidate",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "comparison",
+            "risks",
+            "evidence refs"
+          ]
+        }
+      ],
+      "buttonActions": 24,
+      "questions": 5
+    },
+    {
+      "roleId": "accountant",
+      "roleLabel": "Accountant / finance",
+      "screens": [
+        "accountant.main",
+        "accountant.payment",
+        "accountant.history"
+      ],
+      "preparedWork": [
+        {
+          "id": "accountant.today",
+          "title": "Today finance report",
+          "outputType": "summary",
+          "dataNeeded": [
+            "payment inbox",
+            "amounts",
+            "currency"
+          ]
+        },
+        {
+          "id": "accountant.critical",
+          "title": "Critical payment list",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "payment eligibility",
+            "documents",
+            "status",
+            "amount"
+          ]
+        },
+        {
+          "id": "accountant.rationale",
+          "title": "Director rationale draft",
+          "outputType": "financial_rationale",
+          "dataNeeded": [
+            "request",
+            "supplier",
+            "evidence",
+            "risk"
+          ]
+        },
+        {
+          "id": "accountant.approval",
+          "title": "Approval candidate",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "ledger status",
+            "payment evidence"
+          ]
+        }
+      ],
+      "buttonActions": 12,
+      "questions": 5
+    },
+    {
+      "roleId": "warehouse",
+      "roleLabel": "Warehouse",
+      "screens": [
+        "warehouse.main",
+        "warehouse.incoming",
+        "warehouse.issue"
+      ],
+      "preparedWork": [
+        {
+          "id": "warehouse.stock_risk",
+          "title": "Stock risk summary",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "stock levels",
+            "requests",
+            "reserved items"
+          ]
+        },
+        {
+          "id": "warehouse.incoming_check",
+          "title": "Incoming discrepancy checklist",
+          "outputType": "missing_data_checklist",
+          "dataNeeded": [
+            "incoming rows",
+            "request items",
+            "documents"
+          ]
+        },
+        {
+          "id": "warehouse.issue_draft",
+          "title": "Issue readiness draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "requested items",
+            "available stock",
+            "approval policy"
+          ]
+        },
+        {
+          "id": "warehouse.approval",
+          "title": "Disputed movement approval candidate",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "discrepancy",
+            "evidence",
+            "risk"
+          ]
+        }
+      ],
+      "buttonActions": 12,
+      "questions": 5
+    },
+    {
+      "roleId": "foreman",
+      "roleLabel": "Foreman",
+      "screens": [
+        "foreman.main",
+        "foreman.ai.quick_modal",
+        "foreman.subcontract"
+      ],
+      "preparedWork": [
+        {
+          "id": "foreman.closeout",
+          "title": "Today closeout plan",
+          "outputType": "summary",
+          "dataNeeded": [
+            "work status",
+            "evidence",
+            "acts"
+          ]
+        },
+        {
+          "id": "foreman.evidence",
+          "title": "Missing evidence checklist",
+          "outputType": "missing_data_checklist",
+          "dataNeeded": [
+            "photos",
+            "documents",
+            "signatures"
+          ]
+        },
+        {
+          "id": "foreman.act",
+          "title": "Draft act/report/message",
+          "outputType": "draft",
+          "dataNeeded": [
+            "work item",
+            "contractor",
+            "evidence"
+          ]
+        },
+        {
+          "id": "foreman.checklist",
+          "title": "Construction and safety checklist",
+          "outputType": "construction_guidance",
+          "dataNeeded": [
+            "knowledge source",
+            "work type",
+            "site context"
+          ]
+        }
+      ],
+      "buttonActions": 12,
+      "questions": 5
+    },
+    {
+      "roleId": "contractor",
+      "roleLabel": "Contractor",
+      "screens": [
+        "contractor.main"
+      ],
+      "preparedWork": [
+        {
+          "id": "contractor.todo",
+          "title": "What to submit today",
+          "outputType": "summary",
+          "dataNeeded": [
+            "own work",
+            "remarks",
+            "documents"
+          ]
+        },
+        {
+          "id": "contractor.blockers",
+          "title": "Acceptance blocker list",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "remarks",
+            "acceptance status"
+          ]
+        },
+        {
+          "id": "contractor.evidence",
+          "title": "Missing evidence list",
+          "outputType": "missing_data_checklist",
+          "dataNeeded": [
+            "photos",
+            "documents",
+            "act evidence"
+          ]
+        },
+        {
+          "id": "contractor.reply",
+          "title": "Foreman reply draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "remarks",
+            "work status"
+          ]
+        }
+      ],
+      "buttonActions": 4,
+      "questions": 5
+    },
+    {
+      "roleId": "director",
+      "roleLabel": "Director",
+      "screens": [
+        "director.dashboard",
+        "director.finance",
+        "director.reports",
+        "ai.command_center",
+        "approval.inbox"
+      ],
+      "preparedWork": [
+        {
+          "id": "director.queue",
+          "title": "Today decision queue",
+          "outputType": "decision_queue",
+          "dataNeeded": [
+            "approvals",
+            "risks",
+            "blockers"
+          ]
+        },
+        {
+          "id": "director.cross_domain",
+          "title": "Cross-domain risk summary",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "procurement",
+            "finance",
+            "warehouse",
+            "foreman"
+          ]
+        },
+        {
+          "id": "director.approval",
+          "title": "Approval explanation",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "evidence",
+            "risk",
+            "after-approval action"
+          ]
+        },
+        {
+          "id": "director.report",
+          "title": "Executive summary draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "period data",
+            "documents",
+            "risks"
+          ]
+        }
+      ],
+      "buttonActions": 20,
+      "questions": 5
+    },
+    {
+      "roleId": "office",
+      "roleLabel": "Office / management",
+      "screens": [
+        "office.hub",
+        "reports.modal"
+      ],
+      "preparedWork": [
+        {
+          "id": "office.queue",
+          "title": "Office daily queue",
+          "outputType": "summary",
+          "dataNeeded": [
+            "documents",
+            "requests",
+            "reports",
+            "tasks"
+          ]
+        },
+        {
+          "id": "office.documents",
+          "title": "Document collection plan",
+          "outputType": "missing_data_checklist",
+          "dataNeeded": [
+            "document metadata",
+            "linked objects"
+          ]
+        },
+        {
+          "id": "office.reminder",
+          "title": "Reminder draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "owner",
+            "blocker",
+            "evidence"
+          ]
+        },
+        {
+          "id": "office.approval",
+          "title": "Approval-ready items",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "approval policy",
+            "evidence"
+          ]
+        }
+      ],
+      "buttonActions": 8,
+      "questions": 5
+    },
+    {
+      "roleId": "documents",
+      "roleLabel": "Documents user",
+      "screens": [
+        "documents.main",
+        "reports.modal"
+      ],
+      "preparedWork": [
+        {
+          "id": "documents.summary",
+          "title": "Document summary",
+          "outputType": "summary",
+          "dataNeeded": [
+            "document metadata",
+            "visible text",
+            "linked objects"
+          ]
+        },
+        {
+          "id": "documents.links",
+          "title": "Linked object map",
+          "outputType": "ready_options",
+          "dataNeeded": [
+            "request",
+            "payment",
+            "act",
+            "supplier"
+          ]
+        },
+        {
+          "id": "documents.risk",
+          "title": "Risk and missing evidence",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "terms",
+            "evidence",
+            "approval policy"
+          ]
+        },
+        {
+          "id": "documents.comment",
+          "title": "Comment draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "document summary",
+            "risk"
+          ]
+        }
+      ],
+      "buttonActions": 8,
+      "questions": 5
+    },
+    {
+      "roleId": "chat",
+      "roleLabel": "Chat user",
+      "screens": [
+        "chat.main"
+      ],
+      "preparedWork": [
+        {
+          "id": "chat.summary",
+          "title": "Conversation summary",
+          "outputType": "summary",
+          "dataNeeded": [
+            "thread messages",
+            "linked records"
+          ]
+        },
+        {
+          "id": "chat.tasks",
+          "title": "Action items by role",
+          "outputType": "decision_queue",
+          "dataNeeded": [
+            "messages",
+            "roles",
+            "screen links"
+          ]
+        },
+        {
+          "id": "chat.risks",
+          "title": "Discussion risk list",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "promises",
+            "missing evidence"
+          ]
+        },
+        {
+          "id": "chat.approval",
+          "title": "Approval candidates",
+          "outputType": "approval_candidate",
+          "dataNeeded": [
+            "decision",
+            "evidence",
+            "policy"
+          ]
+        }
+      ],
+      "buttonActions": 4,
+      "questions": 5
+    },
+    {
+      "roleId": "map",
+      "roleLabel": "Map / logistics user",
+      "screens": [
+        "map.main"
+      ],
+      "preparedWork": [
+        {
+          "id": "map.nearby",
+          "title": "Nearby supplier insight",
+          "outputType": "logistics_insight",
+          "dataNeeded": [
+            "supplier locations",
+            "object location"
+          ]
+        },
+        {
+          "id": "map.route_risk",
+          "title": "Route risk summary",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "route",
+            "deadline",
+            "delivery notes"
+          ]
+        },
+        {
+          "id": "map.comparison",
+          "title": "Map-based supplier comparison",
+          "outputType": "ready_options",
+          "dataNeeded": [
+            "supplier evidence",
+            "object proximity"
+          ]
+        },
+        {
+          "id": "map.delivery_request",
+          "title": "Delivery request draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "missing delivery facts"
+          ]
+        }
+      ],
+      "buttonActions": 4,
+      "questions": 5
+    },
+    {
+      "roleId": "security",
+      "roleLabel": "Security / admin",
+      "screens": [
+        "security.screen"
+      ],
+      "preparedWork": [
+        {
+          "id": "security.roles",
+          "title": "Risky roles",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "role matrix",
+            "permissions",
+            "policy"
+          ]
+        },
+        {
+          "id": "security.forbidden",
+          "title": "Forbidden action attempts",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "action audit",
+            "screen policy"
+          ]
+        },
+        {
+          "id": "security.approvals",
+          "title": "Suspicious approvals",
+          "outputType": "decision_queue",
+          "dataNeeded": [
+            "ledger",
+            "approval history"
+          ]
+        },
+        {
+          "id": "security.report",
+          "title": "Security report draft",
+          "outputType": "draft",
+          "dataNeeded": [
+            "risk roles",
+            "attempts",
+            "policy gaps"
+          ]
+        }
+      ],
+      "buttonActions": 4,
+      "questions": 5
+    },
+    {
+      "roleId": "runtime_admin",
+      "roleLabel": "Runtime / dev admin",
+      "screens": [
+        "screen.runtime"
+      ],
+      "preparedWork": [
+        {
+          "id": "runtime.health",
+          "title": "Runtime health summary",
+          "outputType": "summary",
+          "dataNeeded": [
+            "runtime registry",
+            "route binding"
+          ]
+        },
+        {
+          "id": "runtime.blocker",
+          "title": "Exact blocker",
+          "outputType": "risk_report",
+          "dataNeeded": [
+            "child runner",
+            "artifact",
+            "status"
+          ]
+        },
+        {
+          "id": "runtime.artifact",
+          "title": "Last proof artifact",
+          "outputType": "ready_options",
+          "dataNeeded": [
+            "artifact path",
+            "matrix status"
+          ]
+        },
+        {
+          "id": "runtime.repair",
+          "title": "Recommended repair steps",
+          "outputType": "draft",
+          "dataNeeded": [
+            "blocker",
+            "route",
+            "transport"
+          ]
+        }
+      ],
+      "buttonActions": 4,
+      "questions": 5
+    }
+  ],
+  "scores": [
+    {
+      "roleId": "accountant",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Today finance report: Accountant sees the financial workload immediately.",
+        "Critical payment list: The first check is obvious.",
+        "Director rationale draft: Director gets evidence and risk in one packet."
+      ]
+    },
+    {
+      "roleId": "buyer",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Prioritized procurement queue: Buyer opens the first request that can move work today.",
+        "Internal-first buy options: Approved requests never arrive empty.",
+        "Supplier request draft: Buyer sends a precise request instead of rewriting from scratch."
+      ]
+    },
+    {
+      "roleId": "chat",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Conversation summary: Team sees what was actually decided.",
+        "Action items by role: Each owner sees next step.",
+        "Discussion risk list: Risk stays visible."
+      ]
+    },
+    {
+      "roleId": "contractor",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "What to submit today: Contractor sees clear next work.",
+        "Acceptance blocker list: Fewer back-and-forth messages.",
+        "Missing evidence list: Contractor submits the right files."
+      ]
+    },
+    {
+      "roleId": "director",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Today decision queue: Director handles the right item first.",
+        "Cross-domain risk summary: Director sees why work is blocked.",
+        "Approval explanation: Approvals become auditable decisions."
+      ]
+    },
+    {
+      "roleId": "documents",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Document summary: Document is understandable in seconds.",
+        "Linked object map: Users jump to the right record.",
+        "Risk and missing evidence: No hidden document gap goes to approval."
+      ]
+    },
+    {
+      "roleId": "foreman",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Today closeout plan: Foreman sees the day plan immediately.",
+        "Missing evidence checklist: Rejected acts are reduced.",
+        "Draft act/report/message: Foreman saves writing time without losing control."
+      ]
+    },
+    {
+      "roleId": "map",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Nearby supplier insight: Buyer sees logistics context.",
+        "Route risk summary: Logistics risk enters procurement decision.",
+        "Map-based supplier comparison: No guessed ETA is presented as fact."
+      ]
+    },
+    {
+      "roleId": "office",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Office daily queue: Office starts with actionable work.",
+        "Document collection plan: Less context switching.",
+        "Reminder draft: Follow-up gets faster and clearer."
+      ]
+    },
+    {
+      "roleId": "runtime_admin",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Runtime health summary: Dev/admin sees the state first.",
+        "Exact blocker: Repair targets the cause.",
+        "Last proof artifact: Debug starts with evidence."
+      ]
+    },
+    {
+      "roleId": "security",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Risky roles: Admin sees access risk quickly.",
+        "Forbidden action attempts: Security reviews real boundary pressure.",
+        "Suspicious approvals: Approval abuse is visible."
+      ]
+    },
+    {
+      "roleId": "warehouse",
+      "totalScore": 100,
+      "roleEmpathyScore": 15,
+      "preparedWorkScore": 20,
+      "screenCoverageScore": 15,
+      "buttonCoverageScore": 15,
+      "qaScore": 15,
+      "safetyScore": 20,
+      "topOpportunities": [
+        "Stock risk summary: Warehouse knows what not to promise.",
+        "Incoming discrepancy checklist: Receiving stays evidence-based.",
+        "Issue readiness draft: The user gets a safe checklist before final issue."
+      ]
+    }
+  ],
+  "safetyIssues": [],
+  "buttonIssues": [],
+  "qaIssues": []
+}

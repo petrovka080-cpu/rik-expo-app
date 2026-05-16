@@ -41,6 +41,7 @@ import {
 } from "./procurement/aiProcurementRequestOptionHydrator";
 import { getAiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantEngine";
 import { describeAiScreenNativeAssistantPack, getAiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantEngine";
+import { describeAiScreenWorkflowPack, getAiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowEngine";
 import { getAiScreenReadyProposals } from "./screenProposals/aiScreenReadyProposalEngine";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -192,9 +193,10 @@ export default function AIAssistantScreen() {
     () => describeAiScreenNativeAssistantPack(screenNativeAssistantPack),
     [screenNativeAssistantPack],
   );
+  const screenWorkflowPack = useMemo(() => getAiScreenWorkflowPack({ role, context: assistantContext, screenId: firstParam(params.screenId) || resolvedUserContext.screenId, searchParams: params, scopedFactsSummary: scopedFacts?.summary ?? null }), [assistantContext, params, resolvedUserContext.screenId, role, scopedFacts?.summary]);
   const assistantFactsSummary = useMemo(
-    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, screenNativeAssistantSummary].filter(Boolean).join("\n\n") || null,
-    [readyBuyFactsSummary, screenNativeAssistantSummary, scopedFacts?.summary],
+    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, screenNativeAssistantSummary, describeAiScreenWorkflowPack(screenWorkflowPack)].filter(Boolean).join("\n\n") || null,
+    [readyBuyFactsSummary, screenNativeAssistantSummary, screenWorkflowPack, scopedFacts?.summary],
   );
   const assistantVoiceScreen = useMemo(
     () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
@@ -404,6 +406,7 @@ export default function AIAssistantScreen() {
             resolvedUserContext={resolvedUserContext}
             readyProposals={readyProposals}
             screenNativeAssistantPack={screenNativeAssistantPack}
+            screenWorkflowPack={screenWorkflowPack}
             roleScreenAssistantPack={roleScreenAssistantPack}
             readyBuyBundle={readyBuyBundle}
             approvedSupplierBundle={approvedSupplierBundle}

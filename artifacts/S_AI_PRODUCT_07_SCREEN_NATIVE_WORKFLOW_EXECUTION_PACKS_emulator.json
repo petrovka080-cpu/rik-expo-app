@@ -1,0 +1,23 @@
+{
+  "wave": "S_AI_PRODUCT_07_SCREEN_NATIVE_WORKFLOW_EXECUTION_PACKS",
+  "final_status": "GREEN_AI_SCREEN_WORKFLOW_EXECUTION_MAESTRO_READY",
+  "checks": {
+    "AI block visible": true,
+    "main buttons targetable": true,
+    "debug hidden": true,
+    "chat answers from context": true,
+    "dangerous direct action not executable": true,
+    "buyer main targetable": true,
+    "accountant main targetable": true,
+    "warehouse main targetable": true,
+    "director dashboard targetable": true,
+    "approval inbox targetable": true
+  },
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "fakeGreenClaimed": false
+}

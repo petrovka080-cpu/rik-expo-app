@@ -1,0 +1,39 @@
+{
+  "wave": "S_AI_PRODUCT_06_ROLE_EMPATHY_MAGIC_LOGIC_BLUEPRINT",
+  "final_status": "GREEN_AI_ROLE_MAGIC_BLUEPRINT_WEB_TARGETABLE",
+  "requiredRoutes": [
+    "/ai?context=buyer",
+    "/ai?context=accountant",
+    "/ai?context=warehouse",
+    "/ai?context=foreman",
+    "/ai?context=director",
+    "/ai?context=reports"
+  ],
+  "requiredTestIds": [
+    "ai.screen_native_value_pack",
+    "ai.assistant.input",
+    "ai.assistant.send"
+  ],
+  "checks": {
+    "web route source exists": true,
+    "buyer role blueprint visible": true,
+    "accountant role blueprint visible": true,
+    "warehouse role blueprint visible": true,
+    "foreman role blueprint visible": true,
+    "director role blueprint visible": true,
+    "documents role blueprint visible": true,
+    "chat answers role-specific question": true,
+    "buttons visible or blocked exactly": true,
+    "debug panels hidden by default": true,
+    "no provider unavailable copy": true,
+    "no fake data": true,
+    "no direct dangerous mutation": true
+  },
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "fakeGreenClaimed": false
+}

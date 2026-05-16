@@ -1,0 +1,1494 @@
+{
+  "wave": "S_AI_PRODUCT_07_SCREEN_NATIVE_WORKFLOW_EXECUTION_PACKS",
+  "final_status": "GREEN_AI_SCREEN_WORKFLOW_QA_COVERAGE_READY",
+  "screens": [
+    {
+      "screenId": "director.dashboard",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "What blocks work?",
+          "answer": {
+            "topic": "director",
+            "answer": "Решения на сегодня: Критические решения, approvals, блокеры работ, деньги и закупки собраны в decision queue. Critical: Submit director decision pack for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain cross-domain executive status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit director decision pack for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute final cross-domain mutation directly. Reason: Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.. Next buttons: Explain cross-domain executive status (safe_read), Draft executive control summary (draft_only), Submit director decision pack for approval (approval_required), Execute final cross-domain mutation directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision today?",
+          "answer": {
+            "topic": "director",
+            "answer": "Решения на сегодня: Критические решения, approvals, блокеры работ, деньги и закупки собраны в decision queue. Critical: Submit director decision pack for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain cross-domain executive status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit director decision pack for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute final cross-domain mutation directly. Reason: Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.. Next buttons: Explain cross-domain executive status (safe_read), Draft executive control summary (draft_only), Submit director decision pack for approval (approval_required), Execute final cross-domain mutation directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision?",
+          "answer": {
+            "topic": "director",
+            "answer": "Решения на сегодня: Критические решения, approvals, блокеры работ, деньги и закупки собраны в decision queue. Critical: Submit director decision pack for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain cross-domain executive status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit director decision pack for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute final cross-domain mutation directly. Reason: Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.. Next buttons: Explain cross-domain executive status (safe_read), Draft executive control summary (draft_only), Submit director decision pack for approval (approval_required), Execute final cross-domain mutation directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approval is critical?",
+          "answer": {
+            "topic": "director",
+            "answer": "Решения на сегодня: Критические решения, approvals, блокеры работ, деньги и закупки собраны в decision queue. Critical: Submit director decision pack for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain cross-domain executive status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit director decision pack for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute final cross-domain mutation directly. Reason: Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.. Next buttons: Explain cross-domain executive status (safe_read), Draft executive control summary (draft_only), Submit director decision pack for approval (approval_required), Execute final cross-domain mutation directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are critical?",
+          "answer": {
+            "topic": "director",
+            "answer": "Решения на сегодня: Критические решения, approvals, блокеры работ, деньги и закупки собраны в decision queue. Critical: Submit director decision pack for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain cross-domain executive status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit director decision pack for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute final cross-domain mutation directly. Reason: Director AI can prepare and submit evidence, but final mutation must go through the approval ledger.. Next buttons: Explain cross-domain executive status (safe_read), Draft executive control summary (draft_only), Submit director decision pack for approval (approval_required), Execute final cross-domain mutation directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "director.finance",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "What blocks work?",
+          "answer": {
+            "topic": "director",
+            "answer": "Финансовые решения: Рискованные платежи, необычные суммы, missing evidence и approval queue собраны для директора. Critical: Submit finance decision for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain finance dashboard deltas. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance decision for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Post finance transaction directly. Reason: Finance posting is a final accounting mutation and cannot be performed by AI directly.. Next buttons: Explain finance dashboard deltas (safe_read), Draft finance summary with evidence (draft_only), Submit finance decision for approval (approval_required), Post finance transaction directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision today?",
+          "answer": {
+            "topic": "director",
+            "answer": "Финансовые решения: Рискованные платежи, необычные суммы, missing evidence и approval queue собраны для директора. Critical: Submit finance decision for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain finance dashboard deltas. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance decision for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Post finance transaction directly. Reason: Finance posting is a final accounting mutation and cannot be performed by AI directly.. Next buttons: Explain finance dashboard deltas (safe_read), Draft finance summary with evidence (draft_only), Submit finance decision for approval (approval_required), Post finance transaction directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where is missing evidence?",
+          "answer": {
+            "topic": "director",
+            "answer": "Финансовые решения: Рискованные платежи, необычные суммы, missing evidence и approval queue собраны для директора. Critical: Submit finance decision for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain finance dashboard deltas. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance decision for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Post finance transaction directly. Reason: Finance posting is a final accounting mutation and cannot be performed by AI directly.. Next buttons: Explain finance dashboard deltas (safe_read), Draft finance summary with evidence (draft_only), Submit finance decision for approval (approval_required), Post finance transaction directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are critical?",
+          "answer": {
+            "topic": "director",
+            "answer": "Финансовые решения: Рискованные платежи, необычные суммы, missing evidence и approval queue собраны для директора. Critical: Submit finance decision for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain finance dashboard deltas. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance decision for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Post finance transaction directly. Reason: Finance posting is a final accounting mutation and cannot be performed by AI directly.. Next buttons: Explain finance dashboard deltas (safe_read), Draft finance summary with evidence (draft_only), Submit finance decision for approval (approval_required), Post finance transaction directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which payments are risky?",
+          "answer": {
+            "topic": "director",
+            "answer": "Финансовые решения: Рискованные платежи, необычные суммы, missing evidence и approval queue собраны для директора. Critical: Submit finance decision for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain finance dashboard deltas. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance decision for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Post finance transaction directly. Reason: Finance posting is a final accounting mutation and cannot be performed by AI directly.. Next buttons: Explain finance dashboard deltas (safe_read), Draft finance summary with evidence (draft_only), Submit finance decision for approval (approval_required), Post finance transaction directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "What blocks work?",
+          "answer": {
+            "topic": "director",
+            "answer": "Executive summary: Отчёты сведены в executive summary: закупки, склад, финансы, документы, evidence и решения. Critical: Submit report package for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize director reports status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report package for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish final report directly. Reason: AI can draft reports, but publication is a final action requiring human approval.. Next buttons: Summarize director reports status (safe_read), Draft director report narrative (draft_only), Submit report package for approval (approval_required), Publish final report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What changed?",
+          "answer": {
+            "topic": "director",
+            "answer": "Executive summary: Отчёты сведены в executive summary: закупки, склад, финансы, документы, evidence и решения. Critical: Submit report package for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize director reports status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report package for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish final report directly. Reason: AI can draft reports, but publication is a final action requiring human approval.. Next buttons: Summarize director reports status (safe_read), Draft director report narrative (draft_only), Submit report package for approval (approval_required), Publish final report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is the main decision?",
+          "answer": {
+            "topic": "director",
+            "answer": "Executive summary: Отчёты сведены в executive summary: закупки, склад, финансы, документы, evidence и решения. Critical: Submit report package for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize director reports status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report package for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish final report directly. Reason: AI can draft reports, but publication is a final action requiring human approval.. Next buttons: Summarize director reports status (safe_read), Draft director report narrative (draft_only), Submit report package for approval (approval_required), Publish final report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision today?",
+          "answer": {
+            "topic": "director",
+            "answer": "Executive summary: Отчёты сведены в executive summary: закупки, склад, финансы, документы, evidence и решения. Critical: Submit report package for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize director reports status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report package for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish final report directly. Reason: AI can draft reports, but publication is a final action requiring human approval.. Next buttons: Summarize director reports status (safe_read), Draft director report narrative (draft_only), Submit report package for approval (approval_required), Publish final report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are critical?",
+          "answer": {
+            "topic": "director",
+            "answer": "Executive summary: Отчёты сведены в executive summary: закупки, склад, финансы, документы, evidence и решения. Critical: Submit report package for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize director reports status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report package for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish final report directly. Reason: AI can draft reports, but publication is a final action requiring human approval.. Next buttons: Summarize director reports status (safe_read), Draft director report narrative (draft_only), Submit report package for approval (approval_required), Publish final report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "What blocks work?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "AI Command Center: Следующие действия собраны как task queue: кому, почему, риск и approval status. Critical: Submit command center action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain current command center task. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit command center action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute command center action without ledger. Reason: Command Center execution must use persisted approval ledger state.. Next buttons: Explain current command center task (safe_read), Draft a command center action plan (draft_only), Submit command center action for approval (approval_required), Execute command center action without ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "AI Command Center: Следующие действия собраны как task queue: кому, почему, риск и approval status. Critical: Submit command center action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain current command center task. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit command center action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute command center action without ledger. Reason: Command Center execution must use persisted approval ledger state.. Next buttons: Explain current command center task (safe_read), Draft a command center action plan (draft_only), Submit command center action for approval (approval_required), Execute command center action without ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What requires approval?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "AI Command Center: Следующие действия собраны как task queue: кому, почему, риск и approval status. Critical: Submit command center action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain current command center task. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit command center action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute command center action without ledger. Reason: Command Center execution must use persisted approval ledger state.. Next buttons: Explain current command center task (safe_read), Draft a command center action plan (draft_only), Submit command center action for approval (approval_required), Execute command center action without ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are critical?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "AI Command Center: Следующие действия собраны как task queue: кому, почему, риск и approval status. Critical: Submit command center action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain current command center task. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit command center action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute command center action without ledger. Reason: Command Center execution must use persisted approval ledger state.. Next buttons: Explain current command center task (safe_read), Draft a command center action plan (draft_only), Submit command center action for approval (approval_required), Execute command center action without ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which queue is blocked?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "AI Command Center: Следующие действия собраны как task queue: кому, почему, риск и approval status. Critical: Submit command center action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain current command center task. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit command center action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute command center action without ledger. Reason: Command Center execution must use persisted approval ledger state.. Next buttons: Explain current command center task (safe_read), Draft a command center action plan (draft_only), Submit command center action for approval (approval_required), Execute command center action without ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "approval.inbox",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "What blocks work?",
+          "answer": {
+            "topic": "director",
+            "answer": "На согласовании: Каждая approval item показывает предложение, evidence, риски, последствия approval и запреты без approval. Critical: Approve or reject through ledger RPC. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain approval inbox evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Approve or reject through ledger RPC goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute preview without approval ledger. Reason: Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.. Next buttons: Explain approval inbox evidence (safe_read), Draft revision note for approver (draft_only), Approve or reject through ledger RPC (approval_required), Execute preview without approval ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What happens after approval?",
+          "answer": {
+            "topic": "director",
+            "answer": "На согласовании: Каждая approval item показывает предложение, evidence, риски, последствия approval и запреты без approval. Critical: Approve or reject through ledger RPC. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain approval inbox evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Approve or reject through ledger RPC goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute preview without approval ledger. Reason: Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.. Next buttons: Explain approval inbox evidence (safe_read), Draft revision note for approver (draft_only), Approve or reject through ledger RPC (approval_required), Execute preview without approval ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is forbidden without approval?",
+          "answer": {
+            "topic": "director",
+            "answer": "На согласовании: Каждая approval item показывает предложение, evidence, риски, последствия approval и запреты без approval. Critical: Approve or reject through ledger RPC. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain approval inbox evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Approve or reject through ledger RPC goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute preview without approval ledger. Reason: Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.. Next buttons: Explain approval inbox evidence (safe_read), Draft revision note for approver (draft_only), Approve or reject through ledger RPC (approval_required), Execute preview without approval ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs my decision today?",
+          "answer": {
+            "topic": "director",
+            "answer": "На согласовании: Каждая approval item показывает предложение, evidence, риски, последствия approval и запреты без approval. Critical: Approve or reject through ledger RPC. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain approval inbox evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Approve or reject through ledger RPC goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute preview without approval ledger. Reason: Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.. Next buttons: Explain approval inbox evidence (safe_read), Draft revision note for approver (draft_only), Approve or reject through ledger RPC (approval_required), Execute preview without approval ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are critical?",
+          "answer": {
+            "topic": "director",
+            "answer": "На согласовании: Каждая approval item показывает предложение, evidence, риски, последствия approval и запреты без approval. Critical: Approve or reject through ledger RPC. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain approval inbox evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Approve or reject through ledger RPC goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute preview without approval ledger. Reason: Approval Inbox can execute only through approved ledger RPC and never through UI-only mutation.. Next buttons: Explain approval inbox evidence (safe_read), Draft revision note for approver (draft_only), Approve or reject through ledger RPC (approval_required), Execute preview without approval ledger (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Снабжение сегодня: Входящие заявки, approved requests, варианты закупа, риски и следующие procurement actions собраны заранее. Critical: Submit buyer request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain buyer workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly. Reason: Supplier confirmation requires approval-backed decision and cannot be direct AI output.. Next buttons: Explain buyer workload (safe_read), Draft procurement request (draft_only), Submit buyer request for approval (approval_required), Confirm supplier directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Снабжение сегодня: Входящие заявки, approved requests, варианты закупа, риски и следующие procurement actions собраны заранее. Critical: Submit buyer request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain buyer workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly. Reason: Supplier confirmation requires approval-backed decision and cannot be direct AI output.. Next buttons: Explain buyer workload (safe_read), Draft procurement request (draft_only), Submit buyer request for approval (approval_required), Confirm supplier directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Снабжение сегодня: Входящие заявки, approved requests, варианты закупа, риски и следующие procurement actions собраны заранее. Critical: Submit buyer request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain buyer workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly. Reason: Supplier confirmation requires approval-backed decision and cannot be direct AI output.. Next buttons: Explain buyer workload (safe_read), Draft procurement request (draft_only), Submit buyer request for approval (approval_required), Confirm supplier directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where is delivery risk?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Снабжение сегодня: Входящие заявки, approved requests, варианты закупа, риски и следующие procurement actions собраны заранее. Critical: Submit buyer request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain buyer workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly. Reason: Supplier confirmation requires approval-backed decision and cannot be direct AI output.. Next buttons: Explain buyer workload (safe_read), Draft procurement request (draft_only), Submit buyer request for approval (approval_required), Confirm supplier directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approved requests already have options?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Снабжение сегодня: Входящие заявки, approved requests, варианты закупа, риски и следующие procurement actions собраны заранее. Critical: Submit buyer request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain buyer workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly. Reason: Supplier confirmation requires approval-backed decision and cannot be direct AI output.. Next buttons: Explain buyer workload (safe_read), Draft procurement request (draft_only), Submit buyer request for approval (approval_required), Confirm supplier directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Очередь заявок снабжения: Заявки превращены в очередь работы: срочность, approval status, готовые варианты, риски и missing data. Critical: Submit buyer proposal pack. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare request options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer proposal pack goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create purchase order directly. Reason: Purchase order creation is a final procurement mutation and requires the approved execution path.. Next buttons: Compare request options (safe_read), Draft buyer proposal rationale (draft_only), Submit buyer proposal pack (approval_required), Create purchase order directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Очередь заявок снабжения: Заявки превращены в очередь работы: срочность, approval status, готовые варианты, риски и missing data. Critical: Submit buyer proposal pack. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare request options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer proposal pack goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create purchase order directly. Reason: Purchase order creation is a final procurement mutation and requires the approved execution path.. Next buttons: Compare request options (safe_read), Draft buyer proposal rationale (draft_only), Submit buyer proposal pack (approval_required), Create purchase order directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Очередь заявок снабжения: Заявки превращены в очередь работы: срочность, approval status, готовые варианты, риски и missing data. Critical: Submit buyer proposal pack. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare request options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer proposal pack goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create purchase order directly. Reason: Purchase order creation is a final procurement mutation and requires the approved execution path.. Next buttons: Compare request options (safe_read), Draft buyer proposal rationale (draft_only), Submit buyer proposal pack (approval_required), Create purchase order directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which are ready for approval?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Очередь заявок снабжения: Заявки превращены в очередь работы: срочность, approval status, готовые варианты, риски и missing data. Critical: Submit buyer proposal pack. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare request options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer proposal pack goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create purchase order directly. Reason: Purchase order creation is a final procurement mutation and requires the approved execution path.. Next buttons: Compare request options (safe_read), Draft buyer proposal rationale (draft_only), Submit buyer proposal pack (approval_required), Create purchase order directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which request is urgent?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Очередь заявок снабжения: Заявки превращены в очередь работы: срочность, approval status, готовые варианты, риски и missing data. Critical: Submit buyer proposal pack. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare request options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit buyer proposal pack goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create purchase order directly. Reason: Purchase order creation is a final procurement mutation and requires the approved execution path.. Next buttons: Compare request options (safe_read), Draft buyer proposal rationale (draft_only), Submit buyer proposal pack (approval_required), Create purchase order directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Готовые варианты закупки: Деталь заявки показывает supplier options, покрытие, риски, missing data и безопасный следующий шаг. Critical: Submit detailed supplier decision. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain request detail evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit detailed supplier decision goes through POST /agent/action/submit-for-approval. Forbidden direct action: Finalize supplier from detail view. Reason: AI recommendation must remain evidence-backed and approval-gated before final supplier selection.. Next buttons: Explain request detail evidence (safe_read), Draft request decision card (draft_only), Submit detailed supplier decision (approval_required), Finalize supplier from detail view (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Готовые варианты закупки: Деталь заявки показывает supplier options, покрытие, риски, missing data и безопасный следующий шаг. Critical: Submit detailed supplier decision. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain request detail evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit detailed supplier decision goes through POST /agent/action/submit-for-approval. Forbidden direct action: Finalize supplier from detail view. Reason: AI recommendation must remain evidence-backed and approval-gated before final supplier selection.. Next buttons: Explain request detail evidence (safe_read), Draft request decision card (draft_only), Submit detailed supplier decision (approval_required), Finalize supplier from detail view (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing for supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Готовые варианты закупки: Деталь заявки показывает supplier options, покрытие, риски, missing data и безопасный следующий шаг. Critical: Submit detailed supplier decision. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain request detail evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit detailed supplier decision goes through POST /agent/action/submit-for-approval. Forbidden direct action: Finalize supplier from detail view. Reason: AI recommendation must remain evidence-backed and approval-gated before final supplier selection.. Next buttons: Explain request detail evidence (safe_read), Draft request decision card (draft_only), Submit detailed supplier decision (approval_required), Finalize supplier from detail view (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Готовые варианты закупки: Деталь заявки показывает supplier options, покрытие, риски, missing data и безопасный следующий шаг. Critical: Submit detailed supplier decision. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain request detail evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit detailed supplier decision goes through POST /agent/action/submit-for-approval. Forbidden direct action: Finalize supplier from detail view. Reason: AI recommendation must remain evidence-backed and approval-gated before final supplier selection.. Next buttons: Explain request detail evidence (safe_read), Draft request decision card (draft_only), Submit detailed supplier decision (approval_required), Finalize supplier from detail view (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should go to director?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Готовые варианты закупки: Деталь заявки показывает supplier options, покрытие, риски, missing data и безопасный следующий шаг. Critical: Submit detailed supplier decision. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain request detail evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit detailed supplier decision goes through POST /agent/action/submit-for-approval. Forbidden direct action: Finalize supplier from detail view. Reason: AI recommendation must remain evidence-backed and approval-gated before final supplier selection.. Next buttons: Explain request detail evidence (safe_read), Draft request decision card (draft_only), Submit detailed supplier decision (approval_required), Finalize supplier from detail view (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Procurement workbench: Workbench подготовил internal-first recommendation, comparison, risk summary, draft supplier request и approval candidate. Critical: Prepare copilot submit-for-approval preview. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain procurement copilot plan. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare copilot submit-for-approval preview goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create order from copilot. Reason: Copilot output is evidence and draft only until approval ledger execution.. Next buttons: Explain procurement copilot plan (safe_read), Draft copilot request preview (draft_only), Prepare copilot submit-for-approval preview (approval_required), Create order from copilot (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Procurement workbench: Workbench подготовил internal-first recommendation, comparison, risk summary, draft supplier request и approval candidate. Critical: Prepare copilot submit-for-approval preview. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain procurement copilot plan. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare copilot submit-for-approval preview goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create order from copilot. Reason: Copilot output is evidence and draft only until approval ledger execution.. Next buttons: Explain procurement copilot plan (safe_read), Draft copilot request preview (draft_only), Prepare copilot submit-for-approval preview (approval_required), Create order from copilot (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is not proven yet?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Procurement workbench: Workbench подготовил internal-first recommendation, comparison, risk summary, draft supplier request и approval candidate. Critical: Prepare copilot submit-for-approval preview. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain procurement copilot plan. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare copilot submit-for-approval preview goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create order from copilot. Reason: Copilot output is evidence and draft only until approval ledger execution.. Next buttons: Explain procurement copilot plan (safe_read), Draft copilot request preview (draft_only), Prepare copilot submit-for-approval preview (approval_required), Create order from copilot (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is the safest next action?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Procurement workbench: Workbench подготовил internal-first recommendation, comparison, risk summary, draft supplier request и approval candidate. Critical: Prepare copilot submit-for-approval preview. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain procurement copilot plan. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare copilot submit-for-approval preview goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create order from copilot. Reason: Copilot output is evidence and draft only until approval ledger execution.. Next buttons: Explain procurement copilot plan (safe_read), Draft copilot request preview (draft_only), Prepare copilot submit-for-approval preview (approval_required), Create order from copilot (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Procurement workbench: Workbench подготовил internal-first recommendation, comparison, risk summary, draft supplier request и approval candidate. Critical: Prepare copilot submit-for-approval preview. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain procurement copilot plan. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare copilot submit-for-approval preview goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create order from copilot. Reason: Copilot output is evidence and draft only until approval ledger execution.. Next buttons: Explain procurement copilot plan (safe_read), Draft copilot request preview (draft_only), Prepare copilot submit-for-approval preview (approval_required), Create order from copilot (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Рынок и внешние варианты: Внешний поиск используется только как cited preview, когда внутренних данных недостаточно. Critical: Submit marketplace-backed request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare marketplace supplier options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit marketplace-backed request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create external supplier without citation. Reason: External supplier creation requires citation/evidence and cannot be invented by AI.. Next buttons: Compare marketplace supplier options (safe_read), Draft request from marketplace item (draft_only), Submit marketplace-backed request (approval_required), Create external supplier without citation (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What cannot be treated as fact yet?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Рынок и внешние варианты: Внешний поиск используется только как cited preview, когда внутренних данных недостаточно. Critical: Submit marketplace-backed request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare marketplace supplier options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit marketplace-backed request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create external supplier without citation. Reason: External supplier creation requires citation/evidence and cannot be invented by AI.. Next buttons: Compare marketplace supplier options (safe_read), Draft request from marketplace item (draft_only), Submit marketplace-backed request (approval_required), Create external supplier without citation (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is citation-backed?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Рынок и внешние варианты: Внешний поиск используется только как cited preview, когда внутренних данных недостаточно. Critical: Submit marketplace-backed request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare marketplace supplier options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit marketplace-backed request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create external supplier without citation. Reason: External supplier creation requires citation/evidence and cannot be invented by AI.. Next buttons: Compare marketplace supplier options (safe_read), Draft request from marketplace item (draft_only), Submit marketplace-backed request (approval_required), Create external supplier without citation (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Рынок и внешние варианты: Внешний поиск используется только как cited preview, когда внутренних данных недостаточно. Critical: Submit marketplace-backed request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare marketplace supplier options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit marketplace-backed request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create external supplier without citation. Reason: External supplier creation requires citation/evidence and cannot be invented by AI.. Next buttons: Compare marketplace supplier options (safe_read), Draft request from marketplace item (draft_only), Submit marketplace-backed request (approval_required), Create external supplier without citation (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Рынок и внешние варианты: Внешний поиск используется только как cited preview, когда внутренних данных недостаточно. Critical: Submit marketplace-backed request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Compare marketplace supplier options. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit marketplace-backed request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create external supplier without citation. Reason: External supplier creation requires citation/evidence and cannot be invented by AI.. Next buttons: Compare marketplace supplier options (safe_read), Draft request from marketplace item (draft_only), Submit marketplace-backed request (approval_required), Create external supplier without citation (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Can this be shortlisted?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Карточка поставщика: Поставщик разобран по покрытию, надёжности, связанным заявкам, missing data и approval-safe actions. Critical: Submit supplier recommendation. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize supplier showcase evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit supplier recommendation goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly from showcase. Reason: Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.. Next buttons: Summarize supplier showcase evidence (safe_read), Draft supplier comparison note (draft_only), Submit supplier recommendation (approval_required), Confirm supplier directly from showcase (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Draft a supplier request.",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Карточка поставщика: Поставщик разобран по покрытию, надёжности, связанным заявкам, missing data и approval-safe actions. Critical: Submit supplier recommendation. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize supplier showcase evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit supplier recommendation goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly from showcase. Reason: Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.. Next buttons: Summarize supplier showcase evidence (safe_read), Draft supplier comparison note (draft_only), Submit supplier recommendation (approval_required), Confirm supplier directly from showcase (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What evidence is missing?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Карточка поставщика: Поставщик разобран по покрытию, надёжности, связанным заявкам, missing data и approval-safe actions. Critical: Submit supplier recommendation. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize supplier showcase evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit supplier recommendation goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly from showcase. Reason: Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.. Next buttons: Summarize supplier showcase evidence (safe_read), Draft supplier comparison note (draft_only), Submit supplier recommendation (approval_required), Confirm supplier directly from showcase (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is missing before supplier choice?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Карточка поставщика: Поставщик разобран по покрытию, надёжности, связанным заявкам, missing data и approval-safe actions. Critical: Submit supplier recommendation. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize supplier showcase evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit supplier recommendation goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly from showcase. Reason: Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.. Next buttons: Summarize supplier showcase evidence (safe_read), Draft supplier comparison note (draft_only), Submit supplier recommendation (approval_required), Confirm supplier directly from showcase (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I open first?",
+          "answer": {
+            "topic": "procurement_workflow",
+            "answer": "Карточка поставщика: Поставщик разобран по покрытию, надёжности, связанным заявкам, missing data и approval-safe actions. Critical: Submit supplier recommendation. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize supplier showcase evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit supplier recommendation goes through POST /agent/action/submit-for-approval. Forbidden direct action: Confirm supplier directly from showcase. Reason: Supplier choice requires approval and must cite evidence; showcase contact buttons are not AI execution paths.. Next buttons: Summarize supplier showcase evidence (safe_read), Draft supplier comparison note (draft_only), Submit supplier recommendation (approval_required), Confirm supplier directly from showcase (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Prepare incoming verification.",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Склад сегодня: Дефицит, приходы, выдачи, расхождения и спорные позиции подготовлены для кладовщика. Critical: Submit warehouse action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse stock status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Mutate stock balance directly. Reason: Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.. Next buttons: Explain warehouse stock status (safe_read), Draft warehouse restock action (draft_only), Submit warehouse action for approval (approval_required), Mutate stock balance directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What cannot be issued?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Склад сегодня: Дефицит, приходы, выдачи, расхождения и спорные позиции подготовлены для кладовщика. Critical: Submit warehouse action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse stock status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Mutate stock balance directly. Reason: Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.. Next buttons: Explain warehouse stock status (safe_read), Draft warehouse restock action (draft_only), Submit warehouse action for approval (approval_required), Mutate stock balance directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is risky in warehouse today?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Склад сегодня: Дефицит, приходы, выдачи, расхождения и спорные позиции подготовлены для кладовщика. Critical: Submit warehouse action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse stock status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Mutate stock balance directly. Reason: Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.. Next buttons: Explain warehouse stock status (safe_read), Draft warehouse restock action (draft_only), Submit warehouse action for approval (approval_required), Mutate stock balance directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is risky today?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Склад сегодня: Дефицит, приходы, выдачи, расхождения и спорные позиции подготовлены для кладовщика. Critical: Submit warehouse action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse stock status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Mutate stock balance directly. Reason: Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.. Next buttons: Explain warehouse stock status (safe_read), Draft warehouse restock action (draft_only), Submit warehouse action for approval (approval_required), Mutate stock balance directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where are documents missing?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Склад сегодня: Дефицит, приходы, выдачи, расхождения и спорные позиции подготовлены для кладовщика. Critical: Submit warehouse action for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse stock status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse action for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Mutate stock balance directly. Reason: Warehouse stock mutations must use approved warehouse flows and are forbidden to AI direct actions.. Next buttons: Explain warehouse stock status (safe_read), Draft warehouse restock action (draft_only), Submit warehouse action for approval (approval_required), Mutate stock balance directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Prepare incoming verification.",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Приход: Приход проверен на совпадения с заявкой, документы, спорные позиции и ручную проверку. Critical: Submit incoming exception for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain incoming receipt status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit incoming exception for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Receive incoming stock directly. Reason: Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.. Next buttons: Explain incoming receipt status (safe_read), Draft incoming receipt note (draft_only), Submit incoming exception for approval (approval_required), Receive incoming stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What cannot be issued?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Приход: Приход проверен на совпадения с заявкой, документы, спорные позиции и ручную проверку. Critical: Submit incoming exception for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain incoming receipt status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit incoming exception for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Receive incoming stock directly. Reason: Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.. Next buttons: Explain incoming receipt status (safe_read), Draft incoming receipt note (draft_only), Submit incoming exception for approval (approval_required), Receive incoming stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What cannot be received?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Приход: Приход проверен на совпадения с заявкой, документы, спорные позиции и ручную проверку. Critical: Submit incoming exception for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain incoming receipt status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit incoming exception for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Receive incoming stock directly. Reason: Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.. Next buttons: Explain incoming receipt status (safe_read), Draft incoming receipt note (draft_only), Submit incoming exception for approval (approval_required), Receive incoming stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is risky in warehouse today?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Приход: Приход проверен на совпадения с заявкой, документы, спорные позиции и ручную проверку. Critical: Submit incoming exception for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain incoming receipt status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit incoming exception for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Receive incoming stock directly. Reason: Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.. Next buttons: Explain incoming receipt status (safe_read), Draft incoming receipt note (draft_only), Submit incoming exception for approval (approval_required), Receive incoming stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where are documents missing?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Приход: Приход проверен на совпадения с заявкой, документы, спорные позиции и ручную проверку. Critical: Submit incoming exception for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain incoming receipt status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit incoming exception for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Receive incoming stock directly. Reason: Receiving stock is a warehouse mutation and cannot be executed by AI screen audit.. Next buttons: Explain incoming receipt status (safe_read), Draft incoming receipt note (draft_only), Submit incoming exception for approval (approval_required), Receive incoming stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Prepare incoming verification.",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Выдача материалов: Выдача подготовлена как черновик: кому, что запрошено, что доступно, дефицит и approval candidates. Critical: Submit warehouse issue request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse issue queue. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse issue request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Issue stock directly. Reason: Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.. Next buttons: Explain warehouse issue queue (safe_read), Draft issue request rationale (draft_only), Submit warehouse issue request (approval_required), Issue stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What alternative exists?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Выдача материалов: Выдача подготовлена как черновик: кому, что запрошено, что доступно, дефицит и approval candidates. Critical: Submit warehouse issue request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse issue queue. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse issue request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Issue stock directly. Reason: Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.. Next buttons: Explain warehouse issue queue (safe_read), Draft issue request rationale (draft_only), Submit warehouse issue request (approval_required), Issue stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What cannot be issued?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Выдача материалов: Выдача подготовлена как черновик: кому, что запрошено, что доступно, дефицит и approval candidates. Critical: Submit warehouse issue request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse issue queue. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse issue request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Issue stock directly. Reason: Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.. Next buttons: Explain warehouse issue queue (safe_read), Draft issue request rationale (draft_only), Submit warehouse issue request (approval_required), Issue stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is risky in warehouse today?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Выдача материалов: Выдача подготовлена как черновик: кому, что запрошено, что доступно, дефицит и approval candidates. Critical: Submit warehouse issue request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse issue queue. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse issue request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Issue stock directly. Reason: Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.. Next buttons: Explain warehouse issue queue (safe_read), Draft issue request rationale (draft_only), Submit warehouse issue request (approval_required), Issue stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where are documents missing?",
+          "answer": {
+            "topic": "warehouse",
+            "answer": "Выдача материалов: Выдача подготовлена как черновик: кому, что запрошено, что доступно, дефицит и approval candidates. Critical: Submit warehouse issue request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain warehouse issue queue. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit warehouse issue request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Issue stock directly. Reason: Warehouse issue flows are mutating RPCs and cannot be executed by AI directly.. Next buttons: Explain warehouse issue queue (safe_read), Draft issue request rationale (draft_only), Submit warehouse issue request (approval_required), Issue stock directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Make rationale for director.",
+          "answer": {
+            "topic": "finance",
+            "answer": "Финансы сегодня: Платежи, документы, риски и кандидаты на согласование собраны для проверки бухгалтером. Critical: Submit finance document for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain accountant workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance document for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create payment directly. Reason: Payments require human-controlled approval and finance posting boundaries.. Next buttons: Explain accountant workload (safe_read), Draft finance document note (draft_only), Submit finance document for approval (approval_required), Create payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Prepare today's payment report.",
+          "answer": {
+            "topic": "finance",
+            "answer": "Финансы сегодня: Платежи, документы, риски и кандидаты на согласование собраны для проверки бухгалтером. Critical: Submit finance document for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain accountant workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance document for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create payment directly. Reason: Payments require human-controlled approval and finance posting boundaries.. Next buttons: Explain accountant workload (safe_read), Draft finance document note (draft_only), Submit finance document for approval (approval_required), Create payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is critical in payments today?",
+          "answer": {
+            "topic": "finance",
+            "answer": "Финансы сегодня: Платежи, документы, риски и кандидаты на согласование собраны для проверки бухгалтером. Critical: Submit finance document for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain accountant workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance document for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create payment directly. Reason: Payments require human-controlled approval and finance posting boundaries.. Next buttons: Explain accountant workload (safe_read), Draft finance document note (draft_only), Submit finance document for approval (approval_required), Create payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is critical today?",
+          "answer": {
+            "topic": "finance",
+            "answer": "Финансы сегодня: Платежи, документы, риски и кандидаты на согласование собраны для проверки бухгалтером. Critical: Submit finance document for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain accountant workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance document for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create payment directly. Reason: Payments require human-controlled approval and finance posting boundaries.. Next buttons: Explain accountant workload (safe_read), Draft finance document note (draft_only), Submit finance document for approval (approval_required), Create payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which need director?",
+          "answer": {
+            "topic": "finance",
+            "answer": "Финансы сегодня: Платежи, документы, риски и кандидаты на согласование собраны для проверки бухгалтером. Critical: Submit finance document for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain accountant workload. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit finance document for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create payment directly. Reason: Payments require human-controlled approval and finance posting boundaries.. Next buttons: Explain accountant workload (safe_read), Draft finance document note (draft_only), Submit finance document for approval (approval_required), Create payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.payment",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Make rationale for director.",
+          "answer": {
+            "topic": "finance",
+            "answer": "AI-проверка платежа: Платёж разобран по основанию, документам, сумме, рискам и approval status. Critical: Submit payment for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain payment form status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit payment for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Apply payment directly. Reason: Direct payment application is forbidden for AI and must remain a human/approval flow.. Next buttons: Explain payment form status (safe_read), Draft payment approval rationale (draft_only), Submit payment for approval (approval_required), Apply payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Prepare today's payment report.",
+          "answer": {
+            "topic": "finance",
+            "answer": "AI-проверка платежа: Платёж разобран по основанию, документам, сумме, рискам и approval status. Critical: Submit payment for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain payment form status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit payment for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Apply payment directly. Reason: Direct payment application is forbidden for AI and must remain a human/approval flow.. Next buttons: Explain payment form status (safe_read), Draft payment approval rationale (draft_only), Submit payment for approval (approval_required), Apply payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What happens after approval?",
+          "answer": {
+            "topic": "finance",
+            "answer": "AI-проверка платежа: Платёж разобран по основанию, документам, сумме, рискам и approval status. Critical: Submit payment for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain payment form status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit payment for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Apply payment directly. Reason: Direct payment application is forbidden for AI and must remain a human/approval flow.. Next buttons: Explain payment form status (safe_read), Draft payment approval rationale (draft_only), Submit payment for approval (approval_required), Apply payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is critical in payments today?",
+          "answer": {
+            "topic": "finance",
+            "answer": "AI-проверка платежа: Платёж разобран по основанию, документам, сумме, рискам и approval status. Critical: Submit payment for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain payment form status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit payment for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Apply payment directly. Reason: Direct payment application is forbidden for AI and must remain a human/approval flow.. Next buttons: Explain payment form status (safe_read), Draft payment approval rationale (draft_only), Submit payment for approval (approval_required), Apply payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which document is missing?",
+          "answer": {
+            "topic": "finance",
+            "answer": "AI-проверка платежа: Платёж разобран по основанию, документам, сумме, рискам и approval status. Critical: Submit payment for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain payment form status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit payment for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Apply payment directly. Reason: Direct payment application is forbidden for AI and must remain a human/approval flow.. Next buttons: Explain payment form status (safe_read), Draft payment approval rationale (draft_only), Submit payment for approval (approval_required), Apply payment directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.history",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Make rationale for director.",
+          "answer": {
+            "topic": "finance",
+            "answer": "История оплат: История оплат подготовлена для поиска повторяющихся missing documents, аномальных сумм и поставщиков с ручной проверкой. Critical: Submit accounting correction request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize accountant history. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit accounting correction request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Rewrite payment history directly. Reason: Accounting history is immutable evidence; AI cannot alter ledger history.. Next buttons: Summarize accountant history (safe_read), Draft accounting history note (draft_only), Submit accounting correction request (approval_required), Rewrite payment history directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Prepare today's payment report.",
+          "answer": {
+            "topic": "finance",
+            "answer": "История оплат: История оплат подготовлена для поиска повторяющихся missing documents, аномальных сумм и поставщиков с ручной проверкой. Critical: Submit accounting correction request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize accountant history. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit accounting correction request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Rewrite payment history directly. Reason: Accounting history is immutable evidence; AI cannot alter ledger history.. Next buttons: Summarize accountant history (safe_read), Draft accounting history note (draft_only), Submit accounting correction request (approval_required), Rewrite payment history directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What changed in payment history?",
+          "answer": {
+            "topic": "finance",
+            "answer": "История оплат: История оплат подготовлена для поиска повторяющихся missing documents, аномальных сумм и поставщиков с ручной проверкой. Critical: Submit accounting correction request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize accountant history. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit accounting correction request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Rewrite payment history directly. Reason: Accounting history is immutable evidence; AI cannot alter ledger history.. Next buttons: Summarize accountant history (safe_read), Draft accounting history note (draft_only), Submit accounting correction request (approval_required), Rewrite payment history directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is critical in payments today?",
+          "answer": {
+            "topic": "finance",
+            "answer": "История оплат: История оплат подготовлена для поиска повторяющихся missing documents, аномальных сумм и поставщиков с ручной проверкой. Critical: Submit accounting correction request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize accountant history. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit accounting correction request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Rewrite payment history directly. Reason: Accounting history is immutable evidence; AI cannot alter ledger history.. Next buttons: Summarize accountant history (safe_read), Draft accounting history note (draft_only), Submit accounting correction request (approval_required), Rewrite payment history directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which amounts are unusual?",
+          "answer": {
+            "topic": "finance",
+            "answer": "История оплат: История оплат подготовлена для поиска повторяющихся missing documents, аномальных сумм и поставщиков с ручной проверкой. Critical: Submit accounting correction request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize accountant history. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit accounting correction request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Rewrite payment history directly. Reason: Accounting history is immutable evidence; AI cannot alter ledger history.. Next buttons: Summarize accountant history (safe_read), Draft accounting history note (draft_only), Submit accounting correction request (approval_required), Rewrite payment history directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft an act for this work.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Работы сегодня: Closeout work, акты, reports, missing evidence, материалы и сообщения подрядчикам подготовлены заранее. Critical: Submit foreman request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain foreman object status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit foreman request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Approve own field request. Reason: Foreman can draft and submit, but cannot self-approve or execute.. Next buttons: Explain foreman object status (safe_read), Draft material request (draft_only), Submit foreman request for approval (approval_required), Approve own field request (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What can be closed today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Работы сегодня: Closeout work, акты, reports, missing evidence, материалы и сообщения подрядчикам подготовлены заранее. Critical: Submit foreman request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain foreman object status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit foreman request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Approve own field request. Reason: Foreman can draft and submit, but cannot self-approve or execute.. Next buttons: Explain foreman object status (safe_read), Draft material request (draft_only), Submit foreman request for approval (approval_required), Approve own field request (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What can close today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Работы сегодня: Closeout work, акты, reports, missing evidence, материалы и сообщения подрядчикам подготовлены заранее. Critical: Submit foreman request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain foreman object status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit foreman request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Approve own field request. Reason: Foreman can draft and submit, but cannot self-approve or execute.. Next buttons: Explain foreman object status (safe_read), Draft material request (draft_only), Submit foreman request for approval (approval_required), Approve own field request (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I write to the contractor?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Работы сегодня: Closeout work, акты, reports, missing evidence, материалы и сообщения подрядчикам подготовлены заранее. Critical: Submit foreman request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain foreman object status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit foreman request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Approve own field request. Reason: Foreman can draft and submit, but cannot self-approve or execute.. Next buttons: Explain foreman object status (safe_read), Draft material request (draft_only), Submit foreman request for approval (approval_required), Approve own field request (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which checks or norms apply?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Работы сегодня: Closeout work, акты, reports, missing evidence, материалы и сообщения подрядчикам подготовлены заранее. Critical: Submit foreman request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain foreman object status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit foreman request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Approve own field request. Reason: Foreman can draft and submit, but cannot self-approve or execute.. Next buttons: Explain foreman object status (safe_read), Draft material request (draft_only), Submit foreman request for approval (approval_required), Approve own field request (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft an act for this work.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Быстрый workbench: Быстрый AI прораба готовит акт, отчёт, missing evidence checklist или сообщение подрядчику. Critical: Submit quick request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain quick modal suggestion. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit quick request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute quick modal request directly. Reason: Quick modal AI cannot bypass approval ledger or write procurement records.. Next buttons: Explain quick modal suggestion (safe_read), Draft quick material request (draft_only), Submit quick request for approval (approval_required), Execute quick modal request directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What can be closed today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Быстрый workbench: Быстрый AI прораба готовит акт, отчёт, missing evidence checklist или сообщение подрядчику. Critical: Submit quick request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain quick modal suggestion. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit quick request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute quick modal request directly. Reason: Quick modal AI cannot bypass approval ledger or write procurement records.. Next buttons: Explain quick modal suggestion (safe_read), Draft quick material request (draft_only), Submit quick request for approval (approval_required), Execute quick modal request directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What can be prepared?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Быстрый workbench: Быстрый AI прораба готовит акт, отчёт, missing evidence checklist или сообщение подрядчику. Critical: Submit quick request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain quick modal suggestion. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit quick request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute quick modal request directly. Reason: Quick modal AI cannot bypass approval ledger or write procurement records.. Next buttons: Explain quick modal suggestion (safe_read), Draft quick material request (draft_only), Submit quick request for approval (approval_required), Execute quick modal request directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What evidence is missing?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Быстрый workbench: Быстрый AI прораба готовит акт, отчёт, missing evidence checklist или сообщение подрядчику. Critical: Submit quick request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain quick modal suggestion. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit quick request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute quick modal request directly. Reason: Quick modal AI cannot bypass approval ledger or write procurement records.. Next buttons: Explain quick modal suggestion (safe_read), Draft quick material request (draft_only), Submit quick request for approval (approval_required), Execute quick modal request directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is forbidden before review?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Быстрый workbench: Быстрый AI прораба готовит акт, отчёт, missing evidence checklist или сообщение подрядчику. Critical: Submit quick request for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain quick modal suggestion. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit quick request for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Execute quick modal request directly. Reason: Quick modal AI cannot bypass approval ledger or write procurement records.. Next buttons: Explain quick modal suggestion (safe_read), Draft quick material request (draft_only), Submit quick request for approval (approval_required), Execute quick modal request directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft an act for this work.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Subcontract status: Субподряд разобран по выполненному, неподтверждённому, документам, рискам и draft actions. Critical: Submit subcontract progress. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain subcontract progress. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit subcontract progress goes through POST /agent/action/submit-for-approval. Forbidden direct action: Sign subcontract directly. Reason: Contract signing is a forbidden final action for AI.. Next buttons: Explain subcontract progress (safe_read), Draft subcontract act (draft_only), Submit subcontract progress (approval_required), Sign subcontract directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What can be closed today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Subcontract status: Субподряд разобран по выполненному, неподтверждённому, документам, рискам и draft actions. Critical: Submit subcontract progress. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain subcontract progress. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit subcontract progress goes through POST /agent/action/submit-for-approval. Forbidden direct action: Sign subcontract directly. Reason: Contract signing is a forbidden final action for AI.. Next buttons: Explain subcontract progress (safe_read), Draft subcontract act (draft_only), Submit subcontract progress (approval_required), Sign subcontract directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is not confirmed?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Subcontract status: Субподряд разобран по выполненному, неподтверждённому, документам, рискам и draft actions. Critical: Submit subcontract progress. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain subcontract progress. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit subcontract progress goes through POST /agent/action/submit-for-approval. Forbidden direct action: Sign subcontract directly. Reason: Contract signing is a forbidden final action for AI.. Next buttons: Explain subcontract progress (safe_read), Draft subcontract act (draft_only), Submit subcontract progress (approval_required), Sign subcontract directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I ask contractor?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Subcontract status: Субподряд разобран по выполненному, неподтверждённому, документам, рискам и draft actions. Critical: Submit subcontract progress. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain subcontract progress. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit subcontract progress goes through POST /agent/action/submit-for-approval. Forbidden direct action: Sign subcontract directly. Reason: Contract signing is a forbidden final action for AI.. Next buttons: Explain subcontract progress (safe_read), Draft subcontract act (draft_only), Submit subcontract progress (approval_required), Sign subcontract directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I write to the contractor?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Subcontract status: Субподряд разобран по выполненному, неподтверждённому, документам, рискам и draft actions. Critical: Submit subcontract progress. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain subcontract progress. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit subcontract progress goes through POST /agent/action/submit-for-approval. Forbidden direct action: Sign subcontract directly. Reason: Contract signing is a forbidden final action for AI.. Next buttons: Explain subcontract progress (safe_read), Draft subcontract act (draft_only), Submit subcontract progress (approval_required), Sign subcontract directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a reply to foreman.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Что нужно сдать: Подрядчик видит missing evidence, документы, замечания и готовый безопасный ответ. Critical: Submit contractor progress for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain contractor own-work status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit contractor progress for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Read cross-role finance data. Reason: Contractor scope is own-records only and cannot expose finance or other contractor rows.. Next buttons: Explain contractor own-work status (safe_read), Draft contractor progress report (draft_only), Submit contractor progress for approval (approval_required), Read cross-role finance data (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What blocks acceptance?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Что нужно сдать: Подрядчик видит missing evidence, документы, замечания и готовый безопасный ответ. Critical: Submit contractor progress for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain contractor own-work status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit contractor progress for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Read cross-role finance data. Reason: Contractor scope is own-records only and cannot expose finance or other contractor rows.. Next buttons: Explain contractor own-work status (safe_read), Draft contractor progress report (draft_only), Submit contractor progress for approval (approval_required), Read cross-role finance data (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I submit today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Что нужно сдать: Подрядчик видит missing evidence, документы, замечания и готовый безопасный ответ. Critical: Submit contractor progress for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain contractor own-work status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit contractor progress for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Read cross-role finance data. Reason: Contractor scope is own-records only and cannot expose finance or other contractor rows.. Next buttons: Explain contractor own-work status (safe_read), Draft contractor progress report (draft_only), Submit contractor progress for approval (approval_required), Read cross-role finance data (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which documents should I attach?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Что нужно сдать: Подрядчик видит missing evidence, документы, замечания и готовый безопасный ответ. Critical: Submit contractor progress for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain contractor own-work status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit contractor progress for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Read cross-role finance data. Reason: Contractor scope is own-records only and cannot expose finance or other contractor rows.. Next buttons: Explain contractor own-work status (safe_read), Draft contractor progress report (draft_only), Submit contractor progress for approval (approval_required), Read cross-role finance data (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Why was the act not accepted?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Что нужно сдать: Подрядчик видит missing evidence, документы, замечания и готовый безопасный ответ. Critical: Submit contractor progress for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain contractor own-work status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit contractor progress for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Read cross-role finance data. Reason: Contractor scope is own-records only and cannot expose finance or other contractor rows.. Next buttons: Explain contractor own-work status (safe_read), Draft contractor progress report (draft_only), Submit contractor progress for approval (approval_required), Read cross-role finance data (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a reminder.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Черновик отчёта: Report modal подготовил события, риски, missing evidence, связанные заявки, платежи и документы. Critical: Submit report for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain report modal status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish report directly. Reason: Report publication requires explicit human approval.. Next buttons: Explain report modal status (safe_read), Draft report from visible evidence (draft_only), Submit report for approval (approval_required), Publish report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is stuck today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Черновик отчёта: Report modal подготовил события, риски, missing evidence, связанные заявки, платежи и документы. Critical: Submit report for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain report modal status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish report directly. Reason: Report publication requires explicit human approval.. Next buttons: Explain report modal status (safe_read), Draft report from visible evidence (draft_only), Submit report for approval (approval_required), Publish report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What needs decision?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Черновик отчёта: Report modal подготовил события, риски, missing evidence, связанные заявки, платежи и документы. Critical: Submit report for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain report modal status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish report directly. Reason: Report publication requires explicit human approval.. Next buttons: Explain report modal status (safe_read), Draft report from visible evidence (draft_only), Submit report for approval (approval_required), Publish report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should be in the report?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Черновик отчёта: Report modal подготовил события, риски, missing evidence, связанные заявки, платежи и документы. Critical: Submit report for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain report modal status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish report directly. Reason: Report publication requires explicit human approval.. Next buttons: Explain report modal status (safe_read), Draft report from visible evidence (draft_only), Submit report for approval (approval_required), Publish report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should go to approval?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Черновик отчёта: Report modal подготовил события, риски, missing evidence, связанные заявки, платежи и документы. Critical: Submit report for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain report modal status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit report for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Publish report directly. Reason: Report publication requires explicit human approval.. Next buttons: Explain report modal status (safe_read), Draft report from visible evidence (draft_only), Submit report for approval (approval_required), Publish report directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a comment.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Документ: Документ разобран по смыслу, связям, важным полям, missing evidence, рискам и draft actions. Critical: Submit document change for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize document evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit document change for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send final document directly. Reason: AI can draft and summarize documents but cannot send final documents directly.. Next buttons: Summarize document evidence (safe_read), Draft document note (draft_only), Submit document change for approval (approval_required), Send final document directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What are the risks?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Документ: Документ разобран по смыслу, связям, важным полям, missing evidence, рискам и draft actions. Critical: Submit document change for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize document evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit document change for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send final document directly. Reason: AI can draft and summarize documents but cannot send final documents directly.. Next buttons: Summarize document evidence (safe_read), Draft document note (draft_only), Submit document change for approval (approval_required), Send final document directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What evidence is missing?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Документ: Документ разобран по смыслу, связям, важным полям, missing evidence, рискам и draft actions. Critical: Submit document change for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize document evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit document change for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send final document directly. Reason: AI can draft and summarize documents but cannot send final documents directly.. Next buttons: Summarize document evidence (safe_read), Draft document note (draft_only), Submit document change for approval (approval_required), Send final document directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is important in this document?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Документ: Документ разобран по смыслу, связям, важным полям, missing evidence, рискам и draft actions. Critical: Submit document change for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize document evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit document change for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send final document directly. Reason: AI can draft and summarize documents but cannot send final documents directly.. Next buttons: Summarize document evidence (safe_read), Draft document note (draft_only), Submit document change for approval (approval_required), Send final document directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is important?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Документ: Документ разобран по смыслу, связям, важным полям, missing evidence, рискам и draft actions. Critical: Submit document change for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Summarize document evidence. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit document change for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send final document directly. Reason: AI can draft and summarize documents but cannot send final documents directly.. Next buttons: Summarize document evidence (safe_read), Draft document note (draft_only), Submit document change for approval (approval_required), Send final document directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Make a director summary.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Итоги обсуждения: Чат превращён в action extraction: итоги, договорённости, задачи, риски и approval candidates. Critical: Submit chat evidence for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain chat context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit chat evidence for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send chat message directly. Reason: AI may draft chat content, but sending is a user action.. Next buttons: Explain chat context (safe_read), Draft chat reply (draft_only), Submit chat evidence for approval (approval_required), Send chat message directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What are the risks?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Итоги обсуждения: Чат превращён в action extraction: итоги, договорённости, задачи, риски и approval candidates. Critical: Submit chat evidence for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain chat context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit chat evidence for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send chat message directly. Reason: AI may draft chat content, but sending is a user action.. Next buttons: Explain chat context (safe_read), Draft chat reply (draft_only), Submit chat evidence for approval (approval_required), Send chat message directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What did we decide?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Итоги обсуждения: Чат превращён в action extraction: итоги, договорённости, задачи, риски и approval candidates. Critical: Submit chat evidence for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain chat context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit chat evidence for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send chat message directly. Reason: AI may draft chat content, but sending is a user action.. Next buttons: Explain chat context (safe_read), Draft chat reply (draft_only), Submit chat evidence for approval (approval_required), Send chat message directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should go to approval?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Итоги обсуждения: Чат превращён в action extraction: итоги, договорённости, задачи, риски и approval candidates. Critical: Submit chat evidence for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain chat context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit chat evidence for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send chat message directly. Reason: AI may draft chat content, but sending is a user action.. Next buttons: Explain chat context (safe_read), Draft chat reply (draft_only), Submit chat evidence for approval (approval_required), Send chat message directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Who must do what?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Итоги обсуждения: Чат превращён в action extraction: итоги, договорённости, задачи, риски и approval candidates. Critical: Submit chat evidence for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain chat context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit chat evidence for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Send chat message directly. Reason: AI may draft chat content, but sending is a user action.. Next buttons: Explain chat context (safe_read), Draft chat reply (draft_only), Submit chat evidence for approval (approval_required), Send chat message directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a delivery request.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Логистика: Карта показывает объекты, поставщиков рядом, доставку, логистические риски и влияние на сроки. Critical: Submit site context for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain map object context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit site context for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create real estate record directly. Reason: Map AI cannot create map or real-estate records without approval and evidence.. Next buttons: Explain map object context (safe_read), Draft site context note (draft_only), Submit site context for approval (approval_required), Create real estate record directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "How does delivery affect deadline?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Логистика: Карта показывает объекты, поставщиков рядом, доставку, логистические риски и влияние на сроки. Critical: Submit site context for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain map object context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit site context for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create real estate record directly. Reason: Map AI cannot create map or real-estate records without approval and evidence.. Next buttons: Explain map object context (safe_read), Draft site context note (draft_only), Submit site context for approval (approval_required), Create real estate record directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where is logistics risk?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Логистика: Карта показывает объекты, поставщиков рядом, доставку, логистические риски и влияние на сроки. Critical: Submit site context for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain map object context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit site context for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create real estate record directly. Reason: Map AI cannot create map or real-estate records without approval and evidence.. Next buttons: Explain map object context (safe_read), Draft site context note (draft_only), Submit site context for approval (approval_required), Create real estate record directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which suppliers are nearby?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Логистика: Карта показывает объекты, поставщиков рядом, доставку, логистические риски и влияние на сроки. Critical: Submit site context for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain map object context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit site context for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create real estate record directly. Reason: Map AI cannot create map or real-estate records without approval and evidence.. Next buttons: Explain map object context (safe_read), Draft site context note (draft_only), Submit site context for approval (approval_required), Create real estate record directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Who is closer to the object?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Логистика: Карта показывает объекты, поставщиков рядом, доставку, логистические риски и влияние на сроки. Critical: Submit site context for approval. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain map object context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit site context for approval goes through POST /agent/action/submit-for-approval. Forbidden direct action: Create real estate record directly. Reason: Map AI cannot create map or real-estate records without approval and evidence.. Next buttons: Explain map object context (safe_read), Draft site context note (draft_only), Submit site context for approval (approval_required), Create real estate record directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Draft a reminder.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Офис сегодня: Офисный hub показывает зависшие документы, заявки без движения, отчёты, просрочки и approval candidates. Critical: Submit office access change. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain office role context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit office access change goes through POST /agent/action/submit-for-approval. Forbidden direct action: Change user role directly. Reason: Role and permission changes are explicitly forbidden to AI direct actions.. Next buttons: Explain office role context (safe_read), Draft office collaboration note (draft_only), Submit office access change (approval_required), Change user role directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What is stuck today?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Офис сегодня: Офисный hub показывает зависшие документы, заявки без движения, отчёты, просрочки и approval candidates. Critical: Submit office access change. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain office role context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit office access change goes through POST /agent/action/submit-for-approval. Forbidden direct action: Change user role directly. Reason: Role and permission changes are explicitly forbidden to AI direct actions.. Next buttons: Explain office role context (safe_read), Draft office collaboration note (draft_only), Submit office access change (approval_required), Change user role directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should go to approval?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Офис сегодня: Офисный hub показывает зависшие документы, заявки без движения, отчёты, просрочки и approval candidates. Critical: Submit office access change. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain office role context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit office access change goes through POST /agent/action/submit-for-approval. Forbidden direct action: Change user role directly. Reason: Role and permission changes are explicitly forbidden to AI direct actions.. Next buttons: Explain office role context (safe_read), Draft office collaboration note (draft_only), Submit office access change (approval_required), Change user role directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which documents need processing?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Офис сегодня: Офисный hub показывает зависшие документы, заявки без движения, отчёты, просрочки и approval candidates. Critical: Submit office access change. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain office role context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit office access change goes through POST /agent/action/submit-for-approval. Forbidden direct action: Change user role directly. Reason: Role and permission changes are explicitly forbidden to AI direct actions.. Next buttons: Explain office role context (safe_read), Draft office collaboration note (draft_only), Submit office access change (approval_required), Change user role directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which requests are stale?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Офис сегодня: Офисный hub показывает зависшие документы, заявки без движения, отчёты, просрочки и approval candidates. Critical: Submit office access change. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain office role context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit office access change goes through POST /agent/action/submit-for-approval. Forbidden direct action: Change user role directly. Reason: Role and permission changes are explicitly forbidden to AI direct actions.. Next buttons: Explain office role context (safe_read), Draft office collaboration note (draft_only), Submit office access change (approval_required), Change user role directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Build a security report.",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Security overview: Security overview показывает risk roles, forbidden attempts, suspicious approvals и service-role risks. Critical: Submit security change request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain security screen status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit security change request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Enroll or unenroll factor directly. Reason: Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.. Next buttons: Explain security screen status (safe_read), Draft security review note (draft_only), Submit security change request (approval_required), Enroll or unenroll factor directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Is there a privileged green path?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Security overview: Security overview показывает risk roles, forbidden attempts, suspicious approvals и service-role risks. Critical: Submit security change request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain security screen status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit security change request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Enroll or unenroll factor directly. Reason: Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.. Next buttons: Explain security screen status (safe_read), Draft security review note (draft_only), Submit security change request (approval_required), Enroll or unenroll factor directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where is permission risk?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Security overview: Security overview показывает risk roles, forbidden attempts, suspicious approvals и service-role risks. Critical: Submit security change request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain security screen status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit security change request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Enroll or unenroll factor directly. Reason: Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.. Next buttons: Explain security screen status (safe_read), Draft security review note (draft_only), Submit security change request (approval_required), Enroll or unenroll factor directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which approvals are suspicious?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Security overview: Security overview показывает risk roles, forbidden attempts, suspicious approvals и service-role risks. Critical: Submit security change request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain security screen status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit security change request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Enroll or unenroll factor directly. Reason: Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.. Next buttons: Explain security screen status (safe_read), Draft security review note (draft_only), Submit security change request (approval_required), Enroll or unenroll factor directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Who attempted forbidden action?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Security overview: Security overview показывает risk roles, forbidden attempts, suspicious approvals и service-role risks. Critical: Submit security change request. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Explain security screen status. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Submit security change request goes through POST /agent/action/submit-for-approval. Forbidden direct action: Enroll or unenroll factor directly. Reason: Auth/security factor changes must remain explicit user actions and are forbidden to AI direct execution.. Next buttons: Explain security screen status (safe_read), Draft security review note (draft_only), Submit security change request (approval_required), Enroll or unenroll factor directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "questions": 5,
+      "answeredFromContext": true,
+      "providerCallsAllowed": false,
+      "answers": [
+        {
+          "question": "Is this targetability or driver?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Runtime diagnosis: Runtime diagnosis доступен только dev/admin и показывает health, transport binding, blockers and artifacts. Critical: Prepare approval-gated runtime action. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Read screen runtime context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare approval-gated runtime action goes through POST /agent/action/submit-for-approval. Forbidden direct action: Write screen state directly. Reason: Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.. Next buttons: Read screen runtime context (safe_read), Draft screen runtime action plan (draft_only), Prepare approval-gated runtime action (approval_required), Write screen state directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "What should I check first?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Runtime diagnosis: Runtime diagnosis доступен только dev/admin и показывает health, transport binding, blockers and artifacts. Critical: Prepare approval-gated runtime action. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Read screen runtime context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare approval-gated runtime action goes through POST /agent/action/submit-for-approval. Forbidden direct action: Write screen state directly. Reason: Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.. Next buttons: Read screen runtime context (safe_read), Draft screen runtime action plan (draft_only), Prepare approval-gated runtime action (approval_required), Write screen state directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Where is the artifact?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Runtime diagnosis: Runtime diagnosis доступен только dev/admin и показывает health, transport binding, blockers and artifacts. Critical: Prepare approval-gated runtime action. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Read screen runtime context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare approval-gated runtime action goes through POST /agent/action/submit-for-approval. Forbidden direct action: Write screen state directly. Reason: Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.. Next buttons: Read screen runtime context (safe_read), Draft screen runtime action plan (draft_only), Prepare approval-gated runtime action (approval_required), Write screen state directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Which child runner failed?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Runtime diagnosis: Runtime diagnosis доступен только dev/admin и показывает health, transport binding, blockers and artifacts. Critical: Prepare approval-gated runtime action. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Read screen runtime context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare approval-gated runtime action goes through POST /agent/action/submit-for-approval. Forbidden direct action: Write screen state directly. Reason: Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.. Next buttons: Read screen runtime context (safe_read), Draft screen runtime action plan (draft_only), Prepare approval-gated runtime action (approval_required), Write screen state directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        },
+        {
+          "question": "Why is matrix red?",
+          "answer": {
+            "topic": "ai_boundaries",
+            "answer": "Runtime diagnosis: Runtime diagnosis доступен только dev/admin и показывает health, transport binding, blockers and artifacts. Critical: Prepare approval-gated runtime action. This screen has a workflow action that must stay safe, draft-only, or approval-ledger routed.. Ready option: Read screen runtime context. Ready as a safe read/explain action from screen context.. Missing data: hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts. Approval route: Prepare approval-gated runtime action goes through POST /agent/action/submit-for-approval. Forbidden direct action: Write screen state directly. Reason: Screen runtime is read-only and plan-only; no UI or DB mutation is allowed.. Next buttons: Read screen runtime context (safe_read), Draft screen runtime action plan (draft_only), Prepare approval-gated runtime action (approval_required), Write screen state directly (forbidden).",
+            "providerCallAllowed": false,
+            "answeredFromScreenContext": true
+          }
+        }
+      ]
+    }
+  ],
+  "qa_from_screen_context": true,
+  "provider_called": false,
+  "db_writes_used": false,
+  "fake_green_claimed": false
+}
