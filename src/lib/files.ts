@@ -14,6 +14,7 @@ import {
   uploadSupplierFileObject,
   type SupplierFileMetadataRow,
 } from "./files.storage.transport";
+import { registerTimeout } from "./lifecycle/timerRegistry";
 import { reportAndSwallow } from "./observability/catchDiscipline";
 import { fetchWithRequestTimeout } from "./requestTimeoutPolicy";
 import { supabase } from "./supabaseClient";
@@ -117,7 +118,7 @@ async function webOpenBlobOrDirect(url: string, fileName?: string) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    registerTimeout("files:web-blob-url-revoke", () => URL.revokeObjectURL(blobUrl), 60_000);
     return;
   } catch (error) {
     reportFilesBoundary({

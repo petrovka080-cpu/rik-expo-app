@@ -136,7 +136,11 @@ function classifyTimerCall(params: {
     return {
       ...params,
       file,
-      status: params.source.includes("setTimeout(detach, 0)") ? "exception" : "finding",
+      status:
+        params.source.includes("setTimeout(detach, 0)") ||
+        params.text.includes('registerTimeout("warehouse:realtime:deferred-detach"')
+          ? "exception"
+          : "finding",
       owner: "warehouse_realtime_detach",
       reason:
         "bounded zero-delay detach is a native teardown safety deferral covered by realtime lifecycle tests",
@@ -407,7 +411,8 @@ export function verifyTimerRealtimeLifecycle(
       draftSyncService.includes("subscribeTimeout.cancel()") &&
       draftSyncService.includes("removeDirectorHandoffBroadcastChannel(channel)"),
     warehouseDeferredDetachBounded:
-      warehouseRealtime.includes("setTimeout(detach, 0)") &&
+      (warehouseRealtime.includes("setTimeout(detach, 0)") ||
+        warehouseRealtime.includes("registerTimeout(\"warehouse:realtime:deferred-detach\"")) &&
       warehouseRealtime.includes("useFocusEffect(bindRealtime)") &&
       warehouseRealtime.includes("subscribeChannel({"),
     directRealtimeCallsitesClassified: realtimeFindings.length === 0,

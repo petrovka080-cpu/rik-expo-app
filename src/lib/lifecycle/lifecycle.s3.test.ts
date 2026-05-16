@@ -320,9 +320,9 @@ describe("S3-H: Realtime reconnect, no duplicate subscriptions", () => {
     expect(warehouseSrc).toContain("useFocusEffect(bindRealtime)");
   });
 
-  it("H4: Warehouse defers channel detach via setTimeout(detach, 0) (native teardown safety)", () => {
+  it("H4: Warehouse defers channel detach through the timer registry (native teardown safety)", () => {
     const warehouseSrc = readFileSync(WAREHOUSE_REALTIME_SRC, "utf8");
-    expect(warehouseSrc).toContain("setTimeout(detach, 0)");
+    expect(warehouseSrc).toContain('registerTimeout("warehouse:realtime:deferred-detach"');
   });
 
   it("H5: clearRealtimeSessionState is idempotent (safe double-cleanup at session boundary)", () => {

@@ -1,0 +1,24 @@
+{
+  "baselineTimers": 0,
+  "baselineChannels": 0,
+  "finalTimers": 0,
+  "finalChannels": 0,
+  "timerSnapshot": {
+    "activeCount": 0,
+    "entries": []
+  },
+  "realtimeSnapshot": {
+    "activeChannelCount": 0,
+    "activeSubscriberCount": 0,
+    "channels": []
+  },
+  "iterations": 24,
+  "screens": [
+    "director.dashboard",
+    "director.reports",
+    "director.finance",
+    "warehouse.main",
+    "buyer.main",
+    "ai.assistant"
+  ]
+}

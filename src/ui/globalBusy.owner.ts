@@ -1,4 +1,5 @@
 import { recordPlatformObservability } from "../lib/observability/platformObservability";
+import { createCancellableDelay } from "../lib/async/mapWithConcurrencyLimit";
 
 export type BusyRunOpts = {
   key?: string;
@@ -46,7 +47,9 @@ const DEFAULT_LABEL = "Загрузка…";
 const DEFAULT_MIN_MS = 650;
 const DEFAULT_LONG_HELD_MS = 15_000;
 
-const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+const sleep = async (ms: number) => {
+  await createCancellableDelay(ms).promise;
+};
 
 const normalizeKey = (key?: string) => {
   const trimmed = String(key ?? DEFAULT_KEY).trim();

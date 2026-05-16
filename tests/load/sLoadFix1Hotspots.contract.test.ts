@@ -119,6 +119,14 @@ const isApprovedScaleBoundedDatabaseQueriesPatch = (file: string) =>
     "src/screens/contractor/contractor.pdfService.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedSScale03TimerRealtimeLifecyclePatch = (file: string) =>
+  [
+    "src/lib/api/pdf.ts",
+    "src/lib/documents/pdfDocumentViewerEntry.ts",
+    "src/lib/pdf/pdfViewer.helpers.ts",
+    "src/screens/director/director.pdf.dmodal.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
   [
     "src/lib/api/directorPdfSource.service.test.ts",
@@ -337,6 +345,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAiTraceObservabilityPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedScaleBoundedDatabaseQueriesPatch(file) &&
+        !isApprovedSScale03TimerRealtimeLifecyclePatch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
         !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&

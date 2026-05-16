@@ -8,6 +8,7 @@ import {
   type PdfSourceKind,
 } from "../pdfFileContract";
 import { recordPdfCrashBreadcrumb } from "../pdf/pdfCrashBreadcrumbs";
+import { createCancellableDelay } from "../async/mapWithConcurrencyLimit";
 import {
   ensurePdfInstantCacheAsset,
   getPdfInstantCacheStatus,
@@ -129,7 +130,7 @@ async function getFileInfo(uri: string) {
   let lastError: unknown;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      if (attempt > 1) await new Promise((r) => setTimeout(r, 100 * attempt));
+      if (attempt > 1) await createCancellableDelay(100 * attempt).promise;
       const info = await FileSystemModule.getInfoAsync(uri);
       if (info) return info;
     } catch (e) {

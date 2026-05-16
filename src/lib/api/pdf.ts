@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import * as Print from "expo-print";
 import type { FilePrintResult } from "expo-print";
 import { File, Paths } from "expo-file-system";
+import { createCancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { normalizeLocalFileUri } from "../pdfFileContract";
 
 type OpenDocOpts = { share?: boolean };
@@ -13,7 +14,7 @@ const logPdfDebug = (level: "info" | "warn", message: string, payload: Record<st
 };
 
 const uiYield = async (ms = 0) => {
-  await new Promise<void>((resolve) => setTimeout(resolve, ms));
+  await createCancellableDelay(ms).promise;
 };
 
 const withTimeout = async <T,>(p: Promise<T>, ms: number, msg: string): Promise<T> => {

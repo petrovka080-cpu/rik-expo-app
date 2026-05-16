@@ -1,0 +1,62 @@
+{
+  "wave": "S_SCALE_03_TIMER_REALTIME_LIFECYCLE_CLEANUP",
+  "checkedAt": "2026-05-16T22:35:53.497Z",
+  "status": "PASS",
+  "framework": "maestro",
+  "device": "android",
+  "targetResults": [
+    {
+      "screenId": "director.dashboard",
+      "route": "(tabs)/office/director.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    },
+    {
+      "screenId": "director.reports",
+      "route": "director.reports",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    },
+    {
+      "screenId": "director.finance",
+      "route": "director.finance",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "route": "(tabs)/office/warehouse.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    },
+    {
+      "screenId": "buyer.main",
+      "route": "(tabs)/office/buyer.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    },
+    {
+      "screenId": "ai.assistant",
+      "route": "(tabs)/ai.tsx",
+      "screenBoots": true,
+      "noBlankWhiteScreen": true,
+      "lifecycleWrapperRecorded": true
+    }
+  ],
+  "lifecycleVerifierPassed": true,
+  "androidRuntimeSmoke": "PASS",
+  "androidRuntimeSource": "artifacts/S_RELEASE_CORE_02_POST_INSTALL_SIGNOFF_matrix.json",
+  "activeTimersReturnToBaseline": true,
+  "activeChannelsReturnToBaseline": true,
+  "noDuplicateSubscriptions": true,
+  "noSecretsPrinted": true,
+  "noRawChannelPayloadsPrinted": true,
+  "noDbWrites": true,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}

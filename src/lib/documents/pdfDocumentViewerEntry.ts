@@ -1,5 +1,6 @@
 import { router as rootRouter, type Href } from "expo-router";
 import { InteractionManager, Platform } from "react-native";
+import { registerTimeout } from "../lifecycle/timerRegistry";
 import { redactSensitiveText } from "../security/redaction";
 
 export type PdfViewerRouterLike = {
@@ -88,7 +89,7 @@ export async function pushPdfDocumentViewerRouteSafely(
     if (hadModalDismiss && typeof InteractionManager?.runAfterInteractions === "function") {
       InteractionManager.runAfterInteractions(() => {
         if (Platform.OS === "android" && hadModalDismiss) {
-          setTimeout(runPush, 80);
+          registerTimeout("pdf-viewer:android-modal-dismiss-push", runPush, 80);
         } else {
           runPush();
         }

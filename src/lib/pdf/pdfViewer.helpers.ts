@@ -5,6 +5,7 @@
  */
 
 import { Platform } from "react-native";
+import { registerTimeout } from "../lifecycle/timerRegistry";
 import * as FileSystemModule from "expo-file-system/legacy";
 import {
   assertValidLocalPdfFile,
@@ -110,7 +111,7 @@ export async function printPdfAsset(asset: DocumentAsset) {
     frame.onload = () => {
       frame.contentWindow?.focus();
       frame.contentWindow?.print();
-      setTimeout(() => {
+      registerTimeout("pdf-viewer:web-print-iframe-remove", () => {
         document.body.removeChild(frame);
       }, 1200);
     };

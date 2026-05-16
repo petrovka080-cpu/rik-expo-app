@@ -8,6 +8,8 @@ import { normalizePdfFileName } from "./documents/pdfDocument";
 import { getFileSystemPaths } from "./fileSystemPaths";
 import { beginPdfLifecycleObservation } from "./pdf/pdfLifecycle";
 import { recordCatchDiscipline } from "./observability/catchDiscipline";
+import { createCancellableDelay } from "./async/mapWithConcurrencyLimit";
+import { registerTimeout } from "./lifecycle/timerRegistry";
 import {
   openAndroidRemotePdfUrl as openAndroidRemotePdfUrlBoundary,
   openAndroidViewIntent,
@@ -64,7 +66,7 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 const uiYield = async (ms = 0) => {
-  await new Promise<void>((resolve) => setTimeout(resolve, ms));
+  await createCancellableDelay(ms).promise;
 };
 
 /**
@@ -912,6 +914,6 @@ export async function runPdfTop(args: {
     });
     Alert.alert("PDF", String(error?.message ?? "Не удалось открыть PDF"));
   } finally {
-    setTimeout(cleanup, 500);
+    registerTimeout("pdf-runner:post-open-cleanup", cleanup, 500);
   }
 }

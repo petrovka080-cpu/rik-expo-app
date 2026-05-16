@@ -623,6 +623,11 @@ describe("performance budget — bundle module count", () => {
     const sScale01BoundedDatabaseQueriesFiles = [
       path.join(SRC, "lib", "api", "queryLimits.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sScale03TimerRealtimeLifecycleFiles = [
+      path.join(SRC, "lib", "lifecycle", "disposable.ts"),
+      path.join(SRC, "lib", "lifecycle", "timerRegistry.ts"),
+      path.join(SRC, "lib", "realtime", "realtimeSubscriptionManager.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1421,6 +1426,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiSecurity01RolePermissionActionBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(sScale01BoundedDatabaseQueriesFiles).toBeLessThanOrEqual(1);
+    expect(sScale03TimerRealtimeLifecycleFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1622,7 +1628,8 @@ describe("performance budget — bundle module count", () => {
         sAiApproval01ActionRouterFiles -
         sAiSecurity01RolePermissionActionBoundaryFiles -
         sE2eCore05DeveloperControlTargetabilityFiles -
-        sScale01BoundedDatabaseQueriesFiles,
+        sScale01BoundedDatabaseQueriesFiles -
+        sScale03TimerRealtimeLifecycleFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

@@ -1,0 +1,67 @@
+{
+  "wave": "S_SCALE_03_TIMER_REALTIME_LIFECYCLE_CLEANUP",
+  "checkedAt": "2026-05-16T22:35:48.167Z",
+  "status": "PASS",
+  "baseUrl": "http://localhost:8099",
+  "webServerStartedByVerifier": false,
+  "targetResults": [
+    {
+      "screenId": "director.dashboard",
+      "path": "/office/director",
+      "finalUrl": "http://localhost:8099/auth/login",
+      "loaded": true,
+      "bodyLength": 56,
+      "whiteScreen": false
+    },
+    {
+      "screenId": "director.reports",
+      "path": "/office/director",
+      "finalUrl": "http://localhost:8099/auth/login",
+      "loaded": true,
+      "bodyLength": 56,
+      "whiteScreen": false
+    },
+    {
+      "screenId": "director.finance",
+      "path": "/office/director",
+      "finalUrl": "http://localhost:8099/auth/login",
+      "loaded": true,
+      "bodyLength": 56,
+      "whiteScreen": false
+    },
+    {
+      "screenId": "warehouse.main",
+      "path": "/office/warehouse",
+      "finalUrl": "http://localhost:8099/office/warehouse",
+      "loaded": true,
+      "bodyLength": 286,
+      "whiteScreen": false
+    },
+    {
+      "screenId": "buyer.main",
+      "path": "/office/buyer",
+      "finalUrl": "http://localhost:8099/office/buyer",
+      "loaded": true,
+      "bodyLength": 3070,
+      "whiteScreen": false
+    },
+    {
+      "screenId": "ai.assistant",
+      "path": "/ai",
+      "finalUrl": "http://localhost:8099/ai",
+      "loaded": true,
+      "bodyLength": 3696,
+      "whiteScreen": false
+    }
+  ],
+  "lifecycleVerifierPassed": true,
+  "activeTimersReturnToBaseline": true,
+  "activeChannelsReturnToBaseline": true,
+  "noDuplicateSubscriptions": true,
+  "noSecretsPrinted": true,
+  "noRawChannelPayloadsPrinted": true,
+  "noDbWrites": true,
+  "dbWriteSignals": [],
+  "noProviderCall": true,
+  "errors": []
+}

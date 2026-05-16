@@ -5,6 +5,7 @@ import * as IntentLauncher from "expo-intent-launcher";
 
 import { getFileSystemPaths } from "../fileSystemPaths";
 import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "../pdfFileContract";
+import { registerTimeout } from "../lifecycle/timerRegistry";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { redactSensitiveText } from "../security/redaction";
 import { recordPlatformObservability } from "../observability/platformObservability";
@@ -317,7 +318,7 @@ async function openAttachmentOnWeb(input: AppAttachmentOpenInput, source: Resolv
       a.click();
       document.body.removeChild(a);
     }
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    registerTimeout("attachment-open:web-blob-url-revoke", () => URL.revokeObjectURL(blobUrl), 60_000);
   } catch (error) {
     recordPlatformObservability({
       screen: "request",

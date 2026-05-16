@@ -333,6 +333,12 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
     const sRouteErrorBoundaryCoverageAllowedDirtyFiles = new Set([
       "scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
     ]);
+    const sScale03TimerRealtimeLifecycleAllowedDirtyFiles = new Set([
+      "scripts/scale/verifyLongSessionLifecycleSafety.ts",
+      "scripts/scale/verifyRealtimeSubscriptionLifecycle.ts",
+      "scripts/scale/verifyTimerLifecycleCleanup.ts",
+      "scripts/scale/verifyTimerRealtimeLifecycle.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -349,6 +355,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sWarehouseApiBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sAssistantStoreBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sRouteErrorBoundaryCoverageAllowedDirtyFiles.has(file) &&
+        !sScale03TimerRealtimeLifecycleAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

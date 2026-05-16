@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getPlatformNetworkSnapshot } from "../../lib/offline/platformNetwork.service";
+import { registerTimeout } from "../../lib/lifecycle/timerRegistry";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   isPlatformGuardCoolingDown,
@@ -178,7 +179,7 @@ export function useWarehouseRealtimeLifecycle(params: {
     return () => {
       // P0: Defer channel detach to avoid native WebSocket close during React
       // teardown. detach() is idempotent — calling after channel is gone is a no-op.
-      setTimeout(detach, 0);
+      registerTimeout("warehouse:realtime:deferred-detach", detach, 0);
     };
   }, [screenActiveRef]);
 

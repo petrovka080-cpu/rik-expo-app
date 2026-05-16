@@ -1,0 +1,23 @@
+{
+  "wave": "S_SCALE_03_TIMER_REALTIME_LIFECYCLE_CLEANUP",
+  "final_status": "GREEN_SCALE_TIMER_REALTIME_LIFECYCLE_READY",
+  "initial_uncleaned_timer_findings": 10,
+  "remaining_uncleaned_timer_findings": 0,
+  "initial_realtime_subscription_files": 16,
+  "unmanaged_realtime_subscriptions_remaining": 0,
+  "timer_registry_added": true,
+  "realtime_subscription_manager_added": true,
+  "double_cleanup_safe": true,
+  "owner_cleanup_supported": true,
+  "long_session_simulation_pass": true,
+  "web_runtime_checked": true,
+  "android_runtime_checked": true,
+  "active_timers_return_to_baseline": true,
+  "active_channels_return_to_baseline": true,
+  "new_hooks_added": false,
+  "realtime_disabled_to_pass": false,
+  "business_logic_changed": false,
+  "secrets_printed": false,
+  "raw_channel_payloads_printed": false,
+  "fake_green_claimed": false
+}

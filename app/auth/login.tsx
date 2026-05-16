@@ -19,6 +19,7 @@ import {
 import { getSessionSafe, isSupabaseEnvValid } from "../../src/lib/supabaseClient";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
+import { createCancellableDelay } from "../../src/lib/async/mapWithConcurrencyLimit";
 
 const POST_AUTH_SESSION_SETTLE_WINDOW_MS = 2500;
 const POST_AUTH_SESSION_POLL_INTERVAL_MS = 200;
@@ -107,9 +108,8 @@ function LoginScreen() {
         };
       }
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, POST_AUTH_SESSION_POLL_INTERVAL_MS),
-      );
+      const pollDelay = createCancellableDelay(POST_AUTH_SESSION_POLL_INTERVAL_MS);
+      await pollDelay.promise;
     }
 
     recordPlatformObservability({

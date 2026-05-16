@@ -84,7 +84,9 @@ describe("D-MODAL-PDF: Android modal dismiss settle delay", () => {
 
     // Verify the Android-specific settle delay exists
     expect(source).toContain('Platform.OS === "android" && hadModalDismiss');
-    expect(source).toContain("setTimeout(runPush, 80)");
+    expect(source).toContain(
+      'registerTimeout("pdf-viewer:android-modal-dismiss-push", runPush, 80)',
+    );
   });
 
   it("should not add delay for iOS modal paths", () => {
@@ -96,7 +98,7 @@ describe("D-MODAL-PDF: Android modal dismiss settle delay", () => {
     // iOS path should still go through normal InteractionManager flow,
     // The else branch calls runPush() directly
     const androidBlock = source.match(
-      /if \(Platform\.OS === "android" && hadModalDismiss\)[\s\S]*?setTimeout\(runPush, 80\);[\s\S]*?else \{[\s\S]*?runPush\(\)/,
+      /if \(Platform\.OS === "android" && hadModalDismiss\)[\s\S]*?registerTimeout\("pdf-viewer:android-modal-dismiss-push", runPush, 80\);[\s\S]*?else \{[\s\S]*?runPush\(\)/,
     );
     expect(androidBlock).not.toBeNull();
   });
