@@ -1,0 +1,24 @@
+{
+  "wave": "S_SCALE_06_AI_ROUTE_LAZY_LOADING_CLOSEOUT",
+  "final_status": "GREEN_SCALE_AI_ROUTE_LAZY_LOADING_READY",
+  "generatedAt": "2026-05-16T20:40:07.486Z",
+  "git": {
+    "head": "2e642271522e1dcff94cea358e563ac094dd07fc",
+    "origin_main": "2e642271522e1dcff94cea358e563ac094dd07fc",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "dirty"
+  },
+  "target_routes": 4,
+  "routes_with_static_heavy_ai_imports": 0,
+  "static_heavy_ai_route_imports_remaining": 0,
+  "dynamic_heavy_ai_route_imports": 7,
+  "routes_with_suspense": 4,
+  "routes_with_loading_fallback": 4,
+  "routes_with_error_boundary": 4,
+  "alias_route_preserved": true,
+  "business_logic_changed": false,
+  "hooks_added": false,
+  "hidden_testid_shims_added": false,
+  "fake_green_claimed": false
+}

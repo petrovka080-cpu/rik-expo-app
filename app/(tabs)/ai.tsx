@@ -1,12 +1,40 @@
 import React from "react";
 import { useLocalSearchParams } from "expo-router";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-import AIAssistantScreen from "../../src/features/ai/AIAssistantScreen";
-import ApprovalInboxScreen from "../../src/features/ai/approvalInbox/ApprovalInboxScreen";
 import { buildApprovalPersistenceBlockedViewModel } from "../../src/features/ai/approvalInbox/approvalInboxPersistenceBlockedViewModel";
-import AiCommandCenterScreen from "../../src/features/ai/commandCenter/AiCommandCenterScreen";
-import ProcurementCopilotRuntimeSurface from "../../src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
+
+const AIAssistantScreen = React.lazy(() => import("../../src/features/ai/AIAssistantScreen"));
+const ApprovalInboxScreen = React.lazy(
+  () => import("../../src/features/ai/approvalInbox/ApprovalInboxScreen"),
+);
+const AiCommandCenterScreen = React.lazy(
+  () => import("../../src/features/ai/commandCenter/AiCommandCenterScreen"),
+);
+const ProcurementCopilotRuntimeSurface = React.lazy(
+  () => import("../../src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface"),
+);
+
+type AiRouteSuspenseProps = {
+  children: React.ReactNode;
+};
+
+function AiRouteLoadingFallback() {
+  return (
+    <View style={styles.lazyFallback}>
+      <ActivityIndicator color="#0F766E" />
+    </View>
+  );
+}
+
+function AiRouteSuspense(props: AiRouteSuspenseProps) {
+  return (
+    <React.Suspense fallback={<AiRouteLoadingFallback />}>
+      {props.children}
+    </React.Suspense>
+  );
+}
 
 function AITabScreen() {
   const params = useLocalSearchParams<{
@@ -30,17 +58,44 @@ function AITabScreen() {
     ? params.procurementRequestId[0]
     : params.procurementRequestId;
   if (approvalInbox === "1") {
-    return <ApprovalInboxScreen viewModel={buildApprovalPersistenceBlockedViewModel()} />;
+    return (
+      <AiRouteSuspense>
+        <ApprovalInboxScreen viewModel={buildApprovalPersistenceBlockedViewModel()} />
+      </AiRouteSuspense>
+    );
   }
   if (procurementCopilot === "1" || procurementExternalIntel === "1") {
-    return <ProcurementCopilotRuntimeSurface requestId={procurementRequestId} />;
+    return (
+      <AiRouteSuspense>
+        <ProcurementCopilotRuntimeSurface requestId={procurementRequestId} />
+      </AiRouteSuspense>
+    );
   }
-  if (mode === "command-center") return <AiCommandCenterScreen />;
+  if (mode === "command-center") {
+    return (
+      <AiRouteSuspense>
+        <AiCommandCenterScreen />
+      </AiRouteSuspense>
+    );
+  }
 
-  return <AIAssistantScreen />;
+  return (
+    <AiRouteSuspense>
+      <AIAssistantScreen />
+    </AiRouteSuspense>
+  );
 }
 
 export default withScreenErrorBoundary(AITabScreen, {
   screen: "ai",
   route: "/ai",
+});
+
+const styles = StyleSheet.create({
+  lazyFallback: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#0B1220",
+  },
 });

@@ -1,0 +1,69 @@
+{
+  "wave": "S_SCALE_06_AI_ROUTE_LAZY_LOADING_CLOSEOUT",
+  "final_status": "GREEN_SCALE_AI_ROUTE_LAZY_LOADING_READY",
+  "generatedAt": "2026-05-16T20:40:07.486Z",
+  "inventory": [
+    {
+      "route": "app/(tabs)/ai.tsx",
+      "staticHeavyImports": [],
+      "dynamicHeavyImports": [
+        "../../src/features/ai/AIAssistantScreen",
+        "../../src/features/ai/approvalInbox/ApprovalInboxScreen",
+        "../../src/features/ai/commandCenter/AiCommandCenterScreen",
+        "../../src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface"
+      ],
+      "hasSuspenseBoundary": true,
+      "hasLoadingFallback": true,
+      "hasErrorBoundary": true,
+      "preservesRouteParams": true
+    },
+    {
+      "route": "app/ai-command-center.tsx",
+      "staticHeavyImports": [],
+      "dynamicHeavyImports": [
+        "../src/features/ai/commandCenter/AiCommandCenterScreen"
+      ],
+      "hasSuspenseBoundary": true,
+      "hasLoadingFallback": true,
+      "hasErrorBoundary": true,
+      "preservesRouteParams": true
+    },
+    {
+      "route": "app/ai-procurement-copilot.tsx",
+      "staticHeavyImports": [],
+      "dynamicHeavyImports": [
+        "../src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface"
+      ],
+      "hasSuspenseBoundary": true,
+      "hasLoadingFallback": true,
+      "hasErrorBoundary": true,
+      "preservesRouteParams": true
+    },
+    {
+      "route": "app/ai-approval-inbox.tsx",
+      "staticHeavyImports": [],
+      "dynamicHeavyImports": [
+        "../src/features/ai/approvalInbox/ApprovalInboxScreen"
+      ],
+      "hasSuspenseBoundary": true,
+      "hasLoadingFallback": true,
+      "hasErrorBoundary": true,
+      "preservesRouteParams": true
+    }
+  ],
+  "findings": [],
+  "metrics": {
+    "targetRoutes": 4,
+    "routesWithStaticHeavyAiImports": 0,
+    "staticHeavyAiRouteImportsRemaining": 0,
+    "dynamicHeavyAiRouteImports": 7,
+    "routesWithSuspense": 4,
+    "routesWithLoadingFallback": 4,
+    "routesWithErrorBoundary": 4,
+    "aliasRoutePreserved": true,
+    "businessLogicChanged": false,
+    "hooksAdded": false,
+    "hiddenTestIdShimsAdded": false,
+    "fakeGreenClaimed": false
+  }
+}

@@ -6,14 +6,18 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
-      "scripts/ai/verifyAgentBffShellDecomposition.ts",
-      "src/features/ai/agent/agentBffRouteShell.ts",
-      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
-      "tests/scale/agentBffShellDecomposition.contract.test.ts"
+      "app/(tabs)/ai.tsx",
+      "app/ai-approval-inbox.tsx",
+      "app/ai-command-center.tsx",
+      "app/ai-procurement-copilot.tsx",
+      "scripts/architecture/verifyAiRouteLazyLoading.ts",
+      "tests/architecture/aiRouteLazyLoading.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
-      "src/features/ai/agent/agentBffRouteShell.ts",
-      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
+      "app/(tabs)/ai.tsx",
+      "app/ai-approval-inbox.tsx",
+      "app/ai-command-center.tsx",
+      "app/ai-procurement-copilot.tsx"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1184,8 +1188,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "2421ec488c3f822e8cd48aa8d1ca46b1402330b5b0a011cf6b06e6619fb0523c",
-    "installed_apk_source_fingerprint": "2421ec488c3f822e8cd48aa8d1ca46b1402330b5b0a011cf6b06e6619fb0523c",
+    "ai_mobile_runtime_source_fingerprint": "64d32fcf0a3005f778a27e61f7ae447858d10f79cb44ef27391411a908c72d6d",
+    "installed_apk_source_fingerprint": "64d32fcf0a3005f778a27e61f7ae447858d10f79cb44ef27391411a908c72d6d",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1193,7 +1197,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "279ad1de37bdb18f73c808bdd8354de75adeecd95886641ed37410246b5cfb69",
+    "changed_files_fingerprint": "dc9bf3abac8f213c749fece6a2ee8c1afcaacb4740d843a1ae580e5d2a9f3279",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

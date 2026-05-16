@@ -3,16 +3,20 @@
   "source_wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "final_status": "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "279ad1de37bdb18f73c808bdd8354de75adeecd95886641ed37410246b5cfb69",
+  "changed_files_fingerprint": "dc9bf3abac8f213c749fece6a2ee8c1afcaacb4740d843a1ae580e5d2a9f3279",
   "changed_files": [
-    "scripts/ai/verifyAgentBffShellDecomposition.ts",
-    "src/features/ai/agent/agentBffRouteShell.ts",
-    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
-    "tests/scale/agentBffShellDecomposition.contract.test.ts"
+    "app/(tabs)/ai.tsx",
+    "app/ai-approval-inbox.tsx",
+    "app/ai-command-center.tsx",
+    "app/ai-procurement-copilot.tsx",
+    "scripts/architecture/verifyAiRouteLazyLoading.ts",
+    "tests/architecture/aiRouteLazyLoading.contract.test.ts"
   ],
   "ai_mobile_runtime_files": [
-    "src/features/ai/agent/agentBffRouteShell.ts",
-    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
+    "app/(tabs)/ai.tsx",
+    "app/ai-approval-inbox.tsx",
+    "app/ai-command-center.tsx",
+    "app/ai-procurement-copilot.tsx"
   ],
   "runtime_smoke": "PASS",
   "core_release_artifact_overwritten": false,
