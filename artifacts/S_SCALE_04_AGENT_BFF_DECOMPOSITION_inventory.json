@@ -1,0 +1,20 @@
+{
+  "wave": "S_SCALE_04_AGENT_BFF_DECOMPOSITION_CLOSEOUT",
+  "source_files": [
+    "src/features/ai/agent/agentBffRouteShell.ts",
+    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
+  ],
+  "verifier": "scripts/ai/verifyAgentBffShellDecomposition.ts",
+  "tests": [
+    "tests/scale/agentBffShellDecomposition.contract.test.ts"
+  ],
+  "shell_line_count_before": 3221,
+  "shell_line_count_after": 2442,
+  "shell_line_count_reduction": 779,
+  "registry_line_count_after": 242,
+  "route_count": 76,
+  "route_registry_moved_to_policy_module": true,
+  "db_writes_used": false,
+  "provider_calls_used": false,
+  "business_logic_changed": false
+}

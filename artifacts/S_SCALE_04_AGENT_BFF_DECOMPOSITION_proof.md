@@ -1,0 +1,22 @@
+# S_SCALE_04_AGENT_BFF_DECOMPOSITION_CLOSEOUT
+
+final_status: GREEN_SCALE_AGENT_BFF_DECOMPOSITION_READY
+exact_reason: none
+shell_line_count_before: 3221
+shell_line_count_after: 2442
+shell_line_count_reduction: 779
+registry_line_count_after: 242
+route_count: 76
+route_count_preserved: true
+route_registry_moved_to_policy_module: true
+shell_reexports_route_definitions: true
+policy_registry_compact: true
+source_guard_hints_preserved: true
+all_routes_read_only: true
+all_routes_no_provider_calls: true
+all_routes_no_direct_database_access: true
+new_hooks_added: false
+business_logic_changed: false
+db_writes_used: false
+provider_calls_used: false
+fake_green_claimed: false

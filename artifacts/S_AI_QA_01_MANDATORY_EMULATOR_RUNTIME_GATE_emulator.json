@@ -3,22 +3,18 @@
   "android_emulator_ready": true,
   "android_installed_runtime_smoke": "PASS",
   "rebuild_requirement": {
-    "final_status": "PASS_ANDROID_REBUILD_NOT_REQUIRED",
-    "require_rebuild": false,
+    "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
+    "require_rebuild": true,
     "changed_files": [
-      "scripts/e2e/runRouteErrorBoundaryMaestro.ts",
-      "scripts/e2e/runRouteErrorBoundaryWeb.ts",
-      "scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
-      "src/shared/ui/ScreenErrorBoundary.test.tsx",
-      "src/shared/ui/ScreenErrorBoundary.tsx",
-      "tests/api/topListPaginationBatch7.contract.test.ts",
-      "tests/architecture/allRoutesHaveErrorBoundary.contract.test.ts",
-      "tests/e2e/routeErrorBoundaryMaestro.contract.test.ts",
-      "tests/e2e/routeErrorBoundaryWeb.contract.test.ts",
-      "tests/errors/routeErrorBoundaryUserCopy.contract.test.ts",
-      "tests/scale/routeErrorBoundaryCoverage.contract.test.ts"
+      "scripts/ai/verifyAgentBffShellDecomposition.ts",
+      "src/features/ai/agent/agentBffRouteShell.ts",
+      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
+      "tests/scale/agentBffShellDecomposition.contract.test.ts"
     ],
-    "ai_mobile_runtime_files": [],
+    "ai_mobile_runtime_files": [
+      "src/features/ai/agent/agentBffRouteShell.ts",
+      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
+    ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
       "app/(tabs)/add.tsx",
@@ -1188,16 +1184,16 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "cf7c28aa2fa7047d6faa625f74c943ab08c786f0ecbb2f2ae78c39a69c539b16",
-    "installed_apk_source_fingerprint": "cf7c28aa2fa7047d6faa625f74c943ab08c786f0ecbb2f2ae78c39a69c539b16",
+    "ai_mobile_runtime_source_fingerprint": "2421ec488c3f822e8cd48aa8d1ca46b1402330b5b0a011cf6b06e6619fb0523c",
+    "installed_apk_source_fingerprint": "2421ec488c3f822e8cd48aa8d1ca46b1402330b5b0a011cf6b06e6619fb0523c",
     "source_fingerprint_matches_installed_apk": true,
-    "local_android_rebuild_install_after_source_change": false,
-    "backend_or_scripts_only": true,
+    "local_android_rebuild_install_after_source_change": true,
+    "backend_or_scripts_only": false,
     "installed_runtime_smoke_required": true,
-    "local_android_rebuild_install_required": false,
-    "local_android_rebuild_install": "NOT_REQUIRED",
+    "local_android_rebuild_install_required": true,
+    "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "8a9f8fe341f3f5bd6573a19dffb8edeb7e439c3d36eada813247210f647f7c89",
+    "changed_files_fingerprint": "279ad1de37bdb18f73c808bdd8354de75adeecd95886641ed37410246b5cfb69",
     "exact_reason": null
   },
   "emulator_boot_completed": false,
