@@ -1,0 +1,43 @@
+{
+  "wave": "S_WEB_AI_ASSISTANT_02_FULL_HEIGHT_CHAT_READY_SCREEN_PROPOSALS",
+  "scope": "web_ai_assistant_product_ux_runtime",
+  "changed_sources": [
+    "scripts/architecture_anti_regression_suite.ts",
+    "src/features/ai/AIAssistantScreen.tsx",
+    "src/features/ai/AIAssistantReadyProductPanels.tsx",
+    "src/features/ai/AIAssistantScreen.styles.ts",
+    "src/features/ai/assistantClient.ts",
+    "src/features/ai/assistantPrompts.ts",
+    "src/features/ai/assistantUx/aiAssistantContextResolver.ts",
+    "src/features/ai/assistantUx/aiAssistantDeterministicAnswers.ts",
+    "src/features/ai/assistantUx/aiAssistantModuleKnowledge.ts",
+    "src/features/ai/assistantUx/aiAssistantUserFacingCopyPolicy.ts",
+    "src/features/ai/screenProposals/aiScreenReadyProposalEngine.ts",
+    "src/features/ai/screenProposals/aiScreenReadyProposalPolicy.ts",
+    "src/features/ai/screenProposals/aiScreenReadyProposalRegistry.ts",
+    "src/features/ai/screenProposals/aiScreenReadyProposalTypes.ts",
+    "src/features/ai/procurement/aiApprovedRequestSupplierOptions.ts",
+    "src/features/ai/procurement/aiApprovedRequestSupplierProposalHydrator.ts",
+    "src/features/ai/procurement/aiSupplierProposalReadinessPolicy.ts",
+    "scripts/e2e/runAiAssistantReadyProposalsWeb.ts",
+    "tests/e2e/aiAssistantStableTestIds.contract.test.ts",
+    "tests/e2e/aiKnowledgePreviewStableSurface.contract.test.ts",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "tests": [
+    "tests/ai/aiAssistantDeterministicAnswers.contract.test.ts",
+    "tests/ai/aiAssistantContextResolver.contract.test.ts",
+    "tests/ai/aiAssistantUserFacingCopyPolicy.contract.test.ts",
+    "tests/ai/aiScreenReadyProposalEngine.contract.test.ts",
+    "tests/ai/aiApprovedRequestSupplierProposalHydrator.contract.test.ts",
+    "tests/ai/aiSupplierProposalReadinessPolicy.contract.test.ts",
+    "tests/e2e/aiAssistantReadyProposalsWeb.contract.test.ts",
+    "tests/architecture/aiAssistantNoDebugContextInUserUi.contract.test.ts",
+    "tests/architecture/aiReadyProposalsNoDirectMutation.contract.test.ts"
+  ],
+  "debug_context_default_visibility": "hidden",
+  "debug_context_flag": "debugAiContext=1",
+  "provider_default": "deterministic_without_provider",
+  "db_write_used": false,
+  "fake_supplier_created": false
+}

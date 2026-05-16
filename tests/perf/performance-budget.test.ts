@@ -385,6 +385,20 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "components", "ai", "runtime", "AiScreenScrollShell.tsx"),
       path.join(SRC, "components", "ai", "runtime", "AiComposerBar.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sWebAiAssistant02FullHeightReadyProposalsFiles = [
+      path.join(SRC, "features", "ai", "AIAssistantReadyProductPanels.tsx"),
+      path.join(SRC, "features", "ai", "assistantUx", "aiAssistantContextResolver.ts"),
+      path.join(SRC, "features", "ai", "assistantUx", "aiAssistantDeterministicAnswers.ts"),
+      path.join(SRC, "features", "ai", "assistantUx", "aiAssistantModuleKnowledge.ts"),
+      path.join(SRC, "features", "ai", "assistantUx", "aiAssistantUserFacingCopyPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenProposals", "aiScreenReadyProposalEngine.ts"),
+      path.join(SRC, "features", "ai", "screenProposals", "aiScreenReadyProposalPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenProposals", "aiScreenReadyProposalRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenProposals", "aiScreenReadyProposalTypes.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiApprovedRequestSupplierOptions.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiApprovedRequestSupplierProposalHydrator.ts"),
+      path.join(SRC, "features", "ai", "procurement", "aiSupplierProposalReadinessPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
@@ -1318,6 +1332,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiAssistant02ScreenLocalRoleAssistantFiles).toBeLessThanOrEqual(8);
     expect(sAiRuntime08ScreenLocalActionSourcePolicyFiles).toBeLessThanOrEqual(1);
     expect(sAiLayout01SafeRuntimeFiles).toBeLessThanOrEqual(5);
+    expect(sWebAiAssistant02FullHeightReadyProposalsFiles).toBeLessThanOrEqual(12);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
@@ -1513,6 +1528,7 @@ describe("performance budget — bundle module count", () => {
         sAiAssistant02ScreenLocalRoleAssistantFiles -
         sAiRuntime08ScreenLocalActionSourcePolicyFiles -
         sAiLayout01SafeRuntimeFiles -
+        sWebAiAssistant02FullHeightReadyProposalsFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
         sAiProcurement04InternalFirstDecisionEngineFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -

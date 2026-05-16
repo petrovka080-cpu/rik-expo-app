@@ -280,11 +280,6 @@ export function buildOfflineAssistantReply(
   context: AssistantContext = "unknown",
 ): string {
   const text = String(message || "").trim().toLowerCase();
-  const aiRole = normalizeAssistantRoleToAiUserRole(role);
-  const knowledgeBlock = buildAiKnowledgePromptBlock({
-    role: aiRole,
-    screenId: resolveAiScreenIdForAssistantContext(context),
-  });
 
   if (!text) {
     return getAssistantGreeting(role, null, context);
@@ -292,9 +287,9 @@ export function buildOfflineAssistantReply(
 
   if (/(what can|can you do|available|allowed|capabilit|help on this screen)/i.test(text)) {
     return [
-      "Short conclusion: I can help only within this role and screen knowledge policy.",
-      knowledgeBlock,
-      "High-risk actions are never executed silently. submit, approve, send, payment, supplier confirmation, order, and stock mutation require approval_required through aiApprovalGate.",
+      "Могу объяснять экран, подсказывать следующий шаг, сравнивать варианты, искать риски и готовить черновики.",
+      "Заказ, подтверждение поставщика, оплата, складское движение и финальное утверждение не выполняются напрямую.",
+      "Опасные действия идут только через согласование.",
     ].join("\n");
   }
 
@@ -319,5 +314,5 @@ export function buildOfflineAssistantReply(
   }
 
   const contextHint = getAssistantContextIntro(context);
-  return `${contextHint ? `${contextHint} ` : ""}AI-ключ сейчас не настроен или недоступен, поэтому я работаю в safe guide mode: подсказываю маршрут по приложению, объясняю статусы и помогаю сформулировать запрос для нужного модуля.`;
+  return `${contextHint ? `${contextHint} ` : ""}Работаю в режиме подсказок и черновиков. Действия напрямую не выполняю. Могу объяснить процесс, подсказать следующий шаг и помочь подготовить безопасный черновик.`;
 }

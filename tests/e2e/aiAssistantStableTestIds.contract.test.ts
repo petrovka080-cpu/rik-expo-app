@@ -16,23 +16,25 @@ const flowFiles = [
 
 describe("AI assistant stable e2e test IDs", () => {
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
+  const assistantProductPanelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
+  const assistantUiSource = [assistantSource, assistantProductPanelsSource].join("\n");
   const assistantFabSource = read("src/features/ai/AssistantFab.tsx");
 
   it("exposes stable IDs on the existing assistant entry and surface", () => {
     expect(assistantFabSource).toContain('testID="ai.assistant.open"');
-    expect(assistantSource).toContain('testID="ai.assistant.screen"');
-    expect(assistantSource).toContain('testID="ai.assistant.messages"');
-    expect(assistantSource).toContain('testID="ai.assistant.input"');
-    expect(assistantSource).toContain('testID="ai.assistant.send"');
-    expect(assistantSource).toContain('"ai.assistant.response"');
-    expect(assistantSource).toContain('"ai.assistant.response.history"');
-    expect(assistantSource).toContain('"ai.knowledge.preview"');
-    expect(assistantSource).toContain('testID="ai.knowledge.role"');
-    expect(assistantSource).toContain('testID="ai.knowledge.screen"');
-    expect(assistantSource).toContain('testID="ai.knowledge.domain"');
-    expect(assistantSource).toContain('testID="ai.knowledge.allowed-intents"');
-    expect(assistantSource).toContain('testID="ai.knowledge.blocked-intents"');
-    expect(assistantSource).toContain('testID="ai.knowledge.approval-boundary"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.screen"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.messages"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.input"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.send"');
+    expect(assistantUiSource).toContain('"ai.assistant.response"');
+    expect(assistantUiSource).toContain('"ai.assistant.response.history"');
+    expect(assistantUiSource).toContain('"ai.knowledge.preview"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.role"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.screen"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.domain"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.allowed-intents"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.blocked-intents"');
+    expect(assistantUiSource).toContain('testID="ai.knowledge.approval-boundary"');
   });
 
   it("keeps the real assistant client path and does not add fake AI output", () => {
@@ -47,22 +49,22 @@ describe("AI assistant stable e2e test IDs", () => {
   it("keeps scoped context preview bounded so the composer remains targetable", () => {
     const stylesSource = read("src/features/ai/AIAssistantScreen.styles.ts");
 
-    expect(assistantSource).toContain("knowledgePreview");
-    expect(assistantSource).not.toContain("{scopedFacts.summary}");
-    expect(assistantSource).toContain("numberOfLines={1}");
-    expect(assistantSource).toContain(
+    expect(assistantUiSource).toContain("knowledgePreview");
+    expect(assistantUiSource).not.toContain("{scopedFacts.summary}");
+    expect(assistantUiSource).toContain("numberOfLines={1}");
+    expect(assistantUiSource).toContain(
       'testID="ai.knowledge.approval-boundary"',
     );
     expect(stylesSource).toContain("maxHeight: 260");
-    expect(assistantSource).toContain('testID="ai.assistant.input"');
-    expect(assistantSource).toContain('testID="ai.assistant.send"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.input"');
+    expect(assistantUiSource).toContain('testID="ai.assistant.send"');
   });
 
   it("keeps assistant chip rows bounded so response bubbles stay targetable", () => {
     const stylesSource = read("src/features/ai/AIAssistantScreen.styles.ts");
 
-    expect(assistantSource).toContain("style={styles.routeScroller}");
-    expect(assistantSource).toContain("style={styles.quickPromptScroller}");
+    expect(assistantUiSource).toContain("style={styles.routeScroller}");
+    expect(assistantUiSource).toContain("style={styles.quickPromptScroller}");
     expect(stylesSource).toContain("routeScroller");
     expect(stylesSource).toContain("quickPromptScroller");
     expect(stylesSource).toContain("maxHeight: 58");

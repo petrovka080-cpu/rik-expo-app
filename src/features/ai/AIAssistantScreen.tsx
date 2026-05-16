@@ -13,15 +13,27 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { supportsAssistantActionMode, tryRunAssistantAction } from "./assistantActions";
-import { loadAssistantScopedFacts, type AssistantScopedFacts } from "./assistantScopeContext";
-import { isAssistantConfigured, sendAssistantMessage } from "./assistantClient";
 import {
-  getAssistantContextLabel, getAssistantContextQuickPrompts, getAssistantGreeting,
+  AIAssistantProductHeader,
+  AIAssistantReadyProductPanels,
+  AIAssistantShortcutRows,
+} from "./AIAssistantReadyProductPanels";
+import { tryRunAssistantAction } from "./assistantActions";
+import { loadAssistantScopedFacts, type AssistantScopedFacts } from "./assistantScopeContext";
+import { sendAssistantMessage } from "./assistantClient";
+import {
+  getAssistantContextQuickPrompts, getAssistantGreeting,
   getAssistantQuickPrompts, normalizeAssistantContext, normalizeAssistantRole,
 } from "./assistantPrompts";
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
+import { resolveAssistantUserContext } from "./assistantUx/aiAssistantContextResolver";
+import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
+import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
+import {
+  buildApprovedRequestBundleFromSearchParams,
+} from "./procurement/aiApprovedRequestSupplierProposalHydrator";
+import { getAiScreenReadyProposals } from "./screenProposals/aiScreenReadyProposalEngine";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
@@ -85,25 +97,13 @@ function resolveAssistantBackFallback(context: AssistantContext) {
   }
 }
 
-function getRoleLabel(role: AssistantRole): string {
-  switch (role) {
-    case "buyer":
-      return "Снабженец";
-    case "warehouse":
-      return "Склад";
-    case "director":
-      return "Директор";
-    case "accountant":
-      return "Бухгалтер";
-    case "foreman":
-      return "Прораб";
-    case "contractor":
-      return "Подрядчик";
-    case "security":
-      return "Безопасность";
-    default:
-      return "Пользователь";
-  }
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function booleanParam(value: string | string[] | undefined): boolean {
+  const normalized = String(firstParam(value) || "").trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
 export default function AIAssistantScreen() {
@@ -111,10 +111,23 @@ export default function AIAssistantScreen() {
     prompt?: string | string[];
     autoSend?: string | string[];
     context?: string | string[];
+    debugAiContext?: string | string[];
+    approvedRequestId?: string | string[];
+    procurementRequestId?: string | string[];
+    approvalStatus?: string | string[];
+    approvedByDirector?: string | string[];
+    approvedRequestItems?: string | string[];
+    internalSupplierId?: string | string[];
+    internalSupplierName?: string | string[];
+    internalSupplierEvidence?: string | string[];
+    internalSupplierMatchedItems?: string | string[];
+    internalSupplierPrice?: string | string[];
+    internalSupplierDelivery?: string | string[];
+    internalSupplierReliability?: string | string[];
   }>();
-  const routePrompt = Array.isArray(params.prompt) ? params.prompt[0] : params.prompt;
-  const routeAutoSend = Array.isArray(params.autoSend) ? params.autoSend[0] : params.autoSend;
-  const routeContext = Array.isArray(params.context) ? params.context[0] : params.context;
+  const routePrompt = firstParam(params.prompt);
+  const routeAutoSend = firstParam(params.autoSend);
+  const routeContext = firstParam(params.context);
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<AssistantRole>("unknown");
@@ -127,17 +140,38 @@ export default function AIAssistantScreen() {
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
   const handledPromptRef = useRef<string>("");
   const assistantContext = useMemo<AssistantContext>(() => normalizeAssistantContext(routeContext), [routeContext]);
+  const debugAiContext = booleanParam(params.debugAiContext);
+  const assistantScreenId = useMemo(
+    () => resolveAiScreenIdForAssistantContext(assistantContext),
+    [assistantContext],
+  );
+  const resolvedUserContext = useMemo(
+    () =>
+      resolveAssistantUserContext({
+        urlContext: assistantContext,
+        sessionRole: role,
+        screenId: assistantScreenId,
+      }),
+    [assistantContext, assistantScreenId, role],
+  );
+  const readyProposals = useMemo(
+    () =>
+      getAiScreenReadyProposals({
+        context: assistantContext,
+        screenId: resolvedUserContext.screenId,
+        limit: assistantContext === "buyer" ? 4 : 3,
+      }),
+    [assistantContext, resolvedUserContext.screenId],
+  );
+  const approvedSupplierBundle = useMemo(
+    () => buildApprovedRequestBundleFromSearchParams(params),
+    [params],
+  );
   const assistantVoiceScreen = useMemo(
     () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
     [role],
   );
 
-  const configured = isAssistantConfigured();
-  const actionMode = useMemo(
-    () => supportsAssistantActionMode(role, assistantContext),
-    [assistantContext, role],
-  );
-  const modeLabel = configured ? (actionMode ? "action AI" : "online AI") : actionMode ? "local action mode" : "guide mode";
   const quickPrompts = useMemo(() => {
     const merged = [
       ...getAssistantContextQuickPrompts(assistantContext),
@@ -254,7 +288,7 @@ export default function AIAssistantScreen() {
           message: text,
         });
         const answer = actionResult.handled
-          ? actionResult.reply || "Действие выполнено."
+          ? sanitizeAssistantUserFacingCopy(actionResult.reply || "Готово. Действия напрямую не выполняю без согласования.")
           : await sendAssistantMessage({
             role,
             context: assistantContext,
@@ -269,7 +303,7 @@ export default function AIAssistantScreen() {
       } catch (error) {
         const messageText =
           error instanceof Error && error.message.trim()
-            ? error.message.trim()
+            ? sanitizeAssistantUserFacingCopy(error.message.trim())
             : "Не удалось выполнить действие. Попробуйте снова.";
         recordAssistantScreenFallback("send_message_failed", error, {
           action: "send",
@@ -321,107 +355,35 @@ export default function AIAssistantScreen() {
     hasAnyUserPrompt &&
     messages.length > 0 &&
     messages[messages.length - 1]?.role === "assistant";
-  const knowledgePreview = scopedFacts?.knowledgePreview ?? null;
-
   return (
     <SafeAreaView testID="ai.assistant.screen" style={styles.safe} edges={["top", "bottom"]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         {hasLatestAssistantReply ? (
           <View testID="ai.assistant.response" style={styles.runtimeInlineMarker} />
         ) : null}
-        <View style={styles.header}>
-          <Pressable style={styles.headerIconButton} onPress={() => safeBack(router, backFallbackRoute)}>
-            <Ionicons name="arrow-back" size={20} color="#0F172A" />
-          </Pressable>
+        <View style={styles.chatShell}>
+          <AIAssistantProductHeader
+            scopeLabel={resolvedUserContext.userFacingScopeLabel}
+            onBack={() => safeBack(router, backFallbackRoute)}
+            onClear={() => void clearChat()}
+          />
+          <AIAssistantReadyProductPanels
+            resolvedUserContext={resolvedUserContext}
+            readyProposals={readyProposals}
+            approvedSupplierBundle={approvedSupplierBundle}
+            debugAiContext={debugAiContext}
+            scopedFacts={scopedFacts}
+            scopedFactsError={scopedFactsError}
+            scopedFactsLoading={scopedFactsLoading}
+            onReadyProposalPress={setInput}
+          />
+          <AIAssistantShortcutRows
+            assistantContext={assistantContext}
+            quickPrompts={quickPrompts}
+            onPromptPress={(prompt) => void send(prompt)}
+          />
 
-          <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>AI ассистент</Text>
-            <Text style={styles.headerSubtitle}>
-              {`${getRoleLabel(role)} • ${getAssistantContextLabel(assistantContext)} • ${
-                modeLabel
-              }`}
-            </Text>
-          </View>
-
-          <Pressable style={styles.headerIconButton} onPress={() => void clearChat()}>
-            <Ionicons name="refresh" size={18} color="#0F172A" />
-          </Pressable>
-        </View>
-
-        {actionMode ? (
-          <View style={styles.noticeCard}>
-            <Text style={styles.noticeTitle}>Операционный режим</Text>
-            <Text style={styles.noticeText}>
-              В этом контексте AI уже использует текущие app APIs для AI-заявки прораба, поиска по рынку и
-              подбора вариантов для снабжения. Бизнес-логика документов и экранов при этом остается той же.
-            </Text>
-          </View>
-        ) : null}
-
-        <View style={[styles.noticeCard, actionMode && styles.noticeHidden]}>
-          <Text style={styles.noticeTitle}>Безопасный режим</Text>
-          <Text style={styles.noticeText}>
-            Ассистент встроен в приложение как read-only помощник: он не меняет статусы, не создает документы и не
-            трогает бизнес-логику за вас. Текущий модуль: {getAssistantContextLabel(assistantContext)}.
-          </Text>
-        </View>
-
-        {scopedFactsLoading || scopedFacts || scopedFactsError ? (
-          <View style={styles.scopeCard} testID={knowledgePreview ? "ai.knowledge.preview" : undefined} accessibilityLabel={knowledgePreview ? "AI knowledge preview" : undefined}>
-            <View style={styles.scopeCardHeader}>
-              <Text style={styles.scopeCardTitle}>Data-aware context</Text>
-              {scopedFactsLoading ? <ActivityIndicator size="small" color="#2563EB" /> : null}
-            </View>
-            {knowledgePreview ? (
-              <>
-                <Text style={styles.scopeCardText} numberOfLines={1} testID="ai.knowledge.role" accessibilityLabel={`AI role ${knowledgePreview.role}`}>{`role: ${knowledgePreview.role}`}</Text>
-                <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.screen" accessibilityLabel={`AI screen ${knowledgePreview.screenId}`}>{`screen: ${knowledgePreview.screenId} | policy: ${knowledgePreview.contextPolicy}`}</Text>
-                <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.domain" accessibilityLabel={`AI domain ${knowledgePreview.domain}`}>{`domain: ${knowledgePreview.domain} | entities: ${knowledgePreview.allowedEntities.join(", ") || "none"} | documents: ${knowledgePreview.documentSources.join(", ") || "none"}`}</Text>
-                <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.allowed-intents" accessibilityLabel="AI allowed intents">{`allowedIntents: ${knowledgePreview.allowedIntents.join(", ") || "none"}`}</Text>
-                <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.blocked-intents" accessibilityLabel="AI blocked intents">{`blockedIntents: ${knowledgePreview.blockedIntents.join(", ") || "none"}`}</Text>
-                <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`approval_required: ${knowledgePreview.approvalBoundary}`}</Text>
-              </>
-            ) : null}
-            {!scopedFacts && scopedFactsError ? (
-              <Text style={styles.scopeCardError}>
-                {`Контекст не загружен: ${scopedFactsError}`}
-              </Text>
-            ) : null}
-          </View>
-        ) : null}
-
-        <ScrollView horizontal style={styles.routeScroller} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.routeRow}>
-          {assistantContext !== "unknown" ? (
-            <View style={styles.routeChip}>
-              <Text style={styles.routeChipText}>{getAssistantContextLabel(assistantContext)}</Text>
-            </View>
-          ) : null}
-          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/market")}>
-            <Text style={styles.routeChipText}>Маркет</Text>
-          </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierShowcase")}>
-            <Text style={styles.routeChipText}>Витрина</Text>
-          </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/supplierMap")}>
-            <Text style={styles.routeChipText}>Карта</Text>
-          </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/auctions")}>
-            <Text style={styles.routeChipText}>Торги</Text>
-          </Pressable>
-          <Pressable style={styles.routeChip} onPress={() => router.push("/(tabs)/profile")}>
-            <Text style={styles.routeChipText}>Профиль</Text>
-          </Pressable>
-        </ScrollView>
-
-        <ScrollView horizontal style={styles.quickPromptScroller} showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickPromptRow}>
-          {quickPrompts.map((prompt) => (
-            <Pressable key={prompt.id} style={styles.quickPromptChip} onPress={() => void send(prompt.prompt)}>
-              <Text style={styles.quickPromptText}>{prompt.label}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
+          <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
           {messages.map((message, index) => {
             const hasPriorUserPrompt = messages
               .slice(0, index)
@@ -523,6 +485,7 @@ export default function AIAssistantScreen() {
             </Text>
           </View>
         ) : null}
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

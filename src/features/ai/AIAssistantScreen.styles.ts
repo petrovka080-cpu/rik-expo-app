@@ -1,12 +1,24 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+
+const webViewportHeight = (Platform.OS === "web" ? "100dvh" : "100%") as "100%";
 
 export const aiAssistantScreenStyles = StyleSheet.create({
   flex: {
     flex: 1,
+    minHeight: 0,
   },
   safe: {
     flex: 1,
+    height: webViewportHeight,
+    minHeight: webViewportHeight,
     backgroundColor: "#F8FAFC",
+    overflow: "hidden",
+  },
+  chatShell: {
+    flex: 1,
+    minHeight: 0,
+    flexDirection: "column",
+    overflow: "hidden",
   },
   bootContainer: {
     flex: 1,
@@ -24,7 +36,8 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingTop: 8,
+    paddingBottom: 8,
     gap: 12,
   },
   headerIconButton: {
@@ -41,7 +54,7 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: "800",
     color: "#0F172A",
   },
@@ -73,6 +86,94 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   noticeHidden: {
     display: "none",
+  },
+  productStatusCard: {
+    marginHorizontal: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  productStatusText: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "700",
+    color: "#334155",
+  },
+  readyProposalBlock: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  readyProposalTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  readyProposalScroller: {
+    flexGrow: 0,
+    maxHeight: 42,
+    marginTop: 8,
+  },
+  readyProposalRow: {
+    gap: 8,
+    paddingRight: 16,
+  },
+  readyProposalChip: {
+    height: 34,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  readyProposalChipText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  supplierProposalBlock: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    maxHeight: 190,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: "#E2E8F0",
+    overflow: "hidden",
+  },
+  supplierOptionCard: {
+    marginTop: 8,
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+  },
+  supplierOptionTitle: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+  supplierOptionText: {
+    marginTop: 6,
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#334155",
+  },
+  supplierOptionMeta: {
+    marginTop: 4,
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: "700",
+    color: "#64748B",
   },
   scopeCard: {
     marginHorizontal: 16,
@@ -116,18 +217,18 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   routeRow: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-    gap: 10,
+    paddingTop: 8,
+    paddingBottom: 2,
+    gap: 8,
   },
   routeScroller: {
     flexGrow: 0,
     maxHeight: 58,
   },
   routeChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#CBD5E1",
@@ -139,18 +240,18 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   quickPromptRow: {
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-    gap: 10,
+    paddingTop: 8,
+    paddingBottom: 2,
+    gap: 8,
   },
   quickPromptScroller: {
     flexGrow: 0,
     maxHeight: 62,
   },
   quickPromptChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -162,11 +263,13 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   messages: {
     flex: 1,
-    marginTop: 10,
+    minHeight: 0,
+    marginTop: 8,
+    overflow: "scroll",
   },
   messagesContent: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 16,
     gap: 12,
   },
   messageBubble: {
@@ -214,8 +317,8 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     alignItems: "flex-end",
     gap: 12,
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
     backgroundColor: "#FFFFFF",
     borderTopWidth: 1,
     borderTopColor: "#E2E8F0",

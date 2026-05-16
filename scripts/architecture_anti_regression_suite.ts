@@ -1094,6 +1094,7 @@ const AI_DISABLED_PROVIDER_PATH = "src/features/ai/model/DisabledModelProvider.t
 const AI_LEGACY_GEMINI_PROVIDER_PATH = "src/features/ai/model/LegacyGeminiModelProvider.ts";
 const AI_ASSISTANT_CLIENT_PATH = "src/features/ai/assistantClient.ts";
 const AI_ASSISTANT_SCREEN_PATH = "src/features/ai/AIAssistantScreen.tsx";
+const AI_ASSISTANT_READY_PRODUCT_PANELS_PATH = "src/features/ai/AIAssistantReadyProductPanels.tsx";
 const AI_ASSISTANT_SCREEN_STYLES_PATH = "src/features/ai/AIAssistantScreen.styles.ts";
 const AI_COMMAND_CENTER_FILES = [
   "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
@@ -6134,7 +6135,12 @@ export function evaluateAiKnowledgePreviewE2eContractGuardrail(params: {
   summary: AiKnowledgePreviewE2eContractSummary;
 } {
   const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
-  const assistantSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCREEN_PATH });
+  const assistantScreenSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCREEN_PATH });
+  const assistantPanelsSource = safeReadProjectFile({
+    readFile,
+    relativePath: AI_ASSISTANT_READY_PRODUCT_PANELS_PATH,
+  });
+  const assistantSource = [assistantScreenSource, assistantPanelsSource].filter(Boolean).join("\n");
   const assistantStylesSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCREEN_STYLES_PATH });
   const scopeContextSource = safeReadProjectFile({ readFile, relativePath: AI_ASSISTANT_SCOPE_CONTEXT_PATH });
   const maestroRunnerSource = safeReadProjectFile({ readFile, relativePath: AI_ROLE_SCREEN_MAESTRO_RUNNER_PATH });

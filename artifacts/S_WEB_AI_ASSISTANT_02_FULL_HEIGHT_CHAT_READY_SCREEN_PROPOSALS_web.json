@@ -1,0 +1,27 @@
+{
+  "wave": "S_WEB_AI_ASSISTANT_02_FULL_HEIGHT_CHAT_READY_SCREEN_PROPOSALS",
+  "final_status": "GREEN_WEB_AI_ASSISTANT_READY_PROPOSALS_RUNTIME_READY",
+  "checks": {
+    "Debug cards are hidden": true,
+    "Chat uses full height": true,
+    "Input visible": true,
+    "Ready proposals block visible": true,
+    "Approved request supplier message visible": true,
+    "Module answer useful": true,
+    "Procurement answer useful": true,
+    "No direct order/payment/warehouse mutation path": true
+  },
+  "debugForbidden": [],
+  "finalForbidden": [],
+  "providerCalled": false,
+  "providerCallUrls": [],
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "badResponses": [],
+  "pageErrors": [],
+  "screenshot": "artifacts\\S_WEB_AI_ASSISTANT_02_FULL_HEIGHT_CHAT_READY_SCREEN_PROPOSALS_web.png",
+  "fakeGreenClaimed": false
+}

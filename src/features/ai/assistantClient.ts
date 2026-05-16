@@ -3,6 +3,8 @@ import {
   buildOfflineAssistantReply,
 } from "./assistantPrompts";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
+import { getAiAssistantDeterministicAnswer } from "./assistantUx/aiAssistantDeterministicAnswers";
+import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
@@ -96,6 +98,7 @@ export async function sendAssistantMessage(options: {
   scopeKey?: string | null;
   sourceKinds?: string[] | null;
   userId?: string | null;
+  providerApproved?: boolean;
 }): Promise<string> {
   const {
     role,
@@ -108,9 +111,21 @@ export async function sendAssistantMessage(options: {
     userId,
   } = options;
   const model = getAssistantModel();
+  const deterministicAnswer = getAiAssistantDeterministicAnswer({
+    role,
+    context,
+    message,
+  });
 
-  if (!isAssistantConfigured()) {
-    return buildOfflineAssistantReply(role, message, context);
+  if (deterministicAnswer) {
+    return deterministicAnswer.answer;
+  }
+
+  const providerApproved = options.providerApproved === true
+    || process.env.EXPO_PUBLIC_AI_ASSISTANT_PROVIDER_APPROVED === "1";
+
+  if (!providerApproved || !isAssistantConfigured()) {
+    return sanitizeAssistantUserFacingCopy(buildOfflineAssistantReply(role, message, context));
   }
 
   try {
@@ -150,7 +165,7 @@ export async function sendAssistantMessage(options: {
       throw new Error(response.safety.reason || "AI model provider blocked request.");
     }
     const text = response.text;
-    const answer = text || buildOfflineAssistantReply(role, message, context);
+    const answer = sanitizeAssistantUserFacingCopy(text || buildOfflineAssistantReply(role, message, context));
     void saveAiReport({
       id: `assistant:${role}:${context}:${Date.now()}`,
       userId: userId || null,
@@ -175,6 +190,6 @@ export async function sendAssistantMessage(options: {
       scopeKey: scopeKey || null,
       model,
     });
-    return buildOfflineAssistantReply(role, message, context);
+    return sanitizeAssistantUserFacingCopy(buildOfflineAssistantReply(role, message, context));
   }
 }
