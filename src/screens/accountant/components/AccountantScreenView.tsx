@@ -10,7 +10,7 @@ import AccountantSubcontractTab from "../AccountantSubcontractTab";
 import ActivePaymentForm from "./ActivePaymentForm";
 import { AccountantCardContent } from "./AccountantCardContent";
 import { AccountantHeader } from "./AccountantHeader";
-import { AccountantListBlock } from "./AccountantListSection";
+import { AccountantListBlock, AccountantMainAiPanel } from "./AccountantListSection";
 import CardModal from "./CardModal";
 import NotificationsModal from "./NotificationsModal";
 import { ReadOnlyPaymentReceipt } from "./ReadOnlyReceipt";
@@ -134,6 +134,15 @@ export function AccountantScreenView(model: AccountantScreenComposition) {
     renderHistoryRow,
     isHistoryTab,
   } = model;
+  const accountantAiPanel = React.useMemo(
+    () => (
+      <AccountantMainAiPanel
+        rows={rows}
+        loading={loading || refreshing}
+      />
+    ),
+    [loading, refreshing, rows],
+  );
 
   return (
     <SafeView style={{ flex: 1, backgroundColor: UI.bg }}>
@@ -175,6 +184,7 @@ export function AccountantScreenView(model: AccountantScreenComposition) {
           onEndReached={loadMoreInbox}
           onScroll={onListScroll}
           contentTopPad={HEADER_MAX + 16}
+          inboxHeader={accountantAiPanel}
           onRenderHistory={renderHistoryRow}
           onRenderInbox={renderInboxRow}
           uiTextColor={UI.text} uiSubColor={UI.sub}
