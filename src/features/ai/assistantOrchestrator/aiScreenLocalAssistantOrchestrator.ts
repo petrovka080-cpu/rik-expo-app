@@ -1,14 +1,10 @@
-import { resolveAiScreenActions } from "../screenActions/aiScreenActionResolver";
 import type {
-  AiScreenActionDefinition,
-  AiScreenActionEvidenceSource,
   AiScreenActionIntent,
-  AiScreenActionMode,
-  AiScreenActionRiskLevel,
 } from "../screenActions/aiScreenActionTypes";
 import { evidenceRefIds } from "./aiAssistantEvidencePlanner";
 import { enforceAiAssistantSameScreenOutputPolicy } from "./aiAssistantSameScreenOutputPolicy";
 import { resolveAiRoleScreenBoundary } from "./aiRoleScreenBoundary";
+import { resolveAiScreenLocalActionSourcePolicy } from "./aiScreenLocalActionSourcePolicy";
 import { resolveAiScreenLocalAssistantContext } from "./aiScreenLocalContextResolver";
 import type {
   AiScreenLocalAssistantActionPlanInput,
@@ -27,47 +23,6 @@ function hasText(value: string | null | undefined): value is string {
 
 function normalizeIntent(value: AiScreenActionIntent | string | null | undefined): string | null {
   return hasText(value) ? value.trim() : null;
-}
-
-function selectVisibleAction(params: {
-  input: AiScreenLocalAssistantActionPlanInput;
-}): AiScreenActionDefinition | null {
-  if (!params.input.auth) return null;
-  const map = resolveAiScreenActions({
-    auth: params.input.auth,
-    screenId: params.input.screenId,
-  });
-  if (map.status !== "ready") return null;
-  if (hasText(params.input.actionId)) {
-    return map.visibleActions.find((action) => action.actionId === params.input.actionId?.trim()) ?? null;
-  }
-  const intent = normalizeIntent(params.input.intent);
-  if (!intent) return null;
-  return map.visibleActions.find((action) => action.intent === intent) ?? null;
-}
-
-function fallbackPlanFromRuntimeIntent(intent: string | null): {
-  mode: AiScreenActionMode;
-  riskLevel: AiScreenActionRiskLevel;
-  requiresApproval: boolean;
-} | null {
-  if (!intent) return null;
-  if (intent === "submit_for_approval") {
-    return { mode: "approval_required", riskLevel: "high", requiresApproval: true };
-  }
-  if (intent === "draft" || intent.startsWith("prepare_")) {
-    return { mode: "draft_only", riskLevel: "medium", requiresApproval: false };
-  }
-  if (
-    ["read", "search", "compare", "explain", "check_status", "find_risk", "navigate"].includes(intent)
-  ) {
-    return { mode: "safe_read", riskLevel: "low", requiresApproval: false };
-  }
-  return null;
-}
-
-function evidenceSourcesFor(action: AiScreenActionDefinition | null): AiScreenActionEvidenceSource[] {
-  return action ? [...action.evidenceSources] : ["screen_state", "role_policy"];
 }
 
 function buildBlockedActionPlan(params: {
@@ -99,6 +54,7 @@ function buildBlockedActionPlan(params: {
     requiresApproval: true,
     evidenceRefs: evidenceRefIds(context.evidencePlan),
     evidenceSources: [],
+    actionPolicySource: null,
     boundary,
     handoffPlan: policy.handoffPlan,
     executable: false,
@@ -225,17 +181,22 @@ export function planAiScreenLocalAssistantAction(
     });
   }
 
-  const action = selectVisibleAction({ input });
+  const actionSource = resolveAiScreenLocalActionSourcePolicy({
+    auth: input.auth,
+    screenId: input.screenId,
+    actionId: input.actionId,
+    intent: normalizeIntent(input.intent),
+  });
+  const action = actionSource.action;
   const intent = normalizeIntent(input.intent) ?? action?.intent ?? null;
-  const runtimeFallback = action ? null : fallbackPlanFromRuntimeIntent(intent);
-  if (!action && !runtimeFallback) {
+  if (actionSource.status !== "resolved" || !action) {
     return buildBlockedActionPlan({
       input,
-      reason: "Action is not available for this screen-local assistant.",
+      reason: actionSource.reason,
     });
   }
 
-  if (action?.mode === "forbidden") {
+  if (action.mode === "forbidden") {
     return buildBlockedActionPlan({
       input,
       reason: action.forbiddenReason ?? "Action is forbidden by screen-local assistant policy.",
@@ -246,14 +207,15 @@ export function planAiScreenLocalAssistantAction(
     status: "planned",
     screenId: context.screenId,
     role: context.role,
-    actionId: action?.actionId ?? null,
+    actionId: action.actionId,
     intent,
-    planMode: action?.mode ?? runtimeFallback?.mode ?? "safe_read",
-    riskLevel: action?.riskLevel ?? runtimeFallback?.riskLevel ?? "low",
-    aiTool: action?.aiTool ?? null,
-    requiresApproval: action?.requiresApproval ?? runtimeFallback?.requiresApproval ?? false,
+    planMode: action.mode,
+    riskLevel: action.riskLevel,
+    aiTool: action.aiTool ?? null,
+    requiresApproval: action.requiresApproval,
     evidenceRefs: evidenceRefIds(context.evidencePlan),
-    evidenceSources: evidenceSourcesFor(action),
+    evidenceSources: [...action.evidenceSources],
+    actionPolicySource: actionSource.actionPolicySource,
     boundary,
     handoffPlan: null,
     executable: false,

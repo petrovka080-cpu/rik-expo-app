@@ -1,7 +1,7 @@
 {
   "final_status": "GREEN_AI_SCREEN_BUTTON_ACTION_TRUTH_MAP_READY",
-  "screens_registered": 18,
-  "buttons_or_actions_registered": 90,
+  "screens_registered": 19,
+  "buttons_or_actions_registered": 95,
   "all_required_screens_registered": true,
   "required_screen_ids": [
     "director.dashboard",
@@ -13,6 +13,7 @@
     "accountant.main",
     "foreman.main",
     "foreman.ai.quick_modal",
+    "foreman.subcontract",
     "contractor.main",
     "reports.modal",
     "documents.main",

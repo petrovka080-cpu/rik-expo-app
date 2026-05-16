@@ -1,8 +1,8 @@
 # S_AI_MAGIC_13_SCREEN_BUTTON_ACTION_TRUTH_MAP
 
 final_status: GREEN_AI_SCREEN_BUTTON_ACTION_TRUTH_MAP_READY
-screens_registered: 18
-buttons_or_actions_registered: 90
+screens_registered: 19
+buttons_or_actions_registered: 95
 all_required_screens_registered: true
 chat_main_registered: true
 map_main_registered: true

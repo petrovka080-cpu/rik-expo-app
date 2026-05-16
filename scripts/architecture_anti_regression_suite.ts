@@ -486,6 +486,18 @@ export type AiCommandCenterTaskStreamRuntimeArchitectureSummary = {
   findings: readonly string[];
 };
 
+export type AiScreenLocalActionSourcePolicyArchitectureSummary = {
+  sourcePolicyPresent: boolean;
+  orchestratorUsesSourcePolicy: boolean;
+  foremanSubcontractActionMapPresent: boolean;
+  allRequiredScreenLocalMapsPresent: boolean;
+  noRuntimeIntentFallback: boolean;
+  contextIntentsFromActionMapOnly: boolean;
+  noProviderImports: boolean;
+  noDirectDatabaseAccess: boolean;
+  findings: readonly string[];
+};
+
 export type AiCommandCenterStateBudgetArchitectureSummary = {
   budgetFilesPresent: boolean;
   scannerPresent: boolean;
@@ -994,6 +1006,7 @@ export type ArchitectureAntiRegressionReport = {
   aiTraceObservability: AiTraceObservabilityArchitectureSummary;
   agentBffRouteShellArchitecture: AgentBffRouteShellArchitectureSummary;
   aiCommandCenterTaskStreamRuntime: AiCommandCenterTaskStreamRuntimeArchitectureSummary;
+  aiScreenLocalActionSourcePolicy: AiScreenLocalActionSourcePolicyArchitectureSummary;
   aiCommandCenterStateBudget: AiCommandCenterStateBudgetArchitectureSummary;
   aiAppActionGraphArchitecture: AiAppActionGraphArchitectureSummary;
   aiProcurementContextEngine: AiProcurementContextEngineArchitectureSummary;
@@ -1110,6 +1123,13 @@ const AI_TASK_STREAM_RUNTIME_FILES = [
   "src/features/ai/taskStream/aiTaskStreamEvidence.ts",
   "src/features/ai/taskStream/aiTaskStreamCardProducers.ts",
 ] as const;
+const AI_SCREEN_LOCAL_ACTION_SOURCE_POLICY_PATH =
+  "src/features/ai/assistantOrchestrator/aiScreenLocalActionSourcePolicy.ts";
+const AI_SCREEN_LOCAL_ORCHESTRATOR_PATH =
+  "src/features/ai/assistantOrchestrator/aiScreenLocalAssistantOrchestrator.ts";
+const AI_SCREEN_LOCAL_CONTEXT_RESOLVER_PATH =
+  "src/features/ai/assistantOrchestrator/aiScreenLocalContextResolver.ts";
+const AI_SCREEN_ACTION_REGISTRY_PATH = "src/features/ai/screenActions/aiScreenActionRegistry.ts";
 const AI_APP_ACTION_GRAPH_FILES = [
   "src/features/ai/appGraph/aiAppActionTypes.ts",
   "src/features/ai/appGraph/aiScreenActionRegistry.ts",
@@ -4100,6 +4120,93 @@ export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
       noModelProviderUiImport,
       noRawPayloadFields,
       unknownRoleDenied,
+      findings,
+    },
+  };
+}
+
+export function evaluateAiScreenLocalActionSourcePolicyGuardrail(params: {
+  projectRoot: string;
+  readFile?: ReadFile;
+}): {
+  check: ArchitectureGuardrailCheck;
+  summary: AiScreenLocalActionSourcePolicyArchitectureSummary;
+} {
+  const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
+  const sourcePolicySource =
+    safeReadProjectFile({ readFile, relativePath: AI_SCREEN_LOCAL_ACTION_SOURCE_POLICY_PATH }) ?? "";
+  const orchestratorSource =
+    safeReadProjectFile({ readFile, relativePath: AI_SCREEN_LOCAL_ORCHESTRATOR_PATH }) ?? "";
+  const contextResolverSource =
+    safeReadProjectFile({ readFile, relativePath: AI_SCREEN_LOCAL_CONTEXT_RESOLVER_PATH }) ?? "";
+  const actionRegistrySource =
+    safeReadProjectFile({ readFile, relativePath: AI_SCREEN_ACTION_REGISTRY_PATH }) ?? "";
+  const combinedSource = [
+    sourcePolicySource,
+    orchestratorSource,
+    contextResolverSource,
+    actionRegistrySource,
+  ].join("\n");
+
+  const sourcePolicyPresent =
+    sourcePolicySource.includes("resolveAiScreenLocalActionSourcePolicy") &&
+    sourcePolicySource.includes("ai_screen_button_action_registry_v1");
+  const orchestratorUsesSourcePolicy =
+    orchestratorSource.includes("resolveAiScreenLocalActionSourcePolicy") &&
+    !orchestratorSource.includes("fallbackPlanFromRuntimeIntent") &&
+    !orchestratorSource.includes("runtimeFallback");
+  const foremanSubcontractActionMapPresent =
+    actionRegistrySource.includes('"foreman.subcontract"') &&
+    actionRegistrySource.includes('actionId: "foreman.subcontract.draft_act"') &&
+    actionRegistrySource.includes('actionId: "foreman.subcontract.submit_act_pack"');
+  const allRequiredScreenLocalMapsPresent =
+    sourcePolicySource.includes("all_screen_local_profiles_have_action_map") &&
+    sourcePolicySource.includes("missing_action_map_screens");
+  const noRuntimeIntentFallback =
+    !orchestratorSource.includes("fallbackPlanFromRuntimeIntent") &&
+    !orchestratorSource.includes("runtimeFallback") &&
+    sourcePolicySource.includes("runtimeIntentFallbackAllowed: false");
+  const contextIntentsFromActionMapOnly =
+    !contextResolverSource.includes("runtime?.availableIntents") &&
+    !contextResolverSource.includes("runtime.availableIntents") &&
+    contextResolverSource.includes("actionMap.availableIntents");
+  const noProviderImports =
+    !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(combinedSource);
+  const noDirectDatabaseAccess =
+    !/@supabase\/supabase-js|\bsupabase\b|\bauth\.admin\b|\blistUsers\b|\bservice_role\b|\.(?:from|rpc|insert|update|delete|upsert)\s*\(/i.test(combinedSource);
+  const findings = [
+    ...(sourcePolicyPresent ? [] : ["screen_local_action_source_policy_missing"]),
+    ...(orchestratorUsesSourcePolicy ? [] : ["screen_local_orchestrator_not_using_source_policy"]),
+    ...(foremanSubcontractActionMapPresent ? [] : ["foreman_subcontract_action_map_missing"]),
+    ...(allRequiredScreenLocalMapsPresent ? [] : ["screen_local_required_action_map_check_missing"]),
+    ...(noRuntimeIntentFallback ? [] : ["screen_local_runtime_intent_fallback_detected"]),
+    ...(contextIntentsFromActionMapOnly ? [] : ["screen_local_context_merges_runtime_intents"]),
+    ...(noProviderImports ? [] : ["screen_local_action_source_provider_import_detected"]),
+    ...(noDirectDatabaseAccess ? [] : ["screen_local_action_source_direct_database_access_detected"]),
+  ];
+  const errors = [
+    ...(sourcePolicySource ? [] : [`missing_file:${AI_SCREEN_LOCAL_ACTION_SOURCE_POLICY_PATH}`]),
+    ...(orchestratorSource ? [] : [`missing_file:${AI_SCREEN_LOCAL_ORCHESTRATOR_PATH}`]),
+    ...(contextResolverSource ? [] : [`missing_file:${AI_SCREEN_LOCAL_CONTEXT_RESOLVER_PATH}`]),
+    ...(actionRegistrySource ? [] : [`missing_file:${AI_SCREEN_ACTION_REGISTRY_PATH}`]),
+    ...findings,
+  ];
+
+  return {
+    check: {
+      name: "ai_screen_local_action_source_policy",
+      status: errors.length === 0 ? "pass" : "fail",
+      errors,
+    },
+    summary: {
+      sourcePolicyPresent,
+      orchestratorUsesSourcePolicy,
+      foremanSubcontractActionMapPresent,
+      allRequiredScreenLocalMapsPresent,
+      noRuntimeIntentFallback,
+      contextIntentsFromActionMapOnly,
+      noProviderImports,
+      noDirectDatabaseAccess,
       findings,
     },
   };
@@ -8601,6 +8708,7 @@ export function runArchitectureAntiRegressionSuite(
   const aiTraceObservability = evaluateAiTraceObservabilityGuardrail({ projectRoot });
   const agentBffRouteShellArchitecture = evaluateAgentBffRouteShellArchitectureGuardrail({ projectRoot });
   const aiCommandCenterTaskStreamRuntime = evaluateAiCommandCenterTaskStreamRuntimeGuardrail({ projectRoot });
+  const aiScreenLocalActionSourcePolicy = evaluateAiScreenLocalActionSourcePolicyGuardrail({ projectRoot });
   const aiCommandCenterStateBudget = evaluateAiCommandCenterStateBudgetGuardrail({ projectRoot });
   const aiAppActionGraphArchitecture = evaluateAiAppActionGraphArchitectureGuardrail({ projectRoot });
   const aiProcurementContextEngine = evaluateAiProcurementContextEngineGuardrail({ projectRoot });
@@ -8653,6 +8761,7 @@ export function runArchitectureAntiRegressionSuite(
     aiTraceObservability.check,
     agentBffRouteShellArchitecture.check,
     aiCommandCenterTaskStreamRuntime.check,
+    aiScreenLocalActionSourcePolicy.check,
     aiCommandCenterStateBudget.check,
     aiAppActionGraphArchitecture.check,
     aiProcurementContextEngine.check,
@@ -8706,6 +8815,7 @@ export function runArchitectureAntiRegressionSuite(
     aiTraceObservability: aiTraceObservability.summary,
     agentBffRouteShellArchitecture: agentBffRouteShellArchitecture.summary,
     aiCommandCenterTaskStreamRuntime: aiCommandCenterTaskStreamRuntime.summary,
+    aiScreenLocalActionSourcePolicy: aiScreenLocalActionSourcePolicy.summary,
     aiCommandCenterStateBudget: aiCommandCenterStateBudget.summary,
     aiAppActionGraphArchitecture: aiAppActionGraphArchitecture.summary,
     aiProcurementContextEngine: aiProcurementContextEngine.summary,
@@ -8790,6 +8900,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`agent_bff_route_shell_no_mutation: ${report.agentBffRouteShellArchitecture.mutationCountZero}`);
   console.info(`ai_command_center_task_stream_runtime: ${report.aiCommandCenterTaskStreamRuntime.commandCenterUsesRuntime}`);
   console.info(`ai_command_center_task_stream_no_fake_cards: ${report.aiCommandCenterTaskStreamRuntime.noFakeCards}`);
+  console.info(`ai_screen_local_action_source_policy: ${report.aiScreenLocalActionSourcePolicy.sourcePolicyPresent}`);
+  console.info(`ai_screen_local_no_runtime_intent_fallback: ${report.aiScreenLocalActionSourcePolicy.noRuntimeIntentFallback}`);
   console.info(`ai_command_center_state_budget_max_cards: ${report.aiCommandCenterStateBudget.maxCardsBounded}`);
   console.info(`ai_command_center_state_budget_no_realtime: ${report.aiCommandCenterStateBudget.noRealtimeSubscriptionInCommandCenter}`);
   console.info(`ai_command_center_state_budget_no_polling_loop: ${report.aiCommandCenterStateBudget.noPollingLoopInCommandCenter}`);

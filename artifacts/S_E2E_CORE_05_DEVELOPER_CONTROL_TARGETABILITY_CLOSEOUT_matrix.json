@@ -28,8 +28,8 @@
   "child_statuses": [
     {
       "name": "command_center_task_stream",
-      "final_status": "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED",
-      "exactReason": null
+      "final_status": "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+      "exactReason": "Command Center runtime screen or runtime-status was not targetable after Maestro UI assertions."
     },
     {
       "name": "cross_screen_runtime",

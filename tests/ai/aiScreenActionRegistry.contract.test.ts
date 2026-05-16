@@ -11,8 +11,8 @@ describe("AI screen action registry", () => {
     const ids = listAiScreenActionEntries().map((entry) => entry.screenId);
 
     expect(ids).toEqual(expect.arrayContaining([...AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS]));
-    expect(AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS).toHaveLength(18);
-    expect(ids).toEqual(expect.arrayContaining(["chat.main", "map.main", "office.hub"]));
+    expect(AI_SCREEN_ACTION_REQUIRED_SCREEN_IDS).toHaveLength(19);
+    expect(ids).toEqual(expect.arrayContaining(["foreman.subcontract", "chat.main", "map.main", "office.hub"]));
     expect(getAiScreenActionEntry("buyer.requests")).toMatchObject({
       domain: "procurement",
       directorControlFullAccess: true,
@@ -30,7 +30,7 @@ describe("AI screen action registry", () => {
     expect(actions.length).toBeGreaterThanOrEqual(90);
     expect(validation).toMatchObject({
       ok: true,
-      screensRegistered: 18,
+      screensRegistered: 19,
       allActionsHaveRoleScope: true,
       allActionsHaveRiskPolicy: true,
       allActionsHaveEvidenceSource: true,

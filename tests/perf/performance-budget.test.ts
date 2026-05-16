@@ -375,6 +375,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentScreenAssistantContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentScreenAssistantRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiRuntime08ScreenLocalActionSourcePolicyFiles = [
+      path.join(SRC, "features", "ai", "assistantOrchestrator", "aiScreenLocalActionSourcePolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiLayout01SafeRuntimeFiles = [
       path.join(SRC, "components", "ai", "runtime", "AiScreenRuntimePanel.tsx"),
       path.join(SRC, "components", "ai", "runtime", "AiSafeKeyboardShell.tsx"),
@@ -1313,6 +1316,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic08ApprovedProcurementExecutorFiles).toBeLessThanOrEqual(10);
     expect(sAiMagic10ScreenButtonActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiAssistant02ScreenLocalRoleAssistantFiles).toBeLessThanOrEqual(8);
+    expect(sAiRuntime08ScreenLocalActionSourcePolicyFiles).toBeLessThanOrEqual(1);
     expect(sAiLayout01SafeRuntimeFiles).toBeLessThanOrEqual(5);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
@@ -1507,6 +1511,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic08ApprovedProcurementExecutorFiles -
         sAiMagic10ScreenButtonActionMapFiles -
         sAiAssistant02ScreenLocalRoleAssistantFiles -
+        sAiRuntime08ScreenLocalActionSourcePolicyFiles -
         sAiLayout01SafeRuntimeFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
         sAiProcurement04InternalFirstDecisionEngineFiles -

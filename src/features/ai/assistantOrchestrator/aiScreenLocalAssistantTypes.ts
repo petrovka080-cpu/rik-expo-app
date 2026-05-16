@@ -211,6 +211,7 @@ export type AiScreenLocalAssistantActionPlanOutput = {
   requiresApproval: boolean;
   evidenceRefs: readonly string[];
   evidenceSources: readonly AiScreenActionEvidenceSource[];
+  actionPolicySource: "ai_screen_button_action_registry_v1" | null;
   boundary: AiRoleScreenBoundaryResult;
   handoffPlan: AiScreenLocalAssistantHandoffPlan | null;
   executable: false;

@@ -1,0 +1,1284 @@
+{
+  "wave": "S_AI_RUNTIME_08_SCREEN_LOCAL_ACTION_SOURCE_POLICY",
+  "required_screens": [
+    "director.dashboard",
+    "ai.command_center",
+    "buyer.main",
+    "buyer.requests",
+    "procurement.copilot",
+    "market.home",
+    "warehouse.main",
+    "accountant.main",
+    "foreman.main",
+    "foreman.ai.quick_modal",
+    "foreman.subcontract",
+    "contractor.main",
+    "reports.modal",
+    "documents.main",
+    "approval.inbox",
+    "chat.main",
+    "map.main",
+    "office.hub",
+    "screen.runtime"
+  ],
+  "local_profiles": [
+    {
+      "screenId": "director.dashboard",
+      "domain": "control",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "domain": "control",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "buyer.main",
+      "domain": "procurement",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "buyer.requests",
+      "domain": "procurement",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "procurement.copilot",
+      "domain": "procurement",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "market.home",
+      "domain": "marketplace",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "domain": "warehouse",
+      "roleScope": [
+        "director",
+        "control",
+        "warehouse"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "accountant.main",
+      "domain": "finance",
+      "roleScope": [
+        "director",
+        "control",
+        "accountant"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "foreman.main",
+      "domain": "projects",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "domain": "procurement",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "domain": "subcontracts",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "contractor.main",
+      "domain": "subcontracts",
+      "roleScope": [
+        "director",
+        "control",
+        "contractor"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "reports.modal",
+      "domain": "reports",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "documents.main",
+      "domain": "documents",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "approval.inbox",
+      "domain": "documents",
+      "roleScope": [
+        "director",
+        "control"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "chat.main",
+      "domain": "chat",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "map.main",
+      "domain": "map",
+      "roleScope": [
+        "director",
+        "control",
+        "buyer",
+        "foreman"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "office.hub",
+      "domain": "control",
+      "roleScope": [
+        "director",
+        "control",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    },
+    {
+      "screenId": "screen.runtime",
+      "domain": "control",
+      "roleScope": [
+        "director",
+        "control",
+        "foreman",
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionMapRegistered": true
+    }
+  ],
+  "runtime_only_intent_checks": [
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "compare",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "prepare_request",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "check_status",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "director.dashboard",
+      "runtimeScreenId": "director.dashboard",
+      "role": "director",
+      "intent": "approve",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "compare",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "prepare_request",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "runtimeScreenId": "ai.command.center",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "prepare_request",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "check_status",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "buyer.main",
+      "runtimeScreenId": "buyer.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "market.home",
+      "runtimeScreenId": "market.home",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "market.home",
+      "runtimeScreenId": "market.home",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "market.home",
+      "runtimeScreenId": "market.home",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "market.home",
+      "runtimeScreenId": "market.home",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "prepare_request",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "check_status",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "runtimeScreenId": "warehouse.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "prepare_report",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "prepare_act",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "accountant.main",
+      "runtimeScreenId": "accountant.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "prepare_report",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "prepare_act",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "check_status",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.main",
+      "runtimeScreenId": "foreman.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "prepare_report",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "prepare_act",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "runtimeScreenId": "foreman.subcontract",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "prepare_report",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "prepare_act",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "contractor.main",
+      "runtimeScreenId": "contractor.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "search",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "prepare_report",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "find_risk",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "reports.modal",
+      "runtimeScreenId": "reports.modal",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "chat.main",
+      "runtimeScreenId": "chat.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "chat.main",
+      "runtimeScreenId": "chat.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "chat.main",
+      "runtimeScreenId": "chat.main",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "chat.main",
+      "runtimeScreenId": "chat.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "map.main",
+      "runtimeScreenId": "map.main",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "map.main",
+      "runtimeScreenId": "map.main",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "map.main",
+      "runtimeScreenId": "map.main",
+      "role": "director",
+      "intent": "check_status",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "map.main",
+      "runtimeScreenId": "map.main",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "office.hub",
+      "runtimeScreenId": "office.hub",
+      "role": "director",
+      "intent": "read",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "office.hub",
+      "runtimeScreenId": "office.hub",
+      "role": "director",
+      "intent": "explain",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "office.hub",
+      "runtimeScreenId": "office.hub",
+      "role": "director",
+      "intent": "draft",
+      "planStatus": "blocked",
+      "blocked": true
+    },
+    {
+      "screenId": "office.hub",
+      "runtimeScreenId": "office.hub",
+      "role": "director",
+      "intent": "navigate",
+      "planStatus": "blocked",
+      "blocked": true
+    }
+  ],
+  "context_intent_checks": [
+    {
+      "screenId": "director.dashboard",
+      "role": "director",
+      "contextIntents": [
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "ai.command_center",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "buyer.main",
+      "role": "director",
+      "contextIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "buyer.requests",
+      "role": "director",
+      "contextIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "procurement.copilot",
+      "role": "director",
+      "contextIntents": [
+        "compare",
+        "draft",
+        "forbidden",
+        "search",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "compare",
+        "draft",
+        "forbidden",
+        "search",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "market.home",
+      "role": "director",
+      "contextIntents": [
+        "compare",
+        "draft",
+        "forbidden",
+        "search",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "compare",
+        "draft",
+        "forbidden",
+        "search",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "warehouse.main",
+      "role": "director",
+      "contextIntents": [
+        "draft",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "accountant.main",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft_act",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft_act",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "foreman.main",
+      "role": "director",
+      "contextIntents": [
+        "draft",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "role": "director",
+      "contextIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "compare",
+        "draft",
+        "find",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "contractor.main",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "reports.modal",
+      "role": "director",
+      "contextIntents": [
+        "draft_act",
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft_act",
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "documents.main",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft_act",
+        "draft_report",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "approval.inbox",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft_report",
+        "explain_status",
+        "forbidden",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "chat.main",
+      "role": "director",
+      "contextIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "map.main",
+      "role": "director",
+      "contextIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "office.hub",
+      "role": "director",
+      "contextIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "draft_report",
+        "find",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    },
+    {
+      "screenId": "screen.runtime",
+      "role": "director",
+      "contextIntents": [
+        "check_status",
+        "draft",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "actionRegistryIntents": [
+        "check_status",
+        "draft",
+        "forbidden",
+        "read_context",
+        "submit_for_approval"
+      ],
+      "matchesActionRegistry": true
+    }
+  ]
+}

@@ -6,7 +6,6 @@ import type {
   AiScreenActionEvidenceSource,
 } from "../screenActions/aiScreenActionTypes";
 import { getAiScreenRuntimeEntry } from "../screenRuntime/aiScreenRuntimeRegistry";
-import { resolveAiScreenRuntime } from "../screenRuntime/aiScreenRuntimeResolver";
 import { buildAiAssistantEvidencePlan } from "./aiAssistantEvidencePlanner";
 import {
   normalizeAiScreenLocalAssistantRuntimeScreenId,
@@ -332,13 +331,6 @@ export function resolveAiScreenLocalAssistantContext(params: {
   const actionEntry = getAiScreenActionEntry(normalizedScreenId);
   const runtimeScreenId = normalizeAiScreenLocalAssistantRuntimeScreenId(normalizedScreenId);
   const runtimeEntry = getAiScreenRuntimeEntry(runtimeScreenId);
-  const runtime =
-    runtimeEntry && runtimeEntry.mounted === "mounted"
-      ? resolveAiScreenRuntime({
-          auth,
-          request: { screenId: runtimeScreenId, limit: 20 },
-        })
-      : null;
   const profileEntry = getProfile(normalizedScreenId);
   const actionMapKnown = actionMap.status === "ready";
   const visibleActions = actionMapKnown ? actionMap.visibleActions : [];
@@ -360,10 +352,9 @@ export function resolveAiScreenLocalAssistantContext(params: {
     ...(actionMapKnown ? actionMap.availableTools : []),
     ...(profileEntry?.sameScreenTools ?? []),
   ]);
-  const availableIntents = unique([
-    ...(actionMapKnown ? actionMap.availableIntents : []),
-    ...(runtime?.availableIntents ?? []),
-  ].map((intent) => String(intent)));
+  const availableIntents = unique(
+    (actionMapKnown ? actionMap.availableIntents : []).map((intent) => String(intent)),
+  );
 
   return {
     status: "ready",

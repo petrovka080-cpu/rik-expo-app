@@ -167,6 +167,24 @@
       "actionCount": 5
     },
     {
+      "screenId": "foreman.subcontract",
+      "domain": "subcontracts",
+      "allowedRoles": [
+        "director",
+        "control",
+        "foreman"
+      ],
+      "forbiddenRoles": [
+        "buyer",
+        "accountant",
+        "warehouse",
+        "contractor",
+        "office",
+        "admin"
+      ],
+      "actionCount": 5
+    },
+    {
       "screenId": "contractor.main",
       "domain": "subcontracts",
       "allowedRoles": [
@@ -325,6 +343,6 @@
       "actionCount": 5
     }
   ],
-  "actionCount": 90,
+  "actionCount": 95,
   "secrets_printed": false
 }
