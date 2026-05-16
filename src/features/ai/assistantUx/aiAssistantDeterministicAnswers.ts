@@ -1,4 +1,6 @@
 import type { AssistantContext, AssistantRole } from "../assistant.types";
+import type { AiRoleScreenAssistantPack } from "../realAssistants/aiRoleScreenAssistantTypes";
+import { answerAiRoleScreenQuestion } from "../realAssistants/aiRoleScreenQuestionAnswerEngine";
 import {
   getAiAssistantContextPrimer,
   getAiAssistantKnowledgeLines,
@@ -11,6 +13,7 @@ export type AiAssistantDeterministicAnswerRequest = {
   context: AssistantContext;
   message: string;
   scopedFactsSummary?: string | null;
+  roleScreenAssistantPack?: AiRoleScreenAssistantPack | null;
 };
 
 export type AiAssistantDeterministicAnswer = {
@@ -128,6 +131,14 @@ export function getAiAssistantDeterministicAnswer(
 ): AiAssistantDeterministicAnswer | null {
   const question = normalizeQuestion(request.message);
   if (!question) return null;
+
+  const roleScreenAnswer = answerAiRoleScreenQuestion({
+    pack: request.roleScreenAssistantPack,
+    question: request.message,
+  });
+  if (roleScreenAnswer) {
+    return roleScreenAnswer;
+  }
 
   const topic = resolveTopic(question, request.context);
   if (!topic) return null;

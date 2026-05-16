@@ -1,0 +1,61 @@
+{
+  "wave": "S_AI_PRODUCT_03_REAL_ROLE_SCREEN_ASSISTANTS",
+  "registryScreens": [
+    "accountant.main",
+    "accountant.payment",
+    "buyer.main",
+    "buyer.requests",
+    "buyer.request.detail",
+    "procurement.copilot",
+    "director.dashboard",
+    "approval.inbox",
+    "warehouse.main",
+    "warehouse.incoming",
+    "warehouse.issue",
+    "foreman.main",
+    "foreman.ai.quick_modal",
+    "foreman.subcontract",
+    "contractor.main",
+    "documents.main",
+    "agent.documents.knowledge",
+    "chat.main",
+    "map.main",
+    "office.hub",
+    "security.screen",
+    "screen.runtime"
+  ],
+  "packTitles": [
+    "Финансы сегодня",
+    "Снабжение сегодня",
+    "Склад сегодня",
+    "Работы сегодня",
+    "Решения на сегодня",
+    "Документ готов к разбору"
+  ],
+  "policyValidations": [
+    {
+      "ok": true,
+      "errors": []
+    },
+    {
+      "ok": true,
+      "errors": []
+    },
+    {
+      "ok": true,
+      "errors": []
+    },
+    {
+      "ok": true,
+      "errors": []
+    },
+    {
+      "ok": true,
+      "errors": []
+    },
+    {
+      "ok": true,
+      "errors": []
+    }
+  ]
+}

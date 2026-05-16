@@ -39,6 +39,10 @@ import {
 import {
   buildProcurementReadyBuyBundleFromSearchParams,
 } from "./procurement/aiProcurementRequestOptionHydrator";
+import {
+  describeAiRoleScreenAssistantPack,
+  getAiRoleScreenAssistantPack,
+} from "./realAssistants/aiRoleScreenAssistantEngine";
 import { getAiScreenReadyProposals } from "./screenProposals/aiScreenReadyProposalEngine";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -113,34 +117,7 @@ function booleanParam(value: string | string[] | undefined): boolean {
 }
 
 export default function AIAssistantScreen() {
-  const params = useLocalSearchParams<{
-    prompt?: string | string[];
-    autoSend?: string | string[];
-    context?: string | string[];
-    debugAiContext?: string | string[];
-    approvedRequestId?: string | string[];
-    procurementRequestId?: string | string[];
-    approvalStatus?: string | string[];
-    approvedByDirector?: string | string[];
-    approvedRequestItems?: string | string[];
-    internalSupplierId?: string | string[];
-    internalSupplierName?: string | string[];
-    internalSupplierEvidence?: string | string[];
-    internalSupplierMatchedItems?: string | string[];
-    internalSupplierPrice?: string | string[];
-    internalSupplierDelivery?: string | string[];
-    internalSupplierReliability?: string | string[];
-    readyBuyRequestId?: string | string[];
-    requestStatus?: string | string[];
-    readyBuyItems?: string | string[];
-    readyBuySupplierId?: string | string[];
-    readyBuySupplierName?: string | string[];
-    readyBuySupplierEvidence?: string | string[];
-    readyBuySupplierMatchedItems?: string | string[];
-    readyBuySupplierPrice?: string | string[];
-    readyBuySupplierDelivery?: string | string[];
-    readyBuySupplierReliability?: string | string[];
-  }>();
+  const params = useLocalSearchParams() as Record<string, string | string[] | undefined>;
   const routePrompt = firstParam(params.prompt);
   const routeAutoSend = firstParam(params.autoSend);
   const routeContext = firstParam(params.context);
@@ -191,9 +168,24 @@ export default function AIAssistantScreen() {
     () => describeProcurementReadyBuyOptionsForAssistant(readyBuyBundle),
     [readyBuyBundle],
   );
+  const roleScreenAssistantPack = useMemo(
+    () => getAiRoleScreenAssistantPack({
+      role,
+      context: assistantContext,
+      screenId: firstParam(params.screenId) || resolvedUserContext.screenId,
+      searchParams: params,
+      scopedFactsSummary: scopedFacts?.summary ?? null,
+      readyBuyBundle,
+    }),
+    [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
+  );
+  const roleScreenAssistantSummary = useMemo(
+    () => describeAiRoleScreenAssistantPack(roleScreenAssistantPack),
+    [roleScreenAssistantPack],
+  );
   const assistantFactsSummary = useMemo(
-    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary].filter(Boolean).join("\n\n") || null,
-    [readyBuyFactsSummary, scopedFacts?.summary],
+    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, roleScreenAssistantSummary].filter(Boolean).join("\n\n") || null,
+    [readyBuyFactsSummary, roleScreenAssistantSummary, scopedFacts?.summary],
   );
   const assistantVoiceScreen = useMemo(
     () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
@@ -323,6 +315,7 @@ export default function AIAssistantScreen() {
             message: text,
             history: nextHistory.filter((item) => item.role !== "user" || item.id !== userMessage.id),
             scopedFactsSummary: assistantFactsSummary,
+            roleScreenAssistantPack,
             scopeKey: scopedFacts?.scopeKey ?? null,
             sourceKinds: scopedFacts?.sourceKinds ?? null,
             userId,
@@ -343,7 +336,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, input, loading, messages, role, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, input, loading, messages, role, roleScreenAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -400,6 +393,7 @@ export default function AIAssistantScreen() {
           <AIAssistantReadyProductPanels
             resolvedUserContext={resolvedUserContext}
             readyProposals={readyProposals}
+            roleScreenAssistantPack={roleScreenAssistantPack}
             readyBuyBundle={readyBuyBundle}
             approvedSupplierBundle={approvedSupplierBundle}
             debugAiContext={debugAiContext}

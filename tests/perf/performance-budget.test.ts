@@ -406,6 +406,20 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "procurement", "aiProcurementReadyBuyOptionTypes.ts"),
       path.join(SRC, "screens", "buyer", "components", "BuyerReadyBuyOptionsBlock.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct03RealRoleScreenAssistantsFiles = [
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantTypes.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantRegistry.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantHydrator.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantEngine.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenQuestionAnswerEngine.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantPolicy.ts"),
+      path.join(SRC, "features", "ai", "realAssistants", "aiRoleScreenAssistantUserCopy.ts"),
+      path.join(SRC, "features", "ai", "finance", "aiAccountantTodayPaymentAssistant.ts"),
+      path.join(SRC, "features", "ai", "warehouse", "aiWarehouseTodayOpsAssistant.ts"),
+      path.join(SRC, "features", "ai", "foreman", "aiForemanTodayCloseoutAssistant.ts"),
+      path.join(SRC, "features", "ai", "director", "aiDirectorTodayDecisionAssistant.ts"),
+      path.join(SRC, "features", "ai", "documents", "aiDocumentReadySummaryAssistant.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiMagic12ProactiveWorkdayTaskIntelligenceFiles = [
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskTypes.ts"),
       path.join(SRC, "features", "ai", "workday", "aiWorkdayTaskPolicy.ts"),
@@ -1177,6 +1191,7 @@ describe("performance budget — bundle module count", () => {
     // S_AI_APPROVAL_02 adds one permanent get_action_status safe-read status tool module.
     // S_AI_PRODUCT_01 adds six permanent Daily Command Center product-layer modules.
     // S_AI_PRODUCT_02 adds four permanent Command Center task-stream runtime modules.
+    // S_AI_PRODUCT_03 adds 12 permanent role-screen assistant product modules.
     // S_AI_MAGIC_13 adds three permanent workday live-evidence bridge modules.
     // S_AI_PRO_02 adds 11 permanent construction know-how engine/BFF modules.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
@@ -1341,6 +1356,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiLayout01SafeRuntimeFiles).toBeLessThanOrEqual(5);
     expect(sWebAiAssistant02FullHeightReadyProposalsFiles).toBeLessThanOrEqual(12);
     expect(sAiProcurement05BuyerInboxReadyBuyOptionsFiles).toBeLessThanOrEqual(5);
+    expect(sAiProduct03RealRoleScreenAssistantsFiles).toBeLessThanOrEqual(12);
     expect(sAiProcurement03InternalFirstIntelligenceFiles).toBeLessThanOrEqual(4);
     expect(sAiProcurement04InternalFirstDecisionEngineFiles).toBeLessThanOrEqual(4);
     expect(sAiMagic12ProactiveWorkdayTaskIntelligenceFiles).toBeLessThanOrEqual(7);
@@ -1538,6 +1554,7 @@ describe("performance budget — bundle module count", () => {
         sAiLayout01SafeRuntimeFiles -
         sWebAiAssistant02FullHeightReadyProposalsFiles -
         sAiProcurement05BuyerInboxReadyBuyOptionsFiles -
+        sAiProduct03RealRoleScreenAssistantsFiles -
         sAiProcurement03InternalFirstIntelligenceFiles -
         sAiProcurement04InternalFirstDecisionEngineFiles -
         sAiMagic12ProactiveWorkdayTaskIntelligenceFiles -

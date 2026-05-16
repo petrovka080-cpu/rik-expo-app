@@ -13,6 +13,8 @@ import {
 } from "./procurement/aiApprovedRequestSupplierOptions";
 import type { ProcurementReadyBuyOptionBundle } from "./procurement/aiProcurementReadyBuyOptionTypes";
 import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcurementReadyBuyOptionTypes";
+import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
+import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 
@@ -48,6 +50,7 @@ export function AIAssistantProductHeader({
 export function AIAssistantReadyProductPanels({
   resolvedUserContext,
   readyProposals,
+  roleScreenAssistantPack,
   readyBuyBundle,
   approvedSupplierBundle,
   debugAiContext,
@@ -61,6 +64,7 @@ export function AIAssistantReadyProductPanels({
     "debugReason" | "userFacingNotice" | "userFacingScopeLabel"
   >;
   readyProposals: AiReadyProposal[];
+  roleScreenAssistantPack: AiRoleScreenAssistantPack | null;
   readyBuyBundle: ProcurementReadyBuyOptionBundle | null;
   approvedSupplierBundle: ProcurementReadySupplierProposalBundle | null;
   debugAiContext: boolean;
@@ -73,10 +77,81 @@ export function AIAssistantReadyProductPanels({
 
   return (
     <>
+      {roleScreenAssistantPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.role_screen_assistant_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{roleScreenAssistantPack.title}</Text>
+          </View>
+          <Text style={styles.roleAssistantSummary}>{roleScreenAssistantPack.summary}</Text>
+          {roleScreenAssistantPack.today ? (
+            <View style={styles.roleAssistantMetricRow}>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.count}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>в срезе</Text>
+              </View>
+              {roleScreenAssistantPack.today.amountLabel ? (
+                <View style={styles.roleAssistantMetric}>
+                  <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.amountLabel}</Text>
+                  <Text style={styles.roleAssistantMetricLabel}>сумма</Text>
+                </View>
+              ) : null}
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.criticalCount ?? roleScreenAssistantPack.risks.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>критич.</Text>
+              </View>
+              <View style={styles.roleAssistantMetric}>
+                <Text style={styles.roleAssistantMetricValue}>{roleScreenAssistantPack.today.overdueCount ?? roleScreenAssistantPack.missingData.length}</Text>
+                <Text style={styles.roleAssistantMetricLabel}>требуют</Text>
+              </View>
+            </View>
+          ) : null}
+          {roleScreenAssistantPack.readyItems.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Самое важное</Text>
+              {roleScreenAssistantPack.readyItems.slice(0, 3).map((item) => (
+                <View key={item.id} style={styles.roleAssistantItem}>
+                  <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                  <Text style={styles.roleAssistantItemText}>{item.description}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          {roleScreenAssistantPack.risks.length > 0 || roleScreenAssistantPack.missingData.length > 0 ? (
+            <View style={styles.roleAssistantSection}>
+              <Text style={styles.roleAssistantSectionTitle}>Риски и недостающие данные</Text>
+              {roleScreenAssistantPack.risks.slice(0, 2).map((risk) => (
+                <Text key={risk.id} style={styles.roleAssistantRiskText}>{`${risk.title}: ${risk.reason}`}</Text>
+              ))}
+              {roleScreenAssistantPack.missingData.slice(0, 2).map((item) => (
+                <Text key={item.id} style={styles.roleAssistantRiskText}>{`Не хватает: ${item.label}`}</Text>
+              ))}
+            </View>
+          ) : null}
+          <ScrollView
+            horizontal
+            style={styles.roleAssistantActionScroller}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.roleAssistantActionRow}
+          >
+            {roleScreenAssistantPack.nextActions.slice(0, 5).map((action) => (
+              <Pressable
+                key={action.id}
+                style={styles.roleAssistantActionChip}
+                onPress={() => onReadyProposalPress(action.label)}
+                testID="ai.role_screen_assistant.action"
+              >
+                <Text style={styles.roleAssistantActionText}>{action.label}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
+
       <View style={styles.productStatusCard}>
         <Text style={styles.productStatusText}>
           {resolvedUserContext.userFacingNotice
-            ?? "Работаю в режиме подсказок и черновиков. Действия напрямую не выполняю."}
+            ?? AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY}
         </Text>
       </View>
 

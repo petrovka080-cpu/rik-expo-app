@@ -1,0 +1,23 @@
+{
+  "wave": "S_AI_PRODUCT_03_REAL_ROLE_SCREEN_ASSISTANTS",
+  "final_status": "GREEN_AI_REAL_ROLE_SCREEN_ASSISTANTS_WEB_READY",
+  "checks": {
+    "Accountant ready work visible": true,
+    "Accountant answer references hydrated context": true,
+    "Buyer ready buy work visible": true,
+    "Chat uses full available height": true,
+    "Input visible": true,
+    "Debug panels are hidden": true,
+    "No provider call": true,
+    "No DB write from web test": true
+  },
+  "providerCalled": false,
+  "providerCallUrls": [],
+  "dbWritesUsed": false,
+  "secretsPrinted": false,
+  "rawRowsPrinted": false,
+  "rawPromptsPrinted": false,
+  "rawProviderPayloadsPrinted": false,
+  "pageErrors": [],
+  "fakeGreenClaimed": false
+}
