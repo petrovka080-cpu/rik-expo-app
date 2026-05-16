@@ -268,6 +268,7 @@ export const loadIncomingItemRowsFromSupabase = async (
 };
 
 export const runSuppliersListRpcFromSupabase = async (searchTerm: string | null) =>
+  // SCALE_BOUND_EXCEPTION: legacy suppliers_list overload accepts only search in this path; table fallback remains page-through bounded.
   await supabase.rpc("suppliers_list", normalizeSuppliersListRpcArgs(searchTerm));
 
 export const loadSuppliersTableRowsFromSupabase = async (searchTerm: string) => {

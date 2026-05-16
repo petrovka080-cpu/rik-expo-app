@@ -118,7 +118,8 @@ export function useDirectorProposalRow({
               const qKinds = await supabase
                 .from("request_items")
                 .select("id, item_kind, note")
-                .in("id", ids);
+                .in("id", ids)
+                .limit(ids.length);
 
               if (!qKinds.error && Array.isArray(qKinds.data)) {
                 const mapKind: Record<string, string> = {};
@@ -243,4 +244,3 @@ export function useDirectorProposalRow({
     ProposalRow,
   };
 }
-

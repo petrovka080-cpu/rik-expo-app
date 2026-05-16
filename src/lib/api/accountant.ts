@@ -774,6 +774,7 @@ export async function listAccountantInbox(status?: string) {
   const norm = normalizeAccountantInboxRpcTab(status);
 
   // 1) новый RPC с датами оплаты
+  // SCALE_BOUND_EXCEPTION: legacy accountant inbox list RPC has no pagination args; migrated screens should use accountant_inbox_scope_v1.
   const n = await client.rpc("list_accountant_inbox_fact", norm ? { p_tab: norm } : {});
   if (!n.error) {
     const rows = validateRpcResponse(n.data, isAccountantInboxLegacyRpcResponse, {

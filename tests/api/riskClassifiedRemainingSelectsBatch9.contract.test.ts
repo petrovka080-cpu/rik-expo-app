@@ -74,6 +74,13 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/pdf/pdfViewer.readiness.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedScaleBoundedDatabaseQueriesPatch = (file: string) =>
+  [
+    "src/lib/api/pdf_proposal.ts",
+    "src/lib/pdf/pdf.builder.ts",
+    "src/screens/contractor/contractor.pdfService.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedDirectorReportsSafeRouting2Artifact = (file: string) =>
   [
     "artifacts/S_DIRECTOR_REPORTS_FETCHALL_SAFE_ROUTING_2_matrix.json",
@@ -278,6 +285,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
         !isApprovedLaterRpcValidationPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
+        !isApprovedScaleBoundedDatabaseQueriesPatch(file) &&
         !isApprovedDirectorReportsSafeRouting2Artifact(file) &&
         !isApprovedDirectorReportsSafeBounds1Patch(file) &&
         !isApprovedDirectSupabaseBypassBatch1Patch(file) &&

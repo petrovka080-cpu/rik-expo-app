@@ -7,6 +7,7 @@ import { renderProposalPdfErrorHtml, renderProposalPdfHtml } from "../pdf/pdf.pr
 import type { ProposalPdfModel } from "../pdf/pdf.model";
 import { listSuppliers } from "./suppliers";
 import type { Supplier } from "./types";
+import { MAX_LIST_LIMIT } from "./queryLimits";
 
 type ProposalHeadRow = Pick<
   Database["public"]["Tables"]["proposals"]["Row"],
@@ -185,7 +186,8 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
       .from("proposal_items")
       .select("id, request_item_id, name_human, uom, qty, app_code, rik_code, price, supplier, note")
       .eq("proposal_id", pid)
-      .order("id", { ascending: true });
+      .order("id", { ascending: true })
+      .limit(MAX_LIST_LIMIT);
 
     const pi: ProposalPdfItemRow[] = Array.isArray(piRaw) ? piRaw : [];
     let requestIdFromItems: string | null = null;
@@ -196,7 +198,8 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
         const ri = await supabase
           .from("request_items")
           .select("id, request_id, name_human, uom, qty, app_code, rik_code")
-          .in("id", ids);
+          .in("id", ids)
+          .limit(Math.min(ids.length, MAX_LIST_LIMIT));
 
         if (!ri.error && Array.isArray(ri.data)) {
           const byId = new Map<string, RequestItemRow>(ri.data.map((r) => [String(r.id), r]));
@@ -289,7 +292,7 @@ export async function buildProposalPdfHtml(proposalId: number | string): Promise
 
     let appNames: Record<string, string> = {};
     try {
-      const apps = await client.from("rik_apps" as never).select("app_code,name_human");
+      const apps = await client.from("rik_apps" as never).select("app_code,name_human").limit(MAX_LIST_LIMIT);
       if (!apps.error && Array.isArray(apps.data)) {
         appNames = Object.fromEntries(
           apps.data.map((a) => [

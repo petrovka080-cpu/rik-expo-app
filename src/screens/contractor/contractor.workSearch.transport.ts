@@ -8,4 +8,6 @@ export type ContractorCatalogSearchRpcArgs = PublicFunctionArgs<"catalog_search"
 export const callContractorCatalogSearchRpc = async (
   supabaseClient: AppSupabaseClient,
   args: ContractorCatalogSearchRpcArgs,
-) => supabaseClient.rpc("catalog_search", args);
+) =>
+  // SCALE_BOUND_EXCEPTION: catalog_search DB function has no limit arg; controller uses short search input and ignores stale responses.
+  supabaseClient.rpc("catalog_search", args);

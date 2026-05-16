@@ -22,7 +22,12 @@ export type MarketSupplierMessageInsert = {
 };
 
 export async function callMarketplaceItemsScopePageRpc(args: MarketItemsScopePageRpcArgs) {
-  return await supabase.rpc("marketplace_items_scope_page_v1" as never, args as never);
+  return await supabase.rpc("marketplace_items_scope_page_v1" as never, {
+    p_offset: args.p_offset,
+    p_limit: args.p_limit,
+    p_side: args.p_side,
+    p_kind: args.p_kind,
+  } as never);
 }
 
 export async function callMarketplaceItemScopeDetailRpc(args: MarketItemScopeDetailRpcArgs) {

@@ -877,6 +877,7 @@ export async function listDirectorProposalsPending(
       errorStage: "table_primary",
     });
     try {
+      // SCALE_BOUND_EXCEPTION: legacy fallback RPC has no pagination args; primary proposals table path is range-bounded before fallback.
       const rpc = await client.rpc("list_director_proposals_pending");
       if (!rpc.error) {
         const validated = validateRpcResponse(rpc.data, isProposalPendingRowsRpcResponse, {

@@ -12,6 +12,7 @@ import {
   callDirectorDecideProposalItemsRpc,
   type DirectorProposalItemDecision,
 } from "./director.proposalDecision.transport";
+import { MAX_LIST_LIMIT } from "../../lib/api/queryLimits";
 
 type Deps = {
   supabase: any;
@@ -149,7 +150,8 @@ export function useDirectorProposalDetail({
       const q = await supabase
         .from("proposal_items")
         .select("request_item_id")
-        .eq("proposal_id", pidStr);
+        .eq("proposal_id", pidStr)
+        .limit(MAX_LIST_LIMIT);
 
       if (q.error) throw q.error;
 

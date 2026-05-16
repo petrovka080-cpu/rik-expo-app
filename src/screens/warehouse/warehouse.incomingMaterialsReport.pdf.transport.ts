@@ -9,4 +9,8 @@ export type WarehouseIncomingMaterialsReportPdfSourceRpcArgs =
 export const callWarehouseIncomingMaterialsReportPdfSourceRpc = async (
   supabase: AppSupabaseClient,
   args: WarehouseIncomingMaterialsReportPdfSourceRpcArgs,
-) => supabase.rpc("pdf_warehouse_incoming_materials_source_v1", args);
+) =>
+  supabase.rpc("pdf_warehouse_incoming_materials_source_v1", {
+    p_from: args.p_from,
+    p_to: args.p_to,
+  });

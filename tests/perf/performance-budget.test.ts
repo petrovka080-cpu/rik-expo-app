@@ -620,6 +620,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "approvalInbox", "approvalInboxPersistenceBlockedViewModel.ts"),
       path.join(SRC, "features", "ai", "procurementCopilot", "ProcurementCopilotRuntimeSurface.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sScale01BoundedDatabaseQueriesFiles = [
+      path.join(SRC, "lib", "api", "queryLimits.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1417,6 +1420,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiApproval01ActionRouterFiles).toBeLessThanOrEqual(4);
     expect(sAiSecurity01RolePermissionActionBoundaryFiles).toBeLessThanOrEqual(4);
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
+    expect(sScale01BoundedDatabaseQueriesFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1617,7 +1621,8 @@ describe("performance budget — bundle module count", () => {
         sAiBff01MissingRouteCoverageFiles -
         sAiApproval01ActionRouterFiles -
         sAiSecurity01RolePermissionActionBoundaryFiles -
-        sE2eCore05DeveloperControlTargetabilityFiles,
+        sE2eCore05DeveloperControlTargetabilityFiles -
+        sScale01BoundedDatabaseQueriesFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

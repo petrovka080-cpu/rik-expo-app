@@ -13,6 +13,5 @@ export async function submitMapScreenDemandOffer(payload: MapScreenDemandOfferIn
 }
 
 export async function loadMapScreenListingRouteMeta(listingId: string) {
-  const query = supabase.from("market_listings").select("id,title,user_id,company_id");
-  return await query.eq("id", listingId).maybeSingle();
+  return await supabase.from("market_listings").select("id,title,user_id,company_id").eq("id", listingId).maybeSingle();
 }

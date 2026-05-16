@@ -300,7 +300,8 @@ export async function snapshotProposalItemsAction(opts: {
       const requestItems = await supabase
         .from("request_items")
         .select("id, name_human, uom, qty, app_code, rik_code")
-        .in("id", cleanIds);
+        .in("id", cleanIds)
+        .limit(cleanIds.length);
 
       if (!requestItems.error && Array.isArray(requestItems.data)) {
         requestItemData = requestItems.data;

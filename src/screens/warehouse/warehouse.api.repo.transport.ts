@@ -37,6 +37,7 @@ export async function callWarehouseApiSupabaseReportsBundle(
   throwIfAborted(options?.signal);
   const [stock, movement, issues] = await Promise.all([
     applySupabaseAbortSignal(
+      // SCALE_BOUND_EXCEPTION: stock report RPC is a current-stock aggregate view without pagination args; tracked for DB function pagination.
       supabase.rpc("acc_report_stock", {}),
       options?.signal,
     ),
@@ -174,6 +175,7 @@ export async function callWarehouseApiSupabaseIncomingItemsScope(
 ): Promise<WarehouseApiEnvelopeResult> {
   throwIfAborted(options?.signal);
   const result = await applySupabaseAbortSignal(
+    // SCALE_BOUND_EXCEPTION: incoming-items RPC is parent-scoped by one incoming id; DB function pagination is a follow-up contract change.
     supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
       p_incoming_id: incomingId,
     } as never),

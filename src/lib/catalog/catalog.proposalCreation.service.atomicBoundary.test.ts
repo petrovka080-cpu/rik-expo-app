@@ -374,7 +374,8 @@ describe("catalog proposal atomic boundary", () => {
     const proposalItemsQuery = {
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
-      in: jest.fn(async () => ({
+      in: jest.fn().mockReturnThis(),
+      limit: jest.fn(async () => ({
         data: [{ request_item_id: "ri-1" }],
         error: null,
       })),
@@ -408,6 +409,7 @@ describe("catalog proposal atomic boundary", () => {
     expect(proposalQuery.eq).toHaveBeenCalledWith("supplier", "Acme");
     expect(proposalItemsQuery.eq).toHaveBeenCalledWith("proposal_id", "proposal-1");
     expect(proposalItemsQuery.in).toHaveBeenCalledWith("request_item_id", ["ri-1"]);
+    expect(proposalItemsQuery.limit).toHaveBeenCalledWith(1);
     expect(result.proposals).toEqual([
       expect.objectContaining({
         proposal_id: "proposal-1",

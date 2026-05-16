@@ -5,6 +5,7 @@ import { loadAggregatedWorkSummary } from "./contractor.data";
 import { generateActPdf, type ContractorPdfWork } from "./contractorPdf";
 import { loadContractorWorkPdfSourceViaRpc } from "./contractorPdfSource.service";
 import type { WorkLogRow } from "./types";
+import { MAX_LIST_LIMIT } from "../../lib/api/queryLimits";
 
 export type ContractorPdfWorkRowLike = {
   progress_id: string;
@@ -203,7 +204,8 @@ export async function generateHistoryPdfForLog(params: {
   const { data: mats } = await supabaseClient
     .from("work_progress_log_materials")
     .select("mat_code, uom_mat, qty_fact")
-    .eq("log_id", log.id);
+    .eq("log_id", log.id)
+    .limit(MAX_LIST_LIMIT);
 
   const matsRowsRaw: LogMaterialRow[] = Array.isArray(mats) ? (mats as LogMaterialRow[]) : [];
   const codes = matsRowsRaw
@@ -214,7 +216,8 @@ export async function generateHistoryPdfForLog(params: {
     const ci = await supabaseClient
       .from("catalog_items")
       .select("rik_code, name_human_ru, name_human, uom_code")
-      .in("rik_code", codes);
+      .in("rik_code", codes)
+      .limit(Math.min(codes.length, MAX_LIST_LIMIT));
 
     if (!ci.error && Array.isArray(ci.data)) {
       for (const n of ci.data as CatalogItemRow[]) {

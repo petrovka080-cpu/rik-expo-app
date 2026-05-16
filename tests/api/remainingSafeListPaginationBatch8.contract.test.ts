@@ -74,6 +74,13 @@ const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
     "tests/pdf/pdfViewer.readiness.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedScaleBoundedDatabaseQueriesPatch = (file: string) =>
+  [
+    "src/lib/api/pdf_proposal.ts",
+    "src/lib/pdf/pdf.builder.ts",
+    "src/screens/contractor/contractor.pdfService.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedDirectSupabaseBypassBatch1Patch = (file: string) =>
   [
     "src/lib/api/directorPdfSource.service.test.ts",
@@ -300,6 +307,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedSLoadFix6WarehouseIssuePatch(file) &&
       !isApprovedLaterRpcValidationPatch(file) &&
       !isApprovedPdfInstantFirstOpenPatch(file) &&
+      !isApprovedScaleBoundedDatabaseQueriesPatch(file) &&
       !isApprovedDirectSupabaseBypassBatch1Patch(file) &&
       !isApprovedAuditBattle52CanonicalPdfAuthBoundaryPatch(file) &&
       !isApprovedAuditBattle79PdfRunnerAuthBoundaryPatch(file) &&

@@ -386,8 +386,8 @@ function classifySelect(params: {
   const rpc = rpcMatch?.[2] ?? null;
   const hasLimit = /\.limit\s*\(/.test(afterStatement);
   const hasRange = /\.range\s*\(/.test(afterStatement);
-  const hasSingle = /\.single\s*\(/.test(afterStatement);
-  const hasMaybeSingle = /\.maybeSingle\s*\(/.test(afterStatement);
+  const hasSingle = /\.single(?:<[^>]+>)?\s*\(/.test(afterStatement);
+  const hasMaybeSingle = /\.maybeSingle(?:<[^>]+>)?\s*\(/.test(afterStatement);
   const hasFilter = /\.(?:eq|in|match|or|not|is|contains|containedBy|overlaps|gte|gt|lte|lt|ilike|like)\s*\(/.test(
     afterStatement,
   );

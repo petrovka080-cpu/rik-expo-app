@@ -368,6 +368,7 @@ export async function listDirectorInbox(
   status: "На утверждении" | "Утверждено" | "Отклонено" = "На утверждении"
 ) {
   const args: { p_status?: DirectorInboxStatusArg } = { p_status: status };
+  // SCALE_BOUND_EXCEPTION: legacy director inbox list RPC has no pagination args; migrated screens should use director_pending_proposals_scope_v1.
   const { data, error } = await client.rpc("list_director_inbox", args);
   if (error) {
     logDirectorApiDebug("[listDirectorInbox]", parseErr(error));

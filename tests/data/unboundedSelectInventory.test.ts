@@ -40,17 +40,19 @@ describe("unbounded select repeatable inventory scanner", () => {
         "await supabase.from(\"request_items\").select(\"id\").range(0, 49);",
         "await supabase.from(\"profiles\").select(\"id, name\").single();",
         "await supabase.from(\"companies\").select(\"id\").maybeSingle();",
+        "await supabase.from(\"requests\").select(\"id\").maybeSingle<RequestRow>();",
       ].join("\n"),
     );
 
-    expect(entries).toHaveLength(4);
+    expect(entries).toHaveLength(5);
     expect(entries.map((entry) => entry.action)).toEqual([
       "already_bounded",
       "already_bounded",
       "already_bounded",
       "already_bounded",
+      "already_bounded",
     ]);
-    expect(entries.map((entry) => entry.risk)).toEqual(["low", "low", "low", "low"]);
+    expect(entries.map((entry) => entry.risk)).toEqual(["low", "low", "low", "low", "low"]);
   });
 
   it("recognizes page-through helper and normalizePage/range contexts as indirect bounds", () => {

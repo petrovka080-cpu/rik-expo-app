@@ -270,6 +270,7 @@ async function loadCanonicalRows(
   screen?: PlatformScreen,
   viewerRole?: string | null,
 ) {
+  // SCALE_BOUND_EXCEPTION: parent-scoped attachment list RPC has no pagination args; replace with DB function pagination when the RPC contract changes.
   const rpc = await client.rpc("proposal_attachment_evidence_scope_v1" as never, {
     p_proposal_id: proposalId,
     p_group_key: null,

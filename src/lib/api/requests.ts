@@ -524,6 +524,7 @@ export async function listRequestItems(requestId: number | string): Promise<ReqI
     });
 
     const args: RequestItemsByRequestArgs = { p_request_id: raw };
+    // SCALE_BOUND_EXCEPTION: parent-scoped request item RPC has no pagination args; replace with DB function pagination when the RPC contract changes.
     const { data, error } = await client.rpc("request_items_by_request", args);
     if (error) throw error;
 

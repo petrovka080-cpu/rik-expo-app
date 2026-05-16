@@ -3,6 +3,7 @@ import type { Database } from "../database.types";
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { supabase } from "../supabaseClient";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "../api/_core";
+import { MAX_LIST_LIMIT } from "../api/queryLimits";
 import {
   loadDirectorFinancePreviewPdfModel,
   prepareDirectorManagementReportPdfModel,
@@ -302,7 +303,8 @@ export async function batchResolveRequestLabels(
     const { data, error } = await supabase
       .from("requests")
       .select("id, display_no")
-      .in("id", uniqueIds);
+      .in("id", uniqueIds)
+      .limit(Math.min(uniqueIds.length, MAX_LIST_LIMIT));
     if (error) throw new Error(`requests lookup failed: ${error.message}`);
     const rows = Array.isArray(data) ? (data as RequestLabelRow[]) : [];
     const mapped: Record<string, string> = {};

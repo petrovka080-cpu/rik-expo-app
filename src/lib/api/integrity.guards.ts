@@ -167,6 +167,7 @@ async function loadRequestIds(
       .from("requests")
       .select("id")
       .in("id", pack)
+      .limit(pack.length)
       .returns<RequestIdRow[]>();
     if (result.error) throw result.error;
     for (const row of result.data ?? []) {
@@ -190,6 +191,7 @@ async function loadProposalContexts(
         .from("proposals")
         .select("id, request_id")
         .in("id", pack)
+        .limit(pack.length)
         .returns<ProposalContextRow[]>(),
       options?.signal,
     );
@@ -213,6 +215,7 @@ async function loadRequestItemLinks(
       .from("request_items")
       .select("id, request_id, status, cancelled_at")
       .in("id", pack)
+      .limit(pack.length)
       .returns<RequestItemLinkRow[]>();
     if (result.error) throw result.error;
     for (const row of result.data ?? []) {
@@ -305,6 +308,7 @@ async function loadProposalItemLinks(
       .from("proposal_items")
       .select("id, proposal_id")
       .in("id", pack)
+      .limit(pack.length)
       .returns<ProposalItemLinkRow[]>();
     if (result.error) throw result.error;
     for (const row of result.data ?? []) {
@@ -328,6 +332,7 @@ async function loadProposalPaymentLinks(
       .from("proposal_payments")
       .select("id, proposal_id")
       .in("id", pack)
+      .limit(pack.length)
       .returns<ProposalPaymentLinkRow[]>();
     if (result.error) throw result.error;
     for (const row of result.data ?? []) {

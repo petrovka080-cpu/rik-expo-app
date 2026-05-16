@@ -42,7 +42,8 @@ export async function loadExistingProposalItemRecoveryRows(
     .from("proposal_items")
     .select("request_item_id")
     .eq("proposal_id", proposalId)
-    .in("request_item_id", requestItemIds);
+    .in("request_item_id", requestItemIds)
+    .limit(Math.max(1, requestItemIds.length));
 }
 
 export async function loadExistingProposalRecoveryRows(params: {

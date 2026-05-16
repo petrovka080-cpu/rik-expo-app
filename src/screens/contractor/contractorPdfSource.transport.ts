@@ -9,4 +9,6 @@ export type ContractorWorkPdfSourceRpcArgs =
 export const callContractorWorkPdfSourceRpc = async (
   supabase: AppSupabaseClient,
   args: ContractorWorkPdfSourceRpcArgs,
-) => supabase.rpc("pdf_contractor_work_source_v1", args);
+) =>
+  // SCALE_BOUND_EXCEPTION: contractor PDF source is keyed by one progress/log id pair, not a list screen read.
+  supabase.rpc("pdf_contractor_work_source_v1", args);
