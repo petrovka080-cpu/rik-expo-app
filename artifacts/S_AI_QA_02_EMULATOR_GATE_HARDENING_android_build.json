@@ -3,21 +3,21 @@
   "source_wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "final_status": "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "9761b2d5c8a202dc02127819dfa08781207932e5a1dfde6cc3a85978a20c36a0",
+  "changed_files_fingerprint": "07414e935e050adfd1dfc45b02ef7e155811455e2df50b02da5a6645c498230f",
   "changed_files": [
-    "scripts/ai/verifyAiRuntimeNoFallbackTransportRegistry.ts",
+    "scripts/ai/verifyAiRuntimeExplicitTransportBindings.ts",
     "scripts/architecture_anti_regression_suite.ts",
     "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-    "src/features/ai/tools/transport/aiToolTransportTypes.ts",
-    "tests/ai/agentRuntimeNoFallbackTransportRegistry.contract.test.ts",
+    "tests/ai/agentRuntimeExplicitTransportBindings.contract.test.ts",
     "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
-    "tests/ai/aiToolTransportBoundary.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportExplicitBindings.contract.test.ts",
     "tests/architecture/aiRuntimeTransportNoFallback.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts",
+    "tests/architecture/aiScreenLocalAssistantArchitecture.contract.test.ts",
     "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
   ],
   "ai_mobile_runtime_files": [
-    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-    "src/features/ai/tools/transport/aiToolTransportTypes.ts"
+    "src/features/ai/agent/agentRuntimeTransportRegistry.ts"
   ],
   "runtime_smoke": "PASS",
   "core_release_artifact_overwritten": false,

@@ -1,0 +1,22 @@
+{
+  "wave": "S_AI_RUNTIME_06_EXPLICIT_TRANSPORT_ROUTE_BINDINGS",
+  "source_files": [
+    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+    "scripts/ai/verifyAiRuntimeExplicitTransportBindings.ts"
+  ],
+  "test_files": [
+    "tests/ai/agentRuntimeExplicitTransportBindings.contract.test.ts",
+    "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportExplicitBindings.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts"
+  ],
+  "registry_entries": 12,
+  "route_count": 76,
+  "explicit_binding_count": 76,
+  "runtime_contracts": 13,
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}

@@ -14,6 +14,8 @@ describe("AI tool transport boundary architecture", () => {
       transportFilesPresent: true,
       allToolsHaveTransportContract: true,
       allRuntimeRoutesHaveTransportContract: true,
+      runtimeRegistryExplicitBindings: true,
+      runtimeRegistryNoPatternMatchers: true,
       toolsUseTransportBoundary: true,
       noToolDirectBffImports: true,
       transportDtoOnly: true,

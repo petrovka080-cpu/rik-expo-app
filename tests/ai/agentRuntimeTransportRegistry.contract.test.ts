@@ -32,6 +32,7 @@ describe("Agent runtime transport registry", () => {
       const mount = getAgentRuntimeGatewayMount(route.operation);
 
       expect(mount).not.toBeNull();
+      expect(registryEntry.operations).toContain(route.operation);
       expect(resolveAgentRuntimeTransportName(route.operation)).toBe(registryEntry.runtimeName);
       expect(mount?.runtimeName).toBe(registryEntry.runtimeName);
       expect(mount?.runtimeBoundary).toBe(registryEntry.expectedBoundary);
@@ -103,6 +104,8 @@ describe("Agent runtime transport registry", () => {
     const contracts = listAiRuntimeTransportContracts();
 
     for (const entry of listAgentRuntimeTransportRegistryEntries()) {
+      expect(entry.operations.length).toBeGreaterThan(0);
+      expect(new Set(entry.operations).size).toBe(entry.operations.length);
       expect(contracts).toEqual(
         expect.arrayContaining([
           expect.objectContaining({

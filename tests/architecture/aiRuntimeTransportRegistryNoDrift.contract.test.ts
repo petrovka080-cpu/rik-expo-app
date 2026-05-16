@@ -13,6 +13,11 @@ describe("AI runtime transport registry drift boundary", () => {
     const closeoutVerifier = read("scripts/ai/verifyAiDomainRuntimeTransportCloseout.ts");
 
     expect(registry).toContain("AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS");
+    expect(registry).toContain("operations:");
+    expect(registry).not.toContain("matchers:");
+    expect(registry).not.toContain("matcherApplies");
+    expect(registry).not.toMatch(/kind:\s*"prefix"/);
+    expect(registry).not.toMatch(/kind:\s*"includes"/);
     expect(gateway).toContain("resolveAgentRuntimeTransportName");
     expect(gateway).not.toMatch(/operation\.startsWith\("agent\.(documents|construction_knowhow|finance|warehouse|field)\./);
     expect(closeoutVerifier).toContain("AI_EXPLICIT_DOMAIN_RUNTIME_TRANSPORT_GROUPS");

@@ -15,7 +15,7 @@
     "tests/architecture/agentBffRuntimeMount.contract.test.ts"
   ],
   "registry_entries": 12,
-  "runtime_contracts": 12,
+  "runtime_contracts": 13,
   "route_count": 76,
   "db_writes": 0,
   "provider_calls": 0,

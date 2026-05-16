@@ -50,7 +50,12 @@ describe("AI screen-local assistant architecture", () => {
     expect(shell).toContain("agent.screen_assistant.context.read");
     expect(shell).toContain("AgentScreenAssistantEnvelope");
     expect(gateway).toContain("resolveAgentRuntimeTransportName");
-    expect(transportRegistry).toContain('{ kind: "prefix", value: "agent.screen_assistant." }');
     expect(transportRegistry).toContain('runtimeName: "screen_runtime"');
+    expect(transportRegistry).toContain('"agent.screen_assistant.context.read"');
+    expect(transportRegistry).toContain('"agent.screen_assistant.ask.preview"');
+    expect(transportRegistry).toContain('"agent.screen_assistant.action_plan"');
+    expect(transportRegistry).toContain('"agent.screen_assistant.draft_preview"');
+    expect(transportRegistry).toContain('"agent.screen_assistant.submit_for_approval.preview"');
+    expect(transportRegistry).not.toContain("matchers:");
   });
 });

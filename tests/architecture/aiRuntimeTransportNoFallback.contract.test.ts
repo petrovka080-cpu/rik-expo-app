@@ -29,7 +29,9 @@ describe("AI runtime transport no-fallback architecture", () => {
     expect(source).not.toMatch(/fallback:\s*true/);
     expect(source).not.toMatch(/return\s+fallbackEntry/);
     expect(source).toContain('entryId: "tool_registry"');
-    expect(source).toContain('value: "agent.tools."');
+    expect(source).toContain('"agent.tools.list"');
+    expect(source).toContain('"agent.tools.validate"');
+    expect(source).toContain('"agent.tools.preview"');
     expect(source).toContain("Agent runtime transport is not registered");
   });
 });

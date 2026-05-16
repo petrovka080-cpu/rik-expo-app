@@ -1,0 +1,26 @@
+# S_AI_RUNTIME_06_EXPLICIT_TRANSPORT_ROUTE_BINDINGS
+
+final_status: GREEN_AI_RUNTIME_EXPLICIT_TRANSPORT_BINDINGS_READY
+exact_reason: none
+route_count: 76
+registry_entry_count: 12
+runtime_contract_count: 13
+explicit_binding_count: 76
+unique_binding_count: 76
+all_routes_bound_once: true
+no_extra_bindings: true
+no_duplicate_bindings: true
+no_pattern_matchers: true
+all_bindings_match_gateway: true
+all_boundaries_aligned: true
+all_runtime_contracts_mounted: true
+no_fallback_entries: true
+no_command_center_routes: true
+unknown_operation_fails_closed: true
+no_db_writes: true
+no_direct_database_access: true
+no_provider_calls: true
+no_raw_rows: true
+no_raw_provider_payloads: true
+no_ui_changes: true
+no_fake_green: true

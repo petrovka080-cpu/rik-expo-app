@@ -4,8 +4,8 @@
   "exact_reason": null,
   "route_count": 76,
   "registry_entry_count": 12,
-  "fallback_entry_count": 1,
-  "runtime_contract_count": 12,
+  "fallback_entry_count": 0,
+  "runtime_contract_count": 13,
   "all_registry_runtime_contracts_mounted": true,
   "all_registry_boundaries_aligned": true,
   "all_gateway_mounts_match_registry": true,
@@ -78,7 +78,7 @@
     "finance_copilot": 4,
     "warehouse_copilot": 4,
     "field_work_copilot": 4,
-    "command_center": 3
+    "tool_registry": 3
   },
   "no_db_writes": true,
   "no_direct_database_access": true,

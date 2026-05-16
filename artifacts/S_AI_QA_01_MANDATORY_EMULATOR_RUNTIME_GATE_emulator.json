@@ -6,19 +6,19 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
-      "scripts/ai/verifyAiRuntimeNoFallbackTransportRegistry.ts",
+      "scripts/ai/verifyAiRuntimeExplicitTransportBindings.ts",
       "scripts/architecture_anti_regression_suite.ts",
       "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-      "src/features/ai/tools/transport/aiToolTransportTypes.ts",
-      "tests/ai/agentRuntimeNoFallbackTransportRegistry.contract.test.ts",
+      "tests/ai/agentRuntimeExplicitTransportBindings.contract.test.ts",
       "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
-      "tests/ai/aiToolTransportBoundary.contract.test.ts",
+      "tests/architecture/aiRuntimeTransportExplicitBindings.contract.test.ts",
       "tests/architecture/aiRuntimeTransportNoFallback.contract.test.ts",
+      "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts",
+      "tests/architecture/aiScreenLocalAssistantArchitecture.contract.test.ts",
       "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
-      "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-      "src/features/ai/tools/transport/aiToolTransportTypes.ts"
+      "src/features/ai/agent/agentRuntimeTransportRegistry.ts"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1135,8 +1135,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "9e37e9813fed44626cc5327fccf613354d84dcf7bcefd4d283bd6859c40dd421",
-    "installed_apk_source_fingerprint": "9e37e9813fed44626cc5327fccf613354d84dcf7bcefd4d283bd6859c40dd421",
+    "ai_mobile_runtime_source_fingerprint": "075dfeb955921aaaf0538aece3b1c515498dde78bfaccca27a02eb3ab6c1d7b2",
+    "installed_apk_source_fingerprint": "075dfeb955921aaaf0538aece3b1c515498dde78bfaccca27a02eb3ab6c1d7b2",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1144,7 +1144,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "9761b2d5c8a202dc02127819dfa08781207932e5a1dfde6cc3a85978a20c36a0",
+    "changed_files_fingerprint": "07414e935e050adfd1dfc45b02ef7e155811455e2df50b02da5a6645c498230f",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

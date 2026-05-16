@@ -344,6 +344,8 @@ export type AiToolTransportBoundaryArchitectureSummary = {
   transportFilesPresent: boolean;
   allToolsHaveTransportContract: boolean;
   allRuntimeRoutesHaveTransportContract: boolean;
+  runtimeRegistryExplicitBindings: boolean;
+  runtimeRegistryNoPatternMatchers: boolean;
   toolsUseTransportBoundary: boolean;
   noToolDirectBffImports: boolean;
   transportDtoOnly: boolean;
@@ -1251,6 +1253,8 @@ const AI_TOOL_SCHEMAS_PATH = "src/features/ai/schemas/aiToolSchemas.ts";
 const AI_TOOL_READ_BINDINGS_PATH = "src/features/ai/tools/aiToolReadBindings.ts";
 const AI_TOOL_PLAN_POLICY_PATH = "src/features/ai/tools/aiToolPlanPolicy.ts";
 const AI_TOOL_TRANSPORT_TYPES_PATH = "src/features/ai/tools/transport/aiToolTransportTypes.ts";
+const AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH =
+  "src/features/ai/agent/agentRuntimeTransportRegistry.ts";
 const AI_TOOL_TRANSPORT_FILES = [
   "src/features/ai/tools/transport/searchCatalog.transport.ts",
   "src/features/ai/tools/transport/compareSuppliers.transport.ts",
@@ -3064,6 +3068,10 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
 } {
   const readFile = params.readFile ?? ((relativePath) => readProjectFile(params.projectRoot, relativePath));
   const transportTypesSource = safeReadProjectFile({ readFile, relativePath: AI_TOOL_TRANSPORT_TYPES_PATH });
+  const runtimeRegistrySource = safeReadProjectFile({
+    readFile,
+    relativePath: AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH,
+  });
   const transportSources = AI_TOOL_TRANSPORT_FILES.map((relativePath) => ({
     relativePath,
     source: safeReadProjectFile({ readFile, relativePath }),
@@ -3090,6 +3098,25 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
   const allRuntimeRoutesHaveTransportContract = REQUIRED_AI_RUNTIME_TRANSPORT_NAMES.every((runtimeName) =>
     Boolean(transportTypesSource?.includes(`runtimeName: "${runtimeName}"`)),
   );
+  const runtimeRegistryText = runtimeRegistrySource ?? "";
+  const requiredRuntimeRegistryTransportNames = REQUIRED_AI_RUNTIME_TRANSPORT_NAMES.filter(
+    (runtimeName) => runtimeName !== "command_center",
+  );
+  const runtimeRegistryExplicitBindings =
+    Boolean(runtimeRegistrySource) &&
+    runtimeRegistryText.includes("operations:") &&
+    requiredRuntimeRegistryTransportNames.every((runtimeName) =>
+      runtimeRegistryText.includes(`runtimeName: "${runtimeName}"`),
+    );
+  const runtimeRegistryNoPatternMatchers =
+    Boolean(runtimeRegistrySource) &&
+    !runtimeRegistryText.includes("AgentRuntimeTransportMatcher") &&
+    !runtimeRegistryText.includes("matchers:") &&
+    !runtimeRegistryText.includes("matcherApplies") &&
+    !/kind:\s*"prefix"/.test(runtimeRegistryText) &&
+    !/kind:\s*"includes"/.test(runtimeRegistryText) &&
+    !/operation\.startsWith\s*\(/.test(runtimeRegistryText) &&
+    !/operation\.includes\s*\(/.test(runtimeRegistryText);
   const toolsUseTransportBoundary = runtimeSources.every((entry) => {
     const source = entry.source ?? "";
     const expectedTransportName =
@@ -3124,9 +3151,12 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
   ];
   const errors = [
     ...(transportTypesSource ? [] : [`missing_file:${AI_TOOL_TRANSPORT_TYPES_PATH}`]),
+    ...(runtimeRegistrySource ? [] : [`missing_file:${AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH}`]),
     ...(transportFilesPresent ? [] : ["ai_tool_transport_files_missing"]),
     ...(allToolsHaveTransportContract ? [] : ["ai_tool_transport_contract_missing"]),
     ...(allRuntimeRoutesHaveTransportContract ? [] : ["ai_runtime_transport_contract_missing"]),
+    ...(runtimeRegistryExplicitBindings ? [] : ["ai_runtime_transport_explicit_bindings_missing"]),
+    ...(runtimeRegistryNoPatternMatchers ? [] : ["ai_runtime_transport_pattern_matcher_detected"]),
     ...(toolsUseTransportBoundary ? [] : ["ai_tool_runtime_not_using_transport_boundary"]),
     ...(noToolDirectBffImports ? [] : ["ai_tool_direct_bff_imports_remain"]),
     ...(transportDtoOnly ? [] : ["ai_tool_transport_dto_only_contract_missing"]),
@@ -3146,6 +3176,8 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
       transportFilesPresent,
       allToolsHaveTransportContract,
       allRuntimeRoutesHaveTransportContract,
+      runtimeRegistryExplicitBindings,
+      runtimeRegistryNoPatternMatchers,
       toolsUseTransportBoundary,
       noToolDirectBffImports,
       transportDtoOnly,
@@ -8716,6 +8748,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_plan_policy_blocks_unknown: ${report.aiToolPlanPolicyArchitecture.blocksUnknownTools}`);
   console.info(`ai_tool_plan_policy_no_live_execution: ${report.aiToolPlanPolicyArchitecture.noLiveExecutionBoundary}`);
   console.info(`ai_tool_transport_boundary: ${report.aiToolTransportBoundary.transportFilesPresent}`);
+  console.info(`ai_runtime_transport_explicit_bindings: ${report.aiToolTransportBoundary.runtimeRegistryExplicitBindings}`);
+  console.info(`ai_runtime_transport_no_pattern_matchers: ${report.aiToolTransportBoundary.runtimeRegistryNoPatternMatchers}`);
   console.info(`ai_tool_transport_no_direct_bff: ${report.aiToolTransportBoundary.noToolDirectBffImports}`);
   console.info(`ai_tool_rate_limit_policy: ${report.aiToolRateLimitPolicy.policyFilesPresent}`);
   console.info(`ai_tool_rate_limit_runtime_gate: ${report.aiToolRateLimitPolicy.runtimeToolsUseRateDecision}`);
