@@ -1,0 +1,29 @@
+{
+  "wave": "S_SCALE_05_RPC_RATE_LIMIT_DISCIPLINE_CLOSEOUT",
+  "final_status": "GREEN_SCALE_RPC_RATE_LIMIT_DISCIPLINE_READY",
+  "generatedAt": "2026-05-16T20:04:52.670Z",
+  "git": {
+    "head": "05d179a1b4250d27d27f2ec5287b39d75952d2b1",
+    "origin_main": "05d179a1b4250d27d27f2ec5287b39d75952d2b1",
+    "ahead": 0,
+    "behind": 0,
+    "worktree": "dirty"
+  },
+  "production_rpc_calls": 102,
+  "wrapper_rpc_entrypoints": 16,
+  "unique_literal_rpc_names": 98,
+  "literal_rpc_names_classified": 98,
+  "dynamic_rpc_calls_classified": 15,
+  "list_like_rpc_entrypoints": 54,
+  "list_like_rpc_with_rate_policy": 54,
+  "list_like_rpc_bounded_or_legacy_migration_guard": true,
+  "remaining_unclassified_rpc_names": [],
+  "remaining_unclassified_dynamic_rpc_calls": [],
+  "broad_live_enforcement_enabled": false,
+  "db_writes_used": false,
+  "provider_calls_used": false,
+  "hooks_added": false,
+  "ui_changed": false,
+  "business_logic_changed": false,
+  "fake_green_claimed": false
+}
