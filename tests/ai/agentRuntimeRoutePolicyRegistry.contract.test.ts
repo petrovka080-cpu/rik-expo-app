@@ -38,6 +38,8 @@ describe("Agent runtime route policy registry", () => {
         idempotencyRequired: registryPolicy?.idempotencyRequired,
         auditRequired: registryPolicy?.auditRequired,
         evidencePolicy: registryPolicy?.evidencePolicy,
+        approvedGatewayRequired: registryPolicy?.approvedGatewayRequired,
+        directExecutionWithoutApproval: false,
         explicitPolicyRequired: true,
         policySource: "explicit_route_policy_registry",
       });
@@ -77,6 +79,8 @@ describe("Agent runtime route policy registry", () => {
         evidencePolicy: "optional_or_blocked_reason",
         idempotencyRequired: false,
         auditRequired: false,
+        approvedGatewayRequired: false,
+        directExecutionWithoutApproval: false,
         mutationCount: 0,
         dbWrites: 0,
         providerCalls: false,

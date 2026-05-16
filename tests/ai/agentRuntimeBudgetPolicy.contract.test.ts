@@ -39,20 +39,25 @@ describe("Agent runtime budget policy", () => {
       idempotencyRequired: true,
       auditRequired: true,
       routeClass: "approval_ledger",
+      approvedGatewayRequired: false,
     });
     expect(getAgentRuntimeRouteBudgetPolicy("agent.action.execute_approved")).toMatchObject({
       idempotencyRequired: true,
       auditRequired: true,
       routeClass: "approved_executor",
+      approvedGatewayRequired: true,
+      directExecutionWithoutApproval: false,
     });
     expect(getAgentRuntimeRouteBudgetPolicy("agent.task_stream.read")).toMatchObject({
       idempotencyRequired: false,
       routeClass: "read",
+      approvedGatewayRequired: false,
     });
     expect(getAgentRuntimeRouteBudgetPolicy("agent.procurement.submit_for_approval")).toMatchObject({
       idempotencyRequired: true,
       auditRequired: true,
       routeClass: "approval_ledger",
+      approvedGatewayRequired: false,
     });
   });
 

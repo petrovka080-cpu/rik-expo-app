@@ -69,6 +69,7 @@ export type AgentRuntimeGatewayMount = {
   runtimeBoundary: AiRuntimeTransportContract["boundary"];
   routeScope: string;
   budget: AgentRuntimeRouteBudgetPolicy;
+  executionPolicySource: "explicit_route_policy_registry";
   redactionRequired: true;
   evidencePolicyRequired: true;
   directExecutionWithoutApproval: false;
@@ -192,10 +193,11 @@ export function listAgentRuntimeGatewayMounts(): AgentRuntimeGatewayMount[] {
       runtimeBoundary: runtime.boundary,
       routeScope: budget.routeScope,
       budget,
+      executionPolicySource: budget.policySource,
       redactionRequired: true,
       evidencePolicyRequired: true,
       directExecutionWithoutApproval: false,
-      approvedGatewayRequired: route.operation.includes("execute_approved"),
+      approvedGatewayRequired: budget.approvedGatewayRequired,
       mutates: false,
       executesTool: false,
       callsDatabaseDirectly: false,
@@ -382,6 +384,14 @@ export function buildAgentRuntimeGatewayMatrix() {
   const budget = buildAgentRuntimeBudgetPolicyMatrix();
   const toolTransportMounts = listAgentRuntimeToolTransportMounts();
   const routePolicies = listAgentRuntimeRouteBudgetPolicies();
+  const approvedGatewayRouteOperations = mounts
+    .filter((mount) => mount.approvedGatewayRequired)
+    .map((mount) => mount.operation)
+    .sort();
+  const approvedExecutorPolicyOperations = routePolicies
+    .filter((policy) => policy.routeClass === "approved_executor")
+    .map((policy) => policy.operation)
+    .sort();
 
   return {
     final_status: "GREEN_AGENT_BFF_RUNTIME_MOUNT_READY",
@@ -398,6 +408,13 @@ export function buildAgentRuntimeGatewayMatrix() {
     all_routes_have_timeout: budget.all_routes_have_timeout,
     all_routes_have_evidence_policy: budget.all_routes_have_evidence_policy,
     all_routes_are_route_scoped: budget.all_routes_are_route_scoped,
+    all_gateway_execution_policy_explicit: mounts.every(
+      (mount) => mount.executionPolicySource === "explicit_route_policy_registry",
+    ),
+    approved_gateway_route_count: approvedGatewayRouteOperations.length,
+    approved_gateway_routes_match_policy:
+      approvedGatewayRouteOperations.join("|") === approvedExecutorPolicyOperations.join("|"),
+    approved_gateway_route_operations: approvedGatewayRouteOperations,
     all_tools_have_transport_boundary: AI_TOOL_NAMES.every((toolName) =>
       toolTransportMounts.some((contract) => contract.toolName === toolName),
     ),

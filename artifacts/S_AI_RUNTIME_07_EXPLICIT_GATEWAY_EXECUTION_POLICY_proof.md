@@ -1,0 +1,24 @@
+# S_AI_RUNTIME_07_EXPLICIT_GATEWAY_EXECUTION_POLICY
+
+final_status: GREEN_AI_RUNTIME_GATEWAY_EXECUTION_POLICY_READY
+exact_reason: none
+route_count: 76
+gateway_mount_count: 76
+explicit_policy_count: 76
+approved_gateway_route_count: 2
+approved_executor_policy_count: 2
+all_routes_have_gateway_execution_policy: true
+approved_gateway_matches_policy: true
+approved_executor_routes_require_gateway: true
+non_approved_routes_do_not_require_gateway: true
+approved_gateway_routes_require_idempotency_and_audit: true
+direct_execution_without_approval_zero: true
+gateway_matrix_uses_explicit_execution_policy: true
+no_gateway_operation_name_heuristics: true
+no_db_writes: true
+no_direct_database_access: true
+no_provider_calls: true
+no_raw_rows: true
+no_raw_provider_payloads: true
+no_ui_changes: true
+no_fake_green: true

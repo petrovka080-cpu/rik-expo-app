@@ -18,6 +18,7 @@ export type AgentRuntimeRoutePolicyRegistryEntry = {
   idempotencyRequired: boolean;
   auditRequired: boolean;
   evidencePolicy: AgentRuntimeEvidencePolicy;
+  approvedGatewayRequired: boolean;
   policySource: "explicit_route_policy_registry";
   mutationCount: 0;
   dbWrites: 0;
@@ -38,6 +39,7 @@ function policy(
     idempotencyRequired,
     auditRequired,
     evidencePolicy,
+    approvedGatewayRequired: routeClass === "approved_executor",
     policySource: "explicit_route_policy_registry",
     mutationCount: 0,
     dbWrites: 0,

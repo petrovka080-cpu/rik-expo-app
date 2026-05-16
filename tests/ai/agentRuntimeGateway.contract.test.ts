@@ -44,6 +44,9 @@ describe("Agent runtime gateway", () => {
       all_routes_have_result_limit: true,
       all_routes_have_timeout: true,
       all_routes_have_evidence_policy: true,
+      all_gateway_execution_policy_explicit: true,
+      approved_gateway_route_count: 2,
+      approved_gateway_routes_match_policy: true,
       all_tools_have_transport_boundary: true,
       all_tools_have_budget: true,
       all_tools_have_rate_policy: true,
@@ -136,12 +139,14 @@ describe("Agent runtime gateway", () => {
     expect(decision.mount).toMatchObject({
       operation: "agent.procurement.copilot.plan.preview",
       runtimeName: "procurement_copilot",
+      executionPolicySource: "explicit_route_policy_registry",
       redactionRequired: true,
       evidencePolicyRequired: true,
       directExecutionWithoutApproval: false,
     });
     expect(getAgentRuntimeGatewayMount("agent.action.execute_approved")).toMatchObject({
       runtimeName: "approved_executor",
+      executionPolicySource: "explicit_route_policy_registry",
       approvedGatewayRequired: true,
       directExecutionWithoutApproval: false,
     });

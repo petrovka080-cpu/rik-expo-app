@@ -346,6 +346,8 @@ export type AiToolTransportBoundaryArchitectureSummary = {
   allRuntimeRoutesHaveTransportContract: boolean;
   runtimeRegistryExplicitBindings: boolean;
   runtimeRegistryNoPatternMatchers: boolean;
+  runtimeGatewayExecutionPolicyExplicit: boolean;
+  runtimeGatewayNoExecutionHeuristics: boolean;
   toolsUseTransportBoundary: boolean;
   noToolDirectBffImports: boolean;
   transportDtoOnly: boolean;
@@ -1255,6 +1257,7 @@ const AI_TOOL_PLAN_POLICY_PATH = "src/features/ai/tools/aiToolPlanPolicy.ts";
 const AI_TOOL_TRANSPORT_TYPES_PATH = "src/features/ai/tools/transport/aiToolTransportTypes.ts";
 const AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH =
   "src/features/ai/agent/agentRuntimeTransportRegistry.ts";
+const AGENT_RUNTIME_GATEWAY_PATH = "src/features/ai/agent/agentRuntimeGateway.ts";
 const AI_TOOL_TRANSPORT_FILES = [
   "src/features/ai/tools/transport/searchCatalog.transport.ts",
   "src/features/ai/tools/transport/compareSuppliers.transport.ts",
@@ -3072,6 +3075,10 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
     readFile,
     relativePath: AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH,
   });
+  const runtimeGatewaySource = safeReadProjectFile({
+    readFile,
+    relativePath: AGENT_RUNTIME_GATEWAY_PATH,
+  });
   const transportSources = AI_TOOL_TRANSPORT_FILES.map((relativePath) => ({
     relativePath,
     source: safeReadProjectFile({ readFile, relativePath }),
@@ -3117,6 +3124,17 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
     !/kind:\s*"includes"/.test(runtimeRegistryText) &&
     !/operation\.startsWith\s*\(/.test(runtimeRegistryText) &&
     !/operation\.includes\s*\(/.test(runtimeRegistryText);
+  const runtimeGatewayText = runtimeGatewaySource ?? "";
+  const runtimeGatewayExecutionPolicyExplicit =
+    Boolean(runtimeGatewaySource) &&
+    runtimeGatewayText.includes("approvedGatewayRequired: budget.approvedGatewayRequired") &&
+    runtimeGatewayText.includes('executionPolicySource: "explicit_route_policy_registry"');
+  const runtimeGatewayNoExecutionHeuristics =
+    Boolean(runtimeGatewaySource) &&
+    !/operation\.includes\s*\(/.test(runtimeGatewayText) &&
+    !/operation\.startsWith\s*\(/.test(runtimeGatewayText) &&
+    !/operation\.endsWith\s*\(/.test(runtimeGatewayText) &&
+    !/includes\s*\(\s*["']execute_approved["']\s*\)/.test(runtimeGatewayText);
   const toolsUseTransportBoundary = runtimeSources.every((entry) => {
     const source = entry.source ?? "";
     const expectedTransportName =
@@ -3152,11 +3170,14 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
   const errors = [
     ...(transportTypesSource ? [] : [`missing_file:${AI_TOOL_TRANSPORT_TYPES_PATH}`]),
     ...(runtimeRegistrySource ? [] : [`missing_file:${AGENT_RUNTIME_TRANSPORT_REGISTRY_PATH}`]),
+    ...(runtimeGatewaySource ? [] : [`missing_file:${AGENT_RUNTIME_GATEWAY_PATH}`]),
     ...(transportFilesPresent ? [] : ["ai_tool_transport_files_missing"]),
     ...(allToolsHaveTransportContract ? [] : ["ai_tool_transport_contract_missing"]),
     ...(allRuntimeRoutesHaveTransportContract ? [] : ["ai_runtime_transport_contract_missing"]),
     ...(runtimeRegistryExplicitBindings ? [] : ["ai_runtime_transport_explicit_bindings_missing"]),
     ...(runtimeRegistryNoPatternMatchers ? [] : ["ai_runtime_transport_pattern_matcher_detected"]),
+    ...(runtimeGatewayExecutionPolicyExplicit ? [] : ["ai_runtime_gateway_execution_policy_not_explicit"]),
+    ...(runtimeGatewayNoExecutionHeuristics ? [] : ["ai_runtime_gateway_execution_heuristic_detected"]),
     ...(toolsUseTransportBoundary ? [] : ["ai_tool_runtime_not_using_transport_boundary"]),
     ...(noToolDirectBffImports ? [] : ["ai_tool_direct_bff_imports_remain"]),
     ...(transportDtoOnly ? [] : ["ai_tool_transport_dto_only_contract_missing"]),
@@ -3178,6 +3199,8 @@ export function evaluateAiToolTransportBoundaryGuardrail(params: {
       allRuntimeRoutesHaveTransportContract,
       runtimeRegistryExplicitBindings,
       runtimeRegistryNoPatternMatchers,
+      runtimeGatewayExecutionPolicyExplicit,
+      runtimeGatewayNoExecutionHeuristics,
       toolsUseTransportBoundary,
       noToolDirectBffImports,
       transportDtoOnly,
@@ -8750,6 +8773,8 @@ function printHumanReport(report: ArchitectureAntiRegressionReport): void {
   console.info(`ai_tool_transport_boundary: ${report.aiToolTransportBoundary.transportFilesPresent}`);
   console.info(`ai_runtime_transport_explicit_bindings: ${report.aiToolTransportBoundary.runtimeRegistryExplicitBindings}`);
   console.info(`ai_runtime_transport_no_pattern_matchers: ${report.aiToolTransportBoundary.runtimeRegistryNoPatternMatchers}`);
+  console.info(`ai_runtime_gateway_execution_policy_explicit: ${report.aiToolTransportBoundary.runtimeGatewayExecutionPolicyExplicit}`);
+  console.info(`ai_runtime_gateway_no_execution_heuristics: ${report.aiToolTransportBoundary.runtimeGatewayNoExecutionHeuristics}`);
   console.info(`ai_tool_transport_no_direct_bff: ${report.aiToolTransportBoundary.noToolDirectBffImports}`);
   console.info(`ai_tool_rate_limit_policy: ${report.aiToolRateLimitPolicy.policyFilesPresent}`);
   console.info(`ai_tool_rate_limit_runtime_gate: ${report.aiToolRateLimitPolicy.runtimeToolsUseRateDecision}`);

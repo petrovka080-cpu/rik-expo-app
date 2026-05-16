@@ -6,19 +6,23 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
-      "scripts/ai/verifyAiRuntimeExplicitTransportBindings.ts",
+      "scripts/ai/verifyAiRuntimeGatewayExecutionPolicy.ts",
       "scripts/architecture_anti_regression_suite.ts",
-      "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-      "tests/ai/agentRuntimeExplicitTransportBindings.contract.test.ts",
-      "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
-      "tests/architecture/aiRuntimeTransportExplicitBindings.contract.test.ts",
-      "tests/architecture/aiRuntimeTransportNoFallback.contract.test.ts",
-      "tests/architecture/aiRuntimeTransportRegistryNoDrift.contract.test.ts",
-      "tests/architecture/aiScreenLocalAssistantArchitecture.contract.test.ts",
+      "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+      "src/features/ai/agent/agentRuntimeGateway.ts",
+      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
+      "tests/ai/agentRuntimeBudgetPolicy.contract.test.ts",
+      "tests/ai/agentRuntimeGateway.contract.test.ts",
+      "tests/ai/agentRuntimeGatewayExecutionPolicy.contract.test.ts",
+      "tests/ai/agentRuntimeRoutePolicyRegistry.contract.test.ts",
+      "tests/architecture/agentBffRuntimeMount.contract.test.ts",
+      "tests/architecture/aiRuntimeGatewayNoHeuristicExecutionPolicy.contract.test.ts",
       "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
-      "src/features/ai/agent/agentRuntimeTransportRegistry.ts"
+      "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+      "src/features/ai/agent/agentRuntimeGateway.ts",
+      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1135,8 +1139,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "075dfeb955921aaaf0538aece3b1c515498dde78bfaccca27a02eb3ab6c1d7b2",
-    "installed_apk_source_fingerprint": "075dfeb955921aaaf0538aece3b1c515498dde78bfaccca27a02eb3ab6c1d7b2",
+    "ai_mobile_runtime_source_fingerprint": "1bf9d5b4a0809ee47126f710cca3d262f2a54fadf000d089f02af4450788190a",
+    "installed_apk_source_fingerprint": "1bf9d5b4a0809ee47126f710cca3d262f2a54fadf000d089f02af4450788190a",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1144,7 +1148,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "07414e935e050adfd1dfc45b02ef7e155811455e2df50b02da5a6645c498230f",
+    "changed_files_fingerprint": "9bed585b099400f288855526f7cb81217b50e51eb46c593c22be47260e387819",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

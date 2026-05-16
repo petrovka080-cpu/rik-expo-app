@@ -1,0 +1,21 @@
+{
+  "wave": "S_AI_RUNTIME_07_EXPLICIT_GATEWAY_EXECUTION_POLICY",
+  "source_files": [
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
+    "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
+    "scripts/ai/verifyAiRuntimeGatewayExecutionPolicy.ts"
+  ],
+  "test_files": [
+    "tests/ai/agentRuntimeGatewayExecutionPolicy.contract.test.ts",
+    "tests/architecture/aiRuntimeGatewayNoHeuristicExecutionPolicy.contract.test.ts",
+    "tests/ai/agentRuntimeGateway.contract.test.ts",
+    "tests/architecture/agentBffRuntimeMount.contract.test.ts"
+  ],
+  "route_count": 76,
+  "explicit_policy_count": 76,
+  "approved_gateway_route_count": 2,
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}

@@ -38,6 +38,8 @@ export type AgentRuntimeRouteBudgetPolicy = {
   idempotencyRequired: boolean;
   auditRequired: boolean;
   evidencePolicy: AgentRuntimeEvidencePolicy;
+  approvedGatewayRequired: boolean;
+  directExecutionWithoutApproval: false;
   evidenceOrBlockedReasonRequired: true;
   boundedRequestRequired: true;
   payloadLimitRequired: true;
@@ -60,6 +62,8 @@ const ROUTE_CLASS_DEFAULTS: Record<
     | "idempotencyRequired"
     | "auditRequired"
     | "evidencePolicy"
+    | "approvedGatewayRequired"
+    | "directExecutionWithoutApproval"
   >
 > = {
   read: {
@@ -178,6 +182,8 @@ export function buildAgentRuntimeRouteBudgetPolicy(
     idempotencyRequired: routePolicy.idempotencyRequired,
     auditRequired: routePolicy.auditRequired,
     evidencePolicy: routePolicy.evidencePolicy,
+    approvedGatewayRequired: routePolicy.approvedGatewayRequired,
+    directExecutionWithoutApproval: routePolicy.directExecutionWithoutApproval,
   };
 }
 
