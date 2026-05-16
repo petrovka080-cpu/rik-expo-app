@@ -115,6 +115,7 @@ export async function sendAssistantMessage(options: {
     role,
     context,
     message,
+    scopedFactsSummary,
   });
 
   if (deterministicAnswer) {

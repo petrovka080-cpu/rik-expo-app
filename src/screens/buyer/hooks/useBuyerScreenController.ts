@@ -1,7 +1,7 @@
 // app/(tabs)/buyer.tsx
 import { formatRequestDisplay } from "../../../lib/format";
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   Platform,
 } from 'react-native';
@@ -54,6 +54,7 @@ import {
 } from "./useBuyerScreenSideEffects";
 import { useBuyerScreenUiState } from "./useBuyerScreenUiState";
 import { useBuyerScreenChromeModel } from "./useBuyerScreenChromeModel";
+import { buildReadyBuyOptionsForBuyerRequest } from "../../../features/ai/procurement/aiBuyerInboxReadyBuyOptions";
 
 const isWeb = Platform.OS === 'web';
 
@@ -469,6 +470,16 @@ export function useBuyerScreenController(): BuyerScreenContentProps {
     proposalNoByPid,
     prettyLabel,
   });
+  const sheetReadyBuyOptions = useMemo(
+    () => sheetGroup
+      ? buildReadyBuyOptionsForBuyerRequest({
+        group: sheetGroup,
+        supplierRegistry: suppliers,
+        metaByRequestItemId: meta,
+      })
+      : null,
+    [meta, sheetGroup, suppliers],
+  );
 
   const contentProps = useBuyerScreenContentProps({
     s,
@@ -539,6 +550,7 @@ export function useBuyerScreenController(): BuyerScreenContentProps {
           disableClear: viewModel.disableClear,
           disableRfq: viewModel.disableRfq,
           disableSend: viewModel.disableSend,
+          readyBuyOptions: sheetReadyBuyOptions,
         },
         renderMobileEditorModal,
         proposalDetails: {

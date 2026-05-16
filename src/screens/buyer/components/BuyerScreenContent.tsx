@@ -208,6 +208,7 @@ export function useBuyerScreenContentProps({
         disableClear: sheets.inbox.disableClear,
         disableRfq: sheets.inbox.disableRfq,
         disableSend: sheets.inbox.disableSend,
+        readyBuyOptions: sheets.inbox.readyBuyOptions,
       },
       renderMobileEditorModal: sheets.renderMobileEditorModal,
       proposalDetails: {
@@ -365,6 +366,7 @@ export function useBuyerScreenContentProps({
       sheets.inbox.disableClear,
       sheets.inbox.disableRfq,
       sheets.inbox.disableSend,
+      sheets.inbox.readyBuyOptions,
       sheets.renderMobileEditorModal,
       sheets.proposalDetails.state.propViewId,
       sheets.proposalDetails.state.setPropViewId,

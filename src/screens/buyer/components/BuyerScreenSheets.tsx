@@ -2,6 +2,7 @@ import React from "react";
 import { View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+import type { ProcurementReadyBuyOptionBundle } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
 import AppButton from "../../../ui/AppButton";
 import IconSquareButton from "../../../ui/IconSquareButton";
 import SendPrimaryButton from "../../../ui/SendPrimaryButton";
@@ -40,6 +41,7 @@ type BuyerScreenSheetsInboxProps = Omit<
   disableClear: boolean;
   disableRfq: boolean;
   disableSend: boolean;
+  readyBuyOptions?: ProcurementReadyBuyOptionBundle | null;
 };
 
 export type BuyerScreenSheetsProps = {

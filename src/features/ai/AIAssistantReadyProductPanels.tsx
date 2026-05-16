@@ -11,6 +11,8 @@ import {
   NO_INTERNAL_SUPPLIERS_MESSAGE,
   type ProcurementReadySupplierProposalBundle,
 } from "./procurement/aiApprovedRequestSupplierOptions";
+import type { ProcurementReadyBuyOptionBundle } from "./procurement/aiProcurementReadyBuyOptionTypes";
+import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcurementReadyBuyOptionTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 
@@ -46,6 +48,7 @@ export function AIAssistantProductHeader({
 export function AIAssistantReadyProductPanels({
   resolvedUserContext,
   readyProposals,
+  readyBuyBundle,
   approvedSupplierBundle,
   debugAiContext,
   scopedFacts,
@@ -58,6 +61,7 @@ export function AIAssistantReadyProductPanels({
     "debugReason" | "userFacingNotice" | "userFacingScopeLabel"
   >;
   readyProposals: AiReadyProposal[];
+  readyBuyBundle: ProcurementReadyBuyOptionBundle | null;
   approvedSupplierBundle: ProcurementReadySupplierProposalBundle | null;
   debugAiContext: boolean;
   scopedFacts: AssistantScopedFacts | null;
@@ -98,6 +102,38 @@ export function AIAssistantReadyProductPanels({
               </Pressable>
             ))}
           </ScrollView>
+        </View>
+      ) : null}
+
+      {readyBuyBundle ? (
+        <View style={styles.supplierProposalBlock} testID="ai.buyer_ready_buy_options">
+          <Text style={styles.readyProposalTitle}>Готовые варианты закупки</Text>
+          {readyBuyBundle.options.length > 0 ? (
+            readyBuyBundle.options.slice(0, 3).map((option, index) => (
+              <View key={option.id} style={styles.supplierOptionCard}>
+                <Text style={styles.supplierOptionTitle}>{`${index + 1}. ${option.supplierName}`}</Text>
+                <Text style={styles.supplierOptionText}>
+                  {`Покрывает: ${option.coverageLabel}`}
+                </Text>
+                {option.priceSignal || option.deliverySignal || option.reliabilitySignal ? (
+                  <Text style={styles.supplierOptionMeta}>
+                    {[option.priceSignal, option.deliverySignal, option.reliabilitySignal].filter(Boolean).join(" · ")}
+                  </Text>
+                ) : null}
+                <Text style={styles.supplierOptionMeta}>
+                  {`Риски: ${option.risks.join(", ") || "нет отмеченных рисков"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Не хватает: ${option.missingData.join(", ") || "нет"}`}
+                </Text>
+                <Text style={styles.supplierOptionMeta}>
+                  {`Следующий шаг: ${option.recommendedAction}`}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.supplierOptionText}>{NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE}</Text>
+          )}
         </View>
       ) : null}
 

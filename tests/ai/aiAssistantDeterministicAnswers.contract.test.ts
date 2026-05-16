@@ -28,4 +28,23 @@ describe("AI assistant deterministic answers", () => {
     expect(result?.answer).toContain("Заказ, подтверждение поставщика, оплата и складское движение");
     expect(containsForbiddenAssistantUserFacingCopy(result?.answer ?? "")).toBe(false);
   });
+
+  it("explains ready buy options when the screen has a prepared procurement bundle", () => {
+    const result = getAiAssistantDeterministicAnswer({
+      role: "buyer",
+      context: "buyer",
+      message: "Что по этой заявке смотреть первым?",
+      scopedFactsSummary: [
+        "Готовые варианты закупки по заявке request-1248: 2.",
+        "- ТОО Supplier Evidence A: покрытие 8/12 позиций; риски: нет цены по 2 позициям; действие: подготовить запрос поставщику",
+        "- ТОО Supplier Evidence B: покрытие 6/12 позиций; риски: нужна проверка доставки; действие: сравнить варианты",
+      ].join("\n"),
+    });
+
+    expect(result).toMatchObject({ topic: "procurement_workflow", providerCallAllowed: false });
+    expect(result?.answer).toContain("ТОО Supplier Evidence A");
+    expect(result?.answer).toContain("ТОО Supplier Evidence B");
+    expect(result?.answer).toContain("сначала подготовь запрос или отправь выбор на согласование");
+    expect(containsForbiddenAssistantUserFacingCopy(result?.answer ?? "")).toBe(false);
+  });
 });

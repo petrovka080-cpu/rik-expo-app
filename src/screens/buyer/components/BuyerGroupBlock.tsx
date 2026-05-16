@@ -2,11 +2,13 @@ import React, { useRef } from "react";
 import { View, Pressable, Animated } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/api/types";
+import type { ProcurementReadyBuyOptionBundle } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
 import type { Attachment, BuyerGroup, DraftAttachmentMap } from "../buyer.types";
 import type { StylesBag } from "./component.types";
 import { UI } from "../buyerUi";
 import { RoleCard } from "../../../components/ui/RoleCard";
 import ChevronIndicator from "../../../ui/ChevronIndicator";
+import { BuyerReadyBuyOptionsBlock } from "./BuyerReadyBuyOptionsBlock";
 
 export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
   g: BuyerGroup;
@@ -22,11 +24,12 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
   headerMeta: string;
 
   s: StylesBag;
+  readyBuyOptions?: ProcurementReadyBuyOptionBundle | null;
 
   onToggle: () => void;
   renderItemRow: (it: BuyerInboxRow, idx2: number) => React.ReactNode;
 }) {
-  const { headerTitle, headerMeta, onToggle, s } = props;
+  const { headerTitle, headerMeta, onToggle, readyBuyOptions, s } = props;
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
@@ -87,6 +90,13 @@ export const BuyerGroupBlock = React.memo(function BuyerGroupBlock(props: {
             ]}
           />
         </Pressable>
+        <BuyerReadyBuyOptionsBlock
+          bundle={readyBuyOptions ?? null}
+          variant="card"
+          onOpen={onToggle}
+          onDraft={onToggle}
+          onCompare={onToggle}
+        />
       </View>
     </Animated.View>
   );

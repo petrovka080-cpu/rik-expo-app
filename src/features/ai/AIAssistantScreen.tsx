@@ -33,6 +33,12 @@ import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext"
 import {
   buildApprovedRequestBundleFromSearchParams,
 } from "./procurement/aiApprovedRequestSupplierProposalHydrator";
+import {
+  describeProcurementReadyBuyOptionsForAssistant,
+} from "./procurement/aiBuyerInboxReadyBuyOptions";
+import {
+  buildProcurementReadyBuyBundleFromSearchParams,
+} from "./procurement/aiProcurementRequestOptionHydrator";
 import { getAiScreenReadyProposals } from "./screenProposals/aiScreenReadyProposalEngine";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -124,6 +130,16 @@ export default function AIAssistantScreen() {
     internalSupplierPrice?: string | string[];
     internalSupplierDelivery?: string | string[];
     internalSupplierReliability?: string | string[];
+    readyBuyRequestId?: string | string[];
+    requestStatus?: string | string[];
+    readyBuyItems?: string | string[];
+    readyBuySupplierId?: string | string[];
+    readyBuySupplierName?: string | string[];
+    readyBuySupplierEvidence?: string | string[];
+    readyBuySupplierMatchedItems?: string | string[];
+    readyBuySupplierPrice?: string | string[];
+    readyBuySupplierDelivery?: string | string[];
+    readyBuySupplierReliability?: string | string[];
   }>();
   const routePrompt = firstParam(params.prompt);
   const routeAutoSend = firstParam(params.autoSend);
@@ -166,6 +182,18 @@ export default function AIAssistantScreen() {
   const approvedSupplierBundle = useMemo(
     () => buildApprovedRequestBundleFromSearchParams(params),
     [params],
+  );
+  const readyBuyBundle = useMemo(
+    () => buildProcurementReadyBuyBundleFromSearchParams(params),
+    [params],
+  );
+  const readyBuyFactsSummary = useMemo(
+    () => describeProcurementReadyBuyOptionsForAssistant(readyBuyBundle),
+    [readyBuyBundle],
+  );
+  const assistantFactsSummary = useMemo(
+    () => [scopedFacts?.summary ?? null, readyBuyFactsSummary].filter(Boolean).join("\n\n") || null,
+    [readyBuyFactsSummary, scopedFacts?.summary],
   );
   const assistantVoiceScreen = useMemo(
     () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
@@ -294,7 +322,7 @@ export default function AIAssistantScreen() {
             context: assistantContext,
             message: text,
             history: nextHistory.filter((item) => item.role !== "user" || item.id !== userMessage.id),
-            scopedFactsSummary: scopedFacts?.summary ?? null,
+            scopedFactsSummary: assistantFactsSummary,
             scopeKey: scopedFacts?.scopeKey ?? null,
             sourceKinds: scopedFacts?.sourceKinds ?? null,
             userId,
@@ -315,7 +343,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, input, loading, messages, role, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, input, loading, messages, role, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
@@ -367,9 +395,12 @@ export default function AIAssistantScreen() {
             onBack={() => safeBack(router, backFallbackRoute)}
             onClear={() => void clearChat()}
           />
+
+          <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
           <AIAssistantReadyProductPanels
             resolvedUserContext={resolvedUserContext}
             readyProposals={readyProposals}
+            readyBuyBundle={readyBuyBundle}
             approvedSupplierBundle={approvedSupplierBundle}
             debugAiContext={debugAiContext}
             scopedFacts={scopedFacts}
@@ -383,7 +414,6 @@ export default function AIAssistantScreen() {
             onPromptPress={(prompt) => void send(prompt)}
           />
 
-          <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
           {messages.map((message, index) => {
             const hasPriorUserPrompt = messages
               .slice(0, index)

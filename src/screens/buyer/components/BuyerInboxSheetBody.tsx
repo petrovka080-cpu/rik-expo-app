@@ -2,9 +2,11 @@ import React from "react";
 import { StyleSheet, View, Text, type FlatList } from "react-native";
 
 import type { BuyerInboxRow } from "../../../lib/catalog_api";
+import type { ProcurementReadyBuyOptionBundle } from "../../../features/ai/procurement/aiProcurementReadyBuyOptionTypes";
 import { FlashList, type FlashListProps } from "../../../ui/FlashList";
 import type { DraftAttachmentMap } from "../buyer.types";
 import { BuyerAttachmentsSticky } from "./BuyerReworkSheetBody";
+import { BuyerReadyBuyOptionsBlock } from "./BuyerReadyBuyOptionsBlock";
 import type { StateSetter, StylesBag } from "./component.types";
 
 type BuyerLineLite = BuyerInboxRow & {
@@ -59,6 +61,7 @@ export function BuyerInboxSheetBody({
   attachments,
   setAttachments,
   renderItemRow,
+  readyBuyOptions,
   footer,
 }: {
   s: StylesBag;
@@ -78,6 +81,7 @@ export function BuyerInboxSheetBody({
   attachments: DraftAttachmentMap;
   setAttachments: StateSetter<DraftAttachmentMap>;
   renderItemRow: (it: BuyerLineLite, idx2: number, onFocusRow?: () => void) => React.ReactNode;
+  readyBuyOptions?: ProcurementReadyBuyOptionBundle | null;
   footer?: React.ReactNode;
 }) {
   const listRef = React.useRef<FlatList<InboxSheetRow> | null>(null);
@@ -222,6 +226,10 @@ export function BuyerInboxSheetBody({
         onScrollToIndexFailed={handleScrollToIndexFailed}
         ListHeaderComponent={
           <View>
+            <BuyerReadyBuyOptionsBlock
+              bundle={readyBuyOptions ?? null}
+              variant="detail"
+            />
             {!kbOpen ? (
               (() => {
                 const headerNote = String((sheetGroup?.items || []).find((x) => x?.note)?.note || "").trim();

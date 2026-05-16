@@ -1,0 +1,39 @@
+{
+  "wave": "S_AI_PROCUREMENT_05_BUYER_INBOX_READY_BUY_OPTIONS",
+  "source_files": [
+    "src/features/ai/procurement/aiBuyerInboxReadyBuyOptions.ts",
+    "src/features/ai/procurement/aiProcurementRequestOptionHydrator.ts",
+    "src/features/ai/procurement/aiProcurementReadyBuyOptionPolicy.ts",
+    "src/features/ai/procurement/aiProcurementReadyBuyOptionTypes.ts",
+    "src/screens/buyer/components/BuyerReadyBuyOptionsBlock.tsx",
+    "src/screens/buyer/components/BuyerGroupBlock.tsx",
+    "src/screens/buyer/components/BuyerInboxSheetBody.tsx",
+    "src/features/ai/AIAssistantReadyProductPanels.tsx",
+    "src/features/ai/AIAssistantScreen.tsx",
+    "src/features/ai/assistantUx/aiAssistantDeterministicAnswers.ts"
+  ],
+  "test_files": [
+    "tests/ai/aiBuyerInboxReadyBuyOptions.contract.test.ts",
+    "tests/ai/aiProcurementRequestOptionHydrator.contract.test.ts",
+    "tests/ai/aiProcurementReadyBuyOptionPolicy.contract.test.ts",
+    "tests/e2e/aiBuyerInboxReadyBuyOptionsWeb.contract.test.ts",
+    "tests/architecture/aiProcurementReadyOptionsNoFakeSuppliers.contract.test.ts",
+    "tests/architecture/aiProcurementReadyOptionsNoDirectMutation.contract.test.ts",
+    "tests/architecture/aiAssistantNoDebugContextInUserUi.contract.test.ts"
+  ],
+  "runtime_runner": "scripts/e2e/runAiBuyerInboxReadyBuyOptionsWeb.ts",
+  "web_artifact": "artifacts/S_AI_PROCUREMENT_05_BUYER_INBOX_READY_BUY_OPTIONS_web.json",
+  "emulator_artifact": "artifacts/S_AI_PROCUREMENT_05_BUYER_INBOX_READY_BUY_OPTIONS_emulator.json",
+  "target_screens": [
+    "buyer.main",
+    "buyer.requests",
+    "buyer.request.detail",
+    "procurement.copilot",
+    "/ai?context=buyer"
+  ],
+  "notes": [
+    "Buyer inbox cards and inbox detail sheet render ready buy options from evidence-backed internal signals.",
+    "No supplier option is produced without supplier evidence; empty evidence shows the explicit no-internal-options message.",
+    "AI chat receives prepared option summaries and answers procurement triage questions deterministically without provider calls."
+  ]
+}

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect, useState } from "react";
 
 import type { BuyerInboxRow, Supplier } from "../../../lib/api/types";
+import { buildReadyBuyOptionsForBuyerRequest } from "../../../features/ai/procurement/aiBuyerInboxReadyBuyOptions";
 import {
   selectBuyerCounterpartyUi,
   selectBuyerGroupHeaderMeta,
@@ -207,6 +208,11 @@ export function useBuyerInboxRenderers(params: {
       const { gsum, headerMeta } = selectBuyerGroupHeaderMeta(group, requestSum);
       const reqLabel = prettyLabel(group.request_id, group.request_id_old ?? null);
       const headerTitle = reqLabel;
+      const readyBuyOptions = buildReadyBuyOptionsForBuyerRequest({
+        group,
+        supplierRegistry: suppliers,
+        metaByRequestItemId: meta,
+      });
 
       return (
         <BuyerGroupBlock
@@ -217,6 +223,7 @@ export function useBuyerInboxRenderers(params: {
           gsum={gsum}
           headerTitle={headerTitle}
           headerMeta={headerMeta}
+          readyBuyOptions={readyBuyOptions}
           onToggle={() => openInboxSheet(group)}
           renderItemRow={renderItemRow}
           isWeb={isWeb}
@@ -234,6 +241,8 @@ export function useBuyerInboxRenderers(params: {
       openInboxSheet,
       renderItemRow,
       isWeb,
+      meta,
+      suppliers,
       supplierGroups,
       attachments,
       setAttachments,

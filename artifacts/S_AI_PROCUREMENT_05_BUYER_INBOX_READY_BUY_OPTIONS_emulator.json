@@ -1,0 +1,13 @@
+{
+  "wave": "S_AI_PROCUREMENT_05_BUYER_INBOX_READY_BUY_OPTIONS",
+  "final_status": "GREEN_AI_BUYER_INBOX_READY_BUY_OPTIONS_EMULATOR_READY",
+  "android_rebuild_install": "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
+  "android_installed_runtime_smoke": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "mandatory_emulator_runtime_matrix": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+  "selected_maestro_avd_name": "Pixel_7_API_34",
+  "selected_maestro_serial": "emulator-5556",
+  "fake_emulator_pass": false,
+  "mutations_created": 0,
+  "secrets_printed": false,
+  "fake_green_claimed": false
+}
