@@ -183,6 +183,51 @@ export const defaultWorkerLoopClock: WorkerLoopClock = {
     }),
 };
 
+export type CancellableDelayStatus = "elapsed" | "cancelled";
+
+export type CancellableDelay = {
+  readonly promise: Promise<CancellableDelayStatus>;
+  cancel: () => void;
+  isActive: () => boolean;
+};
+
+export function createCancellableDelay(delayMs: number): CancellableDelay {
+  const safeDelayMs = Number.isFinite(delayMs) ? Math.max(0, Math.floor(delayMs)) : 0;
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let settled = false;
+  let resolveDelay: (status: CancellableDelayStatus) => void = () => undefined;
+
+  const settle = (status: CancellableDelayStatus) => {
+    if (settled) return;
+    settled = true;
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+    }
+    resolveDelay(status);
+  };
+
+  const promise = new Promise<CancellableDelayStatus>((resolve) => {
+    resolveDelay = resolve;
+    if (safeDelayMs <= 0) {
+      settled = true;
+      resolve("elapsed");
+      return;
+    }
+
+    timer = setTimeout(() => {
+      timer = null;
+      settle("elapsed");
+    }, safeDelayMs);
+  });
+
+  return {
+    promise,
+    cancel: () => settle("cancelled"),
+    isActive: () => timer !== null && !settled,
+  };
+}
+
 const isAbortStop = (signal: AbortSignal | null) => signal?.aborted === true;
 
 const buildStateContext = (

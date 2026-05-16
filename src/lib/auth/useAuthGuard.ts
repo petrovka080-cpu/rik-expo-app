@@ -15,6 +15,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { router } from "expo-router";
 
+import { createCancellableDelay, type CancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { getSessionSafe } from "../supabaseClient";
 import {
   ensureQueueWorker,
@@ -67,6 +68,15 @@ export function useAuthGuard(
   const previousInAuthStackRef = useRef(segments?.[0] === "auth");
   const usableUiMarkerRef = useRef(false);
   const lastRouteDecisionKeyRef = useRef<string | null>(null);
+  const authExitSettleDelayRef = useRef<CancellableDelay | null>(null);
+
+  const cancelAuthExitSettleDelay = useCallback(() => {
+    authExitSettleDelayRef.current?.cancel();
+    authExitSettleDelayRef.current = null;
+    authExitSessionProbeInFlightRef.current = false;
+  }, [authExitSessionProbeInFlightRef]);
+
+  useEffect(() => cancelAuthExitSettleDelay, [cancelAuthExitSettleDelay]);
 
   const performRouteTransition = useCallback(
     (args: {
@@ -218,6 +228,7 @@ export function useAuthGuard(
     const wasInAuthStack = previousInAuthStackRef.current;
 
     if (wasInAuthStack && !inAuthStack) {
+      cancelAuthExitSettleDelay();
       authExitAtRef.current = Date.now();
       authExitSessionProbeInFlightRef.current = false;
       authExitSessionProbeTokenRef.current += 1;
@@ -227,6 +238,7 @@ export function useAuthGuard(
         target: POST_AUTH_ENTRY_ROUTE,
       });
     } else if (inAuthStack) {
+      cancelAuthExitSettleDelay();
       authExitAtRef.current = null;
       authExitSessionProbeInFlightRef.current = false;
       lastRouteDecisionKeyRef.current = null;
@@ -234,6 +246,7 @@ export function useAuthGuard(
 
     previousInAuthStackRef.current = inAuthStack;
   }, [
+    cancelAuthExitSettleDelay,
     recordAuthGateEvent,
     segments,
     authExitAtRef,
@@ -286,9 +299,13 @@ export function useAuthGuard(
               settleDelayMs: AUTH_EXIT_SESSION_SETTLE_WINDOW_MS,
             });
 
-            await new Promise((resolve) =>
-              setTimeout(resolve, AUTH_EXIT_SESSION_SETTLE_WINDOW_MS),
-            );
+            const settleDelay = createCancellableDelay(AUTH_EXIT_SESSION_SETTLE_WINDOW_MS);
+            authExitSettleDelayRef.current = settleDelay;
+            const settleDelayStatus = await settleDelay.promise;
+            if (authExitSettleDelayRef.current === settleDelay) {
+              authExitSettleDelayRef.current = null;
+            }
+            if (settleDelayStatus === "cancelled") return;
 
             if (probeToken !== authExitSessionProbeTokenRef.current) return;
 
@@ -429,6 +446,7 @@ export function useAuthGuard(
     }
 
     if (decision.type === "redirect_login") {
+      cancelAuthExitSettleDelay();
       executeRouteDecision(decision, {
         hasSession: false,
       });
@@ -436,6 +454,7 @@ export function useAuthGuard(
     }
 
     if (decision.type === "redirect_post_auth_entry") {
+      cancelAuthExitSettleDelay();
       resetPendingAuthExitSessionProbe();
       executeRouteDecision(decision, {
         hasSession: true,
@@ -469,6 +488,7 @@ export function useAuthGuard(
     authExitAtRef,
     authExitSessionProbeTokenRef,
     authExitSessionProbeInFlightRef,
+    cancelAuthExitSettleDelay,
     executeRouteDecision,
     setAuthSessionState,
   ]);

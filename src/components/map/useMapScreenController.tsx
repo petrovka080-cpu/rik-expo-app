@@ -94,10 +94,14 @@ export function useMapScreenController() {
   const routeFocusId = getRouteParamValue(params.focusId);
 
   // ✅ debounce region updates (пересчёт кластеров только когда карта “остановилась”)
-  const regionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const regionTimerRef = useRef<{
+    region: ReturnType<typeof setTimeout> | null;
+    zoom: ReturnType<typeof setTimeout> | null;
+  }>({ region: null, zoom: null });
   const onRegionChangeDebounced = (r: MapRegion) => {
-    if (regionTimerRef.current) clearTimeout(regionTimerRef.current);
-    regionTimerRef.current = setTimeout(() => {
+    if (regionTimerRef.current.region) clearTimeout(regionTimerRef.current.region);
+    regionTimerRef.current.region = setTimeout(() => {
+      regionTimerRef.current.region = null;
       setRegion(r);
 
       const z = zoomFromRegion(r.longitudeDelta, screenW);
@@ -109,8 +113,16 @@ export function useMapScreenController() {
   };
 
   useEffect(() => {
+    const timers = regionTimerRef.current;
     return () => {
-      if (regionTimerRef.current) clearTimeout(regionTimerRef.current);
+      if (timers.region) {
+        clearTimeout(timers.region);
+        timers.region = null;
+      }
+      if (timers.zoom) {
+        clearTimeout(timers.zoom);
+        timers.zoom = null;
+      }
     };
   }, []);
 
@@ -183,7 +195,9 @@ export function useMapScreenController() {
     const step2 = getMapRegionForZoom(lat, lng, z2, screenW);
 
     setRegion(step1);
-    setTimeout(() => {
+    if (regionTimerRef.current.zoom) clearTimeout(regionTimerRef.current.zoom);
+    regionTimerRef.current.zoom = setTimeout(() => {
+      regionTimerRef.current.zoom = null;
       setRegion(step2);
     }, 180);
   };

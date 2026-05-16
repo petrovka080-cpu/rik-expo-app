@@ -48,6 +48,7 @@ type MockHandoffChannel = {
 
 describe("request draft sync lifecycle boundary", () => {
   beforeEach(() => {
+    jest.useRealTimers();
     mockSupabase.auth.getSession.mockReset().mockResolvedValue({
       data: { session: { access_token: "access-token" } },
     });
@@ -150,6 +151,57 @@ describe("request draft sync lifecycle boundary", () => {
     });
 
     expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
+  });
+
+  it("times out a silent handoff broadcast subscribe and removes the channel", async () => {
+    jest.useFakeTimers();
+    const channel = {} as MockHandoffChannel;
+    channel.subscribe = jest.fn<MockHandoffChannel, [(status: string) => void]>(() => channel);
+    channel.send = jest.fn<Promise<string>, []>();
+
+    mockSupabase.channel.mockReturnValue(channel);
+    mockSupabase.rpc.mockResolvedValue({
+      data: {
+        document_type: "request_draft_sync",
+        version: "v2",
+        request_payload: { id: "req-1" },
+        items_payload: [],
+        submitted: true,
+        request_created: false,
+      },
+      error: null,
+    });
+    mockMapRequestRow.mockReturnValue({
+      id: "req-1",
+      display_no: "REQ-1",
+      status: "submitted",
+    });
+
+    const resultPromise = syncRequestDraftViaRpc({
+      requestId: "req-1",
+      lines: [],
+      submit: true,
+    });
+
+    for (let index = 0; index < 20 && channel.subscribe.mock.calls.length === 0; index += 1) {
+      await Promise.resolve();
+    }
+    expect(channel.subscribe).toHaveBeenCalledTimes(1);
+
+    jest.advanceTimersByTime(5000);
+    for (let index = 0; index < 20; index += 1) {
+      await Promise.resolve();
+    }
+
+    await expect(resultPromise).resolves.toMatchObject({
+      request: {
+        id: "req-1",
+      },
+      submitted: true,
+    });
+
+    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
+    expect(channel.send).not.toHaveBeenCalled();
   });
 
   it("keeps request draft auth lookup behind the transport boundary", () => {

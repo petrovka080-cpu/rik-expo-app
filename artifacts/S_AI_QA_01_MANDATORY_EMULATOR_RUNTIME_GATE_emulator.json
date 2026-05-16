@@ -6,27 +6,23 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
-      "app/+not-found.tsx",
-      "app/auth/login.tsx",
-      "app/auth/register.tsx",
-      "app/auth/reset.tsx",
-      "app/index.tsx",
-      "app/sign-in.tsx",
-      "scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
-      "src/lib/observability/platformObservability.ts",
-      "src/shared/ui/ScreenErrorBoundary.tsx",
-      "tests/app/error-boundary-coverage.test.ts",
-      "tests/architecture/e2eStableTestIdsGate.contract.test.ts",
-      "tests/e2e/authStableTestIds.contract.test.ts",
-      "tests/scale/routeErrorBoundaryCoverage.contract.test.ts"
+      "scripts/scale/verifyTimerRealtimeLifecycle.ts",
+      "src/components/map/MapRenderer.web.tsx",
+      "src/components/map/useMapScreenController.tsx",
+      "src/lib/api/requestDraftSync.service.test.ts",
+      "src/lib/api/requestDraftSync.service.ts",
+      "src/lib/async/mapWithConcurrencyLimit.ts",
+      "src/lib/auth/useAuthGuard.ts",
+      "src/lib/realtime/realtime.client.ts",
+      "src/lib/useBusyAction.ts",
+      "tests/architecture/noUncleanedLifecycleTimers.contract.test.ts",
+      "tests/lifecycle/cancellableDelay.test.ts",
+      "tests/lifecycle/useBusyActionTimerCleanup.test.tsx",
+      "tests/scale/timerRealtimeLifecycle.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
-      "app/+not-found.tsx",
-      "app/auth/login.tsx",
-      "app/auth/register.tsx",
-      "app/auth/reset.tsx",
-      "app/index.tsx",
-      "app/sign-in.tsx"
+      "src/components/map/MapRenderer.web.tsx",
+      "src/components/map/useMapScreenController.tsx"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1197,8 +1193,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "ef1f1bddf17ec169077b49dff6a53b78c1dd8c320b800f742ec0a733340ec16d",
-    "installed_apk_source_fingerprint": "ef1f1bddf17ec169077b49dff6a53b78c1dd8c320b800f742ec0a733340ec16d",
+    "ai_mobile_runtime_source_fingerprint": "cf7c28aa2fa7047d6faa625f74c943ab08c786f0ecbb2f2ae78c39a69c539b16",
+    "installed_apk_source_fingerprint": "cf7c28aa2fa7047d6faa625f74c943ab08c786f0ecbb2f2ae78c39a69c539b16",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1206,7 +1202,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "94d59a23c5c98f2aacf16e080cdf56b1d985a67d674b94922f0fe389503ba843",
+    "changed_files_fingerprint": "20c508893eb041ccedb4a2459887f21fa20308d820d980b1d948b453e71bcd36",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

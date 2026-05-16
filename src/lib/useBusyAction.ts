@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { createCancellableDelay } from './async/mapWithConcurrencyLimit';
 import { logger } from './logger';
 
 type Opts = {
@@ -18,12 +19,18 @@ export function useBusyAction(opts?: Opts) {
       setBusyKey(key);
       try {
         // таймаут чтобы не висло вечно
-        await Promise.race([
-          fn(),
-          new Promise<void>((_, rej) =>
-            setTimeout(() => rej(new Error('Таймаут операции (30с)')), timeoutMs)
-          ),
-        ]);
+        const timeoutDelay = createCancellableDelay(timeoutMs);
+        try {
+          const timeoutPromise = timeoutDelay.promise.then((status) => {
+            if (status === 'elapsed') {
+              throw new Error('Таймаут операции (30с)');
+            }
+          });
+
+          await Promise.race([fn(), timeoutPromise]);
+        } finally {
+          timeoutDelay.cancel();
+        }
       } catch (e) {
         // покажем ошибку в консоль и наружу
         logger.error('useBusyAction', key, e);

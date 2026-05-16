@@ -4,6 +4,7 @@ import type {
   SupabaseClient,
 } from "@supabase/supabase-js";
 
+import { createCancellableDelay, type CancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { supabase } from "../supabaseClient";
 import type { RealtimeChannelBinding, RealtimeScope } from "./realtime.channels";
@@ -25,6 +26,9 @@ type SubscribeChannelParams = {
 
 type ActiveRealtimeChannel = {
   channel: RealtimeChannel | null;
+  pendingChannel: RealtimeChannel | null;
+  pendingJoinDelay: CancellableDelay | null;
+  disposed: boolean;
   scope: RealtimeLifecycleScope;
   route: string;
   surface: string;
@@ -94,20 +98,8 @@ export function getRealtimeDebugState() {
  * Gracefully unsubscribes active channels before clearing state.
  */
 export function clearRealtimeSessionState() {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const [name, entry] of activeChannels) {
-    if (entry.channel) {
-      try {
-        entry.channel.unsubscribe();
-      } catch (_) {
-        // best-effort cleanup at session boundary
-      }
-      try {
-        entry.client.removeChannel(entry.channel);
-      } catch (_) {
-        // best-effort cleanup at session boundary
-      }
-    }
+    disposeRealtimeEntry(entry, name);
   }
   activeChannels.clear();
   reconnectBackoffAttempts.clear();
@@ -179,13 +171,6 @@ export function buildRealtimeReconnectBackoffPlan(params: {
 
 const shouldBypassRealtimeDelayForTests = () =>
   typeof process !== "undefined" && process.env?.NODE_ENV === "test";
-
-const waitRealtimeBackoffDelay = (delayMs: number) =>
-  delayMs > 0
-    ? new Promise<void>((resolve) => {
-        setTimeout(resolve, delayMs);
-      })
-    : Promise.resolve();
 
 const observeRealtimeReconnectBackoff = (params: {
   plan: RealtimeReconnectBackoffPlan;
@@ -276,6 +261,27 @@ const cleanupRealtimeChannel = (params: {
       error,
     });
   }
+};
+
+const disposeRealtimeEntry = (entry: ActiveRealtimeChannel, channelName: string) => {
+  if (entry.disposed) return;
+  entry.disposed = true;
+  entry.pendingJoinDelay?.cancel();
+  entry.pendingJoinDelay = null;
+
+  const channel = entry.channel ?? entry.pendingChannel;
+  entry.channel = null;
+  entry.pendingChannel = null;
+  if (!channel) return;
+
+  cleanupRealtimeChannel({
+    client: entry.client,
+    channel,
+    scope: entry.scope,
+    route: entry.route,
+    surface: entry.surface,
+    channelName,
+  });
 };
 
 const observeChannelStatus = (params: {
@@ -463,16 +469,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       if (!current || !current.subscribers.delete(token)) return;
       if (current.subscribers.size > 0) return;
       activeChannels.delete(params.name);
-      if (current.channel) {
-        cleanupRealtimeChannel({
-          client: current.client,
-          channel: current.channel,
-          scope: current.scope,
-          route: current.route,
-          surface: current.surface,
-          channelName: params.name,
-        });
-      }
+      disposeRealtimeEntry(current, params.name);
       recordPlatformObservability({
         screen: params.scope,
         surface,
@@ -504,20 +501,14 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       bindingCount: params.bindings.length,
     });
     activeChannels.delete(params.name);
-    if (existing.channel) {
-      cleanupRealtimeChannel({
-        client: existing.client,
-        channel: existing.channel,
-        scope: existing.scope,
-        route: existing.route,
-        surface: existing.surface,
-        channelName: params.name,
-      });
-    }
+    disposeRealtimeEntry(existing, params.name);
   }
 
   const entry: ActiveRealtimeChannel = {
     channel: null,
+    pendingChannel: null,
+    pendingJoinDelay: null,
+    disposed: false,
     scope: params.scope,
     route: params.route,
     surface,
@@ -542,7 +533,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
   void (async () => {
     await ensureRealtimeAuth(client, params.scope, params.route);
     const currentEntry = activeChannels.get(params.name);
-    if (currentEntry !== entry || currentEntry.subscribers.size === 0) return;
+    if (entry.disposed || currentEntry !== entry || currentEntry.subscribers.size === 0) return;
 
     const projectedActiveCount = activeChannels.size;
     if (projectedActiveCount >= REALTIME_ACTIVE_CHANNEL_WARN_AT) {
@@ -579,6 +570,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     });
 
     let channel = client.channel(params.name);
+    entry.pendingChannel = channel;
     for (const binding of params.bindings) {
       channel = channel.on(
           "postgres_changes",
@@ -618,6 +610,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
         },
       );
     }
+    entry.pendingChannel = channel;
 
     recordPlatformObservability({
       screen: params.scope,
@@ -649,20 +642,22 @@ export function subscribeChannel(params: SubscribeChannelParams) {
       scope: params.scope,
       surface,
     });
-    await waitRealtimeBackoffDelay(
+    const joinDelay = createCancellableDelay(
       shouldBypassRealtimeDelayForTests() ? 0 : initialJoinPlan.delayMs,
     );
+    entry.pendingJoinDelay = joinDelay;
+    const joinDelayStatus = await joinDelay.promise;
+    if (entry.pendingJoinDelay === joinDelay) {
+      entry.pendingJoinDelay = null;
+    }
+    if (joinDelayStatus === "cancelled" || entry.disposed) return;
 
     const entryBeforeSubscribe = activeChannels.get(params.name);
     if (entryBeforeSubscribe !== entry || entryBeforeSubscribe.subscribers.size === 0) {
-      cleanupRealtimeChannel({
-        client,
-        channel,
-        scope: params.scope,
-        route: params.route,
-        surface,
-        channelName: params.name,
-      });
+      if (entryBeforeSubscribe === entry) {
+        activeChannels.delete(params.name);
+      }
+      disposeRealtimeEntry(entry, params.name);
       return;
     }
 
@@ -678,17 +673,14 @@ export function subscribeChannel(params: SubscribeChannelParams) {
 
     const liveEntry = activeChannels.get(params.name);
     if (liveEntry !== entry || liveEntry.subscribers.size === 0) {
-      cleanupRealtimeChannel({
-        client,
-        channel,
-        scope: params.scope,
-        route: params.route,
-        surface,
-        channelName: params.name,
-      });
+      if (liveEntry === entry) {
+        activeChannels.delete(params.name);
+      }
+      disposeRealtimeEntry(entry, params.name);
       return;
     }
 
+    liveEntry.pendingChannel = null;
     liveEntry.channel = channel;
   })();
 
@@ -697,16 +689,7 @@ export function subscribeChannel(params: SubscribeChannelParams) {
     if (!current || !current.subscribers.delete(token)) return;
     if (current.subscribers.size > 0) return;
     activeChannels.delete(params.name);
-    if (current.channel) {
-      cleanupRealtimeChannel({
-        client: current.client,
-        channel: current.channel,
-        scope: current.scope,
-        route: current.route,
-        surface: current.surface,
-        channelName: params.name,
-      });
-    }
+    disposeRealtimeEntry(current, params.name);
     recordPlatformObservability({
       screen: params.scope,
       surface,

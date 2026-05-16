@@ -1,4 +1,5 @@
 import type { ReqItemRow as CatalogReqItemRow } from "../catalog_api";
+import { createCancellableDelay } from "../async/mapWithConcurrencyLimit";
 import { mapRequestRow } from "./requests.parsers";
 import type { RequestMeta, RequestRecord } from "./types";
 import { logger } from "../logger";
@@ -21,6 +22,7 @@ import {
 
 const REQUEST_DRAFT_SYNC_RPC_V2_ENABLED =
   String(process.env.EXPO_PUBLIC_REQUEST_DRAFT_SYNC_RPC_V2 ?? "1").trim() !== "0";
+const DIRECTOR_HANDOFF_BROADCAST_SUBSCRIBE_TIMEOUT_MS = 5000;
 
 
 export type RequestDraftSyncLineInput = {
@@ -82,39 +84,50 @@ const signalDirectorRequestSubmitted = async (params: {
   try {
     await ensureRealtimeAuth();
     const channel = createDirectorHandoffBroadcastChannel();
+    const subscribeTimeout = createCancellableDelay(
+      DIRECTOR_HANDOFF_BROADCAST_SUBSCRIBE_TIMEOUT_MS,
+    );
     const broadcastResult = await new Promise<string>((resolve, reject) => {
       let settled = false;
+      const settle = (handler: () => void) => {
+        if (settled) return;
+        settled = true;
+        subscribeTimeout.cancel();
+        handler();
+      };
+
+      void subscribeTimeout.promise.then((status) => {
+        if (status !== "elapsed") return;
+        settle(() => reject(new Error("broadcast subscribe timed out")));
+      });
+
       try {
         channel.subscribe(async (status) => {
           if (settled) return;
           if (status === "SUBSCRIBED") {
+            subscribeTimeout.cancel();
             try {
               const sendResult = await sendDirectorHandoffBroadcast(channel, {
                 requestId,
                 displayNo,
                 sourcePath: params.sourcePath,
               });
-              settled = true;
-              resolve(String(sendResult));
+              settle(() => resolve(String(sendResult)));
             } catch (error) {
-              settled = true;
-              reject(error);
+              settle(() => reject(error));
             }
             return;
           }
 
           if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
-            settled = true;
-            reject(new Error(`broadcast subscribe ${status.toLowerCase()}`));
+            settle(() => reject(new Error(`broadcast subscribe ${status.toLowerCase()}`)));
           }
         });
       } catch (error) {
-        if (!settled) {
-          settled = true;
-          reject(error);
-        }
+        settle(() => reject(error));
       }
     }).finally(() => {
+      subscribeTimeout.cancel();
       void removeDirectorHandoffBroadcastChannel(channel);
     });
     logger.info("request-draft-sync.signal", {

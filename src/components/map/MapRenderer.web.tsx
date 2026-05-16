@@ -43,6 +43,7 @@ export default function MapRendererWeb({
   const myMarkerRef = useRef<L.Marker | null>(null);
   const suppressEmitRef = useRef(false);
   const suppressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialViewportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const safeSetSuppress = (ms: number) => {
     suppressEmitRef.current = true;
@@ -110,12 +111,21 @@ export default function MapRendererWeb({
 
     mapRef.current = map;
 
-    setTimeout(() => {
+    if (initialViewportTimerRef.current) clearTimeout(initialViewportTimerRef.current);
+    initialViewportTimerRef.current = setTimeout(() => {
+      initialViewportTimerRef.current = null;
       emitViewport();
     }, 0);
 
     return () => {
-      if (suppressTimerRef.current) clearTimeout(suppressTimerRef.current);
+      if (initialViewportTimerRef.current) {
+        clearTimeout(initialViewportTimerRef.current);
+        initialViewportTimerRef.current = null;
+      }
+      if (suppressTimerRef.current) {
+        clearTimeout(suppressTimerRef.current);
+        suppressTimerRef.current = null;
+      }
       try {
         map.off("moveend", emitViewport);
         map.off("zoomend", emitViewport);
