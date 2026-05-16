@@ -1,0 +1,24 @@
+{
+  "wave": "S_AI_RUNTIME_05_NO_FALLBACK_TRANSPORT_REGISTRY",
+  "source_files": [
+    "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
+    "src/features/ai/agent/agentRuntimeGateway.ts",
+    "src/features/ai/tools/transport/aiToolTransportTypes.ts",
+    "scripts/ai/verifyAiRuntimeNoFallbackTransportRegistry.ts"
+  ],
+  "test_files": [
+    "tests/ai/agentRuntimeTransportRegistry.contract.test.ts",
+    "tests/ai/agentRuntimeNoFallbackTransportRegistry.contract.test.ts",
+    "tests/architecture/aiRuntimeTransportNoFallback.contract.test.ts",
+    "tests/architecture/aiToolTransportBoundaryArchitecture.contract.test.ts"
+  ],
+  "registry_entries": 12,
+  "runtime_contracts": 13,
+  "route_count": 76,
+  "fallback_entry_count": 0,
+  "command_center_route_count": 0,
+  "tool_registry_route_count": 3,
+  "db_writes": 0,
+  "provider_calls": 0,
+  "ui_changes": false
+}

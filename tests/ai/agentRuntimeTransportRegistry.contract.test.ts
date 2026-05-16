@@ -17,6 +17,7 @@ describe("Agent runtime transport registry", () => {
     expect(matrix.all_registry_runtime_contracts_mounted).toBe(true);
     expect(matrix.all_registry_boundaries_aligned).toBe(true);
     expect(matrix.all_gateway_mounts_match_registry).toBe(true);
+    expect(matrix.fallback_entry_count).toBe(0);
     expect(matrix.no_domain_command_center_fallback).toBe(true);
     expect(matrix.all_domain_groups_explicit).toBe(true);
     expect(matrix.no_db_writes).toBe(true);
@@ -61,6 +62,41 @@ describe("Agent runtime transport registry", () => {
         });
       }
     }
+  });
+
+  it("routes agent tool registry operations through an explicit tool_registry runtime", () => {
+    const toolRoutes = AGENT_BFF_ROUTE_DEFINITIONS.filter((route) =>
+      route.operation.startsWith("agent.tools."),
+    );
+
+    expect(toolRoutes.map((route) => route.operation).sort()).toEqual([
+      "agent.tools.list",
+      "agent.tools.preview",
+      "agent.tools.validate",
+    ]);
+    for (const route of toolRoutes) {
+      expect(resolveAgentRuntimeTransportName(route.operation)).toBe("tool_registry");
+      expect(getAgentRuntimeTransportRegistryEntry(route.operation)).toMatchObject({
+        entryId: "tool_registry",
+        fallback: false,
+        runtimeName: "tool_registry",
+        expectedBoundary: "runtime_read_transport",
+      });
+      expect(getAgentRuntimeGatewayMount(route.operation)).toMatchObject({
+        runtimeName: "tool_registry",
+        runtimeBoundary: "runtime_read_transport",
+        approvedGatewayRequired: false,
+        mutates: false,
+        callsDatabaseDirectly: false,
+        callsModelProvider: false,
+      });
+    }
+  });
+
+  it("fails closed for unknown operations instead of falling back", () => {
+    expect(() => resolveAgentRuntimeTransportName("agent.unknown.operation")).toThrow(
+      "Agent runtime transport is not registered",
+    );
   });
 
   it("aligns every registry runtime with a mounted transport contract", () => {

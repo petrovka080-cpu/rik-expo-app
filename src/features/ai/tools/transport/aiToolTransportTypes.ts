@@ -13,6 +13,7 @@ export type AiToolTransportBoundaryKind =
 export type AiRuntimeTransportName =
   | "task_stream"
   | "command_center"
+  | "tool_registry"
   | "procurement_copilot"
   | "document_knowledge"
   | "construction_knowhow"
@@ -288,6 +289,21 @@ export const AI_RUNTIME_TRANSPORT_CONTRACTS = Object.freeze([
     runtimeName: "command_center",
     boundary: "runtime_read_transport",
     routeScope: "agent.command_center.read",
+    boundedRequest: true,
+    dtoOnly: true,
+    redactionRequired: true,
+    evidenceRefsOrBlockedReasonRequired: true,
+    uiImportAllowed: false,
+    modelProviderImportAllowed: false,
+    supabaseImportAllowedInTransport: false,
+    mutationAllowedFromUi: false,
+    rawRowsExposed: false,
+    rawProviderPayloadExposed: false,
+  },
+  {
+    runtimeName: "tool_registry",
+    boundary: "runtime_read_transport",
+    routeScope: "agent.tools",
     boundedRequest: true,
     dtoOnly: true,
     redactionRequired: true,

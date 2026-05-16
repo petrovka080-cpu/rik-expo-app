@@ -23,10 +23,10 @@ export type AgentRuntimeTransportRegistryEntry = {
     | "finance_copilot"
     | "warehouse_copilot"
     | "field_work_copilot"
+    | "tool_registry"
     | "procurement_copilot"
     | "screen_runtime"
-    | "task_stream"
-    | "command_center_fallback";
+    | "task_stream";
   runtimeName: AiRuntimeTransportName;
   expectedBoundary: AiRuntimeTransportContract["boundary"];
   matchers: readonly AgentRuntimeTransportMatcher[];
@@ -105,6 +105,13 @@ export const AGENT_RUNTIME_TRANSPORT_REGISTRY = Object.freeze([
     fallback: false,
   },
   {
+    entryId: "tool_registry",
+    runtimeName: "tool_registry",
+    expectedBoundary: "runtime_read_transport",
+    matchers: [{ kind: "prefix", value: "agent.tools." }],
+    fallback: false,
+  },
+  {
     entryId: "procurement_copilot",
     runtimeName: "procurement_copilot",
     expectedBoundary: "runtime_preview_transport",
@@ -132,13 +139,6 @@ export const AGENT_RUNTIME_TRANSPORT_REGISTRY = Object.freeze([
       { kind: "prefix", value: "agent.workday." },
     ],
     fallback: false,
-  },
-  {
-    entryId: "command_center_fallback",
-    runtimeName: "command_center",
-    expectedBoundary: "runtime_read_transport",
-    matchers: [],
-    fallback: true,
   },
 ] as const satisfies readonly AgentRuntimeTransportRegistryEntry[]);
 
@@ -197,11 +197,7 @@ export function getAgentRuntimeTransportRegistryEntry(
   );
   if (explicitEntry) return explicitEntry;
 
-  const fallbackEntry = AGENT_RUNTIME_TRANSPORT_REGISTRY.find((entry) => entry.fallback);
-  if (!fallbackEntry) {
-    throw new Error("Agent runtime transport fallback is not registered");
-  }
-  return fallbackEntry;
+  throw new Error(`Agent runtime transport is not registered: ${operation}`);
 }
 
 export function resolveAgentRuntimeTransportName(operation: string): AiRuntimeTransportName {

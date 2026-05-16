@@ -20,6 +20,7 @@ describe("AI tool transport boundary contracts", () => {
     expect(listAiRuntimeTransportContracts().map((contract) => contract.runtimeName)).toEqual([
       "task_stream",
       "command_center",
+      "tool_registry",
       "procurement_copilot",
       "document_knowledge",
       "construction_knowhow",

@@ -1267,6 +1267,7 @@ const AI_TOOL_TRANSPORT_FILES = [
 const REQUIRED_AI_RUNTIME_TRANSPORT_NAMES = [
   "task_stream",
   "command_center",
+  "tool_registry",
   "procurement_copilot",
   "document_knowledge",
   "construction_knowhow",

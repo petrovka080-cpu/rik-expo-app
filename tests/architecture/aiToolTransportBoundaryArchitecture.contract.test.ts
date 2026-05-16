@@ -42,6 +42,7 @@ describe("AI tool transport boundary architecture", () => {
             'toolName: "get_action_status"',
             'runtimeName: "task_stream"',
             'runtimeName: "command_center"',
+            'runtimeName: "tool_registry"',
             'runtimeName: "procurement_copilot"',
             'runtimeName: "document_knowledge"',
             'runtimeName: "construction_knowhow"',

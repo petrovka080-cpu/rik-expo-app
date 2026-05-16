@@ -1,0 +1,25 @@
+# S_AI_RUNTIME_05_NO_FALLBACK_TRANSPORT_REGISTRY
+
+final_status: GREEN_AI_RUNTIME_TRANSPORT_NO_FALLBACK_READY
+exact_reason: none
+route_count: 76
+registry_entry_count: 12
+runtime_contract_count: 13
+fallback_entry_count: 0
+command_center_route_count: 0
+tool_registry_route_count: 3
+all_routes_registered: true
+all_routes_match_gateway: true
+all_boundaries_aligned: true
+no_fallback_entries: true
+no_route_uses_fallback: true
+no_command_center_route_fallback: true
+tool_routes_explicit: true
+unknown_operation_fails_closed: true
+no_db_writes: true
+no_direct_database_access: true
+no_provider_calls: true
+no_raw_rows: true
+no_raw_provider_payloads: true
+no_ui_changes: true
+no_fake_green: true
