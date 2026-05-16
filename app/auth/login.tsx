@@ -18,6 +18,7 @@ import {
 } from "../../src/lib/auth/signInSafe";
 import { getSessionSafe, isSupabaseEnvValid } from "../../src/lib/supabaseClient";
 import { recordPlatformObservability } from "../../src/lib/observability/platformObservability";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const POST_AUTH_SESSION_SETTLE_WINDOW_MS = 2500;
 const POST_AUTH_SESSION_POLL_INTERVAL_MS = 200;
@@ -42,7 +43,7 @@ type ReadableSessionResult = {
   degraded: boolean;
 };
 
-export default function LoginScreen() {
+function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -349,4 +350,9 @@ const styles = StyleSheet.create({
     color: "#1D4ED8",
     fontWeight: "600",
   },
+});
+
+export default withScreenErrorBoundary(LoginScreen, {
+  screen: "auth",
+  route: "/auth/login",
 });

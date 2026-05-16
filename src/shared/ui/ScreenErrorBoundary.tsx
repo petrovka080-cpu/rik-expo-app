@@ -4,6 +4,9 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 
 type ScreenBoundaryScreen =
+  | "startup"
+  | "auth"
+  | "not_found"
   | "warehouse"
   | "contractor"
   | "accountant"

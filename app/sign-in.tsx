@@ -3,6 +3,13 @@
 import React from "react";
 import { Redirect } from "expo-router";
 
-export default function SignInScreen() {
+import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
+
+function SignInScreen() {
   return <Redirect href="/auth/login" />;
 }
+
+export default withScreenErrorBoundary(SignInScreen, {
+  screen: "auth",
+  route: "/sign-in",
+});

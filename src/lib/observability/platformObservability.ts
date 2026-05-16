@@ -2,6 +2,9 @@ import { redactSensitiveRecord, redactSensitiveText } from "../security/redactio
 
 type PlatformObservabilityScreen =
   | "global_busy"
+  | "startup"
+  | "auth"
+  | "not_found"
   | "warehouse"
   | "contractor"
   | "accountant"

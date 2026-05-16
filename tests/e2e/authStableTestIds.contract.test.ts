@@ -10,7 +10,8 @@ describe("auth stable e2e test IDs", () => {
   const loginSource = read("app/auth/login.tsx");
 
   it("exposes stable IDs on the real login screen elements", () => {
-    expect(loginSource).toContain('export default function LoginScreen()');
+    expect(loginSource).toContain('function LoginScreen()');
+    expect(loginSource).toContain('export default withScreenErrorBoundary(LoginScreen');
     expect(loginSource).toContain('testID="auth.login.screen"');
     expect(loginSource).toContain('testID="auth.login.email"');
     expect(loginSource).toContain('testID="auth.login.password"');

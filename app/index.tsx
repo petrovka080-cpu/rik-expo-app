@@ -5,8 +5,9 @@ import { router } from "expo-router";
 import { POST_AUTH_ENTRY_ROUTE } from "../src/lib/authRouting";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
 import { getSessionSafe, supabase } from "../src/lib/supabaseClient";
+import { withScreenErrorBoundary } from "../src/shared/ui/ScreenErrorBoundary";
 
-export default function Index() {
+function Index() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
@@ -160,4 +161,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
   },
+});
+
+export default withScreenErrorBoundary(Index, {
+  screen: "startup",
+  route: "/",
 });

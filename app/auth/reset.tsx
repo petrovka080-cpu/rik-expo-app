@@ -12,8 +12,9 @@ import {
 import { Link } from 'expo-router';
 import { supabase } from '../../src/lib/supabaseClient';
 import { requestPasswordResetEmail } from '../../src/lib/auth/passwordReset.transport';
+import { withScreenErrorBoundary } from '../../src/shared/ui/ScreenErrorBoundary';
 
-export default function ResetScreen() {
+function ResetScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -184,4 +185,9 @@ const styles = StyleSheet.create({
     color: '#1D4ED8',
     fontWeight: '600',
   },
+});
+
+export default withScreenErrorBoundary(ResetScreen, {
+  screen: 'auth',
+  route: '/auth/reset',
 });

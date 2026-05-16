@@ -1,41 +1,35 @@
 /**
  * Error boundary coverage tests.
  *
- * WAVE P: Validates that all user-facing route files (except layouts,
- * auth, and system routes) are wrapped with withScreenErrorBoundary
- * to prevent full-app crashes from render errors.
+ * All user-facing leaf routes must be wrapped with withScreenErrorBoundary.
+ * Only navigation layouts, a web style utility, and legacy deep-link aliases
+ * are exempt; aliases must resolve to wrapped canonical routes.
  */
 
 import * as fs from "fs";
 import * as path from "path";
 
+import {
+  GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY,
+  verifyRouteErrorBoundaryCoverage,
+} from "../../scripts/scale/verifyRouteErrorBoundaryCoverage";
+
 const APP_DIR = path.resolve(__dirname, "../../app");
 
-/**
- * Routes that are legitimately exempt from screen error boundaries:
- * - _layout.tsx: navigation wrappers, not screens
- * - +not-found.tsx: system route
- * - index.tsx: app entry redirect
- * - sign-in.tsx: auth gate
- * - auth/*: auth flow (own error handling)
- * - calculator/_webStyleGuard.tsx: utility, not a screen
- */
-const EXEMPT_PATTERNS = [
-  /_layout\.tsx$/,
-  /\+not-found\.tsx$/,
-  /^index\.tsx$/,
-  /^sign-in\.tsx$/,
-  /^auth[\\/]/,
-  /_webStyleGuard\.tsx$/,
-  // Alias re-exports to routes that already have boundaries:
-  /^\(tabs\)\/suppliers-map\.tsx$/,  // → (tabs)/supplierMap.tsx
-  /^chat\/index\.tsx$/,             // → (tabs)/chat.tsx
-  /^reports\/ai-assistant\.tsx$/,   // → (tabs)/ai.tsx
-];
+const ALIAS_ROUTES = new Map<string, string>([
+  ["(tabs)/suppliers-map.tsx", "(tabs)/supplierMap.tsx"],
+  ["chat/index.tsx", "(tabs)/chat.tsx"],
+  ["reports/ai-assistant.tsx", "(tabs)/ai.tsx"],
+]);
 
-function isExempt(relativePath: string): boolean {
-  return EXEMPT_PATTERNS.some((p) => p.test(relativePath));
-}
+const REQUIRED_LEAF_ROUTES = [
+  "index.tsx",
+  "sign-in.tsx",
+  "+not-found.tsx",
+  "auth/login.tsx",
+  "auth/register.tsx",
+  "auth/reset.tsx",
+];
 
 function collectTsxFiles(dir: string, base = ""): string[] {
   const results: string[] = [];
@@ -47,21 +41,53 @@ function collectTsxFiles(dir: string, base = ""): string[] {
       results.push(rel);
     }
   }
-  return results;
+  return results.sort((left, right) => left.localeCompare(right));
+}
+
+function isLayoutOrUtility(route: string) {
+  return /(^|\/)_layout\.tsx$/.test(route) || route === "calculator/_webStyleGuard.tsx";
 }
 
 describe("error boundary coverage", () => {
   const allRoutes = collectTsxFiles(APP_DIR);
-  const screenRoutes = allRoutes.filter((r) => !isExempt(r));
+  const screenRoutes = allRoutes.filter(
+    (route) => !isLayoutOrUtility(route) && !ALIAS_ROUTES.has(route),
+  );
 
-  it("has at least 15 screen routes to validate", () => {
-    expect(screenRoutes.length).toBeGreaterThanOrEqual(15);
+  it("treats root, auth, and not-found routes as protected user-facing screens", () => {
+    for (const route of REQUIRED_LEAF_ROUTES) {
+      expect(screenRoutes).toContain(route);
+    }
   });
 
-  for (const route of screenRoutes) {
-    it(`${route} has withScreenErrorBoundary`, () => {
+  it("wraps every user-facing leaf route with withScreenErrorBoundary", () => {
+    expect(screenRoutes.length).toBeGreaterThanOrEqual(30);
+
+    for (const route of screenRoutes) {
       const content = fs.readFileSync(path.join(APP_DIR, route), "utf8");
       expect(content).toContain("withScreenErrorBoundary");
+    }
+  });
+
+  it("keeps legacy aliases as default re-exports to wrapped canonical routes", () => {
+    for (const [aliasRoute, canonicalRoute] of ALIAS_ROUTES.entries()) {
+      const aliasContent = fs.readFileSync(path.join(APP_DIR, aliasRoute), "utf8");
+      const canonicalContent = fs.readFileSync(path.join(APP_DIR, canonicalRoute), "utf8");
+
+      expect(aliasContent).toMatch(/export\s*\{\s*default\s*\}\s*from\s*["'][^"']+["']\s*;/);
+      expect(canonicalContent).toContain("withScreenErrorBoundary");
+    }
+  });
+
+  it("passes the S_SCALE_02 route boundary verifier without broad whitelists", () => {
+    const verification = verifyRouteErrorBoundaryCoverage(process.cwd(), {
+      writeArtifacts: false,
     });
-  }
+
+    expect(verification.final_status).toBe(GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY);
+    expect(verification.metrics.remainingScreenRoutesWithoutBoundary).toBe(0);
+    expect(verification.metrics.aliasRoutesResolveToWrappedTargets).toBe(true);
+    expect(verification.metrics.noBroadWhitelist).toBe(true);
+    expect(verification.metrics.rootAndAuthRoutesCovered).toBe(true);
+  });
 });

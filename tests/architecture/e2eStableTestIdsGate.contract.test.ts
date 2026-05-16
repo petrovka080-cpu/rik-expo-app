@@ -18,7 +18,8 @@ describe("e2e stable test IDs architecture gate", () => {
     const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
     const assistantFabSource = read("src/features/ai/AssistantFab.tsx");
 
-    expect(loginSource).toContain('export default function LoginScreen()');
+    expect(loginSource).toContain('function LoginScreen()');
+    expect(loginSource).toContain('export default withScreenErrorBoundary(LoginScreen');
     expect(loginSource).toContain('testID="auth.login.email"');
     expect(loginSource).toContain('testID="auth.login.password"');
     expect(loginSource).toContain('testID="auth.login.submit"');

@@ -14,6 +14,7 @@ import { Link, router } from "expo-router";
 import { POST_AUTH_ENTRY_ROUTE } from "../../src/lib/authRouting";
 import { signUpWithEmailPassword } from "../../src/lib/auth/signUp.transport";
 import { supabase } from "../../src/lib/supabaseClient";
+import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const UI_COPY = {
   title: "Создать аккаунт",
@@ -28,7 +29,7 @@ const UI_COPY = {
   login: "Войти",
 } as const;
 
-export default function RegisterScreen() {
+function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -195,4 +196,9 @@ const styles = StyleSheet.create({
     color: "#1D4ED8",
     fontWeight: "600",
   },
+});
+
+export default withScreenErrorBoundary(RegisterScreen, {
+  screen: "auth",
+  route: "/auth/register",
 });
