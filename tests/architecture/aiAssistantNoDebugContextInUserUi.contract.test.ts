@@ -15,7 +15,7 @@ describe("AI assistant no debug context in default user UI", () => {
 
     expect(debugGateIndex).toBeGreaterThan(-1);
     expect(dataAwareIndex).toBeGreaterThan(debugGateIndex);
-    expect(source).toContain("Подсказки и черновики. Опасные действия — только через согласование.");
+    expect(source).toContain("Ответы по текущему экрану, безопасные черновики и маршруты согласования.");
     expect(source).not.toContain("AI-ключи не настроены");
     expect(source).not.toContain("safe guide mode");
   });

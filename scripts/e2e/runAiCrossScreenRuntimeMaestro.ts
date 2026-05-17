@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 import {
   ensureAndroidMaestroDriverReady,
@@ -78,6 +79,24 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
+const defaultAdbBinary = path.join(
+  process.env.LOCALAPPDATA ?? "",
+  "Android",
+  "Sdk",
+  "platform-tools",
+  process.platform === "win32" ? "adb.exe" : "adb",
+);
+
+type CommandCenterUiEvidence = {
+  screenVisible: boolean;
+  screenRuntimeVisible: boolean;
+  taskStreamLoadedVisible: boolean;
+  emptyStateVisible: boolean;
+  cardsVisible: boolean;
+  evidenceVisible: boolean;
+  approvalBoundaryVisible: boolean;
+  cardsOrEmptyStateVisible: boolean;
+};
 
 const requiredScreens = [
   "director.dashboard",
@@ -186,6 +205,58 @@ function writeArtifact(
   fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   return artifact;
+}
+
+function resolveAdbBinary(): string {
+  const explicit = process.env.ADB_PATH;
+  if (explicit && fs.existsSync(explicit)) return explicit;
+  if (fs.existsSync(defaultAdbBinary)) return defaultAdbBinary;
+  return "adb";
+}
+
+function runAdbCommand(deviceId: string, args: readonly string[], timeout = 45_000): string {
+  const command = resolveAdbBinary();
+  const result = spawnSync(command, ["-s", deviceId, ...args], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    stdio: "pipe",
+    shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
+    timeout,
+    killSignal: "SIGTERM",
+  });
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`ADB command failed: adb -s ${deviceId} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
+  }
+  return stdout.trim();
+}
+
+function dumpUiAutomatorXml(deviceId: string): string {
+  runAdbCommand(deviceId, ["shell", "uiautomator", "dump", "/sdcard/rik-cross-screen-command-center.xml"], 30_000);
+  return runAdbCommand(deviceId, ["exec-out", "cat", "/sdcard/rik-cross-screen-command-center.xml"], 30_000);
+}
+
+function hasUiId(xml: string, id: string): boolean {
+  return xml.includes(id);
+}
+
+function collectCommandCenterUiEvidence(deviceId: string): CommandCenterUiEvidence {
+  const xml = dumpUiAutomatorXml(deviceId);
+  const taskStreamLoadedVisible = hasUiId(xml, "ai.command.center.task-stream-loaded");
+  const emptyStateVisible = hasUiId(xml, "ai.command.center.empty-state");
+  const cardsVisible = hasUiId(xml, "ai.command.center.card");
+  return {
+    screenVisible: hasUiId(xml, "ai.command.center.screen") && hasUiId(xml, "ai.command_center.screen"),
+    screenRuntimeVisible: hasUiId(xml, "ai.screen.runtime.status"),
+    taskStreamLoadedVisible,
+    emptyStateVisible,
+    cardsVisible,
+    evidenceVisible: hasUiId(xml, "ai.command.center.card.evidence"),
+    approvalBoundaryVisible: hasUiId(xml, "ai.command.center.card.approval-required"),
+    cardsOrEmptyStateVisible: taskStreamLoadedVisible || emptyStateVisible || cardsVisible,
+  };
 }
 
 function classifyMaestroFailure(error: unknown, fallback: string): {
@@ -394,6 +465,67 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
     fs.rmSync(flowPath, { force: true });
   }
 
+  const deviceId = maestroPreflight.selected_serial;
+  if (!deviceId) {
+    return writeArtifact(
+      baseArtifact(
+        "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        "Maestro preflight did not record the selected Android device serial after cross-screen runtime pass.",
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+        },
+      ),
+    );
+  }
+
+  let uiEvidence: CommandCenterUiEvidence;
+  try {
+    uiEvidence = collectCommandCenterUiEvidence(deviceId);
+  } catch (error) {
+    return writeArtifact(
+      baseArtifact(
+        "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+        `Cross-screen runtime uiautomator evidence dump failed after Maestro pass: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+        },
+      ),
+    );
+  }
+
+  if (!uiEvidence.screenVisible || !uiEvidence.screenRuntimeVisible || !uiEvidence.cardsOrEmptyStateVisible) {
+    return writeArtifact(
+      baseArtifact(
+        "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+        "Cross-screen runtime Maestro pass did not leave verifiable uiautomator screen/runtime/card-or-empty-state evidence.",
+        {
+          e2e_role_mode: roleAuth.roleMode,
+          role_auth_source: roleAuth.source,
+          auth_source: roleAuth.auth_source,
+          full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+          role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+          separate_role_users_required: roleAuth.separate_role_users_required,
+          screen_runtime_visible: uiEvidence.screenRuntimeVisible,
+          cards_or_empty_state_visible: uiEvidence.cardsOrEmptyStateVisible,
+          evidence_visible_if_cards_exist: !uiEvidence.cardsVisible || uiEvidence.evidenceVisible,
+          approval_boundary_visible: uiEvidence.approvalBoundaryVisible,
+        },
+      ),
+    );
+  }
+
   return writeArtifact(
     baseArtifact("GREEN_AI_CROSS_SCREEN_RUNTIME_MATRIX_READY", null, {
       e2e_role_mode: roleAuth.roleMode,
@@ -408,9 +540,9 @@ export async function runAiCrossScreenRuntimeMaestro(): Promise<AiCrossScreenRun
       accountant_runtime_checked: true,
       foreman_runtime_checked: true,
       contractor_runtime_checked: true,
-      cards_or_empty_state_visible: true,
-      evidence_visible_if_cards_exist: true,
-      approval_boundary_visible: true,
+      cards_or_empty_state_visible: uiEvidence.cardsOrEmptyStateVisible,
+      evidence_visible_if_cards_exist: !uiEvidence.cardsVisible || uiEvidence.evidenceVisible,
+      approval_boundary_visible: uiEvidence.approvalBoundaryVisible,
     }),
   );
 }

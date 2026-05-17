@@ -13,7 +13,7 @@
   "contractor_runtime_checked": true,
   "cards_or_empty_state_visible": true,
   "evidence_visible_if_cards_exist": true,
-  "approval_boundary_visible": true,
+  "approval_boundary_visible": false,
   "mutations_created": 0,
   "role_leakage_observed": false,
   "e2e_role_mode": "developer_control_full_access",

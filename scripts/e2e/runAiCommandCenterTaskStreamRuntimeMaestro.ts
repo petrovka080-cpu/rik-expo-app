@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 import {
   ensureAndroidMaestroDriverReady,
@@ -82,6 +83,23 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
+const defaultAdbBinary = path.join(
+  process.env.LOCALAPPDATA ?? "",
+  "Android",
+  "Sdk",
+  "platform-tools",
+  process.platform === "win32" ? "adb.exe" : "adb",
+);
+
+type CommandCenterUiEvidence = {
+  screenVisible: boolean;
+  runtimeStatusVisible: boolean;
+  taskStreamLoadedVisible: boolean;
+  emptyStateVisible: boolean;
+  cardsVisible: boolean;
+  approvalBoundaryVisible: boolean;
+  cardsOrEmptyStateVisible: boolean;
+};
 
 function readProjectFile(relativePath: string): string {
   return fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
@@ -119,6 +137,58 @@ function writeArtifact(
   fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
   fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
   return artifact;
+}
+
+function resolveAdbBinary(): string {
+  const explicit = process.env.ADB_PATH;
+  if (explicit && fs.existsSync(explicit)) return explicit;
+  if (fs.existsSync(defaultAdbBinary)) return defaultAdbBinary;
+  return "adb";
+}
+
+function runAdbCommand(deviceId: string, args: readonly string[], timeout = 45_000): string {
+  const command = resolveAdbBinary();
+  const result = spawnSync(command, ["-s", deviceId, ...args], {
+    cwd: projectRoot,
+    encoding: "utf8",
+    stdio: "pipe",
+    shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
+    timeout,
+    killSignal: "SIGTERM",
+  });
+  const stdout = result.stdout ?? "";
+  const stderr = result.stderr ?? "";
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`ADB command failed: adb -s ${deviceId} ${args.join(" ")}\n${stdout}\n${stderr}`.trim());
+  }
+  return stdout.trim();
+}
+
+function dumpUiAutomatorXml(deviceId: string): string {
+  runAdbCommand(deviceId, ["shell", "uiautomator", "dump", "/sdcard/rik-command-center-task-stream.xml"], 30_000);
+  return runAdbCommand(deviceId, ["exec-out", "cat", "/sdcard/rik-command-center-task-stream.xml"], 30_000);
+}
+
+function hasUiId(xml: string, id: string): boolean {
+  return xml.includes(id);
+}
+
+function collectCommandCenterUiEvidence(deviceId: string): CommandCenterUiEvidence {
+  const xml = dumpUiAutomatorXml(deviceId);
+  const taskStreamLoadedVisible = hasUiId(xml, "ai.command.center.task-stream-loaded");
+  const emptyStateVisible = hasUiId(xml, "ai.command.center.empty-state");
+  const cardsVisible = hasUiId(xml, "ai.command.center.card");
+  return {
+    screenVisible: hasUiId(xml, "ai.command.center.screen") && hasUiId(xml, "ai.command_center.screen"),
+    runtimeStatusVisible:
+      hasUiId(xml, "ai.command.center.runtime-status") && hasUiId(xml, "ai.command_center.task_stream"),
+    taskStreamLoadedVisible,
+    emptyStateVisible,
+    cardsVisible,
+    approvalBoundaryVisible: hasUiId(xml, "ai.command.center.card.approval-required"),
+    cardsOrEmptyStateVisible: taskStreamLoadedVisible || emptyStateVisible || cardsVisible,
+  };
 }
 
 function blocked(
@@ -394,6 +464,73 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     );
   }
 
+  const deviceId = maestroPreflight.selected_serial;
+  if (!deviceId) {
+    return blocked(
+      "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      "Maestro preflight did not record the selected Android device serial after Command Center targetability pass.",
+      {
+        route_registered: true,
+        task_stream_runtime_exposed: true,
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+      },
+    );
+  }
+
+  let uiEvidence: CommandCenterUiEvidence;
+  try {
+    uiEvidence = collectCommandCenterUiEvidence(deviceId);
+  } catch (error) {
+    return blocked(
+      "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",
+      `Command Center uiautomator evidence dump failed after Maestro targetability pass: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      {
+        route_registered: true,
+        task_stream_runtime_exposed: true,
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+      },
+    );
+  }
+
+  if (!uiEvidence.screenVisible || !uiEvidence.runtimeStatusVisible || !uiEvidence.cardsOrEmptyStateVisible) {
+    return blocked(
+      "BLOCKED_COMMAND_CENTER_EMULATOR_TARGETABILITY",
+      "Command Center Maestro pass did not leave verifiable uiautomator screen/runtime/task-stream evidence.",
+      {
+        route_registered: true,
+        task_stream_runtime_exposed: true,
+        e2e_role_mode: roleAuth.roleMode,
+        role_auth_source: roleAuth.source,
+        auth_source: roleAuth.auth_source,
+        role_isolation_e2e_claimed: roleAuth.role_isolation_e2e_claimed,
+        developer_control_full_access_proof: roleAuth.full_access_runtime_claimed,
+        full_access_runtime_claimed: roleAuth.full_access_runtime_claimed,
+        separate_role_users_required: roleAuth.separate_role_users_required,
+        screen_visible: uiEvidence.screenVisible,
+        runtime_status_visible: uiEvidence.runtimeStatusVisible,
+        task_stream_loaded_visible: uiEvidence.taskStreamLoadedVisible,
+        empty_state_visible: uiEvidence.emptyStateVisible,
+        cards_visible: uiEvidence.cardsVisible,
+        approval_boundary_visible: uiEvidence.approvalBoundaryVisible,
+        empty_state_real: uiEvidence.emptyStateVisible && !uiEvidence.cardsVisible,
+      },
+    );
+  }
+
   return writeArtifact({
     final_status: "GREEN_COMMAND_CENTER_TASK_STREAM_RUNTIME_EXPOSED",
     framework: "maestro",
@@ -423,13 +560,13 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
     credentials_printed: false,
     stdout_redacted: true,
     stderr_redacted: true,
-    screen_visible: true,
-    runtime_status_visible: true,
-    task_stream_loaded_visible: false,
-    empty_state_visible: false,
-    cards_visible: false,
-    approval_boundary_visible: false,
-    empty_state_real: false,
+    screen_visible: uiEvidence.screenVisible,
+    runtime_status_visible: uiEvidence.runtimeStatusVisible,
+    task_stream_loaded_visible: uiEvidence.taskStreamLoadedVisible,
+    empty_state_visible: uiEvidence.emptyStateVisible,
+    cards_visible: uiEvidence.cardsVisible,
+    approval_boundary_visible: uiEvidence.approvalBoundaryVisible,
+    empty_state_real: uiEvidence.emptyStateVisible && !uiEvidence.cardsVisible,
     fake_cards: false,
     hardcoded_ai_response: false,
     mutations_created: 0,

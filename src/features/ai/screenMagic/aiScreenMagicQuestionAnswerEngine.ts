@@ -45,7 +45,7 @@ export function answerAiScreenMagicQuestion(params: {
   }
 
   const asksScreenWork =
-    /что|почему|какие|какой|где|кто|как|critical|risk|missing|document|supplier|payment|stock|warehouse|approval|draft|report|summary|first|route|blocker|evidence/i.test(question);
+    /что|почему|какие|какой|где|кто|как|критич|риск|не хватает|недоста|документ|поставщик|платеж|оплат|склад|остат|согласован|черновик|отчет|сводк|перв|маршрут|блокер|доказ|critical|risk|missing|document|supplier|payment|stock|warehouse|approval|draft|report|summary|first|route|blocker|evidence/i.test(question);
   if (!asksScreenWork) return null;
 
   const critical = pack.aiPreparedWork.find((item) => item.riskLevel === "critical" || item.riskLevel === "high")

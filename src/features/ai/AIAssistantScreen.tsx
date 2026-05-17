@@ -397,7 +397,7 @@ export default function AIAssistantScreen() {
         ) : null}
         <View style={styles.chatShell}>
           <AIAssistantProductHeader
-            scopeLabel={resolvedUserContext.userFacingScopeLabel}
+            domain={resolvedUserContext.effectiveDomain}
             onBack={() => safeBack(router, backFallbackRoute)}
             onClear={() => void clearChat()}
           />

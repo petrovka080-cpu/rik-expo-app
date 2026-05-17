@@ -16,7 +16,10 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   chatShell: {
     flex: 1,
+    width: "100%",
+    maxWidth: 1120,
     minHeight: 0,
+    alignSelf: "center",
     flexDirection: "column",
     overflow: "hidden",
   },
@@ -33,6 +36,8 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     color: "#475569",
   },
   header: {
+    width: "100%",
+    alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 16,
@@ -103,6 +108,9 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     color: "#334155",
   },
   roleAssistantBlock: {
+    width: "100%",
+    maxWidth: 1088,
+    alignSelf: "center",
     marginHorizontal: 16,
     padding: 12,
     borderRadius: 8,
@@ -204,6 +212,7 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   },
   roleAssistantActionChip: {
     height: 34,
+    maxWidth: 260,
     paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: "#0F172A",
@@ -211,6 +220,7 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     justifyContent: "center",
   },
   roleAssistantActionText: {
+    flexShrink: 1,
     fontSize: 12,
     fontWeight: "800",
     color: "#FFFFFF",
@@ -381,6 +391,9 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     overflow: "scroll",
   },
   messagesContent: {
+    width: "100%",
+    maxWidth: 1088,
+    alignSelf: "center",
     paddingHorizontal: 16,
     paddingBottom: 16,
     gap: 12,
@@ -426,6 +439,9 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     height: 1,
   },
   composer: {
+    width: "100%",
+    maxWidth: 1120,
+    alignSelf: "center",
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 12,

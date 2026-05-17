@@ -23,14 +23,16 @@ import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTyp
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
 
 export function AIAssistantProductHeader({
-  scopeLabel,
+  domain,
   onBack,
   onClear,
 }: {
-  scopeLabel: string;
+  domain: string;
   onBack: () => void;
   onClear: () => void;
 }) {
+  const title = resolveAssistantHeaderTitle(domain);
+
   return (
     <View style={styles.header}>
       <Pressable style={styles.headerIconButton} onPress={onBack}>
@@ -38,9 +40,9 @@ export function AIAssistantProductHeader({
       </Pressable>
 
       <View style={styles.headerText}>
-        <Text style={styles.headerTitle}>{`AI ассистент · ${scopeLabel}`}</Text>
+        <Text style={styles.headerTitle}>{title}</Text>
         <Text style={styles.headerSubtitle}>
-          Подсказки и черновики. Опасные действия — только через согласование.
+          Ответы по текущему экрану, безопасные черновики и маршруты согласования.
         </Text>
       </View>
 
@@ -49,6 +51,26 @@ export function AIAssistantProductHeader({
       </Pressable>
     </View>
   );
+}
+
+function resolveAssistantHeaderTitle(domain: string): string {
+  switch (domain) {
+    case "finance":
+      return "Финансы сегодня";
+    case "procurement":
+    case "marketplace":
+      return "Снабжение сегодня";
+    case "warehouse":
+      return "Склад сегодня";
+    case "control":
+    case "reports":
+      return "Решения на сегодня";
+    case "projects":
+    case "subcontracts":
+      return "Работы сегодня";
+    default:
+      return "AI помощник";
+  }
 }
 
 export function AIAssistantReadyProductPanels({

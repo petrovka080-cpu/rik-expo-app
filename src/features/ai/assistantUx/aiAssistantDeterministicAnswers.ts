@@ -63,7 +63,7 @@ function resolveTopic(question: string, context: AssistantContext): AiAssistantK
     return "procurement_workflow";
   }
 
-  if (includesAny(question, ["склад", "остатк", "приход", "выдач", "дефицит"])) {
+  if (includesAny(question, ["склад", "остат", "приход", "выдач", "дефицит"])) {
     return "warehouse";
   }
 
