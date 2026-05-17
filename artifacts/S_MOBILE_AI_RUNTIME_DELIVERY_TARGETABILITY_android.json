@@ -1,0 +1,125 @@
+{
+  "wave": "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF",
+  "final_status": "BLOCKED_ANDROID_DEBUG_RUNTIME_COPY_VISIBLE_TO_NORMAL_USER",
+  "package": "com.azisbek_dzhantaev.rikexpoapp",
+  "adb_serial": "emulator-5556",
+  "adb_devices_checked": true,
+  "raw_adb_deeplink_works": true,
+  "android_deeplinks_checked": true,
+  "android_ai_routes_targetable": true,
+  "command_center_two_slash_checked": true,
+  "command_center_three_slash_checked": true,
+  "command_center_two_and_three_slash_equivalent": true,
+  "rn_views_visible": true,
+  "route_specific_content_visible": true,
+  "ai_entry_button_targetable": true,
+  "android_blank_screen": false,
+  "login_screen_after_authenticated_flow": false,
+  "debug_runtime_copy_visible": true,
+  "debug_copy_visible_routes": [
+    "ai_command_three_slash",
+    "ai_command_two_slash",
+    "ai_procurement",
+    "ai_approval"
+  ],
+  "android_maestro_child_runners_recorded": true,
+  "mandatory_matrix_final_status": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+  "mandatory_matrix_freshness_run_id": "S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_2026-05-17T123254561Z",
+  "mandatory_matrix_child_result_count": 8,
+  "android_rebuild_done_blindly": false,
+  "android_rebuild_required": false,
+  "local_android_rebuild_install": "NOT_REQUIRED",
+  "secrets_printed": false,
+  "fake_green_claimed": false,
+  "routes": [
+    {
+      "route": "ai_root",
+      "uri": "rik:///ai",
+      "xml": "artifacts/S_MOBILE_ANDROID_ui_ai_root.xml",
+      "am_start": "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+      "rn_views_visible": true,
+      "route_specific_ids_visible": [
+        "ai.assistant"
+      ],
+      "route_specific_content_visible": true,
+      "ai_entry_or_button_targetable": true,
+      "blank_screen": false,
+      "android_runtime_unstable_dialog": false,
+      "login_screen_visible": false,
+      "debug_runtime_copy_visible": false
+    },
+    {
+      "route": "ai_command_three_slash",
+      "uri": "rik:///ai-command-center",
+      "xml": "artifacts/S_MOBILE_ANDROID_ui_ai_command.xml",
+      "am_start": "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+      "rn_views_visible": true,
+      "route_specific_ids_visible": [
+        "ai.command.center.screen",
+        "ai.command_center.screen",
+        "ai.command.center.header"
+      ],
+      "route_specific_content_visible": true,
+      "ai_entry_or_button_targetable": true,
+      "blank_screen": false,
+      "android_runtime_unstable_dialog": false,
+      "login_screen_visible": false,
+      "debug_runtime_copy_visible": true
+    },
+    {
+      "route": "ai_command_two_slash",
+      "uri": "rik://ai-command-center",
+      "xml": "artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml",
+      "am_start": "Starting: Intent { act=android.intent.action.VIEW dat=rik://ai-command-center/... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+      "rn_views_visible": true,
+      "route_specific_ids_visible": [
+        "ai.command.center.screen",
+        "ai.command_center.screen",
+        "ai.command.center.header"
+      ],
+      "route_specific_content_visible": true,
+      "ai_entry_or_button_targetable": true,
+      "blank_screen": false,
+      "android_runtime_unstable_dialog": false,
+      "login_screen_visible": false,
+      "debug_runtime_copy_visible": true
+    },
+    {
+      "route": "ai_procurement",
+      "uri": "rik:///ai-procurement-copilot",
+      "xml": "artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml",
+      "am_start": "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+      "rn_views_visible": true,
+      "route_specific_ids_visible": [
+        "ai.procurement",
+        "procurement.copilot",
+        "ai.procurement.copilot"
+      ],
+      "route_specific_content_visible": true,
+      "ai_entry_or_button_targetable": true,
+      "blank_screen": false,
+      "android_runtime_unstable_dialog": false,
+      "login_screen_visible": false,
+      "debug_runtime_copy_visible": true
+    },
+    {
+      "route": "ai_approval",
+      "uri": "rik:///ai-approval-inbox",
+      "xml": "artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml",
+      "am_start": "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+      "rn_views_visible": true,
+      "route_specific_ids_visible": [
+        "ai.approval",
+        "approval.inbox",
+        "ai.approval.inbox"
+      ],
+      "route_specific_content_visible": true,
+      "ai_entry_or_button_targetable": true,
+      "blank_screen": false,
+      "android_runtime_unstable_dialog": false,
+      "login_screen_visible": false,
+      "debug_runtime_copy_visible": true
+    }
+  ],
+  "exact_reason": "Raw uiautomator proof shows normal-user-visible runtime/debug copy on AI command center, procurement copilot, and approval inbox routes."
+}

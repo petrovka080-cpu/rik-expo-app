@@ -1,0 +1,101 @@
+﻿{
+    "wave":  "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF",
+    "package":  "com.azisbek_dzhantaev.rikexpoapp",
+    "adb_serial":  "emulator-5556",
+    "routes":  [
+                   {
+                       "route":  "ai_root",
+                       "uri":  "rik:///ai",
+                       "xml":  "artifacts/S_MOBILE_ANDROID_ui_ai_root.xml",
+                       "am_start":  "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+                       "rn_views_visible":  true,
+                       "route_specific_ids_visible":  [
+                                                          "ai.assistant"
+                                                      ],
+                       "route_specific_content_visible":  true,
+                       "ai_entry_or_button_targetable":  true,
+                       "blank_screen":  false,
+                       "android_runtime_unstable_dialog":  false,
+                       "login_screen_visible":  false,
+                       "debug_runtime_copy_visible":  false
+                   },
+                   {
+                       "route":  "ai_command_three_slash",
+                       "uri":  "rik:///ai-command-center",
+                       "xml":  "artifacts/S_MOBILE_ANDROID_ui_ai_command.xml",
+                       "am_start":  "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+                       "rn_views_visible":  true,
+                       "route_specific_ids_visible":  [
+                                                          "ai.command.center.screen",
+                                                          "ai.command_center.screen",
+                                                          "ai.command.center.header"
+                                                      ],
+                       "route_specific_content_visible":  true,
+                       "ai_entry_or_button_targetable":  true,
+                       "blank_screen":  false,
+                       "android_runtime_unstable_dialog":  false,
+                       "login_screen_visible":  false,
+                       "debug_runtime_copy_visible":  true
+                   },
+                   {
+                       "route":  "ai_command_two_slash",
+                       "uri":  "rik://ai-command-center",
+                       "xml":  "artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml",
+                       "am_start":  "Starting: Intent { act=android.intent.action.VIEW dat=rik://ai-command-center/... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+                       "rn_views_visible":  true,
+                       "route_specific_ids_visible":  [
+                                                          "ai.command.center.screen",
+                                                          "ai.command_center.screen",
+                                                          "ai.command.center.header"
+                                                      ],
+                       "route_specific_content_visible":  true,
+                       "ai_entry_or_button_targetable":  true,
+                       "blank_screen":  false,
+                       "android_runtime_unstable_dialog":  false,
+                       "login_screen_visible":  false,
+                       "debug_runtime_copy_visible":  true
+                   },
+                   {
+                       "route":  "ai_procurement",
+                       "uri":  "rik:///ai-procurement-copilot",
+                       "xml":  "artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml",
+                       "am_start":  "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+                       "rn_views_visible":  true,
+                       "route_specific_ids_visible":  [
+                                                          "ai.procurement",
+                                                          "procurement.copilot",
+                                                          "ai.procurement.copilot"
+                                                      ],
+                       "route_specific_content_visible":  true,
+                       "ai_entry_or_button_targetable":  true,
+                       "blank_screen":  false,
+                       "android_runtime_unstable_dialog":  false,
+                       "login_screen_visible":  false,
+                       "debug_runtime_copy_visible":  true
+                   },
+                   {
+                       "route":  "ai_approval",
+                       "uri":  "rik:///ai-approval-inbox",
+                       "xml":  "artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml",
+                       "am_start":  "Starting: Intent { act=android.intent.action.VIEW dat=rik:///... pkg=com.azisbek_dzhantaev.rikexpoapp }",
+                       "rn_views_visible":  true,
+                       "route_specific_ids_visible":  [
+                                                          "ai.approval",
+                                                          "approval.inbox",
+                                                          "ai.approval.inbox"
+                                                      ],
+                       "route_specific_content_visible":  true,
+                       "ai_entry_or_button_targetable":  true,
+                       "blank_screen":  false,
+                       "android_runtime_unstable_dialog":  false,
+                       "login_screen_visible":  false,
+                       "debug_runtime_copy_visible":  true
+                   }
+               ],
+    "command_center_two_slash_checked":  true,
+    "command_center_three_slash_checked":  true,
+    "command_center_two_and_three_slash_equivalent":  true,
+    "raw_adb_deeplink_works":  true,
+    "debug_copy_visible_to_normal_user":  true,
+    "generated_at":  "2026-05-17T18:00:30.9441306+06:00"
+}

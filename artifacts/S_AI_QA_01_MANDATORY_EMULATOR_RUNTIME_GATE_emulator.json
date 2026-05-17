@@ -5,16 +5,7 @@
   "rebuild_requirement": {
     "final_status": "PASS_ANDROID_REBUILD_NOT_REQUIRED",
     "require_rebuild": false,
-    "changed_files": [
-      "scripts/e2e/aiScreenMagicScopedWaveProof.ts",
-      "scripts/e2e/runAiScreenMagicMaestro.ts",
-      "scripts/e2e/runAiScreenMagicWeb.ts",
-      "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
-      "tests/ai/aiProcurementNativeMagicWave.contract.test.ts",
-      "tests/e2e/aiScreenMagicScopedWaveMaestro.contract.test.ts",
-      "tests/e2e/aiScreenMagicScopedWaveWeb.contract.test.ts",
-      "tests/e2e/verifyAiScreenMagicIosDelivery.contract.test.ts"
-    ],
+    "changed_files": [],
     "ai_mobile_runtime_files": [],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1206,7 +1197,7 @@
     "local_android_rebuild_install_required": false,
     "local_android_rebuild_install": "NOT_REQUIRED",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "687f597c9bcb2a080a8d9729b1f6c74496f66433ee4ec05acb252604b6785880",
+    "changed_files_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

@@ -1,0 +1,13 @@
+﻿## git status --short --branch
+## main...origin/main
+
+## git rev-list --left-right --count HEAD...origin/main
+0	0
+
+## git diff --name-only
+
+## git diff --stat
+
+## git diff --check
+
+git_diff_check_exit=0
