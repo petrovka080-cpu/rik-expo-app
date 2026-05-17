@@ -628,6 +628,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "lifecycle", "timerRegistry.ts"),
       path.join(SRC, "lib", "realtime", "realtimeSubscriptionManager.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sScale08AgentBffTaskStreamOwnerSplitFiles = [
+      path.join(SRC, "features", "ai", "agent", "agentTaskStreamRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1427,6 +1430,7 @@ describe("performance budget — bundle module count", () => {
     expect(sE2eCore05DeveloperControlTargetabilityFiles).toBeLessThanOrEqual(2);
     expect(sScale01BoundedDatabaseQueriesFiles).toBeLessThanOrEqual(1);
     expect(sScale03TimerRealtimeLifecycleFiles).toBeLessThanOrEqual(3);
+    expect(sScale08AgentBffTaskStreamOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1629,7 +1633,8 @@ describe("performance budget — bundle module count", () => {
         sAiSecurity01RolePermissionActionBoundaryFiles -
         sE2eCore05DeveloperControlTargetabilityFiles -
         sScale01BoundedDatabaseQueriesFiles -
-        sScale03TimerRealtimeLifecycleFiles,
+        sScale03TimerRealtimeLifecycleFiles -
+        sScale08AgentBffTaskStreamOwnerSplitFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

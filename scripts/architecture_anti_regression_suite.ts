@@ -1422,6 +1422,7 @@ const AI_TOOL_RUNTIME_TRANSPORT_IMPORTS: Record<(typeof AI_TOOL_RUNTIME_FILES)[n
   "src/features/ai/tools/getActionStatusTool.ts": "getActionStatus.transport",
 };
 const AGENT_BFF_ROUTE_SHELL_PATH = "src/features/ai/agent/agentBffRouteShell.ts";
+const AGENT_TASK_STREAM_ROUTES_PATH = "src/features/ai/agent/agentTaskStreamRoutes.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
   "compare_suppliers",
@@ -3977,12 +3978,15 @@ export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
   const commandCenterSource = commandCenterSources.join("\n");
   const runtimeSource = runtimeSources.join("\n");
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const taskStreamRouteSource =
+    safeReadProjectFile({ readFile, relativePath: AGENT_TASK_STREAM_ROUTES_PATH }) ?? "";
 
   const runtimeAdapterExists = runtimeSources.every((source) => source.length > 0);
   const taskStreamRouteExposed =
     shellSource.includes("GET /agent/task-stream") &&
-    shellSource.includes("loadAiTaskStreamRuntime") &&
-    shellSource.includes("agent.task_stream.read");
+    shellSource.includes("agent.task_stream.read") &&
+    shellSource.includes('from "./agentTaskStreamRoutes"') &&
+    taskStreamRouteSource.includes("loadAiTaskStreamRuntime");
   const commandCenterUsesRuntime =
     commandCenterSource.includes("GET /agent/task-stream") &&
     commandCenterSource.includes("runtimeStatus") &&

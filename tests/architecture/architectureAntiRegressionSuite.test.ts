@@ -432,7 +432,7 @@ describe("architecture anti-regression suite", () => {
       projectRoot: process.cwd(),
       readFile: (relativePath) => {
         if (relativePath === "src/features/ai/agent/agentBffRouteShell.ts") {
-          return "GET /agent/task-stream\nloadAiTaskStreamRuntime\nagent.task_stream.read";
+          return 'GET /agent/task-stream\nfrom "./agentTaskStreamRoutes"\nagent.task_stream.read';
         }
         if (relativePath.includes("commandCenter")) {
           return [
@@ -444,9 +444,10 @@ describe("architecture anti-regression suite", () => {
             "mutationCount: 0",
           ].join("\n");
         }
-        if (relativePath.includes("taskStream")) {
+        if (relativePath.includes("taskStream") || relativePath.includes("TaskStream")) {
           return [
             "canUseAiCapability",
+            "loadAiTaskStreamRuntime",
             "getAllowedAiDomainsForRole",
             "roleScoped: true",
             "screenId",
@@ -479,7 +480,7 @@ describe("architecture anti-regression suite", () => {
         if (relativePath.includes("commandCenter")) {
           return 'import { supabase } from "@supabase/supabase-js";\nconst rawPrompt = "leak";';
         }
-        if (relativePath.includes("taskStream")) {
+        if (relativePath.includes("taskStream") || relativePath.includes("TaskStream")) {
           return "fake task card\nmutationCount: 1";
         }
         return "";

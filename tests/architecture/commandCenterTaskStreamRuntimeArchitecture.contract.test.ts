@@ -23,10 +23,12 @@ describe("Command Center task-stream runtime architecture", () => {
       "src/features/ai/commandCenter/AiCommandCenterTypes.ts",
     ].map(read).join("\n");
     const shell = read("src/features/ai/agent/agentBffRouteShell.ts");
+    const taskStreamRoute = read("src/features/ai/agent/agentTaskStreamRoutes.ts");
     const runtime = runtimeFiles.map(read).join("\n");
 
     expect(shell).toContain("GET /agent/task-stream");
-    expect(shell).toContain("loadAiTaskStreamRuntime");
+    expect(shell).toContain('from "./agentTaskStreamRoutes"');
+    expect(taskStreamRoute).toContain("loadAiTaskStreamRuntime");
     expect(commandCenter).toContain("runtimeStatus");
     expect(commandCenter).toContain("taskStreamLoaded");
     expect(runtime).toContain("hasAiTaskStreamEvidence");
