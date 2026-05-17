@@ -421,19 +421,17 @@ function toQa(questions: readonly string[]): AiScreenMagicQa[] {
     }));
 }
 
-function fallbackBlueprint(screenId: string): MagicBlueprint {
-  return {
-    userGoal: "AI prepares safe screen-specific work from hydrated context and audited action policy.",
-    screenSummary: `Готово от AI · ${screenId}`,
-    preparedWork: prepared(["Сегодня / Сейчас", "Критические", "Недостающие данные", "Следующий шаг"]),
-    buttonLabels: {},
-    qa: DEFAULT_QA,
-  };
+function requireBlueprint(screenId: string): MagicBlueprint {
+  const blueprint = BLUEPRINTS[screenId];
+  if (!blueprint) {
+    throw new Error(`BLOCKED_AI_SCREEN_MAGIC_BLUEPRINT_MISSING:${screenId}`);
+  }
+  return blueprint;
 }
 
 export function listAiScreenMagicRegistry(): AiScreenMagicRegistryEntry[] {
   return listAiScreenWorkflowRegistry().map((entry) => {
-    const blueprint = BLUEPRINTS[entry.screenId] ?? fallbackBlueprint(entry.screenId);
+    const blueprint = requireBlueprint(entry.screenId);
     return {
       screenId: entry.screenId,
       roleScope: [...entry.roleScope],

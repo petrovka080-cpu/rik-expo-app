@@ -1,6 +1,8 @@
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import {
+  buildAiScreenMagicClickPayload,
   buildAiScreenMagicButtonResultCopy,
+  isAiScreenMagicClickPayload,
   resolveAiScreenMagicButton,
 } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 
@@ -25,9 +27,10 @@ describe("AI screen magic button resolver", () => {
 
     const result = buildAiScreenMagicButtonResultCopy({
       pack,
-      buttonIdOrLabel: draft!.label,
+      buttonIdOrLabel: buildAiScreenMagicClickPayload(draft!),
     });
 
+    expect(isAiScreenMagicClickPayload(buildAiScreenMagicClickPayload(draft!))).toBe(true);
     expect(result).toMatchObject({
       providerCallAllowed: false,
       dbWriteUsed: false,
@@ -35,5 +38,23 @@ describe("AI screen magic button resolver", () => {
     });
     expect(result?.answer).toContain("Готово от AI");
     expect(result?.answer).toContain("Черновик");
+  });
+
+  it("requires exact audited button labels or ids and rejects fuzzy partial clicks", () => {
+    const pack = getAiScreenMagicPack({ role: "buyer", context: "buyer", screenId: "buyer.main" });
+    const draft = pack.buttons.find((button) => button.actionKind === "draft_only");
+    expect(draft).toBeTruthy();
+
+    const exactById = buildAiScreenMagicButtonResultCopy({
+      pack,
+      buttonIdOrLabel: draft!.id,
+    });
+    const fuzzyPartial = buildAiScreenMagicButtonResultCopy({
+      pack,
+      buttonIdOrLabel: `Готово от AI: ${draft!.label.slice(0, Math.max(1, draft!.label.length - 2))}`,
+    });
+
+    expect(exactById?.button.id).toBe(draft!.id);
+    expect(fuzzyPartial).toBeNull();
   });
 });

@@ -40,6 +40,7 @@ import {
   buildProcurementReadyBuyBundleFromSearchParams,
 } from "./procurement/aiProcurementRequestOptionHydrator";
 import { getAiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantEngine";
+import { isAiScreenMagicClickPayload } from "./screenMagic/aiScreenMagicButtonResolver";
 import { buildAiScreenMagicPackFromWorkflowPack, describeAiScreenMagicPack } from "./screenMagic/aiScreenMagicEngine";
 import { describeAiScreenNativeAssistantPack, getAiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantEngine";
 import { describeAiScreenWorkflowPack, getAiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowEngine";
@@ -414,7 +415,7 @@ export default function AIAssistantScreen() {
             scopedFacts={scopedFacts}
             scopedFactsError={scopedFactsError}
             scopedFactsLoading={scopedFactsLoading}
-            onReadyProposalPress={(text) => text.startsWith("Готово от AI:") ? void send(text) : setInput(text)}
+            onReadyProposalPress={(text) => isAiScreenMagicClickPayload(text) ? void send(text) : setInput(text)}
           />
           <AIAssistantShortcutRows
             assistantContext={assistantContext}

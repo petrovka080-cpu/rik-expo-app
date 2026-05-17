@@ -9,7 +9,9 @@ describe("AI cross-screen runtime E2E contract", () => {
     expect(runner).toContain("runAiCrossScreenRuntimeMaestro");
     expect(runner).toContain("ai.screen.runtime.screen");
     expect(runner).toContain("ai.screen.runtime.status");
-    expect(runner).toContain("ai.screen.runtime.loaded");
+    expect(runner).toContain("ai.command.center.screen");
+    expect(runner).toContain("ai.command.center.task-stream-loaded");
+    expect(runner).toContain("ai.command.center.empty-state");
     expect(runner).toContain("resolveExplicitAiRoleAuthEnv");
     expect(runner).toContain("BLOCKED_ROLE_ISOLATION_REQUIRES_SEPARATE_E2E_USERS");
     expect(runner).toContain("mutations_created: 0");

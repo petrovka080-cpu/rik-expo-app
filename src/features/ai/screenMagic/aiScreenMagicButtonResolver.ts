@@ -8,6 +8,8 @@ import type {
 } from "./aiScreenMagicTypes";
 import { sanitizeAiScreenMagicUserCopy } from "./aiScreenMagicUserCopy";
 
+export const AI_SCREEN_MAGIC_CLICK_PREFIX = "Готово от AI:";
+
 function expectedResultFor(kind: AiScreenMagicActionKind): AiScreenMagicExpectedResult {
   if (kind === "safe_read") return "opens_read_result";
   if (kind === "draft_only") return "creates_safe_draft";
@@ -102,14 +104,28 @@ function normalizeButtonText(value: string): string {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function exactButtonTarget(value: string): string {
+  const raw = String(value || "").trim();
+  const prefixed = /^\s*Готово от AI:\s*(.+?)\s*$/i.exec(raw);
+  return prefixed?.[1] ?? raw;
+}
+
 function findButton(pack: AiScreenMagicPack, buttonIdOrLabel: string): AiScreenMagicButton | null {
-  const needle = normalizeButtonText(buttonIdOrLabel);
+  const needle = normalizeButtonText(exactButtonTarget(buttonIdOrLabel));
   if (!needle) return null;
   return pack.buttons.find((button) => {
     const id = normalizeButtonText(button.id);
     const label = normalizeButtonText(button.label);
-    return needle === id || needle === label || needle.includes(label) || needle.includes(id);
+    return needle === id || needle === label;
   }) ?? null;
+}
+
+export function buildAiScreenMagicClickPayload(button: Pick<AiScreenMagicButton, "label">): string {
+  return `${AI_SCREEN_MAGIC_CLICK_PREFIX} ${button.label}`;
+}
+
+export function isAiScreenMagicClickPayload(value: string): boolean {
+  return /^\s*Готово от AI:\s*.+?\s*$/i.test(String(value || ""));
 }
 
 export type AiScreenMagicButtonResultCopy = {

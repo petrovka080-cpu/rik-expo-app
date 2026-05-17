@@ -100,11 +100,14 @@ function isRouteRegistered(): boolean {
 
 function isTaskStreamRuntimeExposed(): boolean {
   const shellSource = readProjectFile("src/features/ai/agent/agentBffRouteShell.ts");
+  const taskStreamRouteSource = readProjectFile("src/features/ai/agent/agentTaskStreamRoutes.ts");
   const runtimeSource = readProjectFile("src/features/ai/taskStream/aiTaskStreamRuntime.ts");
   const commandCenterSource = readProjectFile("src/features/ai/commandCenter/buildAiCommandCenterViewModel.ts");
   return (
     shellSource.includes("GET /agent/task-stream") &&
-    shellSource.includes("loadAiTaskStreamRuntime") &&
+    shellSource.includes("agent.task_stream.read") &&
+    taskStreamRouteSource.includes("GET /agent/task-stream") &&
+    taskStreamRouteSource.includes("loadAiTaskStreamRuntime") &&
     runtimeSource.includes("AI_TASK_STREAM_RUNTIME_CONTRACT") &&
     commandCenterSource.includes("runtimeStatus")
   );

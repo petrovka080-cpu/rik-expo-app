@@ -14,7 +14,10 @@ describe("AI screen-by-screen magic web runner", () => {
 
     const screen = fs.readFileSync(path.join(process.cwd(), "src", "features", "ai", "AIAssistantScreen.tsx"), "utf8");
     const panels = fs.readFileSync(path.join(process.cwd(), "src", "features", "ai", "AIAssistantReadyProductPanels.tsx"), "utf8");
-    expect(screen).toContain('text.startsWith("Готово от AI:") ? void send(text) : setInput(text)');
-    expect(panels).toContain('onReadyProposalPress(`Готово от AI: ${button.label}`)');
+    const buttonResolver = fs.readFileSync(path.join(process.cwd(), "src", "features", "ai", "screenMagic", "aiScreenMagicButtonResolver.ts"), "utf8");
+    expect(screen).toContain("isAiScreenMagicClickPayload(text) ? void send(text) : setInput(text)");
+    expect(panels).toContain("onReadyProposalPress(buildAiScreenMagicClickPayload(button))");
+    expect(buttonResolver).toContain("AI_SCREEN_MAGIC_CLICK_PREFIX");
+    expect(buttonResolver).not.toContain("needle.includes");
   });
 });

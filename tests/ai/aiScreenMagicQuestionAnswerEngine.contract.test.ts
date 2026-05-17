@@ -1,5 +1,6 @@
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { buildAiScreenMagicClickPayload } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 
 describe("AI screen magic question answer engine", () => {
   it("answers role-native questions from screen context without provider calls", () => {
@@ -24,7 +25,7 @@ describe("AI screen magic question answer engine", () => {
 
     const answer = answerAiScreenMagicQuestion({
       pack,
-      question: `Готово от AI: ${approval!.label}`,
+      question: buildAiScreenMagicClickPayload(approval!),
     });
 
     expect(answer).toMatchObject({

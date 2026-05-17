@@ -32,4 +32,12 @@ describe("AI screen workflow engine", () => {
     expect(packs).toHaveLength(28);
     expect(packs.every((pack) => validateAiScreenWorkflowPack(pack).ok)).toBe(true);
   });
+
+  it("blocks unknown explicit screen ids instead of falling back to a context default", () => {
+    expect(() => getAiScreenWorkflowPack({
+      role: "buyer",
+      context: "buyer",
+      screenId: "buyer.main.unregistered",
+    })).toThrow(/BLOCKED_AI_SCREEN_WORKFLOW_EXACT_SCREEN_NOT_REGISTERED:buyer\.main\.unregistered/);
+  });
 });

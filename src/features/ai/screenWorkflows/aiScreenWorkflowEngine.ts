@@ -25,6 +25,14 @@ function unique(values: readonly string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+function firstSearchParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function explicitRequestedScreenId(request: AiScreenWorkflowHydrationRequest): string {
+  return String(request.screenId ?? firstSearchParam(request.searchParams?.screenId) ?? "").trim();
+}
+
 function evidenceForScreen(entries: readonly AiScreenButtonActionEntry[], hydratedEvidence: readonly string[], screenId: string): string[] {
   return unique([
     ...hydratedEvidence,
@@ -86,10 +94,12 @@ function buildReadyOptions(params: {
 export function getAiScreenWorkflowPack(request: AiScreenWorkflowHydrationRequest): AiScreenWorkflowPack {
   const hydrated = hydrateAiScreenWorkflowContext(request);
   const requestedScreenId = hydrated.workflowScreenId || resolveDefaultAiScreenWorkflowScreenId(request.context);
-  const entry = getAiScreenWorkflowRegistryEntry(requestedScreenId)
-    ?? getAiScreenWorkflowRegistryEntry(resolveDefaultAiScreenWorkflowScreenId(request.context));
+  const entry = getAiScreenWorkflowRegistryEntry(requestedScreenId);
   if (!entry) {
-    throw new Error(`AI screen workflow registry missing for ${requestedScreenId}`);
+    const blocker = explicitRequestedScreenId(request)
+      ? "BLOCKED_AI_SCREEN_WORKFLOW_EXACT_SCREEN_NOT_REGISTERED"
+      : "BLOCKED_AI_SCREEN_WORKFLOW_DEFAULT_SCREEN_NOT_REGISTERED";
+    throw new Error(`${blocker}:${requestedScreenId || "missing"}`);
   }
 
   const auditEntries = listAiScreenButtonRoleActionEntriesForScreen(entry.screenId);

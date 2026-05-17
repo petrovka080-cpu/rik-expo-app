@@ -3,6 +3,7 @@ import {
   getAiScreenMagicRegistryEntry,
   listAiScreenMagicRegistry,
 } from "../../src/features/ai/screenMagic/aiScreenMagicRegistry";
+import { listAiScreenWorkflowRegistry } from "../../src/features/ai/screenWorkflows/aiScreenWorkflowRegistry";
 
 describe("AI screen magic registry", () => {
   it("covers the 28 audited major screens with screen-specific product metadata", () => {
@@ -42,6 +43,14 @@ describe("AI screen magic registry", () => {
     ]));
     expect(entries.every((entry) => entry.preparedWork.length >= 4)).toBe(true);
     expect(entries.every((entry) => entry.qa.length >= 5)).toBe(true);
+  });
+
+  it("has an explicit magic registry entry for every audited workflow screen", () => {
+    const magicIds = new Set(listAiScreenMagicRegistry().map((entry) => entry.screenId));
+    const workflowIds = listAiScreenWorkflowRegistry().map((entry) => entry.screenId);
+
+    expect(workflowIds).toHaveLength(28);
+    expect(workflowIds.filter((screenId) => !magicIds.has(screenId))).toEqual([]);
   });
 
   it("maps document knowledge alias through the underlying workflow registry", () => {

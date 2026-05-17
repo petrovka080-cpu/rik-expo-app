@@ -16,6 +16,7 @@ import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcureme
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
 import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
+import { buildAiScreenMagicClickPayload } from "./screenMagic/aiScreenMagicButtonResolver";
 import { buildAiScreenMagicPackFromWorkflowPack } from "./screenMagic/aiScreenMagicEngine";
 import type { AiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
@@ -204,7 +205,7 @@ export function AIAssistantReadyProductPanels({
                   <Pressable
                     key={button.id}
                     style={styles.roleAssistantActionChip}
-                    onPress={() => onReadyProposalPress(`Готово от AI: ${button.label}`)}
+                    onPress={() => onReadyProposalPress(buildAiScreenMagicClickPayload(button))}
                     testID="ai.screen_magic.action"
                   >
                     <Text style={styles.roleAssistantActionText}>{button.label}</Text>

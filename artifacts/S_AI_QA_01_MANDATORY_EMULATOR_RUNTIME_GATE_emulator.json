@@ -6,20 +6,28 @@
     "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
     "require_rebuild": true,
     "changed_files": [
+      "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts",
+      "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts",
       "src/features/ai/AIAssistantReadyProductPanels.tsx",
       "src/features/ai/AIAssistantScreen.tsx",
       "src/features/ai/screenMagic/aiScreenMagicButtonResolver.ts",
-      "src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine.ts",
+      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
+      "src/features/ai/screenWorkflows/aiScreenWorkflowEngine.ts",
       "tests/ai/aiScreenMagicButtonResolver.contract.test.ts",
       "tests/ai/aiScreenMagicQuestionAnswerEngine.contract.test.ts",
+      "tests/ai/aiScreenMagicRegistry.contract.test.ts",
+      "tests/ai/aiScreenWorkflowEngine.contract.test.ts",
       "tests/architecture/aiScreenMagicNoDebugUserUi.contract.test.ts",
+      "tests/architecture/aiScreenMagicNoFallbackTransport.contract.test.ts",
+      "tests/e2e/aiCrossScreenRuntime.e2e.test.ts",
       "tests/e2e/aiScreenByScreenMagicWeb.contract.test.ts"
     ],
     "ai_mobile_runtime_files": [
       "src/features/ai/AIAssistantReadyProductPanels.tsx",
       "src/features/ai/AIAssistantScreen.tsx",
       "src/features/ai/screenMagic/aiScreenMagicButtonResolver.ts",
-      "src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine.ts"
+      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
+      "src/features/ai/screenWorkflows/aiScreenWorkflowEngine.ts"
     ],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
@@ -1202,8 +1210,8 @@
       "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
       "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml"
     ],
-    "ai_mobile_runtime_source_fingerprint": "b0c4ed897cd2c49878356d5dcc71e1cf992648545912a1ab715f583c6667bb21",
-    "installed_apk_source_fingerprint": "b0c4ed897cd2c49878356d5dcc71e1cf992648545912a1ab715f583c6667bb21",
+    "ai_mobile_runtime_source_fingerprint": "f11351469c41396594bc5c6c3d0ba3be49345aab9d590798057d41330f1b1f5a",
+    "installed_apk_source_fingerprint": "f11351469c41396594bc5c6c3d0ba3be49345aab9d590798057d41330f1b1f5a",
     "source_fingerprint_matches_installed_apk": true,
     "local_android_rebuild_install_after_source_change": true,
     "backend_or_scripts_only": false,
@@ -1211,7 +1219,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "9a5fbcf1e3c6d189eb70e50faa745dd69b3384394519bc77e2b559f00d8cb925",
+    "changed_files_fingerprint": "599e113f53f1fd682f48d2a6151d0a241aa6e532cc92e673fb472becaf0a8e66",
     "exact_reason": null
   },
   "emulator_boot_completed": false,
