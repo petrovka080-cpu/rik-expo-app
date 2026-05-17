@@ -1,0 +1,86 @@
+{
+  "wave": "S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT",
+  "final_status": "GREEN_AI_SCREEN_MAGIC_MAESTRO_READY",
+  "screens": [
+    "buyer.main",
+    "buyer.requests",
+    "buyer.request.detail",
+    "procurement.copilot"
+  ],
+  "checks": {
+    "screens_targetable": true,
+    "ai_entry_visible": true,
+    "dialog_opens": true,
+    "content_not_clipped": true,
+    "input_targetable": true,
+    "screen_specific_question_targetable": true,
+    "safe_read_button_targetable": true,
+    "draft_only_button_targetable_where_available": true,
+    "approval_required_routes_to_approval_where_available": true,
+    "no_blank_modal": true,
+    "no_debug_header": true
+  },
+  "per_screen": [
+    {
+      "screenId": "buyer.main",
+      "route_targetable": true,
+      "ai_entry_visible": true,
+      "dialog_opens": true,
+      "content_not_clipped": true,
+      "input_targetable": true,
+      "screen_specific_question_targetable": true,
+      "safe_read_button_targetable": true,
+      "draft_only_button_targetable_where_available": true,
+      "approval_required_routes_to_approval_where_available": true,
+      "no_blank_modal": true,
+      "no_debug_header": true
+    },
+    {
+      "screenId": "buyer.requests",
+      "route_targetable": true,
+      "ai_entry_visible": true,
+      "dialog_opens": true,
+      "content_not_clipped": true,
+      "input_targetable": true,
+      "screen_specific_question_targetable": true,
+      "safe_read_button_targetable": true,
+      "draft_only_button_targetable_where_available": true,
+      "approval_required_routes_to_approval_where_available": true,
+      "no_blank_modal": true,
+      "no_debug_header": true
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "route_targetable": true,
+      "ai_entry_visible": true,
+      "dialog_opens": true,
+      "content_not_clipped": true,
+      "input_targetable": true,
+      "screen_specific_question_targetable": true,
+      "safe_read_button_targetable": true,
+      "draft_only_button_targetable_where_available": true,
+      "approval_required_routes_to_approval_where_available": true,
+      "no_blank_modal": true,
+      "no_debug_header": true
+    },
+    {
+      "screenId": "procurement.copilot",
+      "route_targetable": true,
+      "ai_entry_visible": true,
+      "dialog_opens": true,
+      "content_not_clipped": true,
+      "input_targetable": true,
+      "screen_specific_question_targetable": true,
+      "safe_read_button_targetable": true,
+      "draft_only_button_targetable_where_available": true,
+      "approval_required_routes_to_approval_where_available": true,
+      "no_blank_modal": true,
+      "no_debug_header": true
+    }
+  ],
+  "buttons_targeted_on_android": true,
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "directDangerousMutationUsed": false,
+  "fakeGreenClaimed": false
+}

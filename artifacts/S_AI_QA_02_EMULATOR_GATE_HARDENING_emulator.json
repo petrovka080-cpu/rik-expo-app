@@ -15,8 +15,8 @@
   "parallel_execution_used": false,
   "probe_latency_budget_ms": 30000,
   "latency_budget_exceeded": true,
-  "transport_retry_count": 0,
-  "flake_retry_count": 0,
+  "transport_retry_count": 1,
+  "flake_retry_count": 1,
   "fake_emulator_pass": false,
   "secrets_printed": false,
   "exact_reason": null

@@ -3,8 +3,8 @@
 final_status: GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY
 android_emulator_ready: true
 android_installed_runtime_smoke: PASS
-ai_source_changed_requires_rebuild: true
-local_android_rebuild_install: PASS
+ai_source_changed_requires_rebuild: false
+local_android_rebuild_install: NOT_REQUIRED
 developer_control_e2e: PASS
 role_screen_knowledge_e2e: PASS
 command_center_runtime_e2e: PASS

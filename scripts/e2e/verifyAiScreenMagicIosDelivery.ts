@@ -16,7 +16,7 @@ type DeliveryPath =
   | "unknown";
 
 type IosDeliveryArtifact = {
-  wave: "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF";
+  wave: string;
   scope: string;
   final_status: IosDeliveryStatus;
   host_platform: NodeJS.Platform;
@@ -46,17 +46,42 @@ type IosDeliveryArtifact = {
 };
 
 const projectRoot = process.cwd();
-const wave = "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF";
-const artifactPrefix = path.join(projectRoot, "artifacts", wave);
-const iosArtifactPath = `${artifactPrefix}_ios.json`;
-const matrixArtifactPath = `${artifactPrefix}_matrix.json`;
-const proofArtifactPath = `${artifactPrefix}_proof.md`;
+const defaultWave = "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF";
 
 const coreRoutes = [
   "rik:///ai-command-center",
   "rik:///ai-procurement-copilot",
   "rik:///ai-approval-inbox",
 ] as const;
+
+function artifactWaveForScope(scope: string): string {
+  return String(scope || defaultWave).trim() || defaultWave;
+}
+
+function artifactPathsForScope(scope: string): {
+  iosArtifactPath: string;
+  matrixArtifactPath: string;
+  proofArtifactPath: string;
+} {
+  const artifactWave = artifactWaveForScope(scope);
+  const artifactPrefix = path.join(projectRoot, "artifacts", artifactWave);
+  const scopedSuffix = artifactWave === defaultWave ? "" : "_ios";
+  return {
+    iosArtifactPath: `${artifactPrefix}_ios.json`,
+    matrixArtifactPath: `${artifactPrefix}${scopedSuffix}_matrix.json`,
+    proofArtifactPath: `${artifactPrefix}${scopedSuffix}_proof.md`,
+  };
+}
+
+function routesForScope(scope: string): string[] {
+  if (scope === "S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT") {
+    return [
+      "rik:///ai-procurement-copilot",
+      "rik:///ai-command-center",
+    ];
+  }
+  return [...coreRoutes];
+}
 
 function run(command: string, args: readonly string[], timeoutMs = 120_000): { status: number | null; stdout: string; stderr: string } {
   const result = spawnSync(command, [...args], {
@@ -136,10 +161,11 @@ function writeJson(filePath: string, value: unknown): void {
 }
 
 function writeProof(artifact: IosDeliveryArtifact): void {
+  const { proofArtifactPath } = artifactPathsForScope(artifact.wave);
   fs.writeFileSync(
     proofArtifactPath,
     [
-      `# ${wave}`,
+      `# ${artifact.wave}`,
       "",
       `final_status: ${artifact.final_status}`,
       `scope: ${artifact.scope}`,
@@ -175,14 +201,17 @@ function buildArtifact(
     deliveryPath: DeliveryPath;
     hostAvailable: boolean;
     bootedSimulator: boolean;
+    routesRequired: readonly string[];
     openedRoutes?: string[];
     visibleRoutes?: string[];
   },
 ): IosDeliveryArtifact {
   const nativeBuildRequired = params.deliveryPath === "native_build_required";
   const green = params.status === "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY";
+  const artifactWave = artifactWaveForScope(params.scope);
+  const { iosArtifactPath } = artifactPathsForScope(artifactWave);
   return {
-    wave,
+    wave: artifactWave,
     scope: params.scope,
     final_status: params.status,
     host_platform: process.platform,
@@ -199,7 +228,7 @@ function buildArtifact(
     ios_delivery_path_documented: params.deliveryPath !== "unknown",
     ios_runtime_host_available: params.hostAvailable,
     ios_booted_simulator_available: params.bootedSimulator,
-    ios_routes_required: [...coreRoutes],
+    ios_routes_required: [...params.routesRequired],
     ios_routes_opened: params.openedRoutes ?? [],
     ios_routes_visible: params.visibleRoutes ?? [],
     android_proof_used_as_ios_proof: false,
@@ -213,8 +242,9 @@ function buildArtifact(
 }
 
 function writeArtifacts(artifact: IosDeliveryArtifact): IosDeliveryArtifact {
+  const { iosArtifactPath, matrixArtifactPath } = artifactPathsForScope(artifact.wave);
   const matrix = {
-    wave,
+    wave: artifact.wave,
     final_status:
       artifact.final_status === "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY"
         ? "GREEN_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_READY"
@@ -241,9 +271,10 @@ function writeArtifacts(artifact: IosDeliveryArtifact): IosDeliveryArtifact {
   return artifact;
 }
 
-export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifact {
+export function verifyAiScreenMagicIosDelivery(scope = defaultWave): IosDeliveryArtifact {
   const appCodeFiles = changedFiles().filter(isRuntimeAppFile);
   const deliveryPath = resolveDeliveryPath(appCodeFiles);
+  const routesRequired = routesForScope(scope);
 
   if (process.platform !== "darwin" || !commandExists("xcrun", ["--version"])) {
     return writeArtifacts(
@@ -256,6 +287,7 @@ export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifac
         deliveryPath,
         hostAvailable: false,
         bootedSimulator: false,
+        routesRequired,
       }),
     );
   }
@@ -271,12 +303,13 @@ export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifac
         deliveryPath,
         hostAvailable: true,
         bootedSimulator: false,
+        routesRequired,
       }),
     );
   }
 
   const openedRoutes: string[] = [];
-  for (const route of coreRoutes) {
+  for (const route of routesRequired) {
     const result = run("xcrun", ["simctl", "openurl", "booted", route], 45_000);
     if (result.status !== 0) {
       return writeArtifacts(
@@ -288,6 +321,7 @@ export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifac
           deliveryPath,
           hostAvailable: true,
           bootedSimulator: true,
+          routesRequired,
           openedRoutes,
         }),
       );
@@ -305,6 +339,7 @@ export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifac
       deliveryPath,
       hostAvailable: true,
       bootedSimulator: true,
+      routesRequired,
       openedRoutes,
     }),
   );
@@ -313,7 +348,7 @@ export function verifyAiScreenMagicIosDelivery(scope = wave): IosDeliveryArtifac
 function readScopeArg(): string {
   const scopeIndex = process.argv.indexOf("--scope");
   if (scopeIndex >= 0 && process.argv[scopeIndex + 1]) return process.argv[scopeIndex + 1];
-  return wave;
+  return defaultWave;
 }
 
 if (require.main === module) {

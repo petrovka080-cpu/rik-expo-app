@@ -26,6 +26,13 @@ describe("AI screen magic iOS delivery proof", () => {
     expect(source).toContain("ios_keyboard_safe");
   });
 
+  it("writes scoped magic-wave iOS artifacts instead of reusing the mobile signoff artifact", () => {
+    expect(source).toContain("artifactWaveForScope(scope)");
+    expect(source).toContain("S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT");
+    expect(source).toContain("routesForScope(scope)");
+    expect(source).toContain("artifactPathsForScope(artifact.wave)");
+  });
+
   it("does not rebuild or publish OTA as part of verification", () => {
     expect(source).toContain("ota_published: false");
     expect(source).toContain("native_build_started: false");
