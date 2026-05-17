@@ -11,5 +11,10 @@ describe("AI screen-by-screen magic web runner", () => {
     expect(source).toContain("buttons_clicked_on_web");
     expect(source).toContain("providerCalled: false");
     expect(source).toContain("dbWritesUsed: false");
+
+    const screen = fs.readFileSync(path.join(process.cwd(), "src", "features", "ai", "AIAssistantScreen.tsx"), "utf8");
+    const panels = fs.readFileSync(path.join(process.cwd(), "src", "features", "ai", "AIAssistantReadyProductPanels.tsx"), "utf8");
+    expect(screen).toContain('text.startsWith("Готово от AI:") ? void send(text) : setInput(text)');
+    expect(panels).toContain('onReadyProposalPress(`Готово от AI: ${button.label}`)');
   });
 });

@@ -8,7 +8,9 @@ describe("AI screen magic no debug user UI", () => {
 
     expect(panels).toContain("ai.screen_magic_pack");
     expect(panels).toContain("ai.screen_magic.action");
+    expect(panels).toContain("Готово от AI:");
     expect(panels).not.toContain("raw provider payload");
+    expect(panels).not.toContain("expectedResult");
     expect(`${screen}\n${panels}`).toContain("debugAiContext &&");
   });
 });

@@ -414,7 +414,7 @@ export default function AIAssistantScreen() {
             scopedFacts={scopedFacts}
             scopedFactsError={scopedFactsError}
             scopedFactsLoading={scopedFactsLoading}
-            onReadyProposalPress={setInput}
+            onReadyProposalPress={(text) => text.startsWith("Готово от AI:") ? void send(text) : setInput(text)}
           />
           <AIAssistantShortcutRows
             assistantContext={assistantContext}

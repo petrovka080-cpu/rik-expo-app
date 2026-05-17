@@ -204,11 +204,7 @@ export function AIAssistantReadyProductPanels({
                   <Pressable
                     key={button.id}
                     style={styles.roleAssistantActionChip}
-                    onPress={() => onReadyProposalPress(
-                      button.actionKind === "forbidden" || button.actionKind === "exact_blocker"
-                        ? `${button.label}: ${button.forbiddenReason ?? button.exactBlocker ?? "blocked"}`
-                        : `${button.label}: ${button.expectedResult}`,
-                    )}
+                    onPress={() => onReadyProposalPress(`Готово от AI: ${button.label}`)}
                     testID="ai.screen_magic.action"
                   >
                     <Text style={styles.roleAssistantActionText}>{button.label}</Text>

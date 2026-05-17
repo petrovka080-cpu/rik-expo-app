@@ -1,4 +1,5 @@
 import type { AiAssistantKnowledgeTopic } from "../assistantUx/aiAssistantModuleKnowledge";
+import { buildAiScreenMagicButtonResultCopy } from "./aiScreenMagicButtonResolver";
 import { sanitizeAiScreenMagicUserCopy } from "./aiScreenMagicUserCopy";
 import type { AiScreenMagicPack } from "./aiScreenMagicTypes";
 
@@ -29,6 +30,19 @@ export function answerAiScreenMagicQuestion(params: {
   const pack = params.pack;
   const question = normalize(params.question);
   if (!pack || !question) return null;
+
+  const buttonResult = buildAiScreenMagicButtonResultCopy({
+    pack,
+    buttonIdOrLabel: params.question,
+  });
+  if (buttonResult) {
+    return {
+      topic: topicForDomain(pack.domain),
+      answer: buttonResult.answer,
+      providerCallAllowed: false,
+      answeredFromScreenContext: true,
+    };
+  }
 
   const asksScreenWork =
     /что|почему|какие|какой|где|кто|как|critical|risk|missing|document|supplier|payment|stock|warehouse|approval|draft|report|summary|first|route|blocker|evidence/i.test(question);

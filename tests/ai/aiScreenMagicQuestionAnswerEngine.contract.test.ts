@@ -16,4 +16,23 @@ describe("AI screen magic question answer engine", () => {
     });
     expect(answer?.answer).toContain("Готово от AI");
   });
+
+  it("answers AI button clicks as screen-context results instead of generic chat", () => {
+    const pack = getAiScreenMagicPack({ role: "director", context: "director", screenId: "director.dashboard" });
+    const approval = pack.buttons.find((button) => button.actionKind === "approval_required");
+    expect(approval).toBeTruthy();
+
+    const answer = answerAiScreenMagicQuestion({
+      pack,
+      question: `Готово от AI: ${approval!.label}`,
+    });
+
+    expect(answer).toMatchObject({
+      answeredFromScreenContext: true,
+      providerCallAllowed: false,
+      topic: "director",
+    });
+    expect(answer?.answer).toContain("approval ledger");
+    expect(answer?.answer).toContain("AI не approve");
+  });
 });
