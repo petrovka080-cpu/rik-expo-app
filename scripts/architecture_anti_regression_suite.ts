@@ -1423,6 +1423,7 @@ const AI_TOOL_RUNTIME_TRANSPORT_IMPORTS: Record<(typeof AI_TOOL_RUNTIME_FILES)[n
 };
 const AGENT_BFF_ROUTE_SHELL_PATH = "src/features/ai/agent/agentBffRouteShell.ts";
 const AGENT_TASK_STREAM_ROUTES_PATH = "src/features/ai/agent/agentTaskStreamRoutes.ts";
+const AGENT_INTEL_GRAPH_ROUTES_PATH = "src/features/ai/agent/agentIntelGraphRoutes.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
   "compare_suppliers",
@@ -4327,6 +4328,9 @@ export function evaluateAiAppActionGraphArchitectureGuardrail(params: {
   const scannerSource =
     safeReadProjectFile({ readFile, relativePath: AI_APP_ACTION_GRAPH_COVERAGE_SCANNER_PATH }) ?? "";
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const intelGraphRouteSource =
+    safeReadProjectFile({ readFile, relativePath: AGENT_INTEL_GRAPH_ROUTES_PATH }) ?? "";
+  const agentBffIntelGraphSource = `${shellSource}\n${intelGraphRouteSource}`;
   const commandCenterSource = (safeReadProjectFile({
     readFile,
     relativePath: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
@@ -4343,12 +4347,12 @@ export function evaluateAiAppActionGraphArchitectureGuardrail(params: {
     externalIntelSource.includes("ExternalSourcePolicy") &&
     externalIntelSource.includes("EXTERNAL_SOURCE_REGISTRY");
   const bffRoutesPresent =
-    shellSource.includes("GET /agent/app-graph/screen/:screenId") &&
-    shellSource.includes("GET /agent/app-graph/action/:buttonId") &&
-    shellSource.includes("POST /agent/app-graph/resolve") &&
-    shellSource.includes("POST /agent/intel/compare") &&
-    shellSource.includes("resolveAiActionGraph") &&
-    shellSource.includes("resolveInternalFirstDecision");
+    agentBffIntelGraphSource.includes("GET /agent/app-graph/screen/:screenId") &&
+    agentBffIntelGraphSource.includes("GET /agent/app-graph/action/:buttonId") &&
+    agentBffIntelGraphSource.includes("POST /agent/app-graph/resolve") &&
+    agentBffIntelGraphSource.includes("POST /agent/intel/compare") &&
+    agentBffIntelGraphSource.includes("resolveAiActionGraph") &&
+    agentBffIntelGraphSource.includes("resolveInternalFirstDecision");
   const requiredScreens = [
     "director.dashboard",
     "ai.command.center",
@@ -4417,8 +4421,8 @@ export function evaluateAiAppActionGraphArchitectureGuardrail(params: {
     );
   const mutationCountZero =
     appGraphSource.includes("mutationCount: 0") &&
-    shellSource.includes("mutationCount: 0") &&
-    !`${appGraphSource}\n${shellSource}`.includes("mutationCount: 1");
+    agentBffIntelGraphSource.includes("mutationCount: 0") &&
+    !`${appGraphSource}\n${agentBffIntelGraphSource}`.includes("mutationCount: 1");
   const findings = [
     ...(appGraphFilesPresent ? [] : ["app_action_graph_files_missing"]),
     ...(domainGraphFilesPresent ? [] : ["domain_entity_graph_files_missing"]),
@@ -4682,6 +4686,9 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
   );
   const externalIntelSource = externalIntelSources.join("\n");
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const intelGraphRouteSource =
+    safeReadProjectFile({ readFile, relativePath: AGENT_INTEL_GRAPH_ROUTES_PATH }) ?? "";
+  const agentBffIntelGraphSource = `${shellSource}\n${intelGraphRouteSource}`;
   const procurementSource = AI_PROCUREMENT_CONTEXT_ENGINE_FILES.map((relativePath) =>
     safeReadProjectFile({ readFile, relativePath }) ?? "",
   ).join("\n");
@@ -4719,10 +4726,10 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
     externalIntelSource.includes("internal_evidence_required") &&
     externalIntelSource.includes("marketplace_check_required_for_procurement");
   const bffRouteContractPresent =
-    shellSource.includes("GET /agent/external-intel/sources") &&
-    shellSource.includes("POST /agent/external-intel/search/preview") &&
-    shellSource.includes("POST /agent/procurement/external-supplier-candidates/preview") &&
-    shellSource.includes("AGENT_EXTERNAL_INTEL_BFF_CONTRACT");
+    agentBffIntelGraphSource.includes("GET /agent/external-intel/sources") &&
+    agentBffIntelGraphSource.includes("POST /agent/external-intel/search/preview") &&
+    agentBffIntelGraphSource.includes("POST /agent/procurement/external-supplier-candidates/preview") &&
+    agentBffIntelGraphSource.includes("AGENT_EXTERNAL_INTEL_BFF_CONTRACT");
   const procurementExternalCandidatesPresent =
     procurementSource.includes("previewProcurementExternalSupplierCandidates") &&
     procurementSource.includes("finalActionAllowed: false") &&
@@ -4740,7 +4747,7 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
   const externalLiveFetchDisabledByDefault =
     externalIntelSource.includes("EXTERNAL_LIVE_FETCH_ENABLED = false") &&
     externalIntelSource.includes('EXTERNAL_INTEL_PROVIDER_DEFAULT = "disabled"') &&
-    shellSource.includes("liveEnabled: false");
+    agentBffIntelGraphSource.includes("liveEnabled: false");
   const noMobileExternalFetch =
     !/\bfetch\s*\(|\bXMLHttpRequest\b|cheerio|puppeteer|uncontrolled_scraping/i.test(
       `${externalIntelSource}\n${commandCenterSource}`,
@@ -4751,7 +4758,7 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
     );
   const noRawHtmlToMobile =
     !/\brawHtml\s*:|\bhtml\s*:|raw_html_payload|rawHtmlBody/i.test(
-      `${externalIntelSource}\n${shellSource}\n${procurementSource}`,
+      `${externalIntelSource}\n${agentBffIntelGraphSource}\n${procurementSource}`,
     );
   const noSecretsInSourceOrArtifacts =
     !/(?:sk-[A-Za-z0-9_-]{12,}|AIza[0-9A-Za-z_-]{20,}|Bearer\s+[0-9A-Za-z._-]{12,}|apiKey:\s*["'][^"']+["'])/.test(
@@ -4759,20 +4766,20 @@ export function evaluateAiExternalIntelGatewayGuardrail(params: {
     );
   const noAuthAdminOrServiceRole =
     !/\bauth\.admin\b|\blistUsers\b|\bservice_role\b/i.test(
-      `${externalIntelSource}\n${shellSource}\n${procurementSource}`,
+      `${externalIntelSource}\n${agentBffIntelGraphSource}\n${procurementSource}`,
     );
   const noMutationSurface =
     !/\.(?:from|rpc|insert|update|delete|upsert)\s*\(|\bcreateOrder\b|\bconfirmSupplier\b|\bsendRfq\b|\bwarehouseMutation\b|\bsendDocument\b/i.test(
       `${externalIntelSource}\n${procurementSource}`,
     ) &&
-    shellSource.includes("mutationCount: 0") &&
+    agentBffIntelGraphSource.includes("mutationCount: 0") &&
     e2eRunnerSource.includes("mutations_created: 0");
   const externalFinalActionForbidden =
     externalIntelSource.includes("forbiddenForFinalAction: true") &&
     procurementSource.includes("finalActionAllowed: false") &&
-    shellSource.includes("finalActionAllowed: false") &&
+    agentBffIntelGraphSource.includes("finalActionAllowed: false") &&
     !/forbiddenForFinalAction:\s*false|finalActionAllowed:\s*true|supplierConfirmationAllowed:\s*true|orderCreationAllowed:\s*true/.test(
-      `${externalIntelSource}\n${procurementSource}\n${shellSource}`,
+      `${externalIntelSource}\n${procurementSource}\n${agentBffIntelGraphSource}`,
     );
   const findings = [
     ...(gatewayFilesPresent ? [] : ["external_intel_gateway_files_missing"]),
