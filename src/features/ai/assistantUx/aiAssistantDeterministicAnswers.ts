@@ -1,6 +1,8 @@
 import type { AssistantContext, AssistantRole } from "../assistant.types";
 import type { AiRoleScreenAssistantPack } from "../realAssistants/aiRoleScreenAssistantTypes";
 import { answerAiRoleScreenQuestion } from "../realAssistants/aiRoleScreenQuestionAnswerEngine";
+import { answerAiScreenMagicQuestion } from "../screenMagic/aiScreenMagicQuestionAnswerEngine";
+import type { AiScreenMagicPack } from "../screenMagic/aiScreenMagicTypes";
 import type { AiScreenNativeAssistantPack } from "../screenNative/aiScreenNativeAssistantTypes";
 import { answerAiScreenNativeQuestion } from "../screenNative/aiScreenNativeQuestionAnswerEngine";
 import {
@@ -15,6 +17,7 @@ export type AiAssistantDeterministicAnswerRequest = {
   context: AssistantContext;
   message: string;
   scopedFactsSummary?: string | null;
+  screenMagicPack?: AiScreenMagicPack | null;
   screenNativeAssistantPack?: AiScreenNativeAssistantPack | null;
   roleScreenAssistantPack?: AiRoleScreenAssistantPack | null;
 };
@@ -141,6 +144,14 @@ export function getAiAssistantDeterministicAnswer(
   });
   if (screenNativeAnswer) {
     return screenNativeAnswer;
+  }
+
+  const screenMagicAnswer = answerAiScreenMagicQuestion({
+    pack: request.screenMagicPack,
+    question: request.message,
+  });
+  if (screenMagicAnswer) {
+    return screenMagicAnswer;
   }
 
   const roleScreenAnswer = answerAiRoleScreenQuestion({

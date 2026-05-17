@@ -248,7 +248,7 @@ function writeArtifacts(artifact: AiProactiveWorkdayArtifact): AiProactiveWorkda
 function loginFlowLines(): string[] {
   return [
     "- launchApp:",
-    "    clearState: false",
+    "    clearState: true",
     "- runFlow:",
     "    when:",
     "      visible:",

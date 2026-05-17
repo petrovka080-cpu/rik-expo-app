@@ -16,6 +16,7 @@ import { NO_READY_INTERNAL_BUY_OPTIONS_MESSAGE } from "./procurement/aiProcureme
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
 import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRoleScreenAssistantUserCopy";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
+import { buildAiScreenMagicPackFromWorkflowPack } from "./screenMagic/aiScreenMagicEngine";
 import type { AiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
@@ -80,6 +81,9 @@ export function AIAssistantReadyProductPanels({
   onReadyProposalPress: (text: string) => void;
 }) {
   const knowledgePreview = scopedFacts?.knowledgePreview ?? null;
+  const screenMagicPack = screenWorkflowPack
+    ? buildAiScreenMagicPackFromWorkflowPack(screenWorkflowPack)
+    : null;
 
   return (
     <>
@@ -163,10 +167,56 @@ export function AIAssistantReadyProductPanels({
       {screenWorkflowPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.screen_workflow_pack">
           <View style={styles.roleAssistantHeaderRow}>
-            <Text style={styles.roleAssistantEyebrow}>Workflow AI</Text>
-            <Text style={styles.roleAssistantDomain}>{screenWorkflowPack.title}</Text>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenMagicPack?.screenSummary ?? screenWorkflowPack.title}</Text>
           </View>
-          <Text style={styles.roleAssistantSummary}>{screenWorkflowPack.userGoal}</Text>
+          <Text style={styles.roleAssistantSummary}>{screenMagicPack?.userGoal ?? screenWorkflowPack.userGoal}</Text>
+          {screenMagicPack ? (
+            <View testID="ai.screen_magic_pack">
+              <View style={styles.roleAssistantSection}>
+                <Text style={styles.roleAssistantSectionTitle}>Сегодня / Сейчас</Text>
+                {screenMagicPack.aiPreparedWork.slice(0, 3).map((item) => (
+                  <View key={item.id} style={styles.roleAssistantItem}>
+                    <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
+                    <Text style={styles.roleAssistantItemText}>{item.description}</Text>
+                  </View>
+                ))}
+              </View>
+              {screenMagicPack.aiPreparedWork.some((item) => item.missingData.length > 0) ? (
+                <View style={styles.roleAssistantSection}>
+                  <Text style={styles.roleAssistantSectionTitle}>Недостающие данные</Text>
+                  {screenMagicPack.aiPreparedWork
+                    .flatMap((item) => item.missingData)
+                    .filter((value, index, values) => values.indexOf(value) === index)
+                    .slice(0, 2)
+                    .map((label) => (
+                      <Text key={label} style={styles.roleAssistantRiskText}>{label}</Text>
+                    ))}
+                </View>
+              ) : null}
+              <ScrollView
+                horizontal
+                style={styles.roleAssistantActionScroller}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.roleAssistantActionRow}
+              >
+                {screenMagicPack.buttons.slice(0, 6).map((button) => (
+                  <Pressable
+                    key={button.id}
+                    style={styles.roleAssistantActionChip}
+                    onPress={() => onReadyProposalPress(
+                      button.actionKind === "forbidden" || button.actionKind === "exact_blocker"
+                        ? `${button.label}: ${button.forbiddenReason ?? button.exactBlocker ?? "blocked"}`
+                        : `${button.label}: ${button.expectedResult}`,
+                    )}
+                    testID="ai.screen_magic.action"
+                  >
+                    <Text style={styles.roleAssistantActionText}>{button.label}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          ) : null}
           {screenWorkflowPack.readyBlocks.length > 0 ? (
             <View style={styles.roleAssistantSection}>
               <Text style={styles.roleAssistantSectionTitle}>Prepared work</Text>

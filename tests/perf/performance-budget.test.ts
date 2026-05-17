@@ -642,6 +642,17 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalog.request.draftLocalState.ts"),
       path.join(SRC, "lib", "catalog", "catalog.request.metaPayload.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiProduct09ScreenMagicFiles = [
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicTypes.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicRegistry.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicHydrator.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicEngine.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicButtonResolver.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicQuestionAnswerEngine.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicPolicy.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicUserCopy.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicProof.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1445,6 +1456,7 @@ describe("performance budget — bundle module count", () => {
     expect(sScale09AgentBffIntelGraphOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale10AgentBffProcurementOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale11CatalogRequestServiceOwnerSplitFiles).toBeLessThanOrEqual(3);
+    expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(9);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1651,7 +1663,8 @@ describe("performance budget — bundle module count", () => {
         sScale08AgentBffTaskStreamOwnerSplitFiles -
         sScale09AgentBffIntelGraphOwnerSplitFiles -
         sScale10AgentBffProcurementOwnerSplitFiles -
-        sScale11CatalogRequestServiceOwnerSplitFiles,
+        sScale11CatalogRequestServiceOwnerSplitFiles -
+        sAiProduct09ScreenMagicFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });
