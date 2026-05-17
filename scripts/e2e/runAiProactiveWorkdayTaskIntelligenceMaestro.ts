@@ -249,6 +249,10 @@ function loginFlowLines(): string[] {
   return [
     "- launchApp:",
     "    clearState: true",
+    "- extendedWaitUntil:",
+    "    visible:",
+    '      id: "auth.login.screen"',
+    "    timeout: 45000",
     "- runFlow:",
     "    when:",
     "      visible:",
