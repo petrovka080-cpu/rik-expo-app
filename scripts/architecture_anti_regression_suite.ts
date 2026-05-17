@@ -1424,6 +1424,7 @@ const AI_TOOL_RUNTIME_TRANSPORT_IMPORTS: Record<(typeof AI_TOOL_RUNTIME_FILES)[n
 const AGENT_BFF_ROUTE_SHELL_PATH = "src/features/ai/agent/agentBffRouteShell.ts";
 const AGENT_TASK_STREAM_ROUTES_PATH = "src/features/ai/agent/agentTaskStreamRoutes.ts";
 const AGENT_INTEL_GRAPH_ROUTES_PATH = "src/features/ai/agent/agentIntelGraphRoutes.ts";
+const AGENT_PROCUREMENT_ROUTES_PATH = "src/features/ai/agent/agentProcurementRoutes.ts";
 const REQUIRED_AI_TOOL_NAMES = [
   "search_catalog",
   "compare_suppliers",
@@ -4507,6 +4508,9 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
     safeReadProjectFile({ readFile, relativePath }) ?? "",
   ).join("\n");
   const shellSource = safeReadProjectFile({ readFile, relativePath: AGENT_BFF_ROUTE_SHELL_PATH }) ?? "";
+  const procurementRouteSource =
+    safeReadProjectFile({ readFile, relativePath: AGENT_PROCUREMENT_ROUTES_PATH }) ?? "";
+  const procurementBffSource = `${shellSource}\n${procurementRouteSource}`;
   const commandCenterSource = (safeReadProjectFile({
     readFile,
     relativePath: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
@@ -4518,15 +4522,15 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
 
   const procurementFilesPresent = procurementSources.every((source) => source.length > 0);
   const bffRoutesPresent =
-    shellSource.includes("GET /agent/procurement/request-context/:requestId") &&
-    shellSource.includes("GET /agent/procurement/request-understanding/:requestId") &&
-    shellSource.includes("POST /agent/procurement/internal-supplier-rank") &&
-    shellSource.includes("POST /agent/procurement/decision-card") &&
-    shellSource.includes("POST /agent/procurement/supplier-match/preview") &&
-    shellSource.includes("POST /agent/procurement/draft-request/preview") &&
-    shellSource.includes("POST /agent/procurement/draft-request-preview") &&
-    shellSource.includes("POST /agent/procurement/submit-for-approval") &&
-    shellSource.includes("AGENT_PROCUREMENT_BFF_CONTRACT");
+    procurementBffSource.includes("GET /agent/procurement/request-context/:requestId") &&
+    procurementBffSource.includes("GET /agent/procurement/request-understanding/:requestId") &&
+    procurementBffSource.includes("POST /agent/procurement/internal-supplier-rank") &&
+    procurementBffSource.includes("POST /agent/procurement/decision-card") &&
+    procurementBffSource.includes("POST /agent/procurement/supplier-match/preview") &&
+    procurementBffSource.includes("POST /agent/procurement/draft-request/preview") &&
+    procurementBffSource.includes("POST /agent/procurement/draft-request-preview") &&
+    procurementBffSource.includes("POST /agent/procurement/submit-for-approval") &&
+    procurementBffSource.includes("AGENT_PROCUREMENT_BFF_CONTRACT");
   const requestContextResolverPresent =
     procurementSource.includes("resolveProcurementRequestContext") &&
     procurementSource.includes("PROCUREMENT_CONTEXT_ALLOWED_ROLES") &&
@@ -4568,10 +4572,10 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
     draftSource.includes("toolsCalled") &&
     !/finalMutationAllowed:\s*true|runSubmitForApprovalToolGate/.test(draftSource);
   const submitForApprovalNoFinalExecution =
-    shellSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY") &&
-    shellSource.includes("persistentBackendFound") &&
-    shellSource.includes("finalExecution: 0") &&
-    shellSource.includes("mutationCount: 0");
+    procurementBffSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY") &&
+    procurementBffSource.includes("persistentBackendFound") &&
+    procurementBffSource.includes("finalExecution: 0") &&
+    procurementBffSource.includes("mutationCount: 0");
   const noProviderImports =
     !/\bfrom\s+["'][^"']*(gemini|openai|features\/ai\/model|AiModelGateway|assistantClient|LegacyGeminiModelProvider)[^"']*["']|openai|gpt-|gemini|AiModelGateway|LegacyGeminiModelProvider|assistantClient/i.test(
       procurementSource,
@@ -4597,8 +4601,8 @@ export function evaluateAiProcurementContextEngineGuardrail(params: {
       procurementSource,
     );
   const noApprovalPersistenceFake =
-    shellSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY") &&
-    !/local_gate_only:\s*true|persisted:\s*true/.test(shellSource);
+    procurementBffSource.includes("BLOCKED_APPROVAL_PERSISTENCE_BACKEND_NOT_READY") &&
+    !/local_gate_only:\s*true|persisted:\s*true/.test(procurementBffSource);
   const e2eRunnerPresent =
     e2eRunnerSource.includes("runAiProcurementContextMaestro") &&
     e2eRunnerSource.includes("BLOCKED_PROCUREMENT_TEST_REQUEST_NOT_AVAILABLE") &&

@@ -634,6 +634,9 @@ describe("performance budget — bundle module count", () => {
     const sScale09AgentBffIntelGraphOwnerSplitFiles = [
       path.join(SRC, "features", "ai", "agent", "agentIntelGraphRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sScale10AgentBffProcurementOwnerSplitFiles = [
+      path.join(SRC, "features", "ai", "agent", "agentProcurementRoutes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1435,6 +1438,7 @@ describe("performance budget — bundle module count", () => {
     expect(sScale03TimerRealtimeLifecycleFiles).toBeLessThanOrEqual(3);
     expect(sScale08AgentBffTaskStreamOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale09AgentBffIntelGraphOwnerSplitFiles).toBeLessThanOrEqual(1);
+    expect(sScale10AgentBffProcurementOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1639,7 +1643,8 @@ describe("performance budget — bundle module count", () => {
         sScale01BoundedDatabaseQueriesFiles -
         sScale03TimerRealtimeLifecycleFiles -
         sScale08AgentBffTaskStreamOwnerSplitFiles -
-        sScale09AgentBffIntelGraphOwnerSplitFiles,
+        sScale09AgentBffIntelGraphOwnerSplitFiles -
+        sScale10AgentBffProcurementOwnerSplitFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

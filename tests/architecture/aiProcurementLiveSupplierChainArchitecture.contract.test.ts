@@ -10,6 +10,7 @@ const sourceFiles = [
   "src/features/ai/procurement/aiSupplierDecisionPolicy.ts",
   "src/features/ai/procurement/aiProcurementEvidenceBuilder.ts",
   "src/features/ai/agent/agentBffRouteShell.ts",
+  "src/features/ai/agent/agentProcurementRoutes.ts",
   "scripts/e2e/runAiProcurementLiveSupplierChainMaestro.ts",
 ];
 
@@ -35,17 +36,20 @@ describe("AI procurement live supplier chain architecture", () => {
   });
 
   it("mounts live supplier chain BFF routes without database or provider access", () => {
-    const shell = read("src/features/ai/agent/agentBffRouteShell.ts");
-    expect(shell).toContain("POST /agent/procurement/live-supplier-chain/preview");
-    expect(shell).toContain("POST /agent/procurement/live-supplier-chain/draft");
-    expect(shell).toContain("POST /agent/procurement/live-supplier-chain/submit-for-approval");
-    expect(shell).toContain("agent.procurement.live_supplier_chain.preview");
-    expect(shell).toContain("agent.procurement.live_supplier_chain.draft");
-    expect(shell).toContain("agent.procurement.live_supplier_chain.submit_for_approval");
-    expect(shell).toContain("internal_context_marketplace_compare_draft_approval");
-    expect(shell).toContain("mutates: false");
-    expect(shell).toContain("callsModelProvider: false");
-    expect(shell).toContain("callsDatabaseDirectly: false");
+    const bff = [
+      read("src/features/ai/agent/agentBffRouteShell.ts"),
+      read("src/features/ai/agent/agentProcurementRoutes.ts"),
+    ].join("\n");
+    expect(bff).toContain("POST /agent/procurement/live-supplier-chain/preview");
+    expect(bff).toContain("POST /agent/procurement/live-supplier-chain/draft");
+    expect(bff).toContain("POST /agent/procurement/live-supplier-chain/submit-for-approval");
+    expect(bff).toContain("agent.procurement.live_supplier_chain.preview");
+    expect(bff).toContain("agent.procurement.live_supplier_chain.draft");
+    expect(bff).toContain("agent.procurement.live_supplier_chain.submit_for_approval");
+    expect(bff).toContain("internal_context_marketplace_compare_draft_approval");
+    expect(bff).toContain("mutates: false");
+    expect(bff).toContain("callsModelProvider: false");
+    expect(bff).toContain("callsDatabaseDirectly: false");
   });
 
   it("uses existing procurement copilot runtime proof and exact no-request blocker", () => {

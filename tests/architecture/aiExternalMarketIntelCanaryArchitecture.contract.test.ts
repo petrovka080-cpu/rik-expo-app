@@ -31,7 +31,10 @@ describe("AI external market intelligence canary architecture", () => {
   });
 
   it("keeps Wave 17 BFF and runner proof on internal-first preview boundaries", () => {
-    const bff = read("src/features/ai/agent/agentBffRouteShell.ts");
+    const bff = [
+      read("src/features/ai/agent/agentBffRouteShell.ts"),
+      read("src/features/ai/agent/agentProcurementRoutes.ts"),
+    ].join("\n");
     const runner = read("scripts/e2e/runAiExternalMarketIntelCanaryMaestro.ts");
     const combined = `${bff}\n${runner}`;
 
