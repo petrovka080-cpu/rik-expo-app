@@ -8,7 +8,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 const tunedFlatListBatchC = [
-  "src/screens/director/DirectorDashboard.tsx",
+  "src/screens/director/DirectorDashboardHeader.tsx",
 ] as const;
 
 describe("S_RUNTIME_05_FLATLIST_TUNING_BATCH_C", () => {
@@ -17,7 +17,7 @@ describe("S_RUNTIME_05_FLATLIST_TUNING_BATCH_C", () => {
   });
 
   it("tunes DirectorDashboard top tabs without changing tab identity or scroll recovery", () => {
-    const source = readRepoFile("src/screens/director/DirectorDashboard.tsx");
+    const source = readRepoFile("src/screens/director/DirectorDashboardHeader.tsx");
 
     expect(source).toContain("DIRECTOR_TOP_TABS_FLATLIST_TUNING");
     expect(source).toContain("initialNumToRender: 5");

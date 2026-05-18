@@ -1,0 +1,292 @@
+import { StyleSheet } from "react-native";
+
+export const colors = {
+  bg: "#020617",
+  card: "#0F172A",
+  cardSoft: "#111827",
+  border: "#1F2937",
+  text: "#F8FAFC",
+  sub: "#94A3B8",
+  accent: "#22C55E",
+  accentSoft: "rgba(34,197,94,0.14)",
+  offerSoft: "#DCFCE7",
+  offerText: "#166534",
+  demandSoft: "#FDE7E1",
+  demandText: "#C2410C",
+} as const;
+
+export const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  content: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  center: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerText: {
+    marginTop: 10,
+    color: colors.sub,
+    fontSize: 13,
+  },
+  headerRow: {
+    marginBottom: 12,
+  },
+  backButton: {
+    alignSelf: "flex-start",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  backButtonText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  heroCard: {
+    backgroundColor: colors.card,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
+  },
+  heroTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+    backgroundColor: colors.accentSoft,
+    borderWidth: 1,
+    borderColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+  },
+  avatarText: {
+    color: colors.text,
+    fontSize: 26,
+    fontWeight: "800",
+  },
+  heroCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  heroTitle: {
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  heroName: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: "800",
+  },
+  heroSubtitle: {
+    color: colors.sub,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  heroActions: {
+    marginTop: 16,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+  heroButton: {
+    minHeight: 42,
+  },
+  primaryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: colors.accent,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryButtonText: {
+    color: "#04110A",
+    fontSize: 13,
+    fontWeight: "800",
+  },
+  secondaryButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.cardSoft,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryButtonText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  statsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    marginTop: 16,
+  },
+  statCard: {
+    flexGrow: 1,
+    minWidth: 140,
+    backgroundColor: colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  statValue: {
+    color: colors.text,
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  statLabel: {
+    marginTop: 4,
+    color: colors.sub,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  sectionHeader: {
+    marginTop: 22,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800",
+  },
+  sectionSubtitle: {
+    marginTop: 4,
+    color: colors.sub,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  emptyCard: {
+    backgroundColor: colors.card,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 18,
+    gap: 10,
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  emptySubtitle: {
+    color: colors.sub,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  emptyButton: {
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  listingsColumn: {
+    gap: 12,
+  },
+  listingCard: {
+    backgroundColor: colors.card,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  listingImage: {
+    width: "100%",
+    height: 154,
+    backgroundColor: "#E2E8F0",
+  },
+  listingBody: {
+    padding: 16,
+    gap: 8,
+  },
+  listingTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  sideBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  sideBadgeOffer: {
+    backgroundColor: colors.offerSoft,
+  },
+  sideBadgeDemand: {
+    backgroundColor: colors.demandSoft,
+  },
+  sideBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  sideBadgeOfferText: {
+    color: colors.offerText,
+  },
+  sideBadgeDemandText: {
+    color: colors.demandText,
+  },
+  statusText: {
+    flex: 1,
+    textAlign: "right",
+    color: colors.sub,
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  listingTitle: {
+    color: colors.text,
+    fontSize: 18,
+    lineHeight: 23,
+    fontWeight: "800",
+  },
+  listingMeta: {
+    color: colors.sub,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  listingPrice: {
+    color: colors.accent,
+    fontSize: 17,
+    fontWeight: "900",
+  },
+  listingFooter: {
+    marginTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  listingFooterText: {
+    color: colors.text,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+});

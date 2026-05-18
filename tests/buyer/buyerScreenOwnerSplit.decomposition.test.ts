@@ -96,6 +96,7 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     const source = readRepoFile("src/screens/buyer/BuyerScreen.tsx");
     const controllerSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenController.ts");
     const contentSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
+    const contentPropsSource = readRepoFile("src/screens/buyer/components/BuyerScreenContent.props.ts");
     const chromeSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenChromeModel.ts");
     const sideEffectsSource = readRepoFile("src/screens/buyer/hooks/useBuyerScreenSideEffects.ts");
 
@@ -107,7 +108,8 @@ describe("BUYER_SCREEN_OWNER_SPLIT decomposition audit", () => {
     expect(controllerSource).toContain("useBuyerScreenLoadingPublisher");
     expect(sideEffectsSource).toContain("buildBuyerScreenLoadingState");
     expect(controllerSource).toContain("useBuyerScreenContentProps");
-    expect(contentSource).toContain("export function useBuyerScreenContentProps");
+    expect(contentSource).toContain("export { useBuyerScreenContentProps }");
+    expect(contentPropsSource).toContain("export function useBuyerScreenContentProps");
     expect(contentSource).toContain("BuyerScreenLayoutSection");
     expect(source).not.toContain("TextInput");
     expect(source).not.toContain("RoleScreenLayout");

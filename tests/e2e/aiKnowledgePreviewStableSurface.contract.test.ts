@@ -6,6 +6,7 @@ const read = (relativePath: string) => fs.readFileSync(path.join(ROOT, relativeP
 
 describe("AI knowledge preview stable surface", () => {
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
+  const assistantDerivedStateSource = read("src/features/ai/useAIAssistantScreenDerivedState.ts");
   const assistantProductPanelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
   const assistantUiSource = [assistantSource, assistantProductPanelsSource].join("\n");
   const scopeSource = read("src/features/ai/assistantScopeContext.ts");
@@ -39,7 +40,7 @@ describe("AI knowledge preview stable surface", () => {
 
   it("keeps real AI execution and composer targetability intact", () => {
     expect(assistantSource).toContain("sendAssistantMessage({");
-    expect(assistantSource).toContain("scopedFacts?.summary ?? null");
+    expect(assistantDerivedStateSource).toContain("scopedFacts?.summary ?? null");
     expect(assistantUiSource).toContain('testID="ai.assistant.input"');
     expect(assistantUiSource).toContain('testID="ai.assistant.send"');
     expect(assistantUiSource).toContain('"ai.assistant.response"');

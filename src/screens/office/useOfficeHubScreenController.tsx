@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Alert, type ScrollView } from "react-native";
 import {
   useFocusEffect,
@@ -24,8 +24,6 @@ import {
   recordOfficeReentryFailure,
   recordOfficePostReturnFailure,
   recordOfficePostReturnFocus,
-  setOfficePostReturnProbe,
-  type OfficePostReturnSubtree,
 } from "../../lib/navigation/officeReentryBreadcrumbs";
 import type { OfficeWorkspaceCard } from "./officeAccess.model";
 import {
@@ -51,9 +49,10 @@ import {
   COPY,
 } from "./officeHub.constants";
 import {
-  OfficePostReturnSubtreeBoundary,
   type OfficeHubScreenProps,
 } from "./officeHub.helpers";
+import { useOfficeHubBootstrapEffects } from "./useOfficeHubBootstrapEffects";
+import { useOfficePostReturnSubtreeRenderer } from "./useOfficePostReturnSubtreeRenderer";
 import { buildOfficeShellContentModel } from "./office.layout.model";
 import { resolveOfficeHubFocusRefreshPlan } from "./office.reentry";
 import { useOfficeHubRoleAccess } from "./useOfficeHubRoleAccess";
@@ -115,16 +114,6 @@ export function useOfficeHubScreenController({
   const disableFocusPostCommit = activePostReturnProbe.includes(
     "no_focus_post_commit",
   );
-
-  React.useEffect(() => {
-    if (requestedPostReturnProbe) {
-      setOfficePostReturnProbe(requestedPostReturnProbe);
-      return;
-    }
-    if (postReturnProbeLabel !== "all") {
-      setOfficePostReturnProbe("all");
-    }
-  }, [postReturnProbeLabel, requestedPostReturnProbe]);
 
   const {
     buildPostReturnExtra,
@@ -247,29 +236,14 @@ export function useOfficeHubScreenController({
     [buildPostReturnExtra, startPostReturnTrace],
   );
 
-  React.useEffect(() => {
-    if (!routeScopeActive) {
-      return;
-    }
-
-    if (
-      ownerBootstrapCompletedRef.current ||
-      initialBootstrapInFlightRef.current
-    ) {
-      return;
-    }
-
-    const task = loadScreen({
-      mode: "initial",
-      reason: "mount_bootstrap",
-    }).finally(() => {
-      if (initialBootstrapInFlightRef.current === task) {
-        initialBootstrapInFlightRef.current = null;
-      }
-    });
-
-    initialBootstrapInFlightRef.current = task;
-  }, [loadScreen, routeScopeActive]);
+  useOfficeHubBootstrapEffects({
+    initialBootstrapInFlightRef,
+    loadScreen,
+    ownerBootstrapCompletedRef,
+    postReturnProbeLabel,
+    requestedPostReturnProbe,
+    routeScopeActive,
+  });
 
   useFocusEffect(
     useCallback(() => {
@@ -405,18 +379,10 @@ export function useOfficeHubScreenController({
 
   const access = useOfficeHubRoleAccess(data, activePostReturnProbe);
 
-  const renderSubtreeBoundary = useCallback(
-    (subtree: OfficePostReturnSubtree, children: React.ReactNode) => (
-      <OfficePostReturnSubtreeBoundary
-        key={subtree}
-        onMount={() => recordPostReturnSubtreeStart(subtree)}
-        onError={(error, info) => handleSubtreeFailure(subtree, error, info)}
-      >
-        {children}
-      </OfficePostReturnSubtreeBoundary>
-    ),
-    [handleSubtreeFailure, recordPostReturnSubtreeStart],
-  );
+  const renderSubtreeBoundary = useOfficePostReturnSubtreeRenderer({
+    handleSubtreeFailure,
+    recordPostReturnSubtreeStart,
+  });
 
   const scrollTo = useCallback((key: SectionKey) => {
     scrollRef.current?.scrollTo({

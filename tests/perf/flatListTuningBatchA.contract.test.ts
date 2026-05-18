@@ -8,7 +8,7 @@ function readRepoFile(relativePath: string): string {
 }
 
 const tunedFlatListBatchA = [
-  "src/screens/buyer/components/BuyerItemRow.tsx",
+  "src/screens/buyer/components/BuyerItemEditor.tsx",
   "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
   "src/components/map/ResultsBottomSheet.tsx",
 ] as const;
@@ -19,7 +19,7 @@ describe("S_RUNTIME_03_FLATLIST_TUNING_BATCH_A", () => {
   });
 
   it("tunes BuyerItemRow supplier suggestion lists without changing item identity", () => {
-    const source = readRepoFile("src/screens/buyer/components/BuyerItemRow.tsx");
+    const source = readRepoFile("src/screens/buyer/components/BuyerItemEditor.tsx");
 
     expect(source).toContain("INLINE_SUPPLIER_FLATLIST_TUNING");
     expect(source).toContain("MODAL_SUPPLIER_FLATLIST_TUNING");

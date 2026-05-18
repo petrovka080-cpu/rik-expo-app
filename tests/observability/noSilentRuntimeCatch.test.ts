@@ -5,7 +5,7 @@ const repoRoot = path.resolve(__dirname, "../..");
 
 const auditedRuntimeFiles = [
   {
-    relativePath: "src/screens/director/DirectorDashboard.tsx",
+    relativePath: "src/screens/director/DirectorDashboardHeader.tsx",
     markerOwner: "reportDirectorTopTabsScrollFailure",
   },
   {

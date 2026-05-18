@@ -23,7 +23,7 @@ const UI_BATCH_A_FILES = [
   "src/screens/contractor/ContractorScreen.tsx",
   "src/screens/contractor/ContractorScreenContainer.tsx",
   "src/screens/contractor/ContractorScreenView.tsx",
-  "src/screens/contractor/useContractorScreenController.tsx",
+  "src/screens/contractor/useContractorScreenController.ts",
   "src/screens/contractor/contractor.utils.ts",
 ] as const;
 
@@ -40,7 +40,7 @@ describe("UI unsafe cast batch A contract", () => {
     const accountantChrome = read("src/screens/accountant/useAccountantScreenChromeModel.ts");
     const accountantKeyboard = read("src/screens/accountant/useAccountantKeyboard.ts");
     const contractorScreen = read("src/screens/contractor/ContractorScreen.tsx");
-    const contractorController = read("src/screens/contractor/useContractorScreenController.tsx");
+    const contractorController = read("src/screens/contractor/useContractorScreenController.ts");
     const contractorView = read("src/screens/contractor/ContractorScreenView.tsx");
     const officeScreen = read("src/screens/office/OfficeHubScreen.tsx");
     const officeController = read("src/screens/office/useOfficeHubScreenController.tsx");

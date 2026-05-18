@@ -7,6 +7,7 @@ const read = (relativePath: string) => fs.readFileSync(path.join(ROOT, relativeP
 describe("AI buyer inbox ready buy options web runner contract", () => {
   const runner = read("scripts/e2e/runAiBuyerInboxReadyBuyOptionsWeb.ts");
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
+  const assistantStateSource = read("src/features/ai/useAIAssistantScreenDerivedState.ts");
   const panelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
   const buyerGroupSource = read("src/screens/buyer/components/BuyerGroupBlock.tsx");
   const buyerSheetSource = read("src/screens/buyer/components/BuyerInboxSheetBody.tsx");
@@ -25,7 +26,8 @@ describe("AI buyer inbox ready buy options web runner contract", () => {
   });
 
   it("uses real product surfaces instead of chat-only shims", () => {
-    expect(assistantSource).toContain("buildProcurementReadyBuyBundleFromSearchParams");
+    expect(assistantStateSource).toContain("buildProcurementReadyBuyBundleFromSearchParams");
+    expect(assistantSource).toContain("readyBuyBundle");
     expect(panelsSource).toContain('testID="ai.buyer_ready_buy_options"');
     expect(buyerGroupSource).toContain("BuyerReadyBuyOptionsBlock");
     expect(buyerSheetSource).toContain("BuyerReadyBuyOptionsBlock");

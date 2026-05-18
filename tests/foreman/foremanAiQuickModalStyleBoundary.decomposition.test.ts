@@ -8,6 +8,7 @@ const read = (relativePath: string) =>
 
 describe("S_NIGHT_UI_14 ForemanAiQuickModal style boundary", () => {
   const modalSource = read("src/screens/foreman/ForemanAiQuickModal.tsx");
+  const helpersSource = read("src/screens/foreman/ForemanAiQuickModal.helpers.tsx");
   const stylesSource = read("src/screens/foreman/ForemanAiQuickModal.styles.ts");
 
   it("keeps ForemanAiQuickModal as a composition shell with extracted styles", () => {
@@ -15,7 +16,7 @@ describe("S_NIGHT_UI_14 ForemanAiQuickModal style boundary", () => {
     expect(modalSource).not.toContain("StyleSheet.create");
     expect(stylesSource).toContain('import { StyleSheet } from "react-native";');
     expect(stylesSource).toContain("export const styles = StyleSheet.create({");
-    expect(modalSource).toContain("const cardStyle = styles.card;");
+    expect(helpersSource).toContain("export const cardStyle = styles.card;");
     expect(modalSource.split(/\r?\n/).length).toBeLessThanOrEqual(560);
   });
 

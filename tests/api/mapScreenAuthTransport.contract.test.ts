@@ -10,7 +10,7 @@ const read = (relativePath: string) =>
 describe("MapScreen auth transport boundary", () => {
   it("keeps MapScreen auth reads behind the transport boundary", () => {
     const screenSource = read("src/components/map/MapScreen.tsx");
-    const controllerSource = read("src/components/map/useMapScreenController.tsx");
+    const controllerSource = read("src/components/map/useMapScreenController.ts");
     const transportSource = read("src/components/map/MapScreen.auth.transport.ts");
 
     expect(screenSource).toContain("MapScreenContainer");

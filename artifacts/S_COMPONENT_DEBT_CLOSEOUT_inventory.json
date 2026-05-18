@@ -1,0 +1,70 @@
+{
+  "wave": "S_COMPONENT_DEBT_CLOSEOUT",
+  "verified_at": "2026-05-18T20:40:16+06:00",
+  "source_commit_verified_before_artifact_amend": "047682764f45f3c7492168ba48cac1ad7edf28b3",
+  "scope": "component debt closeout for 50k scale readiness",
+  "runtime_code_changed": true,
+  "business_logic_changed": false,
+  "provider_or_model_config_changed": false,
+  "database_migrations_changed": false,
+  "db_writes_added": false,
+  "broad_allowlists_used": false,
+  "component_debt": {
+    "god_component_line_threshold": 500,
+    "hook_pressure_threshold": 25,
+    "god_component_count": 0,
+    "hook_pressure_component_count": 0,
+    "scanner_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
+  },
+  "largest_components_after_closeout": [
+    { "file": "src/screens/warehouse/components/ReqIssueModal.tsx", "line_count": 499, "hook_count": 7 },
+    { "file": "src/screens/director/DirectorReportsModal.tsx", "line_count": 495, "hook_count": 20 },
+    { "file": "src/screens/accountant/components/ActivePaymentForm.tsx", "line_count": 490, "hook_count": 1 },
+    { "file": "src/components/PeriodPickerSheet.tsx", "line_count": 487, "hook_count": 4 },
+    { "file": "src/screens/foreman/ForemanAiQuickModal.tsx", "line_count": 487, "hook_count": 2 },
+    { "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx", "line_count": 480, "hook_count": 2 },
+    { "file": "src/features/ai/AIAssistantReadyProductPanels.tsx", "line_count": 478, "hook_count": 0 },
+    { "file": "src/features/auctions/AuctionDetailScreen.tsx", "line_count": 478, "hook_count": 2 },
+    { "file": "src/screens/office/useOfficeHubScreenController.tsx", "line_count": 475, "hook_count": 24 },
+    { "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx", "line_count": 468, "hook_count": 5 }
+  ],
+  "main_extractions": [
+    "src/components/foreman/CalcModalContentFields.tsx",
+    "src/components/foreman/CatalogModal.styles.ts",
+    "src/features/ai/AIAssistantShortcutRows.tsx",
+    "src/features/ai/useAIAssistantScreenDerivedState.ts",
+    "src/features/ai/commandCenter/AiCommandCenterScreen.styles.ts",
+    "src/features/chat/ChatScreen.styles.ts",
+    "src/features/profile/ProfileOtaDiagnosticsCard.styles.ts",
+    "src/features/seller/SellerAreaScreen.styles.ts",
+    "src/features/supplierShowcase/SupplierShowcaseScreen.styles.ts",
+    "src/screens/accountant/components/ActivePaymentAllocationSection.tsx",
+    "src/screens/accountant/components/ReadOnlyReceipt.styles.ts",
+    "src/screens/accountant/components/ReadOnlyReceiptAttachmentStateBlock.tsx",
+    "src/screens/buyer/components/BuyerAttachmentsSticky.tsx",
+    "src/screens/buyer/components/BuyerItemEditor.tsx",
+    "src/screens/buyer/components/BuyerScreenContent.props.ts",
+    "src/screens/director/DirectorDashboardHeader.tsx",
+    "src/screens/director/DirectorReportsMaterialRow.tsx",
+    "src/screens/director/DirectorReportsModal.types.ts",
+    "src/screens/director/DirectorReportsObjectFilterSummary.tsx",
+    "src/screens/foreman/ForemanAiQuickModal.helpers.tsx",
+    "src/screens/office/useOfficeHubBootstrapEffects.ts",
+    "src/screens/office/useOfficePostReturnSubtreeRenderer.tsx",
+    "src/screens/warehouse/components/WarehouseReportsTab.styles.ts"
+  ],
+  "renamed_type_only_owners": [
+    "src/components/map/useMapScreenController.ts",
+    "src/screens/contractor/useContractorScreenController.ts"
+  ],
+  "updated_verifier_contracts": [
+    "tests/architecture/aiRealAssistantsNoGenericChatOnly.contract.test.ts",
+    "tests/buyer/buyerItemRowEditorModel.contract.test.ts",
+    "tests/e2e/aiBuyerInboxReadyBuyOptionsWeb.contract.test.ts",
+    "tests/e2e/aiRealRoleScreenAssistantsWeb.contract.test.ts",
+    "tests/e2e/maestroCriticalBusinessPhase1.contract.test.ts",
+    "tests/foreman/foremanAiQuickModalStyleBoundary.decomposition.test.ts",
+    "tests/observability/noSilentRuntimeCatch.test.ts",
+    "tests/perf/flatListTuningBatchC.contract.test.ts"
+  ]
+}

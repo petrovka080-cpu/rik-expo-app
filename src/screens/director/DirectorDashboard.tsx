@@ -7,39 +7,14 @@ import {
   RefreshControl,
   Platform,
   Animated,
-  type FlatList,
-  type StyleProp,
-  type ViewStyle,
 } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import { StatusBar } from "expo-status-bar";
 import { UI, s } from "./director.styles";
-import { officeRoleChrome } from "../office/officeRoleChrome";
 import type { DirTopTab, FinPage, Group, ProposalHead } from "./director.types";
 import type { DirectorFinanceCanonicalScope } from "./director.readModels";
+import DirectorDashboardHeader, { type DirectorDashboardRequestTab as Tab } from "./DirectorDashboardHeader";
 import DirectorSubcontractTab from "./DirectorSubcontractTab";
-import { reportDirectorTopTabsScrollFailure } from "./director.observability";
-
-type Tab = "foreman" | "buyer";
-type TopTabItem = { key: DirTopTab; label: string };
-
-type TopTabsListRef = { scrollToOffset?: (params: { offset: number; animated?: boolean }) => void };
-
-const DIRECTOR_TOP_TAB_TEST_IDS = [
-  "requests",
-  "subcontracts",
-  "finance",
-  "warehouse",
-  "reports",
-] as const;
-
-const DIRECTOR_TOP_TABS: TopTabItem[] = [
-  { key: "Заявки", label: "Заявки" },
-  { key: "Подряды", label: "Подряды" },
-  { key: "Финансы", label: "Финансы" },
-  { key: "Склад", label: "Склад" },
-  { key: "Отчёты", label: "Отчёты" },
-];
 
 type DirectorFinanceDashboardCard = { key: "debt" | "spend" };
 
@@ -47,14 +22,6 @@ const DIRECTOR_FINANCE_DASHBOARD_CARDS: DirectorFinanceDashboardCard[] = [
   { key: "debt" },
   { key: "spend" },
 ];
-
-const DIRECTOR_TOP_TABS_FLATLIST_TUNING = {
-  initialNumToRender: 5,
-  maxToRenderPerBatch: 5,
-  updateCellsBatchingPeriod: 32,
-  windowSize: 3,
-  removeClippedSubviews: false,
-} as const;
 
 const DIRECTOR_REQUEST_GROUPS_FLATLIST_TUNING = {
   initialNumToRender: 8,
@@ -79,18 +46,6 @@ const DIRECTOR_FINANCE_FLATLIST_TUNING = {
   windowSize: 3,
   removeClippedSubviews: false,
 } as const;
-
-const DIRECTOR_TOP_TABS_CONTENT_CONTAINER_STYLE: StyleProp<ViewStyle> = [
-  officeRoleChrome.switcherRow,
-  {
-    paddingTop: 2,
-    paddingBottom: 2,
-    alignItems: "center",
-    paddingRight: 12,
-  },
-];
-
-const directorTopTabKeyExtractor = (item: TopTabItem) => item.key;
 
 const directorForemanGroupKeyExtractor = (group: Group, index: number) =>
   group?.request_id ? `req:${String(group.request_id)}` : `g:${index}`;
@@ -154,7 +109,6 @@ type Props = {
 export default function DirectorDashboard(p: Props) {
   const finSummary = p.finScope?.summary;
 
-  const headerTitle = "Контроль";
   const headerPadTop = Platform.OS === "web" ? 10 : 0;
   const contentTopPad = Math.max(p.HEADER_MAX + 16 + headerPadTop, p.HEADER_MIN + 16 + headerPadTop);
   const requestGroupsContentContainerStyle = React.useMemo(
@@ -173,27 +127,6 @@ export default function DirectorDashboard(p: Props) {
     () => ({ paddingTop: contentTopPad, paddingBottom: 24 }),
     [contentTopPad],
   );
-
-  const topTabsRef = React.useRef<FlatList<TopTabItem> | null>(null);
-  const topTabXRef = React.useRef<Record<string, { x: number; w: number }>>({});
-
-  const onTopTabLayout = React.useCallback((key: string, e: { nativeEvent?: { layout?: { x?: number; width?: number } } }) => {
-    const x = Number(e?.nativeEvent?.layout?.x ?? 0);
-    const w = Number(e?.nativeEvent?.layout?.width ?? 0);
-    topTabXRef.current[key] = { x, w };
-  }, []);
-
-  React.useEffect(() => {
-    const sv = topTabsRef.current as TopTabsListRef | null;
-    const rec = topTabXRef.current?.[p.dirTab];
-    if (!sv || !rec) return;
-    if (typeof sv.scrollToOffset !== "function") return;
-    try {
-      sv.scrollToOffset({ offset: Math.max(0, rec.x - 12), animated: true });
-    } catch (error) {
-      reportDirectorTopTabsScrollFailure(error);
-    }
-  }, [p.dirTab]);
 
   const refreshRowsControl = React.useMemo(
     () => (
@@ -263,120 +196,22 @@ export default function DirectorDashboard(p: Props) {
   );
 
   const HeaderContent = (
-    <View>
-      <Animated.Text style={[s.collapsingTitle, { fontSize: p.titleSize }]} numberOfLines={1}>
-        {headerTitle}
-      </Animated.Text>
-
-      <View style={[officeRoleChrome.switcherShell, { marginTop: 12 }]}>
-        <FlashList
-        ref={topTabsRef}
-        data={DIRECTOR_TOP_TABS}
-        keyExtractor={directorTopTabKeyExtractor}
-        estimatedItemSize={112}
-        {...DIRECTOR_TOP_TABS_FLATLIST_TUNING}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        keyboardShouldPersistTaps="handled"
-        renderItem={({ item, index }) => {
-          const active = String(p.dirTab) === item.key;
-          const topTabTestId = DIRECTOR_TOP_TAB_TEST_IDS[index] ?? "unknown";
-          return (
-            <Pressable
-              key={item.key}
-              testID={`director-top-tab-${topTabTestId}`}
-              onLayout={(e) => onTopTabLayout(item.key, e)}
-              onPress={() => {
-                p.setDirTab(item.key);
-                if (item.key !== "Заявки") p.closeSheet();
-              }}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: active }}
-              style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
-            >
-              <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
-                {item.label}
-              </Text>
-            </Pressable>
-          );
-        }}
-        contentContainerStyle={DIRECTOR_TOP_TABS_CONTENT_CONTAINER_STYLE}
-      />
-
-      {String(p.dirTab) === "Заявки" ? (
-        <View style={{ paddingHorizontal: 12, paddingTop: 6, paddingBottom: 2, minHeight: 44, justifyContent: "center" }}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            {(["foreman", "buyer"] as Tab[]).map((t) => {
-              const active = p.tab === t;
-              return (
-                <Pressable
-                  key={t}
-                  testID={`director-request-tab-${t}`}
-                  onPress={() => p.setTab(t)}
-                  accessibilityRole="tab"
-                  accessibilityState={{ selected: active }}
-                  style={[s.tab, active && s.tabActive, { marginRight: 8 }]}
-                >
-                  <Text numberOfLines={1} style={{ color: active ? UI.text : UI.sub, fontWeight: "600", fontSize: 13 }}>
-                    {t === "foreman" ? "Прораб" : "Снабженец"}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-      ) : null}
-      </View>
-
-      {String(p.dirTab) === "Заявки" ? (
-        <Animated.View style={{ opacity: p.subOpacity }}>
-          {p.tab === "foreman" ? (
-            <View style={s.sectionHeader}>
-              <Text style={s.sectionTitle}>Заявки</Text>
-
-              <View style={s.kpiRow}>
-                <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>Заявок</Text>
-                  <Text style={s.kpiValue}>
-                    {p.loadingRows && !p.foremanRequestsCount ? "..." : String(p.foremanRequestsCount)}
-                  </Text>
-                </View>
-
-                <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>
-                    {p.loadingRows && !p.foremanPositionsCount ? "..." : String(p.foremanPositionsCount)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ) : (
-            <View style={s.sectionHeader}>
-              <Text style={s.sectionTitle}>Предложения</Text>
-
-              <View style={s.kpiRow}>
-                <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>Предложений</Text>
-                  <Text style={s.kpiValue}>
-                    {p.loadingProps && !p.buyerPropsCount ? "..." : String(p.buyerPropsCount)}
-                  </Text>
-                </View>
-
-                <View style={s.kpiPillHalf}>
-                  <Text style={s.kpiLabel}>Позиций</Text>
-                  <Text style={s.kpiValue}>
-                    {p.loadingProps && !p.buyerPositionsCount ? "..." : String(p.buyerPositionsCount)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          )}
-        </Animated.View>
-      ) : null}
-    </View>
+    <DirectorDashboardHeader
+      buyerPositionsCount={p.buyerPositionsCount}
+      buyerPropsCount={p.buyerPropsCount}
+      closeSheet={p.closeSheet}
+      dirTab={p.dirTab}
+      foremanPositionsCount={p.foremanPositionsCount}
+      foremanRequestsCount={p.foremanRequestsCount}
+      loadingProps={p.loadingProps}
+      loadingRows={p.loadingRows}
+      setDirTab={p.setDirTab}
+      setTab={p.setTab}
+      subOpacity={p.subOpacity}
+      tab={p.tab}
+      titleSize={p.titleSize}
+    />
   );
-
   return (
     <View style={[s.container, { backgroundColor: UI.bg }]}>
       <StatusBar style="light" />

@@ -6,44 +6,16 @@ import PeriodPickerSheet from "../../components/PeriodPickerSheet";
 import DirectorFinanceCardModal from "./DirectorFinanceCardModal";
 import { useDirectorReportsModalState } from "./hooks/useDirectorReportsModalState";
 import { styles } from "./DirectorReportsModal.styles";
+import { DirectorReportsMaterialRow } from "./DirectorReportsMaterialRow";
+import type { DirectorReportsModalProps as Props } from "./DirectorReportsModal.types";
+import { DirectorReportsObjectFilterSummary } from "./DirectorReportsObjectFilterSummary";
 import { UI, s } from "./director.styles";
 import {
   type RepDisciplineLevel,
-  type RepDisciplinePayload,
   type RepDisciplineWork,
-  type RepPayload,
   type RepRow,
   type RepTab,
 } from "./director.types";
-
-type Props = {
-  visible: boolean;
-  onClose: () => void;
-  repData: RepPayload | null;
-  repDiscipline: RepDisciplinePayload | null;
-  repPeriodShort: string;
-  repLoading: boolean;
-  repDisciplinePriceLoading: boolean;
-  repPeriodOpen: boolean;
-  onOpenPeriod: () => void;
-  onClosePeriod: () => void;
-  repFrom: string | null;
-  repTo: string | null;
-  onApplyPeriod: (from: string, to: string) => void;
-  onClearPeriod: () => void;
-  repObjOpen: boolean;
-  onCloseRepObj: () => void;
-  repOptObjects: string[];
-  applyObjectFilter: (name: string | null) => Promise<void>;
-  repObjectName: string | null;
-  onOpenRepObj: () => void;
-  repOptLoading: boolean;
-  repTab: RepTab;
-  setRepTab: (t: RepTab) => void;
-  onRefresh: () => Promise<void>;
-  onExportProductionPdf?: () => Promise<void> | void;
-  onExportSubcontractPdf?: () => Promise<void> | void;
-};
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
 
@@ -132,40 +104,15 @@ export default function DirectorReportsModal({
     onClose();
   }, [onClose, resetDetailOverlays]);
 
-  const renderMaterialRow = React.useCallback(({ item }: { item: RepRow }) => {
-    const qAll = Number(item.qty_total || 0);
-    const qNoReq = Number(item.qty_free || 0);
-    const docs = Number(item.docs_cnt || 0);
-    const docsNoReq = Number(item.docs_free || 0);
-    return (
-      <View style={[s.mobCard, styles.cardMb10]}>
-        <View style={s.mobMain}>
-          <Text style={s.mobTitle} numberOfLines={2}>{item.name_human_ru || item.rik_code}</Text>
-          <Text style={s.mobMeta} numberOfLines={2}>
-            {`Выдано: ${qAll} ${item.uom} · Док. ${docs}`}
-            {qNoReq > 0 ? ` · Без заявки: ${qNoReq} (${docsNoReq} док.)` : ""}
-          </Text>
-        </View>
-        {noWorkNameCount > 0 ? (
-          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
-            {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
-          </Text>
-        ) : null}
-        {unresolvedNamesCount > 0 ? (
-          <Text style={[s.mobMeta, styles.mt4WarningText]} numberOfLines={3}>
-            {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
-          </Text>
-        ) : null}
-        {reportDiagnostics ? (
-          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
-            {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
-          </Text>
-        ) : null}
-      </View>
-    );
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, []);
-
+  const renderMaterialRow = React.useCallback(({ item }: { item: RepRow }) => (
+    <DirectorReportsMaterialRow
+      item={item}
+      noWorkNameCount={noWorkNameCount}
+      noWorkNameExplanation={noWorkNameExplanation}
+      reportDiagnostics={reportDiagnostics}
+      unresolvedNamesCount={unresolvedNamesCount}
+    />
+  ), [noWorkNameCount, noWorkNameExplanation, reportDiagnostics, unresolvedNamesCount]);
   const renderObjectOptionRow = React.useCallback(({ item }: { item: string }) => (
     <Pressable
       onPress={async () => {
@@ -439,41 +386,19 @@ export default function DirectorReportsModal({
         ) : null
       }
     >
-      <View style={styles.mb10}>
-        <Text style={styles.filterLabel}>Склад</Text>
-        <View style={styles.filterWrap}>
-          <Pressable onPress={() => void applyObjectFilter(null)} style={[s.tab, !repObjectName && s.tabActive, styles.filterTabSpacing]}>
-            <Text style={[styles.filterTabText, !repObjectName ? styles.filterTabTextActive : styles.filterTabTextInactive]}>Все</Text>
-          </Pressable>
-          <Pressable onPress={onOpenRepObj} style={[s.tab, repObjectName && s.tabActive, styles.filterTabSpacing]}>
-            <Text style={[styles.filterTabText, repObjectName ? styles.filterTabTextActive : styles.filterTabTextInactive]}>{`${objectCountLabel} · ${objectCount}`}</Text>
-          </Pressable>
-          {repObjectName ? (
-            <Pressable onPress={onOpenRepObj} style={[s.tab, s.tabActive, styles.filterTabSpacing]}>
-              <Text numberOfLines={1} style={styles.selectedObjectNameText}>{repObjectName}</Text>
-            </Pressable>
-          ) : null}
-          {repOptLoading ? <Text style={styles.repOptLoadingText}>…</Text> : null}
-        </View>
-        <Text style={[s.mobMeta, styles.mt6]} numberOfLines={2}>{objectCountLabel}</Text>
-        <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>{objectCountExplanation}</Text>
-        {noWorkNameCount > 0 ? (
-          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
-            {`Без вида работ: ${noWorkNameCount}${reportDiagnostics ? ` (${reportDiagnostics.noWorkName.share}% позиций)` : ""} · ${noWorkNameExplanation}`}
-          </Text>
-        ) : null}
-        {unresolvedNamesCount > 0 ? (
-          <Text style={[s.mobMeta, styles.mt4WarningText]} numberOfLines={3}>
-            {`Неразрешённых кодов: ${unresolvedNamesCount}. Именование частично деградировало, но экран сохраняет backend-owned truth.`}
-          </Text>
-        ) : null}
-        {reportDiagnostics ? (
-          <Text style={[s.mobMeta, styles.mt4]} numberOfLines={3}>
-            {`Именование: объекты ${reportDiagnostics.naming.objectNamingSourceStatus} · работы ${reportDiagnostics.naming.workNamingSourceStatus} · names ${reportDiagnostics.naming.namesViewStatus} · overrides ${reportDiagnostics.naming.overridesStatus} · ledger ${reportDiagnostics.naming.balanceViewStatus}`}
-          </Text>
-        ) : null}
-      </View>
-
+      <DirectorReportsObjectFilterSummary
+        applyObjectFilter={applyObjectFilter}
+        noWorkNameCount={noWorkNameCount}
+        noWorkNameExplanation={noWorkNameExplanation}
+        objectCount={objectCount}
+        objectCountExplanation={objectCountExplanation}
+        objectCountLabel={objectCountLabel}
+        onOpenRepObj={onOpenRepObj}
+        repObjectName={repObjectName}
+        repOptLoading={repOptLoading}
+        reportDiagnostics={reportDiagnostics}
+        unresolvedNamesCount={unresolvedNamesCount}
+      />
       {repTab === "materials" ? (
         <View style={styles.mb10}>
           <View style={styles.rowGap8}>

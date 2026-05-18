@@ -13,7 +13,7 @@ const countHookCalls = (source: string): number =>
 describe("WAVE 16 contractor screen decomposition A", () => {
   const screen = read("src/screens/contractor/ContractorScreen.tsx");
   const container = read("src/screens/contractor/ContractorScreenContainer.tsx");
-  const controller = read("src/screens/contractor/useContractorScreenController.tsx");
+  const controller = read("src/screens/contractor/useContractorScreenController.ts");
   const view = read("src/screens/contractor/ContractorScreenView.tsx");
 
   it("keeps ContractorScreen as a thin route shell", () => {

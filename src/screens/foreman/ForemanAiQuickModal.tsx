@@ -20,6 +20,13 @@ import type { ForemanAiQuickReviewGroup, ForemanAiQuickMode } from "./foreman.ai
 import { buildForemanDraftContextSummary } from "./foremanDraftVisualState";
 import type { ForemanAiOutcomeType } from "./foremanUi.store";
 import { styles } from "./ForemanAiQuickModal.styles";
+import {
+  cardStyle,
+  normalizeComparableMessage,
+  NoticeCard,
+  renderMetaLine,
+  toSelectorToken,
+} from "./ForemanAiQuickModal.helpers";
 import { useForemanVoiceInput } from "./hooks/useForemanVoiceInput";
 
 type Props = {
@@ -50,63 +57,6 @@ type Props = {
   ui: { text: string; sub: string; cardBg: string; border: string; accent: string };
   styles: typeof import("./foreman.styles").s;
 };
-
-const cardStyle = styles.card;
-
-const normalizeComparableMessage = (value: string): string =>
-  String(value || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-
-const KIND_LABELS: Record<string, string> = {
-  material: "Материал",
-  work: "Работа",
-  service: "Услуга",
-};
-
-const getKindLabel = (value: string): string => KIND_LABELS[value] || value || "Позиция";
-
-const renderMetaLine = (params: { qty?: number; unit?: string | null; kind?: string | null; code?: string | null }) =>
-  [
-    params.qty != null ? `${params.qty} ${params.unit || ""}`.trim() : params.unit || null,
-    params.kind ? getKindLabel(params.kind) : null,
-    params.code || null,
-  ]
-    .filter(Boolean)
-    .join(" • ");
-
-const toSelectorToken = (value: string) =>
-  String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const NoticeCard = ({
-  backgroundColor,
-  borderColor,
-  titleColor,
-  title,
-  detail,
-}: {
-  backgroundColor: string;
-  borderColor: string;
-  titleColor: string;
-  title: string;
-  detail?: string | null;
-}) => (
-  <View
-    style={[styles.noticeCard, { backgroundColor, borderColor }]}
-  >
-    <Text style={[styles.noticeTitle, { color: titleColor }]}>{title}</Text>
-    {detail ? (
-      <Text style={[styles.noticeDetail, { color: titleColor }]}>
-        {detail}
-      </Text>
-    ) : null}
-  </View>
-);
 
 export default function ForemanAiQuickModal(props: Props) {
   const insets = useSafeAreaInsets();

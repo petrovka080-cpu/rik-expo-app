@@ -25,7 +25,7 @@ const MAP_SCREEN_CONTROLLER_PATH = join(
   "src",
   "components",
   "map",
-  "useMapScreenController.tsx",
+  "useMapScreenController.ts",
 );
 const MAP_QUERY_PATH = join(__dirname, "..", "..", "src", "components", "map", "useMapListingsQuery.ts");
 

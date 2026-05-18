@@ -14,12 +14,14 @@ function countHookCalls(source: string): number {
 describe("S_RUNTIME_06 BuyerItemRow editor model boundary", () => {
   it("moves editor state and effects out of BuyerItemRow without weakening the row contract", () => {
     const rowSource = readRepoFile("src/screens/buyer/components/BuyerItemRow.tsx");
+    const editorSource = readRepoFile("src/screens/buyer/components/BuyerItemEditor.tsx");
     const modelSource = readRepoFile("src/screens/buyer/hooks/useBuyerItemEditorModel.ts");
     const originalHookCallSites = 43;
     const currentHookCallSites = countHookCalls(rowSource);
 
-    expect(rowSource).toContain('import { useBuyerItemEditorModel } from "../hooks/useBuyerItemEditorModel";');
-    expect(rowSource).toContain("} = useBuyerItemEditorModel({");
+    expect(rowSource).toContain('export { BuyerItemEditor } from "./BuyerItemEditor";');
+    expect(editorSource).toContain('import { useBuyerItemEditorModel } from "../hooks/useBuyerItemEditorModel";');
+    expect(editorSource).toContain("} = useBuyerItemEditorModel({");
     expect(currentHookCallSites).toBeLessThanOrEqual(8);
     expect(originalHookCallSites - currentHookCallSites).toBeGreaterThanOrEqual(35);
 
@@ -38,13 +40,14 @@ describe("S_RUNTIME_06 BuyerItemRow editor model boundary", () => {
 
   it("preserves supplier picker, note, and list tuning behavior", () => {
     const rowSource = readRepoFile("src/screens/buyer/components/BuyerItemRow.tsx");
+    const editorSource = readRepoFile("src/screens/buyer/components/BuyerItemEditor.tsx");
     const modelSource = readRepoFile("src/screens/buyer/hooks/useBuyerItemEditorModel.ts");
 
-    expect(rowSource).toContain("INLINE_SUPPLIER_FLATLIST_TUNING");
-    expect(rowSource).toContain("MODAL_SUPPLIER_FLATLIST_TUNING");
-    expect(rowSource).toContain("keyExtractor={supplierKeyExtractor}");
-    expect(rowSource).toContain("renderItem={renderInlineSupplierItem}");
-    expect(rowSource).toContain("renderItem={renderModalSupplierItem}");
+    expect(editorSource).toContain("INLINE_SUPPLIER_FLATLIST_TUNING");
+    expect(editorSource).toContain("MODAL_SUPPLIER_FLATLIST_TUNING");
+    expect(editorSource).toContain("keyExtractor={supplierKeyExtractor}");
+    expect(editorSource).toContain("renderItem={renderInlineSupplierItem}");
+    expect(editorSource).toContain("renderItem={renderModalSupplierItem}");
     expect(rowSource).toContain("export const BuyerItemRow = React.memo(BuyerItemRowInner");
 
     expect(modelSource).toContain("onSetSupplier(selectedLabel)");

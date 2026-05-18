@@ -653,6 +653,36 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicUserCopy.ts"),
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicProof.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sComponentDebtCloseoutFiles = [
+      path.join(SRC, "components", "foreman", "CalcModalContentFields.tsx"),
+      path.join(SRC, "components", "foreman", "CatalogModal.styles.ts"),
+      path.join(SRC, "features", "ai", "AIAssistantShortcutRows.tsx"),
+      path.join(SRC, "features", "ai", "commandCenter", "AiCommandCenterScreen.styles.ts"),
+      path.join(SRC, "features", "ai", "useAIAssistantScreenDerivedState.ts"),
+      path.join(SRC, "features", "chat", "ChatScreen.styles.ts"),
+      path.join(SRC, "features", "profile", "ProfileOtaDiagnosticsCard.styles.ts"),
+      path.join(SRC, "features", "seller", "SellerAreaScreen.styles.ts"),
+      path.join(SRC, "features", "supplierShowcase", "SupplierShowcaseScreen.styles.ts"),
+      path.join(SRC, "screens", "accountant", "components", "ActivePaymentAllocationSection.tsx"),
+      path.join(SRC, "screens", "accountant", "components", "ReadOnlyReceipt.styles.ts"),
+      path.join(SRC, "screens", "accountant", "components", "ReadOnlyReceiptAttachmentStateBlock.tsx"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerAttachmentsSticky.tsx"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerItemEditor.tsx"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerMobileItemEditorModal.styles.ts"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerPropDetailsSheetBody.styles.ts"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerRfqSheetBody.styles.ts"),
+      path.join(SRC, "screens", "buyer", "components", "BuyerScreenContent.props.ts"),
+      path.join(SRC, "screens", "buyer", "components", "SheetFooterActions.tsx"),
+      path.join(SRC, "screens", "director", "DirectorDashboardHeader.tsx"),
+      path.join(SRC, "screens", "director", "DirectorReportsMaterialRow.tsx"),
+      path.join(SRC, "screens", "director", "DirectorReportsModal.types.ts"),
+      path.join(SRC, "screens", "director", "DirectorReportsObjectFilterSummary.tsx"),
+      path.join(SRC, "screens", "director", "DirectorSubcontractTab.styles.ts"),
+      path.join(SRC, "screens", "foreman", "ForemanAiQuickModal.helpers.tsx"),
+      path.join(SRC, "screens", "office", "useOfficeHubBootstrapEffects.ts"),
+      path.join(SRC, "screens", "office", "useOfficePostReturnSubtreeRenderer.tsx"),
+      path.join(SRC, "screens", "warehouse", "components", "WarehouseReportsTab.styles.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -794,7 +824,7 @@ describe("performance budget — bundle module count", () => {
     const sNightUi17MapScreenControllerDecompositionAFiles = [
       path.join(SRC, "components", "map", "MapScreenContainer.tsx"),
       path.join(SRC, "components", "map", "MapScreenView.tsx"),
-      path.join(SRC, "components", "map", "useMapScreenController.tsx"),
+      path.join(SRC, "components", "map", "useMapScreenController.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle46ContractorWorkModalTransportFiles = [
       path.join(SRC, "screens", "contractor", "contractor.workModalService.transport.ts"),
@@ -817,7 +847,7 @@ describe("performance budget — bundle module count", () => {
     const sNightUi16ContractorScreenDecompositionAFiles = [
       path.join(SRC, "screens", "contractor", "ContractorScreenContainer.tsx"),
       path.join(SRC, "screens", "contractor", "ContractorScreenView.tsx"),
-      path.join(SRC, "screens", "contractor", "useContractorScreenController.tsx"),
+      path.join(SRC, "screens", "contractor", "useContractorScreenController.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAuditBattle49ActivePaymentFormStyleBoundaryFiles = [
       path.join(SRC, "screens", "accountant", "components", "ActivePaymentForm.styles.ts"),
@@ -1664,7 +1694,8 @@ describe("performance budget — bundle module count", () => {
         sScale09AgentBffIntelGraphOwnerSplitFiles -
         sScale10AgentBffProcurementOwnerSplitFiles -
         sScale11CatalogRequestServiceOwnerSplitFiles -
-        sAiProduct09ScreenMagicFiles,
+        sAiProduct09ScreenMagicFiles -
+        sComponentDebtCloseoutFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

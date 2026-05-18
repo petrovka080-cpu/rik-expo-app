@@ -17,7 +17,12 @@ const flowFiles = [
 describe("AI assistant stable e2e test IDs", () => {
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
   const assistantProductPanelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
-  const assistantUiSource = [assistantSource, assistantProductPanelsSource].join("\n");
+  const assistantShortcutRowsSource = read("src/features/ai/AIAssistantShortcutRows.tsx");
+  const assistantUiSource = [
+    assistantSource,
+    assistantProductPanelsSource,
+    assistantShortcutRowsSource,
+  ].join("\n");
   const assistantFabSource = read("src/features/ai/AssistantFab.tsx");
 
   it("exposes stable IDs on the existing assistant entry and surface", () => {

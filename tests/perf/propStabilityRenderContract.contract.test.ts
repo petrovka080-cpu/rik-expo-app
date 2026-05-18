@@ -17,22 +17,25 @@ describe("S_NIGHT_UI_20_PROP_STABILITY_RENDER_CONTRACT", () => {
   it("keeps BuyerScreen and BuyerItemRow behind stable composition contracts", () => {
     const buyerScreen = readRepoFile("src/screens/buyer/BuyerScreen.tsx");
     const buyerContent = readRepoFile("src/screens/buyer/components/BuyerScreenContent.tsx");
+    const buyerContentProps = readRepoFile("src/screens/buyer/components/BuyerScreenContent.props.ts");
     const buyerItemRow = readRepoFile("src/screens/buyer/components/BuyerItemRow.tsx");
+    const buyerItemEditor = readRepoFile("src/screens/buyer/components/BuyerItemEditor.tsx");
 
     expect(buyerScreen).toContain("const contentProps = useBuyerScreenController();");
     expect(buyerScreen).toContain("<BuyerScreenContent {...contentProps} />");
 
     expect(buyerContent).toContain("export const BuyerScreenContent = React.memo(function BuyerScreenContent");
     expect(buyerContent).toContain("const subcontractScrollHandler = useMemo");
-    expect(buyerContent).toContain("const stableMainList = useMemo");
-    expect(buyerContent).toContain("const stableSheets = useMemo");
+    expect(buyerContentProps).toContain("const stableMainList = useMemo");
+    expect(buyerContentProps).toContain("const stableSheets = useMemo");
 
-    expect(buyerItemRow).toContain("const supplierKeyExtractor = (item: string, idx: number)");
-    expect(buyerItemRow).toContain("const renderInlineSupplierItem = React.useCallback");
-    expect(buyerItemRow).toContain("const renderModalSupplierItem = React.useCallback");
-    expect(buyerItemRow).toContain("keyExtractor={supplierKeyExtractor}");
-    expect(buyerItemRow).toContain("renderItem={renderInlineSupplierItem}");
-    expect(buyerItemRow).toContain("renderItem={renderModalSupplierItem}");
+    expect(buyerItemRow).toContain("export { BuyerItemEditor }");
+    expect(buyerItemEditor).toContain("const supplierKeyExtractor = (item: string, idx: number)");
+    expect(buyerItemEditor).toContain("const renderInlineSupplierItem = React.useCallback");
+    expect(buyerItemEditor).toContain("const renderModalSupplierItem = React.useCallback");
+    expect(buyerItemEditor).toContain("keyExtractor={supplierKeyExtractor}");
+    expect(buyerItemEditor).toContain("renderItem={renderInlineSupplierItem}");
+    expect(buyerItemEditor).toContain("renderItem={renderModalSupplierItem}");
   });
 
   it("stabilizes MarketHomeScreen heavy feed props and item callbacks", () => {
@@ -72,14 +75,15 @@ describe("S_NIGHT_UI_20_PROP_STABILITY_RENDER_CONTRACT", () => {
 
   it("keeps DirectorDashboard, AccountantScreen, and OfficeHubScreen on existing stable list contracts", () => {
     const director = readRepoFile("src/screens/director/DirectorDashboard.tsx");
+    const directorHeader = readRepoFile("src/screens/director/DirectorDashboardHeader.tsx");
     const accountantScreen = readRepoFile("src/screens/accountant/AccountantScreen.tsx");
     const accountantList = readRepoFile("src/screens/accountant/components/AccountantListSection.tsx");
     const officeScreen = readRepoFile("src/screens/office/OfficeHubScreen.tsx");
     const officeContent = readRepoFile("src/screens/office/OfficeShellContent.tsx");
 
-    expect(director).toContain("const DIRECTOR_TOP_TABS: TopTabItem[]");
+    expect(directorHeader).toContain("const DIRECTOR_TOP_TABS: TopTabItem[]");
     expect(director).toContain("const DIRECTOR_FINANCE_DASHBOARD_CARDS");
-    expect(director).toContain("const directorTopTabKeyExtractor");
+    expect(directorHeader).toContain("const directorTopTabKeyExtractor");
     expect(director).toContain("const directorForemanGroupKeyExtractor");
     expect(director).toContain("const directorProposalHeadKeyExtractor");
     expect(director).toContain("const directorFinanceCardKeyExtractor");

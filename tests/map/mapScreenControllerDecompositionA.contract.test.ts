@@ -12,7 +12,7 @@ const countHookCalls = (source: string): number =>
 describe("WAVE 17 MapScreen controller decomposition A", () => {
   const screen = readRepoFile("src/components/map/MapScreen.tsx");
   const container = readRepoFile("src/components/map/MapScreenContainer.tsx");
-  const controller = readRepoFile("src/components/map/useMapScreenController.tsx");
+  const controller = readRepoFile("src/components/map/useMapScreenController.ts");
   const view = readRepoFile("src/components/map/MapScreenView.tsx");
 
   it("keeps MapScreen as a thin shell", () => {

@@ -38,11 +38,11 @@ const memoizedBuyerComponents = [
     exportLine: "export const BuyerReworkSheetBody = React.memo(BuyerReworkSheetBodyInner);",
   },
   {
-    relativePath: "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+    relativePath: "src/screens/buyer/components/SheetFooterActions.tsx",
     exportLine: "export const SheetFooterActions = React.memo(SheetFooterActionsInner);",
   },
   {
-    relativePath: "src/screens/buyer/components/BuyerReworkSheetBody.tsx",
+    relativePath: "src/screens/buyer/components/BuyerAttachmentsSticky.tsx",
     exportLine: "export const BuyerAttachmentsSticky = React.memo(BuyerAttachmentsStickyInner);",
   },
   {

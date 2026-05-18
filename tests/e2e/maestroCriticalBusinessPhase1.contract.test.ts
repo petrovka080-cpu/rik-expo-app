@@ -56,6 +56,7 @@ describe("maestro critical business phase 1 contracts", () => {
   const buyerRfqSource = read("src/screens/buyer/components/BuyerRfqSheetBody.tsx");
   const buyerProposalSource = read("src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx");
   const directorDashboardSource = read("src/screens/director/DirectorDashboard.tsx");
+  const directorDashboardHeaderSource = read("src/screens/director/DirectorDashboardHeader.tsx");
   const directorProposalRowSource = read("src/screens/director/DirectorProposalRow.tsx");
   const directorProposalSheetSource = read("src/screens/director/DirectorProposalSheet.tsx");
   const directorSheetModalSource = read("src/screens/director/DirectorSheetModal.tsx");
@@ -275,9 +276,9 @@ describe("maestro critical business phase 1 contracts", () => {
     expect(buyerHeaderSource).toContain('testID="buyer-tab-approved"');
     expect(buyerRfqSource).toContain('testID="buyer-rfq-publish"');
     expect(buyerProposalSource).toContain('testID="buyer-proposal-pdf"');
-    expect(directorDashboardSource).toContain("DIRECTOR_TOP_TAB_TEST_IDS");
-    expect(directorDashboardSource).toContain("director-top-tab-${topTabTestId}");
-    expect(directorDashboardSource).toContain("director-request-tab-${t}");
+    expect(directorDashboardHeaderSource).toContain("DIRECTOR_TOP_TAB_TEST_IDS");
+    expect(directorDashboardHeaderSource).toContain("director-top-tab-${topTabTestId}");
+    expect(directorDashboardHeaderSource).toContain("director-request-tab-${t}");
     expect(directorDashboardSource).toContain(
       'testID="director-finance-dashboard-debt-card"',
     );

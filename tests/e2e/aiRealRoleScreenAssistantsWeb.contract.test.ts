@@ -7,6 +7,7 @@ const read = (relativePath: string) => fs.readFileSync(path.join(ROOT, relativeP
 describe("AI real role-screen assistants web runner contract", () => {
   const runner = read("scripts/e2e/runAiRealRoleScreenAssistantsWeb.ts");
   const assistantSource = read("src/features/ai/AIAssistantScreen.tsx");
+  const assistantStateSource = read("src/features/ai/useAIAssistantScreenDerivedState.ts");
   const panelsSource = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
 
   it("checks product-first role packs for accountant and buyer on web", () => {
@@ -19,7 +20,7 @@ describe("AI real role-screen assistants web runner contract", () => {
   });
 
   it("wires the role assistant pack before chat answers", () => {
-    expect(assistantSource).toContain("getAiRoleScreenAssistantPack");
+    expect(assistantStateSource).toContain("getAiRoleScreenAssistantPack");
     expect(assistantSource).toContain("roleScreenAssistantPack");
     expect(panelsSource).toContain('testID="ai.role_screen_assistant_pack"');
     expect(panelsSource.indexOf("Готово от AI")).toBeLessThan(panelsSource.indexOf("productStatusCard"));

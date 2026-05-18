@@ -1,0 +1,37 @@
+{
+  "wave": "S_COMPONENT_DEBT_CLOSEOUT",
+  "final_status": "GREEN_COMPONENT_DEBT_CLOSED",
+  "current_head_verified": true,
+  "component_debt_verified": true,
+  "god_components_real_remaining": 0,
+  "hook_pressure_components_real_remaining": 0,
+  "god_component_line_threshold": 500,
+  "hook_pressure_threshold": 25,
+  "business_logic_changed": false,
+  "provider_or_model_config_changed": false,
+  "database_migrations_changed": false,
+  "db_writes_added": false,
+  "broad_allowlists_used": false,
+  "app_code_changed": true,
+  "fake_green_claimed": false,
+  "gates": {
+    "npx_tsc_no_emit_pretty_false": "PASS",
+    "npx_expo_lint": "PASS",
+    "git_diff_check": "PASS",
+    "npm_test_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS",
+    "release_verify_required_gates": "PASS"
+  },
+  "release_verify_pre_sync": {
+    "status": "BLOCKED_RELEASE_SYNC_ONLY",
+    "classification": "runtime-ota",
+    "build_required": false,
+    "ai_mandatory_emulator_runtime_gate": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+    "android_installed_runtime_smoke": "PASS",
+    "only_blocker": "HEAD does not match origin/main; local branch ahead by 2 commits; push exact release commit before publishing"
+  },
+  "ios_build_required_by_release_verify": false,
+  "ios_blocker_reported_by_release_verify": false,
+  "android_used_as_ios_proof": false,
+  "web_used_as_ios_proof": false
+}

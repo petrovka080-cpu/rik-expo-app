@@ -357,7 +357,7 @@ export function verifyTimerRealtimeLifecycle(
   const busyAction = read(repoRoot, "src/lib/useBusyAction.ts");
   const authGuard = read(repoRoot, "src/lib/auth/useAuthGuard.ts");
   const realtimeClient = read(repoRoot, "src/lib/realtime/realtime.client.ts");
-  const mapController = read(repoRoot, "src/components/map/useMapScreenController.tsx");
+  const mapController = read(repoRoot, "src/components/map/useMapScreenController.ts");
   const mapRenderer = read(repoRoot, "src/components/map/MapRenderer.web.tsx");
   const draftSyncService = read(repoRoot, "src/lib/api/requestDraftSync.service.ts");
   const warehouseRealtime = read(repoRoot, "src/screens/warehouse/warehouse.realtime.lifecycle.ts");
