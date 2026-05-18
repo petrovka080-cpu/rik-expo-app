@@ -1,0 +1,25 @@
+{
+  "name": "rik-expo-app",
+  "slug": "rik-expo-app",
+  "scheme": "rik",
+  "version": "1.0.0",
+  "ios": {
+    "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
+    "buildNumber": "23",
+    "infoPlist": {
+      "ITSAppUsesNonExemptEncryption": false,
+      "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
+      "NSLocationWhenInUseUsageDescription": "Доступ к геопозиции нужен для отображения вашего местоположения на карте.",
+      "NSLocationAlwaysAndWhenInUseUsageDescription": "Доступ к геопозиции нужен для маршрутов."
+    }
+  },
+  "updates": {
+    "enabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
+  },
+  "runtimeVersion": {
+    "policy": "fingerprint"
+  }
+}

@@ -1,0 +1,17 @@
+# S_IOS_TESTFLIGHT_BUILD_AND_QA04_SIGNOFF_CLOSEOUT
+
+final_status: GREEN_IOS_TESTFLIGHT_QA03_QA04_SIGNOFF_READY
+recorded_at: 2026-05-18T11:33:49.915Z
+current_head: cb6311c309719c931b5f2db535ac811aacc2868e
+ios_build_id: db1025ce-da62-4ac5-badf-aaa73855182d
+ios_build_profile: production
+ios_distribution: STORE
+ios_build_git_commit_matches_head: true
+ios_testflight_submit_completed: true
+ios_testflight_build_available: true
+physical_ios_device_used: true
+testflight_build_installed: true
+ios_runtime_proof_current: true
+android_used_as_ios_proof: false
+web_used_as_ios_proof: false
+fake_green_claimed: false

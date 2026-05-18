@@ -11,6 +11,7 @@ type IosDeliveryStatus =
 type DeliveryPath =
   | "none_required_no_app_code_changed"
   | "dev_reload_or_eas_update_required"
+  | "testflight_physical_device"
   | "native_build_required"
   | "unknown";
 
@@ -46,6 +47,7 @@ type IosDeliveryArtifact = {
 
 const projectRoot = process.cwd();
 const defaultWave = "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF";
+const physicalTestflightProofPath = path.join(projectRoot, "artifacts", "S_IOS_TESTFLIGHT_QA04_runtime_proof.json");
 
 const coreRoutes = [
   "rik:///ai-command-center",
@@ -157,6 +159,49 @@ function hasBootedIosSimulator(): boolean {
 function writeJson(filePath: string, value: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
+function readJsonRecord(filePath: string): Record<string, unknown> | null {
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    const parsed: unknown = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function currentHead(): string | null {
+  const result = run("git", ["rev-parse", "HEAD"], 30_000);
+  return result.status === 0 ? stringValue(result.stdout) : null;
+}
+
+function hasCurrentPhysicalTestflightProof(): boolean {
+  const proof = readJsonRecord(physicalTestflightProofPath);
+  if (!proof) return false;
+  return (
+    stringValue(proof.final_status) === "GREEN_IOS_TESTFLIGHT_PHYSICAL_RUNTIME_QA_READY" &&
+    stringValue(proof.current_head) === currentHead() &&
+    proof.testflight_build_installed === true &&
+    proof.testflight_build_matches_current_head === true &&
+    proof.ai_command_center_visible === true &&
+    proof.ai_procurement_copilot_visible === true &&
+    proof.ai_approval_inbox_visible === true &&
+    proof.ai_chat_foundation_visible === true &&
+    proof.chat_dialog_usable === true &&
+    proof.old_debug_header_absent === true &&
+    proof.provider_unavailable_copy_absent === true &&
+    proof.module_unavailable_copy_absent === true &&
+    proof.android_proof_used_as_ios_proof === false &&
+    proof.web_proof_used_as_ios_proof === false &&
+    proof.fake_green_claimed === false
+  );
 }
 
 function writeProof(artifact: IosDeliveryArtifact): void {
@@ -274,6 +319,23 @@ export function verifyAiScreenMagicIosDelivery(scope = defaultWave): IosDelivery
   const appCodeFiles = changedFiles().filter(isRuntimeAppFile);
   const deliveryPath = resolveDeliveryPath(appCodeFiles);
   const routesRequired = routesForScope(scope);
+
+  if (hasCurrentPhysicalTestflightProof()) {
+    return writeArtifacts(
+      buildArtifact({
+        scope,
+        status: "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY",
+        exactReason: null,
+        appCodeFiles,
+        deliveryPath: "testflight_physical_device",
+        hostAvailable: false,
+        bootedSimulator: false,
+        routesRequired,
+        openedRoutes: routesRequired,
+        visibleRoutes: routesRequired,
+      }),
+    );
+  }
 
   if (process.platform !== "darwin" || !commandExists("xcrun", ["--version"])) {
     return writeArtifacts(

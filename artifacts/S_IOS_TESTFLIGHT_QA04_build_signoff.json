@@ -1,0 +1,13 @@
+{
+  "final_status": "GREEN_IOS_EAS_BUILD_SIGNOFF_READY",
+  "current_head": "cb6311c309719c931b5f2db535ac811aacc2868e",
+  "ios_build_id": "db1025ce-da62-4ac5-badf-aaa73855182d",
+  "ios_build_status": "FINISHED",
+  "ios_build_profile": "production",
+  "ios_distribution": "STORE",
+  "ios_build_git_commit_matches_head": true,
+  "simulator_build_used": false,
+  "runtime_version": "be945428a984869a2cd7eac50f188296f9ed7cbc",
+  "app_build_version": "44",
+  "fake_green_claimed": false
+}

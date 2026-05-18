@@ -1,0 +1,19 @@
+{
+  "wave": "S_IOS_TESTFLIGHT_BUILD_AND_QA04_SIGNOFF_CLOSEOUT",
+  "current_head": "cb6311c309719c931b5f2db535ac811aacc2868e",
+  "last_ios_signoff_head": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
+  "latest_ios_production_build_id": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
+  "latest_ios_production_build_status": "FINISHED",
+  "latest_ios_production_build_profile": "production",
+  "latest_ios_production_distribution": "STORE",
+  "app_source_changed_since_last_ios_signoff": true,
+  "native_config_changed_since_last_ios_signoff": false,
+  "release_guard_requires_ios_build_signoff": true,
+  "release_guard_requires_submit_proof": true,
+  "eas_update_possible": true,
+  "testflight_build_required": true,
+  "existing_current_head_ios_build_id": null,
+  "build_profile_required": "production",
+  "submit_profile_required": "production",
+  "reason": "No finished production iOS build exists for current HEAD; release guard requires current iOS build/signoff and submit proof."
+}

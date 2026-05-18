@@ -9,11 +9,13 @@
     "newBuildRequired": true,
     "submitRequired": true,
     "simulatorBuildUsedForSubmit": false,
-    "appStoreDistributionProfileFound": true
+    "appStoreDistributionProfileFound": true,
+    "submitProfileFound": true,
+    "ascAppId": "6759552514"
   },
   "ota": {
     "used": false,
-    "reason": "new build/submit gate required"
+    "reason": "new TestFlight build/submit gate required"
   },
   "runtimeVersionConfigured": true,
   "easJsonPresent": true

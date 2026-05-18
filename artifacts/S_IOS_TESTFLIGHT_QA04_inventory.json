@@ -1,0 +1,16 @@
+{
+  "wave": "S_IOS_TESTFLIGHT_BUILD_AND_QA04_SIGNOFF_CLOSEOUT",
+  "current_head": "cb6311c309719c931b5f2db535ac811aacc2868e",
+  "build_profile": "production",
+  "submit_profile": "production",
+  "build_id": "db1025ce-da62-4ac5-badf-aaa73855182d",
+  "submit_id": "d40f13c0-b455-4709-a8d4-ff152b09c97d",
+  "build_commit": "cb6311c309719c931b5f2db535ac811aacc2868e",
+  "build_status": "FINISHED",
+  "distribution": "STORE",
+  "runtimeVersion": "be945428a984869a2cd7eac50f188296f9ed7cbc",
+  "appBuildVersion": "44",
+  "eas_build_output": "artifacts/S_IOS_TESTFLIGHT_QA04_eas_build_output.json",
+  "eas_submit_output": "artifacts/S_IOS_TESTFLIGHT_QA04_eas_submit_output.txt",
+  "release_guard_expected_matrix": "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json"
+}

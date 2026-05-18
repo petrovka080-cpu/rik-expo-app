@@ -1,15 +1,15 @@
 # S_AI_QA_04 Fresh iOS Build Signoff
 
-final_status: BLOCKED_IOS_BUILD_SIGNOFF_REQUIRED
+final_status: GREEN_AI_DUAL_PLATFORM_RUNTIME_SIGNOFF_AND_IOS_SUBMIT_READY
 android_runtime_smoke: PASS
 mandatory_ai_runtime_matrix: PASS
-ios_build_status: BLOCKED
-ios_build_profile: BLOCKED
-ios_distribution: BLOCKED
-ios_build_git_commit_matches_head: false
-ios_app_store_connect_submit: NOT_APPROVED
+ios_build_status: FINISHED
+ios_build_profile: production
+ios_distribution: STORE_OR_TESTFLIGHT
+ios_build_git_commit_matches_head: true
+ios_app_store_connect_submit: PASS
 physical_ios_runtime_claimed: false
 fake_ios_pass: false
 fake_emulator_pass: false
 no_ota_as_native_replacement: true
-exact_reason: S_AI_QA_03_REQUIRE_IOS_BUILD_SIGNOFF must be true for QA03.
+exact_reason: null

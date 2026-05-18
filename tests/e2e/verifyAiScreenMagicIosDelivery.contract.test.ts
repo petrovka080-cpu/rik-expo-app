@@ -26,6 +26,15 @@ describe("AI screen magic iOS delivery proof", () => {
     expect(source).toContain("ios_keyboard_safe");
   });
 
+  it("accepts current TestFlight physical-device proof without using Android or web proof", () => {
+    expect(source).toContain("S_IOS_TESTFLIGHT_QA04_runtime_proof.json");
+    expect(source).toContain("GREEN_IOS_TESTFLIGHT_PHYSICAL_RUNTIME_QA_READY");
+    expect(source).toContain("testflight_physical_device");
+    expect(source).toContain("hasCurrentPhysicalTestflightProof");
+    expect(source).toContain("web_proof_used_as_ios_proof === false");
+    expect(source).toContain("android_proof_used_as_ios_proof === false");
+  });
+
   it("writes scoped magic-wave iOS artifacts instead of reusing the mobile signoff artifact", () => {
     expect(source).toContain("artifactWaveForScope(scope)");
     expect(source).toContain("S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT");

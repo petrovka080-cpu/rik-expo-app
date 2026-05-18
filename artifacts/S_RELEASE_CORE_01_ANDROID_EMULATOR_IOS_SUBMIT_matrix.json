@@ -1,5 +1,5 @@
 {
-  "final_status": "GREEN_ANDROID_LOCAL_REBUILD_INSTALL_READY",
+  "final_status": "GREEN_ANDROID_EMULATOR_AND_IOS_BUILD_SUBMIT_GATE",
   "android": {
     "status": "PASS",
     "physical_device_required": false,
@@ -8,10 +8,14 @@
     "apk_built": true,
     "apk_installed_on_emulator": true,
     "aab_used_for_direct_install": false,
-    "artifact_path": "artifacts/release/android-emulator.apk",
     "runtime_smoke": "PASS",
     "google_play_submit": false,
-    "emulator_boot_completed": false
+    "emulator_boot_completed": false,
+    "anrDialogObserved": false,
+    "anrDialogHandledByWait": false,
+    "build_id": "local-gradle",
+    "artifact_path": "artifacts/release/android-emulator.apk",
+    "exact_reason": null
   },
   "ios": {
     "status": "PASS",
@@ -23,8 +27,8 @@
     "eas_submit_finished": true,
     "app_store_connect_submit_proof": true,
     "testflight_or_processing_status_captured": true,
-    "build_id": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
-    "submit_id": "49fe5597-8b91-4df8-851e-65f93a76a9a1",
+    "build_id": "db1025ce-da62-4ac5-badf-aaa73855182d",
+    "submit_id": "d40f13c0-b455-4709-a8d4-ff152b09c97d",
     "exact_reason": null
   },
   "ota": {
@@ -42,5 +46,18 @@
     "credentials_in_cli_args": false,
     "credentials_printed": false,
     "artifacts_redacted": true
+  },
+  "gates": {
+    "focused_tests": "PASS",
+    "android_emulator_smoke": "PASS",
+    "ios_build": "PASS",
+    "ios_submit": "PASS",
+    "tsc": "PASS",
+    "lint": "PASS",
+    "jest": "PASS",
+    "architecture_scanner": "PASS",
+    "git_diff_check": "PASS",
+    "artifact_json_parse": "PASS",
+    "release_verify": "PENDING"
   }
 }
