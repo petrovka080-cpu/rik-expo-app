@@ -131,6 +131,9 @@ const maestroBinary =
     "bin",
     process.platform === "win32" ? "maestro.bat" : "maestro",
   );
+const uiAutomatorDumpTimeoutMs = 60000;
+const uiAutomatorDumpRetryCount = 1;
+const responseSmokeTimeoutMs = 120000;
 
 function runCommand(
   command: string,
@@ -460,6 +463,7 @@ async function runMaestroFlows(params: {
   debugOutputDir: string;
   maestroRoleEnv: Record<string, string>;
   secretValues: readonly string[];
+  timeoutMs?: number;
 }): Promise<void> {
   void params.debugOutputDir;
   await runMaestroTestWithDriverRepair({
@@ -471,13 +475,28 @@ async function runMaestroFlows(params: {
     maestroBinary,
     deviceId: params.deviceId,
     reportPath: params.reportPath,
+    timeoutMs: params.timeoutMs,
   });
 }
 
 function dumpAndroidHierarchy(deviceId: string): string {
   const dumpPath = "/sdcard/rik_ai_role_screen_window.xml";
-  adbWithTimeout(deviceId, ["shell", "uiautomator", "dump", dumpPath], 20000, true);
-  return adbWithTimeout(deviceId, ["exec-out", "cat", dumpPath], 10000, true);
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt <= uiAutomatorDumpRetryCount; attempt += 1) {
+    try {
+      return adbWithTimeout(
+        deviceId,
+        ["shell", `uiautomator dump ${dumpPath} && cat ${dumpPath}`],
+        uiAutomatorDumpTimeoutMs,
+        true,
+      );
+    } catch (error) {
+      lastError = error;
+      waitForDeviceTransport(deviceId);
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 2000);
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
 function observePromptPipeline(deviceId: string): PromptPipelineObservation {
@@ -757,6 +776,7 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
       debugOutputDir: responseSmokeDebugOutputDir,
       maestroRoleEnv,
       secretValues,
+      timeoutMs: responseSmokeTimeoutMs,
     });
   } catch (error) {
     responseSmokeStatus = "BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY";
@@ -820,20 +840,31 @@ export async function runAiRoleScreenKnowledgeMaestro(): Promise<AiRoleScreenKno
   return artifact;
 }
 
+function responseSmokeCanaryCannotFailRelease(artifact: AiRoleScreenKnowledgeArtifact): boolean {
+  if (artifact.final_status !== "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE") return false;
+  return (
+    artifact.response_smoke_blocking_release === false &&
+    artifact.response_smoke_exact_llm_text_assertion === false
+  );
+}
+
 if (require.main === module) {
+  const writeStdoutAndExit = (payload: unknown, exitCode: number): void => {
+    process.exitCode = exitCode;
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`, () => {
+      process.exit(exitCode);
+    });
+  };
+
   void runAiRoleScreenKnowledgeMaestro()
     .then((artifact) => {
-      console.info(JSON.stringify(artifact, null, 2));
-      if (artifact.final_status !== "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE") {
-        process.exitCode = 1;
-      }
+      const releaseGateExitCode = artifact.final_status === "GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE" ? 0 : 1;
+      const exitCode = responseSmokeCanaryCannotFailRelease(artifact) ? releaseGateExitCode : 1;
+      writeStdoutAndExit(artifact, exitCode);
     })
     .catch((error) => {
-      if (error instanceof Error) {
-        console.error(error.stack || error.message);
-      } else {
-        console.error(error);
-      }
-      process.exitCode = 1;
+      const message = error instanceof Error ? error.stack || error.message : String(error);
+      process.stderr.write(`${message}\n`);
+      process.exit(1);
     });
 }

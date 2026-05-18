@@ -86,7 +86,24 @@ describe("runAiRoleScreenKnowledgeMaestro", () => {
     expect(source).toContain("createResponseSmokeFlowFiles");
     expect(source).toContain("buildResponseSmokeFlowSource");
     expect(source).toContain("responseSmokeReportFile");
+    expect(source).toContain("responseSmokeTimeoutMs = 120000");
+    expect(source).toContain("timeoutMs: responseSmokeTimeoutMs");
     expect(source).toContain("responseSmokeStatus = \"BLOCKED_AI_RESPONSE_SMOKE_TIMEOUT_CANARY\"");
+    expect(source).toContain("responseSmokeCanaryCannotFailRelease");
     expect(source).toContain("artifact.final_status !== \"GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE\"");
+    expect(source).toContain("artifact.final_status === \"GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE\" ? 0 : 1");
+  });
+
+  it("uses bounded device-side uiautomator dump with retry for prompt pipeline proof", () => {
+    expect(source).toContain("uiAutomatorDumpTimeoutMs = 60000");
+    expect(source).toContain("uiAutomatorDumpRetryCount = 1");
+    expect(source).toContain('["shell", `uiautomator dump ${dumpPath} && cat ${dumpPath}`]');
+    expect(source).toContain("waitForDeviceTransport(deviceId)");
+  });
+
+  it("forces CLI exit after writing the artifact so Maestro handles cannot hang the process", () => {
+    expect(source).toContain("writeStdoutAndExit");
+    expect(source).toContain("process.exit(exitCode)");
+    expect(source).toContain("GREEN_AI_ROLE_SCREEN_DETERMINISTIC_RELEASE_GATE\" ? 0 : 1");
   });
 });

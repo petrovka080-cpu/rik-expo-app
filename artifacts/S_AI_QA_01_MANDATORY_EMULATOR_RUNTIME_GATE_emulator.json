@@ -3,39 +3,15 @@
   "android_emulator_ready": true,
   "android_installed_runtime_smoke": "PASS",
   "rebuild_requirement": {
-    "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
-    "require_rebuild": true,
+    "final_status": "PASS_ANDROID_REBUILD_NOT_REQUIRED",
+    "require_rebuild": false,
     "changed_files": [
-      "scripts/e2e/aiScreenMagicScopedWaveProof.ts",
-      "scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts",
       "scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts",
-      "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "src/features/ai/screenMagic/aiScreenMagicButtonResolver.ts",
-      "src/features/ai/screenMagic/aiScreenMagicEngine.ts",
-      "src/features/ai/screenMagic/aiScreenMagicPolicy.ts",
-      "src/features/ai/screenMagic/aiScreenMagicProof.ts",
-      "src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine.ts",
-      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-      "src/features/ai/screenMagic/aiScreenMagicTypes.ts",
-      "src/features/ai/screenMagic/aiScreenMagicUserCopy.ts",
-      "tests/ai/aiChatUsability.contract.test.ts",
-      "tests/ai/aiScreenContextQaFoundation.contract.test.ts",
-      "tests/ai/aiScreenMagicButtonResult.contract.test.ts",
-      "tests/ai/aiScreenMagicEngine.contract.test.ts",
-      "tests/ai/aiScreenMagicUserCopy.contract.test.ts",
-      "tests/architecture/aiChatNoGenericFallback.contract.test.ts"
+      "scripts/release/verifyNativeAiReleaseProofBlockers.ts",
+      "tests/e2e/runAiRoleScreenKnowledgeMaestro.contract.test.ts",
+      "tests/release/verifyNativeAiReleaseProofBlockers.contract.test.ts"
     ],
-    "ai_mobile_runtime_files": [
-      "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "src/features/ai/screenMagic/aiScreenMagicButtonResolver.ts",
-      "src/features/ai/screenMagic/aiScreenMagicEngine.ts",
-      "src/features/ai/screenMagic/aiScreenMagicPolicy.ts",
-      "src/features/ai/screenMagic/aiScreenMagicProof.ts",
-      "src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine.ts",
-      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-      "src/features/ai/screenMagic/aiScreenMagicTypes.ts",
-      "src/features/ai/screenMagic/aiScreenMagicUserCopy.ts"
-    ],
+    "ai_mobile_runtime_files": [],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
       "app/(tabs)/add.tsx",
@@ -1215,13 +1191,13 @@
     "ai_mobile_runtime_source_fingerprint": "7b2b7b745c4ae19379a12b6236ff928f121e24be99eb2f221262570b81c35680",
     "installed_apk_source_fingerprint": "7b2b7b745c4ae19379a12b6236ff928f121e24be99eb2f221262570b81c35680",
     "source_fingerprint_matches_installed_apk": true,
-    "local_android_rebuild_install_after_source_change": true,
-    "backend_or_scripts_only": false,
+    "local_android_rebuild_install_after_source_change": false,
+    "backend_or_scripts_only": true,
     "installed_runtime_smoke_required": true,
-    "local_android_rebuild_install_required": true,
-    "local_android_rebuild_install": "PASS",
+    "local_android_rebuild_install_required": false,
+    "local_android_rebuild_install": "NOT_REQUIRED",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "6f790e99ec4fa4ac34b655a2b9aaaa7cae6b1735680e5f367ae0cb26573e2552",
+    "changed_files_fingerprint": "b03d3e9e12c726c7e28c5b6dd62dd1778288d3bd5f77f519b10ceb4952cd6111",
     "exact_reason": null
   },
   "emulator_boot_completed": false,
@@ -1232,5 +1208,5 @@
   "selected_android_api_level": "34",
   "fake_emulator_pass": false,
   "secrets_printed": false,
-  "exact_reason": "Command timed out after 20000ms: adb -s emulator-5556 shell uiautomator dump /sdcard/rik_ai_role_screen_window.xml"
+  "exact_reason": null
 }

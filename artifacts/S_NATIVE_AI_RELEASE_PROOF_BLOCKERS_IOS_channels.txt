@@ -1,0 +1,46 @@
+Channel:
+Name    development
+ID      019c8f3a-c756-76f5-a0b7-9c64a87279da
+Status  Active
+
+Branches pointed at this channel and their most recent update group:
+
+Branch           development
+Platforms        android
+Runtime Version  3552019e19dfce67fd75a6cc56d7cc63e137edec
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 development de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         79ce6c1e-5fde-4807-b98d-55ef7fc92ef3
+
+———
+
+Channel:
+Name    preview
+ID      019c8db4-65b5-7da6-95a4-68f15301cb93
+Status  Active
+
+Branches pointed at this channel and their most recent update group:
+
+Branch           preview
+Platforms        ios
+Runtime Version  67b43f2c5bcf4a40913c9c0433209614d5bd5255
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 preview de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         03b9cdba-a23d-4d59-bb94-9bf221329cac
+
+———
+
+Channel:
+Name    production
+ID      019c8d74-c158-704b-a58a-119171e25920
+Status  Active
+
+Branches pointed at this channel and their most recent update group:
+
+Branch           production
+Platforms        android
+Runtime Version  3552019e19dfce67fd75a6cc56d7cc63e137edec
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 production de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         1c2805c3-c1d3-481f-ae71-044119904974
+★ eas-cli@18.13.0 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.

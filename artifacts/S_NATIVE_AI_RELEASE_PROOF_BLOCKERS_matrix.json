@@ -1,0 +1,28 @@
+{
+  "wave": "S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_CLOSEOUT",
+  "final_status": "BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE",
+  "current_head_synced_with_origin": true,
+  "worktree_clean": true,
+  "app_source_changed_since_last_ios_signoff": true,
+  "android_adb_runtime_stable": true,
+  "android_uiautomator_dump_pass": true,
+  "android_ai_routes_targetable": true,
+  "android_blank_screen": false,
+  "android_debug_runtime_copy_visible": false,
+  "ios_delivery_proof_current": false,
+  "ios_build_signoff_current": false,
+  "ios_submit_proof_current": false,
+  "web_used_as_native_proof": false,
+  "android_used_as_ios_proof": false,
+  "blind_android_rebuild": false,
+  "blind_ios_build": false,
+  "blind_ota_publish": false,
+  "fake_green_claimed": false,
+  "exact_blockers": [
+    "BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE",
+    "BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE",
+    "BLOCKED_IOS_BUILD_SIGNOFF_REQUIRED",
+    "BLOCKED_AI_QA04_IOS_BUILD_STALE_COMMIT",
+    "BLOCKED_AI_QA04_IOS_SUBMIT_PROOF_MISSING"
+  ]
+}

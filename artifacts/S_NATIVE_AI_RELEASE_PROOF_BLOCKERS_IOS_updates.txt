@@ -1,0 +1,7 @@
+Branch name may not be empty.
+★ eas-cli@18.13.0 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+    Error: update:list command failed.

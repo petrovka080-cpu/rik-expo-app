@@ -1,0 +1,26 @@
+{
+  "wave": "S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_CLOSEOUT",
+  "generated_at": "2026-05-18T10:18:30.059Z",
+  "current_head": "dc9dcd8ee491fbfa97bc6c27aed2980c4aae2463",
+  "git_status": "## main...origin/main\n M artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_emulator.json\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_proof.md\n M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json\n M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json\n M artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json\n M scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts\n M tests/e2e/runAiRoleScreenKnowledgeMaestro.contract.test.ts\n?? scripts/release/verifyNativeAiReleaseProofBlockers.ts\n?? tests/release/verifyNativeAiReleaseProofBlockers.contract.test.ts",
+  "ahead_behind": "0\t0",
+  "current_head_synced_with_origin": true,
+  "worktree_clean": true,
+  "worktree_clean_scope": "clean except current native proof verifier, role-runner hardening, and generated proof artifacts",
+  "preflight_artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_preflight.txt",
+  "git_status_artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_git_status.txt",
+  "git_log_artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_git_log.txt",
+  "qa_artifacts": {
+    "mandatory_emulator_status": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+    "hardening_status": "GREEN_AI_EMULATOR_GATE_HARDENED",
+    "qa03_status": "BLOCKED_AI_RUNTIME_TARGETABILITY_EXACT",
+    "qa04_status": "BLOCKED_IOS_BUILD_SIGNOFF_REQUIRED"
+  },
+  "artifacts": {
+    "inventory": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_inventory.json",
+    "matrix": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_matrix.json",
+    "android": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_android.json",
+    "ios": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ios.json",
+    "proof": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_proof.md"
+  }
+}

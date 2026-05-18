@@ -1,0 +1,100 @@
+{
+  "final_status": "GREEN_NATIVE_AI_RELEASE_PROOF_READY",
+  "adb_command": "sdk-adb",
+  "devices": [
+    "emulator-5554",
+    "emulator-5556"
+  ],
+  "selected_serial": "emulator-5556",
+  "package_name": "com.azisbek_dzhantaev.rikexpoapp",
+  "emulator_selected_correctly": true,
+  "boot_completed": true,
+  "package_installed": true,
+  "app_launches": true,
+  "uiautomator_dump_pass": true,
+  "launch_artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_launch.xml",
+  "launch_proof": {
+    "dumpPass": true,
+    "rnViewsVisible": true,
+    "routeSpecificContentVisible": true,
+    "aiRouteTargetable": true,
+    "blankScreen": false,
+    "loginScreenObserved": false,
+    "debugRuntimeCopyVisible": false,
+    "exactBlocker": null,
+    "exactReason": null
+  },
+  "routes": [
+    {
+      "route": "rik:///ai",
+      "artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_1_rik_ai.xml",
+      "dumpPass": true,
+      "rnViewsVisible": true,
+      "routeSpecificContentVisible": true,
+      "aiRouteTargetable": true,
+      "blankScreen": false,
+      "loginScreenObserved": false,
+      "debugRuntimeCopyVisible": false,
+      "exactBlocker": null,
+      "exactReason": null
+    },
+    {
+      "route": "rik:///ai-command-center",
+      "artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_2_rik_ai_command_center.xml",
+      "dumpPass": true,
+      "rnViewsVisible": true,
+      "routeSpecificContentVisible": true,
+      "aiRouteTargetable": true,
+      "blankScreen": false,
+      "loginScreenObserved": false,
+      "debugRuntimeCopyVisible": false,
+      "exactBlocker": null,
+      "exactReason": null
+    },
+    {
+      "route": "rik://ai-command-center",
+      "artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_3_rik_ai_command_center.xml",
+      "dumpPass": true,
+      "rnViewsVisible": true,
+      "routeSpecificContentVisible": true,
+      "aiRouteTargetable": true,
+      "blankScreen": false,
+      "loginScreenObserved": false,
+      "debugRuntimeCopyVisible": false,
+      "exactBlocker": null,
+      "exactReason": null
+    },
+    {
+      "route": "rik:///ai-procurement-copilot",
+      "artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_4_rik_ai_procurement_copilot.xml",
+      "dumpPass": true,
+      "rnViewsVisible": true,
+      "routeSpecificContentVisible": true,
+      "aiRouteTargetable": true,
+      "blankScreen": false,
+      "loginScreenObserved": false,
+      "debugRuntimeCopyVisible": false,
+      "exactBlocker": null,
+      "exactReason": null
+    },
+    {
+      "route": "rik:///ai-approval-inbox",
+      "artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_ui_5_rik_ai_approval_inbox.xml",
+      "dumpPass": true,
+      "rnViewsVisible": true,
+      "routeSpecificContentVisible": true,
+      "aiRouteTargetable": true,
+      "blankScreen": false,
+      "loginScreenObserved": false,
+      "debugRuntimeCopyVisible": false,
+      "exactBlocker": null,
+      "exactReason": null
+    }
+  ],
+  "android_ai_routes_targetable": true,
+  "android_blank_screen": false,
+  "android_debug_runtime_copy_visible": false,
+  "logcat_artifact": "artifacts/S_NATIVE_AI_RELEASE_PROOF_BLOCKERS_ANDROID_logcat_excerpt.txt",
+  "exact_reason": null,
+  "fake_green_claimed": false
+}

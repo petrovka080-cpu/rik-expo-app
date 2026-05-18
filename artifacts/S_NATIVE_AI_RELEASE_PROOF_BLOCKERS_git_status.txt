@@ -1,0 +1,18 @@
+$ git status --short --branch
+exit=0 timedOut=false
+## main...origin/main
+ M artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_emulator.json
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_proof.md
+ M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json
+ M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json
+ M artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json
+ M scripts/e2e/runAiRoleScreenKnowledgeMaestro.ts
+ M tests/e2e/runAiRoleScreenKnowledgeMaestro.contract.test.ts
+?? scripts/release/verifyNativeAiReleaseProofBlockers.ts
+?? tests/release/verifyNativeAiReleaseProofBlockers.contract.test.ts

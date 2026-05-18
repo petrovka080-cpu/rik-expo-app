@@ -1,0 +1,35 @@
+Branches:
+
+Branch           production
+Platforms        android
+Runtime Version  3552019e19dfce67fd75a6cc56d7cc63e137edec
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 production de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         1c2805c3-c1d3-481f-ae71-044119904974
+
+———
+
+Branch           preview
+Platforms        android
+Runtime Version  3552019e19dfce67fd75a6cc56d7cc63e137edec
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 preview de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         188ce14c-f852-42be-8310-8127105a5e7b
+
+———
+
+Branch           development
+Platforms        android
+Runtime Version  3552019e19dfce67fd75a6cc56d7cc63e137edec
+Message          "S-OTA-ALL-EAS-CHANNELS-CLIENT-CHANGES-PREFLIGHT-AND-PUBLISH-1 development de74868" (1 week ago by azisbek_dzhantaev)
+Group ID         79ce6c1e-5fde-4807-b98d-55ef7fc92ef3
+
+———
+
+Branch           main
+Platforms        android, ios
+Runtime Version  1.0.0
+Message          "S3: Lifecycle hardening — Buyer app-resume fix, typed lifecycle contract" (1 month ago by azisbek_dzhantaev)
+Group ID         8a5a514c-d755-4d03-a373-647d131f714a
+★ eas-cli@18.13.0 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
