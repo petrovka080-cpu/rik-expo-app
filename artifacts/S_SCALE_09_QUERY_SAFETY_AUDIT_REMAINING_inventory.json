@@ -1,6 +1,6 @@
 {
   "wave": "S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT",
-  "generatedAt": "2026-05-18T10:57:54.022Z",
+  "generatedAt": "2026-05-18T14:51:28.995Z",
   "source_verifier_wave": "S_SCALE_01_BOUNDED_DATABASE_QUERIES_CLOSEOUT",
   "source_verifier_status": "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY",
   "audit_unbounded_query_files_initial": 41,
