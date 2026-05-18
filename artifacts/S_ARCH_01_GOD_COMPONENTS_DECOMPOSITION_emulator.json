@@ -1,0 +1,11 @@
+{
+  "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
+  "target": "android-emulator",
+  "status": "PASS",
+  "android_runtime_checked": true,
+  "app_source_changed": false,
+  "user_visible_behavior_changed": false,
+  "remaining_god_components": 0,
+  "new_god_components_added": 0,
+  "fake_green_claimed": false
+}

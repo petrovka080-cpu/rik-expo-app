@@ -1,0 +1,132 @@
+{
+  "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
+  "generatedAt": "2026-05-18T21:31:34.802Z",
+  "component_line_threshold": 500,
+  "hook_pressure_threshold": 25,
+  "top_by_lines": [
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "lineCount": 496,
+      "hookCount": 20
+    },
+    {
+      "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
+      "lineCount": 490,
+      "hookCount": 1
+    },
+    {
+      "file": "src/components/PeriodPickerSheet.tsx",
+      "lineCount": 487,
+      "hookCount": 4
+    },
+    {
+      "file": "src/screens/foreman/ForemanAiQuickModal.tsx",
+      "lineCount": 487,
+      "hookCount": 2
+    },
+    {
+      "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
+      "lineCount": 480,
+      "hookCount": 2
+    },
+    {
+      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
+      "lineCount": 478,
+      "hookCount": 0
+    },
+    {
+      "file": "src/features/auctions/AuctionDetailScreen.tsx",
+      "lineCount": 478,
+      "hookCount": 2
+    },
+    {
+      "file": "src/screens/office/useOfficeHubScreenController.tsx",
+      "lineCount": 475,
+      "hookCount": 24
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+      "lineCount": 468,
+      "hookCount": 5
+    },
+    {
+      "file": "src/features/reports/ReportsDashboardScreen.tsx",
+      "lineCount": 466,
+      "hookCount": 9
+    },
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "lineCount": 465,
+      "hookCount": 13
+    },
+    {
+      "file": "src/screens/profile/components/ProfileMainSections.tsx",
+      "lineCount": 464,
+      "hookCount": 0
+    }
+  ],
+  "top_by_hooks": [
+    {
+      "file": "src/screens/office/useOfficeHubScreenController.tsx",
+      "lineCount": 475,
+      "hookCount": 24
+    },
+    {
+      "file": "src/screens/director/DirectorSubcontractTab.tsx",
+      "lineCount": 399,
+      "hookCount": 21
+    },
+    {
+      "file": "src/screens/profile/ProfileContent.tsx",
+      "lineCount": 421,
+      "hookCount": 21
+    },
+    {
+      "file": "src/features/chat/ChatScreen.tsx",
+      "lineCount": 460,
+      "hookCount": 20
+    },
+    {
+      "file": "src/screens/director/DirectorReportsModal.tsx",
+      "lineCount": 496,
+      "hookCount": 20
+    },
+    {
+      "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
+      "lineCount": 288,
+      "hookCount": 15
+    },
+    {
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 412,
+      "hookCount": 14
+    },
+    {
+      "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+      "lineCount": 325,
+      "hookCount": 14
+    },
+    {
+      "file": "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+      "lineCount": 247,
+      "hookCount": 14
+    },
+    {
+      "file": "src/components/map/ResultsBottomSheet.tsx",
+      "lineCount": 465,
+      "hookCount": 13
+    },
+    {
+      "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+      "lineCount": 239,
+      "hookCount": 13
+    },
+    {
+      "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "lineCount": 380,
+      "hookCount": 11
+    }
+  ],
+  "findings": [],
+  "blockers": []
+}
