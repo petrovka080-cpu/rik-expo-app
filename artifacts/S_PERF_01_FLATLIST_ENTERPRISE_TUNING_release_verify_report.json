@@ -1,0 +1,213 @@
+{
+  "mode": "verify",
+  "timestamp": "2026-05-18T17:35:49.699Z",
+  "repo": {
+    "gitBranch": "main",
+    "headCommit": "37e96055929753ba2a00537d0959797f3b7e1735",
+    "originMainCommit": "37e96055929753ba2a00537d0959797f3b7e1735",
+    "worktreeClean": true,
+    "envFilePolicyValid": true,
+    "trackedEnvFiles": [
+      ".env.example"
+    ],
+    "unsafeTrackedEnvFiles": [],
+    "headMatchesOriginMain": true,
+    "localCommitsAheadOriginMain": 0,
+    "originMainCommitsAheadHead": 0,
+    "syncStatus": "synced",
+    "syncAction": "none",
+    "requiredSyncApprovalKeys": []
+  },
+  "gates": [
+    {
+      "name": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "expo-lint",
+      "command": "npx expo lint",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "architecture-anti-regression",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest-run-in-band",
+      "command": "npm test -- --runInBand",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest",
+      "command": "npm test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "classification": {
+    "kind": "runtime-ota",
+    "changeClass": "js-ui",
+    "files": [
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_emulator.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_inventory.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_matrix.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_proof.md",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_web.json",
+      "scripts/e2e/runFlatListPerformanceMaestro.ts",
+      "scripts/e2e/runFlatListPerformanceWeb.ts",
+      "scripts/performance/verifyFlatListTuning.ts",
+      "src/features/chat/ChatScreen.tsx",
+      "src/features/reports/ReportsDashboardScreen.tsx",
+      "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "src/lib/performance/listPerformancePolicy.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+      "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+      "tests/architecture/noUnboundedScrollViewMaps.contract.test.ts",
+      "tests/e2e/flatListPerformanceMaestro.contract.test.ts",
+      "tests/e2e/flatListPerformanceWeb.contract.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/performance/flatListTuning.contract.test.ts"
+    ],
+    "nonRuntimeFiles": [
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_emulator.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_inventory.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_matrix.json",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_proof.md",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_web.json",
+      "scripts/e2e/runFlatListPerformanceMaestro.ts",
+      "scripts/e2e/runFlatListPerformanceWeb.ts",
+      "scripts/performance/verifyFlatListTuning.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+      "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+      "tests/architecture/noUnboundedScrollViewMaps.contract.test.ts",
+      "tests/e2e/flatListPerformanceMaestro.contract.test.ts",
+      "tests/e2e/flatListPerformanceWeb.contract.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/performance/flatListTuning.contract.test.ts"
+    ],
+    "runtimeFiles": [
+      "src/features/chat/ChatScreen.tsx",
+      "src/features/reports/ReportsDashboardScreen.tsx",
+      "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "src/lib/performance/listPerformancePolicy.ts"
+    ],
+    "buildRequiredFiles": [],
+    "reasons": [
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_emulator.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_inventory.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_proof.md is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_web.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "scripts/e2e/runFlatListPerformanceMaestro.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "scripts/e2e/runFlatListPerformanceWeb.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "scripts/performance/verifyFlatListTuning.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/features/chat/ChatScreen.tsx is runtime JS/TS code and requires full preflight before OTA.",
+      "src/features/reports/ReportsDashboardScreen.tsx is runtime JS/TS code and requires full preflight before OTA.",
+      "src/features/supplierShowcase/SupplierShowcaseScreen.tsx is runtime JS/TS code and requires full preflight before OTA.",
+      "src/lib/performance/listPerformancePolicy.ts is runtime JS/TS code and requires full preflight before OTA.",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/api/remainingSafeListPaginationBatch8.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/architecture/noUnboundedScrollViewMaps.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/e2e/flatListPerformanceMaestro.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/e2e/flatListPerformanceWeb.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/perf/performance-budget.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/performance/flatListTuning.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped."
+    ],
+    "packageJsonMutationKind": "none"
+  },
+  "migrationPolicy": {
+    "migrationFiles": [],
+    "highRiskFiles": [],
+    "productionDbApprovalRequired": false,
+    "requiredApprovalKeys": [],
+    "missingApprovalKeys": [],
+    "approvalSatisfied": true,
+    "nextSafeWave": null,
+    "risks": [],
+    "blockers": []
+  },
+  "aiMandatoryEmulatorRuntimeGate": {
+    "required": false,
+    "artifactPath": "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+    "finalStatus": null,
+    "androidInstalledRuntimeSmoke": null,
+    "fakeEmulatorPass": null,
+    "secretsPrinted": null,
+    "exactReason": null,
+    "blockers": [],
+    "hardeningArtifactPath": "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+    "hardeningFinalStatus": null,
+    "hardeningCoreReleaseArtifactOverwritten": null,
+    "hardeningAiGateArtifactIsolated": null
+  },
+  "runtimePolicy": {
+    "resolvedRuntimeVersion": "policy:fingerprint",
+    "runtimePolicy": "policy:fingerprint",
+    "runtimeVersionStrategy": "fingerprint",
+    "runtimePolicyValid": true,
+    "runtimePolicyReason": "runtimeVersion uses the fingerprint policy.",
+    "runtimeProofConsistent": true,
+    "runtimeProofReason": "release extra truth matches the configured runtime policy.",
+    "buildRequired": false
+  },
+  "startupPolicy": {
+    "updatesEnabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "startupPolicyValid": true,
+    "startupPolicyReason": "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000."
+  },
+  "readiness": {
+    "status": "pass",
+    "otaDisposition": "allow",
+    "blockers": []
+  },
+  "requiredArtifacts": [],
+  "missingArtifacts": [],
+  "targetChannel": null,
+  "expectedBranch": null,
+  "releaseMessage": null,
+  "rolloutPercentage": null,
+  "commitRange": "HEAD^..HEAD",
+  "otaPublish": null,
+  "releaseMetadata": {
+    "gitSha": "present",
+    "appVersion": "present",
+    "buildLineage": "present",
+    "runtimeVersion": "present",
+    "channel": "missing",
+    "branch": "missing",
+    "platform": "not_applicable",
+    "otaDisposition": "candidate",
+    "rollbackReady": true,
+    "sentrySourceMaps": "not_applicable",
+    "binarySourceMapsProven": "not_applicable",
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "otaPublished": false,
+    "easUpdateTriggered": false,
+    "missing": [
+      "channel",
+      "branch"
+    ],
+    "warnings": []
+  }
+}

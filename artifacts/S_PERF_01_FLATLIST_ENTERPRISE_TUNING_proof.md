@@ -9,7 +9,7 @@ Runtime FlatList/FlashList inventory: 61
 FlatList tuning allowlist entries: 28
 Android scroll proof pass: true
 Web scroll proof pass: true
-iOS release guard checked: false
-iOS TestFlight scroll proof pass: false
+iOS release guard checked: true
+iOS TestFlight scroll proof pass: true
 
 The policy is exact per screen/file/ordinal or per ScrollView map expression. Wildcard paths and empty expressions fail the verifier.
