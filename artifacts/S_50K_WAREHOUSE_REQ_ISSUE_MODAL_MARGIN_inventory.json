@@ -1,0 +1,36 @@
+{
+  "wave": "S_50K_WAREHOUSE_REQ_ISSUE_MODAL_MARGIN",
+  "base_head": "50c8307f45ca99d53242908bdef23dd63fb1ccab",
+  "branch": "main",
+  "scope": "warehouse request issue modal component-debt margin",
+  "changed_files": [
+    "src/screens/warehouse/components/ReqIssueModal.tsx",
+    "src/screens/warehouse/components/ReqIssueModal.parts.tsx",
+    "tests/perf/performance-budget.test.ts"
+  ],
+  "source_changes": {
+    "ReqIssueModal.tsx": {
+      "line_count_after": 253,
+      "responsibility": "modal orchestration, data derivation, stable callbacks, FlashList wiring"
+    },
+    "ReqIssueModal.parts.tsx": {
+      "line_count_after": 286,
+      "responsibility": "presentation-only header, cart footer, close button, and styles"
+    }
+  },
+  "component_debt": {
+    "god_component_line_threshold": 500,
+    "req_issue_modal_below_threshold": true,
+    "shared_parts_below_threshold": true,
+    "architecture_suite_god_component_count": 0,
+    "architecture_suite_hook_pressure_component_count": 0
+  },
+  "perf_budget": {
+    "source_module_budget": 1300,
+    "new_owner_allowance_files": 1,
+    "allowance_exact_paths": [
+      "src/screens/warehouse/components/ReqIssueModal.parts.tsx"
+    ],
+    "broad_allowlists_used": false
+  }
+}

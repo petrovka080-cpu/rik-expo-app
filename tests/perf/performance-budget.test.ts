@@ -683,6 +683,9 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "screens", "office", "useOfficePostReturnSubtreeRenderer.tsx"),
       path.join(SRC, "screens", "warehouse", "components", "WarehouseReportsTab.styles.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const s50kWarehouseReqIssueModalMarginFiles = [
+      path.join(SRC, "screens", "warehouse", "components", "ReqIssueModal.parts.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1176,6 +1179,8 @@ describe("performance budget — bundle module count", () => {
     // plus focused src-owned regression tests.
     // S-AUDIT_BATTLE_13 adds one permanent AIAssistant static style boundary
     // plus focused src-owned regression tests.
+    // S-50K-WAREHOUSE-REQ-ISSUE-MODAL-MARGIN adds one warehouse issue modal
+    // presentation owner to keep the interactive modal below component-debt budgets.
     // S-AUDIT_BATTLE_14 adds one permanent ProfileContent load-state render boundary
     // plus focused src-owned regression tests.
     // S-AUDIT_BATTLE_41 adds one permanent BuyerSubcontractTab form model boundary.
@@ -1487,6 +1492,7 @@ describe("performance budget — bundle module count", () => {
     expect(sScale10AgentBffProcurementOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale11CatalogRequestServiceOwnerSplitFiles).toBeLessThanOrEqual(3);
     expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(9);
+    expect(s50kWarehouseReqIssueModalMarginFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1695,7 +1701,8 @@ describe("performance budget — bundle module count", () => {
         sScale10AgentBffProcurementOwnerSplitFiles -
         sScale11CatalogRequestServiceOwnerSplitFiles -
         sAiProduct09ScreenMagicFiles -
-        sComponentDebtCloseoutFiles,
+        sComponentDebtCloseoutFiles -
+        s50kWarehouseReqIssueModalMarginFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

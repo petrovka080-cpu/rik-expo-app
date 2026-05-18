@@ -1,11 +1,9 @@
 // src/screens/warehouse/components/ReqIssueModal.tsx
 import React, { useCallback, useMemo } from "react";
-import { View, Text, Pressable, Platform, StyleSheet } from "react-native";
+import { View, Text, Platform } from "react-native";
 import RNModal from "../../../ui/React19SafeModal";
-import { Ionicons } from "@expo/vector-icons";
-import { uomLabelRu } from "../warehouse.uom";
 
-import { UI, s } from "../warehouse.styles";
+import { UI } from "../warehouse.styles";
 import { nz } from "../warehouse.utils";
 import type { ReqHeadRow, ReqItemUiRow, ReqPickLine } from "../warehouse.types";
 import {
@@ -14,8 +12,12 @@ import {
   type ReqIssueModalRowShape,
 } from "./reqIssueModal.row.model";
 import { ReqIssueModalRow } from "./ReqIssueModalRow";
-
-import IconSquareButton from "../../../ui/IconSquareButton";
+import {
+  CloseSquare,
+  ReqIssueCartFooter,
+  ReqIssueHeadCard,
+  reqIssueModalStyles as localStyles,
+} from "./ReqIssueModal.parts";
 import { FlashList } from "../../../ui/FlashList";
 
 type Props = {
@@ -60,39 +62,6 @@ type HeadLoose = (ReqHeadRow | ReqItemUiRow) & {
   waiting_stock?: boolean;
 };
 
-function CloseSquare({
-  onPress,
-  disabled,
-  accessibilityLabel,
-  size = 44,
-  iconSize = 20,
-}: {
-  onPress: () => void;
-  disabled?: boolean;
-  accessibilityLabel?: string;
-  size?: number;
-  iconSize?: number;
-}) {
-  return (
-    <IconSquareButton
-      onPress={onPress}
-      disabled={!!disabled}
-      loading={false}
-      accessibilityLabel={accessibilityLabel || "Закрыть"}
-      width={size}
-      height={size}
-      radius={16}
-      bg="rgba(255,255,255,0.06)"
-      bgPressed="rgba(255,255,255,0.10)"
-      bgDisabled="rgba(255,255,255,0.04)"
-      spinnerColor={UI.text}
-    >
-      <Ionicons name="close" size={iconSize} color={UI.text} />
-    </IconSquareButton>
-  );
-}
-
-// ✅ дедуп по request_item_id: берём "самую сильную" строку
 function parseHeaderMeta(raw: string): { contractor: string; phone: string; volume: string } {
   const out = { contractor: "", phone: "", volume: "" };
   const normalizePhone = (v: string) => {
@@ -205,10 +174,9 @@ export default function ReqIssueModal(props: Props) {
 
   const hasHead = !!(headObj || headLevel || headSystem || headZone || headContractor || headPhone || headVolume);
 
-  // ✅ 1) фильтр по qty_left > 0
   const rows = useMemo(() => (reqItems || []).filter((it) => nz(it.qty_left, 0) > 0), [reqItems]);
 
-  // ✅ Stable callbacks — not recreated per-renderItem call
+  // Stable callbacks avoid rebuilding every row render path.
   const handleChangeQty = useCallback((requestItemId: string, value: string) => {
     setReqQtyInputByItem((p) => ({ ...(p || {}), [requestItemId]: value }));
   }, [setReqQtyInputByItem]);
@@ -221,59 +189,29 @@ export default function ReqIssueModal(props: Props) {
     addReqPickLine(shape.item);
   }, [addReqPickLine]);
 
-  // ✅ Memoized cart footer — not rebuilt on every render
+  const reqPickLines = useMemo(() => Object.values(reqPick || {}), [reqPick]);
+  const reqPickCount = reqPickLines.length;
+
+  const renderReqIssueItem = useCallback(({ item }: { item: ReqItemUiRow }) => (
+    <ReqIssueModalRow
+      shape={selectReqIssueModalRowShape(item, reqQtyInputByItem, issueBusy, recipientText)}
+      onChangeQty={handleChangeQty}
+      onPressMax={handlePressMax}
+      onPressAdd={handlePressAdd}
+      issueBusy={issueBusy}
+    />
+  ), [handleChangeQty, handlePressAdd, handlePressMax, issueBusy, recipientText, reqQtyInputByItem]);
+
   const cartFooter = useMemo(() => (
-    <View style={localStyles.cartFooter}>
-      <Text style={localStyles.cartSummaryText}>
-        В корзине: {Object.keys(reqPick || {}).length}
-      </Text>
-
-      {Object.values(reqPick || {}).slice(0, 8).map((ln) => (
-        <View
-          key={ln.request_item_id}
-          style={localStyles.cartRow}
-        >
-          <View style={localStyles.flexContent}>
-            <Text style={localStyles.cartItemTitle} numberOfLines={1}>
-              {String(ln.name_human || "Позиция")}
-            </Text>
-            <Text style={localStyles.cartItemMeta} numberOfLines={1}>
-              {`${uomLabelRu(ln.uom)} · ${String(ln.qty ?? "0")}`}
-            </Text>
-          </View>
-
-          <CloseSquare
-            onPress={() => removeReqPickLine(ln.request_item_id)}
-            accessibilityLabel="Убрать из корзины"
-            size={44}
-            iconSize={20}
-          />
-        </View>
-      ))}
-
-      <View style={localStyles.cartActions}>
-        <Pressable
-          testID="warehouse-req-submit"
-          accessibilityLabel="warehouse-req-submit"
-          onPress={() => submitReqPick()}
-          disabled={issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()}
-          style={[
-            s.openBtn,
-            {
-              borderColor: UI.accent,
-              opacity:
-                issueBusy || Object.keys(reqPick || {}).length === 0 || !recipientText.trim()
-                  ? 0.45
-                  : 1,
-            },
-          ]}
-        >
-          <Text style={s.openBtnText}>{issueBusy ? "..." : "Выдать выбранное"}</Text>
-        </Pressable>
-      </View>
-    </View>
-  ), [reqPick, issueBusy, recipientText, removeReqPickLine, submitReqPick]);
-
+    <ReqIssueCartFooter
+      reqPickLines={reqPickLines}
+      reqPickCount={reqPickCount}
+      recipientText={recipientText}
+      issueBusy={issueBusy}
+      removeReqPickLine={removeReqPickLine}
+      submitReqPick={submitReqPick}
+    />
+  ), [issueBusy, recipientText, removeReqPickLine, reqPickCount, reqPickLines, submitReqPick]);
   return (
     <RNModal
       isVisible={visible}
@@ -298,73 +236,35 @@ export default function ReqIssueModal(props: Props) {
           <Text style={localStyles.title} numberOfLines={1}>
             {title}
           </Text>
-          <CloseSquare onPress={onClose} accessibilityLabel="Свернуть" size={46} iconSize={22} />
+          <CloseSquare onPress={onClose} accessibilityLabel="\u0421\u0432\u0435\u0440\u043d\u0443\u0442\u044c" size={46} iconSize={22} />
         </View>
 
         {hasHead ? (
-          <View
-            style={[localStyles.headCard, { borderLeftColor: headAccentColor }]}
-          >
-            {!!headObj ? (
-              <Text style={localStyles.headText}>
-                {`Объект: ${headObj}`}
-              </Text>
-            ) : null}
-            {!!headLevel ? (
-              <Text style={localStyles.headText}>
-                {`Этаж/уровень: ${headLevel}`}
-              </Text>
-            ) : null}
-            {!!headSystem ? (
-              <Text style={localStyles.headText}>
-                {`Система: ${headSystem}`}
-              </Text>
-            ) : null}
-            {!!headZone ? (
-              <Text style={localStyles.headTextLast}>
-                {`Зона: ${headZone}`}
-              </Text>
-            ) : null}
-            {!!headContractor ? (
-              <Text style={localStyles.headText}>
-                {`Подрядчик: ${headContractor}`}
-              </Text>
-            ) : null}
-            {!!headPhone ? (
-              <Text style={localStyles.headText}>
-                {`Телефон: ${headPhone}`}
-              </Text>
-            ) : null}
-            {!!headVolume ? (
-              <Text style={localStyles.headTextLast}>
-                {`Объём: ${headVolume}`}
-              </Text>
-            ) : null}
-          </View>
+          <ReqIssueHeadCard
+            headObj={headObj}
+            headLevel={headLevel}
+            headSystem={headSystem}
+            headZone={headZone}
+            headContractor={headContractor}
+            headPhone={headPhone}
+            headVolume={headVolume}
+            headAccentColor={headAccentColor}
+          />
         ) : null}
-
         {reqItemsLoading ? (
-          <Text style={localStyles.loadingText}>Загрузка позиций…</Text>
+          <Text style={localStyles.loadingText}>{"\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043f\u043e\u0437\u0438\u0446\u0438\u0439..."}</Text>
         ) : (
           <FlashList
             data={rows}
-            // ✅ stable key: no positional index — prevents virtualization restarts on any update
+            // Stable key avoids virtualization restarts when rows update.
             keyExtractor={selectReqIssueModalRowKey}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             estimatedItemSize={148}
-            renderItem={({ item }) => (
-              <ReqIssueModalRow
-                shape={selectReqIssueModalRowShape(item, reqQtyInputByItem, issueBusy, recipientText)}
-                onChangeQty={handleChangeQty}
-                onPressMax={handlePressMax}
-                onPressAdd={handlePressAdd}
-                issueBusy={issueBusy}
-              />
-            )}
+            renderItem={renderReqIssueItem}
             ListEmptyComponent={
               <Text style={localStyles.emptyText}>
-                Нет строк для выдачи (лимиты закрыты).
+                {"\u041d\u0435\u0442 \u0441\u0442\u0440\u043e\u043a \u0434\u043b\u044f \u0432\u044b\u0434\u0430\u0447\u0438 (\u043b\u0438\u043c\u0438\u0442\u044b \u0437\u0430\u043a\u0440\u044b\u0442\u044b)."}
               </Text>
             }
             ListFooterComponent={cartFooter}
@@ -382,117 +282,3 @@ export default function ReqIssueModal(props: Props) {
     </RNModal>
   );
 }
-
-const localStyles = StyleSheet.create({
-  cartFooter: {
-    marginTop: 12,
-    paddingBottom: 12,
-  },
-  cartSummaryText: {
-    color: UI.sub,
-    fontWeight: "900",
-  },
-  cartRow: {
-    marginTop: 8,
-    flexDirection: "row",
-    gap: 10,
-    alignItems: "center",
-  },
-  flexContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  cartItemTitle: {
-    color: UI.text,
-    fontWeight: "900",
-  },
-  cartItemMeta: {
-    color: UI.sub,
-    fontWeight: "800",
-  },
-  cartActions: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "flex-end",
-  },
-  modal: {
-    margin: 0,
-    justifyContent: "flex-end",
-  },
-  sheet: {
-    height: "90%",
-    backgroundColor: UI.cardBg,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    paddingTop: 10,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-    flex: 1,
-    minHeight: 0,
-  },
-  handle: {
-    alignSelf: "center",
-    width: 44,
-    height: 5,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    marginBottom: 10,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 10,
-  },
-  title: {
-    flex: 1,
-    color: UI.text,
-    fontWeight: "900",
-    fontSize: 18,
-  },
-  headCard: {
-    marginTop: 8,
-    marginBottom: 12,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "#0F172A",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-    borderLeftWidth: 4,
-  },
-  headText: {
-    color: UI.text,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 4,
-  },
-  headTextLast: {
-    color: UI.text,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 0,
-  },
-  loadingText: {
-    color: UI.sub,
-    fontWeight: "800",
-  },
-  emptyText: {
-    color: UI.sub,
-    fontWeight: "800",
-    paddingTop: 12,
-  },
-  messageBox: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-    backgroundColor: "rgba(255,255,255,0.04)",
-  },
-  messageText: {
-    color: UI.text,
-    fontWeight: "900",
-  },
-});

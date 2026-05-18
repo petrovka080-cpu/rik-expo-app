@@ -1,0 +1,23 @@
+{
+  "wave": "S_50K_WAREHOUSE_REQ_ISSUE_MODAL_MARGIN",
+  "final_status": "GREEN_50K_WAREHOUSE_REQ_ISSUE_MODAL_MARGIN_READY",
+  "current_head_verified": true,
+  "source_owner_split": true,
+  "req_issue_modal_lines_after": 253,
+  "parts_owner_lines": 286,
+  "flashlist_render_item_stabilized": true,
+  "cart_footer_memoized": true,
+  "header_presentation_extracted": true,
+  "user_facing_copy_ascii_safe_unicode_escapes": true,
+  "component_debt_god_component_count": 0,
+  "component_debt_hook_pressure_component_count": 0,
+  "perf_budget_one_file_owner_allowance": true,
+  "android_installed_runtime_signoff": true,
+  "business_logic_changed": false,
+  "auth_logic_changed": false,
+  "provider_or_model_config_changed": false,
+  "db_writes_used": false,
+  "migrations_used": false,
+  "broad_allowlists_used": false,
+  "fake_green_claimed": false
+}
