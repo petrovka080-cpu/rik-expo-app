@@ -25,6 +25,7 @@ Closed a near-threshold component-debt risk in the warehouse request issue modal
 - `npm test -- --runInBand` PASS: 1295 suites passed, 1 skipped; 5466 tests passed, 1 skipped.
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json` PASS.
 - `npx tsx scripts/release/verifyAndroidInstalledBuildRuntime.ts` PASS: `GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF`.
+- `npm run release:verify -- --json --report-file artifacts\S_50K_WAREHOUSE_REQ_ISSUE_MODAL_MARGIN_release_verify_report.json` PASS for runtime commit `0488c5f4e61097f0c26c44f18d64d08db1a63215`: repo synced, all release gates passed, readiness `pass`, blockers `0`.
 
 ## Architecture Suite Snapshot
 
@@ -42,4 +43,4 @@ Closed a near-threshold component-debt risk in the warehouse request issue modal
 - No database writes.
 - No migrations.
 - No provider or model configuration changes.
-- No release artifact was claimed before release verification.
+- No iOS stale/signoff/submit blocker was reported by release verification, so no EAS/TestFlight rebuild was required.
