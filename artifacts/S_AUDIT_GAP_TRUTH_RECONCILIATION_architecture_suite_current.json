@@ -1,4 +1,4 @@
-﻿{
+{
   "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
   "directSupabase": {
     "serviceBypassBudget": 0,
@@ -283,8 +283,8 @@
     "runtimeInstances": 61,
     "flatListInstances": 7,
     "flashListInstances": 54,
-    "tunedInstances": 28,
-    "allowlistedInstances": 33,
+    "tunedInstances": 33,
+    "allowlistedInstances": 28,
     "violations": 0,
     "missingInitialNumToRender": 0,
     "missingMaxToRenderPerBatch": 0,
@@ -292,8 +292,8 @@
     "missingKeyExtractor": 0,
     "unstableKeyExtractor": 0,
     "removeClippedSubviewsDocumented": 29,
-    "allowlistEntries": 33,
-    "matchedAllowlistEntries": 33,
+    "allowlistEntries": 28,
+    "matchedAllowlistEntries": 28,
     "staleAllowlistEntries": 0,
     "allowlistMetadataErrors": 0,
     "editableHeavyExceptions": 1,
@@ -305,10 +305,10 @@
       },
       {
         "file": "src/screens/director/DirectorDashboard.tsx",
-        "count": 4
+        "count": 3
       },
       {
-        "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+        "file": "src/screens/buyer/components/BuyerItemEditor.tsx",
         "count": 2
       },
       {
@@ -1031,89 +1031,79 @@
     "reportOnly": true,
     "godComponentLineThreshold": 500,
     "hookPressureThreshold": 25,
-    "godComponentCount": 25,
-    "hookPressureComponentCount": 2,
+    "godComponentCount": 0,
+    "hookPressureComponentCount": 0,
     "topByLines": [
       {
-        "file": "src/features/chat/ChatScreen.tsx",
-        "lineCount": 653,
+        "file": "src/screens/director/DirectorReportsModal.tsx",
+        "lineCount": 496,
         "hookCount": 20
       },
       {
-        "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
-        "lineCount": 645,
-        "hookCount": 2
-      },
-      {
         "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
-        "lineCount": 633,
+        "lineCount": 490,
         "hookCount": 1
       },
       {
-        "file": "src/screens/director/DirectorSubcontractTab.tsx",
-        "lineCount": 620,
-        "hookCount": 21
+        "file": "src/components/PeriodPickerSheet.tsx",
+        "lineCount": 487,
+        "hookCount": 4
       },
       {
-        "file": "src/screens/director/DirectorDashboard.tsx",
-        "lineCount": 619,
-        "hookCount": 9
-      },
-      {
-        "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
-        "lineCount": 616,
-        "hookCount": 5
-      },
-      {
-        "file": "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
-        "lineCount": 611,
+        "file": "src/screens/foreman/ForemanAiQuickModal.tsx",
+        "lineCount": 487,
         "hookCount": 2
       },
       {
-        "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
-        "lineCount": 610,
+        "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
+        "lineCount": 480,
+        "hookCount": 2
+      },
+      {
+        "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
+        "lineCount": 478,
+        "hookCount": 0
+      },
+      {
+        "file": "src/features/auctions/AuctionDetailScreen.tsx",
+        "lineCount": 478,
+        "hookCount": 2
+      },
+      {
+        "file": "src/screens/office/useOfficeHubScreenController.tsx",
+        "lineCount": 475,
+        "hookCount": 24
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+        "lineCount": 468,
         "hookCount": 5
       },
       {
-        "file": "src/features/seller/SellerAreaScreen.tsx",
-        "lineCount": 607,
-        "hookCount": 8
+        "file": "src/features/reports/ReportsDashboardScreen.tsx",
+        "lineCount": 466,
+        "hookCount": 9
       },
       {
-        "file": "src/components/foreman/CatalogModal.tsx",
-        "lineCount": 605,
-        "hookCount": 7
+        "file": "src/components/map/ResultsBottomSheet.tsx",
+        "lineCount": 465,
+        "hookCount": 13
       },
       {
-        "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
-        "lineCount": 603,
-        "hookCount": 11
-      },
-      {
-        "file": "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
-        "lineCount": 597,
-        "hookCount": 4
+        "file": "src/screens/profile/components/ProfileMainSections.tsx",
+        "lineCount": 464,
+        "hookCount": 0
       }
     ],
     "topByHooks": [
       {
-        "file": "src/features/ai/AIAssistantScreen.tsx",
-        "lineCount": 532,
-        "hookCount": 29
-      },
-      {
         "file": "src/screens/office/useOfficeHubScreenController.tsx",
-        "lineCount": 509,
-        "hookCount": 25
-      },
-      {
-        "file": "src/components/map/useMapScreenController.tsx",
-        "lineCount": 520,
-        "hookCount": 23
+        "lineCount": 475,
+        "hookCount": 24
       },
       {
         "file": "src/screens/director/DirectorSubcontractTab.tsx",
-        "lineCount": 620,
+        "lineCount": 399,
         "hookCount": 21
       },
       {
@@ -1123,12 +1113,12 @@
       },
       {
         "file": "src/features/chat/ChatScreen.tsx",
-        "lineCount": 653,
+        "lineCount": 460,
         "hookCount": 20
       },
       {
         "file": "src/screens/director/DirectorReportsModal.tsx",
-        "lineCount": 570,
+        "lineCount": 496,
         "hookCount": 20
       },
       {
@@ -1137,13 +1127,13 @@
         "hookCount": 15
       },
       {
-        "file": "src/screens/contractor/useContractorScreenController.tsx",
-        "lineCount": 535,
-        "hookCount": 15
+        "file": "src/features/ai/AIAssistantScreen.tsx",
+        "lineCount": 412,
+        "hookCount": 14
       },
       {
         "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
-        "lineCount": 538,
+        "lineCount": 325,
         "hookCount": 14
       },
       {
@@ -1155,6 +1145,16 @@
         "file": "src/components/map/ResultsBottomSheet.tsx",
         "lineCount": 465,
         "hookCount": 13
+      },
+      {
+        "file": "src/screens/accountant/AccountantSubcontractTab.tsx",
+        "lineCount": 239,
+        "hookCount": 13
+      },
+      {
+        "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+        "lineCount": 380,
+        "hookCount": 11
       }
     ]
   },
