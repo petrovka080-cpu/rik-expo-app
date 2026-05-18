@@ -1,6 +1,6 @@
 {
   "wave": "S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_CLOSEOUT",
-  "checkedAt": "2026-05-16T17:50:17.185Z",
+  "checkedAt": "2026-05-18T15:45:45.622Z",
   "status": "PASS",
   "baseUrl": "http://localhost:8099",
   "webServerStartedByVerifier": false,
@@ -70,7 +70,7 @@
       "path": "/ai-approval-inbox",
       "finalUrl": "http://localhost:8099/ai-approval-inbox",
       "loaded": true,
-      "bodyLength": 226,
+      "bodyLength": 929,
       "whiteScreen": false,
       "errorOverlayVisible": false,
       "routeBoundaryRecorded": true
@@ -80,7 +80,7 @@
       "path": "/ai",
       "finalUrl": "http://localhost:8099/ai",
       "loaded": true,
-      "bodyLength": 3696,
+      "bodyLength": 47,
       "whiteScreen": false,
       "errorOverlayVisible": false,
       "routeBoundaryRecorded": true

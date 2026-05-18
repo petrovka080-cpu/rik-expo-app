@@ -1,0 +1,42 @@
+{
+  "wave": "S_SCALE_10_ERROR_BOUNDARY_AUDIT_REMAINING_CLOSEOUT",
+  "base_head": "b21ba1cd1225374781c909129f0bd9a95ee60cb7",
+  "branch": "main",
+  "scope": "route error boundary remaining audit verification",
+  "verifier": "scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
+  "current_verifier_status": "GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY",
+  "routes": {
+    "routes_total": 41,
+    "routes_with_boundary_or_exception": 41,
+    "routes_missing_boundary": 0,
+    "screen_routes_total": 33,
+    "screen_routes_with_boundary": 33,
+    "remaining_screen_routes_without_boundary": 0,
+    "alias_routes_total": 3,
+    "alias_routes_resolve_to_wrapped_targets": true,
+    "layout_routes_exempt": true,
+    "utility_routes_exempt": true,
+    "root_and_auth_routes_covered": true
+  },
+  "runtime_proof": {
+    "web_artifact": "artifacts/S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_web.json",
+    "web_status": "PASS",
+    "web_target_count": 8,
+    "web_no_white_screen_normal_boot": true,
+    "android_maestro_artifact": "artifacts/S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_emulator.json",
+    "android_maestro_status": "PASS",
+    "android_maestro_target_count": 8,
+    "android_installed_runtime_status": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF"
+  },
+  "safety": {
+    "app_code_changed": false,
+    "new_hooks_added": false,
+    "business_logic_changed": false,
+    "navigation_semantics_changed": false,
+    "db_writes_used": false,
+    "migrations_used": false,
+    "provider_or_model_config_changed": false,
+    "broad_exception_used": false,
+    "fake_green_claimed": false
+  }
+}
