@@ -37,6 +37,12 @@
     "npm_test_suites": "1300 passed, 1 skipped",
     "npm_test_tests": "5476 passed, 1 skipped",
     "architecture_anti_regression_suite_json": "PASS",
-    "release_verify_json": "PENDING_POST_COMMIT_CLEAN_SYNCED_HEAD"
-  }
+    "release_verify_json": "PASS"
+  },
+  "release_verify_readiness": "pass",
+  "release_verify_ota_disposition": "skip",
+  "release_verify_blockers": [],
+  "release_verify_eas_build_triggered": false,
+  "release_verify_eas_submit_triggered": false,
+  "release_verify_ota_published": false
 }

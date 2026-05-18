@@ -59,4 +59,4 @@ No app/source/runtime code changed in this wave, so iOS TestFlight rebuild/submi
 - `git diff --check`: PASS.
 - `npm test -- --runInBand`: PASS, 1300 suites passed / 1 skipped, 5476 tests passed / 1 skipped.
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json`: PASS.
-- `npm run release:verify -- --json`: PENDING_POST_COMMIT_CLEAN_SYNCED_HEAD. Release guard requires a clean synced worktree, so this artifact-only wave must be committed and pushed before the final release guard run.
+- `npm run release:verify -- --json`: PASS on clean synced HEAD; readiness `pass`, OTA disposition `skip`, blockers `[]`, EAS build/submit/update not triggered.
