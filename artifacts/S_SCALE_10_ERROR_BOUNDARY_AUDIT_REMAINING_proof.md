@@ -39,6 +39,7 @@ Updated runtime artifacts:
 - `npm test -- --runInBand tests/scale/routeErrorBoundaryCoverage.contract.test.ts tests/architecture/allRoutesHaveErrorBoundary.contract.test.ts tests/errors/routeErrorBoundaryUserCopy.contract.test.ts` PASS: 3 suites, 6 tests.
 - `npm test -- --runInBand` PASS: 1295 suites passed, 1 skipped; 5466 tests passed, 1 skipped.
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json` PASS.
+- `npm run release:verify -- --json --report-file artifacts\S_SCALE_10_ERROR_BOUNDARY_AUDIT_REMAINING_release_verify_report.json` PASS for `befa43d40f3371cda485e1e2f155a1c42a3c719d`: repo synced, classification `non-runtime`, readiness `pass`, blockers `0`, iOS blockers `0`.
 
 ## Safety
 
@@ -50,4 +51,5 @@ Updated runtime artifacts:
 - No migrations.
 - No provider or model configuration changes.
 - No broad route exception was added.
+- No iOS EAS/TestFlight rebuild was required because no app/source runtime code changed and release verification reported no iOS blockers.
 - No fake green was claimed.
