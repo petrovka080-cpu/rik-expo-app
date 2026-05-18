@@ -1,49 +1,151 @@
 {
-  "wave": "S_AUDIT_GAP_TRUTH_RECONCILIATION_CLOSEOUT",
-  "generatedAt": "2026-05-18T17:49:21.783Z",
-  "source_head_verified": "26b7dff4b9ab2f4de775da319814a3aa3f9cbac9",
-  "verifiers": [
-    {
-      "name": "verifyBoundedDatabaseQueries",
-      "command": "npx tsx scripts/scale/verifyBoundedDatabaseQueries.ts --write-artifacts",
-      "exit_code": 0,
-      "status": "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY"
-    },
-    {
-      "name": "verifyRouteErrorBoundaryCoverage",
-      "command": "npx tsx scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
-      "exit_code": 0,
-      "status": "GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY"
-    },
-    {
-      "name": "verifyTimerLifecycleCleanup",
-      "command": "npx tsx scripts/scale/verifyTimerLifecycleCleanup.ts",
-      "exit_code": 0,
-      "status": "GREEN_SCALE_TIMER_LIFECYCLE_CLEANUP_READY"
-    },
-    {
-      "name": "verifyRealtimeSubscriptionLifecycle",
-      "command": "npx tsx scripts/scale/verifyRealtimeSubscriptionLifecycle.ts",
-      "exit_code": 0,
-      "status": "GREEN_SCALE_REALTIME_SUBSCRIPTION_LIFECYCLE_READY"
-    },
-    {
-      "name": "verifySupabaseRpcRateLimitDiscipline",
-      "command": "npx tsx scripts/architecture/verifySupabaseRpcRateLimitDiscipline.ts",
-      "exit_code": 0,
-      "status": "GREEN_SCALE_RPC_RATE_LIMIT_DISCIPLINE_READY"
-    },
-    {
-      "name": "verifyFlatListTuning",
-      "command": "npx tsx scripts/performance/verifyFlatListTuning.ts",
-      "exit_code": 0,
-      "status": "PASS"
-    },
-    {
-      "name": "architecture_anti_regression_suite",
-      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
-      "exit_code": 0,
-      "status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED"
-    }
-  ]
+    "bounded":  {
+                    "final_status":  "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY",
+                    "remaining_unbounded_select_findings":  0,
+                    "remaining_unbounded_rpc_list_findings":  0,
+                    "artifacts":  {
+                                      "inventory":  "artifacts/S_SCALE_01_BOUNDED_DATABASE_QUERIES_inventory.json",
+                                      "matrix":  "artifacts/S_SCALE_01_BOUNDED_DATABASE_QUERIES_matrix.json",
+                                      "web":  "artifacts/S_SCALE_01_BOUNDED_DATABASE_QUERIES_web.json",
+                                      "proof":  "artifacts/S_SCALE_01_BOUNDED_DATABASE_QUERIES_proof.md"
+                                  },
+                    "audit_remaining_artifacts":  {
+                                                      "inventory":  "artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_inventory.json",
+                                                      "matrix":  "artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_matrix.json",
+                                                      "web":  "artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_web.json",
+                                                      "proof":  "artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_proof.md"
+                                                  }
+                },
+    "realtime_manager":  {
+                             "final_status":  "GREEN_SCALE_REALTIME_MANAGER_ENFORCEMENT_READY",
+                             "direct_realtime_channels_remaining":  0,
+                             "unmanaged_subscriptions_remaining":  0,
+                             "all_subscriptions_have_owner":  true,
+                             "active_channels_return_to_baseline":  true,
+                             "findings":  [
+
+                                          ]
+                         },
+    "realtime_lifecycle":  {
+                               "final_status":  "GREEN_SCALE_REALTIME_SUBSCRIPTION_LIFECYCLE_READY",
+                               "unmanaged_realtime_subscriptions_remaining":  0,
+                               "realtime_subscription_manager_added":  true,
+                               "active_channels_return_to_baseline":  true,
+                               "findings":  [
+
+                                            ]
+                           },
+    "timer":  {
+                  "final_status":  "GREEN_SCALE_TIMER_LIFECYCLE_CLEANUP_READY",
+                  "remaining_uncleaned_timer_findings":  0,
+                  "timer_registry_added":  true,
+                  "active_timers_return_to_baseline":  true,
+                  "findings":  [
+
+                               ]
+              },
+    "rpc_runtime":  {
+                        "final_status":  "GREEN_SCALE_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_READY",
+                        "findings":  0,
+                        "metrics":  {
+                                        "runtimeEnforcementEnabled":  true,
+                                        "wrappedSupabaseExportPresent":  true,
+                                        "adapterBoundaryPresent":  true,
+                                        "directRpcCalls":  51,
+                                        "directRpcRuntimeCovered":  51,
+                                        "directRpcBypassRemaining":  0,
+                                        "adapterRpcCallsClassified":  38,
+                                        "listLikeRpcEntrypoints":  27,
+                                        "listLikeRpcRuntimeLimited":  true,
+                                        "dynamicRpcBoundariesClassified":  true,
+                                        "mutationRpcApprovalSafe":  true,
+                                        "adminGreenPathFound":  false,
+                                        "serviceRoleGreenPathFound":  false
+                                    },
+                        "artifacts":  {
+                                          "inventory":  "artifacts/S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT_inventory.json",
+                                          "matrix":  "artifacts/S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT_matrix.json",
+                                          "proof":  "artifacts/S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT_proof.md"
+                                      }
+                    },
+    "rpc_discipline":  {
+                           "final_status":  "GREEN_SCALE_RPC_RATE_LIMIT_DISCIPLINE_READY",
+                           "findings":  0,
+                           "metrics":  {
+                                           "directSupabaseRpcCalls":  51,
+                                           "wrapperRpcEntrypoints":  16,
+                                           "dynamicDirectRpcCalls":  6,
+                                           "dynamicWrapperRpcEntrypoints":  4,
+                                           "uniqueLiteralRpcNames":  57,
+                                           "literalRpcNamesClassified":  57,
+                                           "dynamicRpcCallsClassified":  10,
+                                           "listLikeRpcEntrypoints":  32,
+                                           "listLikeRpcWithRatePolicy":  32,
+                                           "listLikeRpcBoundedOrMigrationGuarded":  true,
+                                           "registryPolicies":  134,
+                                           "duplicatePolicies":  0,
+                                           "broadLiveEnforcementEnabled":  false,
+                                           "remainingUnclassifiedRpcNames":  [
+
+                                                                             ],
+                                           "remainingUnclassifiedDynamicRpcCalls":  [
+
+                                                                                    ]
+                                       },
+                           "artifacts":  {
+                                             "inventory":  "artifacts/S_SCALE_05_RPC_RATE_LIMIT_DISCIPLINE_inventory.json",
+                                             "matrix":  "artifacts/S_SCALE_05_RPC_RATE_LIMIT_DISCIPLINE_matrix.json",
+                                             "proof":  "artifacts/S_SCALE_05_RPC_RATE_LIMIT_DISCIPLINE_proof.md"
+                                         }
+                       },
+    "flatlist":  {
+                     "status":  "PASS",
+                     "remaining_untuned_flatlists":  0,
+                     "unbounded_scrollview_maps_remaining":  0,
+                     "enterprise_targets":  9,
+                     "errors":  [
+
+                                ]
+                 },
+    "routes":  {
+                   "wave":  "S_SCALE_02_ROUTE_ERROR_BOUNDARY_COVERAGE_CLOSEOUT",
+                   "final_status":  "GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY",
+                   "metrics":  {
+                                   "routes_total":  41,
+                                   "routes_with_boundary_or_exception":  41,
+                                   "routes_missing_boundary":  0,
+                                   "real_screen_routes_without_boundary":  0,
+                                   "exception_routes_documented":  true,
+                                   "broad_exception_used":  false,
+                                   "raw_stack_user_visible":  false,
+                                   "secrets_user_visible":  false,
+                                   "retry_or_back_available":  true,
+                                   "web_runtime_checked":  true,
+                                   "android_runtime_checked":  true,
+                                   "new_hooks_added":  false,
+                                   "hidden_testid_shims_added":  false,
+                                   "business_logic_changed":  false,
+                                   "fake_green_claimed":  false,
+                                   "totalAppTsxRoutes":  41,
+                                   "screenRoutesTotal":  33,
+                                   "screenRoutesWithBoundary":  33,
+                                   "remainingScreenRoutesWithoutBoundary":  0,
+                                   "aliasRoutesTotal":  3,
+                                   "aliasRoutesResolveToWrappedTargets":  true,
+                                   "layoutRoutesExempt":  true,
+                                   "utilityRoutesExempt":  true,
+                                   "noBroadWhitelist":  true,
+                                   "rootAndAuthRoutesCovered":  true,
+                                   "hooksAdded":  false,
+                                   "businessLogicChanged":  false,
+                                   "fakeGreenClaimed":  false,
+                                   "dbWritesUsed":  false
+                               },
+                   "blockers":  [
+
+                                ],
+                   "findings":  [
+
+                                ]
+               }
 }

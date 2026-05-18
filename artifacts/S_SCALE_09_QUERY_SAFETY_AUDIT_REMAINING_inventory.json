@@ -1,6 +1,6 @@
 {
   "wave": "S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT",
-  "generatedAt": "2026-05-18T14:51:28.995Z",
+  "generatedAt": "2026-05-18T21:06:27.471Z",
   "source_verifier_wave": "S_SCALE_01_BOUNDED_DATABASE_QUERIES_CLOSEOUT",
   "source_verifier_status": "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY",
   "audit_unbounded_query_files_initial": 41,
@@ -13,8 +13,8 @@
     ".tsx"
   ],
   "select_inventory_count": 284,
-  "rpc_inventory_count": 102,
-  "approvals_count": 386,
+  "rpc_inventory_count": 51,
+  "approvals_count": 335,
   "findings": [],
   "metrics": {
     "initialUnboundedSelectFindings": 48,
@@ -26,7 +26,7 @@
     "queryLimitPolicyAdded": true,
     "noBroadWhitelist": true,
     "approvedExceptionCount": 0,
-    "approvedRpcExceptionCount": 15
+    "approvedRpcExceptionCount": 8
   },
   "per_callsite_exceptions_only": true,
   "broad_whitelist_used": false,

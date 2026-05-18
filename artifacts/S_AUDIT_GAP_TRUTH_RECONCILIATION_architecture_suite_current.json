@@ -2,11 +2,11 @@
   "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
   "directSupabase": {
     "serviceBypassBudget": 0,
-    "totalFindings": 215,
+    "totalFindings": 172,
     "serviceBypassFindings": 0,
     "serviceBypassFiles": 0,
-    "transportControlledFindings": 168,
-    "testOnlyFindings": 47,
+    "transportControlledFindings": 129,
+    "testOnlyFindings": 43,
     "generatedOrIgnoredFindings": 0,
     "topServiceBypassFiles": []
   },
@@ -173,20 +173,20 @@
       ]
     },
     "current": {
-      "total": 189,
-      "productionSource": 46,
+      "total": 188,
+      "productionSource": 45,
       "testSource": 143,
       "byPattern": {
         "as_any": 25,
         "ts_ignore": 6,
         "silent_catch": 15,
-        "unsafe_unknown_as": 143
+        "unsafe_unknown_as": 142
       },
       "productionByPattern": {
         "as_any": 0,
         "ts_ignore": 0,
         "silent_catch": 0,
-        "unsafe_unknown_as": 46
+        "unsafe_unknown_as": 45
       },
       "testByPattern": {
         "as_any": 25,
@@ -201,7 +201,7 @@
             "as_any": 0,
             "ts_ignore": 0,
             "silent_catch": 0,
-            "unsafe_unknown_as": 24
+            "unsafe_unknown_as": 23
           }
         },
         {

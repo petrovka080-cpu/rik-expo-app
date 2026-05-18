@@ -1,35 +1,26 @@
 {
   "wave": "S_AUDIT_GAP_TRUTH_RECONCILIATION_CLOSEOUT",
-  "generatedAt": "2026-05-18T17:49:21.783Z",
-  "scans": [
-    {
-      "name": "lists",
+  "generatedAt": "2026-05-18T21:13:27.637Z",
+  "scans": {
+    "lists": {
       "command": "rg -n \"FlatList|SectionList|VirtualizedList|ScrollView\" src app -g \"*.ts\" -g \"*.tsx\"",
-      "exit_code": 0,
       "match_count": 207,
       "file_count": 65
     },
-    {
-      "name": "realtime",
-      "command": "rg -n \"supabase\\.channel|\\.channel\\(|\\.subscribe\\(|removeChannel|removeAllChannels|postgres_changes\" src app -g \"*.ts\" -g \"*.tsx\"",
-      "exit_code": 0,
+    "realtime": {
+      "command": "rg -n \"supabase\\\\.channel|\\\\.channel\\\\(|\\\\.subscribe\\\\(|removeChannel|removeAllChannels|postgres_changes\" src app -g \"*.ts\" -g \"*.tsx\"",
       "match_count": 50,
       "file_count": 17
     },
-    {
-      "name": "rpc",
-      "command": "rg -n \"\\.rpc\\(\" src app -g \"*.ts\" -g \"*.tsx\"",
-      "exit_code": 0,
-      "match_count": 118,
-      "file_count": 58
+    "rpc": {
+      "command": "rg -n \"\\\\.rpc\\\\(\" src app -g \"*.ts\" -g \"*.tsx\"",
+      "match_count": 64,
+      "file_count": 32
     },
-    {
-      "name": "tsx_map_calls",
-      "command": "rg -n \"\\.map\\(\" src app -g \"*.tsx\"",
-      "exit_code": 0,
+    "tsx_map_calls": {
+      "command": "rg -n \"\\\\.map\\\\(\" src app -g \"*.tsx\"",
       "match_count": 228,
-      "file_count": 99,
-      "verifier_result": "unbounded_scrollview_maps_remaining: 0"
+      "file_count": 99
     }
-  ]
+  }
 }

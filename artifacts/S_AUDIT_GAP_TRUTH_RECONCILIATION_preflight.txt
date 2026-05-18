@@ -1,5 +1,7 @@
 wave: S_AUDIT_GAP_TRUTH_RECONCILIATION_CLOSEOUT
-captured_at: 2026-05-18T17:47:59.278Z
+captured_at: 2026-05-18T21:13:27.637Z
+source_head: 8145799e3ce705fdb5297a3315e20b8f05ca0a70
+origin_main: 8145799e3ce705fdb5297a3315e20b8f05ca0a70
 
 ## git status --short --branch
 ## main...origin/main
@@ -7,43 +9,11 @@ captured_at: 2026-05-18T17:47:59.278Z
 ## git rev-list --left-right --count HEAD...origin/main
 0	0
 
-## git log --oneline -30
-26b7dff4 Record flatlist tuning release verification
-37e96055 Tune production list rendering performance
-5d7d3c8e Record director report tuning release verification
-e19d3d94 Tune director report lists for scale
-2b0bb5f7 Record route error boundary release verification
-befa43d4 Close remaining audited route error boundary gaps
-b21ba1cd Record warehouse issue modal release verification
-0488c5f4 Add warehouse issue modal scale margin
-50c8307f Close remaining audited query safety gaps
-a609904e Reduce component debt below scale budget
-1006dc31 Reconcile current audit gaps with HEAD
-1b498443 Sign off iOS TestFlight QA03 QA04
-cb6311c3 Close remaining audited query safety gaps
-02c2582e Close native AI release proof blockers
-dc9dcd8e Fix AI chat usability and screen QA foundation
-5b8cc3e4 Refresh mobile AI runtime targetability proof
-44631e68 Prove mobile AI runtime delivery and targetability
-7fa30570 Prove mobile AI runtime delivery and targetability
-78bd8318 Prove mobile AI runtime delivery and targetability
-2b7f5c22 Add scoped AI procurement magic proof
-146e4297 Fix AI chat usability and screen QA foundation
-3ec16eaa Fix mobile AI runtime targetability signoff
-072e9916 Harden AI screen magic exact routing
-dbc5fa5c Resolve AI screen magic button clicks
-c18ade11 Add screen-by-screen AI magic execution
-e87df7a5 Split catalog request service ownership
-3542166e Split agent BFF procurement ownership
-4118bfc1 Split agent BFF intel graph ownership
-9b609ff3 Split agent BFF task stream ownership
-71bd927d Clean timer and realtime lifecycle ownership
-
 ## git diff --name-only
-(no output)
+(no output before artifact refresh)
 
 ## git diff --stat
-(no output)
+(no output before artifact refresh)
 
 ## git diff --check
-(no output)
+PASS before artifact refresh
