@@ -4,8 +4,7 @@ import { spawnSync } from "node:child_process";
 
 type IosDeliveryStatus =
   | "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY"
-  | "BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE"
-  | "BLOCKED_IOS_NO_BOOTED_SIMULATOR"
+  | "BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE"
   | "BLOCKED_IOS_ROUTE_OPEN_FAILED"
   | "BLOCKED_IOS_UI_PROOF_NOT_CAPTURED";
 
@@ -280,7 +279,7 @@ export function verifyAiScreenMagicIosDelivery(scope = defaultWave): IosDelivery
     return writeArtifacts(
       buildArtifact({
         scope,
-        status: "BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE",
+        status: "BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE",
         exactReason:
           "iOS runtime UI proof requires a macOS host with Xcode simctl or a physical iOS proof path; this run did not rebuild, publish OTA, or reuse Android proof as iOS proof.",
         appCodeFiles,
@@ -296,7 +295,7 @@ export function verifyAiScreenMagicIosDelivery(scope = defaultWave): IosDelivery
     return writeArtifacts(
       buildArtifact({
         scope,
-        status: "BLOCKED_IOS_NO_BOOTED_SIMULATOR",
+        status: "BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE",
         exactReason:
           "macOS/Xcode is available, but no booted iOS simulator was available for core AI route proof.",
         appCodeFiles,

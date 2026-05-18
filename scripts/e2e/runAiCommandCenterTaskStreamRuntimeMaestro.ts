@@ -170,6 +170,10 @@ function dumpUiAutomatorXml(deviceId: string): string {
   return runAdbCommand(deviceId, ["exec-out", "cat", "/sdcard/rik-command-center-task-stream.xml"], 30_000);
 }
 
+function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
 function hasUiId(xml: string, id: string): boolean {
   return xml.includes(id);
 }
@@ -189,6 +193,36 @@ function collectCommandCenterUiEvidence(deviceId: string): CommandCenterUiEviden
     approvalBoundaryVisible: hasUiId(xml, "ai.command.center.card.approval-required"),
     cardsOrEmptyStateVisible: taskStreamLoadedVisible || emptyStateVisible || cardsVisible,
   };
+}
+
+function isCompleteCommandCenterUiEvidence(evidence: CommandCenterUiEvidence): boolean {
+  return evidence.screenVisible && evidence.runtimeStatusVisible && evidence.cardsOrEmptyStateVisible;
+}
+
+function waitForCommandCenterUiEvidence(deviceId: string, timeoutMs = 45_000): CommandCenterUiEvidence {
+  const deadline = Date.now() + timeoutMs;
+  let lastEvidence: CommandCenterUiEvidence | null = null;
+  let lastError: unknown = null;
+
+  while (Date.now() <= deadline) {
+    try {
+      lastEvidence = collectCommandCenterUiEvidence(deviceId);
+      lastError = null;
+      if (isCompleteCommandCenterUiEvidence(lastEvidence)) {
+        return lastEvidence;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (Date.now() < deadline) {
+      sleepSync(1_000);
+    }
+  }
+
+  if (lastEvidence) return lastEvidence;
+  if (lastError) throw lastError;
+  return collectCommandCenterUiEvidence(deviceId);
 }
 
 function blocked(
@@ -287,7 +321,7 @@ function classifyMaestroFailure(error: unknown): {
 }
 
 function flowLines(mode: "loaded" | "empty"): string[] {
-  const targetLink = "rik://ai-command-center";
+  const targetLink = "rik:///ai-command-center";
 
   return [
     `appId: ${appId}`,
@@ -485,7 +519,7 @@ export async function runAiCommandCenterTaskStreamRuntimeMaestro(): Promise<AiCo
 
   let uiEvidence: CommandCenterUiEvidence;
   try {
-    uiEvidence = collectCommandCenterUiEvidence(deviceId);
+    uiEvidence = waitForCommandCenterUiEvidence(deviceId);
   } catch (error) {
     return blocked(
       "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE",

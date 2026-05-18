@@ -4014,9 +4014,10 @@ export function evaluateAiCommandCenterTaskStreamRuntimeGuardrail(params: {
     runtimeSource.includes("directMutationAllowed: false") &&
     !/\b(create_order|confirm_supplier|change_payment_status|change_warehouse_status)\s*\(/.test(runtimeSource);
   const submitForApprovalNoFinalExecution =
-    commandCenterSource.includes("Final mutation was not executed") &&
-    commandCenterSource.includes("submit_for_approval") &&
-    commandCenterSource.includes("mutationCount: 0");
+    /action\.action === "submit_for_approval"[\s\S]{0,800}mutationCount:\s*0[\s\S]{0,160}executed:\s*false/.test(
+      commandCenterSource,
+    ) &&
+    !/action\.action === "submit_for_approval"[\s\S]{0,800}executed:\s*true/.test(commandCenterSource);
   const noFakeCards =
     runtimeSource.includes("fakeCards: false") &&
     !/fake task card|fake card|hardcoded task/i.test(runtimeSource);
@@ -6597,8 +6598,8 @@ export function evaluateAiMandatoryEmulatorRuntimeGateGuardrail(params: {
   const rebuildPolicyPresent =
     Boolean(rebuildPolicySource?.includes("resolveAiAndroidRebuildRequirement")) &&
     Boolean(rebuildPolicySource?.includes("src/features/ai/")) &&
-    (Boolean(rebuildPolicySource?.includes("tests/e2e")) ||
-      Boolean(rebuildPolicySource?.includes("tests\\/e2e"))) &&
+    Boolean(rebuildPolicySource?.includes("isAiMobileRuntimeSourcePath")) &&
+    !Boolean(rebuildPolicySource?.includes("tests/e2e/**/*.yaml")) &&
     Boolean(rebuildPolicySource?.includes("BLOCKED_ANDROID_REBUILD_REQUIRED_FOR_AI_RUNTIME_PROOF"));
   const buildInstallRunnerPresent =
     Boolean(buildInstallSource?.includes("buildInstallAndroidPreviewForEmulator")) &&
@@ -7154,7 +7155,7 @@ export function evaluateDeveloperControlRuntimeTargetabilityGuardrail(params: {
       return flow.includes("clearState: false") && flow.includes('id: "auth.login.screen"') && flow.includes("runFlow:");
     });
   const commandCenterStableIdsChecked =
-    commandRunnerSource.includes("rik://ai-command-center") &&
+    commandRunnerSource.includes("rik:///ai-command-center") &&
     commandCenterRouteSource.includes("AiCommandCenterScreen") &&
     commandRunnerSource.includes("ai.command.center.screen") &&
     commandRunnerSource.includes("ai.command.center.runtime-status") &&
@@ -7168,7 +7169,7 @@ export function evaluateDeveloperControlRuntimeTargetabilityGuardrail(params: {
     procurementRunnerSource.includes("ai.procurement.copilot.context-loaded") &&
     procurementRunnerSource.includes("ai.procurement.copilot.empty-state") &&
     procurementSurfaceSource.includes("ai.procurement.copilot.empty-state") &&
-    procurementSurfaceSource.includes("fake_request=false") &&
+    !/fake_request|fake_suppliers|mutation_count|provider_called|external_intel_status/.test(procurementSurfaceSource) &&
     !procurementRunnerSource.includes("if (!requestReady)");
   const approvalPersistenceNonBlocking =
     routeSource.includes("approvalInbox") &&

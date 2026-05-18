@@ -1,190 +1,125 @@
-{
-  "wave": "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF",
-  "generated_at": "2026-05-17T13:11:16.285Z",
-  "current_head": "2b7f5c2246f712c30f6af2966877c9480399deee",
-  "origin_left_right_count": "0\t0",
-  "preflight_artifact": "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt",
-  "diff_patch_artifact": "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch",
-  "preflight": "## git status --short --branch\r\n## main...origin/main\r\n\r\n## git rev-list --left-right --count HEAD...origin/main\r\n0\t0\r\n\r\n## git diff --name-only\r\n\r\n## git diff --stat\r\n\r\n## git diff --check\r\n\r\ngit_diff_check_exit=0\r\n",
-  "current_diff_name_only": [
-    "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
-    "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json",
-    "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
-    "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json",
-    "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_emulator.json",
-    "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
-    "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json",
-    "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json",
-    "artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json",
-    "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json",
-    "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md"
-  ],
-  "current_diff_classification": "proof_artifacts_only_no_rebuild_no_ota",
-  "android_rebuild_required_from_current_diff": false,
-  "ios_rebuild_required_from_current_diff": false,
-  "ota_required_from_current_diff": false,
-  "app_config": {
-    "name": "rik-expo-app",
-    "slug": "rik-expo-app",
-    "scheme": "rik",
-    "version": "1.0.0",
-    "ios": {
-      "bundleIdentifier": "com.azisbekdzhantaev.rikexpoapp",
-      "buildNumber": "23",
-      "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "Доступ к микрофону нужен для записи аудио-сообщений.",
-        "NSLocationWhenInUseUsageDescription": "Доступ к геопозиции нужен для отображения вашего местоположения на карте.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Доступ к геопозиции нужен для маршрутов."
-      }
-    },
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 30000,
-      "url": "https://u.expo.dev/93959cca-1c92-4b59-b80a-f1a1f5dfdf5a"
-    },
-    "runtimeVersion": {
-      "policy": "fingerprint"
-    }
-  },
-  "eas_inventory": {
-    "cli_available": true,
-    "cli_version": "eas-cli/18.7.0 win32-x64 node-v20.19.6",
-    "channels_checked": true,
-    "branches_checked": true,
-    "update_list_default_command": "eas update:list --limit 20 --non-interactive",
-    "update_list_default_status": "FAILED_BRANCH_NAME_REQUIRED_ON_THIS_CLI",
-    "branch_update_lists_checked": [
-      "development",
-      "preview",
-      "production"
-    ],
-    "profiles": {
-      "development": {
-        "channel": "development",
-        "distribution": "internal",
-        "android": null,
-        "ios": null
-      },
-      "preview": {
-        "channel": "preview",
-        "distribution": "internal",
-        "android": {
-          "buildType": "apk"
-        },
-        "ios": null
-      },
-      "production": {
-        "channel": "production",
-        "distribution": "store",
-        "android": {
-          "buildType": "app-bundle"
-        },
-        "ios": {
-          "simulator": false
-        }
-      },
-      "production-emulator": {
-        "channel": "production",
-        "distribution": "internal",
-        "android": {
-          "buildType": "apk"
-        },
-        "ios": null
-      }
-    },
-    "channel_summary": {
-      "development": {
-        "branch": "development",
-        "latest_ios_runtime": "67b43f2c5bcf4a40913c9c0433209614d5bd5255",
-        "latest_android_runtime": "3552019e19dfce67fd75a6cc56d7cc63e137edec"
-      },
-      "preview": {
-        "branch": "preview",
-        "latest_ios_runtime": "67b43f2c5bcf4a40913c9c0433209614d5bd5255",
-        "latest_android_runtime": "3552019e19dfce67fd75a6cc56d7cc63e137edec"
-      },
-      "production": {
-        "branch": "production",
-        "latest_ios_runtime": "67b43f2c5bcf4a40913c9c0433209614d5bd5255",
-        "latest_android_runtime": "3552019e19dfce67fd75a6cc56d7cc63e137edec"
-      }
-    }
-  },
-  "ios_last_known_build": {
-    "artifact": "artifacts/S_RELEASE_IOS_SIGNOFF_CURRENT_HEAD_build.json",
-    "build_id": "b1d7e8ab-5bd0-4339-a12e-165b3d489c84",
-    "git_commit": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
-    "runtime_version": "be945428a984869a2cd7eac50f188296f9ed7cbc",
-    "current_head_when_captured": "979a4f20fe660a0f147efcfcbe8b22cb4e84230b",
-    "current_head_now": "2b7f5c2246f712c30f6af2966877c9480399deee",
-    "build_matches_current_head_now": false,
-    "app_source_changed_since_build": true,
-    "app_source_changed_count": 212,
-    "app_source_changed_sample": [
-      "app/(tabs)/ai.tsx",
-      "app/+not-found.tsx",
-      "app/ai-approval-inbox.tsx",
-      "app/ai-command-center.tsx",
-      "app/ai-procurement-copilot.tsx",
-      "app/auth/login.tsx",
-      "app/auth/register.tsx",
-      "app/auth/reset.tsx",
-      "app/index.tsx",
-      "app/sign-in.tsx",
-      "src/components/map/MapRenderer.web.tsx",
-      "src/components/map/MapScreen.market.transport.ts",
-      "src/components/map/useMapScreenController.tsx",
-      "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "src/features/ai/AIAssistantScreen.styles.ts",
-      "src/features/ai/AIAssistantScreen.tsx",
-      "src/features/ai/agent/agentBffRouteShell.ts",
-      "src/features/ai/agent/agentIntelGraphRoutes.ts",
-      "src/features/ai/agent/agentProcurementRoutes.ts",
-      "src/features/ai/agent/agentRuntimeBudgetPolicy.ts",
-      "src/features/ai/agent/agentRuntimeGateway.ts",
-      "src/features/ai/agent/agentRuntimeRoutePolicyRegistry.ts",
-      "src/features/ai/agent/agentRuntimeTransportRegistry.ts",
-      "src/features/ai/agent/agentTaskStreamRoutes.ts",
-      "src/features/ai/approvalRouter/aiApprovalActionEvidencePolicy.ts",
-      "src/features/ai/approvalRouter/aiApprovalActionPayloadRedaction.ts",
-      "src/features/ai/approvalRouter/aiApprovalActionRouter.ts",
-      "src/features/ai/approvalRouter/aiApprovalActionRouterTypes.ts",
-      "src/features/ai/assistantClient.ts",
-      "src/features/ai/assistantOrchestrator/aiScreenLocalActionSourcePolicy.ts",
-      "src/features/ai/assistantOrchestrator/aiScreenLocalAssistantOrchestrator.ts",
-      "src/features/ai/assistantOrchestrator/aiScreenLocalAssistantTypes.ts",
-      "src/features/ai/assistantOrchestrator/aiScreenLocalContextResolver.ts",
-      "src/features/ai/assistantPrompts.ts",
-      "src/features/ai/assistantUx/aiAssistantContextResolver.ts",
-      "src/features/ai/assistantUx/aiAssistantDeterministicAnswers.ts",
-      "src/features/ai/assistantUx/aiAssistantModuleKnowledge.ts",
-      "src/features/ai/assistantUx/aiAssistantUserFacingCopyPolicy.ts",
-      "src/features/ai/bffCoverage/aiBffMissingRoutePlanner.ts",
-      "src/features/ai/bffCoverage/aiBffRouteCoverageRegistry.ts",
-      "src/features/ai/bffCoverage/aiBffRouteCoverageTypes.ts",
-      "src/features/ai/bffCoverage/aiBffRouteCoverageVerifier.ts",
-      "src/features/ai/director/aiDirectorApprovalCandidate.ts",
-      "src/features/ai/director/aiDirectorCrossDomainEvidence.ts",
-      "src/features/ai/director/aiDirectorNextActionSelector.ts",
-      "src/features/ai/director/aiDirectorRiskPriorityScoring.ts",
-      "src/features/ai/director/aiDirectorTodayDecisionAssistant.ts",
-      "src/features/ai/documents/aiDocumentEvidenceResolver.ts",
-      "src/features/ai/documents/aiDocumentForbiddenActionPolicy.ts",
-      "src/features/ai/documents/aiDocumentKnowledgePolicy.ts",
-      "src/features/ai/documents/aiDocumentReadySummaryAssistant.ts",
-      "src/features/ai/documents/aiDocumentRouteRegistry.ts",
-      "src/features/ai/finance/aiAccountantTodayPaymentAssistant.ts",
-      "src/features/ai/finance/aiFinanceApprovalCandidate.ts",
-      "src/features/ai/finance/aiFinanceEvidenceResolver.ts",
-      "src/features/ai/finance/aiPaymentDraftRationale.ts",
-      "src/features/ai/finance/aiPaymentRiskClassifier.ts",
-      "src/features/ai/foreman/aiFieldCloseoutDraftEngine.ts",
-      "src/features/ai/foreman/aiForemanApprovalCandidate.ts",
-      "src/features/ai/foreman/aiForemanEvidenceResolver.ts"
-    ],
-    "native_config_changed_since_build": false,
-    "native_config_changed_files": []
-  }
+﻿{
+    "wave":  "S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF",
+    "generated_at":  "2026-05-18T00:56:50.1138650Z",
+    "git":  {
+                "branch_status":  "## main...origin/main\r\n M artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json\r\n M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios.json\r\n M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios_proof.md\r\n M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_matrix.json\r\n M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_proof.md\r\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json\r\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json\r\n M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md\r\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json\r\n M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json\r\n M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_emulator.json\r\n M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_ios.json\r\n M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_matrix.json\r\n M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_proof.md\r\n M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_emulator.json\r\n M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_inventory.json\r\n M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_ios.json\r\n M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json\r\n M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_proof.md\r\n M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json\r\n M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json\r\n M artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_android.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_matrix.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android_raw_adb.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_inventory.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_matrix.json\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt\r\n M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_proof.md\r\n M artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml\r\n M artifacts/S_MOBILE_ANDROID_ui_ai_command.xml\r\n M artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml\r\n M artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml\r\n M artifacts/S_MOBILE_ANDROID_ui_ai_root.xml\r\n M scripts/architecture_anti_regression_suite.ts\r\n M scripts/e2e/ensureAndroidMaestroDriverReady.ts\r\n M scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts\r\n M scripts/e2e/runAiCommandCenterRuntimeMaestro.ts\r\n M scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts\r\n M scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts\r\n M scripts/e2e/runAiCrossScreenRuntimeMaestro.ts\r\n M scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts\r\n M scripts/e2e/runAiScreenButtonActionMapMaestro.ts\r\n M scripts/e2e/verifyAiScreenMagicIosDelivery.ts\r\n M scripts/release/requireAndroidRebuildForAiSourceChanges.ts\r\n M src/features/ai/AIAssistantReadyProductPanels.tsx\r\n M src/features/ai/AIAssistantScreen.tsx\r\n M src/features/ai/approvalInbox/ApprovalInboxScreen.tsx\r\n M src/features/ai/assistantUx/aiAssistantContextResolver.ts\r\n M src/features/ai/commandCenter/AiCommandCenterScreen.tsx\r\n M src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx\r\n M src/features/ai/screenMagic/aiScreenMagicUserCopy.ts\r\n M src/features/ai/screenNative/aiScreenNativeUserCopy.ts\r\n M src/features/ai/screenWorkflows/aiScreenWorkflowUserCopy.ts\r\n M tests/ai/aiScreenMagicUserCopy.contract.test.ts\r\n M tests/ai/aiScreenNativeUserCopy.contract.test.ts\r\n M tests/ai/aiScreenWorkflowUserCopy.contract.test.ts\r\n M tests/architecture/architectureAntiRegressionSuite.test.ts\r\n M tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml\r\n M tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml\r\n M tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml\r\n M tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml\r\n M tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml\r\n M tests/e2e/aiRoleScreenKnowledge.e2e.test.ts\r\n M tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts\r\n M tests/e2e/commandCenterRuntimeTargetability.contract.test.ts\r\n M tests/e2e/developerControlCommandCenterTargetability.contract.test.ts\r\n M tests/e2e/developerControlLoginOrShell.contract.test.ts\r\n M tests/e2e/developerControlProcurementTargetability.contract.test.ts\r\n M tests/e2e/procurementCopilotRuntimeTargetability.contract.test.ts\r\n M tests/release/requireAndroidRebuildForAiSourceChanges.contract.test.ts",
+                "head_vs_origin_main":  "0\t0",
+                "changed_files":  [
+                                      "artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json",
+                                      "artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios.json",
+                                      "artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios_proof.md",
+                                      "artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_matrix.json",
+                                      "artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_proof.md",
+                                      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json",
+                                      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+                                      "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md",
+                                      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json",
+                                      "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+                                      "artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_emulator.json",
+                                      "artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_ios.json",
+                                      "artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_matrix.json",
+                                      "artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_proof.md",
+                                      "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_emulator.json",
+                                      "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_inventory.json",
+                                      "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_ios.json",
+                                      "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json",
+                                      "artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_proof.md",
+                                      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json",
+                                      "artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json",
+                                      "artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_android.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_matrix.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android_raw_adb.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_inventory.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_matrix.json",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt",
+                                      "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_proof.md",
+                                      "artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml",
+                                      "artifacts/S_MOBILE_ANDROID_ui_ai_command.xml",
+                                      "artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml",
+                                      "artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml",
+                                      "artifacts/S_MOBILE_ANDROID_ui_ai_root.xml",
+                                      "scripts/architecture_anti_regression_suite.ts",
+                                      "scripts/e2e/ensureAndroidMaestroDriverReady.ts",
+                                      "scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts",
+                                      "scripts/e2e/runAiCommandCenterRuntimeMaestro.ts",
+                                      "scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts",
+                                      "scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts",
+                                      "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts",
+                                      "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts",
+                                      "scripts/e2e/runAiScreenButtonActionMapMaestro.ts",
+                                      "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
+                                      "scripts/release/requireAndroidRebuildForAiSourceChanges.ts",
+                                      "src/features/ai/AIAssistantReadyProductPanels.tsx",
+                                      "src/features/ai/AIAssistantScreen.tsx",
+                                      "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+                                      "src/features/ai/assistantUx/aiAssistantContextResolver.ts",
+                                      "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+                                      "src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx",
+                                      "src/features/ai/screenMagic/aiScreenMagicUserCopy.ts",
+                                      "src/features/ai/screenNative/aiScreenNativeUserCopy.ts",
+                                      "src/features/ai/screenWorkflows/aiScreenWorkflowUserCopy.ts",
+                                      "tests/ai/aiScreenMagicUserCopy.contract.test.ts",
+                                      "tests/ai/aiScreenNativeUserCopy.contract.test.ts",
+                                      "tests/ai/aiScreenWorkflowUserCopy.contract.test.ts",
+                                      "tests/architecture/architectureAntiRegressionSuite.test.ts",
+                                      "tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml",
+                                      "tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml",
+                                      "tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml",
+                                      "tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml",
+                                      "tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml",
+                                      "tests/e2e/aiRoleScreenKnowledge.e2e.test.ts",
+                                      "tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts",
+                                      "tests/e2e/commandCenterRuntimeTargetability.contract.test.ts",
+                                      "tests/e2e/developerControlCommandCenterTargetability.contract.test.ts",
+                                      "tests/e2e/developerControlLoginOrShell.contract.test.ts",
+                                      "tests/e2e/developerControlProcurementTargetability.contract.test.ts",
+                                      "tests/e2e/procurementCopilotRuntimeTargetability.contract.test.ts",
+                                      "tests/release/requireAndroidRebuildForAiSourceChanges.contract.test.ts"
+                                  ]
+            },
+    "diff_classification":  {
+                                "script_test_artifact_only":  false,
+                                "app_code_changed":  true,
+                                "app_code_changed_files":  [
+                                                               "src/features/ai/AIAssistantReadyProductPanels.tsx",
+                                                               "src/features/ai/AIAssistantScreen.tsx",
+                                                               "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+                                                               "src/features/ai/assistantUx/aiAssistantContextResolver.ts",
+                                                               "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+                                                               "src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx",
+                                                               "src/features/ai/screenMagic/aiScreenMagicUserCopy.ts",
+                                                               "src/features/ai/screenNative/aiScreenNativeUserCopy.ts",
+                                                               "src/features/ai/screenWorkflows/aiScreenWorkflowUserCopy.ts"
+                                                           ],
+                                "native_or_config_changed":  false,
+                                "native_or_config_changed_files":  [
+
+                                                                   ],
+                                "android_rebuild_required_by_app_source":  true,
+                                "ios_fresh_js_delivery_required":  true,
+                                "native_build_may_be_required":  false
+                            },
+    "expo":  {
+                 "app_inventory_artifact":  "artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios_inventory.txt",
+                 "simctl_artifact":  "artifacts/S_MOBILE_IOS_simctl_booted.txt",
+                 "scheme":  "rik",
+                 "ios_bundle_identifier":  "com.azisbekdzhantaev.rikexpoapp",
+                 "runtime_policy":  "fingerprint",
+                 "updates_enabled":  true,
+                 "updates_check_automatically":  "ON_LOAD",
+                 "fallback_to_cache_timeout":  30000,
+                 "eas_channels_observed_read_only":  [
+                                                         "development",
+                                                         "preview",
+                                                         "production"
+                                                     ],
+                 "eas_preview_ios_update_observed":  true,
+                 "eas_update_list_read_failed":  "Branch name may not be empty."
+             }
 }

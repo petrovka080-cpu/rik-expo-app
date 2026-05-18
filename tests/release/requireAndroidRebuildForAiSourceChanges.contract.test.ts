@@ -15,12 +15,12 @@ import {
 } from "../../scripts/release/releaseGuard.shared";
 
 describe("Android rebuild policy for AI source changes", () => {
-  it("requires rebuild for AI/mobile runtime and stable e2e YAML changes", () => {
+  it("requires rebuild for AI/mobile runtime app code but not e2e YAML changes", () => {
     expect(isAiMobileRuntimeRebuildPath("src/features/ai/AIAssistantScreen.tsx")).toBe(true);
     expect(isAiMobileRuntimeRebuildPath("src/screens/director/DirectorDashboard.tsx")).toBe(true);
     expect(isAiMobileRuntimeRebuildPath("src/components/AppCombo.tsx")).toBe(true);
     expect(isAiMobileRuntimeRebuildPath("app/ai-command-center.tsx")).toBe(true);
-    expect(isAiMobileRuntimeRebuildPath("tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml")).toBe(true);
+    expect(isAiMobileRuntimeRebuildPath("tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml")).toBe(false);
   });
 
   it("does not require a fresh APK rebuild for scripts-only changes, while keeping runtime smoke mandatory", () => {

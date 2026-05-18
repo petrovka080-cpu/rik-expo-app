@@ -193,11 +193,11 @@ function createFlowFile(): string {
       "- tapOn:",
       '    id: "ai.command.center.action.create-draft"',
       "- assertVisible:",
-      '    text: "mutation_count=0; executed=false"',
+      '    text: "\u0418\u0418 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u043b \u0438 \u043d\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u043b \u043d\u0430\u0440\u0443\u0436\u0443."',
       "- tapOn:",
       '    id: "ai.command.center.action.submit-for-approval"',
       "- assertVisible:",
-      '    text: "mutation_count=0; executed=false"',
+      '    text: "\u0418\u0418 \u043d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0438\u0437\u043c\u0435\u043d\u0438\u043b \u0438 \u043d\u0435 \u043e\u0442\u043f\u0440\u0430\u0432\u0438\u043b \u043d\u0430\u0440\u0443\u0436\u0443."',
       "",
     ].join("\n"),
   );

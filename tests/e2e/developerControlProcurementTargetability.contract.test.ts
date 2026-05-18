@@ -30,8 +30,6 @@ describe("developer/control Procurement Copilot targetability", () => {
     ]) {
       expect(surface).toContain(testId);
     }
-    expect(surface).toContain("fake_request=false");
-    expect(surface).toContain("fake_suppliers=false");
-    expect(surface).toContain("mutation_count=0");
+    expect(surface).not.toMatch(/fake_request|fake_suppliers|mutation_count|provider_called|external_intel_status/);
   });
 });

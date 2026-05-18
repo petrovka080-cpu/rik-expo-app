@@ -8,7 +8,7 @@
     "procurement.copilot"
   ],
   "screens_covered": true,
-  "android_proof_pass": true,
+  "android_proof_pass": false,
   "ios_delivery_proof_pass": false,
   "web_proof_pass": true,
   "chat_dialog_not_tiny": true,
@@ -16,7 +16,7 @@
   "qa_from_screen_context": true,
   "buttons_visible": true,
   "buttons_clickable_on_web": true,
-  "buttons_targetable_on_android": true,
+  "buttons_targetable_on_android": false,
   "buttons_verified_on_ios": false,
   "safe_read_no_mutation": true,
   "draft_only_not_final_submit": true,

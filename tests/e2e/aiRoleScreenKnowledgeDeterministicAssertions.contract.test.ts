@@ -19,6 +19,8 @@ describe("AI role-screen deterministic knowledge assertions", () => {
     for (const flowPath of flowFiles) {
       const flow = read(flowPath);
 
+      expect(flow).toContain("rik:///ai?context=");
+      expect(flow).toContain("__debug");
       expect(flow).toContain('id: "ai.knowledge.preview"');
       expect(flow).toContain('id: "ai.knowledge.role"');
       expect(flow).toContain('id: "ai.knowledge.screen"');

@@ -238,8 +238,58 @@ async function dumpUiAutomatorXml(deviceId: string): Promise<string> {
   return runAdbCommand(deviceId, ["exec-out", "cat", "/sdcard/rik-window.xml"], 30_000);
 }
 
-async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkProof> {
-  try {
+async function waitForUiAutomatorEvidence(
+  deviceId: string,
+  predicate: (xml: string) => boolean,
+  timeoutMs = 45_000,
+): Promise<{ xml: string; matched: boolean; anrBlocked: boolean }> {
+  const deadline = Date.now() + timeoutMs;
+  let lastXml = "";
+  let lastError: unknown = null;
+
+  while (Date.now() <= deadline) {
+    try {
+      lastXml = await dumpUiAutomatorXml(deviceId);
+      if (hasSystemAnrDialog(lastXml)) {
+        return { xml: lastXml, matched: false, anrBlocked: true };
+      }
+      if (predicate(lastXml)) {
+        return { xml: lastXml, matched: true, anrBlocked: false };
+      }
+      lastError = null;
+    } catch (error) {
+      lastError = error;
+    }
+
+    if (Date.now() < deadline) {
+      await sleep(1_000);
+    }
+  }
+
+  if (lastError && !lastXml) {
+    throw lastError;
+  }
+  return { xml: lastXml, matched: false, anrBlocked: hasSystemAnrDialog(lastXml) };
+}
+
+function writeAdbEvidence(label: string, xml: string): void {
+  fs.writeFileSync(
+    path.join(projectRoot, "artifacts", `S_AI_MAGIC_11_${label}_adb.xml`),
+    xml,
+  );
+}
+
+async function collectDeepLinkEvidence(
+  deviceId: string,
+  label: string,
+  links: readonly string[],
+  predicate: (xml: string) => boolean,
+): Promise<{ matched: boolean; anrBlocked: boolean }> {
+  let lastResult: { xml: string; matched: boolean; anrBlocked: boolean } | null = null;
+
+  for (const [index, link] of links.entries()) {
+    runAdbCommand(deviceId, ["shell", "am", "force-stop", appId]);
+    await sleep(2_000);
     runAdbCommand(
       deviceId,
       [
@@ -250,13 +300,36 @@ async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkPro
         "-a",
         "android.intent.action.VIEW",
         "-d",
-        "rik://ai-command-center",
+        link,
         appId,
       ],
     );
-    await sleep(2_000);
-    const commandCenterXml = await dumpUiAutomatorXml(deviceId);
-    if (hasSystemAnrDialog(commandCenterXml)) {
+    const result = await waitForUiAutomatorEvidence(deviceId, predicate);
+    writeAdbEvidence(`${label}_${index + 1}`, result.xml);
+    lastResult = result;
+    if (result.anrBlocked || result.matched) {
+      return { matched: result.matched, anrBlocked: result.anrBlocked };
+    }
+  }
+
+  return {
+    matched: lastResult?.matched ?? false,
+    anrBlocked: lastResult?.anrBlocked ?? false,
+  };
+}
+
+async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkProof> {
+  try {
+    const commandCenterEvidence = await collectDeepLinkEvidence(
+      deviceId,
+      "command_center",
+      [
+        "rik://ai-command-center",
+        "rik:///ai-command-center",
+      ],
+      (xml) => hasUiId(xml, "ai.command_center.screen") && hasUiId(xml, "ai.command_center.task_stream"),
+    );
+    if (commandCenterEvidence.anrBlocked) {
       return {
         attempted: true,
         succeeded: false,
@@ -265,27 +338,18 @@ async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkPro
         exactReason: "Android system ANR dialog blocked ADB deep link proof before Maestro assertions.",
       };
     }
-    const commandCenterIdsVisible =
-      hasUiId(commandCenterXml, "ai.command_center.screen") &&
-      hasUiId(commandCenterXml, "ai.command_center.task_stream");
+    const commandCenterIdsVisible = commandCenterEvidence.matched;
 
-    runAdbCommand(
+    const approvalInboxEvidence = await collectDeepLinkEvidence(
       deviceId,
+      "approval_inbox",
       [
-        "shell",
-        "am",
-        "start",
-        "-W",
-        "-a",
-        "android.intent.action.VIEW",
-        "-d",
         "rik://ai-approval-inbox",
-        appId,
+        "rik:///ai-approval-inbox",
       ],
+      (xml) => hasUiId(xml, "ai.approval_inbox.screen") && hasUiId(xml, "ai.approval.inbox.status"),
     );
-    await sleep(2_000);
-    const approvalInboxXml = await dumpUiAutomatorXml(deviceId);
-    if (hasSystemAnrDialog(approvalInboxXml)) {
+    if (approvalInboxEvidence.anrBlocked) {
       return {
         attempted: true,
         succeeded: false,
@@ -294,9 +358,7 @@ async function collectAdbDeepLinkProof(deviceId: string): Promise<AdbDeepLinkPro
         exactReason: "Android system ANR dialog blocked ADB deep link proof before Maestro assertions.",
       };
     }
-    const approvalInboxIdsVisible =
-      hasUiId(approvalInboxXml, "ai.approval_inbox.screen") &&
-      hasUiId(approvalInboxXml, "ai.approval.inbox.status");
+    const approvalInboxIdsVisible = approvalInboxEvidence.matched;
 
     return {
       attempted: true,
@@ -414,7 +476,7 @@ function flowLines(): string[] {
     "          visible:",
     '            id: "profile-edit-open"',
     "          timeout: 30000",
-    '- openLink: "rik://ai-command-center"',
+    '- openLink: "rik:///ai-command-center"',
     "- extendedWaitUntil:",
     "    visible:",
     '      id: "ai.command_center.screen"',

@@ -31,12 +31,12 @@ describe("AI role-screen knowledge Maestro e2e contract", () => {
 
   it("covers the required role-screen AI knowledge flows without fake answers", () => {
     expect(directorFlow).toContain("E2E_DIRECTOR_EMAIL");
-    expect(directorFlow).toContain("rik://ai?context=director");
+    expect(directorFlow).toContain("rik:///ai?context=director__debug");
     expect(directorFlow).toContain('id: "ai.knowledge.preview"');
     expect(directorFlow).toContain('id: "ai.knowledge.approval-boundary"');
 
     expect(foremanFlow).toContain("E2E_FOREMAN_EMAIL");
-    expect(foremanFlow).toContain("rik://ai?context=foreman");
+    expect(foremanFlow).toContain("rik:///ai?context=foreman__debug");
     expect(foremanFlow).toContain("assertNotVisible");
     expect(foremanFlow).toContain("accounting_posting");
 

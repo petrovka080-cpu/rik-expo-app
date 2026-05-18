@@ -8,7 +8,8 @@ name: AI Role Screen Knowledge Accountant
       visible: "Wait"
     commands:
       - tapOn: "Wait"
-- openLink: "rik://ai?context=accountant"
+- stopApp
+- openLink: "rik:///ai?context=accountant__debug"
 - runFlow:
     when:
       visible:
@@ -31,7 +32,7 @@ name: AI Role Screen Knowledge Accountant
           visible:
             id: "profile-edit-open"
           timeout: 30000
-      - openLink: "rik://ai?context=accountant"
+      - openLink: "rik:///ai?context=accountant__debug"
 - extendedWaitUntil:
     visible:
       id: "ai.assistant.screen"

@@ -105,7 +105,6 @@ export function isAiMobileRuntimeRebuildPath(filePath: string): boolean {
   if (!normalized) return false;
   if (AI_MOBILE_RUNTIME_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return true;
   if (NAVIGATION_RUNTIME_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return true;
-  if (/^tests\/e2e\/.*\.ya?ml$/i.test(normalized)) return true;
   return false;
 }
 
@@ -115,7 +114,6 @@ function isAiMobileRuntimeSourcePath(filePath: string): boolean {
   if (/\.(?:test|spec)\.[cm]?[jt]sx?$/i.test(normalized)) return false;
   if (normalized.includes("/__tests__/")) return false;
   if (AI_MOBILE_RUNTIME_SOURCE_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return true;
-  if (/^tests\/e2e\/.*\.ya?ml$/i.test(normalized)) return true;
   return false;
 }
 
@@ -127,7 +125,6 @@ export function readCurrentAiMobileRuntimeSourceFiles(params: {
   const tracked = runGit(projectRoot, [
     "ls-files",
     ...AI_MOBILE_RUNTIME_SOURCE_PREFIXES,
-    "tests/e2e",
   ]);
   return dedupeSorted([
     ...tracked.filter(isAiMobileRuntimeSourcePath),

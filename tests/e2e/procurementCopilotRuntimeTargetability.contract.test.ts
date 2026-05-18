@@ -25,8 +25,8 @@ describe("Procurement Copilot runtime targetability closeout", () => {
 
     expect(runner).toContain("rik://ai-procurement-copilot");
     expect(runner).toContain("clearState: true");
-    expect(surface).toContain("fake_request=false");
-    expect(surface).toContain("fake_suppliers=false");
+    expect(surface).toContain("ai.procurement.copilot.empty-state");
+    expect(surface).not.toMatch(/fake_request|fake_suppliers|mutation_count|provider_called|external_intel_status/);
     expect(runner).not.toContain("fake_request=true");
   });
 });

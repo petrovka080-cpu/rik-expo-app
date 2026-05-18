@@ -14,8 +14,8 @@ describe("developer/control Command Center targetability", () => {
     const screen = read("src/features/ai/commandCenter/AiCommandCenterScreen.tsx");
     const route = read("app/ai-command-center.tsx");
 
-    expect(runner).toContain("rik://ai-command-center");
-    expect(crossScreenRunner).toContain("rik://ai-command-center");
+    expect(runner).toContain("rik:///ai-command-center");
+    expect(crossScreenRunner).toContain("rik:///ai-command-center");
     expect(runner).toContain("clearState: true");
     expect(crossScreenRunner).toContain("clearState: true");
     expect(route).toContain("AiCommandCenterScreen");

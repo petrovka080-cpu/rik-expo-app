@@ -110,6 +110,33 @@ export function AIAssistantReadyProductPanels({
 
   return (
     <>
+      {debugAiContext && (scopedFactsLoading || scopedFacts || scopedFactsError) ? (
+        <View
+          style={styles.scopeCard}
+          testID={knowledgePreview ? "ai.knowledge.preview" : undefined}
+          accessibilityLabel={knowledgePreview ? "AI knowledge preview" : undefined}
+        >
+          <View style={styles.scopeCardHeader}>
+            <Text style={styles.scopeCardTitle}>Data-aware context</Text>
+            {scopedFactsLoading ? <ActivityIndicator size="small" color="#2563EB" /> : null}
+          </View>
+          <Text style={styles.scopeCardMeta} numberOfLines={2}>{resolvedUserContext.debugReason}</Text>
+          {knowledgePreview ? (
+            <>
+              <Text style={styles.scopeCardText} numberOfLines={1} testID="ai.knowledge.role" accessibilityLabel={`AI role ${knowledgePreview.role}`}>{`role: ${knowledgePreview.role}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.screen" accessibilityLabel={`AI screen ${knowledgePreview.screenId}`}>{`screen: ${knowledgePreview.screenId} | policy: ${knowledgePreview.contextPolicy}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.domain" accessibilityLabel={`AI domain ${knowledgePreview.domain}`}>{`domain: ${knowledgePreview.domain} | entities: ${knowledgePreview.allowedEntities.join(", ") || "none"} | documents: ${knowledgePreview.documentSources.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.allowed-intents" accessibilityLabel="AI allowed intents">{`allowedIntents: ${knowledgePreview.allowedIntents.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.blocked-intents" accessibilityLabel="AI blocked intents">{`blockedIntents: ${knowledgePreview.blockedIntents.join(", ") || "none"}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`approval_required: ${knowledgePreview.approvalBoundary}`}</Text>
+            </>
+          ) : null}
+          {!scopedFacts && scopedFactsError ? (
+            <Text style={styles.scopeCardError}>{`Context was not loaded: ${scopedFactsError}`}</Text>
+          ) : null}
+        </View>
+      ) : null}
+
       {screenNativeAssistantPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.screen_native_value_pack">
           <View style={styles.roleAssistantHeaderRow}>
@@ -446,32 +473,6 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {debugAiContext && (scopedFactsLoading || scopedFacts || scopedFactsError) ? (
-        <View
-          style={styles.scopeCard}
-          testID={knowledgePreview ? "ai.knowledge.preview" : undefined}
-          accessibilityLabel={knowledgePreview ? "AI knowledge preview" : undefined}
-        >
-          <View style={styles.scopeCardHeader}>
-            <Text style={styles.scopeCardTitle}>Data-aware context</Text>
-            {scopedFactsLoading ? <ActivityIndicator size="small" color="#2563EB" /> : null}
-          </View>
-          <Text style={styles.scopeCardMeta} numberOfLines={2}>{resolvedUserContext.debugReason}</Text>
-          {knowledgePreview ? (
-            <>
-              <Text style={styles.scopeCardText} numberOfLines={1} testID="ai.knowledge.role" accessibilityLabel={`AI role ${knowledgePreview.role}`}>{`role: ${knowledgePreview.role}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.screen" accessibilityLabel={`AI screen ${knowledgePreview.screenId}`}>{`screen: ${knowledgePreview.screenId} | policy: ${knowledgePreview.contextPolicy}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.domain" accessibilityLabel={`AI domain ${knowledgePreview.domain}`}>{`domain: ${knowledgePreview.domain} | entities: ${knowledgePreview.allowedEntities.join(", ") || "none"} | documents: ${knowledgePreview.documentSources.join(", ") || "none"}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.allowed-intents" accessibilityLabel="AI allowed intents">{`allowedIntents: ${knowledgePreview.allowedIntents.join(", ") || "none"}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.blocked-intents" accessibilityLabel="AI blocked intents">{`blockedIntents: ${knowledgePreview.blockedIntents.join(", ") || "none"}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`approval_required: ${knowledgePreview.approvalBoundary}`}</Text>
-            </>
-          ) : null}
-          {!scopedFacts && scopedFactsError ? (
-            <Text style={styles.scopeCardError}>{`Контекст не загружен: ${scopedFactsError}`}</Text>
-          ) : null}
-        </View>
-      ) : null}
     </>
   );
 }

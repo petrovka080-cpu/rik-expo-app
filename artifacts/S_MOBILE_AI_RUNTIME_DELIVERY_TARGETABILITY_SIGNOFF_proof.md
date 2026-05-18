@@ -1,16 +1,33 @@
-# S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF
+﻿# S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF
 
-final_status: BLOCKED_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_EXACT
-current_head: 2b7f5c2246f712c30f6af2966877c9480399deee
-preflight: main aligned with origin; preflight diff was empty before proof artifacts.
-android: raw adb deeplinks work on emulator-5556 for rik:///ai, rik:///ai-command-center, rik://ai-command-center, rik:///ai-procurement-copilot, rik:///ai-approval-inbox.
-android_maestro: fresh mandatory matrix finished at 2026-05-17T13:00:15.638Z with 8 child results recorded; final_status=GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY.
-android_blocker: BLOCKED_ANDROID_DEBUG_RUNTIME_COPY_VISIBLE_TO_NORMAL_USER
-ios: latest known iOS build commit=979a4f20fe660a0f147efcfcbe8b22cb4e84230b, current_head=2b7f5c2246f712c30f6af2966877c9480399deee, app/src changes since build=212, native config changes since build=0.
-ios_blocker: BLOCKED_IOS_UPDATE_NOT_PUBLISHED; no iOS simulator/device proof available on this Windows host; no OTA/build was published blindly.
-no_blind_android_rebuild: true
-no_blind_ios_rebuild: true
-no_blind_ota: true
-android_proof_used_as_ios_proof: false
-web_used_as_native_proof: false
-fake_green_claimed: false
+final_status: BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE
+exact_reason: iOS runtime UI proof requires a macOS host with Xcode simctl or a physical iOS proof path; this run did not rebuild, publish OTA, or reuse Android proof as iOS proof.
+
+## Android
+- Raw ADB checked rik:///ai, rik:///ai-command-center, rik://ai-command-center, rik:///ai-procurement-copilot, rik:///ai-approval-inbox.
+- Android targetability: True; RN views visible: True; blank screen: False; debug copy visible: False.
+- Installed runtime: GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF; mandatory matrix: GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY; child results recorded: True.
+- Controlled rebuild/install was used only because app source changed; android_rebuild_done_blindly: false.
+
+## iOS
+- iOS delivery path detected: dev_reload_or_eas_update_required; app code changed: True.
+- iOS proof status: BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE.
+- No OTA published, no native build started, and Android/web proof was not reused as iOS proof.
+- Required next proof path: macOS/Xcode simulator with simctl or physical iOS/TestFlight manual screenshots for core AI routes.
+
+## Gates
+- npx tsc --noEmit --pretty false: PASS
+- npx expo lint: PASS
+- git diff --check: PASS
+- npm test -- --runInBand: PASS
+- npx tsx scripts/architecture_anti_regression_suite.ts --json: PASS
+- npx tsx scripts/release/verifyAndroidInstalledBuildRuntime.ts: GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF
+- npx tsx scripts/e2e/runAiMandatoryEmulatorRuntimeMatrix.ts: GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY
+- npm run release:verify -- --json: BLOCKED_DIRTY_WORKTREE_BEFORE_COMMIT before commit; release guard readiness blocked by dirty worktree.
+
+## Safety
+- provider/model config touched: false
+- auth/business logic touched: false
+- hooks added: false
+- hidden testID-only shims added: false
+- fake data/db writes/direct dangerous mutations: false

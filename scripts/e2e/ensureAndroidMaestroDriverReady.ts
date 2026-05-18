@@ -128,6 +128,7 @@ const wave = "S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR";
 const artifactRelativePath = path.join("artifacts", `${wave}_preflight.json`);
 const defaultAppId = "com.azisbek_dzhantaev.rikexpoapp";
 const defaultDriverStartupTimeoutMs = 180_000;
+const defaultMaestroFlowTimeoutMs = 300_000;
 const bootTimeoutMs = 180_000;
 const pollIntervalMs = 2_000;
 
@@ -907,7 +908,7 @@ export async function runMaestroTestWithDriverRepair(
     args,
     env: options.env ?? {},
     secrets,
-    timeoutMs: options.timeoutMs ?? 180_000,
+    timeoutMs: options.timeoutMs ?? defaultMaestroFlowTimeoutMs,
   });
   scrubMaestroRunArtifacts(dirs, secrets);
   if (!first.error && first.status === 0) {
@@ -970,7 +971,7 @@ export async function runMaestroTestWithDriverRepair(
     }),
     env: options.env ?? {},
     secrets,
-    timeoutMs: options.timeoutMs ?? 180_000,
+    timeoutMs: options.timeoutMs ?? defaultMaestroFlowTimeoutMs,
   });
   scrubMaestroRunArtifacts(dirs, secrets);
   if (!retry.error && retry.status === 0 && retryPreflight.selected_serial) {

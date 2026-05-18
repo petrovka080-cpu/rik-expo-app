@@ -38,7 +38,7 @@ describe("developer/control login or shell targetability", () => {
       expect(flow).toContain("runFlow:");
       expect(flow).toContain('id: "auth.login.screen"');
       expect(flow).toContain("profile-edit-open");
-      expect(flow).toContain("openLink: \"rik://ai?context=");
+      expect(flow).toContain("openLink: \"rik:///ai?context=");
     }
   });
 });

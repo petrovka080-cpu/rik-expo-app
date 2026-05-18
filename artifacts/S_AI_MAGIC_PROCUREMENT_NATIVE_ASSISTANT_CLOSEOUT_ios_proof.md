@@ -3,8 +3,8 @@
 final_status: BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE
 scope: S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT
 host_platform: win32
-app_code_changed: false
-ios_delivery_path: none_required_no_app_code_changed
+app_code_changed: true
+ios_delivery_path: dev_reload_or_eas_update_required
 ios_latest_app_code_visible: false
 ios_ai_dialog_usable: false
 ios_keyboard_safe: false

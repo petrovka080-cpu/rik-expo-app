@@ -23,7 +23,7 @@ describe("Command Center runtime targetability closeout", () => {
       expect(`${runner}\n${screen}`).toContain(testId);
     }
 
-    expect(runner).toContain("rik://ai-command-center");
+    expect(runner).toContain("rik:///ai-command-center");
     expect(runner).toContain("clearState: true");
     expect(runner).not.toContain("canary");
   });

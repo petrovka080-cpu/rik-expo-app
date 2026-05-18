@@ -284,7 +284,7 @@ function flowLines(mode: "card" | "empty"): string[] {
     `name: AI Proactive Workday Task Intelligence ${mode}`,
     "---",
     ...loginFlowLines(),
-    '- openLink: "rik://ai-command-center"',
+    '- openLink: "rik:///ai-command-center"',
     "- extendedWaitUntil:",
     "    visible:",
     '      id: "ai.command.center.screen"',

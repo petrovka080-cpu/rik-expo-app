@@ -27,7 +27,12 @@ import {
 } from "./assistantPrompts";
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
-import { resolveAssistantUserContext } from "./assistantUx/aiAssistantContextResolver";
+import {
+  booleanAssistantRouteParam,
+  firstAssistantRouteParam,
+  parseAssistantRouteContextParam,
+  resolveAssistantUserContext,
+} from "./assistantUx/aiAssistantContextResolver";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
 import { resolveAiScreenIdForAssistantContext } from "./context/aiScreenContext";
 import {
@@ -108,20 +113,15 @@ function resolveAssistantBackFallback(context: AssistantContext) {
   }
 }
 
-function firstParam(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
-function booleanParam(value: string | string[] | undefined): boolean {
-  const normalized = String(firstParam(value) || "").trim().toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes";
-}
-
 export default function AIAssistantScreen() {
   const params = useLocalSearchParams() as Record<string, string | string[] | undefined>;
-  const routePrompt = firstParam(params.prompt);
-  const routeAutoSend = firstParam(params.autoSend);
-  const routeContext = firstParam(params.context);
+  const routePrompt = firstAssistantRouteParam(params.prompt);
+  const routeAutoSend = firstAssistantRouteParam(params.autoSend);
+  const routeContextParams = useMemo(
+    () => parseAssistantRouteContextParam(firstAssistantRouteParam(params.context)),
+    [params.context],
+  );
+  const routeContext = routeContextParams.context;
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<AssistantRole>("unknown");
@@ -134,7 +134,7 @@ export default function AIAssistantScreen() {
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
   const handledPromptRef = useRef<string>("");
   const assistantContext = useMemo<AssistantContext>(() => normalizeAssistantContext(routeContext), [routeContext]);
-  const debugAiContext = booleanParam(params.debugAiContext);
+  const debugAiContext = routeContextParams.debugAiContext || booleanAssistantRouteParam(params.debugAiContext);
   const assistantScreenId = useMemo(
     () => resolveAiScreenIdForAssistantContext(assistantContext),
     [assistantContext],
@@ -173,7 +173,7 @@ export default function AIAssistantScreen() {
     () => getAiRoleScreenAssistantPack({
       role,
       context: assistantContext,
-      screenId: firstParam(params.screenId) || resolvedUserContext.screenId,
+      screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId,
       searchParams: params,
       scopedFactsSummary: scopedFacts?.summary ?? null,
       readyBuyBundle,
@@ -184,7 +184,7 @@ export default function AIAssistantScreen() {
     () => getAiScreenNativeAssistantPack({
       role,
       context: assistantContext,
-      screenId: firstParam(params.screenId) || resolvedUserContext.screenId,
+      screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId,
       searchParams: params,
       scopedFactsSummary: scopedFacts?.summary ?? null,
       readyBuyBundle,
@@ -192,7 +192,7 @@ export default function AIAssistantScreen() {
     [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
   );
   const screenNativeAssistantSummary = useMemo(() => describeAiScreenNativeAssistantPack(screenNativeAssistantPack), [screenNativeAssistantPack]);
-  const screenWorkflowPack = useMemo(() => getAiScreenWorkflowPack({ role, context: assistantContext, screenId: firstParam(params.screenId) || resolvedUserContext.screenId, searchParams: params, scopedFactsSummary: scopedFacts?.summary ?? null }), [assistantContext, params, resolvedUserContext.screenId, role, scopedFacts?.summary]);
+  const screenWorkflowPack = useMemo(() => getAiScreenWorkflowPack({ role, context: assistantContext, screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId, searchParams: params, scopedFactsSummary: scopedFacts?.summary ?? null }), [assistantContext, params, resolvedUserContext.screenId, role, scopedFacts?.summary]);
   const screenMagicPack = buildAiScreenMagicPackFromWorkflowPack(screenWorkflowPack);
   const assistantFactsSummary = useMemo(
     () => [scopedFacts?.summary ?? null, readyBuyFactsSummary, screenNativeAssistantSummary, describeAiScreenMagicPack(screenMagicPack), describeAiScreenWorkflowPack(screenWorkflowPack)].filter(Boolean).join("\n\n") || null,

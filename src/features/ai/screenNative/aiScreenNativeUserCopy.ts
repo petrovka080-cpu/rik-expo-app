@@ -1,7 +1,21 @@
 const FORBIDDEN_USER_COPY = [
+  /AI APP KNOWLEDGE BLOCK/gi,
+  /READ_ONLY_FACTS/gi,
+  /\bscreenId:/gi,
+  /\bcontextPolicy:/gi,
+  /\ballowedEntities:/gi,
   /Data-aware context/gi,
   /allowedIntents/gi,
   /blockedIntents/gi,
+  /documentSources/gi,
+  /reportSources/gi,
+  /pdfSources/gi,
+  /approvalBoundary/gi,
+  /redactionPolicy/gi,
+  /professionalAnswerRequirements/gi,
+  /rawDocumentContent/gi,
+  /rawPdfContent/gi,
+  /rawAttachmentContent/gi,
   /safe guide mode/gi,
   /provider unavailable/gi,
   /Gemini unavailable/gi,
@@ -11,11 +25,45 @@ const FORBIDDEN_USER_COPY = [
   /raw registry/gi,
 ];
 
+const INTERNAL_CONTEXT_BLOCK_COPY = [
+  /AI APP KNOWLEDGE BLOCK/gi,
+  /READ_ONLY_FACTS/gi,
+  /\bscreenId:/gi,
+  /\bcontextPolicy:/gi,
+  /\ballowedEntities:/gi,
+  /documentSources/gi,
+  /reportSources/gi,
+  /pdfSources/gi,
+  /approvalBoundary/gi,
+  /redactionPolicy/gi,
+  /professionalAnswerRequirements/gi,
+  /rawDocumentContent/gi,
+  /rawPdfContent/gi,
+  /rawAttachmentContent/gi,
+];
+
 export const AI_SCREEN_NATIVE_SAFE_STATUS_COPY =
   "Работаю по данным экрана: готовлю сводки, риски, черновики и кандидаты на согласование. Опасные действия напрямую не выполняю.";
 
+function includesForbiddenAiScreenNativeUserCopy(value: string): boolean {
+  return FORBIDDEN_USER_COPY.some((pattern) => {
+    pattern.lastIndex = 0;
+    return pattern.test(value);
+  });
+}
+
+function includesInternalContextBlockCopy(value: string): boolean {
+  return INTERNAL_CONTEXT_BLOCK_COPY.some((pattern) => {
+    pattern.lastIndex = 0;
+    return pattern.test(value);
+  });
+}
+
 export function sanitizeAiScreenNativeUserCopy(value: string): string {
   let next = String(value || "");
+  if (includesInternalContextBlockCopy(next)) {
+    return AI_SCREEN_NATIVE_SAFE_STATUS_COPY;
+  }
   for (const pattern of FORBIDDEN_USER_COPY) {
     next = next.replace(pattern, "режим подсказок и черновиков");
   }
@@ -23,8 +71,5 @@ export function sanitizeAiScreenNativeUserCopy(value: string): string {
 }
 
 export function containsForbiddenAiScreenNativeUserCopy(value: string): boolean {
-  return FORBIDDEN_USER_COPY.some((pattern) => {
-    pattern.lastIndex = 0;
-    return pattern.test(value);
-  });
+  return includesForbiddenAiScreenNativeUserCopy(value);
 }

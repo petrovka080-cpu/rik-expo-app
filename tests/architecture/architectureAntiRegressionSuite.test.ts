@@ -439,9 +439,9 @@ describe("architecture anti-regression suite", () => {
             "GET /agent/task-stream",
             "runtimeStatus",
             "taskStreamLoaded",
-            "submit_for_approval",
-            "Final mutation was not executed",
+            'action.action === "submit_for_approval"',
             "mutationCount: 0",
+            "executed: false",
           ].join("\n");
         }
         if (relativePath.includes("taskStream") || relativePath.includes("TaskStream")) {

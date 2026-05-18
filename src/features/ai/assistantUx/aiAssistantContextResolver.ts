@@ -16,6 +16,58 @@ export type AiAssistantResolvedUserContext = {
   debugReason: string;
 };
 
+export type AssistantRouteParamValue = string | string[] | undefined;
+
+export function firstAssistantRouteParam(value: AssistantRouteParamValue): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export function booleanAssistantRouteParam(value: AssistantRouteParamValue): boolean {
+  const normalized = String(firstAssistantRouteParam(value) || "").trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes";
+}
+
+export function parseAssistantRouteContextParam(value: string | undefined): {
+  context: string | undefined;
+  debugAiContext: boolean;
+} {
+  const raw = String(value || "").trim();
+  if (!raw) return { context: undefined, debugAiContext: false };
+
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    decoded = raw;
+  }
+
+  const debugSuffix = "__debug";
+  if (decoded.toLowerCase().endsWith(debugSuffix)) {
+    return {
+      context: decoded.slice(0, -debugSuffix.length),
+      debugAiContext: true,
+    };
+  }
+
+  if (decoded.includes("&")) {
+    const query = decoded.split("&")[0].includes("=") ? decoded : `context=${decoded}`;
+    const nestedParams = query.split("&").reduce<Record<string, string>>((acc, part) => {
+      const separatorIndex = part.indexOf("=");
+      if (separatorIndex <= 0) return acc;
+      const key = part.slice(0, separatorIndex).trim();
+      const nestedValue = part.slice(separatorIndex + 1).trim();
+      if (key) acc[key] = nestedValue;
+      return acc;
+    }, {});
+    return {
+      context: nestedParams.context ?? decoded.split("&")[0],
+      debugAiContext: booleanAssistantRouteParam(nestedParams.debugAiContext),
+    };
+  }
+
+  return { context: decoded, debugAiContext: false };
+}
+
 const CONTEXT_DOMAIN: Partial<Record<AssistantContext, AiDomain>> = {
   buyer: "procurement",
   request: "procurement",

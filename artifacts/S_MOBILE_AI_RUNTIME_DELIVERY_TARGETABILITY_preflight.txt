@@ -1,13 +1,241 @@
 ﻿## git status --short --branch
 ## main...origin/main
+ M artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json
+ M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios.json
+ M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios_proof.md
+ M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_matrix.json
+ M artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_proof.md
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json
+ M artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json
+ M artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json
+ M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_emulator.json
+ M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_ios.json
+ M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_matrix.json
+ M artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_proof.md
+ M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_emulator.json
+ M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_inventory.json
+ M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_ios.json
+ M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json
+ M artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_proof.md
+ M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json
+ M artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json
+ M artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_android.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_matrix.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android_raw_adb.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_inventory.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_matrix.json
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt
+ M artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_proof.md
+ M artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml
+ M artifacts/S_MOBILE_ANDROID_ui_ai_command.xml
+ M artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml
+ M artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml
+ M artifacts/S_MOBILE_ANDROID_ui_ai_root.xml
+ M scripts/architecture_anti_regression_suite.ts
+ M scripts/e2e/ensureAndroidMaestroDriverReady.ts
+ M scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts
+ M scripts/e2e/runAiCommandCenterRuntimeMaestro.ts
+ M scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts
+ M scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts
+ M scripts/e2e/runAiCrossScreenRuntimeMaestro.ts
+ M scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts
+ M scripts/e2e/runAiScreenButtonActionMapMaestro.ts
+ M scripts/e2e/verifyAiScreenMagicIosDelivery.ts
+ M scripts/release/requireAndroidRebuildForAiSourceChanges.ts
+ M src/features/ai/AIAssistantReadyProductPanels.tsx
+ M src/features/ai/AIAssistantScreen.tsx
+ M src/features/ai/approvalInbox/ApprovalInboxScreen.tsx
+ M src/features/ai/assistantUx/aiAssistantContextResolver.ts
+ M src/features/ai/commandCenter/AiCommandCenterScreen.tsx
+ M src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx
+ M src/features/ai/screenMagic/aiScreenMagicUserCopy.ts
+ M src/features/ai/screenNative/aiScreenNativeUserCopy.ts
+ M src/features/ai/screenWorkflows/aiScreenWorkflowUserCopy.ts
+ M tests/ai/aiScreenMagicUserCopy.contract.test.ts
+ M tests/ai/aiScreenNativeUserCopy.contract.test.ts
+ M tests/ai/aiScreenWorkflowUserCopy.contract.test.ts
+ M tests/architecture/architectureAntiRegressionSuite.test.ts
+ M tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml
+ M tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml
+ M tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml
+ M tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml
+ M tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml
+ M tests/e2e/aiRoleScreenKnowledge.e2e.test.ts
+ M tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts
+ M tests/e2e/commandCenterRuntimeTargetability.contract.test.ts
+ M tests/e2e/developerControlCommandCenterTargetability.contract.test.ts
+ M tests/e2e/developerControlLoginOrShell.contract.test.ts
+ M tests/e2e/developerControlProcurementTargetability.contract.test.ts
+ M tests/e2e/procurementCopilotRuntimeTargetability.contract.test.ts
+ M tests/release/requireAndroidRebuildForAiSourceChanges.contract.test.ts
 
 ## git rev-list --left-right --count HEAD...origin/main
 0	0
 
 ## git diff --name-only
+artifacts/S_AI_CORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json
+artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios.json
+artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios_proof.md
+artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_matrix.json
+artifacts/S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_proof.md
+artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json
+artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json
+artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md
+artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_android_build.json
+artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json
+artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_emulator.json
+artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_ios.json
+artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_matrix.json
+artifacts/S_AI_QA_03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_proof.md
+artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_emulator.json
+artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_inventory.json
+artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_ios.json
+artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json
+artifacts/S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_proof.md
+artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json
+artifacts/S_ANDROID_MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json
+artifacts/S_ANDROID_MAESTRO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_android.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_matrix.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_android_raw_adb.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_inventory.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_matrix.json
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt
+artifacts/S_MOBILE_AI_RUNTIME_DELIVERY_TARGETABILITY_proof.md
+artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml
+artifacts/S_MOBILE_ANDROID_ui_ai_command.xml
+artifacts/S_MOBILE_ANDROID_ui_ai_command_two_slash.xml
+artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml
+artifacts/S_MOBILE_ANDROID_ui_ai_root.xml
+scripts/architecture_anti_regression_suite.ts
+scripts/e2e/ensureAndroidMaestroDriverReady.ts
+scripts/e2e/runAiCommandCenterApprovalRuntimeMaestro.ts
+scripts/e2e/runAiCommandCenterRuntimeMaestro.ts
+scripts/e2e/runAiCommandCenterTaskStreamRuntimeMaestro.ts
+scripts/e2e/runAiConstructionKnowhowEngineMaestro.ts
+scripts/e2e/runAiCrossScreenRuntimeMaestro.ts
+scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts
+scripts/e2e/runAiScreenButtonActionMapMaestro.ts
+scripts/e2e/verifyAiScreenMagicIosDelivery.ts
+scripts/release/requireAndroidRebuildForAiSourceChanges.ts
+src/features/ai/AIAssistantReadyProductPanels.tsx
+src/features/ai/AIAssistantScreen.tsx
+src/features/ai/approvalInbox/ApprovalInboxScreen.tsx
+src/features/ai/assistantUx/aiAssistantContextResolver.ts
+src/features/ai/commandCenter/AiCommandCenterScreen.tsx
+src/features/ai/procurementCopilot/ProcurementCopilotRuntimeSurface.tsx
+src/features/ai/screenMagic/aiScreenMagicUserCopy.ts
+src/features/ai/screenNative/aiScreenNativeUserCopy.ts
+src/features/ai/screenWorkflows/aiScreenWorkflowUserCopy.ts
+tests/ai/aiScreenMagicUserCopy.contract.test.ts
+tests/ai/aiScreenNativeUserCopy.contract.test.ts
+tests/ai/aiScreenWorkflowUserCopy.contract.test.ts
+tests/architecture/architectureAntiRegressionSuite.test.ts
+tests/e2e/ai-role-screen-knowledge/accountant-knowledge.yaml
+tests/e2e/ai-role-screen-knowledge/buyer-knowledge.yaml
+tests/e2e/ai-role-screen-knowledge/contractor-knowledge.yaml
+tests/e2e/ai-role-screen-knowledge/director-control-knowledge.yaml
+tests/e2e/ai-role-screen-knowledge/foreman-knowledge.yaml
+tests/e2e/aiRoleScreenKnowledge.e2e.test.ts
+tests/e2e/aiRoleScreenKnowledgeDeterministicAssertions.contract.test.ts
+tests/e2e/commandCenterRuntimeTargetability.contract.test.ts
+tests/e2e/developerControlCommandCenterTargetability.contract.test.ts
+tests/e2e/developerControlLoginOrShell.contract.test.ts
+tests/e2e/developerControlProcurementTargetability.contract.test.ts
+tests/e2e/procurementCopilotRuntimeTargetability.contract.test.ts
+tests/release/requireAndroidRebuildForAiSourceChanges.contract.test.ts
 
 ## git diff --stat
+ ...ORE_03B_EXPLICIT_ROLE_SECRETS_E2E_emulator.json |   2 +-
+ ..._PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios.json |  10 +-
+ ...CUREMENT_NATIVE_ASSISTANT_CLOSEOUT_ios_proof.md |   4 +-
+ ...OCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_matrix.json |   4 +-
+ ..._PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT_proof.md |   4 +-
+ ...1_MANDATORY_EMULATOR_RUNTIME_GATE_emulator.json |  76 +++-
+ ..._01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json | 120 +++---
+ ..._QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_proof.md |   4 +-
+ ...A_02_EMULATOR_GATE_HARDENING_android_build.json |  57 ++-
+ .../S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json | 116 ++---
+ ...AL_PLATFORM_RUNTIME_TARGETABILITY_emulator.json |   2 +-
+ ...03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_ios.json |  34 +-
+ ...DUAL_PLATFORM_RUNTIME_TARGETABILITY_matrix.json |  12 +-
+ ...03_DUAL_PLATFORM_RUNTIME_TARGETABILITY_proof.md |  10 +-
+ ..._AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_emulator.json |   2 +-
+ ...AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_inventory.json |   2 +-
+ .../S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_ios.json    |  34 +-
+ .../S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_matrix.json |  16 +-
+ .../S_AI_QA_04_FRESH_IOS_BUILD_SIGNOFF_proof.md    |  14 +-
+ ...OID_MAESTRO_DRIVER_STABILITY_REPAIR_matrix.json |  62 +--
+ ..._MAESTRO_DRIVER_STABILITY_REPAIR_preflight.json |  10 +-
+ ...RO_PARENT_MATRIX_CHILD_ISOLATION_freshness.json |  50 +--
+ ...IME_DELIVERY_TARGETABILITY_SIGNOFF_android.json | 469 +++++++++++++++------
+ ...RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_ios.json |  56 +--
+ ...TIME_DELIVERY_TARGETABILITY_SIGNOFF_matrix.json |  80 ++--
+ ...RUNTIME_DELIVERY_TARGETABILITY_SIGNOFF_proof.md |  47 ++-
+ ..._AI_RUNTIME_DELIVERY_TARGETABILITY_android.json | 469 +++++++++++++++------
+ ...IME_DELIVERY_TARGETABILITY_android_raw_adb.json | 178 ++++----
+ ...LE_AI_RUNTIME_DELIVERY_TARGETABILITY_diff.patch | Bin 0 -> 976366 bytes
+ ...I_RUNTIME_DELIVERY_TARGETABILITY_inventory.json | 313 ++++++--------
+ ...BILE_AI_RUNTIME_DELIVERY_TARGETABILITY_ios.json |  86 ++--
+ ...E_AI_RUNTIME_DELIVERY_TARGETABILITY_matrix.json |  80 ++--
+ ...AI_RUNTIME_DELIVERY_TARGETABILITY_preflight.txt | 300 ++++++++++++-
+ ...BILE_AI_RUNTIME_DELIVERY_TARGETABILITY_proof.md |  47 ++-
+ artifacts/S_MOBILE_ANDROID_ui_ai_approval.xml      |   4 +-
+ artifacts/S_MOBILE_ANDROID_ui_ai_command.xml       |   4 +-
+ .../S_MOBILE_ANDROID_ui_ai_command_two_slash.xml   |   4 +-
+ artifacts/S_MOBILE_ANDROID_ui_ai_procurement.xml   |   4 +-
+ artifacts/S_MOBILE_ANDROID_ui_ai_root.xml          |   4 +-
+ scripts/architecture_anti_regression_suite.ts      |  15 +-
+ scripts/e2e/ensureAndroidMaestroDriverReady.ts     |   5 +-
+ .../runAiCommandCenterApprovalRuntimeMaestro.ts    | 112 +++--
+ scripts/e2e/runAiCommandCenterRuntimeMaestro.ts    |   4 +-
+ .../runAiCommandCenterTaskStreamRuntimeMaestro.ts  |  38 +-
+ .../e2e/runAiConstructionKnowhowEngineMaestro.ts   |   2 +-
+ scripts/e2e/runAiCrossScreenRuntimeMaestro.ts      |  38 +-
+ ...runAiProactiveWorkdayTaskIntelligenceMaestro.ts |   2 +-
+ scripts/e2e/runAiScreenButtonActionMapMaestro.ts   |   9 +-
+ scripts/e2e/verifyAiScreenMagicIosDelivery.ts      |   7 +-
+ .../requireAndroidRebuildForAiSourceChanges.ts     |   3 -
+ src/features/ai/AIAssistantReadyProductPanels.tsx  |  53 +--
+ src/features/ai/AIAssistantScreen.tsx              |  34 +-
+ .../ai/approvalInbox/ApprovalInboxScreen.tsx       |   8 +-
+ .../ai/assistantUx/aiAssistantContextResolver.ts   |  52 +++
+ .../ai/commandCenter/AiCommandCenterScreen.tsx     | 231 ++++++----
+ .../ProcurementCopilotRuntimeSurface.tsx           |  17 +-
+ .../ai/screenMagic/aiScreenMagicUserCopy.ts        |  51 ++-
+ .../ai/screenNative/aiScreenNativeUserCopy.ts      |  53 ++-
+ .../ai/screenWorkflows/aiScreenWorkflowUserCopy.ts |  47 ++-
+ tests/ai/aiScreenMagicUserCopy.contract.test.ts    |  10 +
+ tests/ai/aiScreenNativeUserCopy.contract.test.ts   |  10 +
+ tests/ai/aiScreenWorkflowUserCopy.contract.test.ts |  10 +
+ .../architectureAntiRegressionSuite.test.ts        |   4 +-
+ .../accountant-knowledge.yaml                      |   5 +-
+ .../ai-role-screen-knowledge/buyer-knowledge.yaml  |   5 +-
+ .../contractor-knowledge.yaml                      |   5 +-
+ .../director-control-knowledge.yaml                |   5 +-
+ .../foreman-knowledge.yaml                         |   5 +-
+ tests/e2e/aiRoleScreenKnowledge.e2e.test.ts        |   4 +-
+ ...owledgeDeterministicAssertions.contract.test.ts |   2 +
+ ...mandCenterRuntimeTargetability.contract.test.ts |   2 +-
+ ...trolCommandCenterTargetability.contract.test.ts |   4 +-
+ .../developerControlLoginOrShell.contract.test.ts  |   2 +-
+ ...ontrolProcurementTargetability.contract.test.ts |   4 +-
+ ...entCopilotRuntimeTargetability.contract.test.ts |   4 +-
+ ...droidRebuildForAiSourceChanges.contract.test.ts |   4 +-
+ 76 files changed, 2458 insertions(+), 1198 deletions(-)
 
 ## git diff --check
-
-git_diff_check_exit=0
+Recorded separately after this artifact rewrite; expected PASS with only CRLF warnings omitted.

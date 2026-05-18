@@ -43,7 +43,7 @@ export default function ApprovalInboxScreen(props: ApprovalInboxScreenProps) {
 
         <View testID="ai.approval.inbox.status" style={styles.statusBar}>
           <Text style={styles.statusText}>
-            status={viewModel.status}; pending={viewModel.pendingCount}; mutation_count=0
+            \u041a \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u044e: {viewModel.pendingCount}. \u0418\u0418 \u043d\u0435 \u0443\u0442\u0432\u0435\u0440\u0436\u0434\u0430\u0435\u0442 \u0438 \u043d\u0435 \u043e\u0442\u043a\u043b\u043e\u043d\u044f\u0435\u0442 \u0441\u0430\u043c.
           </Text>
         </View>
 
@@ -51,11 +51,13 @@ export default function ApprovalInboxScreen(props: ApprovalInboxScreenProps) {
           <View testID="ai.approval.inbox.empty-state" style={styles.emptyBox}>
             {viewModel.status === "blocked" ? (
               <Text testID="ai.approval.persistence.blocked" style={styles.persistenceText}>
-                approval_persistence=blocked
+                \u0421\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435 \u0441\u043e\u0433\u043b\u0430\u0441\u043e\u0432\u0430\u043d\u0438\u0439 \u0441\u0435\u0439\u0447\u0430\u0441 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u043e.
               </Text>
             ) : null}
             <Text style={styles.emptyTitle}>{viewModel.emptyMessage}</Text>
-            <Text style={styles.emptyText}>fake_actions=false</Text>
+            <Text style={styles.emptyText}>
+              \u041f\u043e\u043a\u0430\u0437\u0430\u043d\u044b \u0442\u043e\u043b\u044c\u043a\u043e \u0440\u0435\u0430\u043b\u044c\u043d\u044b\u0435 \u043a\u0430\u043d\u0434\u0438\u0434\u0430\u0442\u044b \u0438\u0437 \u0434\u043e\u0441\u0442\u0443\u043f\u043d\u044b\u0445 \u0434\u0430\u043d\u043d\u044b\u0445.
+            </Text>
           </View>
         ) : null}
 
