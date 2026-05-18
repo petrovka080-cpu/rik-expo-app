@@ -15,6 +15,7 @@
       "scripts/e2e/runAiCrossScreenRuntimeMaestro.ts",
       "scripts/e2e/runAiProactiveWorkdayTaskIntelligenceMaestro.ts",
       "scripts/e2e/runAiScreenButtonActionMapMaestro.ts",
+      "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
       "scripts/release/requireAndroidRebuildForAiSourceChanges.ts",
       "src/features/ai/AIAssistantReadyProductPanels.tsx",
       "src/features/ai/AIAssistantScreen.tsx",
@@ -1239,7 +1240,7 @@
     "local_android_rebuild_install_required": true,
     "local_android_rebuild_install": "PASS",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "d891c527f65db664f134fb3dcfd9b20816744902cc47e40e1439d774150a8db0",
+    "changed_files_fingerprint": "6fac8301efc2c1089c31403f0bd55bbd05fb8480e0fb92873afa2a0dc20967b4",
     "exact_reason": null
   },
   "emulator_boot_completed": false,
