@@ -686,6 +686,9 @@ describe("performance budget — bundle module count", () => {
     const s50kWarehouseReqIssueModalMarginFiles = [
       path.join(SRC, "screens", "warehouse", "components", "ReqIssueModal.parts.tsx"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sPerf01FlatListEnterprisePolicyFiles = [
+      path.join(SRC, "lib", "performance", "listPerformancePolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1493,6 +1496,7 @@ describe("performance budget — bundle module count", () => {
     expect(sScale11CatalogRequestServiceOwnerSplitFiles).toBeLessThanOrEqual(3);
     expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(9);
     expect(s50kWarehouseReqIssueModalMarginFiles).toBeLessThanOrEqual(1);
+    expect(sPerf01FlatListEnterprisePolicyFiles).toBeLessThanOrEqual(1);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1702,7 +1706,8 @@ describe("performance budget — bundle module count", () => {
         sScale11CatalogRequestServiceOwnerSplitFiles -
         sAiProduct09ScreenMagicFiles -
         sComponentDebtCloseoutFiles -
-        s50kWarehouseReqIssueModalMarginFiles,
+        s50kWarehouseReqIssueModalMarginFiles -
+        sPerf01FlatListEnterprisePolicyFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

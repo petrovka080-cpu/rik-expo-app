@@ -50,6 +50,7 @@ const CHAT_THREAD_LIST_TUNING = {
   maxToRenderPerBatch: 12,
   updateCellsBatchingPeriod: 32,
   windowSize: 7,
+  onEndReachedThreshold: 0.4,
   removeClippedSubviews: Platform.OS !== "web",
 } as const;
 

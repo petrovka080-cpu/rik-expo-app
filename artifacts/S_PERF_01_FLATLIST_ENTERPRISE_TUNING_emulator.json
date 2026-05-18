@@ -1,0 +1,101 @@
+{
+  "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
+  "checkedAt": "2026-05-18T17:15:28.002Z",
+  "status": "PASS",
+  "framework": "maestro",
+  "device": "android",
+  "targetResults": [
+    {
+      "screenId": "buyer.requests",
+      "routePath": "/office/buyer",
+      "file": "src/screens/buyer/components/BuyerMainList.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "accountant.history",
+      "routePath": "/office/accountant",
+      "file": "src/screens/accountant/components/AccountantListSection.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "warehouse.stock",
+      "routePath": "/office/warehouse",
+      "file": "src/screens/warehouse/components/WarehouseStockTab.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "routePath": "/office/warehouse",
+      "file": "src/screens/warehouse/components/WarehouseIncomingTab.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "warehouse.issue",
+      "routePath": "/office/warehouse",
+      "file": "src/screens/warehouse/components/WarehouseIssueTab.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "market.home",
+      "routePath": "/market",
+      "file": "src/features/market/MarketHomeScreen.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "market.supplier_showcase",
+      "routePath": "/supplierShowcase",
+      "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "chat.thread",
+      "routePath": "/chat",
+      "file": "src/features/chat/ChatScreen.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    },
+    {
+      "screenId": "reports.dashboard",
+      "routePath": "/reports/dashboard",
+      "file": "src/features/reports/ReportsDashboardScreen.tsx",
+      "sourceListProofPresent": true,
+      "listVerifierPassed": true,
+      "scrollDownUpProof": true,
+      "noBlankScreen": true
+    }
+  ],
+  "flatListVerifierPassed": true,
+  "androidRuntimeSmoke": "PASS",
+  "androidRuntimeFinalStatus": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "androidScrollProofPass": true,
+  "noBlankScreen": true,
+  "noDbWrites": true,
+  "noProviderCall": true,
+  "noSecretsPrinted": true,
+  "hiddenTestIdShimsAdded": false,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}

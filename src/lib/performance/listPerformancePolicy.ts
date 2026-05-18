@@ -1,0 +1,406 @@
+export const DEFAULT_FLATLIST_PERF = {
+  initialNumToRender: 12,
+  maxToRenderPerBatch: 12,
+  windowSize: 7,
+  onEndReachedThreshold: 0.4,
+} as const;
+
+export const DENSE_FLATLIST_PERF = {
+  initialNumToRender: 20,
+  maxToRenderPerBatch: 20,
+  windowSize: 9,
+  onEndReachedThreshold: 0.5,
+} as const;
+
+export type EnterpriseListKind = "FlatList" | "FlashList" | "SectionList" | "VirtualizedList";
+
+export type EnterpriseListTarget = {
+  screenId: string;
+  routePath: string;
+  file: string;
+  kind: EnterpriseListKind;
+  ordinal: number;
+  owner: string;
+  dataProof: "paginated" | "bounded" | "screen-state-budget";
+  proof: string;
+  requiresFooterOrBoundProof: boolean;
+};
+
+export const ENTERPRISE_LIST_TARGETS = [
+  {
+    screenId: "buyer.requests",
+    routePath: "/office/buyer",
+    file: "src/screens/buyer/components/BuyerMainList.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "buyer requests owner",
+    dataProof: "paginated",
+    proof: "Buyer inbox list has load-more footer state, onEndReached, and bounded page fetch contracts.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "accountant.history",
+    routePath: "/office/accountant",
+    file: "src/screens/accountant/components/AccountantListSection.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "accountant history owner",
+    dataProof: "paginated",
+    proof: "Accountant list switches inbox/history with explicit onEndReached handlers and footer loading state.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "warehouse.stock",
+    routePath: "/office/warehouse",
+    file: "src/screens/warehouse/components/WarehouseStockTab.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "warehouse inventory owner",
+    dataProof: "paginated",
+    proof: "Warehouse stock tab receives hasMore/loadingMore/onEndReached from the warehouse controller.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "warehouse.incoming",
+    routePath: "/office/warehouse",
+    file: "src/screens/warehouse/components/WarehouseIncomingTab.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "warehouse incoming owner",
+    dataProof: "paginated",
+    proof: "Warehouse incoming tab receives hasMore/loadingMore/onEndReached from the warehouse controller.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "warehouse.issue",
+    routePath: "/office/warehouse",
+    file: "src/screens/warehouse/components/WarehouseIssueTab.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "warehouse issue owner",
+    dataProof: "paginated",
+    proof: "Warehouse issue tab receives hasMore/loadingMore/onEndReached from the warehouse controller.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "market.home",
+    routePath: "/market",
+    file: "src/features/market/MarketHomeScreen.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "marketplace owner",
+    dataProof: "paginated",
+    proof: "Market feed has explicit onEndReached, threshold, footer, empty state, and page cursor loading.",
+    requiresFooterOrBoundProof: true,
+  },
+  {
+    screenId: "market.supplier_showcase",
+    routePath: "/supplierShowcase",
+    file: "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "supplier showcase owner",
+    dataProof: "bounded",
+    proof: "Supplier showcase payload is scoped to one supplier/company and rendered with an empty state and explicit virtualized window.",
+    requiresFooterOrBoundProof: false,
+  },
+  {
+    screenId: "chat.thread",
+    routePath: "/chat",
+    file: "src/features/chat/ChatScreen.tsx",
+    kind: "FlashList",
+    ordinal: 1,
+    owner: "chat owner",
+    dataProof: "bounded",
+    proof: "Chat thread is local screen state with a stable key, empty state, and tuned virtualized message window.",
+    requiresFooterOrBoundProof: false,
+  },
+  {
+    screenId: "reports.dashboard",
+    routePath: "/reports/dashboard",
+    file: "src/features/reports/ReportsDashboardScreen.tsx",
+    kind: "SectionList",
+    ordinal: 1,
+    owner: "reports owner",
+    dataProof: "bounded",
+    proof: "Reports dashboard renders four bounded report sections from report RPC payloads and export-only derived rows.",
+    requiresFooterOrBoundProof: false,
+  },
+] as const satisfies readonly EnterpriseListTarget[];
+
+export type ScrollViewMapBound = {
+  file: string;
+  expression: string;
+  owner: string;
+  boundProof: string;
+  maxItemsProof: string;
+};
+
+export const SCROLLVIEW_MAP_BOUNDS = [
+  {
+    file: "app/product/[id].tsx",
+    expression: "row.items.map",
+    owner: "market product owner",
+    boundProof: "Product detail renders item groups returned for one listing only.",
+    maxItemsProof: "Single product payload, not an unbounded feed.",
+  },
+  {
+    file: "src/components/foreman/CalcModalContent.tsx",
+    expression: "props.coreFields.map",
+    owner: "foreman calc owner",
+    boundProof: "Calculator core fields come from a static field registry.",
+    maxItemsProof: "Static calculator form section.",
+  },
+  {
+    file: "src/components/foreman/CalcModalContent.tsx",
+    expression: "props.additionalFields.map",
+    owner: "foreman calc owner",
+    boundProof: "Additional calculator fields come from the selected work-type schema.",
+    maxItemsProof: "Schema-bound modal form section.",
+  },
+  {
+    file: "src/components/foreman/CalcModalContent.tsx",
+    expression: "props.derivedFields.map",
+    owner: "foreman calc owner",
+    boundProof: "Derived calculator fields come from the selected work-type schema.",
+    maxItemsProof: "Schema-bound modal form section.",
+  },
+  {
+    file: "src/components/foreman/WorkTypePicker.tsx",
+    expression: "listInside.map",
+    owner: "foreman work type owner",
+    boundProof: "Picker rows are filtered from the already-loaded work type dictionary.",
+    maxItemsProof: "Nested picker viewport, not a production feed.",
+  },
+  {
+    file: "src/components/foreman/WorkTypePicker.tsx",
+    expression: "families.map",
+    owner: "foreman work type owner",
+    boundProof: "Family chips are derived from grouped dictionary families.",
+    maxItemsProof: "Nested picker chip rail.",
+  },
+  {
+    file: "src/components/map/DemandDetailsModal.tsx",
+    expression: "rows.map",
+    owner: "map demand owner",
+    boundProof: "Demand detail modal renders rows for one selected demand/listing.",
+    maxItemsProof: "Single-detail modal, not a list feed.",
+  },
+  {
+    file: "src/features/ai/AIAssistantReadyProductPanels.tsx",
+    expression: "screenMagicPack.buttons.map",
+    owner: "ai assistant owner",
+    boundProof: "Screen magic buttons are produced by the bounded AI action registry.",
+    maxItemsProof: "Registry-sized action panel.",
+  },
+  {
+    file: "src/features/ai/AIAssistantReadyProductPanels.tsx",
+    expression: "readyProposals.map",
+    owner: "ai assistant owner",
+    boundProof: "Ready proposal cards are controlled by the AI ready-products panel contract.",
+    maxItemsProof: "Panel contract keeps proposal cards small and action-focused.",
+  },
+  {
+    file: "src/features/ai/AIAssistantScreen.tsx",
+    expression: "messages.map",
+    owner: "ai assistant owner",
+    boundProof: "AI assistant chat history is local persisted assistant state; production chat thread uses FlashList separately.",
+    maxItemsProof: "Assistant storage and response-smoke contracts keep this screen scoped to assistant context.",
+  },
+  {
+    file: "src/features/ai/AIAssistantShortcutRows.tsx",
+    expression: "quickPrompts.map",
+    owner: "ai assistant owner",
+    boundProof: "Quick prompts are provided by the bounded assistant prompt registry.",
+    maxItemsProof: "Small prompt rail.",
+  },
+  {
+    file: "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+    expression: "visibleSections.map",
+    owner: "ai approval owner",
+    boundProof: "Approval inbox sections are produced by the approval inbox runtime view model.",
+    maxItemsProof: "Small role-scoped approval sections.",
+  },
+  {
+    file: "src/features/ai/approvalInbox/ApprovalInboxScreen.tsx",
+    expression: "section.actions.map",
+    owner: "ai approval owner",
+    boundProof: "Approval actions are nested under one role-scoped section.",
+    maxItemsProof: "Small approval action group.",
+  },
+  {
+    file: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+    expression: "state.viewModel.workday.cards.map",
+    owner: "ai command center owner",
+    boundProof: "Command center card budget scanner enforces max cards and pagination policy.",
+    maxItemsProof: "Covered by aiCommandCenterStateBudget maxCardsBounded.",
+  },
+  {
+    file: "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+    expression: "activeSections.map",
+    owner: "ai command center owner",
+    boundProof: "Active sections are a fixed command-center screen registry.",
+    maxItemsProof: "Small section registry.",
+  },
+  {
+    file: "src/features/auctions/AuctionDetailScreen.tsx",
+    expression: "row.items.map",
+    owner: "auction owner",
+    boundProof: "Auction detail rows are scoped to one selected auction.",
+    maxItemsProof: "Single detail payload.",
+  },
+  {
+    file: "src/features/market/components/MarketCategoryRail.tsx",
+    expression: "categories.map",
+    owner: "marketplace owner",
+    boundProof: "Category rail is a horizontal chip rail from category options.",
+    maxItemsProof: "Small taxonomy rail.",
+  },
+  {
+    file: "src/features/market/components/MarketHeroCarousel.tsx",
+    expression: "banners.map",
+    owner: "marketplace owner",
+    boundProof: "Hero carousel is a marketing banner rail.",
+    maxItemsProof: "Small curated banner list.",
+  },
+  {
+    file: "src/features/reports/ReportsHubScreen.tsx",
+    expression: "REPORT_MODULES.map",
+    owner: "reports owner",
+    boundProof: "Reports hub modules are a static registry.",
+    maxItemsProof: "Static navigation tiles.",
+  },
+  {
+    file: "src/features/seller/SellerAreaScreen.tsx",
+    expression: "payload.listings.map",
+    owner: "seller area owner",
+    boundProof: "Seller area is the owner dashboard for one seller; marketplace discovery uses MarketHome FlashList.",
+    maxItemsProof: "Single seller scoped payload.",
+  },
+  {
+    file: "src/screens/accountant/components/AccountantListSection.tsx",
+    expression: "model.actions.map",
+    owner: "accountant owner",
+    boundProof: "Accountant action shortcuts are a derived small action panel above the FlashList.",
+    maxItemsProof: "Small shortcut panel.",
+  },
+  {
+    file: "src/screens/accountant/components/Header.tsx",
+    expression: "TABS.map",
+    owner: "accountant owner",
+    boundProof: "Accountant header tabs are a static role tab registry.",
+    maxItemsProof: "Static tab rail.",
+  },
+  {
+    file: "src/screens/accountant/components/NotificationsModal.tsx",
+    expression: "notifs.map",
+    owner: "accountant owner",
+    boundProof: "Notifications modal renders the current local notification slice.",
+    maxItemsProof: "Modal-scoped notification list.",
+  },
+  {
+    file: "src/screens/accountant/components/TabsBar.tsx",
+    expression: "TABS.map",
+    owner: "accountant owner",
+    boundProof: "Accountant tabs are a static role tab registry.",
+    maxItemsProof: "Static tab rail.",
+  },
+  {
+    file: "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+    expression: "WORK_MODE_OPTIONS.map",
+    owner: "buyer subcontract owner",
+    boundProof: "Work mode options are a static control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/buyer/BuyerSubcontractTab.view.tsx",
+    expression: "PRICE_TYPE_OPTIONS.map",
+    owner: "buyer subcontract owner",
+    boundProof: "Price type options are a static control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+    expression: "DEADLINE_HOURS.map",
+    owner: "buyer rfq owner",
+    boundProof: "Deadline options are a static RFQ control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+    expression: "DELIVERY_OPTIONS.map",
+    owner: "buyer rfq owner",
+    boundProof: "Delivery options are a static RFQ control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+    expression: "VISIBILITY_OPTIONS.map",
+    owner: "buyer rfq owner",
+    boundProof: "Visibility options are a static RFQ control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+    expression: "PAYMENT_TERMS_OPTIONS.map",
+    owner: "buyer rfq owner",
+    boundProof: "Payment terms are a static RFQ control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/foreman/ForemanAiQuickModal.tsx",
+    expression: "props.preview.map",
+    owner: "foreman ai owner",
+    boundProof: "AI quick modal preview is generated from the selected draft context.",
+    maxItemsProof: "Modal-scoped preview group.",
+  },
+  {
+    file: "src/screens/foreman/ForemanAiQuickModal.tsx",
+    expression: "props.reviewGroups.map",
+    owner: "foreman ai owner",
+    boundProof: "Review groups are produced by the modal review model.",
+    maxItemsProof: "Modal-scoped review groups.",
+  },
+  {
+    file: "src/screens/foreman/ForemanAiQuickModal.tsx",
+    expression: "group.options.map",
+    owner: "foreman ai owner",
+    boundProof: "Review options are nested under one bounded review group.",
+    maxItemsProof: "Small options group.",
+  },
+  {
+    file: "src/screens/foreman/ForemanAiQuickModal.tsx",
+    expression: "filteredQuestions.map",
+    owner: "foreman ai owner",
+    boundProof: "Question rows are filtered within one quick-help modal.",
+    maxItemsProof: "Modal-scoped help list.",
+  },
+  {
+    file: "src/screens/profile/components/ListingModal.tsx",
+    expression: "LISTING_KIND_OPTIONS.map",
+    owner: "profile listing owner",
+    boundProof: "Listing kind options are a static control set.",
+    maxItemsProof: "Static form options.",
+  },
+  {
+    file: "src/screens/profile/components/ListingModal.tsx",
+    expression: "catalogResults.map",
+    owner: "profile listing owner",
+    boundProof: "Catalog suggestions are loaded through the bounded catalog search path.",
+    maxItemsProof: "Search-result modal suggestions, not a root feed.",
+  },
+  {
+    file: "src/screens/profile/components/ListingModal.tsx",
+    expression: "listingCartItems.map",
+    owner: "profile listing owner",
+    boundProof: "Listing cart items are user-selected local form rows.",
+    maxItemsProof: "Local draft cart within one listing modal.",
+  },
+  {
+    file: "src/screens/warehouse/components/WarehouseHeader.tsx",
+    expression: "WAREHOUSE_TABS.map",
+    owner: "warehouse owner",
+    boundProof: "Warehouse tabs are a static role tab registry.",
+    maxItemsProof: "Static tab rail.",
+  },
+] as const satisfies readonly ScrollViewMapBound[];

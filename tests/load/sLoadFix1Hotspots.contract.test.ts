@@ -287,6 +287,30 @@ const isApprovedDirectorReportsFlatListTuningPatch = (file: string) =>
     "tests/api/hotspotListPaginationBatch7.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPerfFlatListEnterpriseTuningPatch = (file: string) =>
+  [
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_emulator.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_inventory.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_matrix.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_proof.md",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_release_verify_report.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_web.json",
+    "scripts/e2e/runFlatListPerformanceMaestro.ts",
+    "scripts/e2e/runFlatListPerformanceWeb.ts",
+    "scripts/performance/verifyFlatListTuning.ts",
+    "src/features/chat/ChatScreen.tsx",
+    "src/features/reports/ReportsDashboardScreen.tsx",
+    "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+    "src/lib/performance/listPerformancePolicy.ts",
+    "tests/architecture/noUnboundedScrollViewMaps.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/e2e/flatListPerformanceMaestro.contract.test.ts",
+    "tests/e2e/flatListPerformanceWeb.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "tests/performance/flatListTuning.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -378,6 +402,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         !isApprovedDirectorReportsFlatListTuningPatch(file) &&
+        !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

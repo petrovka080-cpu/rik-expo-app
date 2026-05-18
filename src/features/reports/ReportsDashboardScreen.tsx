@@ -45,6 +45,15 @@ type ReportSection = {
   chart?: "turnover" | "pipe" | null;
 };
 
+const REPORTS_DASHBOARD_SECTION_LIST_PERF = {
+  initialNumToRender: 12,
+  maxToRenderPerBatch: 12,
+  windowSize: 7,
+  onEndReachedThreshold: 0.4,
+} as const;
+const reportsDashboardSectionKeyExtractor = (item: ReportRow, index: number) =>
+  `${index}:${String(item[0] ?? "")}`;
+
 export default function ReportsDashboardScreen() {
   const router = useRouter();
   const [start, setStart] = useState(monthAgo());
@@ -284,13 +293,14 @@ export default function ReportsDashboardScreen() {
   return (
     <SectionList
       sections={sections}
-      keyExtractor={(item, index) => `${index}:${String(item[0] ?? "")}`}
+      keyExtractor={reportsDashboardSectionKeyExtractor}
       renderSectionHeader={renderSectionHeader}
       renderItem={renderSectionItem}
       renderSectionFooter={renderSectionFooter}
       stickySectionHeadersEnabled={false}
       keyboardShouldPersistTaps="handled"
       removeClippedSubviews
+      {...REPORTS_DASHBOARD_SECTION_LIST_PERF}
       style={{ flex: 1, backgroundColor: "#f8fafc" }}
       contentContainerStyle={{ padding: 12, gap: 16, paddingBottom: 24 }}
       ListHeaderComponent={
@@ -300,7 +310,17 @@ export default function ReportsDashboardScreen() {
           {loading ? <ActivityIndicator size="large" /> : null}
         </View>
       }
+      ListEmptyComponent={renderReportsDashboardEmptyList}
+      ListFooterComponent={null}
     />
+  );
+}
+
+function renderReportsDashboardEmptyList() {
+  return (
+    <View style={tableFooterEmpty}>
+      <Text style={{ color: "#64748b" }}>РќРµС‚ РґР°РЅРЅС‹С…</Text>
+    </View>
   );
 }
 

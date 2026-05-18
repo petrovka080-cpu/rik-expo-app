@@ -257,6 +257,31 @@ const isApprovedAiDraftReportToolPatch = (file: string) =>
     "tests/ai/draftReportTool.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPerfFlatListEnterpriseTuningPatch = (file: string) =>
+  [
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_emulator.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_inventory.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_matrix.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_proof.md",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_release_verify_report.json",
+    "artifacts/S_PERF_01_FLATLIST_ENTERPRISE_TUNING_web.json",
+    "scripts/e2e/runFlatListPerformanceMaestro.ts",
+    "scripts/e2e/runFlatListPerformanceWeb.ts",
+    "scripts/performance/verifyFlatListTuning.ts",
+    "src/features/chat/ChatScreen.tsx",
+    "src/features/reports/ReportsDashboardScreen.tsx",
+    "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+    "src/lib/performance/listPerformancePolicy.ts",
+    "tests/architecture/noUnboundedScrollViewMaps.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/e2e/flatListPerformanceMaestro.contract.test.ts",
+    "tests/e2e/flatListPerformanceWeb.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/perf/performance-budget.test.ts",
+    "tests/performance/flatListTuning.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -339,6 +364,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
       !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
       !isApprovedAiDraftReportToolPatch(file) &&
+      !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

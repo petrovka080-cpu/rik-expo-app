@@ -58,6 +58,7 @@ const SUPPLIER_SHOWCASE_LIST_FLATLIST_TUNING = {
   maxToRenderPerBatch: 6,
   updateCellsBatchingPeriod: 32,
   windowSize: 7,
+  onEndReachedThreshold: 0.4,
   removeClippedSubviews: false,
 } as const;
 
