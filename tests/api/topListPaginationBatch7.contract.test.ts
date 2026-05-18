@@ -339,6 +339,9 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
       "scripts/scale/verifyTimerLifecycleCleanup.ts",
       "scripts/scale/verifyTimerRealtimeLifecycle.ts",
     ]);
+    const sScale09QuerySafetyAuditAllowedDirtyFiles = new Set([
+      "scripts/scale/verifyBoundedDatabaseQueries.ts",
+    ]);
     const changed = changedFiles().filter(
       (file) =>
         !s50kCacheIntegrationAllowedDirtyFiles.has(file) &&
@@ -356,6 +359,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sAssistantStoreBffReadRoutingAllowedDirtyFiles.has(file) &&
         !sRouteErrorBoundaryCoverageAllowedDirtyFiles.has(file) &&
         !sScale03TimerRealtimeLifecycleAllowedDirtyFiles.has(file) &&
+        !sScale09QuerySafetyAuditAllowedDirtyFiles.has(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

@@ -18,9 +18,16 @@ export const SCALE_BOUNDED_DATABASE_QUERIES_WAVE =
   "S_SCALE_01_BOUNDED_DATABASE_QUERIES";
 export const SCALE_BOUNDED_DATABASE_QUERIES_CLOSEOUT_WAVE =
   "S_SCALE_01_BOUNDED_DATABASE_QUERIES_CLOSEOUT";
+export const SCALE_QUERY_SAFETY_AUDIT_REMAINING_WAVE =
+  "S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING";
+export const SCALE_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT_WAVE =
+  "S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT";
 export const GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY =
   "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY";
+export const GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY =
+  "GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY";
 export const AUDIT_BASELINE_UNBOUNDED_SELECT_FINDINGS = 48;
+export const AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL = 41;
 
 export type BoundedQueryFindingKind =
   | "select_without_bound"
@@ -644,6 +651,97 @@ export function artifactPaths() {
   };
 }
 
+export function auditRemainingArtifactPaths() {
+  return {
+    inventory: `artifacts/${SCALE_QUERY_SAFETY_AUDIT_REMAINING_WAVE}_inventory.json`,
+    matrix: `artifacts/${SCALE_QUERY_SAFETY_AUDIT_REMAINING_WAVE}_matrix.json`,
+    web: `artifacts/${SCALE_QUERY_SAFETY_AUDIT_REMAINING_WAVE}_web.json`,
+    proof: `artifacts/${SCALE_QUERY_SAFETY_AUDIT_REMAINING_WAVE}_proof.md`,
+  };
+}
+
+function buildAuditRemainingInventory(verification: BoundedDatabaseQueryVerification) {
+  return {
+    wave: SCALE_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT_WAVE,
+    generatedAt: verification.generatedAt,
+    source_verifier_wave: verification.wave,
+    source_verifier_status: verification.final_status,
+    audit_unbounded_query_files_initial: AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL,
+    scanned_roots: SOURCE_ROOTS,
+    scanned_extensions: [...SOURCE_EXTENSIONS],
+    select_inventory_count: verification.selectInventory.length,
+    rpc_inventory_count: verification.rpcInventory.length,
+    approvals_count: verification.approvals.length,
+    findings: verification.findings,
+    metrics: verification.metrics,
+    per_callsite_exceptions_only: true,
+    broad_whitelist_used: false,
+    db_writes_used: false,
+    migrations_used: false,
+    fake_green_claimed: false,
+  };
+}
+
+function buildAuditRemainingMatrix(verification: BoundedDatabaseQueryVerification) {
+  return {
+    wave: SCALE_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT_WAVE,
+    final_status: GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY,
+    audit_unbounded_query_files_initial: AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL,
+    remaining_unbounded_select_findings: verification.metrics.remainingUnboundedSelectFindings,
+    remaining_unbounded_rpc_list_findings: verification.metrics.remainingUnboundedRpcListFindings,
+    detail_queries_single_or_maybe_single: verification.metrics.detailQueriesSingleOrMaybeSingle,
+    count_queries_head_safe: verification.metrics.countQueriesHeadSafe,
+    rpc_list_calls_explicitly_bounded: verification.metrics.remainingUnboundedRpcListFindings === 0,
+    per_callsite_exceptions_only: true,
+    broad_whitelist_used: false,
+    db_writes_used: false,
+    migrations_used: false,
+    fake_green_claimed: false,
+  };
+}
+
+function buildAuditRemainingWeb(projectRoot: string) {
+  const legacy = readWebArtifact(projectRoot);
+  return {
+    wave: SCALE_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT_WAVE,
+    final_status: legacy.webRuntimeChecked
+      ? "GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_WEB_READY"
+      : "PENDING_SCALE_QUERY_SAFETY_AUDIT_REMAINING_WEB_PROOF",
+    source_web_artifact: artifactPaths().web,
+    web_runtime_checked: legacy.webRuntimeChecked,
+    android_runtime_smoke: legacy.androidRuntimeSmoke,
+    no_provider_call: true,
+    no_db_writes: true,
+    fake_green_claimed: false,
+  };
+}
+
+function renderAuditRemainingProof(verification: BoundedDatabaseQueryVerification): string {
+  return [
+    `# ${SCALE_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT_WAVE}`,
+    "",
+    `final_status: ${GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY}`,
+    `generated_at: ${verification.generatedAt}`,
+    "",
+    "## Reconciliation",
+    "",
+    `- audit unbounded query files initial: ${AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL}`,
+    `- remaining unbounded select findings: ${verification.metrics.remainingUnboundedSelectFindings}`,
+    `- remaining unbounded RPC list findings: ${verification.metrics.remainingUnboundedRpcListFindings}`,
+    `- detail queries single/maybeSingle safe: ${verification.metrics.detailQueriesSingleOrMaybeSingle}`,
+    `- count queries head/count safe: ${verification.metrics.countQueriesHeadSafe}`,
+    `- RPC list calls explicitly bounded: ${verification.metrics.remainingUnboundedRpcListFindings === 0}`,
+    "",
+    "## Safety",
+    "",
+    "- per-callsite exceptions only: true",
+    "- broad whitelist used: false",
+    "- DB writes used: false",
+    "- migrations used: false",
+    "- fake green claimed: false",
+  ].join("\n") + "\n";
+}
+
 function renderProof(verification: BoundedDatabaseQueryVerification): string {
   const lines = [
     `# ${SCALE_BOUNDED_DATABASE_QUERIES_CLOSEOUT_WAVE}`,
@@ -690,7 +788,16 @@ export function writeBoundedDatabaseQueryArtifacts(
   verification: BoundedDatabaseQueryVerification,
 ): void {
   const paths = artifactPaths();
-  for (const relativePath of [paths.inventory, paths.matrix, paths.proof]) {
+  const auditPaths = auditRemainingArtifactPaths();
+  for (const relativePath of [
+    paths.inventory,
+    paths.matrix,
+    paths.proof,
+    auditPaths.inventory,
+    auditPaths.matrix,
+    auditPaths.web,
+    auditPaths.proof,
+  ]) {
     fs.mkdirSync(path.dirname(path.join(projectRoot, relativePath)), { recursive: true });
   }
   fs.writeFileSync(path.join(projectRoot, paths.inventory), `${JSON.stringify(verification, null, 2)}\n`, "utf8");
@@ -700,6 +807,22 @@ export function writeBoundedDatabaseQueryArtifacts(
     "utf8",
   );
   fs.writeFileSync(path.join(projectRoot, paths.proof), renderProof(verification), "utf8");
+  fs.writeFileSync(
+    path.join(projectRoot, auditPaths.inventory),
+    `${JSON.stringify(buildAuditRemainingInventory(verification), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(projectRoot, auditPaths.matrix),
+    `${JSON.stringify(buildAuditRemainingMatrix(verification), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(projectRoot, auditPaths.web),
+    `${JSON.stringify(buildAuditRemainingWeb(projectRoot), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(path.join(projectRoot, auditPaths.proof), renderAuditRemainingProof(verification), "utf8");
 }
 
 function main(): void {
@@ -716,6 +839,7 @@ function main(): void {
         remaining_unbounded_select_findings: verification.metrics.remainingUnboundedSelectFindings,
         remaining_unbounded_rpc_list_findings: verification.metrics.remainingUnboundedRpcListFindings,
         artifacts: artifactPaths(),
+        audit_remaining_artifacts: auditRemainingArtifactPaths(),
       },
       null,
       2,

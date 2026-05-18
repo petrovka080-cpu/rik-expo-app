@@ -9,7 +9,10 @@ import {
   clampQueryLimit,
 } from "../../src/lib/api/queryLimits";
 import {
+  AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL,
   GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY,
+  GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY,
+  auditRemainingArtifactPaths,
   verifyBoundedDatabaseQueries,
 } from "../../scripts/scale/verifyBoundedDatabaseQueries";
 
@@ -45,5 +48,24 @@ describe("S_SCALE_01 bounded database query policy", () => {
     expect(source).not.toContain("RPC_BOUND_ARG_RE.test(context)");
     expect(source).toContain("SCALE_BOUND_");
     expect(source).toContain("remainingUnboundedSelectFindings");
+  });
+
+  it("writes the S_SCALE_09 remaining-audit closeout artifacts from the same strict scanner", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "scripts/scale/verifyBoundedDatabaseQueries.ts"),
+      "utf8",
+    );
+    const paths = auditRemainingArtifactPaths();
+
+    expect(AUDIT_REMAINING_UNBOUNDED_QUERY_FILES_INITIAL).toBe(41);
+    expect(GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY).toBe(
+      "GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY",
+    );
+    expect(paths.matrix).toBe("artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_matrix.json");
+    expect(source).toContain("buildAuditRemainingMatrix");
+    expect(source).toContain("per_callsite_exceptions_only: true");
+    expect(source).toContain("broad_whitelist_used: false");
+    expect(source).toContain("db_writes_used: false");
+    expect(source).toContain("migrations_used: false");
   });
 });

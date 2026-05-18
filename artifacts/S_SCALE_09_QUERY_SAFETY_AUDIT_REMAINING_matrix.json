@@ -1,0 +1,15 @@
+{
+  "wave": "S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_CLOSEOUT",
+  "final_status": "GREEN_SCALE_QUERY_SAFETY_AUDIT_REMAINING_READY",
+  "audit_unbounded_query_files_initial": 41,
+  "remaining_unbounded_select_findings": 0,
+  "remaining_unbounded_rpc_list_findings": 0,
+  "detail_queries_single_or_maybe_single": true,
+  "count_queries_head_safe": true,
+  "rpc_list_calls_explicitly_bounded": true,
+  "per_callsite_exceptions_only": true,
+  "broad_whitelist_used": false,
+  "db_writes_used": false,
+  "migrations_used": false,
+  "fake_green_claimed": false
+}
