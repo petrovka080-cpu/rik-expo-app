@@ -1,0 +1,381 @@
+﻿## rg lists
+$ rg -n FlatList|SectionList|VirtualizedList|ScrollView src app -g *.ts -g *.tsx
+app\product\[id].tsx:10:  ScrollView,
+app\product\[id].tsx:217:      <ScrollView contentContainerStyle={styles.content}>
+app\product\[id].tsx:397:      </ScrollView>
+src\ui\FlashList.tsx:2:import { FlatList, type FlatListProps } from "react-native";
+src\ui\FlashList.tsx:13:export type FlashListProps<T> = FlatListProps<T> & {
+src\ui\FlashList.tsx:19:  maintainVisibleContentPosition?: FlatListProps<T>["maintainVisibleContentPosition"];
+src\ui\FlashList.tsx:46:  ref: React.ForwardedRef<FlatList<T>>,
+src\ui\FlashList.tsx:68:    logger.info("flash-list.compat", "legacy architecture fallback -> FlatList");
+src\ui\FlashList.tsx:71:  return <FlatList ref={ref} {...rest} />;
+src\ui\FlashList.tsx:75:  props: FlashListProps<T> & { ref?: React.ForwardedRef<FlatList<T>> },
+src\features\chat\ChatScreen.tsx:7:  type FlatList,
+src\features\chat\ChatScreen.tsx:11:  ScrollView,
+src\features\chat\ChatScreen.tsx:131:  const listRef = useRef<FlatList<ChatMessage>>(null);
+src\features\chat\ChatScreen.tsx:326:          <ScrollView
+src\features\chat\ChatScreen.tsx:379:          </ScrollView>
+src\features\reports\ReportsHubScreen.tsx:4:import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+src\features\reports\ReportsHubScreen.tsx:51:    <ScrollView
+src\features\reports\ReportsHubScreen.tsx:85:    </ScrollView>
+src\features\reports\ReportsDashboardScreen.tsx:8:  SectionList,
+src\features\reports\ReportsDashboardScreen.tsx:285:    <SectionList
+src\features\seller\SellerAreaScreen.tsx:10:  ScrollView,
+src\features\seller\SellerAreaScreen.tsx:180:    <ScrollView
+src\features\seller\SellerAreaScreen.tsx:328:    </ScrollView>
+src\features\auctions\AuctionDetailScreen.tsx:9:  ScrollView,
+src\features\auctions\AuctionDetailScreen.tsx:139:      <ScrollView contentContainerStyle={styles.content}>
+src\features\auctions\AuctionDetailScreen.tsx:260:      </ScrollView>
+src\features\market\useMarketHomeController.ts:5:  type FlatList,
+src\features\market\useMarketHomeController.ts:59:  const listRef = useRef<FlatList<MarketHomeListingCard>>(null);
+src\features\market\marketCleanup.contract.test.tsx:43:    expect(source).not.toContain("<ScrollView horizontal");
+src\features\market\components\MarketHeroCarousel.tsx:7:  ScrollView,
+src\features\market\components\MarketHeroCarousel.tsx:35:      <ScrollView
+src\features\market\components\MarketHeroCarousel.tsx:59:      </ScrollView>
+src\components\map\ResultsBottomSheet.tsx:12:  type FlatList,
+src\components\map\ResultsBottomSheet.tsx:128:  const listRef = useRef<FlatList<Row> | null>(null);
+src\features\market\components\MarketCategoryRail.tsx:2:import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+src\features\market\components\MarketCategoryRail.tsx:19:    <ScrollView
+src\features\market\components\MarketCategoryRail.tsx:39:    </ScrollView>
+src\components\map\DemandDetailsModal.tsx:2:import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+src\components\map\DemandDetailsModal.tsx:64:          <ScrollView contentContainerStyle={styles.content}>
+src\components\map\DemandDetailsModal.tsx:114:          </ScrollView>
+src\screens\accountant\useAccountantScreenChromeModel.ts:7:  type ScrollView,
+src\screens\accountant\useAccountantScreenChromeModel.ts:19:  const cardScrollRef = useRef<ScrollView | null>(null);
+src\screens\accountant\useAccountantKeyboard.ts:8:  type ScrollView,
+src\screens\accountant\useAccountantKeyboard.ts:53:  cardScrollRef: RefObject<ScrollView | null>,
+src\components\AppCombo.tsx:2:import { View, Text, Pressable, Modal, FlatList, TextInput } from 'react-native';
+src\components\AppCombo.tsx:99:          <FlatList
+src\components\foreman\WorkTypePicker.tsx:10:  ScrollView,
+src\components\foreman\WorkTypePicker.tsx:269:                <ScrollView
+src\components\foreman\WorkTypePicker.tsx:292:                </ScrollView>
+src\components\foreman\WorkTypePicker.tsx:295:              <ScrollView
+src\components\foreman\WorkTypePicker.tsx:314:              </ScrollView>
+src\components\foreman\useCalcModalController.ts:8:  type ScrollView,
+src\components\foreman\useCalcModalController.ts:79:  const scrollRef = useRef<ScrollView | null>(null);
+src\components\foreman\CalcModalContent.tsx:9:  ScrollView,
+src\components\foreman\CalcModalContent.tsx:48:  scrollRef: React.MutableRefObject<ScrollView | null>;
+src\components\foreman\CalcModalContent.tsx:297:            <ScrollView
+src\components\foreman\CalcModalContent.tsx:467:            </ScrollView>
+src\components\ai\runtime\AiScreenScrollShell.tsx:3:  ScrollView,
+src\components\ai\runtime\AiScreenScrollShell.tsx:32:      <ScrollView
+src\components\ai\runtime\AiScreenScrollShell.tsx:40:      </ScrollView>
+src\screens\accountant\components\TabsBar.tsx:2:import { Pressable, ScrollView, Text, View } from "react-native";
+src\screens\accountant\components\TabsBar.tsx:16:      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 12 }}>
+src\screens\accountant\components\TabsBar.tsx:38:      </ScrollView>
+src\components\ai\runtime\AiSafeKeyboardShell.tsx:5:  ScrollView,
+src\components\ai\runtime\AiSafeKeyboardShell.tsx:35:      <ScrollView
+src\components\ai\runtime\AiSafeKeyboardShell.tsx:44:      </ScrollView>
+src\screens\accountant\components\NotificationsModal.tsx:2:import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+src\screens\accountant\components\NotificationsModal.tsx:36:          <ScrollView contentContainerStyle={{ gap: 8 }}>
+src\screens\accountant\components\NotificationsModal.tsx:67:          </ScrollView>
+src\components\ai\runtime\AiBoundedFlatList.tsx:3:  FlatList,
+src\components\ai\runtime\AiBoundedFlatList.tsx:5:  type FlatListProps,
+src\components\ai\runtime\AiBoundedFlatList.tsx:17:export type AiBoundedFlatListProps<T> = Omit<
+src\components\ai\runtime\AiBoundedFlatList.tsx:18:  FlatListProps<T>,
+src\components\ai\runtime\AiBoundedFlatList.tsx:29:  ListEmptyComponent: FlatListProps<T>["ListEmptyComponent"];
+src\components\ai\runtime\AiBoundedFlatList.tsx:37:export function getAiBoundedFlatListData<T>(data: readonly T[] | null | undefined): T[] {
+src\components\ai\runtime\AiBoundedFlatList.tsx:42:export function AiBoundedFlatList<T>({
+src\components\ai\runtime\AiBoundedFlatList.tsx:51:}: AiBoundedFlatListProps<T>): React.ReactElement {
+src\components\ai\runtime\AiBoundedFlatList.tsx:52:  const boundedData = getAiBoundedFlatListData(data);
+src\components\ai\runtime\AiBoundedFlatList.tsx:57:    <FlatList
+src\screens\accountant\components\Header.tsx:2:import { Animated, Pressable, ScrollView, Text, View } from "react-native";
+src\screens\accountant\components\Header.tsx:110:        <ScrollView
+src\screens\accountant\components\Header.tsx:147:        </ScrollView>
+src\screens\accountant\components\CardModal.tsx:9:  ScrollView,
+src\screens\accountant\components\CardModal.tsx:79:  scrollRef: React.Ref<ScrollView>;
+src\screens\accountant\components\CardModal.tsx:178:            <Animated.ScrollView
+src\screens\accountant\components\CardModal.tsx:191:            </Animated.ScrollView>
+src\screens\accountant\components\AccountantScreenView.tsx:2:import { View, ScrollView } from "react-native";
+src\screens\accountant\components\AccountantScreenView.tsx:221:        scrollRef={(r: ScrollView | null) => { payFormReveal.scrollRef.current = r; cardScrollRef.current = r; }}
+src\screens\accountant\components\AccountantListSection.tsx:6:  ScrollView,
+src\screens\accountant\components\AccountantListSection.tsx:115:      <ScrollView
+src\screens\accountant\components\AccountantListSection.tsx:141:      </ScrollView>
+src\features\ai\approvalInbox\ApprovalInboxScreen.tsx:3:import { ScrollView, StyleSheet, Text, View } from "react-native";
+src\features\ai\approvalInbox\ApprovalInboxScreen.tsx:33:      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+src\features\ai\approvalInbox\ApprovalInboxScreen.tsx:87:      </ScrollView>
+src\screens\contractor\components\ContractorWorkModal.tsx:2:import { Modal, Platform, Pressable, ScrollView, Text, View, type ViewStyle } from "react-native";
+src\screens\contractor\components\ContractorWorkModal.tsx:105:      <ScrollView
+src\screens\contractor\components\ContractorWorkModal.tsx:186:      </ScrollView>
+src\screens\contractor\components\ContractDetailsModal.tsx:2:import { Modal, Pressable, ScrollView, Text, View } from "react-native";
+src\screens\contractor\components\ContractDetailsModal.tsx:56:          <ScrollView>
+src\screens\contractor\components\ContractDetailsModal.tsx:75:          </ScrollView>
+src\features\ai\commandCenter\AiCommandCenterScreen.tsx:6:  ScrollView,
+src\features\ai\commandCenter\AiCommandCenterScreen.tsx:179:      <ScrollView
+src\features\ai\commandCenter\AiCommandCenterScreen.tsx:365:      </ScrollView>
+src\screens\buyer\BuyerSubcontractTab.view.tsx:7:  ScrollView,
+src\screens\buyer\BuyerSubcontractTab.view.tsx:145:        <ScrollView
+src\screens\buyer\BuyerSubcontractTab.view.tsx:381:        </ScrollView>
+src\lib\pdf\pdfViewer.components.tsx:8:import { Platform, Pressable, ScrollView, Text } from "react-native";
+src\lib\pdf\pdfViewer.components.tsx:57:    <ScrollView
+src\lib\pdf\pdfViewer.components.tsx:133:    </ScrollView>
+src\screens\warehouse\components\WarehouseHeader.tsx:2:import { View, Text, Pressable, ScrollView, Animated } from "react-native";
+src\screens\warehouse\components\WarehouseHeader.tsx:133:        <ScrollView
+src\screens\warehouse\components\WarehouseHeader.tsx:155:        </ScrollView>
+src\features\ai\procurementCopilot\ProcurementCopilotRuntimeSurface.tsx:3:import { ScrollView, StyleSheet, Text, View } from "react-native";
+src\features\ai\procurementCopilot\ProcurementCopilotRuntimeSurface.tsx:32:      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+src\features\ai\procurementCopilot\ProcurementCopilotRuntimeSurface.tsx:81:      </ScrollView>
+src\screens\buyer\hooks\useBuyerScreenUiState.ts:2:import type { ScrollView } from "react-native";
+src\screens\buyer\hooks\useBuyerScreenUiState.ts:148:  const tabsScrollRef = useRef<ScrollView | null>(null);
+src\screens\buyer\components\BuyerScreenHeader.tsx:2:import { View, Text, Pressable, Animated, ScrollView } from "react-native";
+src\screens\buyer\components\BuyerScreenHeader.tsx:23:  tabsScrollRef?: React.RefObject<ScrollView | null>;
+src\screens\buyer\components\BuyerScreenHeader.tsx:55:        <ScrollView
+src\screens\buyer\components\BuyerScreenHeader.tsx:121:        </ScrollView>
+src\screens\buyer\hooks\useBuyerScreenHeader.tsx:2:import { Animated, ScrollView } from "react-native";
+src\screens\buyer\hooks\useBuyerScreenHeader.tsx:20:  tabsScrollRef: React.RefObject<ScrollView | null>;
+src\screens\buyer\components\BuyerRfqSheetBody.tsx:2:import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+src\screens\buyer\components\BuyerRfqSheetBody.tsx:208:      <ScrollView
+src\screens\buyer\components\BuyerRfqSheetBody.tsx:431:      </ScrollView>
+src\screens\buyer\components\BuyerMobileItemEditorModal.tsx:3:  FlatList,
+src\screens\buyer\components\BuyerMobileItemEditorModal.tsx:185:            <FlatList
+src\screens\buyer\components\BuyerMobileItemEditorModal.tsx:229:          <FlatList
+src\screens\buyer\components\BuyerItemRow.tsx:7:  FlatList,
+src\screens\buyer\components\BuyerItemRow.tsx:243:              <FlatList
+src\screens\buyer\components\BuyerItemRow.tsx:319:              <FlatList
+src\screens\buyer\components\BuyerInboxSheetBody.tsx:2:import { StyleSheet, View, Text, type FlatList } from "react-native";
+src\screens\buyer\components\BuyerInboxSheetBody.tsx:87:  const listRef = React.useRef<FlatList<InboxSheetRow> | null>(null);
+src\screens\buyer\components\BuyerAccountingSheetBody.tsx:2:import { ScrollView, Text, TextInput, View, Pressable } from "react-native";
+src\screens\buyer\components\BuyerAccountingSheetBody.tsx:87:    <ScrollView
+src\screens\buyer\components\BuyerAccountingSheetBody.tsx:189:    </ScrollView>
+src\screens\security\SecurityScreen.tsx:6:  View, Text, TextInput, Pressable, ScrollView, StyleSheet, Platform, Alert,
+src\screens\security\SecurityScreen.tsx:99:    <ScrollView contentContainerStyle={s.wrap}>
+src\screens\security\SecurityScreen.tsx:169:    </ScrollView>
+src\screens\profile\components\ProfileMainSections.tsx:5:  ScrollView,
+src\screens\profile\components\ProfileMainSections.tsx:147:    <ScrollView
+src\screens\profile\components\ProfileMainSections.tsx:459:    </ScrollView>
+src\screens\profile\components\ProfileContentLoadState.tsx:2:import { Pressable, ScrollView, Text, View } from "react-native";
+src\screens\profile\components\ProfileContentLoadState.tsx:20:      <ScrollView
+src\screens\profile\components\ProfileContentLoadState.tsx:48:      </ScrollView>
+src\screens\profile\components\ListingModal.tsx:8:  ScrollView,
+src\screens\profile\components\ListingModal.tsx:185:            <ScrollView
+src\screens\profile\components\ListingModal.tsx:313:            </ScrollView>
+src\screens\profile\components\ListingModal.tsx:370:              <ScrollView
+src\screens\profile\components\ListingModal.tsx:405:              </ScrollView>
+src\screens\profile\components\ListingModal.test.tsx:101:    const scroll = renderer.root.findByType(require("react-native").ScrollView);
+src\screens\profile\components\EditProfileModal.tsx:7:  ScrollView,
+src\screens\profile\components\EditProfileModal.tsx:67:          <ScrollView
+src\screens\profile\components\EditProfileModal.tsx:162:          </ScrollView>
+src\screens\office\useOfficeHubScreenController.tsx:2:import { Alert, type ScrollView } from "react-native";
+src\screens\office\useOfficeHubScreenController.tsx:85:  const scrollRef = useRef<ScrollView | null>(null);
+src\screens\office\useOfficeCompanySection.ts:24:import type { ScrollView } from "react-native";
+src\screens\office\useOfficeCompanySection.ts:38:  scrollRef: React.RefObject<ScrollView | null>;
+src\screens\office\OfficeShellContent.tsx:5:  ScrollView,
+src\screens\office\OfficeShellContent.tsx:9:  type ScrollViewProps,
+src\screens\office\OfficeShellContent.tsx:63:  scrollRef: React.RefObject<ScrollView | null>;
+src\screens\office\OfficeShellContent.tsx:74:  onContentSizeChange: ScrollViewProps["onContentSizeChange"];
+src\screens\office\OfficeShellContent.tsx:124:      <ScrollView
+src\screens\office\OfficeShellContent.tsx:200:      </ScrollView>
+src\screens\office\OfficeHubScreen.test.tsx:1564:  it("removes ScrollView content size callback when the native isolation probe disables it", async () => {
+src\features\ai\AIAssistantScreen.tsx:9:  ScrollView,
+src\features\ai\AIAssistantScreen.tsx:405:          <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
+src\features\ai\AIAssistantScreen.tsx:468:        </ScrollView>
+src\screens\director\DirectorSubcontractTab.tsx:12:  ScrollView,
+src\screens\director\DirectorSubcontractTab.tsx:87:        <ScrollView style={ds.modalScroll} keyboardShouldPersistTaps="handled">
+src\screens\director\DirectorSubcontractTab.tsx:178:        </ScrollView>
+src\screens\director\DirectorDashboard.tsx:10:  type FlatList,
+src\screens\director\DirectorDashboard.tsx:177:  const topTabsRef = React.useRef<FlatList<TopTabItem> | null>(null);
+src\features\ai\AIAssistantReadyProductPanels.tsx:4:import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+src\features\ai\AIAssistantReadyProductPanels.tsx:197:          <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:213:          </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:247:              <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:263:              </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:285:          <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:305:          </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:360:          <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:376:          </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:390:          <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:408:          </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:491:      <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:517:      </ScrollView>
+src\features\ai\AIAssistantReadyProductPanels.tsx:519:      <ScrollView
+src\features\ai\AIAssistantReadyProductPanels.tsx:530:      </ScrollView>
+src\screens\director\DirectorFinanceCardModal.tsx:221:            {/* No ScrollView wrapper here: child may contain FlatList/SectionList */}
+src\screens\foreman\ForemanSubcontractDraftSections.tsx:2:import { Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+src\screens\foreman\ForemanSubcontractDraftSections.tsx:81:      <ScrollView
+src\screens\foreman\ForemanSubcontractDraftSections.tsx:158:      </ScrollView>
+src\screens\foreman\ForemanEditorSection.tsx:142:    <Animated.ScrollView
+src\screens\foreman\ForemanEditorSection.tsx:299:    </Animated.ScrollView>
+src\screens\foreman\ForemanDropdown.tsx:3:  FlatList,
+src\screens\foreman\ForemanDropdown.tsx:177:            <FlatList
+src\screens\foreman\ForemanAiQuickModal.tsx:9:  ScrollView,
+src\screens\foreman\ForemanAiQuickModal.tsx:200:              <ScrollView
+src\screens\foreman\ForemanAiQuickModal.tsx:265:              </ScrollView>
+src\screens\foreman\ForemanAiQuickModal.tsx:331:              <ScrollView
+src\screens\foreman\ForemanAiQuickModal.tsx:486:              </ScrollView>
+exit_code=0
+
+## rg realtime
+$ rg -n supabase\.channel|\.channel\(|\.subscribe\(|removeChannel|removeAllChannels|postgres_changes src app -g *.ts -g *.tsx
+src\screens\accountant\accountant.realtime.lifecycle.ts:80:              sourceKind: "supabase:postgres_changes",
+src\screens\accountant\accountant.realtime.lifecycle.ts:170:          sourceKind: "supabase:postgres_changes",
+src\screens\warehouse\warehouse.receiveDraft.store.test.ts:60:    const unsubscribe = useWarehouseReceiveDraftStore.subscribe((state) => {
+src\screens\warehouse\warehouse.receiveDraft.store.test.ts:112:    const unsubscribe = useWarehouseReceiveDraftStore.subscribe((state) => {
+src\screens\warehouse\warehouse.realtime.lifecycle.ts:160:          sourceKind: "supabase:postgres_changes",
+src\screens\warehouse\warehouse.realtime.lifecycle.test.tsx:80:    removeChannel: jest.Mock;
+src\screens\warehouse\warehouse.realtime.lifecycle.test.tsx:327:      removeChannel: jest.fn(),
+src\screens\warehouse\warehouse.realtime.lifecycle.test.tsx:350:    expect(supabase.channel).not.toHaveBeenCalled();
+src\screens\warehouse\warehouse.realtime.lifecycle.test.tsx:359:    expect(supabase.removeChannel).not.toHaveBeenCalled();
+src\lib\realtime\realtimeSubscriptionManager.ts:9:  removeChannel?: (channel: TChannel) => void | Promise<void>;
+src\lib\realtime\realtimeSubscriptionManager.ts:30:  removeChannel?: (channel: TChannel) => void | Promise<void>;
+src\lib\realtime\realtimeSubscriptionManager.ts:59:  if (entry.removeChannel) {
+src\lib\realtime\realtimeSubscriptionManager.ts:60:    await entry.removeChannel(channel);
+src\lib\realtime\realtimeSubscriptionManager.ts:93:    removeChannel: options.removeChannel as ManagedEntry<ManagedRealtimeChannel>["removeChannel"],
+src\lib\realtime\realtimeSubscriptionManager.ts:106:        if (options.removeChannel) {
+src\lib\realtime\realtimeSubscriptionManager.ts:107:          await options.removeChannel(channel);
+src\lib\realtime\realtime.client.ts:253:    params.client.removeChannel(params.channel);
+src\lib\realtime\realtime.client.ts:572:    let channel = client.channel(params.name);
+src\lib\realtime\realtime.client.ts:576:          "postgres_changes",
+src\lib\realtime\realtime.client.ts:593:            sourceKind: "supabase:postgres_changes",
+src\lib\realtime\realtime.client.ts:664:    channel.subscribe((status) => {
+src\lib\api\requestDraftSync.transport.ts:25:    supabase.channel(DIRECTOR_HANDOFF_BROADCAST_CHANNEL_NAME, {
+src\lib\api\requestDraftSync.transport.ts:54:): Promise<"ok" | "timed out" | "error"> => supabase.removeChannel(channel);
+src\lib\api\requestDraftSync.service.ts:105:        channel.subscribe(async (status) => {
+src\lib\api\requestDraftSync.service.test.ts:17:    removeChannel: jest.fn(),
+src\lib\api\requestDraftSync.service.test.ts:35:  removeChannel: jest.Mock;
+src\lib\api\requestDraftSync.service.test.ts:57:    mockSupabase.removeChannel.mockReset().mockResolvedValue(undefined);
+src\lib\api\requestDraftSync.service.test.ts:153:    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
+src\lib\api\requestDraftSync.service.test.ts:203:    expect(mockSupabase.removeChannel).toHaveBeenCalledWith(channel);
+src\lib\api\requestDraftSync.service.test.ts:217:      /\bsupabase\s*\.\s*(rpc|from|channel|removeChannel)\b/,
+src\lib\api\requestDraftSync.service.test.ts:228:    expect(syncTransportSource).toContain(directClientCall("removeChannel"));
+src\lib\offline\platformNetwork.service.ts:180:) => platformNetworkStore.subscribe(listener);
+src\screens\director\director.lifecycle.realtime.ts:131:      "postgres_changes",
+src\screens\director\director.lifecycle.realtime.ts:150:      "postgres_changes",
+src\screens\director\director.lifecycle.realtime.ts:176:      "postgres_changes",
+src\screens\director\director.lifecycle.realtime.ts:202:      "postgres_changes",
+src\screens\director\director.lifecycle.realtime.ts:242:    .subscribe((status) => {
+src\screens\director\director.lifecycle.realtime.transport.ts:13:  supabase.channel(DIRECTOR_SCREEN_REALTIME_CHANNEL_NAME, {
+src\screens\director\director.lifecycle.realtime.transport.ts:24:): ReturnType<typeof supabase.removeChannel> => supabase.removeChannel(channel);
+src\screens\director\director.lifecycle.realtime.test.tsx:50:    removeChannel: (...args: unknown[]) => mockRemoveChannel(...args),
+src\screens\director\director.lifecycle.realtime.test.tsx:271:    expect(realtimeSource).not.toContain("supabase.removeChannel");
+src\screens\director\director.lifecycle.realtime.test.tsx:272:    expect(realtimeSource).not.toContain("supabase.channel");
+src\screens\director\director.finance.realtime.lifecycle.ts:65:        sourceKind: "supabase:postgres_changes",
+src\screens\director\director.finance.realtime.lifecycle.ts:140:            sourceKind: "supabase:postgres_changes",
+src\screens\director\director.finance.realtime.lifecycle.ts:161:            sourceKind: "supabase:postgres_changes",
+src\screens\director\director.reports.realtime.lifecycle.ts:65:        sourceKind: "supabase:postgres_changes",
+src\screens\director\director.reports.realtime.lifecycle.ts:140:            sourceKind: "supabase:postgres_changes",
+src\screens\director\director.reports.realtime.lifecycle.ts:161:            sourceKind: "supabase:postgres_changes",
+src\screens\buyer\buyer.realtime.lifecycle.ts:178:          sourceKind: "supabase:postgres_changes",
+src\screens\contractor\contractor.realtime.lifecycle.ts:151:          sourceKind: "supabase:postgres_changes",
+exit_code=0
+
+## rg rpc
+$ rg -n \.rpc\( src app -g *.ts -g *.tsx
+src\screens\warehouse\warehouse.seed.transport.ts:211:  return supabase.rpc(fn, { p_incoming_id: incomingId });
+src\screens\warehouse\warehouse.seed.transport.contract.test.ts:54:    expect(transport).toContain("return supabase.rpc(fn, { p_incoming_id: incomingId });");
+src\screens\warehouse\warehouse.objectWorkReport.pdf.transport.ts:15:  supabase.rpc(
+src\features\market\market.repository.transport.ts:25:  return await supabase.rpc("marketplace_items_scope_page_v1" as never, {
+src\features\market\market.repository.transport.ts:35:    .rpc("marketplace_item_scope_detail_v1" as never, args as never)
+src\screens\warehouse\warehouse.nameMap.ui.transport.ts:31:) => supabase.rpc("warehouse_refresh_name_map_ui" as never, payload as never);
+src\screens\warehouse\warehouse.issue.transport.ts:30:  return await supabase.rpc("wh_issue_free_atomic_v5", payload);
+src\screens\warehouse\warehouse.issue.transport.ts:37:  return await supabase.rpc("wh_issue_request_atomic_v1", payload);
+src\screens\warehouse\warehouse.incomingMaterialsReport.pdf.transport.ts:13:  supabase.rpc("pdf_warehouse_incoming_materials_source_v1", {
+src\screens\warehouse\hooks\useWarehouseReceiveApply.transport.contract.test.ts:19:    expect(service).not.toContain('supabase.rpc("wh_receive_apply_ui"');
+src\screens\warehouse\warehouse.incomingForm.pdf.transport.ts:14:  supabase.rpc("pdf_warehouse_incoming_source_v1", args);
+src\screens\subcontracts\subcontracts.shared.transport.ts:24:  const { data, error } = await supabase.rpc("subcontract_create_v1", payload);
+src\screens\subcontracts\subcontracts.shared.transport.ts:31:  const { data, error } = await supabase.rpc("subcontract_create_draft", payload);
+src\screens\subcontracts\subcontracts.shared.transport.ts:39:  const { data, error } = await supabase.rpc(rpcName, args);
+src\screens\subcontracts\subcontracts.shared.test.ts:135:    expect(serviceSource).not.toContain("supabase.rpc(");
+src\screens\subcontracts\subcontracts.shared.test.ts:136:    expect(transportSource).toContain('supabase.rpc("subcontract_create_v1"');
+src\screens\subcontracts\subcontracts.shared.test.ts:137:    expect(transportSource).toContain('supabase.rpc("subcontract_create_draft"');
+src\screens\subcontracts\subcontracts.shared.test.ts:138:    expect(transportSource).toContain("supabase.rpc(rpcName, args)");
+src\screens\warehouse\warehouse.dayMaterialsReport.pdf.transport.ts:13:  supabase.rpc("pdf_warehouse_day_materials_source_v1", {
+src\screens\warehouse\hooks\useWarehouseReceiveApply.transport.ts:20:  return supabase.rpc("wh_receive_apply_ui", payload);
+src\screens\warehouse\warehouse.api.repo.transport.ts:41:      supabase.rpc("acc_report_stock", {}),
+src\screens\warehouse\warehouse.api.repo.transport.ts:45:      supabase.rpc("acc_report_movement", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:52:      supabase.rpc("acc_report_issues_v2", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:68:  return await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
+src\screens\warehouse\warehouse.api.repo.transport.ts:78:    supabase.rpc("wh_report_issued_materials_fast", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:94:    supabase.rpc("wh_report_issued_by_object_fast", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:110:    supabase.rpc("acc_report_incoming_v2", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:165:  return await supabase.rpc("warehouse_incoming_queue_scope_v1" as never, {
+src\screens\warehouse\warehouse.api.repo.transport.ts:179:    supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
+src\screens\warehouse\warehouse.api.repo.transport.ts:196:    supabase.rpc("warehouse_issue_queue_scope_v4", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:210:  return await supabase.rpc("warehouse_issue_items_scope_v1", {
+src\screens\warehouse\warehouse.api.repo.transport.ts:220:  return await supabase.rpc("warehouse_stock_scope_v2", {
+src\components\foreman\calcModal.rpc.transport.ts:9:  return await supabase.rpc("rpc_calc_work_kit", payload);
+src\lib\api\accountant.ts:523:  const { data, error } = await client.rpc("proposal_send_to_accountant_min", args);
+src\lib\api\accountant.ts:588:    client.rpc("accountant_proposal_financial_state_v1", args),
+src\lib\api\accountant.ts:687:  const { data, error } = await client.rpc("accounting_pay_invoice_v1", args);
+src\lib\api\accountant.ts:778:  const n = await client.rpc("list_accountant_inbox_fact", norm ? { p_tab: norm } : {});
+src\lib\api\accountant.ts:789:  const r = await client.rpc("list_accountant_inbox", { p_tab: norm ?? "К оплате" });
+src\lib\api\director.ts:177:  const rpc = await client.rpc(name);
+src\lib\api\director.ts:285:    const rpc = await client.rpc("approve_one", { p_proposal_id: toRpcId(approvalId) });
+src\lib\api\director.ts:315:    const rpc = await client.rpc("reject_one", { p_proposal_id: toRpcId(approvalId) });
+src\lib\api\director.ts:372:  const { data, error } = await client.rpc("list_director_inbox", args);
+src\lib\api\director.return.transport.ts:8:  supabase.rpc("director_return_min_auto", args);
+src\lib\api\directorPdfSource.service.test.ts:101:    expect(serviceSource).not.toContain("supabase.rpc(");
+src\lib\api\directorReportsTransport.transport.ts:14:    supabase.rpc(
+src\lib\api\directorPdfSource.transport.ts:39:  return await supabase.rpc("pdf_director_finance_source_v1", {
+src\lib\api\directorPdfSource.transport.ts:50:  return await supabase.rpc("pdf_director_production_source_v1", {
+src\lib\api\directorPdfSource.transport.ts:61:  return await supabase.rpc("pdf_director_subcontract_source_v1", {
+src\lib\store_supabase.write.transport.ts:17:  return await supabase.rpc(STORE_SUPABASE_WRITE_RPC_NAMES.sendRequestToDirector, {
+src\lib\store_supabase.write.transport.ts:23:  return await supabase.rpc(STORE_SUPABASE_WRITE_RPC_NAMES.approveOrDeclineRequestPending, {
+src\lib\api\foremanAiResolve.transport.ts:29:  return await supabase.rpc("resolve_catalog_synonym_v1" as never, {
+src\lib\api\foremanAiResolve.transport.ts:36:  return await supabase.rpc("resolve_packaging_v1" as never, {
+src\lib\api\integrity.guards.transport.ts:9:  return await supabaseClient.rpc("proposal_request_item_integrity_v1", {
+src\lib\api\paymentPdf.transport.ts:5:  return await supabase.rpc("pdf_payment_source_v1", { p_payment_id: paymentId });
+src\lib\api\proposals.ts:320:  const primary = await client.rpc(
+src\lib\api\proposals.ts:338:  const compatibility = await client.rpc("proposal_submit", buildProposalSubmitArgs(proposalId));
+src\lib\api\proposals.ts:350:  return client.rpc("proposal_create");
+src\lib\api\proposals.ts:462:  return client.rpc("proposal_add_items", buildProposalAddItemsArgs(proposalId, requestItemIds));
+src\lib\api\proposals.ts:881:      const rpc = await client.rpc("list_director_proposals_pending");
+src\lib\api\proposals.ts:1027:  const { data, error } = await client.rpc("proposal_items_snapshot", buildProposalItemsSnapshotArgs(proposalId, metaRows));
+src\lib\api\queryBoundary.ts:328:      args == null ? await transport.rpc(fn) : await transport.rpc(fn, args);
+src\lib\api\proposalAttachments.service.ts:274:  const rpc = await client.rpc("proposal_attachment_evidence_scope_v1" as never, {
+src\lib\api\requests.itemMutations.transport.ts:17:  return await supabase.rpc("request_item_add_or_inc", args);
+src\lib\api\requestDraftSync.transport.ts:73:  supabase.rpc("request_sync_draft_v2", args);
+src\lib\api\proposals.transport.ts:5:  return await supabase.rpc("proposal_items_for_web", { p_id: proposalId });
+src\lib\api\requests.ts:386:    const { data, error } = await client.rpc("request_find_reusable_empty_draft_v1", args);
+src\lib\api\requests.ts:528:    const { data, error } = await client.rpc("request_items_by_request", args);
+src\lib\api\requests.ts:789:    const { data, error } = await client.rpc(
+src\lib\api\requests.ts:913:    const { data, error } = await rawClient.rpc(
+src\lib\api\proposalAttachmentEvidence.api.ts:108:  const rpc = await client.rpc("proposal_attachment_evidence_attach_v1" as never, args as never);
+src\lib\api\profile.transport.ts:3:export const callEnsureMyProfileRpc = async () => supabase.rpc("ensure_my_profile");
+src\lib\api\profile.transport.ts:5:export const callGetMyRoleRpc = async () => supabase.rpc("get_my_role");
+src\lib\api\_core.transport.ts:36:    return (await supabase.rpc(variant.fn, args)) as RpcCompatTransportResult;
+src\lib\api\_core.transport.ts:38:  return (await supabase.rpc(variant.fn)) as RpcCompatTransportResult;
+src\screens\accountant\accountant.return.transport.ts:9:  supabase.rpc("acc_return_min_auto", args);
+src\screens\accountant\accountant.return.transport.ts:12:  supabase.rpc("proposal_return_to_buyer_min", args);
+src\lib\catalog\catalog.transport.supabase.ts:178:      return await supabase.rpc("rik_quick_ru", {
+src\lib\catalog\catalog.transport.supabase.ts:183:      return await supabase.rpc("rik_quick_search_typed", {
+src\lib\catalog\catalog.transport.supabase.ts:189:      return await supabase.rpc("rik_quick_search", {
+src\lib\catalog\catalog.transport.supabase.ts:272:  await supabase.rpc("suppliers_list", normalizeSuppliersListRpcArgs(searchTerm));
+src\lib\catalog\catalog.proposalCreation.service.atomicBoundary.test.ts:189:    expect(transportSource).toContain('supabase.rpc("rpc_proposal_submit_v3"');
+src\screens\accountant\accountant.inbox.transport.ts:15:  supabase.rpc("accountant_inbox_scope_v1", {
+src\screens\accountant\accountant.history.transport.ts:21:  supabase.rpc("list_accountant_payments_history_v2", {
+src\screens\accountant\accountant.history.transport.ts:31:  supabase.rpc("accountant_history_scope_v1", {
+src\lib\catalog\catalog.proposalCreation.transport.ts:63:  return await supabase.rpc("rpc_proposal_submit_v3" as never, args as never);
+src\lib\documents\attachmentOpener.test.ts:325:    expect(transportSource).not.toContain(".rpc(");
+src\screens\director\director.finance.rpc.transport.ts:34:): Promise<DirectorFinanceRpcResult> => supabase.rpc(rpcName, args);
+src\screens\director\director.approve.boundary.test.ts:75:    expect(boundarySource).not.toContain('supabase.rpc("director_approve_pipeline_v1"');
+src\screens\director\director.approve.boundary.test.ts:76:    expect(boundarySource).not.toContain('params.supabase.rpc("director_approve_pipeline_v1"');
+src\screens\director\director.approve.boundary.test.ts:77:    expect(transportSource).toContain('supabase.rpc("director_approve_pipeline_v1"');
+src\screens\director\director.approve.transport.ts:14:  return supabase.rpc("director_approve_pipeline_v1", args);
+src\screens\director\director.repository.transport.ts:7:  supabase.rpc("list_director_items_stable");
+src\screens\director\director.proposals.transport.ts:10:  supabase.rpc("director_pending_proposals_scope_v1", {
+src\screens\director\director.proposalDecision.transport.ts:19:  return supabase.rpc("director_decide_proposal_items", args);
+src\screens\director\director.proposalDecision.transport.contract.test.ts:28:    expect(proposalSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
+src\screens\director\director.proposalDecision.transport.contract.test.ts:29:    expect(detailSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
+src\screens\director\director.proposalDecision.transport.contract.test.ts:30:    expect(transportSource).toContain('supabase.rpc("director_decide_proposal_items"');
+src\lib\infra\queueLatencyMetrics.transport.ts:13:  return supabaseClient.rpc("submit_jobs_metrics");
+src\lib\infra\jobQueue.ts:432:  const primary = await queueClient.rpc(
+src\lib\infra\jobQueue.ts:455:    const legacy = await queueRpcCompat.rpc(
+src\lib\infra\jobQueue.ts:489:  const { data, error } = await queueClient.rpc("submit_jobs_recover_stuck");
+src\lib\infra\jobQueue.ts:503:  const first = await queueClient.rpc("submit_jobs_mark_completed", {
+src\lib\infra\jobQueue.ts:521:  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_completed", {
+src\lib\infra\jobQueue.ts:552:  const first = await queueClient.rpc("submit_jobs_mark_failed", {
+src\lib\infra\jobQueue.ts:571:  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_failed", {
+src\lib\infra\jobQueue.ts:600:  const { data, error } = await queueClient.rpc("submit_jobs_metrics");
+src\screens\director\director.request.transport.ts:11:  return supabase.rpc("reject_request_item", {
+src\screens\director\director.request.transport.ts:21:  return supabase.rpc("reject_request_all", {
+src\screens\director\director.request.transport.ts:34:  return supabase.rpc("director_approve_request_v1", {
+src\screens\contractor\contractor.workModalService.test.ts:344:    expect(serviceSource).not.toContain('supabaseClient.rpc("work_seed_defaults_auto"');
+src\screens\contractor\contractor.workModalService.test.ts:346:    expect(transportSource).toContain('supabaseClient.rpc("work_seed_defaults_auto"');
+src\screens\contractor\contractor.workModalService.transport.ts:56:  return await supabaseClient.rpc("work_seed_defaults_auto", { p_work_code: workCode });
+src\screens\contractor\contractor.workSearch.transport.ts:13:  supabaseClient.rpc("catalog_search", args);
+src\screens\contractor\contractorPdfSource.transport.ts:14:  supabase.rpc("pdf_contractor_work_source_v1", args);
+src\screens\buyer\buyer.actions.write.transport.ts:32:  return await params.supabase.rpc("request_items_set_status", {
+src\screens\buyer\buyer.actions.write.transport.ts:52:  return await params.supabase.rpc(
+src\screens\buyer\buyer.actions.write.transport.ts:62:  return await params.supabase.rpc(
+src\screens\buyer\hooks\useBuyerRequestProposalMap.transport.ts:8:) => supabase.rpc("resolve_req_pr_map", args);
+exit_code=0

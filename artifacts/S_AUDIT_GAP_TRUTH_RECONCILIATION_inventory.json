@@ -1,0 +1,434 @@
+﻿{
+    "wave":  "S_AUDIT_GAP_TRUTH_RECONCILIATION_CLOSEOUT",
+    "generatedAt":  "2026-05-18T11:59:40.4352179Z",
+    "final_status":  "BLOCKED_FINDINGS_REAL_REMAINING",
+    "git":  {
+                "head":  "1b498443cb20b9984c23886470c9619e81e56e41",
+                "origin_main":  "1b498443cb20b9984c23886470c9619e81e56e41",
+                "ahead":  0,
+                "behind":  0,
+                "status_short_branch":  "## main...origin/main\r\n M artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_inventory.json\r\n M artifacts/S_SCALE_09_QUERY_SAFETY_AUDIT_REMAINING_proof.md",
+                "current_head_verified":  true
+            },
+    "verifier_statuses":  {
+                              "value":  [
+                                            {
+                                                "name":  "verifyBoundedDatabaseQueries",
+                                                "command":  "npx tsx scripts/scale/verifyBoundedDatabaseQueries.ts --write-artifacts",
+                                                "exit_code":  0
+                                            },
+                                            {
+                                                "name":  "verifyRouteErrorBoundaryCoverage",
+                                                "command":  "npx tsx scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
+                                                "exit_code":  0
+                                            },
+                                            {
+                                                "name":  "verifyTimerLifecycleCleanup",
+                                                "command":  "npx tsx scripts/scale/verifyTimerLifecycleCleanup.ts",
+                                                "exit_code":  0
+                                            },
+                                            {
+                                                "name":  "verifyRealtimeSubscriptionLifecycle",
+                                                "command":  "npx tsx scripts/scale/verifyRealtimeSubscriptionLifecycle.ts",
+                                                "exit_code":  0
+                                            },
+                                            {
+                                                "name":  "verifySupabaseRpcRateLimitDiscipline",
+                                                "command":  "npx tsx scripts/architecture/verifySupabaseRpcRateLimitDiscipline.ts",
+                                                "exit_code":  0
+                                            },
+                                            {
+                                                "name":  "architecture_anti_regression_suite",
+                                                "command":  "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+                                                "exit_code":  0
+                                            }
+                                        ],
+                              "Count":  6
+                          },
+    "old_audit_claims":  {
+                             "unbounded_query_files":  41,
+                             "routes_without_error_boundaries":  11,
+                             "flatlist_screens_untuned":  4,
+                             "realtime_sprawl_files":  17,
+                             "rpc_rate_limit_gaps":  118,
+                             "god_components_approx":  22
+                         },
+    "current_truth":  {
+                          "bounded_queries":  {
+                                                  "final_status":  "GREEN_SCALE_BOUNDED_DATABASE_QUERIES_READY",
+                                                  "remaining_unbounded_select_findings":  0,
+                                                  "remaining_unbounded_rpc_list_findings":  0,
+                                                  "stale_old_audit_claim":  true
+                                              },
+                          "route_error_boundaries":  {
+                                                         "final_status":  "GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY",
+                                                         "routes_missing_boundary":  0,
+                                                         "real_screen_routes_without_boundary":  0,
+                                                         "stale_old_audit_claim":  true,
+                                                         "routes_total":  41,
+                                                         "screen_routes_total":  33,
+                                                         "screen_routes_with_boundary":  33
+                                                     },
+                          "timer_lifecycle":  {
+                                                  "final_status":  "GREEN_SCALE_TIMER_LIFECYCLE_CLEANUP_READY",
+                                                  "remaining_uncleaned_timer_findings":  0,
+                                                  "stale_old_audit_claim":  true
+                                              },
+                          "realtime_lifecycle":  {
+                                                     "final_status":  "GREEN_SCALE_REALTIME_SUBSCRIPTION_LIFECYCLE_READY",
+                                                     "unmanaged_realtime_subscriptions_remaining":  0,
+                                                     "rg_surface_match_count":  50,
+                                                     "rg_surface_file_count":  17,
+                                                     "note":  "17 realtime files remain as managed lifecycle surface, not unmanaged subscription findings.",
+                                                     "stale_old_audit_claim":  true
+                                                 },
+                          "flatlist_tuning":  {
+                                                  "final_status":  "pass",
+                                                  "runtime_instances":  61,
+                                                  "flatlist_instances":  7,
+                                                  "flashlist_instances":  54,
+                                                  "violations":  0,
+                                                  "rg_surface_match_count":  202,
+                                                  "rg_surface_file_count":  63,
+                                                  "stale_old_audit_claim":  true
+                                              },
+                          "rpc_rate_limit_discipline":  {
+                                                            "final_status":  "GREEN_SCALE_RPC_RATE_LIMIT_DISCIPLINE_READY",
+                                                            "verifier_findings":  0,
+                                                            "rg_rpc_match_count":  118,
+                                                            "rg_rpc_file_count":  58,
+                                                            "direct_supabase_rpc_calls":  102,
+                                                            "list_like_rpc_entrypoints":  54,
+                                                            "list_like_rpc_with_rate_policy":  54,
+                                                            "broad_live_enforcement_enabled":  false,
+                                                            "stale_old_audit_claim":  true,
+                                                            "wrapper_rpc_entrypoints":  16,
+                                                            "unique_literal_rpc_names":  98,
+                                                            "literal_rpc_names_classified":  98,
+                                                            "dynamic_rpc_calls_classified":  15
+                                                        },
+                          "component_debt":  {
+                                                 "final_status":  "report_only",
+                                                 "god_component_line_threshold":  500,
+                                                 "hook_pressure_threshold":  25,
+                                                 "god_component_count":  25,
+                                                 "hook_pressure_component_count":  2,
+                                                 "top_by_lines":  [
+                                                                      {
+                                                                          "file":  "src/features/chat/ChatScreen.tsx",
+                                                                          "lineCount":  653,
+                                                                          "hookCount":  20
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/accountant/components/ReadOnlyReceipt.tsx",
+                                                                          "lineCount":  645,
+                                                                          "hookCount":  2
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/accountant/components/ActivePaymentForm.tsx",
+                                                                          "lineCount":  633,
+                                                                          "hookCount":  1
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/director/DirectorSubcontractTab.tsx",
+                                                                          "lineCount":  620,
+                                                                          "hookCount":  21
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/director/DirectorDashboard.tsx",
+                                                                          "lineCount":  619,
+                                                                          "hookCount":  9
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+                                                                          "lineCount":  616,
+                                                                          "hookCount":  5
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
+                                                                          "lineCount":  611,
+                                                                          "hookCount":  2
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+                                                                          "lineCount":  610,
+                                                                          "hookCount":  5
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/features/seller/SellerAreaScreen.tsx",
+                                                                          "lineCount":  607,
+                                                                          "hookCount":  8
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/components/foreman/CatalogModal.tsx",
+                                                                          "lineCount":  605,
+                                                                          "hookCount":  7
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+                                                                          "lineCount":  603,
+                                                                          "hookCount":  11
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+                                                                          "lineCount":  597,
+                                                                          "hookCount":  4
+                                                                      }
+                                                                  ],
+                                                 "top_by_hooks":  [
+                                                                      {
+                                                                          "file":  "src/features/ai/AIAssistantScreen.tsx",
+                                                                          "lineCount":  532,
+                                                                          "hookCount":  29
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/office/useOfficeHubScreenController.tsx",
+                                                                          "lineCount":  509,
+                                                                          "hookCount":  25
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/components/map/useMapScreenController.tsx",
+                                                                          "lineCount":  520,
+                                                                          "hookCount":  23
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/director/DirectorSubcontractTab.tsx",
+                                                                          "lineCount":  620,
+                                                                          "hookCount":  21
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/profile/ProfileContent.tsx",
+                                                                          "lineCount":  421,
+                                                                          "hookCount":  21
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/features/chat/ChatScreen.tsx",
+                                                                          "lineCount":  653,
+                                                                          "hookCount":  20
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/director/DirectorReportsModal.tsx",
+                                                                          "lineCount":  570,
+                                                                          "hookCount":  20
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/accountant/useAccountantScreenComposition.tsx",
+                                                                          "lineCount":  288,
+                                                                          "hookCount":  15
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/contractor/useContractorScreenController.tsx",
+                                                                          "lineCount":  535,
+                                                                          "hookCount":  15
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+                                                                          "lineCount":  538,
+                                                                          "hookCount":  14
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+                                                                          "lineCount":  247,
+                                                                          "hookCount":  14
+                                                                      },
+                                                                      {
+                                                                          "file":  "src/components/map/ResultsBottomSheet.tsx",
+                                                                          "lineCount":  465,
+                                                                          "hookCount":  13
+                                                                      }
+                                                                  ],
+                                                 "stale_old_audit_claim":  false,
+                                                 "remaining_gap_real":  true
+                                             }
+                      },
+    "extra_scans":  {
+                        "lists":  {
+                                      "name":  "lists",
+                                      "exit_code":  0,
+                                      "match_count":  202,
+                                      "file_count":  63,
+                                      "files":  [
+                                                    "app\\product\\[id].tsx",
+                                                    "src\\components\\ai\\runtime\\AiBoundedFlatList.tsx",
+                                                    "src\\components\\ai\\runtime\\AiSafeKeyboardShell.tsx",
+                                                    "src\\components\\ai\\runtime\\AiScreenScrollShell.tsx",
+                                                    "src\\components\\AppCombo.tsx",
+                                                    "src\\components\\foreman\\CalcModalContent.tsx",
+                                                    "src\\components\\foreman\\useCalcModalController.ts",
+                                                    "src\\components\\foreman\\WorkTypePicker.tsx",
+                                                    "src\\components\\map\\DemandDetailsModal.tsx",
+                                                    "src\\components\\map\\ResultsBottomSheet.tsx",
+                                                    "src\\features\\ai\\AIAssistantReadyProductPanels.tsx",
+                                                    "src\\features\\ai\\AIAssistantScreen.tsx",
+                                                    "src\\features\\ai\\approvalInbox\\ApprovalInboxScreen.tsx",
+                                                    "src\\features\\ai\\commandCenter\\AiCommandCenterScreen.tsx",
+                                                    "src\\features\\ai\\procurementCopilot\\ProcurementCopilotRuntimeSurface.tsx",
+                                                    "src\\features\\auctions\\AuctionDetailScreen.tsx",
+                                                    "src\\features\\chat\\ChatScreen.tsx",
+                                                    "src\\features\\market\\components\\MarketCategoryRail.tsx",
+                                                    "src\\features\\market\\components\\MarketHeroCarousel.tsx",
+                                                    "src\\features\\market\\marketCleanup.contract.test.tsx",
+                                                    "src\\features\\market\\useMarketHomeController.ts",
+                                                    "src\\features\\reports\\ReportsDashboardScreen.tsx",
+                                                    "src\\features\\reports\\ReportsHubScreen.tsx",
+                                                    "src\\features\\seller\\SellerAreaScreen.tsx",
+                                                    "src\\lib\\pdf\\pdfViewer.components.tsx",
+                                                    "src\\screens\\accountant\\components\\AccountantListSection.tsx",
+                                                    "src\\screens\\accountant\\components\\AccountantScreenView.tsx",
+                                                    "src\\screens\\accountant\\components\\CardModal.tsx",
+                                                    "src\\screens\\accountant\\components\\Header.tsx",
+                                                    "src\\screens\\accountant\\components\\NotificationsModal.tsx",
+                                                    "src\\screens\\accountant\\components\\TabsBar.tsx",
+                                                    "src\\screens\\accountant\\useAccountantKeyboard.ts",
+                                                    "src\\screens\\accountant\\useAccountantScreenChromeModel.ts",
+                                                    "src\\screens\\buyer\\BuyerSubcontractTab.view.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerAccountingSheetBody.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerInboxSheetBody.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerItemRow.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerMobileItemEditorModal.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerRfqSheetBody.tsx",
+                                                    "src\\screens\\buyer\\components\\BuyerScreenHeader.tsx",
+                                                    "src\\screens\\buyer\\hooks\\useBuyerScreenHeader.tsx",
+                                                    "src\\screens\\buyer\\hooks\\useBuyerScreenUiState.ts",
+                                                    "src\\screens\\contractor\\components\\ContractDetailsModal.tsx",
+                                                    "src\\screens\\contractor\\components\\ContractorWorkModal.tsx",
+                                                    "src\\screens\\director\\DirectorDashboard.tsx",
+                                                    "src\\screens\\director\\DirectorFinanceCardModal.tsx",
+                                                    "src\\screens\\director\\DirectorSubcontractTab.tsx",
+                                                    "src\\screens\\foreman\\ForemanAiQuickModal.tsx",
+                                                    "src\\screens\\foreman\\ForemanDropdown.tsx",
+                                                    "src\\screens\\foreman\\ForemanEditorSection.tsx",
+                                                    "src\\screens\\foreman\\ForemanSubcontractDraftSections.tsx",
+                                                    "src\\screens\\office\\OfficeHubScreen.test.tsx",
+                                                    "src\\screens\\office\\OfficeShellContent.tsx",
+                                                    "src\\screens\\office\\useOfficeCompanySection.ts",
+                                                    "src\\screens\\office\\useOfficeHubScreenController.tsx",
+                                                    "src\\screens\\profile\\components\\EditProfileModal.tsx",
+                                                    "src\\screens\\profile\\components\\ListingModal.test.tsx",
+                                                    "src\\screens\\profile\\components\\ListingModal.tsx",
+                                                    "src\\screens\\profile\\components\\ProfileContentLoadState.tsx",
+                                                    "src\\screens\\profile\\components\\ProfileMainSections.tsx",
+                                                    "src\\screens\\security\\SecurityScreen.tsx",
+                                                    "src\\screens\\warehouse\\components\\WarehouseHeader.tsx",
+                                                    "src\\ui\\FlashList.tsx"
+                                                ]
+                                  },
+                        "realtime":  {
+                                         "name":  "realtime",
+                                         "exit_code":  0,
+                                         "match_count":  50,
+                                         "file_count":  17,
+                                         "files":  [
+                                                       "src\\lib\\api\\requestDraftSync.service.test.ts",
+                                                       "src\\lib\\api\\requestDraftSync.service.ts",
+                                                       "src\\lib\\api\\requestDraftSync.transport.ts",
+                                                       "src\\lib\\offline\\platformNetwork.service.ts",
+                                                       "src\\lib\\realtime\\realtime.client.ts",
+                                                       "src\\lib\\realtime\\realtimeSubscriptionManager.ts",
+                                                       "src\\screens\\accountant\\accountant.realtime.lifecycle.ts",
+                                                       "src\\screens\\buyer\\buyer.realtime.lifecycle.ts",
+                                                       "src\\screens\\contractor\\contractor.realtime.lifecycle.ts",
+                                                       "src\\screens\\director\\director.finance.realtime.lifecycle.ts",
+                                                       "src\\screens\\director\\director.lifecycle.realtime.test.tsx",
+                                                       "src\\screens\\director\\director.lifecycle.realtime.transport.ts",
+                                                       "src\\screens\\director\\director.lifecycle.realtime.ts",
+                                                       "src\\screens\\director\\director.reports.realtime.lifecycle.ts",
+                                                       "src\\screens\\warehouse\\warehouse.realtime.lifecycle.test.tsx",
+                                                       "src\\screens\\warehouse\\warehouse.realtime.lifecycle.ts",
+                                                       "src\\screens\\warehouse\\warehouse.receiveDraft.store.test.ts"
+                                                   ]
+                                     },
+                        "rpc":  {
+                                    "name":  "rpc",
+                                    "exit_code":  0,
+                                    "match_count":  118,
+                                    "file_count":  58,
+                                    "files":  [
+                                                  "src\\components\\foreman\\calcModal.rpc.transport.ts",
+                                                  "src\\features\\market\\market.repository.transport.ts",
+                                                  "src\\lib\\api\\_core.transport.ts",
+                                                  "src\\lib\\api\\accountant.ts",
+                                                  "src\\lib\\api\\director.return.transport.ts",
+                                                  "src\\lib\\api\\director.ts",
+                                                  "src\\lib\\api\\directorPdfSource.service.test.ts",
+                                                  "src\\lib\\api\\directorPdfSource.transport.ts",
+                                                  "src\\lib\\api\\directorReportsTransport.transport.ts",
+                                                  "src\\lib\\api\\foremanAiResolve.transport.ts",
+                                                  "src\\lib\\api\\integrity.guards.transport.ts",
+                                                  "src\\lib\\api\\paymentPdf.transport.ts",
+                                                  "src\\lib\\api\\profile.transport.ts",
+                                                  "src\\lib\\api\\proposalAttachmentEvidence.api.ts",
+                                                  "src\\lib\\api\\proposalAttachments.service.ts",
+                                                  "src\\lib\\api\\proposals.transport.ts",
+                                                  "src\\lib\\api\\proposals.ts",
+                                                  "src\\lib\\api\\queryBoundary.ts",
+                                                  "src\\lib\\api\\requestDraftSync.transport.ts",
+                                                  "src\\lib\\api\\requests.itemMutations.transport.ts",
+                                                  "src\\lib\\api\\requests.ts",
+                                                  "src\\lib\\catalog\\catalog.proposalCreation.service.atomicBoundary.test.ts",
+                                                  "src\\lib\\catalog\\catalog.proposalCreation.transport.ts",
+                                                  "src\\lib\\catalog\\catalog.transport.supabase.ts",
+                                                  "src\\lib\\documents\\attachmentOpener.test.ts",
+                                                  "src\\lib\\infra\\jobQueue.ts",
+                                                  "src\\lib\\infra\\queueLatencyMetrics.transport.ts",
+                                                  "src\\lib\\store_supabase.write.transport.ts",
+                                                  "src\\screens\\accountant\\accountant.history.transport.ts",
+                                                  "src\\screens\\accountant\\accountant.inbox.transport.ts",
+                                                  "src\\screens\\accountant\\accountant.return.transport.ts",
+                                                  "src\\screens\\buyer\\buyer.actions.write.transport.ts",
+                                                  "src\\screens\\buyer\\hooks\\useBuyerRequestProposalMap.transport.ts",
+                                                  "src\\screens\\contractor\\contractor.workModalService.test.ts",
+                                                  "src\\screens\\contractor\\contractor.workModalService.transport.ts",
+                                                  "src\\screens\\contractor\\contractor.workSearch.transport.ts",
+                                                  "src\\screens\\contractor\\contractorPdfSource.transport.ts",
+                                                  "src\\screens\\director\\director.approve.boundary.test.ts",
+                                                  "src\\screens\\director\\director.approve.transport.ts",
+                                                  "src\\screens\\director\\director.finance.rpc.transport.ts",
+                                                  "src\\screens\\director\\director.proposalDecision.transport.contract.test.ts",
+                                                  "src\\screens\\director\\director.proposalDecision.transport.ts",
+                                                  "src\\screens\\director\\director.proposals.transport.ts",
+                                                  "src\\screens\\director\\director.repository.transport.ts",
+                                                  "src\\screens\\director\\director.request.transport.ts",
+                                                  "src\\screens\\subcontracts\\subcontracts.shared.test.ts",
+                                                  "src\\screens\\subcontracts\\subcontracts.shared.transport.ts",
+                                                  "src\\screens\\warehouse\\hooks\\useWarehouseReceiveApply.transport.contract.test.ts",
+                                                  "src\\screens\\warehouse\\hooks\\useWarehouseReceiveApply.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.api.repo.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.dayMaterialsReport.pdf.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.incomingForm.pdf.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.incomingMaterialsReport.pdf.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.issue.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.nameMap.ui.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.objectWorkReport.pdf.transport.ts",
+                                                  "src\\screens\\warehouse\\warehouse.seed.transport.contract.test.ts",
+                                                  "src\\screens\\warehouse\\warehouse.seed.transport.ts"
+                                              ]
+                                }
+                    },
+    "safety":  {
+                   "read_only_verification_wave":  true,
+                   "app_code_changed":  false,
+                   "business_logic_changed":  false,
+                   "provider_model_config_touched":  false,
+                   "migrations_run":  false,
+                   "db_writes_run":  false,
+                   "android_rebuild_run":  false,
+                   "ios_rebuild_run":  false,
+                   "ota_published":  false,
+                   "broad_allowlists_used":  false,
+                   "fake_green_claimed":  false
+               },
+    "remaining_findings":  [
+                               "component_debt_report_only_god_components"
+                           ],
+    "gates":  {
+                  "tsc_noEmit":  "PASS",
+                  "expo_lint":  "PASS",
+                  "git_diff_check":  "PASS",
+                  "npm_test_runInBand":  "PASS",
+                  "architecture_anti_regression_suite_json":  "PASS",
+                  "release_verify_json":  "PASS",
+                  "release_verify_readiness":  "pass",
+                  "release_verify_ota_disposition":  "skip"
+              }
+}

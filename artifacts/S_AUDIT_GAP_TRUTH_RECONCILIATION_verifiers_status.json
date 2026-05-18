@@ -1,0 +1,32 @@
+﻿[
+    {
+        "name":  "verifyBoundedDatabaseQueries",
+        "command":  "npx tsx scripts/scale/verifyBoundedDatabaseQueries.ts --write-artifacts",
+        "exit_code":  0
+    },
+    {
+        "name":  "verifyRouteErrorBoundaryCoverage",
+        "command":  "npx tsx scripts/scale/verifyRouteErrorBoundaryCoverage.ts",
+        "exit_code":  0
+    },
+    {
+        "name":  "verifyTimerLifecycleCleanup",
+        "command":  "npx tsx scripts/scale/verifyTimerLifecycleCleanup.ts",
+        "exit_code":  0
+    },
+    {
+        "name":  "verifyRealtimeSubscriptionLifecycle",
+        "command":  "npx tsx scripts/scale/verifyRealtimeSubscriptionLifecycle.ts",
+        "exit_code":  0
+    },
+    {
+        "name":  "verifySupabaseRpcRateLimitDiscipline",
+        "command":  "npx tsx scripts/architecture/verifySupabaseRpcRateLimitDiscipline.ts",
+        "exit_code":  0
+    },
+    {
+        "name":  "architecture_anti_regression_suite",
+        "command":  "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+        "exit_code":  0
+    }
+]

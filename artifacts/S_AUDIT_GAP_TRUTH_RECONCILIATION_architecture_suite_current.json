@@ -1,0 +1,1406 @@
+﻿{
+  "final_status": "GREEN_ARCHITECTURE_ANTI_REGRESSION_SUITE_ADDED",
+  "directSupabase": {
+    "serviceBypassBudget": 0,
+    "totalFindings": 215,
+    "serviceBypassFindings": 0,
+    "serviceBypassFiles": 0,
+    "transportControlledFindings": 168,
+    "testOnlyFindings": 47,
+    "generatedOrIgnoredFindings": 0,
+    "topServiceBypassFiles": []
+  },
+  "directSupabaseExceptionContainment": {
+    "registryPath": "artifacts/S_AUDIT_BATTLE_17_DIRECT_SUPABASE_EXCEPTION_CONTAINMENT_registry.json",
+    "registryLoaded": true,
+    "registryEntries": 156,
+    "currentServiceBypassFindings": 0,
+    "allowedCurrentFindings": 0,
+    "unclassifiedCurrentFindings": 0,
+    "disallowedCurrentFindings": 0,
+    "categoryCounts": {
+      "must_stay_direct_for_now": 79,
+      "can_be_migrated_later": 55,
+      "needs_new_bff_endpoint": 22,
+      "unsafe_unknown": 0
+    },
+    "operationCounts": {
+      "auth": 62,
+      "storage": 10,
+      "read": 5,
+      "write": 15,
+      "rpc": 57,
+      "realtime": 7
+    }
+  },
+  "productionReadonlyCanary": {
+    "whitelistRouteCount": 4,
+    "forbiddenMutationOperationCount": 8,
+    "redactionForbiddenKeysEnforced": true
+  },
+  "cacheRateScope": {
+    "cacheCanaryRouteScoped": true,
+    "cacheAllowedRoute": "marketplace.catalog.search",
+    "rateLimitCanaryRoute": "marketplace.catalog.search",
+    "rateLimitCanaryPercent": 1,
+    "persistentReadinessContractLocked": true,
+    "persistentReadinessKeyCanonical": true,
+    "readThroughLiteralKeyUsageLocked": true
+  },
+  "cacheColdMissProof": {
+    "proofTestPresent": true,
+    "matrixArtifactPresent": true,
+    "proofArtifactPresent": true,
+    "matrixStatus": "GREEN_CACHE_COLD_MISS_DETERMINISTIC_PROOF_READY",
+    "deterministicProofReady": true,
+    "knownEmptyKeyProof": true,
+    "firstMissSecondHitProof": true,
+    "utf8SafeProof": true,
+    "metricsRedactedProof": true,
+    "routeScopeUnchanged": true,
+    "rollbackSafeProof": true,
+    "productionCacheStillDisabled": true
+  },
+  "rateLimitMarketplaceCanaryProof": {
+    "matrixArtifactPresent": true,
+    "proofArtifactPresent": true,
+    "matrixStatus": "GREEN_RATE_LIMIT_1_PERCENT_MARKETPLACE_CANARY_PASS",
+    "routeScoped": true,
+    "selectedSubjectProof": true,
+    "nonSelectedSubjectProof": true,
+    "privateSmokeProof": true,
+    "healthReadyStable": true,
+    "redactedProof": true,
+    "canaryRetained": true
+  },
+  "rateLimitMarketplace5PctCanaryProof": {
+    "matrixArtifactPresent": true,
+    "monitorArtifactPresent": true,
+    "metricsArtifactPresent": true,
+    "proofArtifactPresent": true,
+    "matrixStatus": "GREEN_RATE_LIMIT_5PCT_MARKETPLACE_RAMP_STABLE",
+    "monitorStatus": "GREEN_RATE_LIMIT_5PCT_MONITOR_WINDOW_STABLE",
+    "routeScoped": true,
+    "selectedSubjectProof": true,
+    "nonSelectedSubjectProof": true,
+    "privateSmokeProof": true,
+    "wouldAllowProof": true,
+    "wouldThrottleProof": true,
+    "falsePositiveCountZero": true,
+    "healthStable": true,
+    "redactedProof": true,
+    "monitorStable": true
+  },
+  "unboundedSelectRatchet": {
+    "unboundedSelectBudget": 0,
+    "selectStarBudget": 0,
+    "totalSelectCalls": 284,
+    "unresolvedUnboundedSelects": 0,
+    "selectStarFindings": 0,
+    "exportAllowlistFindings": 1,
+    "documentedExportAllowlistFindings": 1,
+    "allowlistEntries": 1,
+    "topFiles": []
+  },
+  "productionRawLoops": {
+    "rawLoopBudget": 0,
+    "totalFindings": 0,
+    "unapprovedFindings": 0,
+    "allowlistedFindings": 0,
+    "allowlistEntries": 0,
+    "topFiles": []
+  },
+  "unsafeCastRatchet": {
+    "baseline": {
+      "total": 189,
+      "productionSource": 46,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 143
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 46
+      },
+      "testByPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 97
+      },
+      "criticalFolderByPattern": [
+        {
+          "folder": "src/lib/api",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 24
+          }
+        },
+        {
+          "folder": "src/lib/auth",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/transport",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/workers",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        }
+      ]
+    },
+    "current": {
+      "total": 189,
+      "productionSource": 46,
+      "testSource": 143,
+      "byPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 143
+      },
+      "productionByPattern": {
+        "as_any": 0,
+        "ts_ignore": 0,
+        "silent_catch": 0,
+        "unsafe_unknown_as": 46
+      },
+      "testByPattern": {
+        "as_any": 25,
+        "ts_ignore": 6,
+        "silent_catch": 15,
+        "unsafe_unknown_as": 97
+      },
+      "criticalFolderByPattern": [
+        {
+          "folder": "src/lib/api",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 24
+          }
+        },
+        {
+          "folder": "src/lib/auth",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/transport",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        },
+        {
+          "folder": "src/lib/workers",
+          "byPattern": {
+            "as_any": 0,
+            "ts_ignore": 0,
+            "silent_catch": 0,
+            "unsafe_unknown_as": 0
+          }
+        }
+      ]
+    },
+    "allowlistedFindings": 0,
+    "allowlistEntries": 0,
+    "criticalFolderViolations": 0,
+    "topFiles": [
+      {
+        "file": "tests/governance/type-suppression-audit.test.ts",
+        "count": 8
+      },
+      {
+        "file": "src/lib/supabaseClient.test.ts",
+        "count": 7
+      },
+      {
+        "file": "src/screens/contractor/contractor.workModalService.ts",
+        "count": 7
+      },
+      {
+        "file": "src/lib/api/proposals.silentCatch.test.ts",
+        "count": 6
+      },
+      {
+        "file": "src/screens/buyer/buyer.silentCatch.test.ts",
+        "count": 6
+      },
+      {
+        "file": "src/screens/foreman/foreman.dicts.repo.ts",
+        "count": 6
+      },
+      {
+        "file": "src/screens/buyer/buyer.status.mutation.test.ts",
+        "count": 5
+      },
+      {
+        "file": "src/screens/director/director.data.ts",
+        "count": 5
+      },
+      {
+        "file": "src/screens/buyer/buyer.actions.test.ts",
+        "count": 4
+      },
+      {
+        "file": "tests/buyer/uiUnsafeCastBatchBRowsModals.contract.test.ts",
+        "count": 4
+      }
+    ]
+  },
+  "flatListTuningRegression": {
+    "runtimeInstances": 61,
+    "flatListInstances": 7,
+    "flashListInstances": 54,
+    "tunedInstances": 28,
+    "allowlistedInstances": 33,
+    "violations": 0,
+    "missingInitialNumToRender": 0,
+    "missingMaxToRenderPerBatch": 0,
+    "missingWindowSize": 0,
+    "missingKeyExtractor": 0,
+    "unstableKeyExtractor": 0,
+    "removeClippedSubviewsDocumented": 29,
+    "allowlistEntries": 33,
+    "matchedAllowlistEntries": 33,
+    "staleAllowlistEntries": 0,
+    "allowlistMetadataErrors": 0,
+    "editableHeavyExceptions": 1,
+    "nestedInventoryRequired": true,
+    "topFiles": [
+      {
+        "file": "src/screens/director/DirectorReportsModal.tsx",
+        "count": 5
+      },
+      {
+        "file": "src/screens/director/DirectorDashboard.tsx",
+        "count": 4
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerItemRow.tsx",
+        "count": 2
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+        "count": 2
+      },
+      {
+        "file": "src/screens/warehouse/components/WarehouseReportsTab.tsx",
+        "count": 2
+      },
+      {
+        "file": "src/components/ai/runtime/AiBoundedFlatList.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/AppCombo.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/foreman/CalcModalContent.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/foreman/CatalogModal.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/map/CatalogSearchModal.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/map/ResultsBottomSheet.tsx",
+        "count": 1
+      },
+      {
+        "file": "src/components/WorkMaterialsEditor.tsx",
+        "count": 1
+      }
+    ]
+  },
+  "errorHandlingGapRatchet": {
+    "targetFiles": 4,
+    "tryFinallyOnly": 9,
+    "documentedTryFinallyOnly": 9,
+    "undocumentedTryFinallyOnly": 0,
+    "catchBlocks": 15,
+    "catchBlocksMissingSignal": 0,
+    "emptyCatchBlocks": 0,
+    "rawDiagnosticSinkFindings": 0,
+    "silentSwallow": 0,
+    "allowlistEntries": 9,
+    "matchedAllowlistEntries": 9,
+    "staleAllowlistEntries": 0,
+    "allowlistMetadataErrors": 0,
+    "topFiles": [
+      {
+        "file": "src/lib/api/director_reports.naming.ts",
+        "count": 3
+      },
+      {
+        "file": "src/lib/documents/pdfDocumentActions.ts",
+        "count": 2
+      },
+      {
+        "file": "src/lib/pdfRunner.ts",
+        "count": 2
+      },
+      {
+        "file": "src/screens/contractor/hooks/useContractorProgressReliability.ts",
+        "count": 2
+      }
+    ]
+  },
+  "aiModelBoundary": {
+    "aiModelGatewayPresent": true,
+    "aiModelTypesPresent": true,
+    "aiDisabledProviderPresent": true,
+    "aiLegacyGeminiProviderPresent": true,
+    "assistantClientUsesGateway": true,
+    "directGeminiImportsOutsideLegacyProvider": 0,
+    "providerImplementationImportsFromUi": 0,
+    "openAiLiveCallFindings": 0,
+    "apiKeyClientFindings": 0,
+    "aiReportsRedactionContractPresent": true,
+    "findings": []
+  },
+  "aiRoleRiskApprovalControlPlane": {
+    "rolePolicyPresent": true,
+    "riskPolicyPresent": true,
+    "screenCapabilityRegistryPresent": true,
+    "approvalGatePresent": true,
+    "professionalResponsePolicyPresent": true,
+    "assistantActionsUsesApprovalGate": true,
+    "assistantActionsDirectSubmitBlocked": true,
+    "directorFullAccessPolicyPresent": true,
+    "nonDirectorScopePresent": true,
+    "forbiddenActionsBlocked": true,
+    "approvalRequiredCannotExecuteDirectly": true,
+    "promptPolicyBuilderApplied": true,
+    "screenContextRedactionPresent": true,
+    "auditEventsPresent": true,
+    "screenGatewayImports": 0,
+    "findings": []
+  },
+  "aiAppKnowledgeRegistry": {
+    "aiKnowledgeTypesPresent": true,
+    "domainRegistryPresent": true,
+    "entityRegistryPresent": true,
+    "screenKnowledgeRegistryPresent": true,
+    "documentSourceRegistryPresent": true,
+    "intentRegistryPresent": true,
+    "knowledgeResolverPresent": true,
+    "knowledgeRedactionPresent": true,
+    "controlPlaneBridgePresent": true,
+    "assistantContextUsesKnowledgeResolver": true,
+    "assistantPromptsIncludeKnowledgePolicy": true,
+    "requiredScreenIdsRegistered": true,
+    "requiredDomainsRegistered": true,
+    "requiredDocumentSourcesRegistered": true,
+    "directorControlFullDomainKnowledgePresent": true,
+    "unknownRoleDenyByDefault": true,
+    "contractorOwnRecordsOnlyPresent": true,
+    "financeContextScopedFromNonFinanceRoles": true,
+    "noDirectHighRiskIntent": true,
+    "registryProviderImports": 0,
+    "resolverNetworkOrDbQueries": 0,
+    "screenGatewayImports": 0,
+    "findings": []
+  },
+  "aiToolRegistryArchitecture": {
+    "registryPresent": true,
+    "typesPresent": true,
+    "schemasPresent": true,
+    "allRequiredToolsRegistered": true,
+    "forbiddenToolsExcluded": true,
+    "allToolsHaveSchema": true,
+    "allToolsHaveRiskPolicy": true,
+    "allToolsHaveAuditMetadata": true,
+    "noLiveExecutionBoundary": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "findings": []
+  },
+  "aiToolReadBindingsArchitecture": {
+    "bindingsPresent": true,
+    "allSafeReadToolsBound": true,
+    "nonSafeReadToolsExcluded": true,
+    "allBindingsReadOnly": true,
+    "allBindingsDisabledByDefault": true,
+    "noLiveExecutionBoundary": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noMutationTerms": true,
+    "findings": []
+  },
+  "aiToolPlanPolicyArchitecture": {
+    "policyPresent": true,
+    "plansAllRegisteredTools": true,
+    "blocksUnknownTools": true,
+    "requiresSafeReadBindings": true,
+    "directExecutionDisabled": true,
+    "mutationDisabled": true,
+    "providerCallsDisabled": true,
+    "dbAccessDisabled": true,
+    "noLiveExecutionBoundary": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "findings": []
+  },
+  "aiToolTransportBoundary": {
+    "transportTypesPresent": true,
+    "transportFilesPresent": true,
+    "allToolsHaveTransportContract": true,
+    "allRuntimeRoutesHaveTransportContract": true,
+    "runtimeRegistryExplicitBindings": true,
+    "runtimeRegistryNoPatternMatchers": true,
+    "runtimeGatewayExecutionPolicyExplicit": true,
+    "runtimeGatewayNoExecutionHeuristics": true,
+    "toolsUseTransportBoundary": true,
+    "noToolDirectBffImports": true,
+    "transportDtoOnly": true,
+    "transportRedactionPresent": true,
+    "noUiTransportImports": true,
+    "noTransportProviderImports": true,
+    "noTransportSupabaseImports": true,
+    "boundedRequestContracts": true,
+    "findings": []
+  },
+  "aiToolRateLimitPolicy": {
+    "policyFilesPresent": true,
+    "allToolsHaveRateLimitScope": true,
+    "allToolsHaveBudgetPolicy": true,
+    "allToolsHaveMaxPayload": true,
+    "allToolsHaveRoleScope": true,
+    "approvalToolsRequireIdempotency": true,
+    "toolPlanIncludesRateDecision": true,
+    "agentBffExposesRateDecision": true,
+    "runtimeToolsUseRateDecision": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noProductionEnvMutation": true,
+    "findings": []
+  },
+  "submitForApprovalAuditTrail": {
+    "auditFilesPresent": true,
+    "submitToolUsesAuditTrail": true,
+    "transportUsesAuditPolicy": true,
+    "evidenceRequired": true,
+    "idempotencyRequired": true,
+    "auditEventRequired": true,
+    "pendingStatusOnly": true,
+    "noFinalExecution": true,
+    "noFakeLocalApproval": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noRawPayloadFields": true,
+    "e2eRunnerPresent": true,
+    "findings": []
+  },
+  "aiPolicyGateScaleProof": {
+    "proofScriptPresent": true,
+    "focusedTestsPresent": true,
+    "architectureTestPresent": true,
+    "artifactsPresent": true,
+    "deterministic10kProof": true,
+    "allRolesCovered": true,
+    "allScreensCovered": true,
+    "allActionsCovered": true,
+    "noModelCalls": true,
+    "noDbCalls": true,
+    "noExternalFetches": true,
+    "noMutations": true,
+    "unknownRoleDenied": true,
+    "contractorOwnRecordsOnly": true,
+    "buyerNoFinanceMutation": true,
+    "accountantNoSupplierConfirmation": true,
+    "warehouseNoFinanceAccess": true,
+    "foremanNoFullCompanyFinance": true,
+    "directorControlNoSilentMutation": true,
+    "forbiddenAlwaysDenied": true,
+    "approvalRequiredNeverDirectExecutes": true,
+    "executeApprovedGateOnly": true,
+    "toolPlansNoDirectExecution": true,
+    "toolPlansNoProviderOrDb": true,
+    "findings": []
+  },
+  "aiExplicitE2eFixtureRegistry": {
+    "fixtureFilesPresent": true,
+    "resolverScriptPresent": true,
+    "requiredEnvNamesDeclared": true,
+    "missingFixtureBlockerExact": true,
+    "redactionPresent": true,
+    "noSupabaseAdminImports": true,
+    "noAuthAdmin": true,
+    "noListUsers": true,
+    "noServiceRole": true,
+    "noSeedOrWrites": true,
+    "artifactsRedactedPolicy": true,
+    "findings": []
+  },
+  "aiTraceObservability": {
+    "traceFilesPresent": true,
+    "eventRegistryComplete": true,
+    "recorderPresent": true,
+    "redactionPresent": true,
+    "exportPolicyPresent": true,
+    "noRawPrompt": true,
+    "noRawProviderPayload": true,
+    "noSecretsOrAuthorization": true,
+    "noFullUserEmail": true,
+    "noDbRows": true,
+    "noModelProviderImports": true,
+    "noSupabaseImports": true,
+    "testsPresent": true,
+    "artifactsPresent": true,
+    "findings": []
+  },
+  "agentBffRouteShellArchitecture": {
+    "shellPresent": true,
+    "allRoutesPresent": true,
+    "authRequired": true,
+    "roleFilteredTools": true,
+    "forbiddenToolsHidden": true,
+    "mutationCountZero": true,
+    "previewNeverMutates": true,
+    "noLiveExecutionBoundary": true,
+    "noProviderImports": true,
+    "noDirectDatabaseAccess": true,
+    "findings": []
+  },
+  "aiCommandCenterTaskStreamRuntime": {
+    "runtimeAdapterExists": true,
+    "taskStreamRouteExposed": true,
+    "commandCenterUsesRuntime": true,
+    "roleScopeExists": true,
+    "screenPolicyExists": true,
+    "evidenceRequirementExists": true,
+    "mutationCountZero": true,
+    "directMutationBlocked": true,
+    "submitForApprovalNoFinalExecution": true,
+    "noFakeCards": true,
+    "noHardcodedAiResponse": true,
+    "noSupabaseUiImport": true,
+    "noModelProviderUiImport": true,
+    "noRawPayloadFields": true,
+    "unknownRoleDenied": true,
+    "findings": []
+  },
+  "aiScreenLocalActionSourcePolicy": {
+    "sourcePolicyPresent": true,
+    "orchestratorUsesSourcePolicy": true,
+    "foremanSubcontractActionMapPresent": true,
+    "allRequiredScreenLocalMapsPresent": true,
+    "noRuntimeIntentFallback": true,
+    "contextIntentsFromActionMapOnly": true,
+    "noProviderImports": true,
+    "noDirectDatabaseAccess": true,
+    "findings": []
+  },
+  "aiCommandCenterStateBudget": {
+    "budgetFilesPresent": true,
+    "scannerPresent": true,
+    "e2eRunnerPresent": true,
+    "artifactsPresent": true,
+    "maxCardsBounded": true,
+    "paginationRequired": true,
+    "refreshThrottleRequired": true,
+    "refreshTimeoutRequired": true,
+    "cancellationRequired": true,
+    "duplicateInFlightBlocked": true,
+    "realtimeDisabledByDefault": true,
+    "perCardRealtimeDisabled": true,
+    "noRealtimeSubscriptionInCommandCenter": true,
+    "noPollingLoopInCommandCenter": true,
+    "taskStreamUsesBudgetedLimit": true,
+    "cardBudgetEnforced": true,
+    "realEmptyState": true,
+    "noMutationSurface": true,
+    "findings": []
+  },
+  "aiAppActionGraphArchitecture": {
+    "appGraphFilesPresent": true,
+    "domainGraphFilesPresent": true,
+    "internalFirstPolicyPresent": true,
+    "externalIntelPolicyPresent": true,
+    "bffRoutesPresent": true,
+    "majorScreensRegistered": true,
+    "aiRelevantButtonsMapped": true,
+    "buttonCoverageScannerPresent": true,
+    "businessActionsHaveRiskPolicy": true,
+    "approvalRequiredCannotExecuteDirectly": true,
+    "forbiddenActionsHaveNoTool": true,
+    "externalSourcesRequireCitation": true,
+    "externalLiveFetchDisabled": true,
+    "externalFinalActionForbidden": true,
+    "noMobileExternalLiveFetch": true,
+    "noUiSupabaseGraphImport": true,
+    "noUiModelProviderGraphImport": true,
+    "noRawPayloadFields": true,
+    "mutationCountZero": true,
+    "findings": []
+  },
+  "aiProcurementContextEngine": {
+    "procurementFilesPresent": true,
+    "bffRoutesPresent": true,
+    "requestContextResolverPresent": true,
+    "internalFirstPolicyPresent": true,
+    "marketplaceSecondPolicyPresent": true,
+    "externalLiveFetchDisabled": true,
+    "externalCitationPolicyPresent": true,
+    "externalCheckedAtPolicyPresent": true,
+    "supplierMatchUsesSafeToolsOnly": true,
+    "supplierMatchNoFinalSelection": true,
+    "draftRequestDraftOnly": true,
+    "submitForApprovalNoFinalExecution": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noUiSupabaseImport": true,
+    "noUiExternalFetch": true,
+    "noUiModelProviderImport": true,
+    "noRawOutputFields": true,
+    "noApprovalPersistenceFake": true,
+    "e2eRunnerPresent": true,
+    "e2eBoundedRealRequestDiscoveryPresent": true,
+    "e2eRequestDiscoveryNoSeedOrAdmin": true,
+    "findings": []
+  },
+  "aiExternalIntelGateway": {
+    "gatewayFilesPresent": true,
+    "sourceRegistryPresent": true,
+    "disabledProviderDefault": true,
+    "providerFlagsPresent": true,
+    "internalFirstGatePresent": true,
+    "bffRouteContractPresent": true,
+    "procurementExternalCandidatesPresent": true,
+    "citationPolicyPresent": true,
+    "checkedAtPolicyPresent": true,
+    "externalLiveFetchDisabledByDefault": true,
+    "noMobileExternalFetch": true,
+    "noUiProviderImport": true,
+    "noRawHtmlToMobile": true,
+    "noSecretsInSourceOrArtifacts": true,
+    "noAuthAdminOrServiceRole": true,
+    "noMutationSurface": true,
+    "externalFinalActionForbidden": true,
+    "findings": []
+  },
+  "aiProcurementCopilotRuntimeChain": {
+    "copilotFilesPresent": true,
+    "bffRoutesPresent": true,
+    "planEnginePresent": true,
+    "internalFirstOrderPresent": true,
+    "marketplaceSecondPresent": true,
+    "externalStatusBridgePresent": true,
+    "externalLiveFetchDisabled": true,
+    "draftPreviewOnly": true,
+    "submitForApprovalPreviewOnly": true,
+    "supplierCardsRequireEvidence": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noUiSupabaseImport": true,
+    "noUiExternalFetch": true,
+    "noUiModelProviderImport": true,
+    "noRawOutputFields": true,
+    "noHardcodedSupplierCards": true,
+    "noMutationSurface": true,
+    "e2eRunnerPresent": true,
+    "findings": []
+  },
+  "aiCrossScreenRuntimeMatrix": {
+    "runtimeFilesPresent": true,
+    "majorScreensRegistered": true,
+    "producerRegistryPresent": true,
+    "producersHaveRolePolicy": true,
+    "producersRequireEvidence": true,
+    "bffRoutesPresent": true,
+    "resolverValidatesScreenId": true,
+    "unknownRoleDenied": true,
+    "notMountedSupported": true,
+    "noProviderImports": true,
+    "noSupabaseImports": true,
+    "noUiSupabaseImport": true,
+    "noUiExternalFetch": true,
+    "noUiProviderImport": true,
+    "noRawPayloadFields": true,
+    "noFakeCards": true,
+    "noMutationSurface": true,
+    "contractorOwnRecordsOnly": true,
+    "e2eRunnerPresent": true,
+    "findings": []
+  },
+  "aiPersistentActionLedger": {
+    "ledgerFilesPresent": true,
+    "migrationProposalPresent": true,
+    "auditStorageProposalPresent": true,
+    "rlsPolicyProposalPresent": true,
+    "rpcContractProposalPresent": true,
+    "rpcBackendAdapterPresent": true,
+    "writeRpcMountProposalPresent": true,
+    "lifecycleDbGuardProposalPresent": true,
+    "noServiceRoleGrantInLedgerBackend": true,
+    "bffRoutesPresent": true,
+    "submitForApprovalPersistsPending": true,
+    "getActionStatusReadsPersistedStatus": true,
+    "idempotencyRequired": true,
+    "auditRequired": true,
+    "evidenceRequired": true,
+    "lifecycleTransitionsEnforced": true,
+    "executeApprovedGatePresent": true,
+    "domainExecutorBlockedWhenMissing": true,
+    "noFakeLocalApproval": true,
+    "noDirectExecutionPath": true,
+    "noUiSupabaseImport": true,
+    "noUiModelProviderImport": true,
+    "noRawLedgerPayloadFields": true,
+    "e2eRunnerPresent": true,
+    "migrationApplyPackagePresent": true,
+    "persistenceRuntimeHealthPresent": true,
+    "persistenceE2eRunnerPresent": true,
+    "noSelectStarInApplyMigration": true,
+    "exactRpcDeploymentBlockerClassified": true,
+    "noServiceRoleInPersistenceRunner": true,
+    "findings": []
+  },
+  "aiApprovalInboxRuntime": {
+    "inboxFilesPresent": true,
+    "bffRoutesPresent": true,
+    "persistentLedgerReadRequired": true,
+    "fakeLocalApprovalAbsent": true,
+    "roleScoped": true,
+    "evidenceRequired": true,
+    "auditRequired": true,
+    "idempotencyRequired": true,
+    "reviewPanelRequired": true,
+    "approveWithoutReviewAllowed": true,
+    "rejectBlocksExecution": true,
+    "pendingCannotExecute": true,
+    "executeApprovedRequiresGate": true,
+    "domainExecutorBlockedWhenMissing": true,
+    "noDirectMutation": true,
+    "noUiSupabaseImport": true,
+    "noUiModelProviderImport": true,
+    "noRawPayloadFields": true,
+    "e2eRunnerPresent": true,
+    "findings": []
+  },
+  "aiApprovedProcurementExecutor": {
+    "executorFilesPresent": true,
+    "centralExecuteGatePresent": true,
+    "approvedStatusRequired": true,
+    "idempotencyRequired": true,
+    "auditRequired": true,
+    "evidenceRequired": true,
+    "procurementExecutorReady": true,
+    "bffMutationBoundaryRequired": true,
+    "bffMutationBoundaryMounted": true,
+    "executedStatusPersistenceRequired": true,
+    "boundaryUsesRequestSyncRpcV2": true,
+    "pendingCannotExecute": true,
+    "rejectedCannotExecute": true,
+    "expiredCannotExecute": true,
+    "forbiddenExecutorAbsent": true,
+    "duplicateExecutionBlocked": true,
+    "bffRoutesPresent": true,
+    "approvalInboxExecutionStatusPresent": true,
+    "commandCenterExecutionStatusPresent": true,
+    "noDirectSupabaseFromUi": true,
+    "noUiExecutorImport": true,
+    "noExecutorModelProviderImport": true,
+    "noDirectSupabaseMutationInExecutor": true,
+    "noRawPayloadFields": true,
+    "e2eRunnerPresent": true,
+    "findings": []
+  },
+  "aiKnowledgePreviewE2eContract": {
+    "deterministicPreviewPresent": true,
+    "roleMetadataIdsPresent": true,
+    "previewBounded": true,
+    "rawPromptBlockNotRenderedInUi": true,
+    "maestroFlowsUsePreviewIds": true,
+    "maestroFlowsDoNotAssertPromptBlock": true,
+    "llmSmokeResponseElementOnly": true,
+    "noFakeAiAnswer": true,
+    "noAuthDiscoveryInRunner": true,
+    "credentialsAbsentFromYaml": true,
+    "findings": []
+  },
+  "aiResponseSmokeNonBlockingContract": {
+    "loadingTestIdPresent": true,
+    "loadingBubbleReal": true,
+    "releaseFlowsDelegatePromptProof": true,
+    "releaseFlowsDoNotRequireResponse": true,
+    "runnerSeparatesReleaseAndResponseSmoke": true,
+    "runnerObservesLoadingOrResponse": true,
+    "responseTimeoutCanaryNonBlocking": true,
+    "noExactLlmTextAssertion": true,
+    "noFakeAiAnswer": true,
+    "noAuthDiscoveryInRunner": true,
+    "credentialsAbsentFromYaml": true,
+    "findings": []
+  },
+  "aiRoleScreenEmulatorGate": {
+    "ensureAndroidEmulatorReadyPresent": true,
+    "maestroRunnerPresent": true,
+    "explicitRoleResolverPresent": true,
+    "e2eSecretRedactorPresent": true,
+    "e2eSuitePresent": true,
+    "emulatorArtifactPresent": true,
+    "fakePassClaimedFalse": true,
+    "allRequiredRoleFlowsRepresented": true,
+    "greenAllFlowsPassed": true,
+    "mutationsCreatedZero": true,
+    "approvalRequiredObserved": true,
+    "roleLeakageNotObserved": true,
+    "roleAuthSourceExplicit": true,
+    "noAuthDiscoveryGreenPath": true,
+    "noSupabaseResolver": true,
+    "credentialsNotInCliArgs": true,
+    "credentialsNotPrinted": true,
+    "stdoutStderrRedacted": true,
+    "blockedStatusHasExactReason": false,
+    "findings": []
+  },
+  "aiExplicitRoleSecretsE2eGate": {
+    "ensureAndroidEmulatorReadyPresent": true,
+    "maestroRunnerPresent": true,
+    "explicitRoleResolverPresent": true,
+    "e2eSecretRedactorPresent": true,
+    "e2eSuitePresent": true,
+    "emulatorArtifactPresent": true,
+    "fakePassClaimedFalse": true,
+    "allRequiredRoleFlowsRepresented": true,
+    "greenAllFlowsPassed": true,
+    "mutationsCreatedZero": true,
+    "approvalRequiredObserved": true,
+    "roleLeakageNotObserved": true,
+    "roleAuthSourceExplicit": true,
+    "noAuthDiscoveryGreenPath": true,
+    "noSupabaseResolver": true,
+    "credentialsNotInCliArgs": true,
+    "credentialsNotPrinted": true,
+    "stdoutStderrRedacted": true,
+    "blockedStatusHasExactReason": false,
+    "findings": []
+  },
+  "developerControlE2eMode": {
+    "resolverSupportsDeveloperControlMode": true,
+    "runnerPresent": true,
+    "existingRunnersModeAware": true,
+    "singleAccountRuntimeAllowed": true,
+    "roleIsolationNotClaimed": true,
+    "roleIsolationContractTestsPresent": true,
+    "separateUsersNotRequiredInDeveloperMode": true,
+    "noAuthAdminListUsersServiceRole": true,
+    "noSeedOrFakeUsers": true,
+    "artifactFieldsPresent": true,
+    "findings": []
+  },
+  "developerControlRuntimeTargetability": {
+    "runnerSeparatesTargetabilityFromRoleIsolation": true,
+    "loginOrShellSupported": true,
+    "commandCenterStableIdsChecked": true,
+    "procurementEmptyStateAllowed": true,
+    "approvalPersistenceNonBlocking": true,
+    "roleIsolationNotClaimed": true,
+    "noSeparateRoleRequirementInDeveloperMode": true,
+    "noAuthAdminListUsersServiceRole": true,
+    "noSeedOrFakeUsers": true,
+    "targetabilityArtifactsPresent": true,
+    "findings": []
+  },
+  "androidEmulatorIosBuildSubmitGate": {
+    "androidApkProfilePresent": true,
+    "iosAppStoreSubmitProfilePresent": true,
+    "releaseRunnerPresent": true,
+    "releaseRedactorPresent": true,
+    "androidRuntimeSmokeFlowPresent": true,
+    "releaseArtifactsPresent": true,
+    "androidUsesApkForEmulator": true,
+    "androidPlaySubmitAbsent": true,
+    "iosSimulatorSubmitBlocked": true,
+    "iosSubmitProfileUsed": true,
+    "productionOtaAbsent": true,
+    "credentialsNotInCliArgs": true,
+    "secretsNotInArtifacts": true,
+    "aiRoleE2eExplicitSecretsOnly": true,
+    "fakePassClaimsAbsent": true,
+    "findings": []
+  },
+  "postInstallReleaseSignoffGate": {
+    "androidVerifierPresent": true,
+    "iosVerifierPresent": true,
+    "signoffArtifactsPresent": true,
+    "androidRuntimeSmokeProven": true,
+    "iosSubmitStatusProven": true,
+    "aiRoleE2eExplicitSecretsOnly": true,
+    "credentialsNotInCliArgs": true,
+    "secretsNotInArtifacts": true,
+    "productionOtaAbsent": true,
+    "androidPlaySubmitAbsent": true,
+    "fakePassClaimsAbsent": true,
+    "findings": []
+  },
+  "aiMandatoryEmulatorRuntimeGate": {
+    "matrixRunnerPresent": true,
+    "rebuildPolicyPresent": true,
+    "buildInstallRunnerPresent": true,
+    "releaseGuardIntegrated": true,
+    "allRequiredChildRunnersReferenced": true,
+    "deterministicTestIdsLocked": true,
+    "exactLlmAssertionsDisabled": true,
+    "responseSmokeNonBlocking": true,
+    "noFakePassPolicy": true,
+    "coreReleaseArtifactNotOverwritten": true,
+    "aiGateArtifactsIsolated": true,
+    "maestroRetryPolicyPresent": true,
+    "retryOnlyTransportFlakes": true,
+    "assertionFailureNotRetried": true,
+    "probeLatencyTracked": true,
+    "probeFlakeRateTracked": true,
+    "singleEmulatorParallelDisabled": true,
+    "multiDeviceParallelSupported": true,
+    "releaseGuardAiGateExtracted": true,
+    "artifactsPresent": true,
+    "artifactJsonValid": true,
+    "artifactStatusAccepted": true,
+    "androidInstalledRuntimeSmokePassOrExactBlocker": true,
+    "fakeEmulatorPassFalse": true,
+    "mutationsCreatedZero": true,
+    "secretsNotPrinted": true,
+    "blockerHasExactReason": true,
+    "findings": []
+  },
+  "aiConstructionKnowhowArchitecture": {
+    "coreFilesPresent": true,
+    "domainPlaybooksRegistered": true,
+    "rolesRegistered": true,
+    "professionalDecisionCardContract": true,
+    "allDomainsHaveEvidencePolicy": true,
+    "allRolesHaveBoundaries": true,
+    "internalFirstExternalSecond": true,
+    "externalPreviewOnly": true,
+    "highRiskRequiresApproval": true,
+    "bffContractsPresent": true,
+    "deterministicUiTestIdsMounted": true,
+    "emulatorRunnerPresent": true,
+    "artifactsPresent": true,
+    "artifactJsonValid": true,
+    "artifactStatusAccepted": true,
+    "noDirectExecution": true,
+    "noDomainMutation": true,
+    "noMobileExternalFetch": true,
+    "noDirectSupabaseFromUi": true,
+    "noRawPromptProviderRows": true,
+    "noProviderChange": true,
+    "noFakeProfessionalData": true,
+    "findings": []
+  },
+  "componentDebt": {
+    "reportOnly": true,
+    "godComponentLineThreshold": 500,
+    "hookPressureThreshold": 25,
+    "godComponentCount": 25,
+    "hookPressureComponentCount": 2,
+    "topByLines": [
+      {
+        "file": "src/features/chat/ChatScreen.tsx",
+        "lineCount": 653,
+        "hookCount": 20
+      },
+      {
+        "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
+        "lineCount": 645,
+        "hookCount": 2
+      },
+      {
+        "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
+        "lineCount": 633,
+        "hookCount": 1
+      },
+      {
+        "file": "src/screens/director/DirectorSubcontractTab.tsx",
+        "lineCount": 620,
+        "hookCount": 21
+      },
+      {
+        "file": "src/screens/director/DirectorDashboard.tsx",
+        "lineCount": 619,
+        "hookCount": 9
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
+        "lineCount": 616,
+        "hookCount": 5
+      },
+      {
+        "file": "src/features/profile/ProfileOtaDiagnosticsCard.tsx",
+        "lineCount": 611,
+        "hookCount": 2
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerPropDetailsSheetBody.tsx",
+        "lineCount": 610,
+        "hookCount": 5
+      },
+      {
+        "file": "src/features/seller/SellerAreaScreen.tsx",
+        "lineCount": 607,
+        "hookCount": 8
+      },
+      {
+        "file": "src/components/foreman/CatalogModal.tsx",
+        "lineCount": 605,
+        "hookCount": 7
+      },
+      {
+        "file": "src/features/supplierShowcase/SupplierShowcaseScreen.tsx",
+        "lineCount": 603,
+        "hookCount": 11
+      },
+      {
+        "file": "src/features/ai/commandCenter/AiCommandCenterScreen.tsx",
+        "lineCount": 597,
+        "hookCount": 4
+      }
+    ],
+    "topByHooks": [
+      {
+        "file": "src/features/ai/AIAssistantScreen.tsx",
+        "lineCount": 532,
+        "hookCount": 29
+      },
+      {
+        "file": "src/screens/office/useOfficeHubScreenController.tsx",
+        "lineCount": 509,
+        "hookCount": 25
+      },
+      {
+        "file": "src/components/map/useMapScreenController.tsx",
+        "lineCount": 520,
+        "hookCount": 23
+      },
+      {
+        "file": "src/screens/director/DirectorSubcontractTab.tsx",
+        "lineCount": 620,
+        "hookCount": 21
+      },
+      {
+        "file": "src/screens/profile/ProfileContent.tsx",
+        "lineCount": 421,
+        "hookCount": 21
+      },
+      {
+        "file": "src/features/chat/ChatScreen.tsx",
+        "lineCount": 653,
+        "hookCount": 20
+      },
+      {
+        "file": "src/screens/director/DirectorReportsModal.tsx",
+        "lineCount": 570,
+        "hookCount": 20
+      },
+      {
+        "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
+        "lineCount": 288,
+        "hookCount": 15
+      },
+      {
+        "file": "src/screens/contractor/useContractorScreenController.tsx",
+        "lineCount": 535,
+        "hookCount": 15
+      },
+      {
+        "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",
+        "lineCount": 538,
+        "hookCount": 14
+      },
+      {
+        "file": "src/screens/contractor/components/ContractorSubcontractsList.tsx",
+        "lineCount": 247,
+        "hookCount": 14
+      },
+      {
+        "file": "src/components/map/ResultsBottomSheet.tsx",
+        "lineCount": 465,
+        "hookCount": 13
+      }
+    ]
+  },
+  "checks": [
+    {
+      "name": "direct_supabase_service_bypass_budget",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "direct_supabase_exception_registry",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "production_readonly_canary_contract",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "cache_rate_route_scope",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "cache_cold_miss_deterministic_proof",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "rate_limit_marketplace_1_percent_canary_proof",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "rate_limit_marketplace_5pct_canary_proof",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "unbounded_select_ratchet",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "production_raw_loop_boundary",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "unsafe_cast_ratchet_contract",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "flatlist_tuning_regression",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "error_handling_gap_ratchet",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_model_provider_boundary",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_role_risk_approval_control_plane",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_app_knowledge_registry",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_tool_registry_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_tool_read_bindings_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_tool_plan_policy_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_tool_transport_boundary",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_tool_rate_limit_policy",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "submit_for_approval_audit_trail",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_policy_gate_scale_proof",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_explicit_e2e_fixture_registry",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_trace_observability",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "agent_bff_route_shell_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_command_center_task_stream_runtime",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_screen_local_action_source_policy",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_command_center_state_budget",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_app_action_graph_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_procurement_context_engine",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_external_intel_gateway",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_procurement_copilot_runtime_chain",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_cross_screen_runtime_matrix",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_persistent_action_ledger",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_approval_inbox_runtime",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_approved_procurement_executor",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_knowledge_preview_e2e_contract",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_response_smoke_non_blocking_contract",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_role_screen_emulator_gate",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_explicit_role_secrets_e2e_gate",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "developer_control_e2e_mode",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "developer_control_runtime_targetability",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "android_emulator_ios_build_submit_gate",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "post_install_release_signoff_gate",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_mandatory_emulator_runtime_gate",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "ai_construction_knowhow_architecture",
+      "status": "pass",
+      "errors": []
+    },
+    {
+      "name": "component_debt_report",
+      "status": "report_only",
+      "errors": []
+    }
+  ],
+  "safety": {
+    "productionCalls": false,
+    "dbWrites": false,
+    "migrations": false,
+    "supabaseProjectChanges": false,
+    "envChanges": false,
+    "secretsPrinted": false
+  }
+}

@@ -1,0 +1,30 @@
+﻿1b498443 Sign off iOS TestFlight QA03 QA04
+cb6311c3 Close remaining audited query safety gaps
+02c2582e Close native AI release proof blockers
+dc9dcd8e Fix AI chat usability and screen QA foundation
+5b8cc3e4 Refresh mobile AI runtime targetability proof
+44631e68 Prove mobile AI runtime delivery and targetability
+7fa30570 Prove mobile AI runtime delivery and targetability
+78bd8318 Prove mobile AI runtime delivery and targetability
+2b7f5c22 Add scoped AI procurement magic proof
+146e4297 Fix AI chat usability and screen QA foundation
+3ec16eaa Fix mobile AI runtime targetability signoff
+072e9916 Harden AI screen magic exact routing
+dbc5fa5c Resolve AI screen magic button clicks
+c18ade11 Add screen-by-screen AI magic execution
+e87df7a5 Split catalog request service ownership
+3542166e Split agent BFF procurement ownership
+4118bfc1 Split agent BFF intel graph ownership
+9b609ff3 Split agent BFF task stream ownership
+71bd927d Clean timer and realtime lifecycle ownership
+c797cfbf Decompose foreman mutation worker helpers
+49213520 Lazy load heavy AI route screens
+2e642271 Classify Supabase RPC rate-limit discipline
+05d179a1 Decompose agent BFF route registry
+927ecd32 Close route error boundary coverage
+80d393fe Clean up timer and realtime lifecycle
+3ddc455b Add route error boundary coverage gate
+3ff126b1 Bound database queries for scale safety
+4f85bcc2 Add screen-native AI workflow execution packs
+b2d6deef Add accountant main AI assistant
+e5101a3c Add screen-native AI value delivery packs
