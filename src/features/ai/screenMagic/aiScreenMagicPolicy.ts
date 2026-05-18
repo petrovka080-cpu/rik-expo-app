@@ -13,6 +13,34 @@ export type AiScreenMagicPolicyResult = {
 
 export function validateAiScreenMagicPack(pack: AiScreenMagicPack): AiScreenMagicPolicyResult {
   const issues: AiScreenMagicValidationIssue[] = [];
+  const allowedHeaders = new Set([
+    "AI помощник",
+    "Готово от AI",
+    "Финансы сегодня",
+    "Снабжение сегодня",
+    "Склад сегодня",
+    "Решения на сегодня",
+    "Работы сегодня",
+  ]);
+  if (!allowedHeaders.has(pack.userHeader)) {
+    issues.push({ screenId: pack.screenId, code: "user_header_invalid", exactReason: `User header is not value-oriented: ${pack.userHeader}` });
+  }
+  if (
+    pack.visibleDomainData.length === 0 ||
+    pack.riskSummary.length === 0 ||
+    pack.missingDataSummary.length === 0 ||
+    pack.safeActions.length === 0 ||
+    pack.approvalCandidates.length === 0 ||
+    pack.exactBlockers.length === 0
+  ) {
+    issues.push({ screenId: pack.screenId, code: "screen_context_signal_missing", exactReason: "Screen magic pack must include visible data, risks, missing data, safe actions, approval candidates, and exact blockers." });
+  }
+  if (pack.screenId === "screen.runtime") {
+    const allowedRuntimeRoles = new Set(["admin", "developer"]);
+    if (pack.roleScope.some((role) => !allowedRuntimeRoles.has(role))) {
+      issues.push({ screenId: pack.screenId, code: "debug_copy_exposed", exactReason: "Runtime screen magic must remain dev/admin only." });
+    }
+  }
   if (pack.aiPreparedWork.length === 0) {
     issues.push({ screenId: pack.screenId, code: "missing_prepared_work", exactReason: "Screen magic pack must include prepared work." });
   }
@@ -38,8 +66,14 @@ export function validateAiScreenMagicPack(pack: AiScreenMagicPack): AiScreenMagi
     if (button.actionKind === "forbidden" && !button.forbiddenReason) {
       issues.push({ screenId: pack.screenId, actionId: button.id, code: "forbidden_reason_missing", exactReason: "Forbidden button lacks user-facing reason." });
     }
+    if (button.actionKind === "exact_blocker" && !button.exactBlocker) {
+      issues.push({ screenId: pack.screenId, actionId: button.id, code: "missing_button_resolution", exactReason: "Exact blocker button lacks blocker reason." });
+    }
     if (!button.expectedResult) {
       issues.push({ screenId: pack.screenId, actionId: button.id, code: "missing_button_resolution", exactReason: "Button has no expected result." });
+    }
+    if (button.resultType !== button.actionKind) {
+      issues.push({ screenId: pack.screenId, actionId: button.id, code: "button_result_type_mismatch", exactReason: "Button result type must match exactly one action kind." });
     }
   }
 
@@ -60,6 +94,7 @@ export function enforceAiScreenMagicPolicy(pack: AiScreenMagicPack): AiScreenMag
     ...pack,
     buttons: pack.buttons.map((button) => ({
       ...button,
+      resultType: button.actionKind,
       canExecuteDirectly: false,
     })),
     safety: {

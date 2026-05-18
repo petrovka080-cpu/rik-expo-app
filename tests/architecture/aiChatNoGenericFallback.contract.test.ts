@@ -30,5 +30,8 @@ describe("AI chat no generic fallback architecture", () => {
       answeredFromScreenContext: true,
       providerCallAllowed: false,
     });
+    expect(answer?.usedSignals.screenId).toBe("warehouse.main");
+    expect(answer?.usedSignals.visibleDomainData.length).toBeGreaterThan(0);
+    expect(answer?.answer).not.toMatch(/module unavailable|provider unavailable|I don't have context/i);
   });
 });

@@ -218,7 +218,7 @@ export function AIAssistantReadyProductPanels({
         <View style={styles.roleAssistantBlock} testID="ai.screen_workflow_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
-            <Text style={styles.roleAssistantDomain}>{screenMagicPack?.screenSummary ?? screenWorkflowPack.title}</Text>
+            <Text style={styles.roleAssistantDomain}>{screenMagicPack?.userHeader ?? screenWorkflowPack.title}</Text>
           </View>
           <Text style={styles.roleAssistantSummary}>{screenMagicPack?.userGoal ?? screenWorkflowPack.userGoal}</Text>
           {screenMagicPack ? (
@@ -250,7 +250,7 @@ export function AIAssistantReadyProductPanels({
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.roleAssistantActionRow}
               >
-                {screenMagicPack.buttons.slice(0, 6).map((button) => (
+                {screenMagicPack.buttons.map((button) => (
                   <Pressable
                     key={button.id}
                     style={styles.roleAssistantActionChip}

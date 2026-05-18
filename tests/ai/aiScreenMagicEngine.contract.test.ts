@@ -19,8 +19,8 @@ describe("AI screen magic engine", () => {
     const pack = getAiScreenMagicPack({ role: "foreman", context: "foreman", screenId: "foreman.main" });
     const text = describeAiScreenMagicPack(pack);
 
-    expect(text).toContain("SCREEN_MAGIC foreman.main");
+    expect(text).toContain(pack.userHeader);
     expect(text).toContain("approval");
-    expect(text).not.toMatch(/raw prompt|raw provider|provider unavailable|module unavailable/i);
+    expect(text).not.toMatch(/SCREEN_MAGIC|screenId:|raw prompt|raw provider|provider unavailable|module unavailable/i);
   });
 });

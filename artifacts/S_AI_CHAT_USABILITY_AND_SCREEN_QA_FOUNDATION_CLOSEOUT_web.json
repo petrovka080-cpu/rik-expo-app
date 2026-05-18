@@ -1,0 +1,24 @@
+{
+  "wave": "S_AI_CHAT_USABILITY_AND_SCREEN_QA_FOUNDATION_CLOSEOUT",
+  "final_status": "GREEN_AI_CHAT_USABILITY_WEB_READY",
+  "checks": {
+    "route opens through AI assistant source": true,
+    "AI block visible": true,
+    "dialog not tiny": true,
+    "message list scrolls": true,
+    "input remains visible": true,
+    "useless header absent": true,
+    "debug copy hidden from normal header": true,
+    "question answer uses screen context": true,
+    "buttons visible": true,
+    "buttons clickable": true,
+    "visible result appears": true,
+    "no provider/module unavailable copy": true,
+    "no fake data": true,
+    "no direct dangerous mutation": true
+  },
+  "chat_dialog_not_tiny": true,
+  "chat_dialog_scrolls": true,
+  "input_visible": true,
+  "fake_green_claimed": false
+}

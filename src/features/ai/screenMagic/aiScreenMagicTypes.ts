@@ -25,10 +25,18 @@ export type AiScreenMagicPreparedWork = {
   riskLevel: AiScreenMagicRiskLevel;
 };
 
+export type AiScreenMagicButtonIntent = {
+  label: string;
+  actionKind: AiScreenMagicActionKind;
+  userFacingReason?: string;
+  exactBlocker?: string;
+};
+
 export type AiScreenMagicButton = {
   id: string;
   label: string;
   actionKind: AiScreenMagicActionKind;
+  resultType: AiScreenMagicActionKind;
   expectedResult: AiScreenMagicExpectedResult;
   bffRoute?: string;
   approvalRoute?: string;
@@ -55,7 +63,14 @@ export type AiScreenMagicPack = {
   roleScope: string[];
   domain: string;
   userGoal: string;
+  userHeader: string;
   screenSummary: string;
+  visibleDomainData: string[];
+  riskSummary: string[];
+  missingDataSummary: string[];
+  safeActions: string[];
+  approvalCandidates: string[];
+  exactBlockers: string[];
   aiPreparedWork: AiScreenMagicPreparedWork[];
   buttons: AiScreenMagicButton[];
   qa: AiScreenMagicQa[];
@@ -67,13 +82,21 @@ export type AiScreenMagicRegistryEntry = {
   roleScope: string[];
   domain: string;
   userGoal: string;
+  userHeader: string;
   screenSummary: string;
+  visibleDomainData: readonly string[];
+  riskSummary: readonly string[];
+  missingDataSummary: readonly string[];
+  safeActions: readonly string[];
+  approvalCandidates: readonly string[];
+  exactBlockers: readonly string[];
   preparedWork: readonly {
     title: string;
     description: string;
     riskLevel: AiScreenMagicRiskLevel;
   }[];
   buttonLabels: Partial<Record<Exclude<AiScreenMagicActionKind, "exact_blocker">, string>>;
+  buttonIntents: readonly AiScreenMagicButtonIntent[];
   qa: readonly AiScreenMagicQa[];
 };
 
@@ -107,6 +130,9 @@ export type AiScreenMagicValidationIssue = {
     | "direct_execution_allowed"
     | "qa_coverage_missing"
     | "debug_copy_exposed"
+    | "user_header_invalid"
+    | "screen_context_signal_missing"
+    | "button_result_type_mismatch"
     | "fake_data_used"
     | "provider_required"
     | "db_write_used";

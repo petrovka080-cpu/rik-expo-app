@@ -21,11 +21,13 @@ describe("AI screen magic button result contract", () => {
 
         expect(result).toBeTruthy();
         expect(result).toMatchObject({
+          resultType: button.actionKind,
           providerCallAllowed: false,
           dbWriteUsed: false,
           directMutationUsed: false,
         });
         expect(result?.answer).toContain(button.label);
+        expect(button.resultType).toBe(button.actionKind);
         expect(resolution.canExecuteDirectly).toBe(false);
 
         if (button.actionKind === "approval_required") {
@@ -45,5 +47,26 @@ describe("AI screen magic button result contract", () => {
       "forbidden",
       "safe_read",
     ]));
+  });
+
+  it("keeps role-native foundation buttons available on key screens", () => {
+    const packByScreen = new Map(listAiScreenMagicPacks().map((pack) => [pack.screenId, pack]));
+    const expectedLabelsByScreen: Record<string, string[]> = {
+      "accountant.main": ["Проверить критические", "Подготовить rationale директору", "Запросить документы", "Отправить на согласование"],
+      "buyer.main": ["Разобрать входящие", "Смотреть варианты закупа", "Сравнить поставщиков", "Запросить цены"],
+      "warehouse.issue": ["Черновик выдачи", "Показать дефицит", "Предложить альтернативу", "Отправить на approval"],
+      "director.dashboard": ["Открыть approval inbox", "Показать критические", "Показать что блокирует работы"],
+      "foreman.main": ["Подготовить акт", "Подготовить отчет", "Проверить missing evidence", "Проверка безопасности"],
+      "approval.inbox": ["Approve", "Reject", "Запросить данные", "Открыть evidence"],
+    };
+
+    for (const [screenId, labels] of Object.entries(expectedLabelsByScreen)) {
+      const pack = packByScreen.get(screenId);
+      const actualLabels = new Set((pack?.buttons ?? []).map((button) => button.label));
+
+      for (const label of labels) {
+        expect(actualLabels.has(label)).toBe(true);
+      }
+    }
   });
 });

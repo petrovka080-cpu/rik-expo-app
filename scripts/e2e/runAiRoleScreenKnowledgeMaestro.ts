@@ -138,12 +138,14 @@ function runCommand(
   capture = true,
   extraEnv: Record<string, string> = {},
   secretValues: readonly string[] = [],
+  timeoutMs?: number,
 ): string {
   const result = spawnSync(command, [...args], {
     cwd: projectRoot,
     encoding: "utf8",
     stdio: capture ? "pipe" : "inherit",
     shell: process.platform === "win32" && /\.(bat|cmd)$/i.test(command),
+    timeout: timeoutMs,
     env: {
       ...process.env,
       ...extraEnv,
@@ -153,7 +155,11 @@ function runCommand(
   });
 
   if (result.error) {
-    throw result.error;
+    const error = result.error as Error & { code?: string };
+    const details = error.code === "ETIMEDOUT"
+      ? `Command timed out after ${timeoutMs ?? 0}ms: ${command} ${args.join(" ")}`
+      : `Command failed before exit: ${command} ${args.join(" ")}\n${error.message}`;
+    throw new Error(redactE2eSecrets(details, secretValues));
   }
 
   if (result.status !== 0) {
@@ -168,6 +174,15 @@ function runCommand(
 
 function adb(deviceId: string, args: readonly string[], capture = true): string {
   return runCommand("adb", ["-s", deviceId, ...args], capture);
+}
+
+function adbWithTimeout(
+  deviceId: string,
+  args: readonly string[],
+  timeoutMs: number,
+  capture = true,
+): string {
+  return runCommand("adb", ["-s", deviceId, ...args], capture, {}, [], timeoutMs);
 }
 
 function isRecoverableMaestroDeviceFailure(errorMessage: string): boolean {
@@ -238,6 +253,10 @@ function buildMaestroPrefixedRoleEnv(
 }
 
 function classifyMaestroFailure(errorMessage: string): AiRoleScreenKnowledgeStatus {
+  if (/Command timed out after \d+ms: adb .*uiautomator|uiautomator dump/i.test(errorMessage)) {
+    return "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
+  }
+
   if (/no devices\/emulators found|device offline|device not found|adb: device|unauthorized/i.test(errorMessage)) {
     return "BLOCKED_ANDROID_ADB_RUNTIME_UNSTABLE";
   }
@@ -457,8 +476,8 @@ async function runMaestroFlows(params: {
 
 function dumpAndroidHierarchy(deviceId: string): string {
   const dumpPath = "/sdcard/rik_ai_role_screen_window.xml";
-  adb(deviceId, ["shell", "uiautomator", "dump", dumpPath], true);
-  return adb(deviceId, ["exec-out", "cat", dumpPath], true);
+  adbWithTimeout(deviceId, ["shell", "uiautomator", "dump", dumpPath], 20000, true);
+  return adbWithTimeout(deviceId, ["exec-out", "cat", dumpPath], 10000, true);
 }
 
 function observePromptPipeline(deviceId: string): PromptPipelineObservation {

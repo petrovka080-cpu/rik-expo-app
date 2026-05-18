@@ -1120,12 +1120,19 @@ export async function runAiMandatoryEmulatorRuntimeMatrix(): Promise<AiMandatory
 }
 
 if (require.main === module) {
+  const writeStdoutAndExit = (payload: unknown, exitCode: number): void => {
+    process.exitCode = exitCode;
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`, () => {
+      process.exit(exitCode);
+    });
+  };
+
   void runAiMandatoryEmulatorRuntimeMatrix()
     .then((artifact) => {
-      console.info(JSON.stringify(artifact, null, 2));
-      if (artifact.final_status !== "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY") {
-        process.exitCode = 1;
-      }
+      writeStdoutAndExit(
+        artifact,
+        artifact.final_status === "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY" ? 0 : 1,
+      );
     })
     .catch((error) => {
       const message = redactE2eSecrets(error instanceof Error ? error.stack ?? error.message : String(error));
@@ -1145,7 +1152,7 @@ if (require.main === module) {
         emulatorResult: null,
         installedRuntime: null,
       });
-      console.info(JSON.stringify(matrix, null, 2));
-      process.exitCode = 1;
+      process.stderr.write(`${message}\n`);
+      writeStdoutAndExit(matrix, 1);
     });
 }

@@ -8,6 +8,17 @@ export type AiScreenMagicQuestionAnswer = {
   answer: string;
   providerCallAllowed: false;
   answeredFromScreenContext: true;
+  usedSignals: {
+    screenId: string;
+    roleScope: string[];
+    visibleDomainData: string[];
+    preparedWork: string[];
+    risks: string[];
+    missingData: string[];
+    safeActions: string[];
+    approvalCandidates: string[];
+    exactBlockers: string[];
+  };
 };
 
 function normalize(value: string): string {
@@ -41,6 +52,7 @@ export function answerAiScreenMagicQuestion(params: {
       answer: buttonResult.answer,
       providerCallAllowed: false,
       answeredFromScreenContext: true,
+      usedSignals: buildUsedSignals(pack),
     };
   }
 
@@ -56,14 +68,23 @@ export function answerAiScreenMagicQuestion(params: {
   const safeRead = pack.buttons.find((button) => button.actionKind === "safe_read");
 
   const answer = sanitizeAiScreenMagicUserCopy([
-    `${pack.screenSummary}: ${pack.userGoal}`,
+    pack.screenSummary,
+    `${pack.userHeader}: ${pack.userGoal}`,
+    pack.visibleDomainData.length > 0
+      ? `Данные экрана: ${pack.visibleDomainData.slice(0, 5).join("; ")}.`
+      : null,
     critical ? `Критический фокус: ${critical.title}. ${critical.description}` : null,
+    pack.riskSummary.length > 0
+      ? `Риски: ${pack.riskSummary.slice(0, 4).join("; ")}.`
+      : null,
     missing.length > 0
       ? `Недостающие данные: ${missing.join("; ")}.`
       : "Недостающие данные не выдумываются; если evidence отсутствует, действие останется в blocker/missing state.",
     safeRead ? `Safe read: ${safeRead.label}.` : null,
+    pack.safeActions.length > 0 ? `Безопасно открыть: ${pack.safeActions.slice(0, 3).join("; ")}.` : null,
     draft ? `Черновик: ${draft.label}; финальная отправка не выполняется.` : null,
     approval ? `Approval: ${approval.label} идёт через ${approval.approvalRoute ?? "approval ledger"}.` : null,
+    pack.exactBlockers.length > 0 ? `Блокер: ${pack.exactBlockers[0]}.` : null,
   ].filter(Boolean).join(" "));
 
   return {
@@ -71,5 +92,25 @@ export function answerAiScreenMagicQuestion(params: {
     answer,
     providerCallAllowed: false,
     answeredFromScreenContext: true,
+    usedSignals: buildUsedSignals(pack),
+  };
+}
+
+function buildUsedSignals(pack: AiScreenMagicPack): AiScreenMagicQuestionAnswer["usedSignals"] {
+  return {
+    screenId: pack.screenId,
+    roleScope: [...pack.roleScope],
+    visibleDomainData: [...pack.visibleDomainData],
+    preparedWork: pack.aiPreparedWork.map((item) => item.title),
+    risks: [...pack.riskSummary],
+    missingData: [
+      ...new Set([
+        ...pack.missingDataSummary,
+        ...pack.aiPreparedWork.flatMap((item) => item.missingData),
+      ]),
+    ],
+    safeActions: [...pack.safeActions],
+    approvalCandidates: [...pack.approvalCandidates],
+    exactBlockers: [...pack.exactBlockers],
   };
 }

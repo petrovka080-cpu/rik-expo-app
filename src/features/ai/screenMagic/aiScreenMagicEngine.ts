@@ -6,7 +6,10 @@ import type {
   AiScreenWorkflowAction,
   AiScreenWorkflowPack,
 } from "../screenWorkflows/aiScreenWorkflowTypes";
-import { buildAiScreenMagicButton } from "./aiScreenMagicButtonResolver";
+import {
+  buildAiScreenMagicButton,
+  buildAiScreenMagicIntentButton,
+} from "./aiScreenMagicButtonResolver";
 import {
   getAiScreenMagicRegistryEntry,
   listAiScreenMagicRegistry,
@@ -14,6 +17,7 @@ import {
 import { sanitizeAiScreenMagicUserCopy } from "./aiScreenMagicUserCopy";
 import type {
   AiScreenMagicHydrationRequest,
+  AiScreenMagicButton,
   AiScreenMagicPack,
   AiScreenMagicPreparedWork,
   AiScreenMagicRegistryEntry,
@@ -42,6 +46,38 @@ function labelForAction(
   return labels?.[action.actionKind] ?? action.label;
 }
 
+function uniqueLabels(buttons: readonly AiScreenMagicButton[]): AiScreenMagicButton[] {
+  const seen = new Set<string>();
+  return buttons.filter((button) => {
+    const key = button.label.trim().toLowerCase().replace(/\s+/g, " ");
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function buildButtons(
+  workflowPack: AiScreenWorkflowPack,
+  registry: AiScreenMagicRegistryEntry,
+): AiScreenMagicButton[] {
+  const workflowButtonPairs = workflowPack.actions.map((action) => ({
+    declaredKind: action.actionKind,
+    button: buildAiScreenMagicButton({
+      action,
+      label: labelForAction(action, registry.buttonLabels),
+    }),
+  }));
+  const workflowButtons = workflowButtonPairs.map((pair) => pair.button);
+  const templateByKind = new Map(workflowButtonPairs.map((pair) => [pair.declaredKind, pair.button]));
+  const intentButtons = registry.buttonIntents.map((intent, index) => buildAiScreenMagicIntentButton({
+    screenId: workflowPack.screenId,
+    intent,
+    template: intent.actionKind === "exact_blocker" ? undefined : templateByKind.get(intent.actionKind),
+    index,
+  }));
+  return uniqueLabels([...intentButtons, ...workflowButtons]);
+}
+
 export function buildAiScreenMagicPackFromWorkflowPack(
   workflowPack: AiScreenWorkflowPack,
 ): AiScreenMagicPack {
@@ -51,7 +87,10 @@ export function buildAiScreenMagicPackFromWorkflowPack(
   }
 
   const evidence = evidenceFromWorkflowPack(workflowPack);
-  const missingData = missingDataFromWorkflowPack(workflowPack);
+  const missingData = [...new Set([
+    ...missingDataFromWorkflowPack(workflowPack),
+    ...registry.missingDataSummary,
+  ])].slice(0, 6);
   const preparedWork: AiScreenMagicPreparedWork[] = registry.preparedWork.map((item, index) => ({
     id: `${workflowPack.screenId}.magic.prepared.${index + 1}`,
     title: sanitizeAiScreenMagicUserCopy(item.title),
@@ -63,15 +102,19 @@ export function buildAiScreenMagicPackFromWorkflowPack(
 
   return enforceAiScreenMagicPolicy({
     screenId: workflowPack.screenId,
-    roleScope: [...workflowPack.roleScope],
+    roleScope: [...registry.roleScope],
     domain: workflowPack.domain,
     userGoal: sanitizeAiScreenMagicUserCopy(registry.userGoal),
+    userHeader: sanitizeAiScreenMagicUserCopy(registry.userHeader),
     screenSummary: sanitizeAiScreenMagicUserCopy(registry.screenSummary),
+    visibleDomainData: registry.visibleDomainData.map(sanitizeAiScreenMagicUserCopy),
+    riskSummary: registry.riskSummary.map(sanitizeAiScreenMagicUserCopy),
+    missingDataSummary: registry.missingDataSummary.map(sanitizeAiScreenMagicUserCopy),
+    safeActions: registry.safeActions.map(sanitizeAiScreenMagicUserCopy),
+    approvalCandidates: registry.approvalCandidates.map(sanitizeAiScreenMagicUserCopy),
+    exactBlockers: registry.exactBlockers.map(sanitizeAiScreenMagicUserCopy),
     aiPreparedWork: preparedWork,
-    buttons: workflowPack.actions.map((action) => buildAiScreenMagicButton({
-      action,
-      label: labelForAction(action, registry.buttonLabels),
-    })),
+    buttons: buildButtons(workflowPack, registry),
     qa: [...registry.qa, ...workflowPack.qaExamples.map((entry) => ({
       question: entry.question,
       answerIntent: entry.expectedAnswerIntent,
@@ -105,9 +148,12 @@ export function describeAiScreenMagicPack(pack: AiScreenMagicPack): string {
     .join("\n");
 
   return sanitizeAiScreenMagicUserCopy([
-    `SCREEN_MAGIC ${pack.screenId} ${pack.domain}`,
+    pack.userHeader,
     pack.screenSummary,
     pack.userGoal,
+    pack.visibleDomainData.length > 0 ? `Visible data: ${pack.visibleDomainData.slice(0, 6).join("; ")}` : null,
+    pack.riskSummary.length > 0 ? `Risks: ${pack.riskSummary.slice(0, 5).join("; ")}` : null,
+    pack.approvalCandidates.length > 0 ? `Approval candidates: ${pack.approvalCandidates.slice(0, 3).join("; ")}` : null,
     work ? `Prepared work:\n${work}` : null,
     buttons ? `Buttons:\n${buttons}` : null,
     "AI never performs direct dangerous mutations; approval-required actions route through the ledger.",

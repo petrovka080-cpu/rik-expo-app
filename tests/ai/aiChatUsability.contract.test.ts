@@ -30,4 +30,13 @@ describe("AI chat usability contract", () => {
     expect(header).not.toContain("AI ассистент ·");
     expect(header).not.toMatch(/screenId|route key|provider|transport|runtime|policy:/i);
   });
+
+  it("extends the existing screen magic panel instead of creating a duplicate chat framework", () => {
+    const panels = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
+
+    expect(panels).toContain("buildAiScreenMagicPackFromWorkflowPack");
+    expect(panels).toContain("screenMagicPack?.userHeader");
+    expect(panels).toContain("screenMagicPack.buttons.map");
+    expect(panels).not.toMatch(/createContext\(|useReducer\(|new AI chat framework/i);
+  });
 });

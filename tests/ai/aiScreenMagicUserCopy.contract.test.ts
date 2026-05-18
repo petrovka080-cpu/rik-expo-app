@@ -1,4 +1,5 @@
 import {
+  AI_SCREEN_MAGIC_SAFE_STATUS_COPY,
   containsForbiddenAiScreenMagicUserCopy,
   sanitizeAiScreenMagicUserCopy,
 } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
@@ -18,6 +19,15 @@ describe("AI screen magic user copy", () => {
     expect(containsForbiddenAiScreenMagicUserCopy(sanitized)).toBe(false);
     expect(sanitized).not.toContain("AI APP KNOWLEDGE BLOCK");
     expect(sanitized).not.toContain("screenId:");
-    expect(sanitized).toContain("screen-specific safe reads");
+    expect(sanitized).toBe(AI_SCREEN_MAGIC_SAFE_STATUS_COPY);
+  });
+
+  it("removes generic fallback and runtime transport wording from normal copy", () => {
+    const sanitized = sanitizeAiScreenMagicUserCopy(
+      "I don't have context; provider not configured; transport status: fallback; raw JSON",
+    );
+
+    expect(containsForbiddenAiScreenMagicUserCopy(sanitized)).toBe(false);
+    expect(sanitized).not.toMatch(/provider|transport|raw JSON|I don't have context/i);
   });
 });

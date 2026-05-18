@@ -20,8 +20,18 @@ const FORBIDDEN_USER_COPY_PATTERNS = [
   /raw payload/i,
   /raw transport/i,
   /raw policy dump/i,
+  /raw screenId/i,
+  /raw route key/i,
+  /raw JSON/i,
+  /provider status/i,
+  /transport status/i,
+  /runtime label/i,
   /provider unavailable/i,
+  /provider not configured/i,
   /module unavailable/i,
+  /I cannot help with that/i,
+  /I don't have context/i,
+  /I do not have context/i,
   /AI-ключи не настроены/i,
   /AI keys are not configured/i,
 ] as const;
@@ -46,7 +56,7 @@ const INTERNAL_CONTEXT_BLOCK_PATTERNS = [
 ] as const;
 
 export const AI_SCREEN_MAGIC_SAFE_STATUS_COPY =
-  "AI prepared screen-specific safe reads, drafts, and approval candidates from the current screen context.";
+  "AI подготовил безопасные ответы, черновики и маршруты согласования по данным текущего экрана.";
 
 function includesForbiddenAiScreenMagicUserCopy(value: string): boolean {
   return FORBIDDEN_USER_COPY_PATTERNS.some((pattern) => pattern.test(value));

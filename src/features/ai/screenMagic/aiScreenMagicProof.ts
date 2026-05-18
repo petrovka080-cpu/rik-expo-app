@@ -11,12 +11,33 @@ export const AI_CHAT_USABILITY_WAVE = "S_AI_CHAT_USABILITY_AND_SCREEN_QA_FOUNDAT
 export const AI_CHAT_USABILITY_GREEN_STATUS = "GREEN_AI_CHAT_USABILITY_AND_SCREEN_QA_READY" as const;
 export const AI_CHAT_USABILITY_REQUIRED_SCREENS = [
   "accountant.main",
+  "accountant.payment",
+  "accountant.history",
   "buyer.main",
+  "buyer.requests",
+  "buyer.request.detail",
+  "procurement.copilot",
+  "market.home",
+  "supplier.showcase",
   "warehouse.main",
+  "warehouse.incoming",
+  "warehouse.issue",
   "director.dashboard",
-  "foreman.main",
+  "director.finance",
+  "director.reports",
   "approval.inbox",
   "ai.command_center",
+  "foreman.main",
+  "foreman.ai.quick_modal",
+  "foreman.subcontract",
+  "contractor.main",
+  "documents.main",
+  "reports.modal",
+  "chat.main",
+  "map.main",
+  "office.hub",
+  "security.screen",
+  "screen.runtime",
 ] as const;
 
 export type AiScreenMagicProofOptions = {
@@ -43,6 +64,7 @@ export function buildAiScreenMagicButtonManifest(packs: readonly AiScreenMagicPa
       buttonId: button.id,
       label: button.label,
       actionKind: button.actionKind,
+      resultType: button.resultType,
       expectedResult: button.expectedResult,
       bffRoute: button.bffRoute ?? null,
       approvalRoute: button.approvalRoute ?? null,
@@ -162,9 +184,32 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     actionKinds.has("forbidden");
   const screenContextHydrated = requiredPacks.every((pack) =>
     pack.aiPreparedWork.length > 0 &&
-    pack.aiPreparedWork.every((item) => item.evidence.length > 0),
+    pack.aiPreparedWork.every((item) => item.evidence.length > 0) &&
+    pack.visibleDomainData.length > 0 &&
+    pack.riskSummary.length > 0 &&
+    pack.missingDataSummary.length > 0 &&
+    pack.safeActions.length > 0 &&
+    pack.approvalCandidates.length > 0 &&
+    pack.exactBlockers.length > 0,
+  );
+  const roleNativeScreenContext = requiredPacks.every((pack) =>
+    Boolean(pack.userHeader) &&
+    pack.visibleDomainData.length > 0 &&
+    pack.riskSummary.length > 0 &&
+    pack.missingDataSummary.length > 0 &&
+    pack.safeActions.length > 0 &&
+    pack.approvalCandidates.length > 0 &&
+    pack.exactBlockers.length > 0,
   );
   const buttonsResolve = allButtons.length > 0 && buttonResults.length === allButtons.length;
+  const everyButtonHasExactlyOneResult = allButtons.every(({ button }) =>
+    button.resultType === button.actionKind &&
+    Boolean(button.expectedResult) &&
+    button.canExecuteDirectly === false,
+  );
+  const runtimeDevAdminOnly = requiredPacks
+    .filter((pack) => pack.screenId === "screen.runtime")
+    .every((pack) => pack.roleScope.every((role) => role === "admin" || role === "developer"));
   const finalChecks = {
     screensCovered,
     chatDialogNotTiny: options.chatDialogNotTiny ?? false,
@@ -173,10 +218,22 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     uselessTopHeaderRemoved: options.uselessTopHeaderRemoved ?? false,
     debugCopyHidden: options.debugCopyHidden ?? false,
     screenContextHydrated,
-    qaFromScreenContext: qaResults.every((result) => result?.answeredFromScreenContext === true && result.providerCallAllowed === false),
+    roleNativeScreenContext,
+    qaFromScreenContext: qaResults.every((result) =>
+      result?.answeredFromScreenContext === true &&
+      result.providerCallAllowed === false &&
+      Boolean(result.usedSignals.screenId) &&
+      result.usedSignals.visibleDomainData.length > 0 &&
+      result.usedSignals.preparedWork.length > 0 &&
+      result.usedSignals.risks.length > 0 &&
+      result.usedSignals.missingData.length > 0 &&
+      result.usedSignals.safeActions.length > 0 &&
+      result.usedSignals.approvalCandidates.length > 0 &&
+      result.usedSignals.exactBlockers.length > 0,
+    ),
     genericChatFallbackUsed: false,
     providerUnavailableCopyHidden: options.providerUnavailableCopyHidden ?? false,
-    buttonsResolveToVisibleResults: buttonsResolve,
+    buttonsResolveToVisibleResults: buttonsResolve && everyButtonHasExactlyOneResult,
     safeReadNoMutation: buttonResults
       .filter((result) => result?.button.actionKind === "safe_read")
       .every((result) => result?.dbWriteUsed === false && result.directMutationUsed === false),
@@ -190,9 +247,10 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
       .filter(({ button }) => button.actionKind === "forbidden")
       .every(({ button }) => Boolean(button.forbiddenReason)),
     newHooksAdded: false,
-    fakeDataUsed: /fake supplier|fake price|fake payment|fake document|fake stock|Supplier A|Supplier B/i.test(serializedPacks),
+    fakeDataUsed: /fake supplier|fake price|fake payment|fake document|fake stock|\bSupplier A\b|\bSupplier B\b/i.test(serializedPacks),
     dbWritesUsed: buttonResults.some((result) => result?.dbWriteUsed !== false),
     directDangerousMutations: buttonResults.some((result) => result?.directMutationUsed !== false),
+    runtimeDevAdminOnly,
     fakeGreenClaimed: false,
   };
   const coreGreen =
@@ -204,6 +262,7 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     finalChecks.uselessTopHeaderRemoved &&
     finalChecks.debugCopyHidden &&
     finalChecks.screenContextHydrated &&
+    finalChecks.roleNativeScreenContext &&
     finalChecks.qaFromScreenContext &&
     !finalChecks.genericChatFallbackUsed &&
     finalChecks.providerUnavailableCopyHidden &&
@@ -216,6 +275,7 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     !finalChecks.fakeDataUsed &&
     !finalChecks.dbWritesUsed &&
     !finalChecks.directDangerousMutations &&
+    finalChecks.runtimeDevAdminOnly &&
     !finalChecks.fakeGreenClaimed &&
     requiredActionKindsPresent;
 
@@ -235,6 +295,7 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     useless_top_header_removed: finalChecks.uselessTopHeaderRemoved,
     debug_copy_hidden: finalChecks.debugCopyHidden,
     screen_context_hydrated: finalChecks.screenContextHydrated,
+    role_native_screen_context: finalChecks.roleNativeScreenContext,
     qa_from_screen_context: finalChecks.qaFromScreenContext,
     generic_chat_fallback_used: finalChecks.genericChatFallbackUsed,
     provider_unavailable_copy_hidden: finalChecks.providerUnavailableCopyHidden,
@@ -247,6 +308,7 @@ export function buildAiChatUsabilityFoundationMatrix(options: AiChatUsabilityPro
     fake_data_used: finalChecks.fakeDataUsed,
     db_writes_used: finalChecks.dbWritesUsed,
     direct_dangerous_mutations: finalChecks.directDangerousMutations,
+    runtime_dev_admin_only: finalChecks.runtimeDevAdminOnly,
     fake_green_claimed: finalChecks.fakeGreenClaimed,
   };
 }

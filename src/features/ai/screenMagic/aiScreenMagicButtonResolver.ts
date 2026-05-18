@@ -3,6 +3,7 @@ import type { AiScreenWorkflowAction } from "../screenWorkflows/aiScreenWorkflow
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
+  AiScreenMagicButtonIntent,
   AiScreenMagicExpectedResult,
   AiScreenMagicPack,
 } from "./aiScreenMagicTypes";
@@ -32,6 +33,7 @@ export function buildAiScreenMagicButton(params: {
     id: params.action.id,
     label: params.label?.trim() || params.action.label,
     actionKind,
+    resultType: actionKind,
     expectedResult: expectedResultFor(actionKind),
     bffRoute: actionKind === "safe_read" || actionKind === "draft_only"
       ? params.action.routeOrHandler
@@ -43,6 +45,35 @@ export function buildAiScreenMagicButton(params: {
     exactBlocker: actionKind === "exact_blocker"
       ? params.action.exactBlocker ?? resolution.userFacingReason
       : params.action.exactBlocker,
+    canExecuteDirectly: false,
+  };
+}
+
+export function buildAiScreenMagicIntentButton(params: {
+  screenId: string;
+  intent: AiScreenMagicButtonIntent;
+  template?: AiScreenMagicButton;
+  index: number;
+}): AiScreenMagicButton {
+  const actionKind = params.template?.actionKind === "exact_blocker"
+    ? "exact_blocker"
+    : params.intent.actionKind;
+  return {
+    id: `${params.screenId}.magic.intent.${actionKind}.${params.index + 1}`,
+    label: params.intent.label.trim(),
+    actionKind,
+    resultType: actionKind,
+    expectedResult: expectedResultFor(actionKind),
+    bffRoute: actionKind === "safe_read" || actionKind === "draft_only"
+      ? params.template?.bffRoute
+      : undefined,
+    approvalRoute: actionKind === "approval_required" ? params.template?.approvalRoute : undefined,
+    forbiddenReason: actionKind === "forbidden"
+      ? params.intent.userFacingReason ?? params.template?.forbiddenReason
+      : undefined,
+    exactBlocker: actionKind === "exact_blocker"
+      ? params.intent.exactBlocker ?? params.template?.exactBlocker
+      : params.intent.exactBlocker ?? params.template?.exactBlocker,
     canExecuteDirectly: false,
   };
 }
@@ -131,6 +162,7 @@ export function isAiScreenMagicClickPayload(value: string): boolean {
 export type AiScreenMagicButtonResultCopy = {
   button: AiScreenMagicButton;
   userLabel: string;
+  resultType: AiScreenMagicActionKind;
   answer: string;
   providerCallAllowed: false;
   dbWriteUsed: false;
@@ -164,13 +196,17 @@ export function buildAiScreenMagicButtonResultCopy(params: {
   return {
     button,
     userLabel: button.label,
+    resultType: button.resultType,
     answer: sanitizeAiScreenMagicUserCopy([
       `Готово от AI: ${button.label}.`,
+      `Result type: ${button.resultType}.`,
       params.pack.screenSummary,
+      params.pack.visibleDomainData.length > 0 ? `Данные экрана: ${params.pack.visibleDomainData.slice(0, 4).join("; ")}.` : null,
+      params.pack.riskSummary.length > 0 ? `Риски: ${params.pack.riskSummary.slice(0, 3).join("; ")}.` : null,
       focusLine,
       missingLine,
       statusLine,
-    ].join(" ")),
+    ].filter(Boolean).join(" ")),
     providerCallAllowed: false,
     dbWriteUsed: false,
     directMutationUsed: false,

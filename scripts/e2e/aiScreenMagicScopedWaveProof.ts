@@ -98,7 +98,7 @@ export function buildAiScreenMagicEnterpriseMatrix(
   const forbiddenShowsUserReason = allButtons
     .filter(({ button }) => button.actionKind === "forbidden")
     .every(({ button }) => Boolean(button.forbiddenReason));
-  const fakeDataUsed = /fake supplier|fake price|fake payment|fake document|fake stock|Supplier A|Supplier B/i.test(serializedPacks);
+  const fakeDataUsed = /fake supplier|fake price|fake payment|fake document|fake stock|\bSupplier A\b|\bSupplier B\b/i.test(serializedPacks);
   const dbWritesUsed = buttonResults.some((result) => result.dbWriteUsed !== false);
   const directDangerousMutations = buttonResults.some((result) => result.directMutationUsed !== false)
     || allButtons.some(({ button }) => button.canExecuteDirectly !== false);

@@ -19,5 +19,5 @@
   "flake_retry_count": 0,
   "fake_emulator_pass": false,
   "secrets_printed": false,
-  "exact_reason": null
+  "exact_reason": "Command timed out after 20000ms: adb -s emulator-5556 shell uiautomator dump /sdcard/rik_ai_role_screen_window.xml"
 }
