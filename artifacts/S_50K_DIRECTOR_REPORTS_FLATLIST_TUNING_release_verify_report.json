@@ -1,0 +1,174 @@
+{
+  "mode": "verify",
+  "timestamp": "2026-05-18T16:34:54.030Z",
+  "repo": {
+    "gitBranch": "main",
+    "headCommit": "e19d3d946d1b6b00d40db86b05ee0ce609f905ee",
+    "originMainCommit": "e19d3d946d1b6b00d40db86b05ee0ce609f905ee",
+    "worktreeClean": true,
+    "envFilePolicyValid": true,
+    "trackedEnvFiles": [
+      ".env.example"
+    ],
+    "unsafeTrackedEnvFiles": [],
+    "headMatchesOriginMain": true,
+    "localCommitsAheadOriginMain": 0,
+    "originMainCommitsAheadHead": 0,
+    "syncStatus": "synced",
+    "syncAction": "none",
+    "requiredSyncApprovalKeys": []
+  },
+  "gates": [
+    {
+      "name": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "expo-lint",
+      "command": "npx expo lint",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "architecture-anti-regression",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest-run-in-band",
+      "command": "npm test -- --runInBand",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "jest",
+      "command": "npm test",
+      "status": "passed",
+      "exitCode": 0
+    },
+    {
+      "name": "git-diff-check",
+      "command": "git diff --check",
+      "status": "passed",
+      "exitCode": 0
+    }
+  ],
+  "classification": {
+    "kind": "runtime-ota",
+    "changeClass": "js-ui",
+    "files": [
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_inventory.json",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_matrix.json",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_proof.md",
+      "scripts/perf/flatListTuningRegression.ts",
+      "src/screens/director/DirectorReportsModal.tsx",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/perf/directorReportsModalFlatListTuning.contract.test.ts"
+    ],
+    "nonRuntimeFiles": [
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_inventory.json",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_matrix.json",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_proof.md",
+      "scripts/perf/flatListTuningRegression.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/perf/directorReportsModalFlatListTuning.contract.test.ts"
+    ],
+    "runtimeFiles": [
+      "src/screens/director/DirectorReportsModal.tsx"
+    ],
+    "buildRequiredFiles": [],
+    "reasons": [
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_inventory.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_matrix.json is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_proof.md is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "scripts/perf/flatListTuningRegression.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "src/screens/director/DirectorReportsModal.tsx is runtime JS/TS code and requires full preflight before OTA.",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped.",
+      "tests/perf/directorReportsModalFlatListTuning.contract.test.ts is tooling/docs/test/backend-proof scope, so OTA should be skipped."
+    ],
+    "packageJsonMutationKind": "none"
+  },
+  "migrationPolicy": {
+    "migrationFiles": [],
+    "highRiskFiles": [],
+    "productionDbApprovalRequired": false,
+    "requiredApprovalKeys": [],
+    "missingApprovalKeys": [],
+    "approvalSatisfied": true,
+    "nextSafeWave": null,
+    "risks": [],
+    "blockers": []
+  },
+  "aiMandatoryEmulatorRuntimeGate": {
+    "required": true,
+    "artifactPath": "artifacts/S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE_matrix.json",
+    "finalStatus": "GREEN_AI_MANDATORY_EMULATOR_RUNTIME_GATE_READY",
+    "androidInstalledRuntimeSmoke": "PASS",
+    "fakeEmulatorPass": false,
+    "secretsPrinted": false,
+    "exactReason": null,
+    "blockers": [],
+    "hardeningArtifactPath": "artifacts/S_AI_QA_02_EMULATOR_GATE_HARDENING_matrix.json",
+    "hardeningFinalStatus": "GREEN_AI_EMULATOR_GATE_HARDENED",
+    "hardeningCoreReleaseArtifactOverwritten": false,
+    "hardeningAiGateArtifactIsolated": true
+  },
+  "runtimePolicy": {
+    "resolvedRuntimeVersion": "policy:fingerprint",
+    "runtimePolicy": "policy:fingerprint",
+    "runtimeVersionStrategy": "fingerprint",
+    "runtimePolicyValid": true,
+    "runtimePolicyReason": "runtimeVersion uses the fingerprint policy.",
+    "runtimeProofConsistent": true,
+    "runtimeProofReason": "release extra truth matches the configured runtime policy.",
+    "buildRequired": false
+  },
+  "startupPolicy": {
+    "updatesEnabled": true,
+    "checkAutomatically": "ON_LOAD",
+    "fallbackToCacheTimeout": 30000,
+    "startupPolicyValid": true,
+    "startupPolicyReason": "Release startup policy is ON_LOAD with fallbackToCacheTimeout=30000."
+  },
+  "readiness": {
+    "status": "pass",
+    "otaDisposition": "allow",
+    "blockers": []
+  },
+  "requiredArtifacts": [],
+  "missingArtifacts": [],
+  "targetChannel": null,
+  "expectedBranch": null,
+  "releaseMessage": null,
+  "rolloutPercentage": null,
+  "commitRange": "HEAD^..HEAD",
+  "otaPublish": null,
+  "releaseMetadata": {
+    "gitSha": "present",
+    "appVersion": "present",
+    "buildLineage": "present",
+    "runtimeVersion": "present",
+    "channel": "missing",
+    "branch": "missing",
+    "platform": "not_applicable",
+    "otaDisposition": "candidate",
+    "rollbackReady": true,
+    "sentrySourceMaps": "not_applicable",
+    "binarySourceMapsProven": "not_applicable",
+    "easBuildTriggered": false,
+    "easSubmitTriggered": false,
+    "otaPublished": false,
+    "easUpdateTriggered": false,
+    "missing": [
+      "channel",
+      "branch"
+    ],
+    "warnings": []
+  }
+}

@@ -57,3 +57,17 @@ From `npx tsx scripts/architecture_anti_regression_suite.ts --json`:
 ## Release Rule
 
 This wave changes app/runtime source. After commit, `npm run release:verify -- --json` must be rerun. If it reports a real iOS stale build/signoff/submit blocker, the active path is EAS cloud iOS build, App Store Connect/TestFlight submit, physical iPhone signoff, QA03/QA04 artifacts, then release verify rerun. Android or Web proof must not be used as iOS proof.
+
+## Release Verify
+
+- Runtime code commit: `e19d3d946d1b6b00d40db86b05ee0ce609f905ee`
+- Command: `npm run release:verify -- --json --report-file artifacts\S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_release_verify_report.json`
+- Result: PASS
+- Report path: `artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_release_verify_report.json`
+- `readiness.status`: `pass`
+- `readiness.blockers`: `[]`
+- `runtimePolicy.buildRequired`: false
+- `requiredArtifacts`: `[]`
+- `missingArtifacts`: `[]`
+- iOS stale build/signoff/submit blocker emitted: false
+- EAS/TestFlight build required by release guard: false
