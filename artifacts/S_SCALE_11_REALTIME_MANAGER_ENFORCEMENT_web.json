@@ -1,0 +1,14 @@
+{
+  "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
+  "checkedAt": "2026-05-18T18:24:47.946Z",
+  "status": "PASS",
+  "framework": "web",
+  "managerVerifierPassed": true,
+  "longSessionVerifierPassed": true,
+  "webRuntimeChecked": true,
+  "noDbWrites": true,
+  "noProviderCall": true,
+  "noSecretsPrinted": true,
+  "fakeGreenClaimed": false,
+  "errors": []
+}

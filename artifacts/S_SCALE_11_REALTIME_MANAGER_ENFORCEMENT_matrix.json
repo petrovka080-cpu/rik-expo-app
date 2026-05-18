@@ -1,0 +1,20 @@
+{
+  "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
+  "final_status": "GREEN_SCALE_REALTIME_MANAGER_ENFORCEMENT_READY",
+  "direct_realtime_channels_remaining": 0,
+  "unmanaged_subscriptions_remaining": 0,
+  "all_subscriptions_have_owner": true,
+  "unsubscribe_all_by_owner_supported": true,
+  "double_cleanup_safe": true,
+  "auth_logout_cleanup_safe": true,
+  "reconnect_no_duplicate_channels": true,
+  "active_channels_return_to_baseline": true,
+  "web_runtime_checked": true,
+  "android_runtime_checked": true,
+  "ios_testflight_delivery_checked": true,
+  "realtime_disabled_to_pass": false,
+  "raw_channel_payloads_printed": false,
+  "secrets_printed": false,
+  "new_hooks_added": false,
+  "fake_green_claimed": false
+}

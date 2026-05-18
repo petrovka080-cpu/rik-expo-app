@@ -1,0 +1,19 @@
+{
+  "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
+  "final_status": "GREEN_SCALE_LONG_SESSION_REALTIME_SAFETY_READY",
+  "generatedAt": "2026-05-18T18:24:47.959Z",
+  "manager_enforcement_status": "GREEN_SCALE_REALTIME_MANAGER_ENFORCEMENT_READY",
+  "duplicate_subscribe_ref_counted": true,
+  "double_cleanup_safe": true,
+  "auth_logout_cleanup_safe": true,
+  "reconnect_no_duplicate_channels": true,
+  "active_channels_return_to_baseline": true,
+  "unsubscribe_calls": 1,
+  "remove_channel_calls": 1,
+  "channels_created": 1,
+  "no_raw_payloads_printed": true,
+  "no_secrets_printed": true,
+  "realtime_disabled_to_pass": false,
+  "fake_green_claimed": false,
+  "errors": []
+}

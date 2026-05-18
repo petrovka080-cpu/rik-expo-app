@@ -1,0 +1,16 @@
+{
+  "wave": "S_SCALE_11_REALTIME_MANAGER_ENFORCEMENT_CLOSEOUT",
+  "checkedAt": "2026-05-18T18:24:54.154Z",
+  "status": "PASS",
+  "framework": "maestro",
+  "device": "android",
+  "managerVerifierPassed": true,
+  "longSessionVerifierPassed": true,
+  "androidRuntimeSmoke": "PASS",
+  "androidRuntimeFinalStatus": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "noDbWrites": true,
+  "noProviderCall": true,
+  "noSecretsPrinted": true,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}
