@@ -1,0 +1,14 @@
+{
+  "wave": "S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT",
+  "checkedAt": "2026-05-18T20:10:29.357Z",
+  "status": "PASS",
+  "framework": "web",
+  "verifierPassed": true,
+  "runtimeEnforcementEnabled": true,
+  "directRpcBypassRemaining": 0,
+  "webRuntimeChecked": true,
+  "noDbWrites": true,
+  "noProviderCall": true,
+  "fakeGreenClaimed": false,
+  "errors": []
+}

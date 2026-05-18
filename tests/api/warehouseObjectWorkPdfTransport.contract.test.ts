@@ -24,7 +24,7 @@ describe("warehouse object-work PDF transport boundary", () => {
     expect(serviceSource).toContain('payloadShapeVersion: "v1"');
 
     expect(transportSource).toContain('PublicFunctionArgs<"pdf_warehouse_object_work_source_v1">');
-    expect(transportSource).toContain('supabase.rpc(');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
     expect(transportSource).toContain('"pdf_warehouse_object_work_source_v1"');
     expect(transportSource).not.toContain("validateWarehouseObjectWorkPdfSourceV1");
     expect(transportSource).not.toContain("WarehouseObjectWorkPdfSourceRpcError");

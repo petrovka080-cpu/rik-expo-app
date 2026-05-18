@@ -51,7 +51,9 @@ describe("warehouse seed runtime transport boundary", () => {
     expect(transport).toContain('return supabase.from("wh_incoming_items").upsert(rows, {');
     expect(transport).toContain('onConflict: "incoming_id,purchase_item_id"');
     expect(transport).toContain("ignoreDuplicates: false");
-    expect(transport).toContain("return supabase.rpc(fn, { p_incoming_id: incomingId });");
+    expect(transport).toContain("return callRateLimitedSupabaseRpc");
+    expect(transport).toContain("fn, {");
+    expect(transport).toContain("p_incoming_id: incomingId");
     expect(transport).toContain("createGuardedPagedQuery");
     expect(transport).toContain("isWarehouseSeedPurchaseItemRow");
     expect(transport).toContain("isWarehouseSeedProposalSnapshotRow");
@@ -117,8 +119,11 @@ describe("warehouse seed runtime transport boundary", () => {
           operation: "write",
           callTarget: "table:wh_incoming_items",
         }),
+      ]),
+    );
+    expect(transportFindings).not.toEqual(
+      expect.arrayContaining([
         expect.objectContaining({
-          classification: "transport_controlled",
           operation: "rpc",
           callTarget: "rpc:dynamic",
         }),

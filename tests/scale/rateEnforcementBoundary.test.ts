@@ -1371,6 +1371,9 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
       "src/features",
       "src/lib/api",
     ];
+    const runtimeRateLimitBoundaryFiles = new Set([
+      "src/lib/api/rpcRateLimitPolicy.ts",
+    ]);
     const activeImports: string[] = [];
 
     const walk = (relativeDir: string) => {
@@ -1391,10 +1394,11 @@ describe("S-50K-RATE-ENFORCEMENT-1 disabled rate enforcement boundary", () => {
         }
         const source = readProjectFile(relativePath);
         if (
-          source.includes("shared/scale/rateLimitAdapters") ||
-          source.includes("shared/scale/rateLimitPolicies") ||
-          source.includes("shared/scale/rateLimitKeySafety") ||
-          source.includes("shared/scale/abuseEnforcementBoundary")
+          !runtimeRateLimitBoundaryFiles.has(relativePath.replace(/\\/g, "/")) &&
+          (source.includes("shared/scale/rateLimitAdapters") ||
+            source.includes("shared/scale/rateLimitPolicies") ||
+            source.includes("shared/scale/rateLimitKeySafety") ||
+            source.includes("shared/scale/abuseEnforcementBoundary"))
         ) {
           activeImports.push(relativePath.replace(/\\/g, "/"));
         }

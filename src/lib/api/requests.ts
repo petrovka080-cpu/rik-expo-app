@@ -35,6 +35,7 @@ import {
   validateRpcResponse,
 } from "./queryBoundary";
 import type { ReqItemRow, RequestMeta, RequestRecord } from "./types";
+import { callRateLimitedSupabaseRpc } from "./supabaseRpcAdapter";
 
 const logRequestsDebug = (...args: unknown[]) => {
   if ((globalThis as typeof globalThis & { __DEV__?: boolean }).__DEV__ === true) {
@@ -904,13 +905,11 @@ export async function requestReopen(requestId: number | string): Promise<Request
   const preconditions = await resolveRequestSubmitPreconditions(requestId);
 
   try {
-    const rawClient = client as unknown as {
-      rpc: (
-        fn: "request_reopen_atomic_v1",
-        args: { p_request_id_text: string },
-      ) => Promise<{ data: unknown; error: { message?: string } | null }>;
-    };
-    const { data, error } = await rawClient.rpc(
+    const { data, error } = await callRateLimitedSupabaseRpc<{
+      data: unknown;
+      error: { message?: string } | null;
+    }>(
+      client,
       "request_reopen_atomic_v1",
       buildRequestReopenAtomicArgs(preconditions.request_id),
     );

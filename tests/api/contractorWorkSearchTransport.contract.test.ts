@@ -22,7 +22,8 @@ describe("contractor work search transport boundary", () => {
     expect(controllerSource).toContain("[material_search/catalog_search] exception:");
 
     expect(transportSource).toContain('PublicFunctionArgs<"catalog_search">');
-    expect(transportSource).toContain('supabaseClient.rpc("catalog_search"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"catalog_search"');
     expect(transportSource).not.toContain("mapCatalogSearchToWorkMaterials");
     expect(transportSource).not.toContain("Array.isArray(data)");
     expect(transportSource).not.toContain("console.warn");

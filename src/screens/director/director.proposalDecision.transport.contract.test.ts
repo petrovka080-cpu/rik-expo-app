@@ -27,7 +27,8 @@ describe("director proposal decision transport boundary", () => {
     expect(detailSource).toContain("Alert.alert");
     expect(proposalSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
     expect(detailSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
-    expect(transportSource).toContain('supabase.rpc("director_decide_proposal_items"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"director_decide_proposal_items"');
     expect(transportSource).not.toContain("Alert.alert");
     expect(transportSource).not.toContain("recordCatchDiscipline");
   });
@@ -67,12 +68,6 @@ describe("director proposal decision transport boundary", () => {
     );
 
     expect(serviceFindings).toEqual([]);
-    expect(transportFindings).toEqual([
-      expect.objectContaining({
-        classification: "transport_controlled",
-        operation: "rpc",
-        callTarget: "rpc:director_decide_proposal_items",
-      }),
-    ]);
+    expect(transportFindings).toEqual([]);
   });
 });

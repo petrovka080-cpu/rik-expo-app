@@ -18,7 +18,8 @@ describe("S_AUDIT_BATTLE_107_INTEGRITY_GUARDS_TRANSPORT_BOUNDARY", () => {
     expect(service).not.toContain('supabaseClient.rpc("proposal_request_item_integrity_v1"');
 
     expect(transport).toContain('from "@supabase/supabase-js"');
-    expect(transport).toContain('supabaseClient.rpc("proposal_request_item_integrity_v1"');
+    expect(transport).toContain("callRateLimitedSupabaseRpc");
+    expect(transport).toContain('"proposal_request_item_integrity_v1"');
     expect(transport).toContain("p_proposal_id: proposalId");
   });
 });

@@ -22,7 +22,8 @@ describe("warehouse incoming form PDF transport boundary", () => {
     expect(serviceSource).toContain('payloadShapeVersion: "v1"');
 
     expect(transportSource).toContain('PublicFunctionArgs<"pdf_warehouse_incoming_source_v1">');
-    expect(transportSource).toContain('supabase.rpc("pdf_warehouse_incoming_source_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"pdf_warehouse_incoming_source_v1"');
     expect(transportSource).not.toContain("validateWarehouseIncomingFormPdfSourceV1");
     expect(transportSource).not.toContain("WarehouseIncomingPdfSourceRpcError");
     expect(transportSource).not.toContain("shouldDisableWarehouseIncomingPdfRpcForSession");

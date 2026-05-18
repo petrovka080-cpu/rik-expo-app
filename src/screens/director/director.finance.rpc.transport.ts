@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabaseClient";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 import type {
   DirectorFinanceFetchSummaryV1Args,
   DirectorFinancePanelScopeV1Args,
@@ -31,4 +32,4 @@ export type DirectorFinanceRpcResult = {
 export const callDirectorFinanceSupabaseRpc = async (
   rpcName: DirectorFinanceRpcName,
   args: DirectorFinanceRpcArgs,
-): Promise<DirectorFinanceRpcResult> => supabase.rpc(rpcName, args);
+): Promise<DirectorFinanceRpcResult> => callRateLimitedSupabaseRpc(supabase, rpcName, args);

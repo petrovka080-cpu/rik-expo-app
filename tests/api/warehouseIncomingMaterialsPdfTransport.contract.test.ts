@@ -23,7 +23,8 @@ describe("warehouse incoming materials PDF transport boundary", () => {
     expect(serviceSource).toContain('payloadShapeVersion: "v1"');
 
     expect(transportSource).toContain('PublicFunctionArgs<"pdf_warehouse_incoming_materials_source_v1">');
-    expect(transportSource).toContain('supabase.rpc("pdf_warehouse_incoming_materials_source_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"pdf_warehouse_incoming_materials_source_v1"');
     expect(transportSource).not.toContain("validateWarehouseIncomingMaterialsPdfSourceV1");
     expect(transportSource).not.toContain("WarehouseIncomingMaterialsPdfSourceRpcError");
     expect(transportSource).not.toContain("shouldDisableWarehouseIncomingMaterialsPdfRpcForSession");

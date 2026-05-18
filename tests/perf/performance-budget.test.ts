@@ -689,6 +689,11 @@ describe("performance budget — bundle module count", () => {
     const sPerf01FlatListEnterprisePolicyFiles = [
       path.join(SRC, "lib", "performance", "listPerformancePolicy.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sScale12RpcRuntimeEnforcementFiles = [
+      path.join(SRC, "lib", "api", "rpcRateLimitPolicy.ts"),
+      path.join(SRC, "lib", "api", "rpcRateLimitedClient.ts"),
+      path.join(SRC, "lib", "api", "supabaseRpcAdapter.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1497,6 +1502,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(9);
     expect(s50kWarehouseReqIssueModalMarginFiles).toBeLessThanOrEqual(1);
     expect(sPerf01FlatListEnterprisePolicyFiles).toBeLessThanOrEqual(1);
+    expect(sScale12RpcRuntimeEnforcementFiles).toBeLessThanOrEqual(3);
     expect(
       tsFiles -
         p3ATypeBoundaryFiles -
@@ -1707,7 +1713,8 @@ describe("performance budget — bundle module count", () => {
         sAiProduct09ScreenMagicFiles -
         sComponentDebtCloseoutFiles -
         s50kWarehouseReqIssueModalMarginFiles -
-        sPerf01FlatListEnterprisePolicyFiles,
+        sPerf01FlatListEnterprisePolicyFiles -
+        sScale12RpcRuntimeEnforcementFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

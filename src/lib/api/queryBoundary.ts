@@ -1,5 +1,6 @@
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { normalizeAppError, type AppError } from "../errors/appError";
+import { callRateLimitedSupabaseRpc } from "./supabaseRpcAdapter";
 
 type RpcTransport = {
   rpc: (
@@ -324,8 +325,18 @@ export async function runContainedRpc<TData>(
   }
 
   try {
-    const result =
-      args == null ? await transport.rpc(fn) : await transport.rpc(fn, args);
+    const result = await callRateLimitedSupabaseRpc(
+      transport,
+      fn,
+      args,
+      {
+        context: {
+          owner: context?.owner ?? "contained_rpc",
+          caller: context?.surface,
+          source: "contained_rpc",
+        },
+      },
+    );
     return {
       data: (result.data ?? null) as TData | null,
       error: asRpcErrorLike(result.error),

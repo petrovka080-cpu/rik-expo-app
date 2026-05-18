@@ -15,6 +15,7 @@ import {
   isRpcVoidResponse,
   validateRpcResponse,
 } from "../api/queryBoundary";
+import { callRateLimitedSupabaseRpc } from "../api/supabaseRpcAdapter";
 import { jobQueueSupabaseClient } from "./jobQueue.transport";
 
 export type SubmitJobStatus = "pending" | "processing" | "completed" | "failed";
@@ -429,7 +430,11 @@ async function claimSubmitJobsWithClient(
 ): Promise<SubmitJobRow[]> {
   const normalizedLimit = resolveSubmitJobClaimLimit(limit, WORKER_BATCH_SIZE);
   const queueRpcCompat = toQueueRpcCompat(queueClient);
-  const primary = await queueClient.rpc(
+  const primary = await callRateLimitedSupabaseRpc<{
+    data: SubmitJobsClaimRpcRow[] | null;
+    error: QueueRpcError | null;
+  }>(
+    queueClient,
     "submit_jobs_claim",
     buildSubmitJobsClaimArgs(workerId, normalizedLimit),
   );
@@ -452,7 +457,11 @@ async function claimSubmitJobsWithClient(
     (primaryMsg.includes("p_worker") || primaryMsg.includes("schema cache"));
 
   if (tryLegacyCompat) {
-    const legacy = await queueRpcCompat.rpc(
+    const legacy = await callRateLimitedSupabaseRpc<{
+      data: SubmitJobsClaimRpcRow[] | null;
+      error: QueueRpcError | null;
+    }>(
+      queueRpcCompat,
       "submit_jobs_claim",
       buildSubmitJobsClaimLegacyArgs(workerId, normalizedLimit, jobType),
     );
@@ -486,7 +495,10 @@ async function claimSubmitJobsWithClient(
 async function recoverStuckSubmitJobsWithClient(
   queueClient: JobQueueSupabaseClient,
 ): Promise<number> {
-  const { data, error } = await queueClient.rpc("submit_jobs_recover_stuck");
+  const { data, error } = await callRateLimitedSupabaseRpc<{
+    data: number | null;
+    error: QueueRpcError | null;
+  }>(queueClient, "submit_jobs_recover_stuck");
   if (error) throw queueInfraError("recoverStuckSubmitJobs", error);
   return getNumberOrDefault(validateRpcResponse(data, isSubmitJobsRecoverStuckRpcResponse, {
     rpcName: "submit_jobs_recover_stuck",
@@ -500,7 +512,10 @@ async function markSubmitJobCompletedWithClient(
   jobId: string,
 ): Promise<void> {
   const queueRpcCompat = toQueueRpcCompat(queueClient);
-  const first = await queueClient.rpc("submit_jobs_mark_completed", {
+  const first = await callRateLimitedSupabaseRpc<{
+    data: null;
+    error: QueueRpcError | null;
+  }>(queueClient, "submit_jobs_mark_completed", {
     p_id: jobId,
   });
   if (!first.error) {
@@ -518,7 +533,10 @@ async function markSubmitJobCompletedWithClient(
     throw queueInfraError("markSubmitJobCompleted.rpc", first.error);
   }
 
-  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_completed", {
+  const legacy = await callRateLimitedSupabaseRpc<{
+    data: null;
+    error: QueueRpcError | null;
+  }>(queueRpcCompat, "submit_jobs_mark_completed", {
     p_job_id: jobId,
   });
   if (!legacy.error) {
@@ -549,7 +567,10 @@ async function markSubmitJobFailedWithClient(
   message: string,
 ): Promise<{ retryCount: number; status: string }> {
   const queueRpcCompat = toQueueRpcCompat(queueClient);
-  const first = await queueClient.rpc("submit_jobs_mark_failed", {
+  const first = await callRateLimitedSupabaseRpc<{
+    data: SubmitJobsMarkFailedRpcRow[] | SubmitJobsMarkFailedRpcRow | null;
+    error: QueueRpcError | null;
+  }>(queueClient, "submit_jobs_mark_failed", {
     p_id: jobId,
     p_error: message,
   });
@@ -568,7 +589,10 @@ async function markSubmitJobFailedWithClient(
     throw queueInfraError("markSubmitJobFailed.rpc", first.error);
   }
 
-  const legacy = await queueRpcCompat.rpc("submit_jobs_mark_failed", {
+  const legacy = await callRateLimitedSupabaseRpc<{
+    data: SubmitJobsMarkFailedRpcRow[] | SubmitJobsMarkFailedRpcRow | null;
+    error: QueueRpcError | null;
+  }>(queueRpcCompat, "submit_jobs_mark_failed", {
     p_job_id: jobId,
     p_error: message,
   });
@@ -597,7 +621,10 @@ async function markSubmitJobFailedWithClient(
 async function fetchSubmitJobMetricsWithClient(
   queueClient: JobQueueSupabaseClient,
 ): Promise<SubmitJobMetrics> {
-  const { data, error } = await queueClient.rpc("submit_jobs_metrics");
+  const { data, error } = await callRateLimitedSupabaseRpc<{
+    data: SubmitJobsMetricsRpcRow[] | SubmitJobsMetricsRpcRow | null;
+    error: QueueRpcError | null;
+  }>(queueClient, "submit_jobs_metrics");
   if (error) throw error;
   return parseSubmitJobMetricsRow(validateRpcResponse(data, isSubmitJobsMetricsRpcResponse, {
     rpcName: "submit_jobs_metrics",

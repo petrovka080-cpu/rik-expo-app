@@ -40,8 +40,11 @@ describe("warehouse receive apply transport boundary", () => {
     expect(rpc).toHaveBeenCalledWith("wh_receive_apply_ui", payload);
   });
 
-  it("moves the scanner-owned RPC finding from service bypass to transport-controlled", () => {
+  it("keeps receive apply RPC behind the rate-limited adapter boundary", () => {
     const findings = scanDirectSupabaseBypasses(root);
+    const transportSource = read(
+      "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts",
+    );
     const serviceFindings = findings.filter(
       (finding) => finding.file === "src/screens/warehouse/hooks/useWarehouseReceiveApply.ts",
     );
@@ -50,12 +53,8 @@ describe("warehouse receive apply transport boundary", () => {
     );
 
     expect(serviceFindings).toEqual([]);
-    expect(transportFindings).toEqual([
-      expect.objectContaining({
-        classification: "transport_controlled",
-        operation: "rpc",
-        callTarget: "rpc:wh_receive_apply_ui",
-      }),
-    ]);
+    expect(transportFindings).toEqual([]);
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"wh_receive_apply_ui"');
   });
 });

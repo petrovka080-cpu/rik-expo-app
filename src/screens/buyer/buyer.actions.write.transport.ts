@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type BuyerRfqPublishPayload = {
   p_request_item_ids: string[];
@@ -29,7 +30,7 @@ export async function setRequestItemsDirectorStatusRpc(params: {
   supabase: SupabaseClient;
   affectedIds: string[];
 }) {
-  return await params.supabase.rpc("request_items_set_status", {
+  return await callRateLimitedSupabaseRpc(params.supabase, "request_items_set_status", {
     p_request_item_ids: params.affectedIds,
     p_status: "У директора",
   });
@@ -49,7 +50,8 @@ export async function publishBuyerRfqRpc(params: {
   supabase: SupabaseClient;
   payload: BuyerRfqPublishPayload;
 }) {
-  return await params.supabase.rpc(
+  return await callRateLimitedSupabaseRpc(
+    params.supabase,
     "buyer_rfq_create_and_publish_v1",
     params.payload,
   );
@@ -59,7 +61,8 @@ export async function sendProposalToAccountingMinRpc(params: {
   supabase: SupabaseClient;
   payload: BuyerProposalAccountingPayload;
 }) {
-  return await params.supabase.rpc(
+  return await callRateLimitedSupabaseRpc(
+    params.supabase,
     "proposal_send_to_accountant_min",
     params.payload,
   );

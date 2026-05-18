@@ -20,12 +20,12 @@ Realtime capacity changed: NO
 
 ## Scanner Baseline
 
-- Total direct Supabase findings: 215
-- Transport-controlled findings: 168
-- Transport-owned files with provider findings: 87
+- Total direct Supabase findings: 172
+- Transport-controlled findings: 129
+- Transport-owned files with provider findings: 68
 - Service bypass findings: 0
 - Service bypass files: 0
-- Test-only findings: 47
+- Test-only findings: 43
 - Generated or ignored findings: 0
 
 ## Provider Surface Summary
@@ -33,7 +33,7 @@ Realtime capacity changed: NO
 - auth: 49 findings across 32 files
 - read: 14 findings across 9 files
 - realtime: 7 findings across 2 files
-- rpc: 71 findings across 42 files
+- rpc: 32 findings across 20 files
 - storage: 11 findings across 5 files
 - write: 16 findings across 12 files
 
@@ -68,7 +68,6 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/features/market/market.repository.transport.ts` - rpc, write
 - `src/features/profile/currentProfileIdentity.auth.transport.ts` - auth
 - `src/features/supplierShowcase/supplierShowcase.auth.transport.ts` - auth
-- `src/features/supplierShowcase/supplierShowcase.transport.ts` - read
 - `src/lib/ai_reports.transport.ts` - write
 - `src/lib/api/_core.transport.ts` - rpc
 - `src/lib/api/canonicalPdfAuth.transport.ts` - auth
@@ -76,7 +75,6 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/lib/api/directorPdfSource.transport.ts` - rpc
 - `src/lib/api/directorReportsTransport.transport.ts` - rpc
 - `src/lib/api/foremanAiResolve.transport.ts` - rpc
-- `src/lib/api/integrity.guards.transport.ts` - rpc
 - `src/lib/api/paymentPdf.transport.ts` - rpc
 - `src/lib/api/profile.transport.ts` - rpc
 - `src/lib/api/proposals.transport.ts` - rpc
@@ -99,7 +97,6 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/lib/chat.auth.transport.ts` - auth
 - `src/lib/documents/attachmentOpener.storage.transport.ts` - storage
 - `src/lib/files.storage.transport.ts` - storage, write
-- `src/lib/infra/queueLatencyMetrics.transport.ts` - rpc
 - `src/lib/pdfRunner.auth.transport.ts` - auth
 - `src/lib/store_supabase.write.transport.ts` - rpc, write
 - `src/lib/supabaseClient.ts` - auth, root client initializer
@@ -110,7 +107,6 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/screens/accountant/useAccountantCardFlow.auth.transport.ts` - auth
 - `src/screens/buyer/BuyerSubcontractTab.auth.transport.ts` - auth
 - `src/screens/buyer/buyer.actions.auth.transport.ts` - auth
-- `src/screens/buyer/buyer.actions.write.transport.ts` - rpc
 - `src/screens/buyer/buyer.repo.storage.transport.ts` - storage
 - `src/screens/buyer/buyer.summary.auth.transport.ts` - auth
 - `src/screens/buyer/hooks/useBuyerAccountingFlags.transport.ts` - write
@@ -120,19 +116,11 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/screens/contractor/contractor.profileService.auth.transport.ts` - auth
 - `src/screens/contractor/contractor.screenData.auth.transport.ts` - auth
 - `src/screens/contractor/contractor.workModalService.transport.ts` - read, rpc
-- `src/screens/contractor/contractor.workSearch.transport.ts` - rpc
-- `src/screens/contractor/contractorPdfSource.transport.ts` - rpc
-- `src/screens/director/director.approve.transport.ts` - rpc
 - `src/screens/director/director.data.transport.ts` - read
 - `src/screens/director/director.finance.bff.client.ts` - auth
-- `src/screens/director/director.finance.rpc.transport.ts` - rpc
 - `src/screens/director/director.lifecycle.auth.transport.ts` - auth
 - `src/screens/director/director.lifecycle.realtime.transport.ts` - realtime
 - `src/screens/director/director.metrics.transport.ts` - read
-- `src/screens/director/director.proposalDecision.transport.ts` - rpc
-- `src/screens/director/director.proposals.transport.ts` - rpc
-- `src/screens/director/director.repository.transport.ts` - rpc
-- `src/screens/director/director.request.transport.ts` - rpc
 - `src/screens/foreman/foreman.auth.transport.ts` - auth
 - `src/screens/foreman/foreman.requests.transport.ts` - read, write
 - `src/screens/office/officeAccess.transport.ts` - write
@@ -140,15 +128,8 @@ Realtime auth, channel creation, and channel cleanup are transport-owned. This m
 - `src/screens/profile/profile.storage.transport.ts` - storage
 - `src/screens/security/SecurityScreen.auth.transport.ts` - auth
 - `src/screens/subcontracts/subcontracts.shared.transport.ts` - rpc
-- `src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts` - rpc
 - `src/screens/warehouse/warehouse.api.bff.client.ts` - auth
-- `src/screens/warehouse/warehouse.api.repo.transport.ts` - rpc
-- `src/screens/warehouse/warehouse.dayMaterialsReport.pdf.transport.ts` - rpc
-- `src/screens/warehouse/warehouse.incomingForm.pdf.transport.ts` - rpc
-- `src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.transport.ts` - rpc
-- `src/screens/warehouse/warehouse.issue.transport.ts` - rpc
 - `src/screens/warehouse/warehouse.nameMap.ui.transport.ts` - read, rpc
-- `src/screens/warehouse/warehouse.objectWorkReport.pdf.transport.ts` - rpc
 - `src/screens/warehouse/warehouse.seed.transport.ts` - rpc, write
 
 ## Production Safety Notes

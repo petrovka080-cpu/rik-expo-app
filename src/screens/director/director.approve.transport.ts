@@ -1,4 +1,5 @@
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type DirectorApprovePipelineRpcArgs = {
   p_proposal_id: string;
@@ -11,5 +12,5 @@ export function callDirectorApprovePipelineRpc(
   supabase: AppSupabaseClient,
   args: DirectorApprovePipelineRpcArgs,
 ) {
-  return supabase.rpc("director_approve_pipeline_v1", args);
+  return callRateLimitedSupabaseRpc(supabase, "director_approve_pipeline_v1", args);
 }

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { callRateLimitedSupabaseRpc } from "../../../lib/api/supabaseRpcAdapter";
 
 export type WarehouseReceiveApplyItem = {
   purchase_item_id: string;
@@ -12,10 +13,18 @@ export type WarehouseReceiveApplyRpcPayload = {
   p_warehouseman_fio: string;
   p_note: string | null;
 };
+type WarehouseReceiveApplyRpcResult = {
+  data: unknown;
+  error: { message?: string | null } | null;
+};
 
 export function callWarehouseReceiveApplyRpc(
   supabase: SupabaseClient,
   payload: WarehouseReceiveApplyRpcPayload,
 ) {
-  return supabase.rpc("wh_receive_apply_ui", payload);
+  return callRateLimitedSupabaseRpc<WarehouseReceiveApplyRpcResult>(
+    supabase,
+    "wh_receive_apply_ui",
+    payload,
+  );
 }

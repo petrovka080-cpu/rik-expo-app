@@ -18,6 +18,11 @@ import {
   fetchWithRequestTimeout,
 } from "./requestTimeoutPolicy";
 import { logger } from "./logger";
+import {
+  createRpcRateLimitedSupabaseClient,
+  type RateLimitedRpcClient,
+} from "./api/supabaseRpcAdapter";
+import type { RpcCallableClient } from "./api/rpcRateLimitedClient";
 
 type RuntimeProcessLike = {
   env?: Record<string, string | undefined>;
@@ -719,7 +724,7 @@ export async function getSessionSafe(
 
   return startAuthSessionRead(extra);
 }
-export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
+const rawSupabaseClient: SupabaseClient<Database> = isSupabaseEnvValid
   ? createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
       persistSession: true,
@@ -734,6 +739,15 @@ export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
     },
   })
   : createMissingSupabaseClient();
+
+export const supabase: SupabaseClient<Database> = isSupabaseEnvValid
+  ? (createRpcRateLimitedSupabaseClient(rawSupabaseClient as unknown as RpcCallableClient, {
+      context: {
+        owner: "supabase_client",
+        source: "supabase_client_proxy",
+      },
+    }) as RateLimitedRpcClient<RpcCallableClient> as unknown as SupabaseClient<Database>)
+  : rawSupabaseClient;
 
 export async function ensureSignedIn(): Promise<boolean> {
   if (!supabase) return false;

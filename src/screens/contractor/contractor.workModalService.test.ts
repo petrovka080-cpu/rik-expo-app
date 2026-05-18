@@ -343,7 +343,8 @@ describe("contractor.workModalService", () => {
     expect(serviceSource).toContain("seedContractorWorkDefaultsAuto(");
     expect(serviceSource).not.toContain('supabaseClient.rpc("work_seed_defaults_auto"');
     expect(transportSource).toContain("seedContractorWorkDefaultsAuto");
-    expect(transportSource).toContain('supabaseClient.rpc("work_seed_defaults_auto"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"work_seed_defaults_auto"');
   });
 
   it("keeps empty state honest when there are no approved request ids in scope", async () => {

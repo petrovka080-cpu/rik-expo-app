@@ -68,7 +68,8 @@ describe("queue latency metrics transport source contract", () => {
     expect(serviceSource).toContain("fetchSubmitJobsMetricsRowsWithClient(supabaseClient)");
     expect(serviceSource).not.toContain(".rpc(");
     expect(serviceSource).not.toContain("../supabaseClient");
-    expect(transportSource).toContain('.rpc("submit_jobs_metrics")');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"submit_jobs_metrics"');
     expect(transportSource).not.toContain(".from(");
     expect(transportSource).not.toContain(".insert(");
     expect(transportSource).not.toContain(".update(");

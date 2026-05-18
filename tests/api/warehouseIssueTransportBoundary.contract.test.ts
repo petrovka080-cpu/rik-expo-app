@@ -16,7 +16,8 @@ describe("S_AUDIT_BATTLE_97_WAREHOUSE_ISSUE_TRANSPORT_BOUNDARY", () => {
     expect(repo).toContain("issueWarehouseRequestAtomicTransport");
     expect(repo).not.toContain(".rpc(");
 
-    expect(transport).toContain("supabase.rpc(\"wh_issue_free_atomic_v5\"");
-    expect(transport).toContain("supabase.rpc(\"wh_issue_request_atomic_v1\"");
+    expect(transport).toContain("callRateLimitedSupabaseRpc");
+    expect(transport).toContain("\"wh_issue_free_atomic_v5\"");
+    expect(transport).toContain("\"wh_issue_request_atomic_v1\"");
   });
 });

@@ -1,0 +1,18 @@
+{
+  "wave": "S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT",
+  "final_status": "GREEN_SCALE_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_READY",
+  "direct_rpc_bypass_remaining": 0,
+  "list_like_rpc_runtime_limited": true,
+  "dynamic_rpc_boundaries_classified": true,
+  "mutation_rpc_approval_safe": true,
+  "admin_green_path_found": false,
+  "service_role_green_path_found": false,
+  "runtime_enforcement_enabled": true,
+  "business_flows_still_pass": true,
+  "web_runtime_checked": true,
+  "android_runtime_checked": true,
+  "ios_testflight_delivery_checked": true,
+  "db_writes_added": false,
+  "migrations_used": false,
+  "fake_green_claimed": false
+}

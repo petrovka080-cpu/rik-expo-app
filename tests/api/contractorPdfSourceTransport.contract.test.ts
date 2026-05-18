@@ -23,7 +23,8 @@ describe("contractor PDF source transport boundary", () => {
     expect(serviceSource).toContain("p_log_id: logId ?? null");
 
     expect(transportSource).toContain('PublicFunctionArgs<"pdf_contractor_work_source_v1">');
-    expect(transportSource).toContain('supabase.rpc("pdf_contractor_work_source_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"pdf_contractor_work_source_v1"');
     expect(transportSource).not.toContain("ContractorWorkPdfSourceError");
     expect(transportSource).not.toContain("returned invalid envelope");
     expect(transportSource).not.toContain("returned invalid mode");

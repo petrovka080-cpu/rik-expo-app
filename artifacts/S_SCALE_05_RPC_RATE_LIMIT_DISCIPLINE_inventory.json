@@ -1,7 +1,7 @@
 {
   "wave": "S_SCALE_05_RPC_RATE_LIMIT_DISCIPLINE_CLOSEOUT",
   "final_status": "GREEN_SCALE_RPC_RATE_LIMIT_DISCIPLINE_READY",
-  "generatedAt": "2026-05-16T20:04:52.670Z",
+  "generatedAt": "2026-05-18T20:10:14.539Z",
   "directRpcInventory": [
     {
       "file": "src/components/foreman/calcModal.rpc.transport.ts",
@@ -28,26 +28,6 @@
       "line": 35,
       "rpcName": "marketplace_item_scope_detail_v1",
       "argsText": "args as never",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 36,
-      "rpcName": null,
-      "argsText": "args",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 38,
-      "rpcName": null,
-      "argsText": "",
       "listLike": false,
       "hasBoundedArgs": false,
       "approval": "rpc_detail_or_status",
@@ -214,16 +194,6 @@
       "reason": "RPC is not classified as a list-returning read."
     },
     {
-      "file": "src/lib/api/integrity.guards.transport.ts",
-      "line": 9,
-      "rpcName": "proposal_request_item_integrity_v1",
-      "argsText": "{\n    p_proposal_id: proposalId,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
       "file": "src/lib/api/paymentPdf.transport.ts",
       "line": 5,
       "rpcName": "pdf_payment_source_v1",
@@ -252,26 +222,6 @@
       "hasBoundedArgs": false,
       "approval": "rpc_detail_or_status",
       "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/lib/api/proposalAttachmentEvidence.api.ts",
-      "line": 108,
-      "rpcName": "proposal_attachment_evidence_attach_v1",
-      "argsText": "args as never",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/api/proposalAttachments.service.ts",
-      "line": 274,
-      "rpcName": "proposal_attachment_evidence_scope_v1",
-      "argsText": "{\n    p_proposal_id: proposalId,\n    p_group_key: null,\n    p_viewer_role: inferViewerRole(screen, viewerRole),\n  } as never",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "parent-scoped attachment list RPC has no pagination args; replace with DB function pagination when the RPC contract changes."
     },
     {
       "file": "src/lib/api/proposals.transport.ts",
@@ -344,26 +294,6 @@
       "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
     },
     {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "rpcName": null,
-      "argsText": "",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "rpcName": null,
-      "argsText": "args",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
       "file": "src/lib/api/requestDraftSync.transport.ts",
       "line": 73,
       "rpcName": "request_sync_draft_v2",
@@ -385,7 +315,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 386,
+      "line": 387,
       "rpcName": "request_find_reusable_empty_draft_v1",
       "argsText": "args",
       "listLike": false,
@@ -395,7 +325,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 528,
+      "line": 529,
       "rpcName": "request_items_by_request",
       "argsText": "args",
       "listLike": true,
@@ -405,7 +335,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 789,
+      "line": 790,
       "rpcName": "request_submit_atomic_v1",
       "argsText": "buildRequestSubmitAtomicArgs(preconditions.request_id), ",
       "listLike": false,
@@ -414,14 +344,14 @@
       "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
     },
     {
-      "file": "src/lib/api/requests.ts",
-      "line": 913,
-      "rpcName": "request_reopen_atomic_v1",
-      "argsText": "buildRequestReopenAtomicArgs(preconditions.request_id), ",
+      "file": "src/lib/api/supabaseRpcAdapter.ts",
+      "line": 88,
+      "rpcName": null,
+      "argsText": "args",
       "listLike": false,
       "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
+      "approval": "rpc_detail_or_status",
+      "reason": "RPC is not classified as a list-returning read."
     },
     {
       "file": "src/lib/catalog/catalog.proposalCreation.transport.ts",
@@ -472,96 +402,6 @@
       "hasBoundedArgs": false,
       "approval": "rpc_approved_exception",
       "reason": "legacy suppliers_list overload accepts only search in this path; table fallback remains page-through bounded."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 432,
-      "rpcName": "submit_jobs_claim",
-      "argsText": "buildSubmitJobsClaimArgs(workerId, normalizedLimit), ",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 455,
-      "rpcName": "submit_jobs_claim",
-      "argsText": "buildSubmitJobsClaimLegacyArgs(workerId, normalizedLimit, jobType), ",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 489,
-      "rpcName": "submit_jobs_recover_stuck",
-      "argsText": "",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 503,
-      "rpcName": "submit_jobs_mark_completed",
-      "argsText": "{\n    p_id: jobId,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 521,
-      "rpcName": "submit_jobs_mark_completed",
-      "argsText": "{\n    p_job_id: jobId,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 552,
-      "rpcName": "submit_jobs_mark_failed",
-      "argsText": "{\n    p_id: jobId,\n    p_error: message,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 571,
-      "rpcName": "submit_jobs_mark_failed",
-      "argsText": "{\n    p_job_id: jobId,\n    p_error: message,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 600,
-      "rpcName": "submit_jobs_metrics",
-      "argsText": "",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/lib/infra/queueLatencyMetrics.transport.ts",
-      "line": 13,
-      "rpcName": "submit_jobs_metrics",
-      "argsText": "",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
     },
     {
       "file": "src/lib/store_supabase.write.transport.ts",
@@ -634,36 +474,6 @@
       "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
     },
     {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 32,
-      "rpcName": "request_items_set_status",
-      "argsText": "{\n    p_request_item_ids: params.affectedIds,\n    p_status: \"У директора\",\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 52,
-      "rpcName": "buyer_rfq_create_and_publish_v1",
-      "argsText": "params.payload, ",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 62,
-      "rpcName": "proposal_send_to_accountant_min",
-      "argsText": "params.payload, ",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
       "file": "src/screens/buyer/hooks/useBuyerRequestProposalMap.transport.ts",
       "line": 8,
       "rpcName": "resolve_req_pr_map",
@@ -672,116 +482,6 @@
       "hasBoundedArgs": false,
       "approval": "rpc_detail_or_status",
       "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/screens/contractor/contractor.workModalService.transport.ts",
-      "line": 56,
-      "rpcName": "work_seed_defaults_auto",
-      "argsText": "{ p_work_code: workCode }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/contractor/contractor.workSearch.transport.ts",
-      "line": 13,
-      "rpcName": "catalog_search",
-      "argsText": "args",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "catalog_search DB function has no limit arg; controller uses short search input and ignores stale responses."
-    },
-    {
-      "file": "src/screens/contractor/contractorPdfSource.transport.ts",
-      "line": 14,
-      "rpcName": "pdf_contractor_work_source_v1",
-      "argsText": "args",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "contractor PDF source is keyed by one progress/log id pair, not a list screen read."
-    },
-    {
-      "file": "src/screens/director/director.approve.transport.ts",
-      "line": 14,
-      "rpcName": "director_approve_pipeline_v1",
-      "argsText": "args",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/director/director.finance.rpc.transport.ts",
-      "line": 34,
-      "rpcName": null,
-      "argsText": "args",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
-    },
-    {
-      "file": "src/screens/director/director.proposalDecision.transport.ts",
-      "line": 19,
-      "rpcName": "director_decide_proposal_items",
-      "argsText": "args",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/director/director.proposals.transport.ts",
-      "line": 10,
-      "rpcName": "director_pending_proposals_scope_v1",
-      "argsText": "{\n    p_offset_heads: args.p_offset_heads,\n    p_limit_heads: args.p_limit_heads,\n  }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/director/director.repository.transport.ts",
-      "line": 7,
-      "rpcName": "list_director_items_stable",
-      "argsText": "",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "legacy stable director list RPC has no pagination args; fallback table path is page-through bounded."
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 11,
-      "rpcName": "reject_request_item",
-      "argsText": "{\n    request_item_id: requestItemId,\n    reason: null,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 21,
-      "rpcName": "reject_request_all",
-      "argsText": "{\n    p_request_id: requestId,\n    p_reason: null,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 34,
-      "rpcName": "director_approve_request_v1",
-      "argsText": "{\n    p_request_id: params.requestId,\n    p_client_mutation_id: params.clientMutationId,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
     },
     {
       "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
@@ -812,216 +512,6 @@
       "hasBoundedArgs": false,
       "approval": "rpc_mutation_or_side_effect",
       "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts",
-      "line": 20,
-      "rpcName": "wh_receive_apply_ui",
-      "argsText": "payload",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 41,
-      "rpcName": "acc_report_stock",
-      "argsText": "{}",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "stock report RPC is a current-stock aggregate view without pagination args; tracked for DB function pagination."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 45,
-      "rpcName": "acc_report_movement",
-      "argsText": "{\n        p_from: periodFrom || null,\n        p_to: periodTo || null,\n      }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 52,
-      "rpcName": "acc_report_issues_v2",
-      "argsText": "{\n        p_from: periodFrom || null,\n        p_to: periodTo || null,\n      }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 68,
-      "rpcName": "acc_report_issue_lines",
-      "argsText": "{ p_issue_id: issueId }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 78,
-      "rpcName": "wh_report_issued_materials_fast",
-      "argsText": "{\n      p_from: p.from ?? null,\n      p_to: p.to ?? null,\n      p_object_id: p.objectId ?? null,\n    }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 94,
-      "rpcName": "wh_report_issued_by_object_fast",
-      "argsText": "{\n      p_from: p.from ?? null,\n      p_to: p.to ?? null,\n      p_object_id: p.objectId ?? null,\n    }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 110,
-      "rpcName": "acc_report_incoming_v2",
-      "argsText": "{\n      p_from: p.from ?? null,\n      p_to: p.to ?? null,\n    }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 165,
-      "rpcName": "warehouse_incoming_queue_scope_v1",
-      "argsText": "{\n    p_offset: pageOffset,\n    p_limit: pageSize,\n  } as never",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 179,
-      "rpcName": "warehouse_incoming_items_scope_v1",
-      "argsText": "{\n      p_incoming_id: incomingId,\n    } as never",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "incoming-items RPC is parent-scoped by one incoming id; DB function pagination is a follow-up contract change."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 196,
-      "rpcName": "warehouse_issue_queue_scope_v4",
-      "argsText": "{\n      p_offset: offset,\n      p_limit: pageSize,\n    }",
-      "listLike": false,
-      "hasBoundedArgs": true,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 210,
-      "rpcName": "warehouse_issue_items_scope_v1",
-      "argsText": "{\n    p_request_id: requestId,\n  }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 220,
-      "rpcName": "warehouse_stock_scope_v2",
-      "argsText": "{\n    p_limit: limit,\n    p_offset: offset,\n  }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.transport.ts",
-      "line": 13,
-      "rpcName": "pdf_warehouse_day_materials_source_v1",
-      "argsText": "{\n    p_from: args.p_from,\n    p_to: args.p_to,\n  }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.incomingForm.pdf.transport.ts",
-      "line": 14,
-      "rpcName": "pdf_warehouse_incoming_source_v1",
-      "argsText": "args",
-      "listLike": true,
-      "hasBoundedArgs": false,
-      "approval": "rpc_approved_exception",
-      "reason": "warehouse incoming PDF source is keyed by one incoming id, not a list screen read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.transport.ts",
-      "line": 13,
-      "rpcName": "pdf_warehouse_incoming_materials_source_v1",
-      "argsText": "{\n    p_from: args.p_from,\n    p_to: args.p_to,\n  }",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
-      "line": 30,
-      "rpcName": "wh_issue_free_atomic_v5",
-      "argsText": "payload",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
-      "line": 37,
-      "rpcName": "wh_issue_request_atomic_v1",
-      "argsText": "payload",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
-      "line": 31,
-      "rpcName": "warehouse_refresh_name_map_ui",
-      "argsText": "payload as never",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_mutation_or_side_effect",
-      "reason": "RPC name/context is mutation or side-effect oriented, not a list read."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.objectWorkReport.pdf.transport.ts",
-      "line": 15,
-      "rpcName": "pdf_warehouse_object_work_source_v1",
-      "argsText": "{\n      p_from: args.p_from,\n      p_to: args.p_to,\n      p_object_id: args.p_object_id,\n    } as PublicFunctionArgs<\"pdf_warehouse_object_work_source_v1\">, ",
-      "listLike": true,
-      "hasBoundedArgs": true,
-      "approval": "rpc_bounded_args",
-      "reason": "List-like RPC includes explicit pagination/limit arguments."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
-      "line": 211,
-      "rpcName": null,
-      "argsText": "{ p_incoming_id: incomingId }",
-      "listLike": false,
-      "hasBoundedArgs": false,
-      "approval": "rpc_detail_or_status",
-      "reason": "RPC is not classified as a list-returning read."
     }
   ],
   "wrapperRpcInventory": [
@@ -1043,7 +533,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 62,
+      "line": 71,
       "wrapper": "runReportRpc",
       "rpcName": "list_report_stock_turnover",
       "argsText": "{ p_start: start, p_end: end }",
@@ -1051,7 +541,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 63,
+      "line": 72,
       "wrapper": "runReportRpc",
       "rpcName": "list_report_costs_by_object",
       "argsText": "{ p_start: start, p_end: end }",
@@ -1059,7 +549,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 64,
+      "line": 73,
       "wrapper": "runReportRpc",
       "rpcName": "list_report_ap_aging",
       "argsText": "",
@@ -1067,7 +557,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 65,
+      "line": 74,
       "wrapper": "runReportRpc",
       "rpcName": "list_report_purchase_pipeline",
       "argsText": "{ p_start: start, p_end: end }",
@@ -1156,28 +646,6 @@
   ],
   "dynamicDirectBoundaries": [
     {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 36,
-      "owner": "core_rpc_compat_transport_with_args",
-      "classification": "compat_transport",
-      "rateEnforcementOperation": null,
-      "boundedArgsRequired": false,
-      "migrationTarget": null,
-      "possibleRpcNames": [],
-      "reason": "Generic typed RPC transport implementation; concrete callers are classified separately."
-    },
-    {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 38,
-      "owner": "core_rpc_compat_transport_without_args",
-      "classification": "compat_transport",
-      "rateEnforcementOperation": null,
-      "boundedArgsRequired": false,
-      "migrationTarget": null,
-      "possibleRpcNames": [],
-      "reason": "Generic typed RPC transport implementation; concrete callers are classified separately."
-    },
-    {
       "file": "src/lib/api/director.ts",
       "line": 177,
       "owner": "director_legacy_pending_rpc_fallbacks",
@@ -1207,26 +675,15 @@
       "reason": "Director reports transport RPC name is held in a typed contract and receives bounded report filters."
     },
     {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "owner": "contained_rpc_without_args",
+      "file": "src/lib/api/supabaseRpcAdapter.ts",
+      "line": 88,
+      "owner": "runtime_rate_limited_rpc_builder",
       "classification": "compat_transport",
       "rateEnforcementOperation": null,
       "boundedArgsRequired": false,
       "migrationTarget": null,
       "possibleRpcNames": [],
-      "reason": "Generic contained RPC boundary; concrete literal and dynamic callers are classified separately."
-    },
-    {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "owner": "contained_rpc_with_args",
-      "classification": "compat_transport",
-      "rateEnforcementOperation": null,
-      "boundedArgsRequired": false,
-      "migrationTarget": null,
-      "possibleRpcNames": [],
-      "reason": "Generic contained RPC boundary; concrete literal and dynamic callers are classified separately."
+      "reason": "Generic runtime rate-limited Supabase RPC builder; concrete callers are classified separately."
     },
     {
       "file": "src/lib/store_supabase.write.transport.ts",
@@ -1255,26 +712,6 @@
       "reason": "Store write transport is an exact request pending mutation RPC."
     },
     {
-      "file": "src/screens/director/director.finance.rpc.transport.ts",
-      "line": 34,
-      "owner": "director_finance_typed_rpc_transport",
-      "classification": "bounded_list",
-      "rateEnforcementOperation": "director.pending.list",
-      "boundedArgsRequired": true,
-      "migrationTarget": null,
-      "possibleRpcNames": [
-        "director_finance_fetch_summary_v1",
-        "director_finance_summary_v2",
-        "director_finance_panel_scope_v1",
-        "director_finance_panel_scope_v2",
-        "director_finance_panel_scope_v3",
-        "director_finance_panel_scope_v4",
-        "director_finance_supplier_scope_v1",
-        "director_finance_supplier_scope_v2"
-      ],
-      "reason": "Director finance transport accepts only the typed finance scope RPC union."
-    },
-    {
       "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
       "line": 39,
       "owner": "subcontract_status_mutation_rpc",
@@ -1287,21 +724,6 @@
         "subcontract_reject_v1"
       ],
       "reason": "Subcontract status RPC is an exact mutation union."
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
-      "line": 211,
-      "owner": "warehouse_seed_dev_only_rpc",
-      "classification": "mutation_or_side_effect",
-      "rateEnforcementOperation": "warehouse.receive.apply",
-      "boundedArgsRequired": false,
-      "migrationTarget": null,
-      "possibleRpcNames": [
-        "wh_incoming_ensure_items",
-        "ensure_incoming_items",
-        "wh_incoming_seed_from_purchase"
-      ],
-      "reason": "Warehouse seed transport is an exact dev-only ensure mutation union."
     }
   ],
   "dynamicWrapperBoundaries": [
@@ -1670,23 +1092,6 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/lib/api/integrity.guards.transport.ts",
-      "line": 9,
-      "rpcName": "proposal_request_item_integrity_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "detail_or_status",
-        "rateEnforcementOperation": null,
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Scalar, detail, status, or identity RPC; not a list-returning read.",
-        "rpcName": "proposal_request_item_integrity_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
       "file": "src/lib/api/paymentPdf.transport.ts",
       "line": 5,
       "rpcName": "pdf_payment_source_v1",
@@ -1732,40 +1137,6 @@
         "migrationTarget": null,
         "reason": "Scalar, detail, status, or identity RPC; not a list-returning read.",
         "rpcName": "get_my_role",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/api/proposalAttachmentEvidence.api.ts",
-      "line": 108,
-      "rpcName": "proposal_attachment_evidence_attach_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "proposal.submit",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Proposal/subcontract creation RPC is covered by the proposal submit mutation rate policy.",
-        "rpcName": "proposal_attachment_evidence_attach_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/api/proposalAttachments.service.ts",
-      "line": 274,
-      "rpcName": "proposal_attachment_evidence_scope_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "request.proposal.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped RPC pagination when DB function contracts are revised",
-        "reason": "Parent-scoped item RPC is keyed by one parent id; migration target is explicit DB-function pagination.",
-        "rpcName": "proposal_attachment_evidence_scope_v1",
         "defaultEnabled": false,
         "enforcementEnabledByDefault": false
       },
@@ -1926,7 +1297,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 386,
+      "line": 387,
       "rpcName": "request_find_reusable_empty_draft_v1",
       "source": "direct",
       "policy": {
@@ -1943,7 +1314,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 528,
+      "line": 529,
       "rpcName": "request_items_by_request",
       "source": "direct",
       "policy": {
@@ -1960,7 +1331,7 @@
     },
     {
       "file": "src/lib/api/requests.ts",
-      "line": 789,
+      "line": 790,
       "rpcName": "request_submit_atomic_v1",
       "source": "direct",
       "policy": {
@@ -1970,23 +1341,6 @@
         "migrationTarget": null,
         "reason": "Request/status mutation RPC is covered by the request item update mutation rate policy.",
         "rpcName": "request_submit_atomic_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/api/requests.ts",
-      "line": 913,
-      "rpcName": "request_reopen_atomic_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "request.item.update",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Request/status mutation RPC is covered by the request item update mutation rate policy.",
-        "rpcName": "request_reopen_atomic_v1",
         "defaultEnabled": false,
         "enforcementEnabledByDefault": false
       },
@@ -2078,159 +1432,6 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 432,
-      "rpcName": "submit_jobs_claim",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_claim",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 455,
-      "rpcName": "submit_jobs_claim",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_claim",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 489,
-      "rpcName": "submit_jobs_recover_stuck",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_recover_stuck",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 503,
-      "rpcName": "submit_jobs_mark_completed",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_mark_completed",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 521,
-      "rpcName": "submit_jobs_mark_completed",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_mark_completed",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 552,
-      "rpcName": "submit_jobs_mark_failed",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_mark_failed",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 571,
-      "rpcName": "submit_jobs_mark_failed",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_mark_failed",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/jobQueue.ts",
-      "line": 600,
-      "rpcName": "submit_jobs_metrics",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_metrics",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/infra/queueLatencyMetrics.transport.ts",
-      "line": 13,
-      "rpcName": "submit_jobs_metrics",
-      "source": "direct",
-      "policy": {
-        "classification": "internal_job",
-        "rateEnforcementOperation": "offline.replay.bridge",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Background job queue RPC is internal worker traffic covered by offline replay bridge rate policy.",
-        "rpcName": "submit_jobs_metrics",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
       "file": "src/screens/accountant/accountant.history.transport.ts",
       "line": 21,
       "rpcName": "list_accountant_payments_history_v2",
@@ -2316,57 +1517,6 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 32,
-      "rpcName": "request_items_set_status",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "request.item.update",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Request/status mutation RPC is covered by the request item update mutation rate policy.",
-        "rpcName": "request_items_set_status",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 52,
-      "rpcName": "buyer_rfq_create_and_publish_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "accountant.payment.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Accountant mutation RPC is covered by the payment mutation rate policy.",
-        "rpcName": "buyer_rfq_create_and_publish_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
-      "line": 62,
-      "rpcName": "proposal_send_to_accountant_min",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "accountant.payment.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Accountant mutation RPC is covered by the payment mutation rate policy.",
-        "rpcName": "proposal_send_to_accountant_min",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
       "file": "src/screens/buyer/hooks/useBuyerRequestProposalMap.transport.ts",
       "line": 8,
       "rpcName": "resolve_req_pr_map",
@@ -2378,176 +1528,6 @@
         "migrationTarget": null,
         "reason": "Scalar, detail, status, or identity RPC; not a list-returning read.",
         "rpcName": "resolve_req_pr_map",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/contractor/contractor.workModalService.transport.ts",
-      "line": 56,
-      "rpcName": "work_seed_defaults_auto",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse mutation/seed RPC is covered by the warehouse receive/apply rate policy.",
-        "rpcName": "work_seed_defaults_auto",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/contractor/contractor.workSearch.transport.ts",
-      "line": 13,
-      "rpcName": "catalog_search",
-      "source": "direct",
-      "policy": {
-        "classification": "legacy_list_migration_guard",
-        "rateEnforcementOperation": "marketplace.catalog.search",
-        "boundedArgsRequired": false,
-        "migrationTarget": "marketplace_items_scope_page_v1",
-        "reason": "Legacy catalog/supplier RPC has no limit argument; bounded marketplace scope RPC is the migration target.",
-        "rpcName": "catalog_search",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/contractor/contractorPdfSource.transport.ts",
-      "line": 14,
-      "rpcName": "pdf_contractor_work_source_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped warehouse report pagination when DB function contracts are revised",
-        "reason": "Warehouse/report child-row RPC is keyed by one parent id and tracked for explicit DB-function pagination.",
-        "rpcName": "pdf_contractor_work_source_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.approve.transport.ts",
-      "line": 14,
-      "rpcName": "director_approve_pipeline_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "director.approval.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Director approval/decision RPC is covered by the approval mutation rate policy.",
-        "rpcName": "director_approve_pipeline_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.proposalDecision.transport.ts",
-      "line": 19,
-      "rpcName": "director_decide_proposal_items",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "director.approval.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Director approval/decision RPC is covered by the approval mutation rate policy.",
-        "rpcName": "director_decide_proposal_items",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.proposals.transport.ts",
-      "line": 10,
-      "rpcName": "director_pending_proposals_scope_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "bounded_list",
-        "rateEnforcementOperation": "director.pending.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Director scope RPCs carry explicit period, filter, offset, or limit arguments.",
-        "rpcName": "director_pending_proposals_scope_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/director/director.repository.transport.ts",
-      "line": 7,
-      "rpcName": "list_director_items_stable",
-      "source": "direct",
-      "policy": {
-        "classification": "legacy_list_migration_guard",
-        "rateEnforcementOperation": "director.pending.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "director_pending_proposals_scope_v1",
-        "reason": "Legacy director list RPC has no pagination args; bounded director scope RPC is the migration target.",
-        "rpcName": "list_director_items_stable",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 11,
-      "rpcName": "reject_request_item",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "director.approval.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Director approval/decision RPC is covered by the approval mutation rate policy.",
-        "rpcName": "reject_request_item",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 21,
-      "rpcName": "reject_request_all",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "director.approval.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Director approval/decision RPC is covered by the approval mutation rate policy.",
-        "rpcName": "reject_request_all",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/director/director.request.transport.ts",
-      "line": 34,
-      "rpcName": "director_approve_request_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "director.approval.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Director approval/decision RPC is covered by the approval mutation rate policy.",
-        "rpcName": "director_approve_request_v1",
         "defaultEnabled": false,
         "enforcementEnabledByDefault": false
       },
@@ -2588,348 +1568,8 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts",
-      "line": 20,
-      "rpcName": "wh_receive_apply_ui",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse mutation/seed RPC is covered by the warehouse receive/apply rate policy.",
-        "rpcName": "wh_receive_apply_ui",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 41,
-      "rpcName": "acc_report_stock",
-      "source": "direct",
-      "policy": {
-        "classification": "legacy_list_migration_guard",
-        "rateEnforcementOperation": "warehouse.stock.page",
-        "boundedArgsRequired": false,
-        "migrationTarget": "warehouse_stock_scope_v2",
-        "reason": "Legacy stock aggregate RPC has no pagination args; bounded warehouse stock scope RPC is the migration target.",
-        "rpcName": "acc_report_stock",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 45,
-      "rpcName": "acc_report_movement",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse/report aggregate RPCs are scoped by period or report filters and rate-limited as ledger reads.",
-        "rpcName": "acc_report_movement",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 52,
-      "rpcName": "acc_report_issues_v2",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse/report aggregate RPCs are scoped by period or report filters and rate-limited as ledger reads.",
-        "rpcName": "acc_report_issues_v2",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 68,
-      "rpcName": "acc_report_issue_lines",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped warehouse report pagination when DB function contracts are revised",
-        "reason": "Warehouse/report child-row RPC is keyed by one parent id and tracked for explicit DB-function pagination.",
-        "rpcName": "acc_report_issue_lines",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 78,
-      "rpcName": "wh_report_issued_materials_fast",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse/report aggregate RPCs are scoped by period or report filters and rate-limited as ledger reads.",
-        "rpcName": "wh_report_issued_materials_fast",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 94,
-      "rpcName": "wh_report_issued_by_object_fast",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse/report aggregate RPCs are scoped by period or report filters and rate-limited as ledger reads.",
-        "rpcName": "wh_report_issued_by_object_fast",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 110,
-      "rpcName": "acc_report_incoming_v2",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse/report aggregate RPCs are scoped by period or report filters and rate-limited as ledger reads.",
-        "rpcName": "acc_report_incoming_v2",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 165,
-      "rpcName": "warehouse_incoming_queue_scope_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "bounded_list",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse incoming queue scope RPC carries explicit offset and limit arguments.",
-        "rpcName": "warehouse_incoming_queue_scope_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 179,
-      "rpcName": "warehouse_incoming_items_scope_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped warehouse report pagination when DB function contracts are revised",
-        "reason": "Warehouse/report child-row RPC is keyed by one parent id and tracked for explicit DB-function pagination.",
-        "rpcName": "warehouse_incoming_items_scope_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 196,
-      "rpcName": "warehouse_issue_queue_scope_v4",
-      "source": "direct",
-      "policy": {
-        "classification": "bounded_list",
-        "rateEnforcementOperation": "warehouse.issue.queue",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse issue queue scope RPC carries explicit offset and limit arguments.",
-        "rpcName": "warehouse_issue_queue_scope_v4",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 210,
-      "rpcName": "warehouse_issue_items_scope_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped warehouse report pagination when DB function contracts are revised",
-        "reason": "Warehouse/report child-row RPC is keyed by one parent id and tracked for explicit DB-function pagination.",
-        "rpcName": "warehouse_issue_items_scope_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
-      "line": 220,
-      "rpcName": "warehouse_stock_scope_v2",
-      "source": "direct",
-      "policy": {
-        "classification": "bounded_list",
-        "rateEnforcementOperation": "warehouse.stock.page",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse stock scope RPC carries explicit offset and limit arguments.",
-        "rpcName": "warehouse_stock_scope_v2",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.transport.ts",
-      "line": 13,
-      "rpcName": "pdf_warehouse_day_materials_source_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse PDF source RPCs are bounded by document filters and covered by ledger read policy.",
-        "rpcName": "pdf_warehouse_day_materials_source_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.incomingForm.pdf.transport.ts",
-      "line": 14,
-      "rpcName": "pdf_warehouse_incoming_source_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "parent_scoped_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": false,
-        "migrationTarget": "parent-scoped warehouse report pagination when DB function contracts are revised",
-        "reason": "Warehouse/report child-row RPC is keyed by one parent id and tracked for explicit DB-function pagination.",
-        "rpcName": "pdf_warehouse_incoming_source_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.transport.ts",
-      "line": 13,
-      "rpcName": "pdf_warehouse_incoming_materials_source_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse PDF source RPCs are bounded by document filters and covered by ledger read policy.",
-        "rpcName": "pdf_warehouse_incoming_materials_source_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
-      "line": 30,
-      "rpcName": "wh_issue_free_atomic_v5",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse mutation/seed RPC is covered by the warehouse receive/apply rate policy.",
-        "rpcName": "wh_issue_free_atomic_v5",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
-      "line": 37,
-      "rpcName": "wh_issue_request_atomic_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse mutation/seed RPC is covered by the warehouse receive/apply rate policy.",
-        "rpcName": "wh_issue_request_atomic_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
-      "line": 31,
-      "rpcName": "warehouse_refresh_name_map_ui",
-      "source": "direct",
-      "policy": {
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse mutation/seed RPC is covered by the warehouse receive/apply rate policy.",
-        "rpcName": "warehouse_refresh_name_map_ui",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.objectWorkReport.pdf.transport.ts",
-      "line": 15,
-      "rpcName": "pdf_warehouse_object_work_source_v1",
-      "source": "direct",
-      "policy": {
-        "classification": "aggregate_read",
-        "rateEnforcementOperation": "warehouse.ledger.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Warehouse PDF source RPCs are bounded by document filters and covered by ledger read policy.",
-        "rpcName": "pdf_warehouse_object_work_source_v1",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 62,
+      "line": 71,
       "rpcName": "list_report_stock_turnover",
       "source": "wrapper",
       "policy": {
@@ -2946,7 +1586,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 63,
+      "line": 72,
       "rpcName": "list_report_costs_by_object",
       "source": "wrapper",
       "policy": {
@@ -2963,7 +1603,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 64,
+      "line": 73,
       "rpcName": "list_report_ap_aging",
       "source": "wrapper",
       "policy": {
@@ -2980,7 +1620,7 @@
     },
     {
       "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "line": 65,
+      "line": 74,
       "rpcName": "list_report_purchase_pipeline",
       "source": "wrapper",
       "policy": {
@@ -3132,40 +1772,6 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 36,
-      "rpcName": "core_rpc_compat_transport_with_args",
-      "source": "dynamic_direct",
-      "policy": {
-        "rpcName": "core_rpc_compat_transport_with_args",
-        "classification": "compat_transport",
-        "rateEnforcementOperation": null,
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Generic typed RPC transport implementation; concrete callers are classified separately.",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/api/_core.transport.ts",
-      "line": 38,
-      "rpcName": "core_rpc_compat_transport_without_args",
-      "source": "dynamic_direct",
-      "policy": {
-        "rpcName": "core_rpc_compat_transport_without_args",
-        "classification": "compat_transport",
-        "rateEnforcementOperation": null,
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Generic typed RPC transport implementation; concrete callers are classified separately.",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
       "file": "src/lib/api/director.ts",
       "line": 177,
       "rpcName": "director_legacy_pending_rpc_fallbacks",
@@ -3200,34 +1806,17 @@
       "hasBoundedArgs": true
     },
     {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "rpcName": "contained_rpc_with_args",
+      "file": "src/lib/api/supabaseRpcAdapter.ts",
+      "line": 88,
+      "rpcName": "runtime_rate_limited_rpc_builder",
       "source": "dynamic_direct",
       "policy": {
-        "rpcName": "contained_rpc_with_args",
+        "rpcName": "runtime_rate_limited_rpc_builder",
         "classification": "compat_transport",
         "rateEnforcementOperation": null,
         "boundedArgsRequired": false,
         "migrationTarget": null,
-        "reason": "Generic contained RPC boundary; concrete literal and dynamic callers are classified separately.",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/lib/api/queryBoundary.ts",
-      "line": 328,
-      "rpcName": "contained_rpc_with_args",
-      "source": "dynamic_direct",
-      "policy": {
-        "rpcName": "contained_rpc_with_args",
-        "classification": "compat_transport",
-        "rateEnforcementOperation": null,
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Generic contained RPC boundary; concrete literal and dynamic callers are classified separately.",
+        "reason": "Generic runtime rate-limited Supabase RPC builder; concrete callers are classified separately.",
         "defaultEnabled": false,
         "enforcementEnabledByDefault": false
       },
@@ -3268,23 +1857,6 @@
       "hasBoundedArgs": false
     },
     {
-      "file": "src/screens/director/director.finance.rpc.transport.ts",
-      "line": 34,
-      "rpcName": "director_finance_typed_rpc_transport",
-      "source": "dynamic_direct",
-      "policy": {
-        "rpcName": "director_finance_typed_rpc_transport",
-        "classification": "bounded_list",
-        "rateEnforcementOperation": "director.pending.list",
-        "boundedArgsRequired": true,
-        "migrationTarget": null,
-        "reason": "Director finance transport accepts only the typed finance scope RPC union.",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": true
-    },
-    {
       "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
       "line": 39,
       "rpcName": "subcontract_status_mutation_rpc",
@@ -3296,23 +1868,6 @@
         "boundedArgsRequired": false,
         "migrationTarget": null,
         "reason": "Subcontract status RPC is an exact mutation union.",
-        "defaultEnabled": false,
-        "enforcementEnabledByDefault": false
-      },
-      "hasBoundedArgs": false
-    },
-    {
-      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
-      "line": 211,
-      "rpcName": "warehouse_seed_dev_only_rpc",
-      "source": "dynamic_direct",
-      "policy": {
-        "rpcName": "warehouse_seed_dev_only_rpc",
-        "classification": "mutation_or_side_effect",
-        "rateEnforcementOperation": "warehouse.receive.apply",
-        "boundedArgsRequired": false,
-        "migrationTarget": null,
-        "reason": "Warehouse seed transport is an exact dev-only ensure mutation union.",
         "defaultEnabled": false,
         "enforcementEnabledByDefault": false
       },
@@ -3389,15 +1944,15 @@
   ],
   "findings": [],
   "metrics": {
-    "directSupabaseRpcCalls": 102,
+    "directSupabaseRpcCalls": 51,
     "wrapperRpcEntrypoints": 16,
-    "dynamicDirectRpcCalls": 11,
+    "dynamicDirectRpcCalls": 6,
     "dynamicWrapperRpcEntrypoints": 4,
-    "uniqueLiteralRpcNames": 98,
-    "literalRpcNamesClassified": 98,
-    "dynamicRpcCallsClassified": 15,
-    "listLikeRpcEntrypoints": 54,
-    "listLikeRpcWithRatePolicy": 54,
+    "uniqueLiteralRpcNames": 57,
+    "literalRpcNamesClassified": 57,
+    "dynamicRpcCallsClassified": 10,
+    "listLikeRpcEntrypoints": 32,
+    "listLikeRpcWithRatePolicy": 32,
     "listLikeRpcBoundedOrMigrationGuarded": true,
     "registryPolicies": 134,
     "duplicatePolicies": 0,

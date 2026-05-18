@@ -4,6 +4,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "./queryBoundary";
+import { callRateLimitedSupabaseRpc } from "./supabaseRpcAdapter";
 
 type ProposalAttachmentEvidenceClient = Pick<SupabaseClient<any, any, any>, "rpc">;
 
@@ -105,7 +106,10 @@ export async function attachProposalAttachmentEvidence(
     p_created_by: text(input.createdBy) || null,
   };
 
-  const rpc = await client.rpc("proposal_attachment_evidence_attach_v1" as never, args as never);
+  const rpc = await callRateLimitedSupabaseRpc<{
+    data: unknown;
+    error: unknown;
+  }>(client, "proposal_attachment_evidence_attach_v1", args);
   if (rpc.error) throw rpc.error;
   const validated = validateRpcResponse(
     rpc.data,

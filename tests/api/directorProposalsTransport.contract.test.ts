@@ -18,7 +18,8 @@ describe("director proposals transport boundary", () => {
     expect(repoSource).toContain("adaptDirectorProposalScopeEnvelope");
     expect(repoSource).toContain("beginPlatformObservability");
 
-    expect(transportSource).toContain('supabase.rpc("director_pending_proposals_scope_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"director_pending_proposals_scope_v1"');
     expect(transportSource).toContain("callDirectorPendingProposalsScopeRpc");
     expect(transportSource).toContain("DirectorPendingProposalsScopeV1Args");
     expect(transportSource).not.toContain("validateRpcResponse");

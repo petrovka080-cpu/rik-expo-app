@@ -1,4 +1,5 @@
 import { supabase } from "../supabaseClient";
+import { callRateLimitedSupabaseRpc } from "./supabaseRpcAdapter";
 import type {
   PublicFunctionArgs,
   PublicFunctionName,
@@ -33,7 +34,29 @@ export async function runRpcCompatTransportVariant<TName extends RpcName>(
 ): Promise<RpcCompatTransportResult> {
   if ("args" in variant && variant.args !== undefined) {
     const args = variant.args ?? undefined;
-    return (await supabase.rpc(variant.fn, args)) as RpcCompatTransportResult;
+    return (await callRateLimitedSupabaseRpc(
+      supabase,
+      variant.fn,
+      args as Record<string, unknown>,
+      {
+        context: {
+          owner: "core_rpc_compat_transport",
+          caller: "runRpcCompatTransportVariant",
+          source: "compat_transport",
+        },
+      },
+    )) as RpcCompatTransportResult;
   }
-  return (await supabase.rpc(variant.fn)) as RpcCompatTransportResult;
+  return (await callRateLimitedSupabaseRpc(
+    supabase,
+    variant.fn,
+    undefined,
+    {
+      context: {
+        owner: "core_rpc_compat_transport",
+        caller: "runRpcCompatTransportVariant",
+        source: "compat_transport",
+      },
+    },
+  )) as RpcCompatTransportResult;
 }

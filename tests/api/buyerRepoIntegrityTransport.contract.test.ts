@@ -23,9 +23,8 @@ describe("buyer repo proposal integrity transport boundary", () => {
       'caller: "src/screens/buyer/buyer.repo.repoGetProposalRequestItemIntegrity"',
     );
 
-    expect(transportSource).toContain(
-      'supabaseClient.rpc("proposal_request_item_integrity_v1"',
-    );
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"proposal_request_item_integrity_v1"');
     expect(transportSource).toContain("p_proposal_id: proposalId");
     expect(transportSource).not.toContain("validateRpcResponse");
   });

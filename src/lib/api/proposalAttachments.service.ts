@@ -4,6 +4,7 @@ import type { Database } from "../database.types";
 import { mapWithConcurrencyLimit } from "../async/mapWithConcurrencyLimit";
 import { loadPagedRowsWithCeiling, type PagedQuery } from "./_core";
 import { isRpcRecordArray, validateRpcResponse } from "./queryBoundary";
+import { callRateLimitedSupabaseRpc } from "./supabaseRpcAdapter";
 import { beginPlatformObservability } from "../observability/platformObservability";
 
 type ProposalAttachmentEvidenceRpcRow = {
@@ -271,11 +272,14 @@ async function loadCanonicalRows(
   viewerRole?: string | null,
 ) {
   // SCALE_BOUND_EXCEPTION: parent-scoped attachment list RPC has no pagination args; replace with DB function pagination when the RPC contract changes.
-  const rpc = await client.rpc("proposal_attachment_evidence_scope_v1" as never, {
+  const rpc = await callRateLimitedSupabaseRpc<{
+    data: unknown;
+    error: unknown;
+  }>(client, "proposal_attachment_evidence_scope_v1", {
     p_proposal_id: proposalId,
     p_group_key: null,
     p_viewer_role: inferViewerRole(screen, viewerRole),
-  } as never);
+  });
   if (rpc.error) throw rpc.error;
   return validateRpcResponse(rpc.data, isRpcRecordArray, {
     rpcName: "proposal_attachment_evidence_scope_v1",

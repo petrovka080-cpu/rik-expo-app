@@ -3,6 +3,8 @@ import type {
   WarehouseIssueRequestLine,
   WarehouseSupabaseClient,
 } from "../../types/contracts/warehouse";
+import type { NullableRpcErrorLike } from "../../lib/api/queryBoundary";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type WarehouseIssueFreeAtomicPayload = {
   p_who: string;
@@ -22,17 +24,29 @@ export type WarehouseIssueRequestAtomicPayload = {
   p_lines: WarehouseIssueRequestLine[];
   p_client_mutation_id: string;
 };
+type WarehouseIssueAtomicRpcResult = {
+  data: unknown;
+  error: NullableRpcErrorLike;
+};
 
 export async function issueWarehouseFreeAtomicTransport(
   supabase: WarehouseSupabaseClient,
   payload: WarehouseIssueFreeAtomicPayload,
 ) {
-  return await supabase.rpc("wh_issue_free_atomic_v5", payload);
+  return await callRateLimitedSupabaseRpc<WarehouseIssueAtomicRpcResult>(
+    supabase,
+    "wh_issue_free_atomic_v5",
+    payload,
+  );
 }
 
 export async function issueWarehouseRequestAtomicTransport(
   supabase: WarehouseSupabaseClient,
   payload: WarehouseIssueRequestAtomicPayload,
 ) {
-  return await supabase.rpc("wh_issue_request_atomic_v1", payload);
+  return await callRateLimitedSupabaseRpc<WarehouseIssueAtomicRpcResult>(
+    supabase,
+    "wh_issue_request_atomic_v1",
+    payload,
+  );
 }

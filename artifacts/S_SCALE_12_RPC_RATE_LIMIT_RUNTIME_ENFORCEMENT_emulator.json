@@ -1,0 +1,16 @@
+{
+  "wave": "S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT",
+  "checkedAt": "2026-05-18T20:10:45.452Z",
+  "status": "PASS",
+  "framework": "maestro",
+  "device": "android",
+  "verifierPassed": true,
+  "runtimeEnforcementEnabled": true,
+  "directRpcBypassRemaining": 0,
+  "androidRuntimeSmoke": "PASS",
+  "androidRuntimeFinalStatus": "GREEN_ANDROID_POST_INSTALL_RUNTIME_SIGNOFF",
+  "noDbWrites": true,
+  "noProviderCall": true,
+  "fakeGreenClaimed": false,
+  "exactReason": null
+}

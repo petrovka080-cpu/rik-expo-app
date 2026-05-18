@@ -94,7 +94,8 @@ describe("S-DIRECT-SUPABASE-BYPASS-DIRECTOR-FINANCE-RPC-ROUTING-1", () => {
     const transport = read(financeRpcTransportPath);
     const bffClient = read(financeBffClientPath);
     const directRpcSites = source.match(/supabase\.rpc\(/g) ?? [];
-    const fallbackRpcSites = transport.match(/supabase\.rpc\(/g) ?? [];
+    const fallbackRpcSites =
+      transport.match(/callRateLimitedSupabaseRpc\(/g) ?? [];
 
     expect(directRpcSites).toHaveLength(0);
     expect(fallbackRpcSites).toHaveLength(1);

@@ -4,6 +4,7 @@ import {
   isRecordRow,
   type PagedQuery,
 } from "../../lib/api/_core";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type WarehouseNameMapUiRow = Record<string, unknown>;
 export type WarehouseRefreshNameMapUiRpcArgs = {
@@ -28,4 +29,4 @@ export function createWarehouseNameMapUiQuery(
 export const callWarehouseRefreshNameMapUiRpc = (
   supabase: SupabaseClient,
   payload: WarehouseRefreshNameMapUiRpcArgs,
-) => supabase.rpc("warehouse_refresh_name_map_ui" as never, payload as never);
+) => callRateLimitedSupabaseRpc(supabase, "warehouse_refresh_name_map_ui", payload);

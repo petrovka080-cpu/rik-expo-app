@@ -1,3 +1,5 @@
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
+
 type DirectorRequestRpcResult = Promise<{ data: unknown; error: unknown }>;
 
 type DirectorRequestRpcClient = {
@@ -8,7 +10,7 @@ export function rejectDirectorRequestItemRpc(
   supabase: DirectorRequestRpcClient,
   requestItemId: string,
 ): DirectorRequestRpcResult {
-  return supabase.rpc("reject_request_item", {
+  return callRateLimitedSupabaseRpc(supabase, "reject_request_item", {
     request_item_id: requestItemId,
     reason: null,
   });
@@ -18,7 +20,7 @@ export function rejectDirectorRequestAllRpc(
   supabase: DirectorRequestRpcClient,
   requestId: string,
 ): DirectorRequestRpcResult {
-  return supabase.rpc("reject_request_all", {
+  return callRateLimitedSupabaseRpc(supabase, "reject_request_all", {
     p_request_id: requestId,
     p_reason: null,
   });
@@ -31,7 +33,7 @@ export function approveDirectorRequestRpc(
     clientMutationId: string;
   },
 ): DirectorRequestRpcResult {
-  return supabase.rpc("director_approve_request_v1", {
+  return callRateLimitedSupabaseRpc(supabase, "director_approve_request_v1", {
     p_request_id: params.requestId,
     p_client_mutation_id: params.clientMutationId,
   });

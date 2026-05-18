@@ -74,7 +74,8 @@ describe("director approve boundary", () => {
     expect(boundarySource).toContain("callDirectorApprovePipelineRpc");
     expect(boundarySource).not.toContain('supabase.rpc("director_approve_pipeline_v1"');
     expect(boundarySource).not.toContain('params.supabase.rpc("director_approve_pipeline_v1"');
-    expect(transportSource).toContain('supabase.rpc("director_approve_pipeline_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"director_approve_pipeline_v1"');
     expect(transportSource).toContain("export function callDirectorApprovePipelineRpc");
     expect(transportSource).not.toContain("validateRpcResponse");
     expect(transportSource).not.toContain("DirectorApproveBoundaryError");

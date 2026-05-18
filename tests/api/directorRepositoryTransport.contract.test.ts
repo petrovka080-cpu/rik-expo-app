@@ -21,7 +21,8 @@ describe("director repository transport boundary", () => {
     expect(repositorySource).toContain('warnDirectorRepository("list_director_items_stable", error, "error")');
 
     expect(transportSource).toContain("DirectorSupabaseClient");
-    expect(transportSource).toContain('supabase.rpc("list_director_items_stable"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"list_director_items_stable"');
     expect(transportSource).not.toContain("normalizeDirectorPendingRows");
     expect(transportSource).not.toContain("loadDirectorRowsFallback");
     expect(transportSource).not.toContain("warnDirectorRepository");

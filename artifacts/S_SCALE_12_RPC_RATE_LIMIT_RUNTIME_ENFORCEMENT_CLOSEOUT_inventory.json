@@ -1,0 +1,663 @@
+{
+  "wave": "S_SCALE_12_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_CLOSEOUT",
+  "final_status": "GREEN_SCALE_RPC_RATE_LIMIT_RUNTIME_ENFORCEMENT_READY",
+  "generatedAt": "2026-05-18T20:10:36.019Z",
+  "discipline": {
+    "directSupabaseRpcCalls": 51,
+    "wrapperRpcEntrypoints": 16,
+    "dynamicDirectRpcCalls": 6,
+    "dynamicWrapperRpcEntrypoints": 4,
+    "uniqueLiteralRpcNames": 57,
+    "literalRpcNamesClassified": 57,
+    "dynamicRpcCallsClassified": 10,
+    "listLikeRpcEntrypoints": 32,
+    "listLikeRpcWithRatePolicy": 32,
+    "listLikeRpcBoundedOrMigrationGuarded": true,
+    "registryPolicies": 134,
+    "duplicatePolicies": 0,
+    "broadLiveEnforcementEnabled": false,
+    "remainingUnclassifiedRpcNames": [],
+    "remainingUnclassifiedDynamicRpcCalls": []
+  },
+  "directRpcCoverage": [
+    {
+      "file": "src/components/foreman/calcModal.rpc.transport.ts",
+      "line": 9,
+      "rpcName": "rpc_calc_work_kit",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/features/market/market.repository.transport.ts",
+      "line": 25,
+      "rpcName": "marketplace_items_scope_page_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/features/market/market.repository.transport.ts",
+      "line": 35,
+      "rpcName": "marketplace_item_scope_detail_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "line": 523,
+      "rpcName": "proposal_send_to_accountant_min",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "line": 588,
+      "rpcName": "accountant_proposal_financial_state_v1",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "line": 687,
+      "rpcName": "accounting_pay_invoice_v1",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "line": 778,
+      "rpcName": "list_accountant_inbox_fact",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/accountant.ts",
+      "line": 789,
+      "rpcName": "list_accountant_inbox",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/director.return.transport.ts",
+      "line": 8,
+      "rpcName": "director_return_min_auto",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "line": 177,
+      "rpcName": null,
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "line": 285,
+      "rpcName": "approve_one",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "line": 315,
+      "rpcName": "reject_one",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/director.ts",
+      "line": 372,
+      "rpcName": "list_director_inbox",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.transport.ts",
+      "line": 39,
+      "rpcName": "pdf_director_finance_source_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.transport.ts",
+      "line": 50,
+      "rpcName": "pdf_director_production_source_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/directorPdfSource.transport.ts",
+      "line": 61,
+      "rpcName": "pdf_director_subcontract_source_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/directorReportsTransport.transport.ts",
+      "line": 14,
+      "rpcName": null,
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/foremanAiResolve.transport.ts",
+      "line": 29,
+      "rpcName": "resolve_catalog_synonym_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/foremanAiResolve.transport.ts",
+      "line": 36,
+      "rpcName": "resolve_packaging_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/paymentPdf.transport.ts",
+      "line": 5,
+      "rpcName": "pdf_payment_source_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/profile.transport.ts",
+      "line": 3,
+      "rpcName": "ensure_my_profile",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/profile.transport.ts",
+      "line": 5,
+      "rpcName": "get_my_role",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/proposals.transport.ts",
+      "line": 5,
+      "rpcName": "proposal_items_for_web",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 320,
+      "rpcName": "proposal_submit_text_v1",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 338,
+      "rpcName": "proposal_submit",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 350,
+      "rpcName": "proposal_create",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 462,
+      "rpcName": "proposal_add_items",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 881,
+      "rpcName": "list_director_proposals_pending",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/proposals.ts",
+      "line": 1027,
+      "rpcName": "proposal_items_snapshot",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/requestDraftSync.transport.ts",
+      "line": 73,
+      "rpcName": "request_sync_draft_v2",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/requests.itemMutations.transport.ts",
+      "line": 17,
+      "rpcName": "request_item_add_or_inc",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "line": 387,
+      "rpcName": "request_find_reusable_empty_draft_v1",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "line": 529,
+      "rpcName": "request_items_by_request",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "line": 790,
+      "rpcName": "request_submit_atomic_v1",
+      "receiver": "client",
+      "coveredBy": "wrapped_core_client"
+    },
+    {
+      "file": "src/lib/api/supabaseRpcAdapter.ts",
+      "line": 88,
+      "rpcName": null,
+      "receiver": "unknown",
+      "coveredBy": "adapter_boundary"
+    },
+    {
+      "file": "src/lib/catalog/catalog.proposalCreation.transport.ts",
+      "line": 63,
+      "rpcName": "rpc_proposal_submit_v3",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.supabase.ts",
+      "line": 178,
+      "rpcName": "rik_quick_ru",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.supabase.ts",
+      "line": 183,
+      "rpcName": "rik_quick_search_typed",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.supabase.ts",
+      "line": 189,
+      "rpcName": "rik_quick_search",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/catalog/catalog.transport.supabase.ts",
+      "line": 272,
+      "rpcName": "suppliers_list",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/store_supabase.write.transport.ts",
+      "line": 17,
+      "rpcName": null,
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/lib/store_supabase.write.transport.ts",
+      "line": 23,
+      "rpcName": null,
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/accountant/accountant.history.transport.ts",
+      "line": 21,
+      "rpcName": "list_accountant_payments_history_v2",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/accountant/accountant.history.transport.ts",
+      "line": 31,
+      "rpcName": "accountant_history_scope_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/accountant/accountant.inbox.transport.ts",
+      "line": 15,
+      "rpcName": "accountant_inbox_scope_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/accountant/accountant.return.transport.ts",
+      "line": 9,
+      "rpcName": "acc_return_min_auto",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/accountant/accountant.return.transport.ts",
+      "line": 12,
+      "rpcName": "proposal_return_to_buyer_min",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/buyer/hooks/useBuyerRequestProposalMap.transport.ts",
+      "line": 8,
+      "rpcName": "resolve_req_pr_map",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
+      "line": 24,
+      "rpcName": "subcontract_create_v1",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
+      "line": 31,
+      "rpcName": "subcontract_create_draft",
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    },
+    {
+      "file": "src/screens/subcontracts/subcontracts.shared.transport.ts",
+      "line": 39,
+      "rpcName": null,
+      "receiver": "supabase",
+      "coveredBy": "wrapped_supabase_export"
+    }
+  ],
+  "adapterRpcCalls": [
+    {
+      "file": "src/lib/api/_core.transport.ts",
+      "line": 38,
+      "receiver": "supabase as unknown as RpcCallableClient",
+      "rpcName": null
+    },
+    {
+      "file": "src/lib/api/_core.transport.ts",
+      "line": 51,
+      "receiver": "supabase as unknown as RpcCallableClient",
+      "rpcName": null
+    },
+    {
+      "file": "src/lib/api/integrity.guards.transport.ts",
+      "line": 10,
+      "receiver": "supabaseClient",
+      "rpcName": "proposal_request_item_integrity_v1"
+    },
+    {
+      "file": "src/lib/api/proposalAttachmentEvidence.api.ts",
+      "line": 109,
+      "receiver": "client",
+      "rpcName": "proposal_attachment_evidence_attach_v1"
+    },
+    {
+      "file": "src/lib/api/proposalAttachments.service.ts",
+      "line": 275,
+      "receiver": "client",
+      "rpcName": "proposal_attachment_evidence_scope_v1"
+    },
+    {
+      "file": "src/lib/api/queryBoundary.ts",
+      "line": 328,
+      "receiver": "transport",
+      "rpcName": null
+    },
+    {
+      "file": "src/lib/api/requests.ts",
+      "line": 908,
+      "receiver": "client",
+      "rpcName": "request_reopen_atomic_v1"
+    },
+    {
+      "file": "src/lib/api/supabaseRpcAdapter.ts",
+      "line": 68,
+      "receiver": "client: unknown",
+      "rpcName": null
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 433,
+      "receiver": "queueClient",
+      "rpcName": "submit_jobs_claim"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 460,
+      "receiver": "queueRpcCompat",
+      "rpcName": "submit_jobs_claim"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 498,
+      "receiver": "queueClient",
+      "rpcName": "submit_jobs_recover_stuck"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 515,
+      "receiver": "queueClient",
+      "rpcName": "submit_jobs_mark_completed"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 536,
+      "receiver": "queueRpcCompat",
+      "rpcName": "submit_jobs_mark_completed"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 570,
+      "receiver": "queueClient",
+      "rpcName": "submit_jobs_mark_failed"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 592,
+      "receiver": "queueRpcCompat",
+      "rpcName": "submit_jobs_mark_failed"
+    },
+    {
+      "file": "src/lib/infra/jobQueue.ts",
+      "line": 624,
+      "receiver": "queueClient",
+      "rpcName": "submit_jobs_metrics"
+    },
+    {
+      "file": "src/lib/infra/queueLatencyMetrics.transport.ts",
+      "line": 18,
+      "receiver": "supabaseClient",
+      "rpcName": "submit_jobs_metrics"
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
+      "line": 33,
+      "receiver": "params.supabase",
+      "rpcName": "request_items_set_status"
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
+      "line": 53,
+      "receiver": "params.supabase",
+      "rpcName": "buyer_rfq_create_and_publish_v1"
+    },
+    {
+      "file": "src/screens/buyer/buyer.actions.write.transport.ts",
+      "line": 64,
+      "receiver": "params.supabase",
+      "rpcName": "proposal_send_to_accountant_min"
+    },
+    {
+      "file": "src/screens/contractor/contractor.workModalService.transport.ts",
+      "line": 61,
+      "receiver": "supabaseClient",
+      "rpcName": "work_seed_defaults_auto"
+    },
+    {
+      "file": "src/screens/contractor/contractor.workSearch.transport.ts",
+      "line": 18,
+      "receiver": "supabaseClient",
+      "rpcName": "catalog_search"
+    },
+    {
+      "file": "src/screens/contractor/contractorPdfSource.transport.ts",
+      "line": 19,
+      "receiver": "supabase",
+      "rpcName": "pdf_contractor_work_source_v1"
+    },
+    {
+      "file": "src/screens/director/director.approve.transport.ts",
+      "line": 15,
+      "receiver": "supabase",
+      "rpcName": "director_approve_pipeline_v1"
+    },
+    {
+      "file": "src/screens/director/director.finance.rpc.transport.ts",
+      "line": 35,
+      "receiver": "supabase",
+      "rpcName": null
+    },
+    {
+      "file": "src/screens/director/director.proposalDecision.transport.ts",
+      "line": 20,
+      "receiver": "supabase",
+      "rpcName": "director_decide_proposal_items"
+    },
+    {
+      "file": "src/screens/director/director.proposals.transport.ts",
+      "line": 11,
+      "receiver": "supabase",
+      "rpcName": "director_pending_proposals_scope_v1"
+    },
+    {
+      "file": "src/screens/director/director.repository.transport.ts",
+      "line": 8,
+      "receiver": "supabase",
+      "rpcName": "list_director_items_stable"
+    },
+    {
+      "file": "src/screens/director/director.request.transport.ts",
+      "line": 13,
+      "receiver": "supabase",
+      "rpcName": "reject_request_item"
+    },
+    {
+      "file": "src/screens/director/director.request.transport.ts",
+      "line": 23,
+      "receiver": "supabase",
+      "rpcName": "reject_request_all"
+    },
+    {
+      "file": "src/screens/director/director.request.transport.ts",
+      "line": 36,
+      "receiver": "supabase",
+      "rpcName": "director_approve_request_v1"
+    },
+    {
+      "file": "src/screens/warehouse/hooks/useWarehouseReceiveApply.transport.ts",
+      "line": 25,
+      "receiver": "supabase",
+      "rpcName": "wh_receive_apply_ui"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "line": 75,
+      "receiver": "supabase",
+      "rpcName": "acc_report_issue_lines"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "line": 172,
+      "receiver": "supabase",
+      "rpcName": "warehouse_incoming_queue_scope_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "line": 217,
+      "receiver": "supabase",
+      "rpcName": "warehouse_issue_items_scope_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.api.repo.transport.ts",
+      "line": 227,
+      "receiver": "supabase",
+      "rpcName": "warehouse_stock_scope_v2"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.dayMaterialsReport.pdf.transport.ts",
+      "line": 18,
+      "receiver": "supabase",
+      "rpcName": "pdf_warehouse_day_materials_source_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingForm.pdf.transport.ts",
+      "line": 19,
+      "receiver": "supabase",
+      "rpcName": "pdf_warehouse_incoming_source_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.incomingMaterialsReport.pdf.transport.ts",
+      "line": 18,
+      "receiver": "supabase",
+      "rpcName": "pdf_warehouse_incoming_materials_source_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
+      "line": 36,
+      "receiver": "supabase",
+      "rpcName": "wh_issue_free_atomic_v5"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.issue.transport.ts",
+      "line": 47,
+      "receiver": "supabase",
+      "rpcName": "wh_issue_request_atomic_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.nameMap.ui.transport.ts",
+      "line": 32,
+      "receiver": "supabase",
+      "rpcName": "warehouse_refresh_name_map_ui"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.objectWorkReport.pdf.transport.ts",
+      "line": 20,
+      "receiver": "supabase",
+      "rpcName": "pdf_warehouse_object_work_source_v1"
+    },
+    {
+      "file": "src/screens/warehouse/warehouse.seed.transport.ts",
+      "line": 216,
+      "receiver": "supabase",
+      "rpcName": null
+    }
+  ],
+  "findings": [],
+  "metrics": {
+    "runtimeEnforcementEnabled": true,
+    "wrappedSupabaseExportPresent": true,
+    "adapterBoundaryPresent": true,
+    "directRpcCalls": 51,
+    "directRpcRuntimeCovered": 51,
+    "directRpcBypassRemaining": 0,
+    "adapterRpcCallsClassified": 38,
+    "listLikeRpcEntrypoints": 27,
+    "listLikeRpcRuntimeLimited": true,
+    "dynamicRpcBoundariesClassified": true,
+    "mutationRpcApprovalSafe": true,
+    "adminGreenPathFound": false,
+    "serviceRoleGreenPathFound": false
+  }
+}

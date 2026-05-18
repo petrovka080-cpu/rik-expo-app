@@ -15,7 +15,8 @@ describe("S_AUDIT_BATTLE_96_CORE_RPC_COMPAT_TRANSPORT_BOUNDARY", () => {
     expect(core).toContain("classifyRpcCompatError");
     expect(core).not.toContain("supabase.rpc(");
     expect(transport).toContain("export async function runRpcCompatTransportVariant");
-    expect(transport).toContain("supabase.rpc(variant.fn");
+    expect(transport).toContain("callRateLimitedSupabaseRpc");
+    expect(transport).toContain("variant.fn");
     expect(transport).toContain("RpcCompatTransportResult");
   });
 });

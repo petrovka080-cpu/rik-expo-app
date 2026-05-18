@@ -55,7 +55,7 @@ describe("buyer action write transport boundary", () => {
     expect(repoSource).not.toContain("supabase.rpc(");
     expect(repoSource).not.toContain("supabase.from(");
     expect(repoSource).not.toContain('.from("request_items")');
-    expect(transportSource).toContain("supabase.rpc(");
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
     expect(transportSource).toContain('"request_items_set_status"');
     expect(transportSource).toContain('"buyer_rfq_create_and_publish_v1"');
     expect(transportSource).toContain('"proposal_send_to_accountant_min"');

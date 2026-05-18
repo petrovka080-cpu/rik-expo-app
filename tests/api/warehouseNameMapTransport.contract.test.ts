@@ -23,7 +23,8 @@ describe("warehouse name-map transport boundary", () => {
     expect(transportSource).toContain('from("warehouse_name_map_ui" as never)');
     expect(transportSource).toContain('.select("code, display_name")');
     expect(transportSource).toContain('.order("code", { ascending: true })');
-    expect(transportSource).toContain('supabase.rpc("warehouse_refresh_name_map_ui" as never');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"warehouse_refresh_name_map_ui"');
     expect(transportSource).toContain("WarehouseRefreshNameMapUiRpcArgs");
   });
 

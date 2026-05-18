@@ -22,9 +22,10 @@ describe("director request transport boundary", () => {
     expect(serviceSource).toContain('rpcName: "reject_request_all"');
     expect(serviceSource).toContain('rpcName: "director_approve_request_v1"');
 
-    expect(transportSource).toContain('rpc("reject_request_item"');
-    expect(transportSource).toContain('rpc("reject_request_all"');
-    expect(transportSource).toContain('rpc("director_approve_request_v1"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"reject_request_item"');
+    expect(transportSource).toContain('"reject_request_all"');
+    expect(transportSource).toContain('"director_approve_request_v1"');
   });
 
   it("preserves reject item RPC payload semantics", async () => {

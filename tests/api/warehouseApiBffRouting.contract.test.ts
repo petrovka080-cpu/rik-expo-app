@@ -71,7 +71,9 @@ describe("warehouse API BFF routing contract", () => {
     expect(repoSource).not.toContain(".rpc(");
     expect(repoSource).not.toContain(".from(");
 
-    expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(12);
+    expect(transportSource.match(/callRateLimitedSupabaseRpc(?:<[^>]+>)?\(/g) ?? []).toHaveLength(4);
+    expect(transportSource.match(/callRateLimitedSupabaseRpcBuilder(?:<[^>]+>)?\(/g) ?? []).toHaveLength(6);
+    expect(transportSource.match(/\.rpc\(/g) ?? []).toHaveLength(0);
     expect(transportSource.match(/\.from\(/g) ?? []).toHaveLength(2);
     expect(transportSource).toContain("createGuardedPagedQuery");
     expect(transportSource).toContain("isRecordRow");
@@ -101,7 +103,8 @@ describe("warehouse API BFF routing contract", () => {
     expect(repoSource).toContain("fetchWarehouseStockScope");
     expect(repoSource).toContain('operation: "warehouse.api.stock.scope"');
     expect(transportSource).toContain("callWarehouseApiSupabaseStockScope");
-    expect(transportSource).toContain('supabase.rpc("warehouse_stock_scope_v2"');
+    expect(transportSource).toContain("callRateLimitedSupabaseRpc");
+    expect(transportSource).toContain('"warehouse_stock_scope_v2"');
     expect(contractSource).toContain('"warehouse.api.stock.scope"');
   });
 

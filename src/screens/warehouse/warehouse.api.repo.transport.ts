@@ -5,6 +5,10 @@ import {
   loadPagedRowsWithCeiling,
 } from "../../lib/api/_core";
 import {
+  callRateLimitedSupabaseRpc,
+  callRateLimitedSupabaseRpcBuilder,
+} from "../../lib/api/supabaseRpcAdapter";
+import {
   applySupabaseAbortSignal,
   throwIfAborted,
 } from "../../lib/requestCancellation";
@@ -27,6 +31,9 @@ export type WarehouseApiReportsBundleResult = {
   movement: WarehouseApiRepoResult;
   issues: WarehouseApiRepoResult;
 };
+type AbortableRpcBuilder<T> = PromiseLike<T> & {
+  abortSignal?: (signal: AbortSignal) => AbortableRpcBuilder<T>;
+};
 
 export async function callWarehouseApiSupabaseReportsBundle(
   supabase: SupabaseClient,
@@ -38,18 +45,18 @@ export async function callWarehouseApiSupabaseReportsBundle(
   const [stock, movement, issues] = await Promise.all([
     applySupabaseAbortSignal(
       // SCALE_BOUND_EXCEPTION: stock report RPC is a current-stock aggregate view without pagination args; tracked for DB function pagination.
-      supabase.rpc("acc_report_stock", {}),
+      callRateLimitedSupabaseRpcBuilder(supabase, "acc_report_stock", {}),
       options?.signal,
     ),
     applySupabaseAbortSignal(
-      supabase.rpc("acc_report_movement", {
+      callRateLimitedSupabaseRpcBuilder(supabase, "acc_report_movement", {
         p_from: periodFrom || null,
         p_to: periodTo || null,
       }),
       options?.signal,
     ),
     applySupabaseAbortSignal(
-      supabase.rpc("acc_report_issues_v2", {
+      callRateLimitedSupabaseRpcBuilder(supabase, "acc_report_issues_v2", {
         p_from: periodFrom || null,
         p_to: periodTo || null,
       }),
@@ -65,7 +72,7 @@ export async function callWarehouseApiSupabaseIssueLineRows(
   supabase: SupabaseClient,
   issueId: number,
 ): Promise<WarehouseApiRepoResult> {
-  return await supabase.rpc("acc_report_issue_lines", { p_issue_id: issueId });
+  return await callRateLimitedSupabaseRpc<WarehouseApiRepoResult>(supabase, "acc_report_issue_lines", { p_issue_id: issueId });
 }
 
 export async function callWarehouseApiSupabaseIssuedMaterialsFastRows(
@@ -75,7 +82,7 @@ export async function callWarehouseApiSupabaseIssuedMaterialsFastRows(
 ): Promise<WarehouseApiRepoResult> {
   throwIfAborted(options?.signal);
   return await applySupabaseAbortSignal(
-    supabase.rpc("wh_report_issued_materials_fast", {
+    callRateLimitedSupabaseRpcBuilder(supabase, "wh_report_issued_materials_fast", {
       p_from: p.from ?? null,
       p_to: p.to ?? null,
       p_object_id: p.objectId ?? null,
@@ -91,7 +98,7 @@ export async function callWarehouseApiSupabaseIssuedByObjectFastRows(
 ): Promise<WarehouseApiRepoResult> {
   throwIfAborted(options?.signal);
   return await applySupabaseAbortSignal(
-    supabase.rpc("wh_report_issued_by_object_fast", {
+    callRateLimitedSupabaseRpcBuilder(supabase, "wh_report_issued_by_object_fast", {
       p_from: p.from ?? null,
       p_to: p.to ?? null,
       p_object_id: p.objectId ?? null,
@@ -107,7 +114,7 @@ export async function callWarehouseApiSupabaseIncomingReportRows(
 ): Promise<WarehouseApiRepoResult> {
   throwIfAborted(options?.signal);
   return await applySupabaseAbortSignal(
-    supabase.rpc("acc_report_incoming_v2", {
+    callRateLimitedSupabaseRpcBuilder(supabase, "acc_report_incoming_v2", {
       p_from: p.from ?? null,
       p_to: p.to ?? null,
     }),
@@ -162,10 +169,10 @@ export async function callWarehouseApiSupabaseIncomingHeadsScope(
   pageOffset: number,
   pageSize: number,
 ): Promise<WarehouseApiEnvelopeResult> {
-  return await supabase.rpc("warehouse_incoming_queue_scope_v1" as never, {
+  return await callRateLimitedSupabaseRpc<WarehouseApiEnvelopeResult>(supabase, "warehouse_incoming_queue_scope_v1", {
     p_offset: pageOffset,
     p_limit: pageSize,
-  } as never);
+  });
 }
 
 export async function callWarehouseApiSupabaseIncomingItemsScope(
@@ -176,9 +183,9 @@ export async function callWarehouseApiSupabaseIncomingItemsScope(
   throwIfAborted(options?.signal);
   const result = await applySupabaseAbortSignal(
     // SCALE_BOUND_EXCEPTION: incoming-items RPC is parent-scoped by one incoming id; DB function pagination is a follow-up contract change.
-    supabase.rpc("warehouse_incoming_items_scope_v1" as never, {
+    callRateLimitedSupabaseRpcBuilder<AbortableRpcBuilder<WarehouseApiEnvelopeResult>>(supabase, "warehouse_incoming_items_scope_v1", {
       p_incoming_id: incomingId,
-    } as never),
+    }),
     options?.signal,
   );
   throwIfAborted(options?.signal);
@@ -193,7 +200,7 @@ export async function callWarehouseApiSupabaseIssueQueueScope(
 ): Promise<WarehouseApiEnvelopeResult> {
   throwIfAborted(options?.signal);
   const result = await applySupabaseAbortSignal(
-    supabase.rpc("warehouse_issue_queue_scope_v4", {
+    callRateLimitedSupabaseRpcBuilder<AbortableRpcBuilder<WarehouseApiEnvelopeResult>>(supabase, "warehouse_issue_queue_scope_v4", {
       p_offset: offset,
       p_limit: pageSize,
     }),
@@ -207,7 +214,7 @@ export async function callWarehouseApiSupabaseIssueItemsScope(
   supabase: SupabaseClient,
   requestId: string,
 ): Promise<WarehouseApiEnvelopeResult> {
-  return await supabase.rpc("warehouse_issue_items_scope_v1", {
+  return await callRateLimitedSupabaseRpc<WarehouseApiEnvelopeResult>(supabase, "warehouse_issue_items_scope_v1", {
     p_request_id: requestId,
   });
 }
@@ -217,7 +224,7 @@ export async function callWarehouseApiSupabaseStockScope(
   offset: number,
   limit: number,
 ): Promise<WarehouseApiEnvelopeResult> {
-  return await supabase.rpc("warehouse_stock_scope_v2", {
+  return await callRateLimitedSupabaseRpc<WarehouseApiEnvelopeResult>(supabase, "warehouse_stock_scope_v2", {
     p_limit: limit,
     p_offset: offset,
   });

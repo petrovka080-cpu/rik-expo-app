@@ -234,6 +234,17 @@ const DYNAMIC_DIRECT_RPC_BOUNDARIES: readonly DynamicRpcBoundary[] = Object.free
     reason: "Generic contained RPC boundary; concrete literal and dynamic callers are classified separately.",
   },
   {
+    file: "src/lib/api/supabaseRpcAdapter.ts",
+    line: 88,
+    owner: "runtime_rate_limited_rpc_builder",
+    classification: "compat_transport",
+    rateEnforcementOperation: null,
+    boundedArgsRequired: false,
+    migrationTarget: null,
+    possibleRpcNames: [],
+    reason: "Generic runtime rate-limited Supabase RPC builder; concrete callers are classified separately.",
+  },
+  {
     file: "src/lib/store_supabase.write.transport.ts",
     line: 17,
     owner: "store_send_request_to_director",
@@ -732,6 +743,12 @@ export function verifySupabaseRpcRateLimitDiscipline(
 
   const dynamicDirectEntries = directRpcInventory.filter((entry) => !entry.rpcName);
   const dynamicWrapperEntries = wrapperRpcInventory.filter((entry) => !entry.rpcName);
+  const activeDynamicDirectBoundaries = DYNAMIC_DIRECT_RPC_BOUNDARIES.filter((boundary) =>
+    dynamicDirectEntries.some((entry) => dynamicKey(entry) === dynamicKey(boundary)),
+  );
+  const activeDynamicWrapperBoundaries = DYNAMIC_WRAPPER_RPC_BOUNDARIES.filter((boundary) =>
+    dynamicWrapperEntries.some((entry) => dynamicKey(entry) === dynamicKey(boundary)),
+  );
   classifiedEntries.push(
     ...classifyDynamicBoundaryEntries(
       "dynamic_direct",
@@ -797,8 +814,8 @@ export function verifySupabaseRpcRateLimitDiscipline(
     generatedAt: new Date().toISOString(),
     directRpcInventory,
     wrapperRpcInventory,
-    dynamicDirectBoundaries: DYNAMIC_DIRECT_RPC_BOUNDARIES,
-    dynamicWrapperBoundaries: DYNAMIC_WRAPPER_RPC_BOUNDARIES,
+    dynamicDirectBoundaries: activeDynamicDirectBoundaries,
+    dynamicWrapperBoundaries: activeDynamicWrapperBoundaries,
     classifiedEntries,
     findings,
     metrics: {

@@ -5,6 +5,7 @@ import {
   isRecordRow,
   type PagedQuery,
 } from "../../lib/api/_core";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type WarehouseSeedRequestItemMini = {
   id?: string | null;
@@ -51,6 +52,10 @@ export type WarehouseSeedEnsureRpcName =
   | "wh_incoming_ensure_items"
   | "ensure_incoming_items"
   | "wh_incoming_seed_from_purchase";
+type WarehouseSeedEnsureRpcResult = {
+  data: unknown;
+  error: { message?: string | null } | null;
+};
 
 const isOptionalString = (value: unknown): boolean =>
   value == null || typeof value === "string";
@@ -208,5 +213,7 @@ export function callWarehouseSeedEnsureRpc(
   fn: WarehouseSeedEnsureRpcName,
   incomingId: string,
 ) {
-  return supabase.rpc(fn, { p_incoming_id: incomingId });
+  return callRateLimitedSupabaseRpc<WarehouseSeedEnsureRpcResult>(supabase, fn, {
+    p_incoming_id: incomingId,
+  });
 }

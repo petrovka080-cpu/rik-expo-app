@@ -1,4 +1,5 @@
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 
 export type DirectorProposalItemDecision = {
   request_item_id: string;
@@ -16,5 +17,5 @@ export function callDirectorDecideProposalItemsRpc(
   supabase: AppSupabaseClient,
   args: DirectorDecideProposalItemsRpcArgs,
 ) {
-  return supabase.rpc("director_decide_proposal_items", args);
+  return callRateLimitedSupabaseRpc(supabase, "director_decide_proposal_items", args);
 }

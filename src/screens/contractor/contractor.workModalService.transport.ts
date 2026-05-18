@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PagedQuery } from "../../lib/api/_core";
+import { callRateLimitedSupabaseRpc } from "../../lib/api/supabaseRpcAdapter";
 import type { Database } from "../../lib/database.types";
 
 export type ContractorWorkModalRequestNoProbeRow = {
@@ -12,6 +13,10 @@ export type ContractorWorkModalRequestDisplayRow = {
   display_no?: string | null;
   request_no?: string | null;
   status?: string | null;
+};
+type ContractorWorkSeedRpcResult = {
+  data: unknown;
+  error: { message?: string | null } | null;
 };
 
 const normalizeRequestNoProbeRow = (
@@ -53,5 +58,11 @@ export async function seedContractorWorkDefaultsAuto(
   supabaseClient: SupabaseClient<Database>,
   workCode: string,
 ) {
-  return await supabaseClient.rpc("work_seed_defaults_auto", { p_work_code: workCode });
+  return await callRateLimitedSupabaseRpc<ContractorWorkSeedRpcResult>(
+    supabaseClient,
+    "work_seed_defaults_auto",
+    {
+      p_work_code: workCode,
+    },
+  );
 }
