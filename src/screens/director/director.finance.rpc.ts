@@ -65,7 +65,7 @@ type FinanceRpcStatus = "unknown" | "available" | "missing" | "failed";
 type FinanceRpcMeta = { status: FinanceRpcStatus; updatedAt: number };
 
 const readRuntimeEnvFlag = (key: string, fallback: string): string =>
-  String(((globalThis as unknown as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
+  String(((globalThis as RuntimeProcessEnv).process?.env ?? {})[key] ?? fallback).trim();
 
 const DIRECTOR_FINANCE_SUMMARY_RPC_ENABLED =
   readRuntimeEnvFlag("EXPO_PUBLIC_DIRECTOR_FINANCE_SUMMARY_RPC", "1") !== "0";

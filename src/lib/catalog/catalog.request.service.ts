@@ -610,8 +610,7 @@ export async function listRequestItems(
 
     if (!Array.isArray(data) || !data.length) return [];
 
-    const rows = Array.isArray(data) ? (data as unknown[]) : [];
-    const mapped = rows
+    const mapped = data
       .map((row) => mapRequestItemRow(row, id))
       .filter((row): row is ReqItemRow => !!row);
     const guarded = await filterCatalogRequestLinkedRowsByExistingRequestLinks(
@@ -713,7 +712,10 @@ export async function listForemanRequests(
   if (!name && !uid) return [];
 
   const take = clamp(limit, 1, 200);
-  const results: { data: unknown; error: { message?: string } | null }[] = [];
+  const results: {
+    data: unknown[] | null;
+    error: { message?: string } | null;
+  }[] = [];
   if (name) {
     results.push(await loadCatalogForemanRequestRowsByName(name, take));
   }
@@ -728,10 +730,9 @@ export async function listForemanRequests(
       continue;
     }
     if (!Array.isArray(result.data)) continue;
-    const rows = Array.isArray(result.data) ? (result.data as unknown[]) : [];
-    for (const rawRow of rows) {
-      if (!asUnknownRecord(rawRow)) continue;
-      const row = rawRow as RequestListMergedRow;
+    for (const rawRow of result.data) {
+      const row = asUnknownRecord(rawRow);
+      if (!row) continue;
       const id = String(row.id ?? "").trim();
       if (!id || mergedById.has(id)) continue;
       mergedById.set(id, row);
@@ -788,10 +789,7 @@ export async function listForemanRequests(
     string,
     { total: number; ok: number; bad: number; pend: number; cancelled: number }
   >();
-  const statusRows = Array.isArray(itemRows) ? (itemRows as unknown[]) : [];
-  for (const rawRow of statusRows) {
-    const row = asUnknownRecord(rawRow);
-    if (!row) continue;
+  for (const row of itemRows) {
     const requestId = String((row as RequestItemStatusAggRow).request_id ?? "");
     if (!requestId) continue;
     const status = normSt((row as RequestItemStatusAggRow).status);

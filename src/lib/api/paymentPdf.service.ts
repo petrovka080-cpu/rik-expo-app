@@ -364,6 +364,14 @@ const requireArray = (value: unknown, field: string) => {
   return value;
 };
 
+const requireOptionalArray = (value: unknown, field: string) => {
+  if (value == null) return undefined;
+  if (!Array.isArray(value)) {
+    throw new PaymentPdfSourceValidationError("invalid_payload", `pdf_payment_source_v1 invalid ${field}`);
+  }
+  return value;
+};
+
 const getPaymentPdfFailureReason = (error: unknown): PdfRpcRolloutFallbackReason => {
   if (error instanceof PaymentPdfSourceValidationError) return error.reason;
   return "rpc_error";
@@ -406,10 +414,7 @@ function validatePaymentPdfSourceV1(value: unknown): PaymentPdfSourceEnvelopeV1 
     throw new PaymentPdfSourceValidationError("missing_fields", "pdf_payment_source_v1 missing header.payment.payment_id");
   }
 
-  const attachmentsMeta = root.attachments_meta;
-  if (attachmentsMeta != null && !Array.isArray(attachmentsMeta)) {
-    throw new PaymentPdfSourceValidationError("invalid_payload", "pdf_payment_source_v1 invalid attachments_meta");
-  }
+  const attachmentsMeta = requireOptionalArray(root.attachments_meta, "attachments_meta");
 
   return {
     document_type: "payment_order",
@@ -425,7 +430,7 @@ function validatePaymentPdfSourceV1(value: unknown): PaymentPdfSourceEnvelopeV1 
     },
     rows,
     allocations,
-    attachments_meta: attachmentsMeta as unknown[] | undefined,
+    attachments_meta: attachmentsMeta,
     totals,
     meta: asRecord(root.meta),
   };

@@ -1,0 +1,31 @@
+{
+  "wave": "S_TYPE_01_RUNTIME_CAST_HARDENING",
+  "final_status": "GREEN_RUNTIME_CAST_HARDENING_READY",
+  "scope": [
+    "src/lib/api/paymentPdf.service.ts",
+    "src/lib/catalog/catalog.request.service.ts",
+    "src/screens/director/director.finance.rpc.ts"
+  ],
+  "runtime_source_changed": true,
+  "unsafe_unknown_as_before": 46,
+  "unsafe_unknown_as_after": 45,
+  "unsafe_unknown_as_reduced": 1,
+  "array_casts_replaced_with_typed_flow_or_validator": 4,
+  "queries_changed": false,
+  "business_logic_changed": false,
+  "hooks_added": false,
+  "ui_changed": false,
+  "db_writes_used": false,
+  "migrations_used": false,
+  "provider_or_model_config_changed": false,
+  "broad_allowlists_used": false,
+  "fake_green_claimed": false,
+  "gates": {
+    "tsc_noEmit": "PASS",
+    "expo_lint": "PASS",
+    "git_diff_check": "PASS",
+    "targeted_tests": "PASS",
+    "full_jest_runInBand": "PASS",
+    "architecture_anti_regression_suite_json": "PASS"
+  }
+}
