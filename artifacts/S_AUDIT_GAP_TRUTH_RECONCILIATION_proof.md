@@ -2,8 +2,8 @@
 
 final_status: GREEN_AUDIT_GAP_TRUTH_RECONCILED
 generated_at: 2026-05-18T21:13:27.637Z
-source_head_verified: 8145799e3ce705fdb5297a3315e20b8f05ca0a70
-origin_main_at_verification: 8145799e3ce705fdb5297a3315e20b8f05ca0a70
+source_head_verified: 8a567443ab5aa0c168ffe7e7c5f6ec16ac7f8495
+origin_main_at_verification: 8a567443ab5aa0c168ffe7e7c5f6ec16ac7f8495
 current_head_verified: true
 
 ## Scope
@@ -40,7 +40,7 @@ The old audit numbers are stale on current HEAD:
 
 ## Release Rule
 
-No app/source/runtime code changed in this wave. Final release:verify is pending the clean synced artifact commit so the release guard can run without dirty-worktree noise.
+No app/source/runtime code changed in this wave, and release:verify did not report iOS blockers. iOS TestFlight rebuild/submit/signoff is not required by GLOBAL_RELEASE_RULE_IOS_TESTFLIGHT.
 
 ## Gate Results
 
@@ -49,4 +49,4 @@ No app/source/runtime code changed in this wave. Final release:verify is pending
 - `git diff --check`: PASS.
 - `npm test -- --runInBand`: PASS, 1309 suites passed / 1 skipped, 5498 tests passed / 1 skipped.
 - `npx tsx scripts/architecture_anti_regression_suite.ts --json`: PASS.
-- `npm run release:verify -- --json`: PENDING final clean synced commit.
+- `npm run release:verify -- --json`: PASS, readiness `pass`, OTA disposition `skip`, blockers [].
