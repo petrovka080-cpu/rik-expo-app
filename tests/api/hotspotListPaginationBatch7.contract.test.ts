@@ -299,6 +299,19 @@ const isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch = (file: string)
     "tests/perf/performance-budget.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedDirectorReportsFlatListTuningPatch = (file: string) =>
+  [
+    "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_inventory.json",
+    "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_matrix.json",
+    "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_proof.md",
+    "artifacts/S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_release_verify_report.json",
+    "scripts/perf/flatListTuningRegression.ts",
+    "src/screens/director/DirectorReportsModal.tsx",
+    "tests/perf/directorReportsModalFlatListTuning.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -391,6 +404,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
+        !isApprovedDirectorReportsFlatListTuningPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

@@ -10,14 +10,10 @@ import { DirectorReportsMaterialRow } from "./DirectorReportsMaterialRow";
 import type { DirectorReportsModalProps as Props } from "./DirectorReportsModal.types";
 import { DirectorReportsObjectFilterSummary } from "./DirectorReportsObjectFilterSummary";
 import { UI, s } from "./director.styles";
-import {
-  type RepDisciplineLevel,
-  type RepDisciplineWork,
-  type RepRow,
-  type RepTab,
-} from "./director.types";
+import type { RepDisciplineLevel, RepDisciplineWork, RepRow, RepTab } from "./director.types";
 
 const money = (v: number) => `${Math.round(Number(v || 0)).toLocaleString("ru-RU")} KGS`;
+const REPORT_LIST_TUNING = { initialNumToRender: 8, maxToRenderPerBatch: 8, windowSize: 7, estimatedItemSize: 96 } as const;
 
 export default function DirectorReportsModal({
   visible,
@@ -328,6 +324,7 @@ export default function DirectorReportsModal({
                   data={objectOptions}
                   renderItem={renderObjectOptionRow}
                   keyExtractor={objectOptionKeyExtractor}
+                  {...REPORT_LIST_TUNING}
                   contentContainerStyle={styles.listBottomPad4}
                   keyboardShouldPersistTaps="handled"
                   showsVerticalScrollIndicator={false}
@@ -354,6 +351,7 @@ export default function DirectorReportsModal({
               data={sortedLevelMaterials}
               renderItem={renderLevelMaterialRow}
               keyExtractor={levelMaterialKeyExtractor}
+              {...REPORT_LIST_TUNING}
               ListHeaderComponent={levelModalHeader}
               contentContainerStyle={[styles.detailListContent, { paddingBottom: detailBottomInset }]}
               keyboardShouldPersistTaps="handled"
@@ -376,6 +374,7 @@ export default function DirectorReportsModal({
               data={sortedWorkLevels}
               renderItem={renderLevelRow}
               keyExtractor={levelKeyExtractor}
+              {...REPORT_LIST_TUNING}
               ListHeaderComponent={workModalHeader}
               ListFooterComponent={workModalFooter}
               contentContainerStyle={[styles.detailListContent, { paddingBottom: detailBottomInset }]}
@@ -450,6 +449,7 @@ export default function DirectorReportsModal({
             data={rows}
             renderItem={renderMaterialRow}
             keyExtractor={materialRowKeyExtractor}
+            {...REPORT_LIST_TUNING}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listBottomPad4}
@@ -463,6 +463,7 @@ export default function DirectorReportsModal({
             data={sortedWorks}
             renderItem={renderWorkRow}
             keyExtractor={disciplineWorkKeyExtractor}
+            {...REPORT_LIST_TUNING}
             ListHeaderComponent={disciplineListHeader}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}

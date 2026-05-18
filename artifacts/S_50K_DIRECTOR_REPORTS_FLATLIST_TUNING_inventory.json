@@ -1,0 +1,53 @@
+{
+  "wave": "S_50K_DIRECTOR_REPORTS_FLATLIST_TUNING_CLOSEOUT",
+  "base_head": "2b0bb5f7a2e8b32a86ba6b721c666f0ff1f0c1e9",
+  "branch_sync_before_change": {
+    "head_left_origin_main": 0,
+    "origin_main_right_head": 0
+  },
+  "changed_files": [
+    {
+      "path": "src/screens/director/DirectorReportsModal.tsx",
+      "kind": "app_runtime_source",
+      "change": "Added shared FlashList tuning props to all five report-surface lists without adding hooks or changing business behavior."
+    },
+    {
+      "path": "scripts/perf/flatListTuningRegression.ts",
+      "kind": "verifier_contract",
+      "change": "Removed the five now-obsolete DirectorReportsModal report-surface allowlist entries."
+    },
+    {
+      "path": "tests/perf/directorReportsModalFlatListTuning.contract.test.ts",
+      "kind": "test_contract",
+      "change": "Locks DirectorReportsModal to five explicitly tuned list instances and zero file-level allowlist entries."
+    },
+    {
+      "path": "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "kind": "dirty_worktree_boundary_contract",
+      "change": "Added exact current-wave file entries so the legacy hotspot boundary test recognizes this scoped report-surface tuning proof."
+    },
+    {
+      "path": "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "kind": "dirty_worktree_boundary_contract",
+      "change": "Added exact current-wave file entries so the legacy pagination boundary test recognizes this scoped report-surface tuning proof."
+    }
+  ],
+  "scanned_surface": {
+    "director_reports_modal_flashlist_instances": 5,
+    "director_reports_modal_tuned_instances": 5,
+    "director_reports_modal_allowlisted_instances": 0,
+    "director_reports_modal_allowlist_entries_remaining": 0,
+    "report_list_tuning_spreads": 5
+  },
+  "guardrails": {
+    "new_hooks_added": false,
+    "business_logic_changed": false,
+    "navigation_semantics_changed": false,
+    "db_writes_used": false,
+    "migrations_used": false,
+    "provider_or_model_config_changed": false,
+    "dirty_worktree_boundary_entries_exact": true,
+    "broad_allowlists_used": false,
+    "fake_green_claimed": false
+  }
+}
