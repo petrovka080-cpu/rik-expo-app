@@ -1,0 +1,1021 @@
+{
+  "wave": "S_AI_MAGIC_FIELD_DOCUMENTS_REPORTS_POINT_OF_NO_RETURN",
+  "screens": [
+    {
+      "screenId": "foreman.main",
+      "canonicalScreenId": "foreman.main",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "preparedWork": [
+        {
+          "title": "Можно подготовить акт",
+          "evidence": [
+            "source:screen_state",
+            "source:warehouse_status",
+            "source:procurement_context",
+            "screen:foreman.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "подпись",
+            "норма или checklist source"
+          ]
+        },
+        {
+          "title": "Missing photo/document/signature",
+          "evidence": [
+            "source:screen_state",
+            "source:warehouse_status",
+            "source:procurement_context",
+            "screen:foreman.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "подпись",
+            "норма или checklist source"
+          ]
+        },
+        {
+          "title": "Материалы задерживают работу",
+          "evidence": [
+            "source:screen_state",
+            "source:warehouse_status",
+            "source:procurement_context",
+            "screen:foreman.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "подпись",
+            "норма или checklist source"
+          ]
+        },
+        {
+          "title": "Подрядчик не сдал документ",
+          "evidence": [
+            "source:screen_state",
+            "source:warehouse_status",
+            "source:procurement_context",
+            "screen:foreman.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "подпись",
+            "норма или checklist source"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "что можно закрыть",
+        "missing фото/документы/подписи",
+        "material blockers",
+        "subcontractor blockers",
+        "construction checklist if source exists"
+      ],
+      "riskSummary": [
+        "акт без evidence",
+        "нет подписи",
+        "материалы блокируют работу"
+      ],
+      "missingDataSummary": [
+        "фото",
+        "документ",
+        "подпись",
+        "норма или checklist source"
+      ],
+      "safeActions": [
+        "проверить missing evidence",
+        "показать строительный checklist",
+        "проверка безопасности"
+      ],
+      "approvalCandidates": [
+        "полевая заявка на approval"
+      ],
+      "exactBlockers": [
+        "AI не подписывает и не делает final submit"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить акт",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Подготовить отчёт",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Проверить missing evidence",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Написать подрядчику",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать строительный checklist",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Проверка безопасности",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "canonicalScreenId": "foreman.ai.quick_modal",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "preparedWork": [
+        {
+          "title": "Акт по текущей работе",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:approval_policy",
+            "screen:foreman.ai.quick_modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "подпись",
+            "документ",
+            "source checklist"
+          ]
+        },
+        {
+          "title": "Отчёт за день",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:approval_policy",
+            "screen:foreman.ai.quick_modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "подпись",
+            "документ",
+            "source checklist"
+          ]
+        },
+        {
+          "title": "Список missing evidence",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:approval_policy",
+            "screen:foreman.ai.quick_modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "подпись",
+            "документ",
+            "source checklist"
+          ]
+        },
+        {
+          "title": "Проверка безопасности",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:approval_policy",
+            "screen:foreman.ai.quick_modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "подпись",
+            "документ",
+            "source checklist"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "акт по текущей работе",
+        "отчет за день",
+        "missing evidence",
+        "сообщение подрядчику",
+        "checklist",
+        "safety check"
+      ],
+      "riskSummary": [
+        "final submit без review",
+        "missing evidence",
+        "checklist without source"
+      ],
+      "missingDataSummary": [
+        "фото",
+        "подпись",
+        "документ",
+        "source checklist"
+      ],
+      "safeActions": [
+        "список missing evidence",
+        "строительный checklist",
+        "проверка безопасности"
+      ],
+      "approvalCandidates": [
+        "quick request на approval"
+      ],
+      "exactBlockers": [
+        "final submit запрещен без review"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Акт по текущей работе",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отчёт за день",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Список missing evidence",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сообщение подрядчику",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Строительный checklist",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Проверка безопасности",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "canonicalScreenId": "foreman.subcontract",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "preparedWork": [
+        {
+          "title": "Выполнено",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:foreman.subcontract"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "акт",
+            "подпись",
+            "документ подрядчика"
+          ]
+        },
+        {
+          "title": "Не подтверждено",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:foreman.subcontract"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "акт",
+            "подпись",
+            "документ подрядчика"
+          ]
+        },
+        {
+          "title": "Документов не хватает",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:foreman.subcontract"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "акт",
+            "подпись",
+            "документ подрядчика"
+          ]
+        },
+        {
+          "title": "Риск",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:foreman.subcontract"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "акт",
+            "подпись",
+            "документ подрядчика"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "subcontract status",
+        "documents missing",
+        "risk",
+        "draft closeout"
+      ],
+      "riskSummary": [
+        "closing without subcontract evidence",
+        "missing document",
+        "signature risk"
+      ],
+      "missingDataSummary": [
+        "акт",
+        "подпись",
+        "документ подрядчика"
+      ],
+      "safeActions": [
+        "показать checklist",
+        "проверить missing evidence"
+      ],
+      "approvalCandidates": [
+        "submit subcontract progress"
+      ],
+      "exactBlockers": [
+        "AI не подписывает subcontract"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить акт",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Запросить документы",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Написать подрядчику",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать checklist",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "canonicalScreenId": "contractor.main",
+      "domain": "projects",
+      "roleScope": [
+        "contractor",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Фото по зоне",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:contractor.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "ответ прорабу"
+          ]
+        },
+        {
+          "title": "Документ к акту",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:contractor.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "ответ прорабу"
+          ]
+        },
+        {
+          "title": "Ответ прорабу",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:contractor.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "ответ прорабу"
+          ]
+        },
+        {
+          "title": "Работы с замечаниями",
+          "evidence": [
+            "source:screen_state",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:contractor.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "фото",
+            "документ",
+            "ответ прорабу"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "missing photos",
+        "missing documents",
+        "reply to foreman",
+        "works with remarks"
+      ],
+      "riskSummary": [
+        "приемка блокируется missing evidence",
+        "работы с замечаниями"
+      ],
+      "missingDataSummary": [
+        "фото",
+        "документ",
+        "ответ прорабу"
+      ],
+      "safeActions": [
+        "список документов",
+        "что мешает приемке",
+        "проверить замечания"
+      ],
+      "approvalCandidates": [
+        "contractor progress submit"
+      ],
+      "exactBlockers": [
+        "AI не меняет work status напрямую"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить ответ",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Список документов",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Что мешает приёмке",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Проверить замечания",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "canonicalScreenId": "documents.main",
+      "domain": "documents",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Краткое содержание",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Связанные объекты",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Важное",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Missing evidence",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "document summary",
+        "linked request/payment/act/supplier",
+        "amount/supplier/date/terms",
+        "obligations",
+        "missing evidence",
+        "risks"
+      ],
+      "riskSummary": [
+        "document without evidence",
+        "missing obligation",
+        "linked object absent"
+      ],
+      "missingDataSummary": [
+        "linked object",
+        "amount",
+        "supplier",
+        "terms",
+        "evidence"
+      ],
+      "safeActions": [
+        "открыть связанные объекты"
+      ],
+      "approvalCandidates": [
+        "document comment or evidence request"
+      ],
+      "exactBlockers": [
+        "AI не подписывает и не удаляет документы"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить резюме",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Запросить missing evidence",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Подготовить комментарий",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть связанные объекты",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "canonicalScreenId": "documents.main",
+      "domain": "documents",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Краткое содержание",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Связанные объекты",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Важное",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        },
+        {
+          "title": "Missing evidence",
+          "evidence": [
+            "source:document_metadata",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:documents.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/documents/:documentId/context",
+            "linked object",
+            "amount",
+            "supplier",
+            "terms"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "document summary",
+        "linked request/payment/act/supplier",
+        "amount/supplier/date/terms",
+        "obligations",
+        "missing evidence",
+        "risks"
+      ],
+      "riskSummary": [
+        "document without evidence",
+        "missing obligation",
+        "linked object absent"
+      ],
+      "missingDataSummary": [
+        "linked object",
+        "amount",
+        "supplier",
+        "terms",
+        "evidence"
+      ],
+      "safeActions": [
+        "открыть связанные объекты"
+      ],
+      "approvalCandidates": [
+        "document comment or evidence request"
+      ],
+      "exactBlockers": [
+        "AI не подписывает и не удаляет документы"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить резюме",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Запросить missing evidence",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Подготовить комментарий",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть связанные объекты",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "canonicalScreenId": "reports.modal",
+      "domain": "reports",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Основные события",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:reports.modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked objects",
+            "missing data"
+          ]
+        },
+        {
+          "title": "Риски",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:reports.modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked objects",
+            "missing data"
+          ]
+        },
+        {
+          "title": "Missing evidence",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:reports.modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked objects",
+            "missing data"
+          ]
+        },
+        {
+          "title": "Что требует решения",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:reports.modal"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked objects",
+            "missing data"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "draft report",
+        "main events",
+        "risks",
+        "missing evidence",
+        "linked requests/payments/documents",
+        "decisions needed"
+      ],
+      "riskSummary": [
+        "report without evidence",
+        "missing linked object",
+        "decision needed"
+      ],
+      "missingDataSummary": [
+        "evidence",
+        "linked objects",
+        "missing data"
+      ],
+      "safeActions": [
+        "проверить evidence"
+      ],
+      "approvalCandidates": [
+        "report review"
+      ],
+      "exactBlockers": [
+        "final report submit is forbidden without review"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Собрать отчёт",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Проверить evidence",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Добавить missing data",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Сохранить черновик",
+          "actionKind": "draft_only"
+        }
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "canonicalScreenId": "chat.main",
+      "domain": "chat",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Итоги обсуждения",
+          "evidence": [
+            "source:chat_thread",
+            "source:screen_state",
+            "source:document_metadata",
+            "screen:chat.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/chat/thread-context/:threadId",
+            "owner",
+            "deadline",
+            "linked object",
+            "approval evidence"
+          ]
+        },
+        {
+          "title": "Задачи Buyer/Warehouse/Director/Foreman",
+          "evidence": [
+            "source:chat_thread",
+            "source:screen_state",
+            "source:document_metadata",
+            "screen:chat.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/chat/thread-context/:threadId",
+            "owner",
+            "deadline",
+            "linked object",
+            "approval evidence"
+          ]
+        },
+        {
+          "title": "Риск срока",
+          "evidence": [
+            "source:chat_thread",
+            "source:screen_state",
+            "source:document_metadata",
+            "screen:chat.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/chat/thread-context/:threadId",
+            "owner",
+            "deadline",
+            "linked object",
+            "approval evidence"
+          ]
+        },
+        {
+          "title": "Approval candidate",
+          "evidence": [
+            "source:chat_thread",
+            "source:screen_state",
+            "source:document_metadata",
+            "screen:chat.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/chat/thread-context/:threadId",
+            "owner",
+            "deadline",
+            "linked object",
+            "approval evidence"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "discussion summary",
+        "extracted tasks",
+        "blockers",
+        "approval needs",
+        "missing data"
+      ],
+      "riskSummary": [
+        "task without owner",
+        "approval need hidden",
+        "direct order/payment/warehouse mutation from chat"
+      ],
+      "missingDataSummary": [
+        "owner",
+        "deadline",
+        "linked object",
+        "approval evidence"
+      ],
+      "safeActions": [
+        "подготовить summary",
+        "запросить missing data"
+      ],
+      "approvalCandidates": [
+        "отправить на approval"
+      ],
+      "exactBlockers": [
+        "chat не делает direct order/payment/warehouse mutation"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Создать черновик задачи",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Подготовить summary",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить на approval",
+          "actionKind": "approval_required"
+        },
+        {
+          "label": "Запросить missing data",
+          "actionKind": "draft_only"
+        }
+      ]
+    }
+  ]
+}

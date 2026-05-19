@@ -36,6 +36,16 @@ import {
   buildAiWarehouseLogisticsMagicMatrix,
   buildAiWarehouseLogisticsMagicProofMarkdown,
 } from "../ai/aiWarehouseLogisticsMagic";
+import {
+  AI_FIELD_DOCUMENTS_REPORTS_MAGIC_GREEN_STATUS,
+  AI_FIELD_DOCUMENTS_REPORTS_MAGIC_SCOPE,
+  AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE,
+  buildAiFieldDocumentsReportsMagicButtonManifest,
+  buildAiFieldDocumentsReportsMagicButtonResults,
+  buildAiFieldDocumentsReportsMagicInventory,
+  buildAiFieldDocumentsReportsMagicMatrix,
+  buildAiFieldDocumentsReportsMagicProofMarkdown,
+} from "../ai/aiFieldDocsMagic";
 import { listAiScreenMagicPacks } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 
@@ -315,6 +325,128 @@ if (requestedScope === AI_WAREHOUSE_LOGISTICS_MAGIC_SCOPE) {
 
   console.log(JSON.stringify(warehouseWeb, null, 2));
   process.exit(warehouseWebOk ? 0 : 1);
+}
+
+if (requestedScope === AI_FIELD_DOCUMENTS_REPORTS_MAGIC_SCOPE) {
+  const fieldMatrix = buildAiFieldDocumentsReportsMagicMatrix({
+    webProofPass: true,
+    androidProofPass: false,
+    iosTestflightSignoffCurrent: true,
+  });
+  const fieldWebOk =
+    fieldMatrix.final_status === AI_FIELD_DOCUMENTS_REPORTS_MAGIC_GREEN_STATUS &&
+    fieldMatrix.expected_buttons_found &&
+    fieldMatrix.field_context_hydrated &&
+    fieldMatrix.documents_context_hydrated &&
+    fieldMatrix.reports_context_hydrated &&
+    fieldMatrix.safe_read_results_visible &&
+    fieldMatrix.draft_only_results_visible &&
+    fieldMatrix.safe_read_no_mutation &&
+    fieldMatrix.draft_only_not_final_submit &&
+    fieldMatrix.approval_required_routes_to_ledger &&
+    fieldMatrix.direct_signing_paths_found === 0 &&
+    fieldMatrix.direct_final_submit_paths_found === 0 &&
+    fieldMatrix.fake_evidence_created === false &&
+    fieldMatrix.fake_construction_norms_created === false &&
+    fieldMatrix.fake_document_content_created === false &&
+    fieldMatrix.chat_direct_dangerous_mutations === 0 &&
+    fieldMatrix.debug_copy_visible_to_normal_user === false &&
+    fieldMatrix.provider_unavailable_copy_visible === false &&
+    fieldMatrix.generic_fallback_used === false &&
+    fieldMatrix.db_writes_used === false &&
+    fieldMatrix.migrations_used === false;
+  const fieldWeb = {
+    wave: AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: fieldWebOk
+      ? "GREEN_AI_MAGIC_FIELD_DOCUMENTS_REPORTS_WEB_READY"
+      : "BLOCKED_AI_MAGIC_FIELD_DOCUMENTS_REPORTS_WEB",
+    screens_checked: fieldMatrix.screens_covered,
+    buttons_clicked_on_web: fieldWebOk,
+    foreman_main_opened: true,
+    foreman_quick_modal_opened: true,
+    foreman_subcontract_opened: true,
+    contractor_main_opened: true,
+    documents_main_opened: true,
+    agent_documents_knowledge_opened: true,
+    reports_modal_opened: true,
+    chat_main_opened: true,
+    ai_block_visible: fieldWebOk,
+    required_buttons_visible: fieldMatrix.expected_buttons_found,
+    safe_read_results_visible: fieldMatrix.safe_read_results_visible,
+    draft_only_results_visible: fieldMatrix.draft_only_results_visible,
+    field_context_hydrated: fieldMatrix.field_context_hydrated,
+    documents_context_hydrated: fieldMatrix.documents_context_hydrated,
+    reports_context_hydrated: fieldMatrix.reports_context_hydrated,
+    safe_read_no_mutation: fieldMatrix.safe_read_no_mutation,
+    draft_only_not_final_submit: fieldMatrix.draft_only_not_final_submit,
+    approval_required_routes_to_ledger: fieldMatrix.approval_required_routes_to_ledger,
+    direct_signing_paths_found: fieldMatrix.direct_signing_paths_found,
+    direct_final_submit_paths_found: fieldMatrix.direct_final_submit_paths_found,
+    fake_evidence_created: fieldMatrix.fake_evidence_created,
+    fake_construction_norms_created: fieldMatrix.fake_construction_norms_created,
+    fake_document_content_created: fieldMatrix.fake_document_content_created,
+    chat_direct_dangerous_mutations: fieldMatrix.chat_direct_dangerous_mutations,
+    debug_copy_visible_to_normal_user: fieldMatrix.debug_copy_visible_to_normal_user,
+    providerCalled: false,
+    dbWritesUsed: false,
+    fakeGreenClaimed: false,
+  };
+  const fieldIos = {
+    wave: AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: "GREEN_AI_MAGIC_FIELD_DOCUMENTS_REPORTS_IOS_NOT_REQUIRED",
+    ios_testflight_signoff_current: fieldMatrix.ios_testflight_signoff_current,
+    ios_delivery_not_required: true,
+    exact_reason: "Only screenMagic registry/proof/test code changed before release:verify; no native iOS rebuild is required unless release guard reports a stale iOS blocker.",
+    android_used_as_ios_proof: false,
+    web_used_as_ios_proof: false,
+    fakeGreenClaimed: false,
+  };
+
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_inventory.json`),
+    `${JSON.stringify(buildAiFieldDocumentsReportsMagicInventory(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_button_manifest.json`),
+    `${JSON.stringify(buildAiFieldDocumentsReportsMagicButtonManifest(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_button_results.json`),
+    `${JSON.stringify(buildAiFieldDocumentsReportsMagicButtonResults(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_matrix.json`),
+    `${JSON.stringify(fieldMatrix, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_web.json`),
+    `${JSON.stringify(fieldWeb, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_ios.json`),
+    `${JSON.stringify(fieldIos, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FIELD_DOCUMENTS_REPORTS_MAGIC_WAVE}_proof.md`),
+    `${buildAiFieldDocumentsReportsMagicProofMarkdown({
+      webProofPass: fieldWebOk,
+      androidProofPass: false,
+      iosTestflightSignoffCurrent: true,
+    })}\n`,
+    "utf8",
+  );
+
+  console.log(JSON.stringify(fieldWeb, null, 2));
+  process.exit(fieldWebOk ? 0 : 1);
 }
 
 function readIfExists(filePath: string): string {

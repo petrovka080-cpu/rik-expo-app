@@ -746,6 +746,8 @@ const FOUNDATION_CONTRACTS: Record<string, MagicFoundationContract> = {
     buttonIntents: [
       { label: "Показать checklist", actionKind: "safe_read" },
       { label: "Подготовить акт", actionKind: "draft_only" },
+      { label: "Запросить документы", actionKind: "draft_only" },
+      { label: "Написать подрядчику", actionKind: "draft_only" },
       { label: "Submit subcontract progress", actionKind: "approval_required" },
       { label: "Sign subcontract directly", actionKind: "forbidden", userFacingReason: "Подписание остается человеческим действием." },
     ],

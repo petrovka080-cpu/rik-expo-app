@@ -101,6 +101,18 @@ function routesForScope(scope: string): string[] {
       "rik:///map",
     ];
   }
+  if (scope === "S_AI_MAGIC_FIELD_DOCUMENTS_REPORTS_POINT_OF_NO_RETURN" || scope === "S_AI_MAGIC_FIELD_DOCUMENTS_REPORTS") {
+    return [
+      "rik:///foreman",
+      "rik:///foreman-ai",
+      "rik:///foreman-subcontract",
+      "rik:///contractor",
+      "rik:///documents",
+      "rik:///agent/documents/knowledge",
+      "rik:///reports",
+      "rik:///chat",
+    ];
+  }
   return [...coreRoutes];
 }
 

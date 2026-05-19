@@ -3,14 +3,18 @@
   "wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "build_profile": "preview",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "5c87b55b60b7f82c2ba13d0b4ad8515d549cbe97ce9ffb6526f2633d07337610",
+  "changed_files_fingerprint": "7f28104c06c703448d2dedafa240d3d17815428b1b2c8de4f2396590b61f3b7c",
   "changed_files": [
-    "scripts/ai/aiProcurementSuppliersMagic.ts",
+    "scripts/ai/aiFieldDocsMagic.ts",
+    "scripts/e2e/aiScreenMagicScopedWaveProof.ts",
     "scripts/e2e/runAiScreenByScreenMagicMaestro.ts",
     "scripts/e2e/runAiScreenByScreenMagicWeb.ts",
+    "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-    "tests/ai/aiProcurementMagicScreen.contract.test.ts",
-    "tests/ai/aiSupplierMagicScreen.contract.test.ts"
+    "tests/ai/aiFieldDocsMagic.contract.test.ts",
+    "tests/architecture/aiChatNoDirectDangerousMutation.contract.test.ts",
+    "tests/architecture/aiFieldDocumentsNoFakeEvidence.contract.test.ts",
+    "tests/architecture/aiFieldDocumentsNoUnsafeFinalSubmit.contract.test.ts"
   ],
   "ai_mobile_runtime_files": [
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts"
@@ -1216,8 +1220,8 @@
     "src/screens/warehouse/warehouseReceiveWorker.ts",
     "src/screens/warehouse/warehouseUi.store.ts"
   ],
-  "ai_mobile_runtime_source_fingerprint": "f1d69d6737b084900a354f3a2f0239a35deda2dcbe8c5664b0713f4047f46c9b",
-  "installed_apk_source_fingerprint": "f1d69d6737b084900a354f3a2f0239a35deda2dcbe8c5664b0713f4047f46c9b",
+  "ai_mobile_runtime_source_fingerprint": "c9fa64683c587138c23c6e3444be2db13b76a0d7448a1f3fd676f134aa29bf34",
+  "installed_apk_source_fingerprint": "c9fa64683c587138c23c6e3444be2db13b76a0d7448a1f3fd676f134aa29bf34",
   "source_fingerprint_matches_installed_apk": true,
   "local_android_rebuild_install_after_source_change": true,
   "apk_artifact_path": "artifacts/release/android-emulator.apk",
