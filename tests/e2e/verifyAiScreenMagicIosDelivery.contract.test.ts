@@ -38,6 +38,7 @@ describe("AI screen magic iOS delivery proof", () => {
   it("writes scoped magic-wave iOS artifacts instead of reusing the mobile signoff artifact", () => {
     expect(source).toContain("artifactWaveForScope(scope)");
     expect(source).toContain("S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT");
+    expect(source).toContain("S_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_POINT_OF_NO_RETURN");
     expect(source).toContain("routesForScope(scope)");
     expect(source).toContain("artifactPathsForScope(artifact.wave)");
     expect(source).toContain("writeScopedEnterpriseArtifacts(artifact)");

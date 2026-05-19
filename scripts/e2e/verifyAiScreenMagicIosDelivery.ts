@@ -88,6 +88,11 @@ function routesForScope(scope: string): string[] {
       "rik:///ai-command-center",
     ];
   }
+  if (scope === "S_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_POINT_OF_NO_RETURN") {
+    return [
+      "rik:///ai-command-center",
+    ];
+  }
   return [...coreRoutes];
 }
 

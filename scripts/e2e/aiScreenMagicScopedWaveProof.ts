@@ -12,6 +12,13 @@ export const AI_PROCUREMENT_NATIVE_MAGIC_REQUIRED_SCREENS = [
   "buyer.request.detail",
   "procurement.copilot",
 ] as const;
+export const AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_WAVE = "S_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_POINT_OF_NO_RETURN" as const;
+export const AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_GREEN_STATUS = "GREEN_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_READY" as const;
+export const AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_REQUIRED_SCREENS = [
+  "warehouse.main",
+  "warehouse.incoming",
+  "warehouse.issue",
+] as const;
 
 export type AiScreenMagicEnterpriseProofOptions = {
   webProofPass?: boolean;
@@ -35,6 +42,11 @@ const AI_SCREEN_MAGIC_SCOPED_WAVES: readonly AiScreenMagicScopedWaveConfig[] = O
     wave: AI_PROCUREMENT_NATIVE_MAGIC_WAVE,
     greenStatus: AI_PROCUREMENT_NATIVE_MAGIC_GREEN_STATUS,
     requiredScreens: AI_PROCUREMENT_NATIVE_MAGIC_REQUIRED_SCREENS,
+  },
+  {
+    wave: AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_WAVE,
+    greenStatus: AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_GREEN_STATUS,
+    requiredScreens: AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_REQUIRED_SCREENS,
   },
 ]);
 

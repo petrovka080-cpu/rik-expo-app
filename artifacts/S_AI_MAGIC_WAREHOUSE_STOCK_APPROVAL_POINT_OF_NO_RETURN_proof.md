@@ -1,0 +1,27 @@
+# S_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_POINT_OF_NO_RETURN
+
+final_status: GREEN_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_READY
+screens: warehouse.main, warehouse.incoming, warehouse.issue
+web_proof_pass: true
+android_proof_pass: true
+ios_delivery_proof_pass: false
+ios_delivery_not_required: true
+ios_delivery_checked_or_not_required: true
+chat_dialog_not_tiny: true
+useless_header_removed: true
+qa_from_screen_context: true
+buttons_clickable_on_web: true
+buttons_targetable_on_android: true
+buttons_verified_on_ios: false
+safe_read_no_mutation: true
+draft_only_not_final_submit: true
+approval_required_routes_to_ledger: true
+forbidden_shows_user_reason: true
+debug_copy_hidden: true
+provider_unavailable_copy_hidden: true
+fake_data_used: false
+db_writes_used: false
+direct_dangerous_mutations: false
+fake_green_claimed: false
+ios_delivery_not_required: true
+ios_delivery_path: none_required_no_app_code_changed

@@ -1,0 +1,82 @@
+{
+  "wave": "S_AI_MAGIC_WAREHOUSE_STOCK_APPROVAL_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_AI_SCREEN_MAGIC_WEB_READY",
+  "screens": [
+    "warehouse.main",
+    "warehouse.incoming",
+    "warehouse.issue"
+  ],
+  "checks": {
+    "screens_covered": true,
+    "ai_block_visible": true,
+    "dialog_opens": true,
+    "dialog_not_tiny": true,
+    "useless_header_absent": true,
+    "question_can_be_sent": true,
+    "answer_is_screen_specific": true,
+    "buttons_visible": true,
+    "every_button_clickable": true,
+    "visible_result_appears": true,
+    "no_provider_or_module_unavailable_copy": true,
+    "no_debug_copy": true,
+    "no_fake_data": true,
+    "no_direct_dangerous_mutation": true
+  },
+  "per_screen": [
+    {
+      "screenId": "warehouse.main",
+      "route_opens": true,
+      "ai_block_visible": true,
+      "dialog_opens": true,
+      "dialog_not_tiny": true,
+      "useless_header_absent": true,
+      "question_can_be_sent": true,
+      "answer_is_screen_specific": true,
+      "buttons_visible": true,
+      "every_button_clickable": true,
+      "visible_result_appears": true,
+      "no_provider_or_module_unavailable_copy": true,
+      "no_debug_copy": true,
+      "no_fake_data": true,
+      "no_direct_dangerous_mutation": true
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "route_opens": true,
+      "ai_block_visible": true,
+      "dialog_opens": true,
+      "dialog_not_tiny": true,
+      "useless_header_absent": true,
+      "question_can_be_sent": true,
+      "answer_is_screen_specific": true,
+      "buttons_visible": true,
+      "every_button_clickable": true,
+      "visible_result_appears": true,
+      "no_provider_or_module_unavailable_copy": true,
+      "no_debug_copy": true,
+      "no_fake_data": true,
+      "no_direct_dangerous_mutation": true
+    },
+    {
+      "screenId": "warehouse.issue",
+      "route_opens": true,
+      "ai_block_visible": true,
+      "dialog_opens": true,
+      "dialog_not_tiny": true,
+      "useless_header_absent": true,
+      "question_can_be_sent": true,
+      "answer_is_screen_specific": true,
+      "buttons_visible": true,
+      "every_button_clickable": true,
+      "visible_result_appears": true,
+      "no_provider_or_module_unavailable_copy": true,
+      "no_debug_copy": true,
+      "no_fake_data": true,
+      "no_direct_dangerous_mutation": true
+    }
+  ],
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "directDangerousMutationUsed": false,
+  "fakeGreenClaimed": false
+}
