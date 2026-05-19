@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -20,6 +21,10 @@ import {
 
 const ARTIFACT_PREFIX = "S_AI_CONSTRUCTION_ENGINEERING_KNOWLEDGE_CORE";
 const artifactsDir = path.join(process.cwd(), "artifacts");
+const releaseVerifyReportPath = path.join(
+  artifactsDir,
+  `${ARTIFACT_PREFIX}_release_verify_report.json`,
+);
 
 const proofSources: ConstructionKnowledgeSource[] = [
   {
@@ -200,6 +205,59 @@ function readStatus(name: string, greenStatus: string): boolean {
   }
 }
 
+function readGit(command: string): string | null {
+  try {
+    return execSync(command, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+  } catch {
+    return null;
+  }
+}
+
+function readReleaseVerifyPassed(): boolean {
+  if (!fs.existsSync(releaseVerifyReportPath)) return false;
+  try {
+    const parsed = JSON.parse(fs.readFileSync(releaseVerifyReportPath, "utf8")) as {
+      mode?: string;
+      repo?: {
+        headCommit?: string;
+        originMainCommit?: string;
+        worktreeClean?: boolean;
+        headMatchesOriginMain?: boolean;
+      };
+      readiness?: {
+        status?: string;
+      };
+      gates?: Array<{
+        status?: string;
+        exitCode?: number;
+      }>;
+    };
+    const currentHead = readGit("git rev-parse HEAD");
+    const currentOriginMain = readGit("git rev-parse origin/main");
+    const currentStatus = readGit("git status --porcelain");
+    return (
+      currentHead != null &&
+      currentOriginMain != null &&
+      currentStatus === "" &&
+      parsed.mode === "verify" &&
+      parsed.repo?.headCommit === currentHead &&
+      parsed.repo?.originMainCommit === currentOriginMain &&
+      parsed.repo?.worktreeClean === true &&
+      parsed.repo?.headMatchesOriginMain === true &&
+      parsed.readiness?.status === "pass" &&
+      Array.isArray(parsed.gates) &&
+      parsed.gates.length > 0 &&
+      parsed.gates.every((gate) => gate.status === "passed" && gate.exitCode === 0)
+    );
+  } catch {
+    return false;
+  }
+}
+
 function buildFreeTextTrace() {
   return Object.entries(webQuestions).flatMap(([role, questions]) =>
     questions.map((questionRu) => {
@@ -292,7 +350,7 @@ export function buildAiConstructionKnowledgeCoreProofArtifacts(options: {
   const matrix = buildConstructionKnowledgeCoreMatrix({
     webProofPassed,
     androidProofPassed,
-    releaseVerifyPassed: options.releaseVerifyPassed ?? false,
+    releaseVerifyPassed: options.releaseVerifyPassed ?? readReleaseVerifyPassed(),
   });
 
   writeJson("inventory", inventory);
@@ -320,6 +378,7 @@ export function buildAiConstructionKnowledgeCoreProofArtifacts(options: {
     "- All role free-text proof questions route through `answerConstructionQuestion` and `aiConstructionKnowledgeProvider`.",
     "- Project, estimate, norm, country, supplier, price, stock and payment claims require matching source types.",
     "- Providers are pure descriptors/adapters; no hooks, useEffect hacks, migrations, DB writes, direct signing, final submit, stock mutation or direct payment path is used.",
+    `- Release verify passed: ${matrix.release_verify_passed}`,
     "",
     `Final status: ${matrix.final_status}`,
     "",
