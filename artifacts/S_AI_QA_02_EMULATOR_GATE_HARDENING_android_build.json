@@ -3,15 +3,14 @@
   "source_wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "final_status": "PASS_ANDROID_REBUILD_INSTALL_FOR_AI_RUNTIME_PROOF",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "bdf24c5030d7e0e442a899bca11f92521ef24ca49ab8d4607b33b2cc810c82d6",
+  "changed_files_fingerprint": "5c87b55b60b7f82c2ba13d0b4ad8515d549cbe97ce9ffb6526f2633d07337610",
   "changed_files": [
-    "scripts/ai/aiFinanceApprovalMagic.ts",
-    "scripts/e2e/ensureAndroidMaestroDriverReady.ts",
+    "scripts/ai/aiProcurementSuppliersMagic.ts",
     "scripts/e2e/runAiScreenByScreenMagicMaestro.ts",
     "scripts/e2e/runAiScreenByScreenMagicWeb.ts",
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-    "tests/ai/aiApprovalInboxMagic.contract.test.ts",
-    "tests/ai/aiFinanceApprovalMagic.contract.test.ts"
+    "tests/ai/aiProcurementMagicScreen.contract.test.ts",
+    "tests/ai/aiSupplierMagicScreen.contract.test.ts"
   ],
   "ai_mobile_runtime_files": [
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts"

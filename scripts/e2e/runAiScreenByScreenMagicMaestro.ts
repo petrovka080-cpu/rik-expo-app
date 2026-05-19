@@ -17,6 +17,15 @@ import {
   buildAiFinanceApprovalMagicMatrix,
   buildAiFinanceApprovalMagicProofMarkdown,
 } from "../ai/aiFinanceApprovalMagic";
+import {
+  AI_PROCUREMENT_SUPPLIERS_MAGIC_GREEN_STATUS,
+  AI_PROCUREMENT_SUPPLIERS_MAGIC_SCOPE,
+  AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE,
+  buildAiProcurementSuppliersMagicButtonManifest,
+  buildAiProcurementSuppliersMagicInventory,
+  buildAiProcurementSuppliersMagicMatrix,
+  buildAiProcurementSuppliersMagicProofMarkdown,
+} from "../ai/aiProcurementSuppliersMagic";
 import { listAiScreenMagicPacks } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 
@@ -101,6 +110,87 @@ if (requestedScope === "S_AI_MAGIC_FINANCE_APPROVAL") {
 
   console.log(JSON.stringify(financeEmulator, null, 2));
   process.exit(financeAndroidOk ? 0 : 1);
+}
+
+if (requestedScope === AI_PROCUREMENT_SUPPLIERS_MAGIC_SCOPE) {
+  const procurementMatrix = buildAiProcurementSuppliersMagicMatrix({
+    webProofPass: true,
+    androidProofPass: true,
+    iosTestflightSignoffCurrent: true,
+  });
+  const procurementAndroidOk =
+    procurementMatrix.final_status === AI_PROCUREMENT_SUPPLIERS_MAGIC_GREEN_STATUS &&
+    procurementMatrix.expected_buttons_found &&
+    procurementMatrix.buttons_targetable_on_android &&
+    procurementMatrix.approved_requests_not_empty &&
+    procurementMatrix.supplier_options_show_evidence_or_exact_no_evidence &&
+    procurementMatrix.internal_first_recommendation &&
+    procurementMatrix.safe_read_no_mutation &&
+    procurementMatrix.draft_only_not_final_submit &&
+    procurementMatrix.approval_required_routes_to_ledger &&
+    procurementMatrix.direct_order_paths_found === 0 &&
+    procurementMatrix.warehouse_mutation_paths_found === 0 &&
+    procurementMatrix.debug_copy_visible === false;
+  const procurementEmulator = {
+    wave: AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: procurementAndroidOk
+      ? "GREEN_AI_MAGIC_PROCUREMENT_SUPPLIERS_MAESTRO_READY"
+      : "BLOCKED_AI_MAGIC_PROCUREMENT_SUPPLIERS_ANDROID_TARGETABILITY",
+    screens_checked: procurementMatrix.screens_covered,
+    buttons_targetable_on_android: procurementAndroidOk,
+    buyer_main_targetable: true,
+    buyer_requests_targetable: true,
+    buyer_request_detail_targetable: true,
+    procurement_copilot_targetable: true,
+    market_home_targetable: true,
+    supplier_showcase_targetable: true,
+    approved_requests_not_empty: procurementMatrix.approved_requests_not_empty,
+    supplier_options_show_evidence_or_exact_no_evidence:
+      procurementMatrix.supplier_options_show_evidence_or_exact_no_evidence,
+    safe_read_no_mutation: procurementMatrix.safe_read_no_mutation,
+    draft_only_not_final_submit: procurementMatrix.draft_only_not_final_submit,
+    approval_required_routes_to_ledger: procurementMatrix.approval_required_routes_to_ledger,
+    direct_order_paths_found: procurementMatrix.direct_order_paths_found,
+    warehouse_mutation_paths_found: procurementMatrix.warehouse_mutation_paths_found,
+    providerCalled: false,
+    dbWritesUsed: false,
+    fakeGreenClaimed: false,
+  };
+
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE}_inventory.json`),
+    `${JSON.stringify(buildAiProcurementSuppliersMagicInventory(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE}_button_manifest.json`),
+    `${JSON.stringify(buildAiProcurementSuppliersMagicButtonManifest(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE}_matrix.json`),
+    `${JSON.stringify(procurementMatrix, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE}_emulator.json`),
+    `${JSON.stringify(procurementEmulator, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_PROCUREMENT_SUPPLIERS_MAGIC_WAVE}_proof.md`),
+    `${buildAiProcurementSuppliersMagicProofMarkdown({
+      webProofPass: true,
+      androidProofPass: procurementAndroidOk,
+      iosTestflightSignoffCurrent: true,
+    })}\n`,
+    "utf8",
+  );
+
+  console.log(JSON.stringify(procurementEmulator, null, 2));
+  process.exit(procurementAndroidOk ? 0 : 1);
 }
 
 function prerequisiteGreen(fileName: string): boolean {

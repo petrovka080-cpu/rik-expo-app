@@ -1,0 +1,804 @@
+{
+  "wave": "S_AI_MAGIC_PROCUREMENT_SUPPLIERS_POINT_OF_NO_RETURN",
+  "screens": [
+    {
+      "screenId": "buyer.main",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Входящие заявки",
+          "evidence": [
+            "source:procurement_context",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:buyer.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "цены",
+            "наличие",
+            "надежность поставщика",
+            "срок поставки"
+          ]
+        },
+        {
+          "title": "Утверждены директором",
+          "evidence": [
+            "source:procurement_context",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:buyer.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "цены",
+            "наличие",
+            "надежность поставщика",
+            "срок поставки"
+          ]
+        },
+        {
+          "title": "Готовые варианты закупки",
+          "evidence": [
+            "source:procurement_context",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:buyer.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "цены",
+            "наличие",
+            "надежность поставщика",
+            "срок поставки"
+          ]
+        },
+        {
+          "title": "Критические по сроку",
+          "evidence": [
+            "source:procurement_context",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:buyer.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "цены",
+            "наличие",
+            "надежность поставщика",
+            "срок поставки"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "входящие заявки",
+        "утвержденные директором",
+        "готовые варианты закупа",
+        "срочные",
+        "без поставщика",
+        "первая заявка для работы"
+      ],
+      "riskSummary": [
+        "срочные заявки без поставщика",
+        "выбор без цены",
+        "заявки без evidence"
+      ],
+      "missingDataSummary": [
+        "цены",
+        "наличие",
+        "надежность поставщика",
+        "срок поставки"
+      ],
+      "safeActions": [
+        "разобрать входящие",
+        "смотреть варианты закупа",
+        "сравнить поставщиков"
+      ],
+      "approvalCandidates": [
+        "отправить выбор поставщика на согласование"
+      ],
+      "exactBlockers": [
+        "заказ напрямую запрещен без approval и evidence"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Разобрать входящие",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Смотреть варианты закупа",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сравнить поставщиков",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Запросить цены",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить выбор на согласование",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Готовые варианты закупки",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.requests"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "варианты закупа",
+            "цены",
+            "availability",
+            "evidence выбора"
+          ]
+        },
+        {
+          "title": "Лучший evidence-backed вариант",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.requests"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "варианты закупа",
+            "цены",
+            "availability",
+            "evidence выбора"
+          ]
+        },
+        {
+          "title": "Риски",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.requests"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "варианты закупа",
+            "цены",
+            "availability",
+            "evidence выбора"
+          ]
+        },
+        {
+          "title": "Следующий шаг",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.requests"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "варианты закупа",
+            "цены",
+            "availability",
+            "evidence выбора"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "статус заявки",
+        "количество позиций",
+        "срочность",
+        "готовые варианты закупа",
+        "лучший вариант или no-evidence",
+        "риски",
+        "следующий шаг"
+      ],
+      "riskSummary": [
+        "approved-заявка без вариантов",
+        "нет поставщика",
+        "нет цены или срока"
+      ],
+      "missingDataSummary": [
+        "варианты закупа",
+        "цены",
+        "availability",
+        "evidence выбора"
+      ],
+      "safeActions": [
+        "смотреть варианты",
+        "сравнить",
+        "проверить риски"
+      ],
+      "approvalCandidates": [
+        "отправить proposal pack на согласование"
+      ],
+      "exactBlockers": [
+        "если evidence нет, показывается no-evidence вместо выдуманного варианта"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Смотреть варианты",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сравнить",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить запрос",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Проверить риски",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Внутренние поставщики",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.request.detail"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "price signal",
+            "delivery signal",
+            "reliability evidence"
+          ]
+        },
+        {
+          "title": "Цена или missing price",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.request.detail"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "price signal",
+            "delivery signal",
+            "reliability evidence"
+          ]
+        },
+        {
+          "title": "Срок или missing delivery",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.request.detail"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "price signal",
+            "delivery signal",
+            "reliability evidence"
+          ]
+        },
+        {
+          "title": "Риски выбора",
+          "evidence": [
+            "source:procurement_context",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:buyer.request.detail"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "price signal",
+            "delivery signal",
+            "reliability evidence"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "варианты поставщиков",
+        "source",
+        "покрытие позиций",
+        "цена или missing",
+        "срок или missing",
+        "reliability",
+        "risks"
+      ],
+      "riskSummary": [
+        "выбор без цены",
+        "неполное покрытие позиций",
+        "низкая надежность поставщика"
+      ],
+      "missingDataSummary": [
+        "price signal",
+        "delivery signal",
+        "reliability evidence"
+      ],
+      "safeActions": [
+        "сравнить варианты",
+        "показать coverage"
+      ],
+      "approvalCandidates": [
+        "отправить выбор поставщика на согласование"
+      ],
+      "exactBlockers": [
+        "финальный выбор поставщика требует human approval"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Запросить цену",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Сравнить варианты",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить запрос поставщику",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить выбор на согласование",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Internal-first recommendation",
+          "evidence": [
+            "source:procurement_context",
+            "source:tool_contract",
+            "source:approval_policy",
+            "screen:procurement.copilot"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "ценовой сигнал",
+            "срок",
+            "reliability",
+            "evidence для директора"
+          ]
+        },
+        {
+          "title": "Supplier comparison",
+          "evidence": [
+            "source:procurement_context",
+            "source:tool_contract",
+            "source:approval_policy",
+            "screen:procurement.copilot"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "ценовой сигнал",
+            "срок",
+            "reliability",
+            "evidence для директора"
+          ]
+        },
+        {
+          "title": "Missing data checklist",
+          "evidence": [
+            "source:procurement_context",
+            "source:tool_contract",
+            "source:approval_policy",
+            "screen:procurement.copilot"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "ценовой сигнал",
+            "срок",
+            "reliability",
+            "evidence для директора"
+          ]
+        },
+        {
+          "title": "Approval candidate",
+          "evidence": [
+            "source:procurement_context",
+            "source:tool_contract",
+            "source:approval_policy",
+            "screen:procurement.copilot"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "ценовой сигнал",
+            "срок",
+            "reliability",
+            "evidence для директора"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "internal-first recommendation",
+        "supplier comparison",
+        "risk summary",
+        "missing data checklist",
+        "draft supplier request",
+        "approval candidate"
+      ],
+      "riskSummary": [
+        "выбор без internal-first проверки",
+        "внешний вариант без citation",
+        "missing data по цене или сроку"
+      ],
+      "missingDataSummary": [
+        "ценовой сигнал",
+        "срок",
+        "reliability",
+        "evidence для директора"
+      ],
+      "safeActions": [
+        "почему поставщик лучше",
+        "что не хватает для выбора"
+      ],
+      "approvalCandidates": [
+        "что отправить директору"
+      ],
+      "exactBlockers": [
+        "copilot не создает order и не меняет бизнес-состояние"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Почему этот поставщик лучше",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Что не хватает для выбора",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сделать запрос поставщику",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Что отправить директору",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "domain": "market",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office"
+      ],
+      "preparedWork": [
+        {
+          "title": "Позиции без внутренних поставщиков",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:market.home"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/market/listing-context/:listingId",
+            "citation",
+            "цена",
+            "availability",
+            "delivery"
+          ]
+        },
+        {
+          "title": "Внешний cited preview",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:market.home"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/market/listing-context/:listingId",
+            "citation",
+            "цена",
+            "availability",
+            "delivery"
+          ]
+        },
+        {
+          "title": "Сравнение с внутренними",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:market.home"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/market/listing-context/:listingId",
+            "citation",
+            "цена",
+            "availability",
+            "delivery"
+          ]
+        },
+        {
+          "title": "Missing citations",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:market.home"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/market/listing-context/:listingId",
+            "citation",
+            "цена",
+            "availability",
+            "delivery"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "позиции без внутренних поставщиков",
+        "cited preview",
+        "внутренние варианты в приоритете",
+        "reliability",
+        "risks",
+        "missing data"
+      ],
+      "riskSummary": [
+        "внешний рынок без citation",
+        "сравнение без внутреннего варианта",
+        "неподтвержденная доступность"
+      ],
+      "missingDataSummary": [
+        "citation",
+        "цена",
+        "availability",
+        "delivery"
+      ],
+      "safeActions": [
+        "показать cited варианты",
+        "сравнить с внутренними"
+      ],
+      "approvalCandidates": [
+        "отправить внешний выбор на approval"
+      ],
+      "exactBlockers": [
+        "внешний поставщик не создается без evidence"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Подготовить внешний запрос",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать cited варианты",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сравнить с внутренними",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman"
+      ],
+      "preparedWork": [
+        {
+          "title": "Покрытие активных позиций",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:supplier.showcase"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/supplier-showcase/:supplierId/context",
+            "reliability history",
+            "price",
+            "coverage proof"
+          ]
+        },
+        {
+          "title": "Подходит к заявкам",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:supplier.showcase"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/supplier-showcase/:supplierId/context",
+            "reliability history",
+            "price",
+            "coverage proof"
+          ]
+        },
+        {
+          "title": "История надёжности",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:supplier.showcase"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/supplier-showcase/:supplierId/context",
+            "reliability history",
+            "price",
+            "coverage proof"
+          ]
+        },
+        {
+          "title": "Риски и missing data",
+          "evidence": [
+            "source:screen_state",
+            "source:procurement_context",
+            "source:tool_contract",
+            "screen:supplier.showcase"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/supplier-showcase/:supplierId/context",
+            "reliability history",
+            "price",
+            "coverage proof"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "supplier reliability",
+        "history",
+        "coverage",
+        "risks",
+        "missing data"
+      ],
+      "riskSummary": [
+        "supplier without reliability signal",
+        "неполное покрытие заявки",
+        "missing price"
+      ],
+      "missingDataSummary": [
+        "reliability history",
+        "price",
+        "coverage proof"
+      ],
+      "safeActions": [
+        "сравнить с внутренними",
+        "показать cited варианты"
+      ],
+      "approvalCandidates": [
+        "отправить выбор на approval"
+      ],
+      "exactBlockers": [
+        "поставщик не подтверждается напрямую AI"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Сравнить с другим",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить запрос",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Добавить в shortlist",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить выбор на approval",
+          "actionKind": "approval_required"
+        }
+      ]
+    }
+  ],
+  "approvedRequestEvidenceProof": {
+    "readyBundle": {
+      "requestId": "approved-request-1",
+      "approvalStatus": "approved",
+      "generatedFrom": "internal_first",
+      "supplierOptions": [
+        {
+          "supplierId": "supplier-internal-1",
+          "supplierName": "Internal Supplier One",
+          "source": "internal",
+          "matchedItems": [
+            "Cement M400"
+          ],
+          "priceSignal": "internal quote evidence",
+          "deliverySignal": "delivery evidence",
+          "reliabilitySignal": "previous delivery evidence",
+          "risks": [
+            "confirm_current_price"
+          ],
+          "evidence": [
+            "internal:supplier:supplier-internal-1",
+            "internal:quote:quote-1"
+          ],
+          "missingData": [
+            "fresh_quote"
+          ],
+          "recommendedNextAction": "compare"
+        },
+        {
+          "supplierName": "External cited preview",
+          "source": "external_cited_preview",
+          "matchedItems": [
+            "Cement M400"
+          ],
+          "risks": [
+            "external_preview_only"
+          ],
+          "evidence": [
+            "market:citation:cement-1"
+          ],
+          "missingData": [
+            "confirmed_quote"
+          ],
+          "recommendedNextAction": "request_quote"
+        }
+      ],
+      "recommendedOptionId": "supplier-internal-1",
+      "directOrderAllowed": false,
+      "requiresApprovalForOrder": true
+    },
+    "noEvidenceBundle": {
+      "requestId": "approved-request-2",
+      "approvalStatus": "approved",
+      "generatedFrom": "internal_first",
+      "supplierOptions": [],
+      "directOrderAllowed": false,
+      "requiresApprovalForOrder": true
+    },
+    "readyOptionsHaveEvidence": true,
+    "externalOptionsHaveCitation": true,
+    "exactNoEvidenceMessage": true,
+    "policyValid": true
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "wave": "S_AI_MAGIC_PROCUREMENT_SUPPLIERS_POINT_OF_NO_RETURN",
+  "scope": "S_AI_MAGIC_PROCUREMENT_SUPPLIERS",
+  "final_status": "GREEN_AI_MAGIC_PROCUREMENT_SUPPLIERS_WEB_READY",
+  "screens_checked": 6,
+  "buttons_clicked_on_web": true,
+  "approved_requests_not_empty": true,
+  "supplier_options_show_evidence_or_exact_no_evidence": true,
+  "internal_first_recommendation": true,
+  "safe_read_no_mutation": true,
+  "draft_only_not_final_submit": true,
+  "approval_required_routes_to_ledger": true,
+  "direct_order_paths_found": 0,
+  "warehouse_mutation_paths_found": 0,
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "fakeGreenClaimed": false
+}

@@ -565,6 +565,7 @@ const FOUNDATION_CONTRACTS: Record<string, MagicFoundationContract> = {
       { label: "Сравнить с внутренними", actionKind: "safe_read" },
       { label: "Показать cited варианты", actionKind: "safe_read" },
       { label: "Подготовить запрос", actionKind: "draft_only" },
+      { label: "Добавить в shortlist", actionKind: "draft_only" },
       { label: "Отправить выбор на approval", actionKind: "approval_required" },
       { label: "Подтвердить поставщика напрямую", actionKind: "forbidden", userFacingReason: "AI не подтверждает поставщика без approval." },
     ],
