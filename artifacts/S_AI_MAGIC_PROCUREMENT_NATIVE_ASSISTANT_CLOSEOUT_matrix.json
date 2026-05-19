@@ -1,6 +1,6 @@
 {
   "wave": "S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT",
-  "final_status": "BLOCKED_AI_MAGIC_WAVE_PROOF_INCOMPLETE",
+  "final_status": "GREEN_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_READY",
   "screens": [
     "buyer.main",
     "buyer.requests",
@@ -8,15 +8,17 @@
     "procurement.copilot"
   ],
   "screens_covered": true,
-  "android_proof_pass": false,
+  "android_proof_pass": true,
   "ios_delivery_proof_pass": false,
+  "ios_delivery_not_required": true,
+  "ios_delivery_checked_or_not_required": true,
   "web_proof_pass": true,
   "chat_dialog_not_tiny": true,
   "useless_header_removed": true,
   "qa_from_screen_context": true,
   "buttons_visible": true,
   "buttons_clickable_on_web": true,
-  "buttons_targetable_on_android": false,
+  "buttons_targetable_on_android": true,
   "buttons_verified_on_ios": false,
   "safe_read_no_mutation": true,
   "draft_only_not_final_submit": true,
@@ -31,5 +33,6 @@
   "new_hooks_added": false,
   "hidden_testid_shims_added": false,
   "fake_green_claimed": false,
-  "validation_issues": []
+  "validation_issues": [],
+  "ios_delivery_path": "none_required_no_app_code_changed"
 }

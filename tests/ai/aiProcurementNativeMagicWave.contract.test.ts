@@ -79,6 +79,8 @@ describe("AI procurement native magic wave", () => {
       web_proof_pass: true,
       android_proof_pass: true,
       ios_delivery_proof_pass: true,
+      ios_delivery_not_required: false,
+      ios_delivery_checked_or_not_required: true,
       safe_read_no_mutation: true,
       draft_only_not_final_submit: true,
       approval_required_routes_to_ledger: true,
@@ -89,6 +91,29 @@ describe("AI procurement native magic wave", () => {
       direct_dangerous_mutations: false,
       new_hooks_added: false,
       hidden_testid_shims_added: false,
+      fake_green_claimed: false,
+    });
+  });
+
+  it("can close a proof-only pass without pretending Android or web is physical iOS proof", () => {
+    const green = buildAiScreenMagicEnterpriseMatrix(AI_PROCUREMENT_NATIVE_MAGIC_WAVE, {
+      webProofPass: true,
+      androidProofPass: true,
+      iosDeliveryProofPass: false,
+      iosDeliveryNotRequired: true,
+      chatDialogNotTiny: true,
+      uselessHeaderRemoved: true,
+      debugCopyHidden: true,
+      providerUnavailableCopyHidden: true,
+    });
+
+    expect(green.final_status).toBe(AI_PROCUREMENT_NATIVE_MAGIC_GREEN_STATUS);
+    expect(green).toMatchObject({
+      ios_delivery_proof_pass: false,
+      ios_delivery_not_required: true,
+      ios_delivery_checked_or_not_required: true,
+      buttons_verified_on_ios: false,
+      buttons_targetable_on_android: true,
       fake_green_claimed: false,
     });
   });

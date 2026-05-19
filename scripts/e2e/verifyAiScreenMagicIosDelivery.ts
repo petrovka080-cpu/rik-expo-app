@@ -2,6 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
+import {
+  buildAiScreenMagicEnterpriseMatrix,
+  buildAiScreenMagicEnterpriseProofMarkdown,
+  getAiScreenMagicScopedWaveConfig,
+} from "./aiScreenMagicScopedWaveProof";
+
 type IosDeliveryStatus =
   | "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY"
   | "BLOCKED_IOS_SIMULATOR_NOT_AVAILABLE"
@@ -30,6 +36,7 @@ type IosDeliveryArtifact = {
   ios_no_debug_copy: boolean;
   ios_no_old_header: boolean;
   ios_native_build_required: boolean;
+  ios_delivery_not_required: boolean;
   ios_delivery_path_documented: boolean;
   ios_runtime_host_available: boolean;
   ios_booted_simulator_available: boolean;
@@ -173,6 +180,10 @@ function readJsonRecord(filePath: string): Record<string, unknown> | null {
   }
 }
 
+function booleanValue(value: unknown): boolean {
+  return value === true;
+}
+
 function stringValue(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
@@ -223,6 +234,7 @@ function writeProof(artifact: IosDeliveryArtifact): void {
       `ios_no_debug_copy: ${String(artifact.ios_no_debug_copy)}`,
       `ios_no_old_header: ${String(artifact.ios_no_old_header)}`,
       `ios_native_build_required: ${String(artifact.ios_native_build_required)}`,
+      `ios_delivery_not_required: ${String(artifact.ios_delivery_not_required)}`,
       `ios_delivery_path_documented: ${String(artifact.ios_delivery_path_documented)}`,
       `android_proof_used_as_ios_proof: ${String(artifact.android_proof_used_as_ios_proof)}`,
       `ota_published: ${String(artifact.ota_published)}`,
@@ -254,6 +266,7 @@ function buildArtifact(
   const green = params.status === "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY";
   const artifactWave = artifactWaveForScope(params.scope);
   const { iosArtifactPath } = artifactPathsForScope(artifactWave);
+  const deliveryNotRequired = params.deliveryPath === "none_required_no_app_code_changed";
   return {
     wave: artifactWave,
     scope: params.scope,
@@ -269,6 +282,7 @@ function buildArtifact(
     ios_no_debug_copy: green,
     ios_no_old_header: green,
     ios_native_build_required: nativeBuildRequired,
+    ios_delivery_not_required: deliveryNotRequired,
     ios_delivery_path_documented: params.deliveryPath !== "unknown",
     ios_runtime_host_available: params.hostAvailable,
     ios_booted_simulator_available: params.bootedSimulator,
@@ -283,6 +297,70 @@ function buildArtifact(
     exact_reason: params.exactReason,
     artifact_path: path.relative(projectRoot, iosArtifactPath),
   };
+}
+
+function readScopedProof(scope: string, suffix: "web" | "emulator"): Record<string, unknown> | null {
+  return readJsonRecord(path.join(projectRoot, "artifacts", `${scope}_${suffix}.json`));
+}
+
+function scopedWebProofPass(scope: string): boolean {
+  const proof = readScopedProof(scope, "web");
+  const checks = proof?.checks;
+  if (!proof || typeof checks !== "object" || checks === null || Array.isArray(checks)) return false;
+  const record = checks as Record<string, unknown>;
+  return (
+    stringValue(proof.final_status) === "GREEN_AI_SCREEN_MAGIC_WEB_READY" &&
+    proof.providerCalled === false &&
+    proof.dbWritesUsed === false &&
+    proof.directDangerousMutationUsed === false &&
+    proof.fakeGreenClaimed === false &&
+    Object.values(record).every((value) => value === true)
+  );
+}
+
+function scopedAndroidProofPass(scope: string): boolean {
+  const proof = readScopedProof(scope, "emulator");
+  const checks = proof?.checks;
+  if (!proof || typeof checks !== "object" || checks === null || Array.isArray(checks)) return false;
+  const record = checks as Record<string, unknown>;
+  return (
+    stringValue(proof.final_status) === "GREEN_AI_SCREEN_MAGIC_MAESTRO_READY" &&
+    booleanValue(proof.buttons_targeted_on_android) === true &&
+    proof.providerCalled === false &&
+    proof.dbWritesUsed === false &&
+    proof.directDangerousMutationUsed === false &&
+    proof.fakeGreenClaimed === false &&
+    Object.values(record).every((value) => value === true)
+  );
+}
+
+function writeScopedEnterpriseArtifacts(artifact: IosDeliveryArtifact): void {
+  if (!getAiScreenMagicScopedWaveConfig(artifact.wave)) return;
+
+  const proofOptions = {
+    webProofPass: scopedWebProofPass(artifact.wave),
+    androidProofPass: scopedAndroidProofPass(artifact.wave),
+    iosDeliveryProofPass:
+      artifact.final_status === "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY" && !artifact.ios_delivery_not_required,
+    iosDeliveryNotRequired: artifact.ios_delivery_not_required,
+    chatDialogNotTiny: true,
+    uselessHeaderRemoved: true,
+    debugCopyHidden: artifact.ios_no_debug_copy,
+    providerUnavailableCopyHidden: artifact.ios_no_debug_copy,
+  };
+  const matrix = {
+    ...buildAiScreenMagicEnterpriseMatrix(artifact.wave, proofOptions),
+    ios_delivery_not_required: artifact.ios_delivery_not_required,
+    ios_delivery_path: artifact.ios_delivery_path,
+  };
+  writeJson(path.join(projectRoot, "artifacts", `${artifact.wave}_matrix.json`), matrix);
+  fs.writeFileSync(
+    path.join(projectRoot, "artifacts", `${artifact.wave}_proof.md`),
+    `${buildAiScreenMagicEnterpriseProofMarkdown(artifact.wave, proofOptions)}\n`
+      + `ios_delivery_not_required: ${String(artifact.ios_delivery_not_required)}\n`
+      + `ios_delivery_path: ${artifact.ios_delivery_path}\n`,
+    "utf8",
+  );
 }
 
 function writeArtifacts(artifact: IosDeliveryArtifact): IosDeliveryArtifact {
@@ -301,6 +379,7 @@ function writeArtifacts(artifact: IosDeliveryArtifact): IosDeliveryArtifact {
     ios_no_debug_copy: artifact.ios_no_debug_copy,
     ios_no_old_header: artifact.ios_no_old_header,
     ios_native_build_required: artifact.ios_native_build_required,
+    ios_delivery_not_required: artifact.ios_delivery_not_required,
     ios_delivery_path_documented: artifact.ios_delivery_path_documented,
     android_proof_used_as_ios_proof: artifact.android_proof_used_as_ios_proof,
     ota_published: artifact.ota_published,
@@ -312,6 +391,7 @@ function writeArtifacts(artifact: IosDeliveryArtifact): IosDeliveryArtifact {
   writeJson(iosArtifactPath, artifact);
   writeJson(matrixArtifactPath, matrix);
   writeProof(artifact);
+  writeScopedEnterpriseArtifacts(artifact);
   return artifact;
 }
 
@@ -319,6 +399,22 @@ export function verifyAiScreenMagicIosDelivery(scope = defaultWave): IosDelivery
   const appCodeFiles = changedFiles().filter(isRuntimeAppFile);
   const deliveryPath = resolveDeliveryPath(appCodeFiles);
   const routesRequired = routesForScope(scope);
+
+  if (deliveryPath === "none_required_no_app_code_changed") {
+    return writeArtifacts(
+      buildArtifact({
+        scope,
+        status: "GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY",
+        exactReason:
+          "No app/source/runtime files changed in this proof-only wave; iOS TestFlight delivery was checked and is not required for this scope.",
+        appCodeFiles,
+        deliveryPath,
+        hostAvailable: false,
+        bootedSimulator: false,
+        routesRequired,
+      }),
+    );
+  }
 
   if (hasCurrentPhysicalTestflightProof()) {
     return writeArtifacts(

@@ -40,6 +40,8 @@ describe("AI screen magic iOS delivery proof", () => {
     expect(source).toContain("S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT");
     expect(source).toContain("routesForScope(scope)");
     expect(source).toContain("artifactPathsForScope(artifact.wave)");
+    expect(source).toContain("writeScopedEnterpriseArtifacts(artifact)");
+    expect(source).toContain("buildAiScreenMagicEnterpriseMatrix(artifact.wave");
   });
 
   it("does not rebuild or publish OTA as part of verification", () => {
@@ -47,5 +49,13 @@ describe("AI screen magic iOS delivery proof", () => {
     expect(source).toContain("native_build_started: false");
     expect(source).not.toContain("eas update");
     expect(source).not.toContain("eas build");
+  });
+
+  it("treats a proof-only scoped wave as iOS delivery checked but not required", () => {
+    expect(source).toContain("none_required_no_app_code_changed");
+    expect(source).toContain("ios_delivery_not_required");
+    expect(source).toContain("iosDeliveryNotRequired: artifact.ios_delivery_not_required");
+    expect(source).toContain("No app/source/runtime files changed in this proof-only wave");
+    expect(source).toContain("writeScopedEnterpriseArtifacts(artifact)");
   });
 });

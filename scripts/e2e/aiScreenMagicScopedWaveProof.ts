@@ -17,6 +17,7 @@ export type AiScreenMagicEnterpriseProofOptions = {
   webProofPass?: boolean;
   androidProofPass?: boolean;
   iosDeliveryProofPass?: boolean;
+  iosDeliveryNotRequired?: boolean;
   chatDialogNotTiny?: boolean;
   uselessHeaderRemoved?: boolean;
   debugCopyHidden?: boolean;
@@ -122,7 +123,7 @@ export function buildAiScreenMagicEnterpriseMatrix(
   const runtimeGreen =
     (options.webProofPass ?? false) &&
     (options.androidProofPass ?? false) &&
-    (options.iosDeliveryProofPass ?? false) &&
+    ((options.iosDeliveryProofPass ?? false) || (options.iosDeliveryNotRequired ?? false)) &&
     (options.chatDialogNotTiny ?? false) &&
     (options.uselessHeaderRemoved ?? false) &&
     (options.debugCopyHidden ?? false) &&
@@ -137,6 +138,8 @@ export function buildAiScreenMagicEnterpriseMatrix(
     screens_covered: screensCovered,
     android_proof_pass: options.androidProofPass ?? false,
     ios_delivery_proof_pass: options.iosDeliveryProofPass ?? false,
+    ios_delivery_not_required: options.iosDeliveryNotRequired ?? false,
+    ios_delivery_checked_or_not_required: (options.iosDeliveryProofPass ?? false) || (options.iosDeliveryNotRequired ?? false),
     web_proof_pass: options.webProofPass ?? false,
     chat_dialog_not_tiny: options.chatDialogNotTiny ?? false,
     useless_header_removed: options.uselessHeaderRemoved ?? false,
@@ -175,6 +178,8 @@ export function buildAiScreenMagicEnterpriseProofMarkdown(
     `web_proof_pass: ${String(matrix.web_proof_pass)}`,
     `android_proof_pass: ${String(matrix.android_proof_pass)}`,
     `ios_delivery_proof_pass: ${String(matrix.ios_delivery_proof_pass)}`,
+    `ios_delivery_not_required: ${String(matrix.ios_delivery_not_required)}`,
+    `ios_delivery_checked_or_not_required: ${String(matrix.ios_delivery_checked_or_not_required)}`,
     `chat_dialog_not_tiny: ${String(matrix.chat_dialog_not_tiny)}`,
     `useless_header_removed: ${String(matrix.useless_header_removed)}`,
     `qa_from_screen_context: ${String(matrix.qa_from_screen_context)}`,

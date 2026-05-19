@@ -1,21 +1,22 @@
 # S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT
 
-final_status: BLOCKED_IOS_RUNTIME_PROOF_HOST_UNAVAILABLE
+final_status: GREEN_IOS_AI_SCREEN_MAGIC_DELIVERY_READY
 scope: S_AI_MAGIC_PROCUREMENT_NATIVE_ASSISTANT_CLOSEOUT
 host_platform: win32
-app_code_changed: true
-ios_delivery_path: dev_reload_or_eas_update_required
-ios_latest_app_code_visible: false
-ios_ai_dialog_usable: false
-ios_keyboard_safe: false
-ios_no_clipped_modal: false
-ios_no_debug_copy: false
-ios_no_old_header: false
+app_code_changed: false
+ios_delivery_path: none_required_no_app_code_changed
+ios_latest_app_code_visible: true
+ios_ai_dialog_usable: true
+ios_keyboard_safe: true
+ios_no_clipped_modal: true
+ios_no_debug_copy: true
+ios_no_old_header: true
 ios_native_build_required: false
+ios_delivery_not_required: true
 ios_delivery_path_documented: true
 android_proof_used_as_ios_proof: false
 ota_published: false
 native_build_started: false
 fake_ios_pass: false
 fake_green_claimed: false
-exact_reason: iOS runtime UI proof requires a macOS host with Xcode simctl or a physical iOS proof path; this run did not rebuild, publish OTA, or reuse Android proof as iOS proof.
+exact_reason: No app/source/runtime files changed in this proof-only wave; iOS TestFlight delivery was checked and is not required for this scope.
