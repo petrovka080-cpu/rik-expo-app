@@ -1,0 +1,11 @@
+{
+  "wave": "S_AI_MAGIC_WAREHOUSE_LOGISTICS_POINT_OF_NO_RETURN",
+  "scope": "S_AI_MAGIC_WAREHOUSE_LOGISTICS",
+  "final_status": "GREEN_AI_MAGIC_WAREHOUSE_LOGISTICS_IOS_NOT_REQUIRED",
+  "ios_testflight_signoff_current": true,
+  "ios_delivery_not_required": true,
+  "exact_reason": "No app/source/runtime code changed in this proof-layer wave before release:verify.",
+  "android_used_as_ios_proof": false,
+  "web_used_as_ios_proof": false,
+  "fakeGreenClaimed": false
+}

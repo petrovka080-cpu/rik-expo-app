@@ -93,6 +93,14 @@ function routesForScope(scope: string): string[] {
       "rik:///ai-command-center",
     ];
   }
+  if (scope === "S_AI_MAGIC_WAREHOUSE_LOGISTICS_POINT_OF_NO_RETURN" || scope === "S_AI_MAGIC_WAREHOUSE_LOGISTICS") {
+    return [
+      "rik:///warehouse",
+      "rik:///warehouse-incoming",
+      "rik:///warehouse-issue",
+      "rik:///map",
+    ];
+  }
   return [...coreRoutes];
 }
 

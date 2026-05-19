@@ -19,6 +19,15 @@ export const AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_REQUIRED_SCREENS = [
   "warehouse.incoming",
   "warehouse.issue",
 ] as const;
+export const AI_WAREHOUSE_LOGISTICS_MAGIC_SCOPE = "S_AI_MAGIC_WAREHOUSE_LOGISTICS" as const;
+export const AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE = "S_AI_MAGIC_WAREHOUSE_LOGISTICS_POINT_OF_NO_RETURN" as const;
+export const AI_WAREHOUSE_LOGISTICS_MAGIC_GREEN_STATUS = "GREEN_AI_MAGIC_WAREHOUSE_LOGISTICS_READY" as const;
+export const AI_WAREHOUSE_LOGISTICS_MAGIC_REQUIRED_SCREENS = [
+  "warehouse.main",
+  "warehouse.incoming",
+  "warehouse.issue",
+  "map.main",
+] as const;
 
 export type AiScreenMagicEnterpriseProofOptions = {
   webProofPass?: boolean;
@@ -33,6 +42,7 @@ export type AiScreenMagicEnterpriseProofOptions = {
 
 export type AiScreenMagicScopedWaveConfig = {
   wave: string;
+  aliases?: readonly string[];
   greenStatus: string;
   requiredScreens: readonly string[];
 };
@@ -48,11 +58,19 @@ const AI_SCREEN_MAGIC_SCOPED_WAVES: readonly AiScreenMagicScopedWaveConfig[] = O
     greenStatus: AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_GREEN_STATUS,
     requiredScreens: AI_WAREHOUSE_STOCK_APPROVAL_MAGIC_REQUIRED_SCREENS,
   },
+  {
+    wave: AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE,
+    aliases: [AI_WAREHOUSE_LOGISTICS_MAGIC_SCOPE],
+    greenStatus: AI_WAREHOUSE_LOGISTICS_MAGIC_GREEN_STATUS,
+    requiredScreens: AI_WAREHOUSE_LOGISTICS_MAGIC_REQUIRED_SCREENS,
+  },
 ]);
 
 export function getAiScreenMagicScopedWaveConfig(scope: string | null | undefined): AiScreenMagicScopedWaveConfig | null {
   const normalized = String(scope ?? "").trim();
-  return AI_SCREEN_MAGIC_SCOPED_WAVES.find((entry) => entry.wave === normalized) ?? null;
+  return AI_SCREEN_MAGIC_SCOPED_WAVES.find((entry) =>
+    entry.wave === normalized || entry.aliases?.includes(normalized),
+  ) ?? null;
 }
 
 export function listAiScreenMagicPacksForScope(scope: string | null | undefined): AiScreenMagicPack[] {

@@ -1,0 +1,471 @@
+{
+  "wave": "S_AI_MAGIC_WAREHOUSE_LOGISTICS_POINT_OF_NO_RETURN",
+  "screens": [
+    {
+      "screenId": "warehouse.main",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Риски дефицита",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы прихода",
+            "точный остаток",
+            "approval для спорной позиции"
+          ]
+        },
+        {
+          "title": "Ожидаемые приходы",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы прихода",
+            "точный остаток",
+            "approval для спорной позиции"
+          ]
+        },
+        {
+          "title": "Заявки, которые склад не закроет",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы прихода",
+            "точный остаток",
+            "approval для спорной позиции"
+          ]
+        },
+        {
+          "title": "Спорные позиции",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы прихода",
+            "точный остаток",
+            "approval для спорной позиции"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "риски дефицита",
+        "ожидаемые приходы",
+        "заявки, которые склад не закроет",
+        "спорные позиции"
+      ],
+      "riskSummary": [
+        "дефицит",
+        "спорный приход",
+        "заявка без достаточного остатка"
+      ],
+      "missingDataSummary": [
+        "документы прихода",
+        "точный остаток",
+        "approval для спорной позиции"
+      ],
+      "safeActions": [
+        "показать дефицит"
+      ],
+      "approvalCandidates": [
+        "спорные позиции на approval"
+      ],
+      "exactBlockers": [
+        "AI не меняет остатки, не принимает и не списывает склад"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Показать дефицит",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить проверку прихода",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Черновик перемещения",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить спорные позиции на approval",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Пришло позиций",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.incoming"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "накладная",
+            "акт расхождения",
+            "подтверждение поставщика"
+          ]
+        },
+        {
+          "title": "Не совпадает с заявкой",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.incoming"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "накладная",
+            "акт расхождения",
+            "подтверждение поставщика"
+          ]
+        },
+        {
+          "title": "Документов не хватает",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.incoming"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "накладная",
+            "акт расхождения",
+            "подтверждение поставщика"
+          ]
+        },
+        {
+          "title": "Ручная проверка",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.incoming"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "накладная",
+            "акт расхождения",
+            "подтверждение поставщика"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "пришло позиций",
+        "расхождения с заявкой",
+        "missing documents",
+        "ручная проверка"
+      ],
+      "riskSummary": [
+        "расхождение прихода",
+        "нет документа",
+        "ручная проверка обязательна"
+      ],
+      "missingDataSummary": [
+        "накладная",
+        "акт расхождения",
+        "подтверждение поставщика"
+      ],
+      "safeActions": [
+        "список расхождений"
+      ],
+      "approvalCandidates": [
+        "спорные позиции на согласование"
+      ],
+      "exactBlockers": [
+        "AI не подтверждает приход напрямую"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Список расхождений",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Запросить документ",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить спорные позиции на согласование",
+          "actionKind": "approval_required"
+        },
+        {
+          "label": "Подготовить черновик проверки",
+          "actionKind": "draft_only"
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Запрошено позиций",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.issue"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "точный остаток",
+            "approval reason",
+            "альтернативная позиция"
+          ]
+        },
+        {
+          "title": "Доступно полностью",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.issue"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "точный остаток",
+            "approval reason",
+            "альтернативная позиция"
+          ]
+        },
+        {
+          "title": "Дефицит",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.issue"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "точный остаток",
+            "approval reason",
+            "альтернативная позиция"
+          ]
+        },
+        {
+          "title": "Требует согласования",
+          "evidence": [
+            "source:warehouse_status",
+            "source:screen_state",
+            "source:approval_policy",
+            "screen:warehouse.issue"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "точный остаток",
+            "approval reason",
+            "альтернативная позиция"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "запрошенные позиции",
+        "доступно полностью",
+        "дефицит",
+        "позиции, где нужен approval"
+      ],
+      "riskSummary": [
+        "выдача при дефиците",
+        "позиция требует approval",
+        "альтернатива без evidence"
+      ],
+      "missingDataSummary": [
+        "точный остаток",
+        "approval reason",
+        "альтернативная позиция"
+      ],
+      "safeActions": [
+        "показать дефицит",
+        "предложить альтернативу"
+      ],
+      "approvalCandidates": [
+        "выдача позиции, где нужен approval"
+      ],
+      "exactBlockers": [
+        "AI не выдает и не списывает материалы напрямую"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Черновик выдачи",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать дефицит",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Предложить альтернативу",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Отправить на approval",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "domain": "logistics",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Ближайшие поставщики",
+          "evidence": [
+            "source:map_context",
+            "source:screen_state",
+            "source:role_policy",
+            "screen:map.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/map/object-context/:objectId",
+            "distance signal",
+            "ETA signal",
+            "linked request"
+          ]
+        },
+        {
+          "title": "Объекты рядом",
+          "evidence": [
+            "source:map_context",
+            "source:screen_state",
+            "source:role_policy",
+            "screen:map.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/map/object-context/:objectId",
+            "distance signal",
+            "ETA signal",
+            "linked request"
+          ]
+        },
+        {
+          "title": "Маршруты с риском",
+          "evidence": [
+            "source:map_context",
+            "source:screen_state",
+            "source:role_policy",
+            "screen:map.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/map/object-context/:objectId",
+            "distance signal",
+            "ETA signal",
+            "linked request"
+          ]
+        },
+        {
+          "title": "Связанные заявки",
+          "evidence": [
+            "source:map_context",
+            "source:screen_state",
+            "source:role_policy",
+            "screen:map.main"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/map/object-context/:objectId",
+            "distance signal",
+            "ETA signal",
+            "linked request"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "nearby suppliers",
+        "nearby objects",
+        "route risks",
+        "delivery impact on requests"
+      ],
+      "riskSummary": [
+        "distance without evidence",
+        "ETA without evidence",
+        "supplier creation risk"
+      ],
+      "missingDataSummary": [
+        "distance signal",
+        "ETA signal",
+        "linked request"
+      ],
+      "safeActions": [
+        "сравнить поставщиков по логистике",
+        "показать риски маршрута",
+        "открыть связанные заявки"
+      ],
+      "approvalCandidates": [
+        "запрос доставки"
+      ],
+      "exactBlockers": [
+        "AI не выдумывает distance/ETA и не создает supplier"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Сравнить поставщиков по логистике",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Показать риски маршрута",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить запрос доставки",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть связанные заявки",
+          "actionKind": "safe_read"
+        }
+      ]
+    }
+  ]
+}

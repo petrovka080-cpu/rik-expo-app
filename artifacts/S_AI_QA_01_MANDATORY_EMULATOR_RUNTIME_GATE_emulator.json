@@ -3,19 +3,23 @@
   "android_emulator_ready": true,
   "android_installed_runtime_smoke": "PASS",
   "rebuild_requirement": {
-    "final_status": "PASS_ANDROID_REBUILD_PROOF_PRESENT",
-    "require_rebuild": true,
+    "final_status": "PASS_ANDROID_REBUILD_NOT_REQUIRED",
+    "require_rebuild": false,
     "changed_files": [
-      "scripts/ai/aiProcurementSuppliersMagic.ts",
+      "scripts/ai/aiWarehouseLogisticsMagic.ts",
+      "scripts/e2e/aiScreenMagicScopedWaveProof.ts",
       "scripts/e2e/runAiScreenByScreenMagicMaestro.ts",
       "scripts/e2e/runAiScreenByScreenMagicWeb.ts",
-      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-      "tests/ai/aiProcurementMagicScreen.contract.test.ts",
-      "tests/ai/aiSupplierMagicScreen.contract.test.ts"
+      "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
+      "tests/ai/aiMapLogisticsMagic.contract.test.ts",
+      "tests/ai/aiWarehouseIncomingMagic.contract.test.ts",
+      "tests/ai/aiWarehouseIssueMagic.contract.test.ts",
+      "tests/ai/aiWarehouseLogisticsMagic.contract.test.ts",
+      "tests/architecture/aiLogisticsNoFakeDistanceEta.contract.test.ts",
+      "tests/architecture/aiWarehouseNoDirectStockMutation.contract.test.ts",
+      "tests/architecture/aiWarehouseNoFakeStock.contract.test.ts"
     ],
-    "ai_mobile_runtime_files": [
-      "src/features/ai/screenMagic/aiScreenMagicRegistry.ts"
-    ],
+    "ai_mobile_runtime_files": [],
     "ai_mobile_runtime_source_files": [
       "app/(tabs)/_layout.tsx",
       "app/(tabs)/add.tsx",
@@ -1220,13 +1224,13 @@
     "ai_mobile_runtime_source_fingerprint": "f1d69d6737b084900a354f3a2f0239a35deda2dcbe8c5664b0713f4047f46c9b",
     "installed_apk_source_fingerprint": "f1d69d6737b084900a354f3a2f0239a35deda2dcbe8c5664b0713f4047f46c9b",
     "source_fingerprint_matches_installed_apk": true,
-    "local_android_rebuild_install_after_source_change": true,
-    "backend_or_scripts_only": false,
+    "local_android_rebuild_install_after_source_change": false,
+    "backend_or_scripts_only": true,
     "installed_runtime_smoke_required": true,
-    "local_android_rebuild_install_required": true,
-    "local_android_rebuild_install": "PASS",
+    "local_android_rebuild_install_required": false,
+    "local_android_rebuild_install": "NOT_REQUIRED",
     "proof_artifact_path": "artifacts/S_AI_QA_01_ANDROID_REBUILD_INSTALL.json",
-    "changed_files_fingerprint": "5c87b55b60b7f82c2ba13d0b4ad8515d549cbe97ce9ffb6526f2633d07337610",
+    "changed_files_fingerprint": "96fe41086547fa4fff193fd94d9bd54a515f38826dba171f14a71c8559afb563",
     "exact_reason": null
   },
   "emulator_boot_completed": false,

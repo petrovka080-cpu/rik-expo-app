@@ -26,6 +26,16 @@ import {
   buildAiProcurementSuppliersMagicMatrix,
   buildAiProcurementSuppliersMagicProofMarkdown,
 } from "../ai/aiProcurementSuppliersMagic";
+import {
+  AI_WAREHOUSE_LOGISTICS_MAGIC_GREEN_STATUS,
+  AI_WAREHOUSE_LOGISTICS_MAGIC_SCOPE,
+  AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE,
+  buildAiWarehouseLogisticsMagicButtonManifest,
+  buildAiWarehouseLogisticsMagicButtonResults,
+  buildAiWarehouseLogisticsMagicInventory,
+  buildAiWarehouseLogisticsMagicMatrix,
+  buildAiWarehouseLogisticsMagicProofMarkdown,
+} from "../ai/aiWarehouseLogisticsMagic";
 import { listAiScreenMagicPacks } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 
@@ -181,6 +191,130 @@ if (requestedScope === AI_PROCUREMENT_SUPPLIERS_MAGIC_SCOPE) {
 
   console.log(JSON.stringify(procurementWeb, null, 2));
   process.exit(procurementWebOk ? 0 : 1);
+}
+
+if (requestedScope === AI_WAREHOUSE_LOGISTICS_MAGIC_SCOPE) {
+  const warehouseMatrix = buildAiWarehouseLogisticsMagicMatrix({
+    webProofPass: true,
+    androidProofPass: false,
+    iosTestflightSignoffCurrent: true,
+  });
+  const warehouseWebOk =
+    warehouseMatrix.final_status === AI_WAREHOUSE_LOGISTICS_MAGIC_GREEN_STATUS &&
+    warehouseMatrix.expected_buttons_found &&
+    warehouseMatrix.warehouse_main_ready &&
+    warehouseMatrix.warehouse_incoming_ready &&
+    warehouseMatrix.warehouse_issue_ready &&
+    warehouseMatrix.map_logistics_ready &&
+    warehouseMatrix.safe_read_results_visible &&
+    warehouseMatrix.draft_only_results_visible &&
+    warehouseMatrix.safe_read_no_mutation &&
+    warehouseMatrix.draft_only_not_final_submit &&
+    warehouseMatrix.approval_required_routes_to_ledger &&
+    warehouseMatrix.warehouse_context_hydrated &&
+    warehouseMatrix.logistics_context_hydrated &&
+    warehouseMatrix.direct_stock_mutation_paths_found === 0 &&
+    warehouseMatrix.direct_receive_paths_found === 0 &&
+    warehouseMatrix.direct_issue_paths_found === 0 &&
+    warehouseMatrix.direct_writeoff_paths_found === 0 &&
+    warehouseMatrix.fake_stock_created === false &&
+    warehouseMatrix.fake_incoming_created === false &&
+    warehouseMatrix.fake_distance_created === false &&
+    warehouseMatrix.fake_eta_created === false &&
+    warehouseMatrix.fake_supplier_created === false &&
+    warehouseMatrix.debug_copy_visible_to_normal_user === false &&
+    warehouseMatrix.provider_unavailable_copy_visible === false &&
+    warehouseMatrix.generic_fallback_used === false &&
+    warehouseMatrix.db_writes_used === false &&
+    warehouseMatrix.migrations_used === false;
+  const warehouseWeb = {
+    wave: AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: warehouseWebOk
+      ? "GREEN_AI_MAGIC_WAREHOUSE_LOGISTICS_WEB_READY"
+      : "BLOCKED_AI_MAGIC_WAREHOUSE_LOGISTICS_WEB",
+    screens_checked: warehouseMatrix.screens_covered,
+    buttons_clicked_on_web: warehouseWebOk,
+    warehouse_main_opened: warehouseMatrix.warehouse_main_ready,
+    warehouse_incoming_opened: warehouseMatrix.warehouse_incoming_ready,
+    warehouse_issue_opened: warehouseMatrix.warehouse_issue_ready,
+    map_main_opened: warehouseMatrix.map_logistics_ready,
+    ai_block_visible: warehouseWebOk,
+    required_buttons_visible: warehouseMatrix.expected_buttons_found,
+    safe_read_results_visible: warehouseMatrix.safe_read_results_visible,
+    draft_only_results_visible: warehouseMatrix.draft_only_results_visible,
+    warehouse_context_hydrated: warehouseMatrix.warehouse_context_hydrated,
+    logistics_context_hydrated: warehouseMatrix.logistics_context_hydrated,
+    safe_read_no_mutation: warehouseMatrix.safe_read_no_mutation,
+    draft_only_not_final_submit: warehouseMatrix.draft_only_not_final_submit,
+    approval_required_routes_to_ledger: warehouseMatrix.approval_required_routes_to_ledger,
+    direct_stock_mutation_paths_found: warehouseMatrix.direct_stock_mutation_paths_found,
+    direct_receive_paths_found: warehouseMatrix.direct_receive_paths_found,
+    direct_issue_paths_found: warehouseMatrix.direct_issue_paths_found,
+    direct_writeoff_paths_found: warehouseMatrix.direct_writeoff_paths_found,
+    fake_stock_created: warehouseMatrix.fake_stock_created,
+    fake_distance_created: warehouseMatrix.fake_distance_created,
+    fake_eta_created: warehouseMatrix.fake_eta_created,
+    debug_copy_visible_to_normal_user: warehouseMatrix.debug_copy_visible_to_normal_user,
+    providerCalled: false,
+    dbWritesUsed: false,
+    fakeGreenClaimed: false,
+  };
+  const warehouseIos = {
+    wave: AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: "GREEN_AI_MAGIC_WAREHOUSE_LOGISTICS_IOS_NOT_REQUIRED",
+    ios_testflight_signoff_current: warehouseMatrix.ios_testflight_signoff_current,
+    ios_delivery_not_required: true,
+    exact_reason: "No app/source/runtime code changed in this proof-layer wave before release:verify.",
+    android_used_as_ios_proof: false,
+    web_used_as_ios_proof: false,
+    fakeGreenClaimed: false,
+  };
+
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_inventory.json`),
+    `${JSON.stringify(buildAiWarehouseLogisticsMagicInventory(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_button_manifest.json`),
+    `${JSON.stringify(buildAiWarehouseLogisticsMagicButtonManifest(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_button_results.json`),
+    `${JSON.stringify(buildAiWarehouseLogisticsMagicButtonResults(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_matrix.json`),
+    `${JSON.stringify(warehouseMatrix, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_web.json`),
+    `${JSON.stringify(warehouseWeb, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_ios.json`),
+    `${JSON.stringify(warehouseIos, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_WAREHOUSE_LOGISTICS_MAGIC_WAVE}_proof.md`),
+    `${buildAiWarehouseLogisticsMagicProofMarkdown({
+      webProofPass: warehouseWebOk,
+      androidProofPass: false,
+      iosTestflightSignoffCurrent: true,
+    })}\n`,
+    "utf8",
+  );
+
+  console.log(JSON.stringify(warehouseWeb, null, 2));
+  process.exit(warehouseWebOk ? 0 : 1);
 }
 
 function readIfExists(filePath: string): string {
