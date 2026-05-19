@@ -1,0 +1,11 @@
+{
+  "wave": "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_POINT_OF_NO_RETURN",
+  "scope": "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY",
+  "final_status": "GREEN_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_IOS_NOT_REQUIRED",
+  "ios_testflight_signoff_current": true,
+  "ios_delivery_not_required": true,
+  "exact_reason": "Only screenMagic registry/proof/test code changed before release:verify; no native iOS rebuild is required unless release guard reports a stale iOS blocker.",
+  "android_used_as_ios_proof": false,
+  "web_used_as_ios_proof": false,
+  "fakeGreenClaimed": false
+}

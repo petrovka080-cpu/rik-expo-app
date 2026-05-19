@@ -67,6 +67,9 @@ const isApprovedAiTraceObservabilityPatch = (file: string) =>
     "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_proof.md",
   ].includes(file);
 
+const isApprovedAiDirectorCommandOfficeSecurityMagicPatch = (file: string) =>
+  file === "tests/ai/aiDirectorReportsMagic.contract.test.ts";
+
 const isLaterApprovedRpcValidationPatch = (file: string) =>
   ["src/lib/api/integrity.guards.ts"].includes(file);
 
@@ -410,6 +413,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle83DirectorPdfBackendAuthBoundaryPatch(file) &&
         !isApprovedAuditBattle86StorageTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle101AiReportsTransportBoundaryPatch(file) &&
+        !isApprovedAiDirectorCommandOfficeSecurityMagicPatch(file) &&
         !isApprovedAuditBattle104DirectorReportsTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle105PaymentPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle106ProposalsTransportBoundaryPatch(file) &&

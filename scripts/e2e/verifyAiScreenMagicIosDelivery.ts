@@ -113,6 +113,19 @@ function routesForScope(scope: string): string[] {
       "rik:///chat",
     ];
   }
+  if (
+    scope === "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_POINT_OF_NO_RETURN" ||
+    scope === "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY"
+  ) {
+    return [
+      "rik:///office/director",
+      "rik:///director/reports",
+      "rik:///ai-command-center",
+      "rik:///office",
+      "rik:///security",
+      "rik:///screen-runtime",
+    ];
+  }
   return [...coreRoutes];
 }
 

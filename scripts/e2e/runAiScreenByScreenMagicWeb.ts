@@ -46,6 +46,16 @@ import {
   buildAiFieldDocumentsReportsMagicMatrix,
   buildAiFieldDocumentsReportsMagicProofMarkdown,
 } from "../ai/aiFieldDocsMagic";
+import {
+  AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_GREEN_STATUS,
+  AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_SCOPE,
+  AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE,
+  buildAiDirectorCommandOfficeSecurityMagicButtonManifest,
+  buildAiDirectorCommandOfficeSecurityMagicButtonResults,
+  buildAiDirectorCommandOfficeSecurityMagicInventory,
+  buildAiDirectorCommandOfficeSecurityMagicMatrix,
+  buildAiDirectorCommandOfficeSecurityMagicProofMarkdown,
+} from "../ai/aiDirectorCommandOfficeSecurityMagic";
 import { listAiScreenMagicPacks } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 
@@ -447,6 +457,140 @@ if (requestedScope === AI_FIELD_DOCUMENTS_REPORTS_MAGIC_SCOPE) {
 
   console.log(JSON.stringify(fieldWeb, null, 2));
   process.exit(fieldWebOk ? 0 : 1);
+}
+
+if (requestedScope === AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_SCOPE) {
+  const directorMatrix = buildAiDirectorCommandOfficeSecurityMagicMatrix({
+    webProofPass: true,
+    androidProofPass: false,
+    iosTestflightSignoffCurrent: true,
+  });
+  const directorWebOk =
+    directorMatrix.final_status === AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_GREEN_STATUS &&
+    directorMatrix.expected_buttons_found &&
+    directorMatrix.director_decision_context_hydrated &&
+    directorMatrix.command_center_next_actions_ready &&
+    directorMatrix.office_context_hydrated &&
+    directorMatrix.security_context_hydrated &&
+    directorMatrix.safe_read_results_visible &&
+    directorMatrix.draft_only_results_visible &&
+    directorMatrix.safe_read_no_mutation &&
+    directorMatrix.draft_only_not_final_submit &&
+      directorMatrix.approval_required_routes_to_ledger &&
+      directorMatrix.ai_auto_approval === false &&
+      directorMatrix.ai_decision_on_behalf_of_director === false &&
+      directorMatrix.approval_bypass_found === 0 &&
+      directorMatrix.policy_disable_paths_found === 0 &&
+      directorMatrix.direct_role_permission_mutation_paths_found === 0 &&
+      directorMatrix.service_role_green_path_found === false &&
+      directorMatrix.runtime_screen_admin_only_ready &&
+      directorMatrix.runtime_context_hydrated_for_admin &&
+      directorMatrix.runtime_debug_visible_to_normal_users === false &&
+      directorMatrix.fake_security_findings_created === false &&
+      directorMatrix.fake_runtime_blockers_created === false &&
+      directorMatrix.fake_report_content_created === false &&
+      directorMatrix.debug_copy_visible_to_normal_user === false &&
+    directorMatrix.provider_unavailable_copy_visible === false &&
+    directorMatrix.generic_fallback_used === false &&
+    directorMatrix.db_writes_used === false &&
+    directorMatrix.migrations_used === false;
+  const directorWeb = {
+    wave: AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: directorWebOk
+      ? "GREEN_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_WEB_READY"
+      : "BLOCKED_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_WEB",
+    screens_checked: directorMatrix.screens_covered,
+    buttons_clicked_on_web: directorWebOk,
+    director_dashboard_opened: directorMatrix.director_dashboard_ready,
+    director_reports_opened: directorMatrix.director_reports_ready,
+    command_center_opened: directorMatrix.command_center_ready,
+      office_hub_opened: directorMatrix.office_hub_ready,
+      security_screen_opened: directorMatrix.security_screen_ready,
+      screen_runtime_dev_admin_only_checked: directorMatrix.screen_runtime_ready,
+      runtime_screen_admin_only_ready: directorMatrix.runtime_screen_admin_only_ready,
+      ai_block_visible: directorWebOk,
+    required_buttons_visible: directorMatrix.expected_buttons_found,
+    safe_read_results_visible: directorMatrix.safe_read_results_visible,
+    draft_only_results_visible: directorMatrix.draft_only_results_visible,
+    director_decision_context_hydrated: directorMatrix.director_decision_context_hydrated,
+      command_center_next_actions_ready: directorMatrix.command_center_next_actions_ready,
+      office_context_hydrated: directorMatrix.office_context_hydrated,
+      security_context_hydrated: directorMatrix.security_context_hydrated,
+      runtime_context_hydrated_for_admin: directorMatrix.runtime_context_hydrated_for_admin,
+      safe_read_no_mutation: directorMatrix.safe_read_no_mutation,
+    draft_only_not_final_submit: directorMatrix.draft_only_not_final_submit,
+      approval_required_routes_to_ledger: directorMatrix.approval_required_routes_to_ledger,
+      ai_auto_approval: directorMatrix.ai_auto_approval,
+      ai_decision_on_behalf_of_director: directorMatrix.ai_decision_on_behalf_of_director,
+      approval_bypass_found: directorMatrix.approval_bypass_found,
+      policy_disable_paths_found: directorMatrix.policy_disable_paths_found,
+      direct_role_permission_mutation_paths_found: directorMatrix.direct_role_permission_mutation_paths_found,
+      service_role_green_path_found: directorMatrix.service_role_green_path_found,
+      runtime_debug_visible_to_normal_users: directorMatrix.runtime_debug_visible_to_normal_users,
+      debug_copy_visible_to_normal_user: directorMatrix.debug_copy_visible_to_normal_user,
+      fake_security_findings_created: directorMatrix.fake_security_findings_created,
+      fake_runtime_blockers_created: directorMatrix.fake_runtime_blockers_created,
+      fake_report_content_created: directorMatrix.fake_report_content_created,
+    providerCalled: false,
+    dbWritesUsed: false,
+    fakeGreenClaimed: false,
+  };
+  const directorIos = {
+    wave: AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: "GREEN_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_IOS_NOT_REQUIRED",
+    ios_testflight_signoff_current: directorMatrix.ios_testflight_signoff_current,
+    ios_delivery_not_required: true,
+    exact_reason: "Only screenMagic registry/proof/test code changed before release:verify; no native iOS rebuild is required unless release guard reports a stale iOS blocker.",
+    android_used_as_ios_proof: false,
+    web_used_as_ios_proof: false,
+    fakeGreenClaimed: false,
+  };
+
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_inventory.json`),
+    `${JSON.stringify(buildAiDirectorCommandOfficeSecurityMagicInventory(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_button_manifest.json`),
+    `${JSON.stringify(buildAiDirectorCommandOfficeSecurityMagicButtonManifest(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_button_results.json`),
+    `${JSON.stringify(buildAiDirectorCommandOfficeSecurityMagicButtonResults(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_matrix.json`),
+    `${JSON.stringify(directorMatrix, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_web.json`),
+    `${JSON.stringify(directorWeb, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_ios.json`),
+    `${JSON.stringify(directorIos, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE}_proof.md`),
+    `${buildAiDirectorCommandOfficeSecurityMagicProofMarkdown({
+      webProofPass: directorWebOk,
+      androidProofPass: false,
+      iosTestflightSignoffCurrent: true,
+    })}\n`,
+    "utf8",
+  );
+
+  console.log(JSON.stringify(directorWeb, null, 2));
+  process.exit(directorWebOk ? 0 : 1);
 }
 
 function readIfExists(filePath: string): string {

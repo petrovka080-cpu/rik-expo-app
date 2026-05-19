@@ -3,18 +3,18 @@
   "wave": "S_AI_QA_01_MANDATORY_EMULATOR_RUNTIME_GATE",
   "build_profile": "preview",
   "local_android_rebuild_install": "PASS",
-  "changed_files_fingerprint": "7f28104c06c703448d2dedafa240d3d17815428b1b2c8de4f2396590b61f3b7c",
+  "changed_files_fingerprint": "3210a787b262c575f966678d02b063680c56218a9dd2317a805137fd2d62e483",
   "changed_files": [
-    "scripts/ai/aiFieldDocsMagic.ts",
+    "scripts/ai/aiDirectorCommandOfficeSecurityMagic.ts",
     "scripts/e2e/aiScreenMagicScopedWaveProof.ts",
     "scripts/e2e/runAiScreenByScreenMagicMaestro.ts",
     "scripts/e2e/runAiScreenByScreenMagicWeb.ts",
     "scripts/e2e/verifyAiScreenMagicIosDelivery.ts",
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts",
-    "tests/ai/aiFieldDocsMagic.contract.test.ts",
-    "tests/architecture/aiChatNoDirectDangerousMutation.contract.test.ts",
-    "tests/architecture/aiFieldDocumentsNoFakeEvidence.contract.test.ts",
-    "tests/architecture/aiFieldDocumentsNoUnsafeFinalSubmit.contract.test.ts"
+    "tests/ai/aiDirectorCommandOfficeSecurityMagic.contract.test.ts",
+    "tests/architecture/aiDirectorCommandNoUnsafeDecision.contract.test.ts",
+    "tests/architecture/aiRuntimeDebugDevAdminOnly.contract.test.ts",
+    "tests/architecture/aiSecurityOfficeNoPermissionMutation.contract.test.ts"
   ],
   "ai_mobile_runtime_files": [
     "src/features/ai/screenMagic/aiScreenMagicRegistry.ts"
@@ -1220,8 +1220,8 @@
     "src/screens/warehouse/warehouseReceiveWorker.ts",
     "src/screens/warehouse/warehouseUi.store.ts"
   ],
-  "ai_mobile_runtime_source_fingerprint": "c9fa64683c587138c23c6e3444be2db13b76a0d7448a1f3fd676f134aa29bf34",
-  "installed_apk_source_fingerprint": "c9fa64683c587138c23c6e3444be2db13b76a0d7448a1f3fd676f134aa29bf34",
+  "ai_mobile_runtime_source_fingerprint": "cdf9c51b8f4c921af2c5f109c5c8babf95e536e0f1354eef66e50632754bc540",
+  "installed_apk_source_fingerprint": "cdf9c51b8f4c921af2c5f109c5c8babf95e536e0f1354eef66e50632754bc540",
   "source_fingerprint_matches_installed_apk": true,
   "local_android_rebuild_install_after_source_change": true,
   "apk_artifact_path": "artifacts/release/android-emulator.apk",

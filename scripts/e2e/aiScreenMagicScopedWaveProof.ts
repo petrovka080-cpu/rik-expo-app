@@ -44,6 +44,19 @@ export const AI_FIELD_DOCUMENTS_REPORTS_MAGIC_REQUIRED_SCREENS = [
   "reports.modal",
   "chat.main",
 ] as const;
+export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_SCOPE = "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY" as const;
+export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE =
+  "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_POINT_OF_NO_RETURN" as const;
+export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_GREEN_STATUS =
+  "GREEN_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_READY" as const;
+export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_REQUIRED_SCREENS = [
+  "director.dashboard",
+  "director.reports",
+  "ai.command_center",
+  "office.hub",
+  "security.screen",
+  "screen.runtime",
+] as const;
 
 export type AiScreenMagicEnterpriseProofOptions = {
   webProofPass?: boolean;
@@ -85,6 +98,12 @@ const AI_SCREEN_MAGIC_SCOPED_WAVES: readonly AiScreenMagicScopedWaveConfig[] = O
     aliases: [AI_FIELD_DOCUMENTS_REPORTS_MAGIC_SCOPE],
     greenStatus: AI_FIELD_DOCUMENTS_REPORTS_MAGIC_GREEN_STATUS,
     requiredScreens: AI_FIELD_DOCUMENTS_REPORTS_MAGIC_REQUIRED_SCREENS,
+  },
+  {
+    wave: AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_WAVE,
+    aliases: [AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_SCOPE],
+    greenStatus: AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_GREEN_STATUS,
+    requiredScreens: AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_REQUIRED_SCREENS,
   },
 ]);
 

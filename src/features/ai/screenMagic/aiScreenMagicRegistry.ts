@@ -676,6 +676,7 @@ const FOUNDATION_CONTRACTS: Record<string, MagicFoundationContract> = {
     approvalCandidates: ["cross-role approval candidate"],
     exactBlockers: ["dangerous execution stays blocked without approval ledger"],
     buttonIntents: [
+      { label: "Открыть задачу", actionKind: "safe_read" },
       { label: "Открыть evidence", actionKind: "safe_read" },
       { label: "Показать блокеры", actionKind: "safe_read" },
       { label: "Подготовить черновик", actionKind: "draft_only" },

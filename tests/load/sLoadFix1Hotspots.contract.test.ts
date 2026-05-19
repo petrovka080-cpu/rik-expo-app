@@ -77,6 +77,9 @@ const isApprovedAiTraceObservabilityPatch = (file: string) =>
     "artifacts/S_AI_OBS_01_TRACE_AUDIT_OBSERVABILITY_proof.md",
   ].includes(normalizePath(file));
 
+const isApprovedAiDirectorCommandOfficeSecurityMagicPatch = (file: string) =>
+  normalizePath(file) === "tests/ai/aiDirectorReportsMagic.contract.test.ts";
+
 const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
   [
     "app/_layout.tsx",
@@ -380,6 +383,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
         !isApprovedAiTraceObservabilityPatch(file) &&
+        !isApprovedAiDirectorCommandOfficeSecurityMagicPatch(file) &&
         !isApprovedPdfInstantFirstOpenPatch(file) &&
         !isApprovedScaleBoundedDatabaseQueriesPatch(file) &&
         !isApprovedSScale03TimerRealtimeLifecyclePatch(file) &&

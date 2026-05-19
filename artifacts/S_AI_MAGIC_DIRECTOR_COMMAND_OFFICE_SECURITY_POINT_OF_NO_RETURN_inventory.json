@@ -1,0 +1,742 @@
+{
+  "wave": "S_AI_MAGIC_DIRECTOR_COMMAND_OFFICE_SECURITY_POINT_OF_NO_RETURN",
+  "screens": [
+    {
+      "screenId": "director.dashboard",
+      "canonicalScreenId": "director.dashboard",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Критические решения",
+          "evidence": [
+            "source:screen_state",
+            "source:finance_summary",
+            "source:approval_policy",
+            "source:ledger_status",
+            "screen:director.dashboard"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы",
+            "rationale",
+            "связанные заявки или платежи"
+          ]
+        },
+        {
+          "title": "Ждут согласования",
+          "evidence": [
+            "source:screen_state",
+            "source:finance_summary",
+            "source:approval_policy",
+            "source:ledger_status",
+            "screen:director.dashboard"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы",
+            "rationale",
+            "связанные заявки или платежи"
+          ]
+        },
+        {
+          "title": "Блокируют работы",
+          "evidence": [
+            "source:screen_state",
+            "source:finance_summary",
+            "source:approval_policy",
+            "source:ledger_status",
+            "screen:director.dashboard"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы",
+            "rationale",
+            "связанные заявки или платежи"
+          ]
+        },
+        {
+          "title": "Запросить недостающие данные",
+          "evidence": [
+            "source:screen_state",
+            "source:finance_summary",
+            "source:approval_policy",
+            "source:ledger_status",
+            "screen:director.dashboard"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "документы",
+            "rationale",
+            "связанные заявки или платежи"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "критические вопросы",
+        "pending approvals",
+        "что блокирует работы",
+        "top issues",
+        "next action"
+      ],
+      "riskSummary": [
+        "скрытый риск",
+        "решение без evidence",
+        "работы заблокированы"
+      ],
+      "missingDataSummary": [
+        "документы",
+        "rationale",
+        "связанные заявки или платежи"
+      ],
+      "safeActions": [
+        "открыть approval inbox",
+        "показать критические",
+        "показать что блокирует работы"
+      ],
+      "approvalCandidates": [
+        "pending approvals для человеческого решения"
+      ],
+      "exactBlockers": [
+        "AI не принимает решение за директора"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Открыть approval inbox",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Показать критические",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Показать что блокирует работы",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Запросить недостающие данные",
+          "actionKind": "draft_only"
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "canonicalScreenId": "director.reports",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        {
+          "title": "Закупки",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:director.reports"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked documents",
+            "approval status"
+          ]
+        },
+        {
+          "title": "Склад",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:director.reports"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked documents",
+            "approval status"
+          ]
+        },
+        {
+          "title": "Финансы",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:director.reports"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked documents",
+            "approval status"
+          ]
+        },
+        {
+          "title": "Документы",
+          "evidence": [
+            "source:report_summary",
+            "source:document_metadata",
+            "source:approval_policy",
+            "screen:director.reports"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "evidence",
+            "linked documents",
+            "approval status"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "procurement summary",
+        "warehouse summary",
+        "finance summary",
+        "documents summary",
+        "critical deviations",
+        "top decision"
+      ],
+      "riskSummary": [
+        "critical deviation",
+        "summary without evidence",
+        "decision missing context"
+      ],
+      "missingDataSummary": [
+        "evidence",
+        "linked documents",
+        "approval status"
+      ],
+      "safeActions": [
+        "открыть риски",
+        "показать evidence"
+      ],
+      "approvalCandidates": [
+        "report package review"
+      ],
+      "exactBlockers": [
+        "AI не публикует финальный отчет без review"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Сформировать summary",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть риски",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить report draft",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать evidence",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "canonicalScreenId": "ai.command_center",
+      "domain": "command_center",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "preparedWork": [
+        {
+          "title": "Buyer next action",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "source:ledger_status",
+            "screen:ai.command_center"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "evidence label",
+            "approval candidate"
+          ]
+        },
+        {
+          "title": "Accountant next action",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "source:ledger_status",
+            "screen:ai.command_center"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "evidence label",
+            "approval candidate"
+          ]
+        },
+        {
+          "title": "Warehouse next action",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "source:ledger_status",
+            "screen:ai.command_center"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "evidence label",
+            "approval candidate"
+          ]
+        },
+        {
+          "title": "Director approval",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "source:ledger_status",
+            "screen:ai.command_center"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "evidence label",
+            "approval candidate"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "cross-role next actions",
+        "buyer next action",
+        "accountant next action",
+        "warehouse next action",
+        "director approval"
+      ],
+      "riskSummary": [
+        "action without ledger",
+        "missing evidence",
+        "blocked route"
+      ],
+      "missingDataSummary": [
+        "last artifact",
+        "evidence label",
+        "approval candidate"
+      ],
+      "safeActions": [
+        "открыть evidence",
+        "показать блокеры"
+      ],
+      "approvalCandidates": [
+        "cross-role approval candidate"
+      ],
+      "exactBlockers": [
+        "dangerous execution stays blocked without approval ledger"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Открыть задачу",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Открыть evidence",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить черновик",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить на approval",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "canonicalScreenId": "office.hub",
+      "domain": "office",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "office"
+      ],
+      "preparedWork": [
+        {
+          "title": "Документы на обработку",
+          "evidence": [
+            "source:office_directory",
+            "source:role_policy",
+            "source:screen_state",
+            "screen:office.hub"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/office/access-change/submit-for-approval",
+            "linked document",
+            "owner",
+            "deadline",
+            "approval route"
+          ]
+        },
+        {
+          "title": "Заявки без движения",
+          "evidence": [
+            "source:office_directory",
+            "source:role_policy",
+            "source:screen_state",
+            "screen:office.hub"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/office/access-change/submit-for-approval",
+            "linked document",
+            "owner",
+            "deadline",
+            "approval route"
+          ]
+        },
+        {
+          "title": "Отчёты на проверку",
+          "evidence": [
+            "source:office_directory",
+            "source:role_policy",
+            "source:screen_state",
+            "screen:office.hub"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/office/access-change/submit-for-approval",
+            "linked document",
+            "owner",
+            "deadline",
+            "approval route"
+          ]
+        },
+        {
+          "title": "Просроченные задачи",
+          "evidence": [
+            "source:office_directory",
+            "source:role_policy",
+            "source:screen_state",
+            "screen:office.hub"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/office/access-change/submit-for-approval",
+            "linked document",
+            "owner",
+            "deadline",
+            "approval route"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "documents to process",
+        "stuck requests",
+        "reports to review",
+        "overdue tasks",
+        "items requiring approval"
+      ],
+      "riskSummary": [
+        "overdue task",
+        "stuck request",
+        "approval needed"
+      ],
+      "missingDataSummary": [
+        "linked document",
+        "owner",
+        "deadline",
+        "approval route"
+      ],
+      "safeActions": [
+        "открыть просроченные",
+        "собрать документы"
+      ],
+      "approvalCandidates": [
+        "отправить на approval"
+      ],
+      "exactBlockers": [
+        "AI не меняет роли и не закрывает задачи напрямую"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Открыть просроченные",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Собрать документы",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить reminder",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить на approval",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "canonicalScreenId": "security.screen",
+      "domain": "security",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "security"
+      ],
+      "preparedWork": [
+        {
+          "title": "Роли с повышенным риском",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:approval_policy",
+            "screen:security.screen"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/security/context",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/draft-review",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/submit-for-approval",
+            "audit evidence",
+            "policy gap"
+          ]
+        },
+        {
+          "title": "Forbidden attempts",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:approval_policy",
+            "screen:security.screen"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/security/context",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/draft-review",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/submit-for-approval",
+            "audit evidence",
+            "policy gap"
+          ]
+        },
+        {
+          "title": "Подозрительные approvals",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:approval_policy",
+            "screen:security.screen"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/security/context",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/draft-review",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/submit-for-approval",
+            "audit evidence",
+            "policy gap"
+          ]
+        },
+        {
+          "title": "Policy gaps",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:approval_policy",
+            "screen:security.screen"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:GET /agent/security/context",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/draft-review",
+            "BLOCKED_AI_SCREEN_WORKFLOW_REAL_DATA_ROUTE_MISSING:POST /agent/security/submit-for-approval",
+            "audit evidence",
+            "policy gap"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "risky roles",
+        "forbidden action attempts",
+        "suspicious approvals",
+        "служебный путь повышенного риска"
+      ],
+      "riskSummary": [
+        "risky role",
+        "forbidden attempt",
+        "suspicious approval",
+        "служебный путь повышенного риска"
+      ],
+      "missingDataSummary": [
+        "audit evidence",
+        "policy gap",
+        "approval trace"
+      ],
+      "safeActions": [
+        "открыть risk roles",
+        "проверить forbidden attempts",
+        "показать policy gaps"
+      ],
+      "approvalCandidates": [
+        "security report"
+      ],
+      "exactBlockers": [
+        "AI не выдает роли, не отключает policy и не разрешает служебный путь повышенного риска"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Открыть risk roles",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Проверить forbidden attempts",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Собрать security report",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Показать policy gaps",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "canonicalScreenId": "screen.runtime",
+      "domain": "runtime",
+      "roleScope": [
+        "admin",
+        "developer"
+      ],
+      "preparedWork": [
+        {
+          "title": "Runtime health",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "screen:screen.runtime"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "runner result",
+            "repair command"
+          ]
+        },
+        {
+          "title": "Transport binding",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "screen:screen.runtime"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "runner result",
+            "repair command"
+          ]
+        },
+        {
+          "title": "Fallback entries",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "screen:screen.runtime"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "runner result",
+            "repair command"
+          ]
+        },
+        {
+          "title": "Exact blocker",
+          "evidence": [
+            "source:screen_state",
+            "source:role_policy",
+            "source:tool_contract",
+            "screen:screen.runtime"
+          ],
+          "missingData": [
+            "hydrated screen data is missing; AI can show workflow policy and next safe action, but cannot invent business facts",
+            "last artifact",
+            "runner result",
+            "repair command"
+          ]
+        }
+      ],
+      "visibleDomainData": [
+        "runtime health",
+        "explicit transport binding",
+        "fallback entries",
+        "failing child runner",
+        "exact blocker",
+        "last artifact",
+        "recommended repair command"
+      ],
+      "riskSummary": [
+        "runtime blocker",
+        "child runner failed",
+        "fallback entry"
+      ],
+      "missingDataSummary": [
+        "last artifact",
+        "runner result",
+        "repair command"
+      ],
+      "safeActions": [
+        "показать exact blocker",
+        "показать last artifact"
+      ],
+      "approvalCandidates": [
+        "approval-gated runtime action"
+      ],
+      "exactBlockers": [
+        "screen.runtime доступен только dev/admin и не должен показываться обычному пользователю"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Показать exact blocker",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Показать repair command",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Prepare approval-gated runtime action",
+          "actionKind": "approval_required"
+        },
+        {
+          "label": "Write screen state directly",
+          "actionKind": "forbidden"
+        }
+      ]
+    }
+  ]
+}
