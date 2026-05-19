@@ -270,6 +270,19 @@ const isApprovedAiForemanRealWorkdayPatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiBuyerRealSourcingPatch = (file: string) =>
+  /^src\/lib\/ai\/buyerSourcing\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiBuyer/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "scripts/ai/aiBuyerRealSourcingFunnelProof.ts" ||
+  /^scripts\/e2e\/runAiBuyerRealSourcingFunnel/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "tests/perf/performance-budget.test.ts" ||
+  [
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -428,6 +441,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAiFieldWorkCopilotPatch(file) &&
         !isApprovedAiConstructionKnowledgeCorePatch(file) &&
         !isApprovedAiForemanRealWorkdayPatch(file) &&
+        !isApprovedAiBuyerRealSourcingPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&

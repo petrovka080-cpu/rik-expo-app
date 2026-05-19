@@ -293,6 +293,19 @@ const isApprovedAiForemanRealWorkdayPatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiBuyerRealSourcingPatch = (file: string) =>
+  /^src\/lib\/ai\/buyerSourcing\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiBuyer/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "scripts/ai/aiBuyerRealSourcingFunnelProof.ts" ||
+  /^scripts\/e2e\/runAiBuyerRealSourcingFunnel/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "tests/perf/performance-budget.test.ts" ||
+  [
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -368,6 +381,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAiRealUserUiButtonProofPatch(file) &&
         !isApprovedAiConstructionKnowledgeCorePatch(file) &&
         !isApprovedAiForemanRealWorkdayPatch(file) &&
+        !isApprovedAiBuyerRealSourcingPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

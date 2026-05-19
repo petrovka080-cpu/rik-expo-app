@@ -22,7 +22,7 @@
   "role_isolation_contract_tests": "PASS",
   "separate_role_users_required": false,
   "test_request_source": "bounded_buyer_summary_rpc",
-  "request_id_hash": "request_96c7b9b0",
+  "request_id_hash": "request_9d1a8a4d",
   "real_request_discovery_bounded": true,
   "real_request_discovery_read_limit": 10,
   "real_request_item_count": 1,
