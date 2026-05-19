@@ -213,7 +213,24 @@ function buildProofContext(overrides: Partial<MarketplaceIntakeContext> = {}): M
 
 function readReleaseVerifyPassed(): boolean {
   if (!fs.existsSync(releaseVerifyReportPath)) return false;
-  const report = JSON.parse(fs.readFileSync(releaseVerifyReportPath, "utf8")) as {
+  const raw = fs.readFileSync(releaseVerifyReportPath);
+  const rawText = raw[0] === 0xff && raw[1] === 0xfe
+    ? raw.toString("utf16le")
+    : raw.toString("utf8");
+  const text = rawText.replace(/^\uFEFF/, "").trim();
+  const candidates = Array.from(text.matchAll(/(?:^|\n)\s*\{/g)).map((match) => match.index ?? 0);
+  let parsed: unknown = null;
+  for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    const candidate = text.slice(candidates[index]).trim();
+    try {
+      parsed = JSON.parse(candidate);
+      break;
+    } catch {
+      // Release verify reports can contain test logs before the final JSON.
+    }
+  }
+  if (parsed === null) return false;
+  const report = parsed as {
     ok?: boolean;
     final_status?: string;
     passed?: boolean;
