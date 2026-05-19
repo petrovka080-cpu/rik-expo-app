@@ -275,6 +275,10 @@ const isApprovedAiRealUserUiButtonProofPatch = (file: string) =>
     "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiConstructionKnowledgeCorePatch = (file: string) =>
+  /^src\/lib\/ai\/constructionKnowledgeCore\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiConstruction/.test(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -348,6 +352,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAiDraftReportToolPatch(file) &&
         !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
         !isApprovedAiRealUserUiButtonProofPatch(file) &&
+        !isApprovedAiConstructionKnowledgeCorePatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

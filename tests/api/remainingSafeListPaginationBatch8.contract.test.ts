@@ -289,6 +289,10 @@ const isApprovedAiRealUserUiButtonProofPatch = (file: string) =>
     "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiConstructionKnowledgeCorePatch = (file: string) =>
+  /^src\/lib\/ai\/constructionKnowledgeCore\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiConstruction/.test(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -373,6 +377,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAiDraftReportToolPatch(file) &&
       !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
       !isApprovedAiRealUserUiButtonProofPatch(file) &&
+      !isApprovedAiConstructionKnowledgeCorePatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

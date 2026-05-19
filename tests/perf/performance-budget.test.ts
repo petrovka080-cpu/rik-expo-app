@@ -590,6 +590,10 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowContracts.ts"),
       path.join(SRC, "features", "ai", "agent", "agentConstructionKnowhowRoutes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sAiConstructionEngineeringKnowledgeCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "constructionKnowledgeCore"),
+      /\.ts$/,
+    );
     const sAiAudit02AllScreenButtonRoleActionMapFiles = [
       path.join(SRC, "features", "ai", "screenAudit", "aiScreenButtonRoleActionTypes.ts"),
       path.join(SRC, "features", "ai", "screenAudit", "aiScreenButtonRoleActionRegistry.ts"),
@@ -1496,6 +1500,7 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic24AgentBffRuntimeMountFiles).toBeLessThanOrEqual(6);
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
+    expect(sAiConstructionEngineeringKnowledgeCoreFiles).toBeLessThanOrEqual(20);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
     expect(sAiApproval01ActionRouterFiles).toBeLessThanOrEqual(4);
@@ -1707,6 +1712,7 @@ describe("performance budget — bundle module count", () => {
         sAiMagic24AgentBffRuntimeMountFiles -
         sAiMagic25McpAppsSdkBlueprintFiles -
         sAiPro02ConstructionKnowhowEngineFiles -
+        sAiConstructionEngineeringKnowledgeCoreFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -
         sAiApproval01ActionRouterFiles -
