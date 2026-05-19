@@ -1,0 +1,623 @@
+{
+  "pdfTrace": [
+    {
+      "screenId": "accountant.main",
+      "actionId": "accountant.main.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiFinanceGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:ai_reports",
+          "sourceLabelRu": "ПДФ: AI-отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "actionId": "accountant.main.magic.intent.draft_only.4",
+      "providerTrace": [
+        "aiFinanceGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:ai_reports",
+          "sourceLabelRu": "ПДФ: AI-отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "actionId": "warehouse.incoming.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiWarehouseGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:request_documents",
+          "sourceLabelRu": "ПДФ: документы заявки.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.magic.intent.safe_read.3",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.magic.intent.draft_only.4",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "actionId": "foreman.main.magic.intent.safe_read.5",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.magic.intent.safe_read.3",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.magic.intent.draft_only.4",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "actionId": "foreman.ai.quick_modal.magic.intent.safe_read.5",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.magic.intent.safe_read.1",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.magic.intent.draft_only.3",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.magic.intent.draft_only.4",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "actionId": "foreman.subcontract.magic.intent.approval_required.5",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "actionId": "contractor.main.magic.intent.safe_read.2",
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:foreman_daily_reports",
+          "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "actionId": "documents.main.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "actionId": "documents.main.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "actionId": "documents.main.magic.intent.draft_only.3",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "actionId": "documents.main.magic.intent.safe_read.4",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "actionId": "documents.main.approval",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "actionId": "documents.main.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "actionId": "documents.main.magic.intent.draft_only.2",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "actionId": "documents.main.magic.intent.draft_only.3",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "actionId": "documents.main.magic.intent.safe_read.4",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "actionId": "documents.main.approval",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:acts",
+          "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.magic.intent.safe_read.2",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.magic.intent.draft_only.3",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.magic.intent.draft_only.4",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "actionId": "reports.modal.approval",
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "actionId": "director.reports.magic.intent.draft_only.1",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "actionId": "director.reports.magic.intent.safe_read.2",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "actionId": "director.reports.magic.intent.draft_only.3",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "actionId": "director.reports.magic.intent.safe_read.4",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "actionId": "director.reports.approval",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": [
+        {
+          "sourceId": "docsrc:director_reports",
+          "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+          "page": 1
+        }
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "actionId": "office.hub.magic.intent.safe_read.2",
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ],
+      "sources": []
+    }
+  ]
+}

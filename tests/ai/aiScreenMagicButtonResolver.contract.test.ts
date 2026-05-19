@@ -1,4 +1,4 @@
-import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
+﻿import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import {
   buildAiScreenMagicClickPayload,
   buildAiScreenMagicButtonResultCopy,
@@ -36,8 +36,9 @@ describe("AI screen magic button resolver", () => {
       dbWriteUsed: false,
       directMutationUsed: false,
     });
-    expect(result?.answer).toContain("Готово от AI");
-    expect(result?.answer).toContain("Черновик");
+    expect(result?.answer).toContain("Черновик подготовлен");
+    expect(result?.answer).toContain(draft?.label);
+    expect(result?.answer).toContain("Финальная отправка не выполнена");
   });
 
   it("requires exact audited button labels or ids and rejects fuzzy partial clicks", () => {

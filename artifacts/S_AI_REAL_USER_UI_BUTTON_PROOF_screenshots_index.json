@@ -1,0 +1,712 @@
+{
+  "screenshots": [
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-01-accountant.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-01-accountant.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-02-accountant.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-02-accountant.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-03-accountant.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-03-accountant.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-04-accountant.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-04-accountant.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-05-accountant.main.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\accountant.main-05-accountant.main.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-01-buyer.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-01-buyer.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-02-buyer.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-02-buyer.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-03-buyer.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-03-buyer.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-04-buyer.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-04-buyer.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-05-buyer.main.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.main-05-buyer.main.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-01-buyer.requests.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-01-buyer.requests.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-02-buyer.requests.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-02-buyer.requests.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-03-buyer.requests.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-03-buyer.requests.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-04-buyer.requests.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-04-buyer.requests.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-05-buyer.requests.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.requests-05-buyer.requests.approval-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-01-buyer.request.detail.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-01-buyer.request.detail.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-02-buyer.request.detail.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-02-buyer.request.detail.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-03-buyer.request.detail.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-03-buyer.request.detail.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-04-buyer.request.detail.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\buyer.request.detail-04-buyer.request.detail.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-01-procurement.copilot.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-01-procurement.copilot.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-02-procurement.copilot.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-02-procurement.copilot.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-03-procurement.copilot.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-03-procurement.copilot.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-04-procurement.copilot.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-04-procurement.copilot.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.safe_read",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-05-procurement.copilot.safe_read-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\procurement.copilot-05-procurement.copilot.safe_read-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-01-market.home.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-01-market.home.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-02-market.home.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-02-market.home.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-03-market.home.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-03-market.home.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-04-market.home.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-04-market.home.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-05-market.home.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\market.home-05-market.home.approval-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-01-supplier.showcase.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-01-supplier.showcase.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-02-supplier.showcase.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-02-supplier.showcase.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-03-supplier.showcase.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-03-supplier.showcase.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-04-supplier.showcase.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-04-supplier.showcase.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-05-supplier.showcase.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\supplier.showcase-05-supplier.showcase.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-01-warehouse.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-01-warehouse.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-02-warehouse.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-02-warehouse.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-03-warehouse.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-03-warehouse.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-04-warehouse.main.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.main-04-warehouse.main.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-01-warehouse.incoming.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-01-warehouse.incoming.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-02-warehouse.incoming.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-02-warehouse.incoming.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.approval_required.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-03-warehouse.incoming.magic.intent.approval_required.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-03-warehouse.incoming.magic.intent.approval_required.3-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-04-warehouse.incoming.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.incoming-04-warehouse.incoming.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-01-warehouse.issue.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-01-warehouse.issue.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-02-warehouse.issue.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-02-warehouse.issue.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-03-warehouse.issue.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-03-warehouse.issue.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-04-warehouse.issue.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\warehouse.issue-04-warehouse.issue.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-01-map.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-01-map.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-02-map.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-02-map.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-03-map.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-03-map.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-04-map.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-04-map.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-05-map.main.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\map.main-05-map.main.approval-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-01-foreman.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-01-foreman.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-02-foreman.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-02-foreman.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-03-foreman.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-03-foreman.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-04-foreman.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-04-foreman.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.safe_read.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-05-foreman.main.magic.intent.safe_read.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.main-05-foreman.main.magic.intent.safe_read.5-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-01-foreman.ai.quick_modal.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-01-foreman.ai.quick_modal.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-02-foreman.ai.quick_modal.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-02-foreman.ai.quick_modal.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-03-foreman.ai.quick_modal.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-03-foreman.ai.quick_modal.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-04-foreman.ai.quick_modal.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-04-foreman.ai.quick_modal.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.safe_read.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-05-foreman.ai.quick_modal.magic.intent.safe_read.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.ai.quick_modal-05-foreman.ai.quick_modal.magic.intent.safe_read.5-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-01-foreman.subcontract.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-01-foreman.subcontract.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-02-foreman.subcontract.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-02-foreman.subcontract.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-03-foreman.subcontract.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-03-foreman.subcontract.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-04-foreman.subcontract.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-04-foreman.subcontract.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-05-foreman.subcontract.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\foreman.subcontract-05-foreman.subcontract.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-01-contractor.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-01-contractor.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-02-contractor.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-02-contractor.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-03-contractor.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-03-contractor.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-04-contractor.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-04-contractor.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-05-contractor.main.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\contractor.main-05-contractor.main.approval-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-01-documents.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-01-documents.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-02-documents.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-02-documents.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-03-documents.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-03-documents.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-04-documents.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-04-documents.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-05-documents.main.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\documents.main-05-documents.main.approval-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-01-documents.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-01-documents.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-02-documents.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-02-documents.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-03-documents.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-03-documents.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-04-documents.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-04-documents.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-05-documents.main.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\agent.documents.knowledge-05-documents.main.approval-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-01-reports.modal.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-01-reports.modal.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-02-reports.modal.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-02-reports.modal.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-03-reports.modal.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-03-reports.modal.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-04-reports.modal.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-04-reports.modal.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-05-reports.modal.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\reports.modal-05-reports.modal.approval-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-01-chat.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-01-chat.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-02-chat.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-02-chat.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-03-chat.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-03-chat.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-04-chat.main.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-04-chat.main.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-05-chat.main.magic.intent.draft_only.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\chat.main-05-chat.main.magic.intent.draft_only.5-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-01-director.dashboard.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-01-director.dashboard.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-02-director.dashboard.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-02-director.dashboard.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-03-director.dashboard.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-03-director.dashboard.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-04-director.dashboard.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-04-director.dashboard.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-05-director.dashboard.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.dashboard-05-director.dashboard.approval-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-01-director.reports.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-01-director.reports.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-02-director.reports.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-02-director.reports.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-03-director.reports.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-03-director.reports.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-04-director.reports.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-04-director.reports.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-05-director.reports.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\director.reports-05-director.reports.approval-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-01-ai.command_center.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-01-ai.command_center.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-02-ai.command_center.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-02-ai.command_center.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-03-ai.command_center.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-03-ai.command_center.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-04-ai.command_center.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-04-ai.command_center.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-05-ai.command_center.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\ai.command_center-05-ai.command_center.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-01-office.hub.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-01-office.hub.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-02-office.hub.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-02-office.hub.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-03-office.hub.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-03-office.hub.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-04-office.hub.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\office.hub-04-office.hub.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-01-security.screen.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-01-security.screen.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-02-security.screen.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-02-security.screen.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-03-security.screen.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-03-security.screen.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-04-security.screen.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-04-security.screen.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.approval",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-05-security.screen.approval-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\security.screen-05-security.screen.approval-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-01-screen.runtime.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-01-screen.runtime.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-02-screen.runtime.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-02-screen.runtime.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.approval_required.3",
+      "before": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-03-screen.runtime.magic.intent.approval_required.3-before.png",
+      "after": "artifacts\\ai-real-user-ui-button-proof\\web\\screen.runtime-03-screen.runtime.magic.intent.approval_required.3-after.png"
+    }
+  ]
+}

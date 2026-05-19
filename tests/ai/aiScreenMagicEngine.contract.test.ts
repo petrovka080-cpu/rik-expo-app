@@ -20,7 +20,7 @@ describe("AI screen magic engine", () => {
     const text = describeAiScreenMagicPack(pack);
 
     expect(text).toContain(pack.userHeader);
-    expect(text).toContain("approval");
-    expect(text).not.toMatch(/SCREEN_MAGIC|screenId:|raw prompt|raw provider|provider unavailable|module unavailable/i);
+    expect(text).toMatch(/соглас/i);
+    expect(text).not.toMatch(/SCREEN_MAGIC|screenId:|raw prompt|raw provider|provider unavailable|module unavailable|approval_required/i);
   });
 });

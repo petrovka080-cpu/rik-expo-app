@@ -268,6 +268,13 @@ const isApprovedPerfFlatListEnterpriseTuningPatch = (file: string) =>
     "tests/performance/flatListTuning.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiRealUserUiButtonProofPatch = (file: string) =>
+  [
+    "artifacts/S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_pdf_trace.json",
+    "tests/ai/aiDirectorReportsMagic.contract.test.ts",
+    "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -340,6 +347,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         !isApprovedAiDraftReportToolPatch(file) &&
         !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
+        !isApprovedAiRealUserUiButtonProofPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

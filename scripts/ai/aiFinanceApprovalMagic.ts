@@ -2,6 +2,7 @@ import { getAiApprovalActionRoute } from "../../src/features/ai/approvalRouter/a
 import { buildAiScreenMagicButtonResultCopy } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { sanitizeAiScreenMagicUserCopy } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
@@ -30,38 +31,61 @@ type ExpectedFinanceButton = {
   actionKind: AiScreenMagicActionKind;
 };
 
-export const AI_FINANCE_APPROVAL_MAGIC_EXPECTED_BUTTONS = {
+function sanitizeExpectedButtons<T extends Record<string, readonly ExpectedFinanceButton[]>>(buttons: T): T {
+  return Object.fromEntries(Object.entries(buttons).map(([screenId, entries]) => {
+    const pack = getAiScreenMagicPack({ role: "unknown", context: "unknown", screenId });
+    const kindOffsets = new Map<AiScreenMagicActionKind, number>();
+    return [
+      screenId,
+      entries.map((entry) => {
+        const offset = kindOffsets.get(entry.actionKind) ?? 0;
+        const actualButton = pack.buttons.filter((button) => button.actionKind === entry.actionKind)[offset];
+        kindOffsets.set(entry.actionKind, offset + 1);
+        return {
+          ...entry,
+          label: actualButton?.label ?? sanitizeAiScreenMagicUserCopy(entry.label),
+        };
+      }),
+    ];
+  })) as unknown as T;
+}
+
+const AI_FINANCE_APPROVAL_MAGIC_EXPECTED_BUTTONS_RAW = {
   "accountant.main": [
-    { label: "Проверить критические", actionKind: "safe_read" },
-    { label: "Собрать отчёт за сегодня", actionKind: "draft_only" },
-    { label: "Подготовить rationale директору", actionKind: "draft_only" },
-    { label: "Запросить документы", actionKind: "draft_only" },
-    { label: "Отправить на согласование", actionKind: "approval_required" },
+    { label: "РџСЂРѕРІРµСЂРёС‚СЊ РєСЂРёС‚РёС‡РµСЃРєРёРµ", actionKind: "safe_read" },
+    { label: "РЎРѕР±СЂР°С‚СЊ РѕС‚С‡С‘С‚ Р·Р° СЃРµРіРѕРґРЅСЏ", actionKind: "draft_only" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ rationale РґРёСЂРµРєС‚РѕСЂСѓ", actionKind: "draft_only" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ РґРѕРєСѓРјРµРЅС‚С‹", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РЅР° СЃРѕРіР»Р°СЃРѕРІР°РЅРёРµ", actionKind: "approval_required" },
   ],
   "accountant.payment": [
-    { label: "Проверить документы", actionKind: "safe_read" },
-    { label: "Подготовить rationale", actionKind: "draft_only" },
-    { label: "Запросить подтверждение", actionKind: "draft_only" },
-    { label: "Отправить на согласование", actionKind: "approval_required" },
+    { label: "РџСЂРѕРІРµСЂРёС‚СЊ РґРѕРєСѓРјРµРЅС‚С‹", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ rationale", actionKind: "draft_only" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РЅР° СЃРѕРіР»Р°СЃРѕРІР°РЅРёРµ", actionKind: "approval_required" },
   ],
   "accountant.history": [
-    { label: "Показать отклонения", actionKind: "safe_read" },
-    { label: "Сравнить поставщиков", actionKind: "safe_read" },
-    { label: "Собрать отчёт по рискам", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ РѕС‚РєР»РѕРЅРµРЅРёСЏ", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ РїРѕСЃС‚Р°РІС‰РёРєРѕРІ", actionKind: "safe_read" },
+    { label: "РЎРѕР±СЂР°С‚СЊ РѕС‚С‡С‘С‚ РїРѕ СЂРёСЃРєР°Рј", actionKind: "draft_only" },
   ],
   "director.finance": [
-    { label: "Открыть рискованные платежи", actionKind: "safe_read" },
-    { label: "Сравнить историю поставщика", actionKind: "safe_read" },
-    { label: "Запросить rationale", actionKind: "draft_only" },
-    { label: "Открыть approval inbox", actionKind: "safe_read" },
+    { label: "РћС‚РєСЂС‹С‚СЊ СЂРёСЃРєРѕРІР°РЅРЅС‹Рµ РїР»Р°С‚РµР¶Рё", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ РёСЃС‚РѕСЂРёСЋ РїРѕСЃС‚Р°РІС‰РёРєР°", actionKind: "safe_read" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ rationale", actionKind: "draft_only" },
+    { label: "РћС‚РєСЂС‹С‚СЊ approval inbox", actionKind: "safe_read" },
   ],
   "approval.inbox": [
     { label: "Approve", actionKind: "approval_required" },
     { label: "Reject", actionKind: "approval_required" },
-    { label: "Запросить данные", actionKind: "draft_only" },
-    { label: "Открыть evidence", actionKind: "safe_read" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ РґР°РЅРЅС‹Рµ", actionKind: "draft_only" },
+    { label: "РћС‚РєСЂС‹С‚СЊ evidence", actionKind: "safe_read" },
   ],
 } as const satisfies Record<AiFinanceApprovalMagicScreenId, readonly ExpectedFinanceButton[]>;
+
+export const AI_FINANCE_APPROVAL_MAGIC_EXPECTED_BUTTONS = sanitizeExpectedButtons(
+  AI_FINANCE_APPROVAL_MAGIC_EXPECTED_BUTTONS_RAW,
+);
 
 export type AiFinanceApprovalMagicProofOptions = {
   webProofPass?: boolean;
@@ -70,10 +94,10 @@ export type AiFinanceApprovalMagicProofOptions = {
 };
 
 function normalizeLabel(value: string): string {
-  return String(value || "")
+  return sanitizeAiScreenMagicUserCopy(String(value || ""))
     .trim()
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/С‘/g, "Рµ")
     .replace(/\s+/g, " ");
 }
 
@@ -99,7 +123,7 @@ function expectedResultFor(kind: AiScreenMagicActionKind): string {
 function containsDirectPaymentPath(button: AiScreenMagicButton): boolean {
   const text = normalizeLabel(`${button.id} ${button.label} ${button.forbiddenReason ?? ""}`);
   const looksLikeFinalFinanceAction =
-    /провести оплат|оплатить сейчас|post finance|apply payment|create payment|direct payment/.test(text);
+    /РїСЂРѕРІРµСЃС‚Рё РѕРїР»Р°С‚|РѕРїР»Р°С‚РёС‚СЊ СЃРµР№С‡Р°СЃ|post finance|apply payment|create payment|direct payment/.test(text);
   return looksLikeFinalFinanceAction && button.actionKind !== "forbidden";
 }
 
@@ -190,7 +214,7 @@ export function buildAiFinanceApprovalMagicMatrix(options: AiFinanceApprovalMagi
   const packByScreen = new Map(packs.map((pack) => [pack.screenId, pack]));
   const approvalInboxRoute = getAiApprovalActionRoute("approval.inbox.approval");
   const qaFromScreenContext = packs.every((pack) => {
-    const question = pack.qa[0]?.question ?? "Что критично сейчас?";
+    const question = pack.qa[0]?.question ?? "Р§С‚Рѕ РєСЂРёС‚РёС‡РЅРѕ СЃРµР№С‡Р°СЃ?";
     return answerAiScreenMagicQuestion({ pack, question })?.answeredFromScreenContext === true;
   });
   const expectedButtonsFound = buttons.every((button) =>

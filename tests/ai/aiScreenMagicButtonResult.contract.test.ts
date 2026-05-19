@@ -1,4 +1,4 @@
-import {
+﻿import {
   buildAiScreenMagicButtonResultCopy,
   resolveAiScreenMagicButton,
 } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
@@ -49,24 +49,27 @@ describe("AI screen magic button result contract", () => {
     ]));
   });
 
-  it("keeps role-native foundation buttons available on key screens", () => {
+  it("keeps role-native foundation buttons available without exposing internal action names", () => {
     const packByScreen = new Map(listAiScreenMagicPacks().map((pack) => [pack.screenId, pack]));
-    const expectedLabelsByScreen: Record<string, string[]> = {
-      "accountant.main": ["Проверить критические", "Подготовить rationale директору", "Запросить документы", "Отправить на согласование"],
-      "buyer.main": ["Разобрать входящие", "Смотреть варианты закупа", "Сравнить поставщиков", "Запросить цены"],
-      "warehouse.issue": ["Черновик выдачи", "Показать дефицит", "Предложить альтернативу", "Отправить на approval"],
-      "director.dashboard": ["Открыть approval inbox", "Показать критические", "Показать что блокирует работы"],
-      "foreman.main": ["Подготовить акт", "Подготовить отчет", "Проверить missing evidence", "Проверка безопасности"],
-      "approval.inbox": ["Approve", "Reject", "Запросить данные", "Открыть evidence"],
+    const expectedKindsByScreen: Record<string, string[]> = {
+      "accountant.main": ["safe_read", "draft_only", "approval_required"],
+      "buyer.main": ["safe_read", "draft_only", "approval_required"],
+      "warehouse.issue": ["safe_read", "draft_only", "approval_required"],
+      "director.dashboard": ["safe_read", "draft_only"],
+      "foreman.main": ["safe_read", "draft_only"],
+      "approval.inbox": ["safe_read", "draft_only", "approval_required"],
     };
+    const forbiddenVisibleCopy =
+      /safe_read|draft_only|approval_required|exact_blocker|forbidden|evidence|rationale|provider|runtime|mutation|execute directly/i;
 
-    for (const [screenId, labels] of Object.entries(expectedLabelsByScreen)) {
+    for (const [screenId, kinds] of Object.entries(expectedKindsByScreen)) {
       const pack = packByScreen.get(screenId);
-      const actualLabels = new Set((pack?.buttons ?? []).map((button) => button.label));
+      expect(pack).toBeTruthy();
 
-      for (const label of labels) {
-        expect(actualLabels.has(label)).toBe(true);
+      for (const kind of kinds) {
+        expect((pack?.buttons ?? []).some((button) => button.actionKind === kind)).toBe(true);
       }
+      expect((pack?.buttons ?? []).map((button) => button.label).join("\n")).not.toMatch(forbiddenVisibleCopy);
     }
   });
 });

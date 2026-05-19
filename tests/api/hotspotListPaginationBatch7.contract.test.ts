@@ -274,6 +274,12 @@ const isApprovedAiDraftReportToolPatch = (file: string) =>
     "tests/ai/draftReportTool.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiGroundedButtonsQaPatch = (file: string) =>
+  [
+    "artifacts/S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_pdf_trace.json",
+    "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiFieldWorkCopilotPatch = (file: string) =>
   [
     "src/features/ai/field/aiForemanReportDraftEngine.ts",
@@ -428,6 +434,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAuditBattle123BuyerRepoStorageTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle126SupplierFilesStorageTransportBoundaryPatch(file) &&
         !isApprovedAiDraftReportToolPatch(file) &&
+        !isApprovedAiGroundedButtonsQaPatch(file) &&
         !isApprovedAiFieldWorkCopilotPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&

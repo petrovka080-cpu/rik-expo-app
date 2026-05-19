@@ -651,7 +651,15 @@ describe("performance budget — bundle module count", () => {
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicQuestionAnswerEngine.ts"),
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicPolicy.ts"),
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicUserCopy.ts"),
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicRealUserButtons.ts"),
       path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicProof.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiGroundedButtonsAndFreeTextQaFiles = [
+      path.join(SRC, "features", "ai", "screenMagic", "aiScreenMagicGrounding.ts"),
+      path.join(SRC, "features", "ai", "groundedAnswers", "groundedAnswerTypes.ts"),
+      path.join(SRC, "features", "ai", "groundedAnswers", "groundedQuestionRouter.ts"),
+      path.join(SRC, "features", "ai", "groundedAnswers", "groundedAnswerRenderer.ts"),
+      path.join(SRC, "features", "ai", "groundedAnswers", "groundedAnswerOrchestrator.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sComponentDebtCloseoutFiles = [
       path.join(SRC, "components", "foreman", "CalcModalContentFields.tsx"),
@@ -1499,7 +1507,7 @@ describe("performance budget — bundle module count", () => {
     expect(sScale09AgentBffIntelGraphOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale10AgentBffProcurementOwnerSplitFiles).toBeLessThanOrEqual(1);
     expect(sScale11CatalogRequestServiceOwnerSplitFiles).toBeLessThanOrEqual(3);
-    expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(9);
+    expect(sAiProduct09ScreenMagicFiles).toBeLessThanOrEqual(10);
     expect(s50kWarehouseReqIssueModalMarginFiles).toBeLessThanOrEqual(1);
     expect(sPerf01FlatListEnterprisePolicyFiles).toBeLessThanOrEqual(1);
     expect(sScale12RpcRuntimeEnforcementFiles).toBeLessThanOrEqual(3);
@@ -1711,6 +1719,7 @@ describe("performance budget — bundle module count", () => {
         sScale10AgentBffProcurementOwnerSplitFiles -
         sScale11CatalogRequestServiceOwnerSplitFiles -
         sAiProduct09ScreenMagicFiles -
+        sAiGroundedButtonsAndFreeTextQaFiles -
         sComponentDebtCloseoutFiles -
         s50kWarehouseReqIssueModalMarginFiles -
         sPerf01FlatListEnterprisePolicyFiles -

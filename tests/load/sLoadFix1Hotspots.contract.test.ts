@@ -80,6 +80,12 @@ const isApprovedAiTraceObservabilityPatch = (file: string) =>
 const isApprovedAiDirectorCommandOfficeSecurityMagicPatch = (file: string) =>
   normalizePath(file) === "tests/ai/aiDirectorReportsMagic.contract.test.ts";
 
+const isApprovedAiGroundedButtonsQaPatch = (file: string) =>
+  [
+    "artifacts/S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_pdf_trace.json",
+    "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
+  ].includes(normalizePath(file));
+
 const isApprovedPdfInstantFirstOpenPatch = (file: string) =>
   [
     "app/_layout.tsx",
@@ -400,6 +406,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAuditBattle119WarehouseObjectWorkPdfTransportBoundaryPatch(file) &&
         !isApprovedAuditBattle120ContractorPdfSourceTransportBoundaryPatch(file) &&
         !isApprovedAiDraftReportToolPatch(file) &&
+        !isApprovedAiGroundedButtonsQaPatch(file) &&
         !isApprovedAiFieldWorkCopilotPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle117DirectorProposalDecisionTransportBoundaryPatch(file) &&

@@ -35,8 +35,8 @@ describe("AI chat usability contract", () => {
     const panels = read("src/features/ai/AIAssistantReadyProductPanels.tsx");
 
     expect(panels).toContain("buildAiScreenMagicPackFromWorkflowPack");
-    expect(panels).toContain("screenMagicPack?.userHeader");
-    expect(panels).toContain("screenMagicPack.buttons.map");
+    expect(panels).toContain("screenMagicPack.userHeader");
+    expect(panels).toContain("screenMagicButtons.map");
     expect(panels).not.toMatch(/createContext\(|useReducer\(|new AI chat framework/i);
   });
 });

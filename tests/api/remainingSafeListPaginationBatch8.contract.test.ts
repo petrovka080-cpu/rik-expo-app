@@ -282,6 +282,13 @@ const isApprovedPerfFlatListEnterpriseTuningPatch = (file: string) =>
     "tests/performance/flatListTuning.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiRealUserUiButtonProofPatch = (file: string) =>
+  [
+    "artifacts/S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_pdf_trace.json",
+    "tests/ai/aiDirectorReportsMagic.contract.test.ts",
+    "tests/ai/aiPdfAggregatorRequiredForDocumentQuestions.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-8 remaining safe list pagination", () => {
   it("bounds six safe remaining list and enrichment reads", () => {
     const auctions = read("src/features/auctions/auctions.data.ts");
@@ -365,6 +372,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
       !isApprovedAiDraftReportToolPatch(file) &&
       !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
+      !isApprovedAiRealUserUiButtonProofPatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

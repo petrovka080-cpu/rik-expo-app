@@ -1,0 +1,15 @@
+{
+  "wave": "S_AI_REAL_USER_UI_BUTTON_PROOF_POINT_OF_NO_RETURN",
+  "scope": "ALL_AI_SCREENS",
+  "final_status": "GREEN_AI_REAL_USER_UI_BUTTONS_WEB_READY",
+  "web_runtime_url": "http://localhost:8099",
+  "all_visible_ai_buttons_clicked_on_web": true,
+  "visible_buttons_expected": 118,
+  "visible_buttons_clicked": 118,
+  "all_buttons_have_visible_result": true,
+  "blank_modals_found": 0,
+  "generic_results_found": 0,
+  "console_errors_found": 0,
+  "screenshots_captured": 118,
+  "fakeGreenClaimed": false
+}

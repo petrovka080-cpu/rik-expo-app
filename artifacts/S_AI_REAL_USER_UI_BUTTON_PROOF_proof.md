@@ -1,0 +1,16 @@
+# S_AI_REAL_USER_UI_BUTTON_PROOF_POINT_OF_NO_RETURN
+
+final_status: BLOCKED_AI_REAL_USER_UI_BUTTON_PROOF
+screens_covered: 25
+visible_button_count: 118
+all_visible_ai_buttons_clicked_on_web: false
+all_targetable_ai_buttons_tapped_on_android: false
+all_buttons_have_visible_result: true
+english_user_visible_ai_labels_found: 0
+technical_user_visible_ai_terms_found: 0
+dangerous_action_buttons_visible: 0
+normal_user_debug_copy_found: 0
+generic_fallback_used: false
+web_screenshots_captured: false
+android_screenshots_captured: false
+fake_green_claimed: false

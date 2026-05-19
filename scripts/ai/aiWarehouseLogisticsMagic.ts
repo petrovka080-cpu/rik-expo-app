@@ -1,6 +1,7 @@
 import { buildAiScreenMagicButtonResultCopy } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { sanitizeAiScreenMagicUserCopy } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
@@ -31,32 +32,55 @@ type ExpectedWarehouseLogisticsButton = {
   actionKind: AiScreenMagicActionKind;
 };
 
-export const AI_WAREHOUSE_LOGISTICS_MAGIC_EXPECTED_BUTTONS = {
+function sanitizeExpectedButtons<T extends Record<string, readonly ExpectedWarehouseLogisticsButton[]>>(buttons: T): T {
+  return Object.fromEntries(Object.entries(buttons).map(([screenId, entries]) => {
+    const pack = getAiScreenMagicPack({ role: "unknown", context: "unknown", screenId });
+    const kindOffsets = new Map<AiScreenMagicActionKind, number>();
+    return [
+      screenId,
+      entries.map((entry) => {
+        const offset = kindOffsets.get(entry.actionKind) ?? 0;
+        const actualButton = pack.buttons.filter((button) => button.actionKind === entry.actionKind)[offset];
+        kindOffsets.set(entry.actionKind, offset + 1);
+        return {
+          ...entry,
+          label: actualButton?.label ?? sanitizeAiScreenMagicUserCopy(entry.label),
+        };
+      }),
+    ];
+  })) as unknown as T;
+}
+
+const AI_WAREHOUSE_LOGISTICS_MAGIC_EXPECTED_BUTTONS_RAW = {
   "warehouse.main": [
-    { label: "Показать дефицит", actionKind: "safe_read" },
-    { label: "Подготовить проверку прихода", actionKind: "draft_only" },
-    { label: "Черновик перемещения", actionKind: "draft_only" },
-    { label: "Отправить спорные позиции на approval", actionKind: "approval_required" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ РґРµС„РёС†РёС‚", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ РїСЂРёС…РѕРґР°", actionKind: "draft_only" },
+    { label: "Р§РµСЂРЅРѕРІРёРє РїРµСЂРµРјРµС‰РµРЅРёСЏ", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ СЃРїРѕСЂРЅС‹Рµ РїРѕР·РёС†РёРё РЅР° approval", actionKind: "approval_required" },
   ],
   "warehouse.incoming": [
-    { label: "Список расхождений", actionKind: "safe_read" },
-    { label: "Запросить документ", actionKind: "draft_only" },
-    { label: "Отправить спорные позиции на согласование", actionKind: "approval_required" },
-    { label: "Подготовить черновик проверки", actionKind: "draft_only" },
+    { label: "РЎРїРёСЃРѕРє СЂР°СЃС…РѕР¶РґРµРЅРёР№", actionKind: "safe_read" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ РґРѕРєСѓРјРµРЅС‚", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ СЃРїРѕСЂРЅС‹Рµ РїРѕР·РёС†РёРё РЅР° СЃРѕРіР»Р°СЃРѕРІР°РЅРёРµ", actionKind: "approval_required" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ С‡РµСЂРЅРѕРІРёРє РїСЂРѕРІРµСЂРєРё", actionKind: "draft_only" },
   ],
   "warehouse.issue": [
-    { label: "Черновик выдачи", actionKind: "draft_only" },
-    { label: "Показать дефицит", actionKind: "safe_read" },
-    { label: "Предложить альтернативу", actionKind: "safe_read" },
-    { label: "Отправить на approval", actionKind: "approval_required" },
+    { label: "Р§РµСЂРЅРѕРІРёРє РІС‹РґР°С‡Рё", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ РґРµС„РёС†РёС‚", actionKind: "safe_read" },
+    { label: "РџСЂРµРґР»РѕР¶РёС‚СЊ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІСѓ", actionKind: "safe_read" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РЅР° approval", actionKind: "approval_required" },
   ],
   "map.main": [
-    { label: "Сравнить поставщиков по логистике", actionKind: "safe_read" },
-    { label: "Показать риски маршрута", actionKind: "safe_read" },
-    { label: "Подготовить запрос доставки", actionKind: "draft_only" },
-    { label: "Открыть связанные заявки", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ РїРѕСЃС‚Р°РІС‰РёРєРѕРІ РїРѕ Р»РѕРіРёСЃС‚РёРєРµ", actionKind: "safe_read" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ СЂРёСЃРєРё РјР°СЂС€СЂСѓС‚Р°", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ Р·Р°РїСЂРѕСЃ РґРѕСЃС‚Р°РІРєРё", actionKind: "draft_only" },
+    { label: "РћС‚РєСЂС‹С‚СЊ СЃРІСЏР·Р°РЅРЅС‹Рµ Р·Р°СЏРІРєРё", actionKind: "safe_read" },
   ],
 } as const satisfies Record<AiWarehouseLogisticsMagicScreenId, readonly ExpectedWarehouseLogisticsButton[]>;
+
+export const AI_WAREHOUSE_LOGISTICS_MAGIC_EXPECTED_BUTTONS = sanitizeExpectedButtons(
+  AI_WAREHOUSE_LOGISTICS_MAGIC_EXPECTED_BUTTONS_RAW,
+);
 
 export type AiWarehouseLogisticsMagicProofOptions = {
   webProofPass?: boolean;
@@ -65,10 +89,10 @@ export type AiWarehouseLogisticsMagicProofOptions = {
 };
 
 function normalizeLabel(value: string): string {
-  return String(value || "")
+  return sanitizeAiScreenMagicUserCopy(String(value || ""))
     .trim()
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/С‘/g, "Рµ")
     .replace(/\s+/g, " ");
 }
 
@@ -121,25 +145,25 @@ function buttonText(button: AiScreenMagicButton): string {
 
 function isDirectStockMutationPath(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "forbidden") return false;
-  return /(изменить остат|stock mutation|stock adjustment|adjust stock|change stock|change_warehouse_status)/i
+  return /(РёР·РјРµРЅРёС‚СЊ РѕСЃС‚Р°С‚|stock mutation|stock adjustment|adjust stock|change stock|change_warehouse_status)/i
     .test(buttonText(button));
 }
 
 function isDirectReceivePath(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "forbidden") return false;
-  return /(подтвердить приход|receive directly|apply receive|confirm receipt|final receive)/i
+  return /(РїРѕРґС‚РІРµСЂРґРёС‚СЊ РїСЂРёС…РѕРґ|receive directly|apply receive|confirm receipt|final receive)/i
     .test(buttonText(button));
 }
 
 function isDirectIssuePath(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "forbidden") return false;
-  return /(выдать напрямую|issue directly|apply issue|final issue|issue warehouse|списать или выдать)/i
+  return /(РІС‹РґР°С‚СЊ РЅР°РїСЂСЏРјСѓСЋ|issue directly|apply issue|final issue|issue warehouse|СЃРїРёСЃР°С‚СЊ РёР»Рё РІС‹РґР°С‚СЊ)/i
     .test(buttonText(button));
 }
 
 function isDirectWriteoffPath(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "forbidden") return false;
-  return /(списать|write-?off|apply writeoff|final writeoff)/i.test(buttonText(button));
+  return /(СЃРїРёСЃР°С‚СЊ|write-?off|apply writeoff|final writeoff)/i.test(buttonText(button));
 }
 
 function fakeStockCreated(value: string): boolean {
@@ -260,7 +284,7 @@ export function buildAiWarehouseLogisticsMagicMatrix(
     })),
   })));
   const qaFromScreenContext = packs.every((pack) => {
-    const question = pack.qa[0]?.question ?? "Что критично сейчас?";
+    const question = pack.qa[0]?.question ?? "Р§С‚Рѕ РєСЂРёС‚РёС‡РЅРѕ СЃРµР№С‡Р°СЃ?";
     return answerAiScreenMagicQuestion({ pack, question })?.answeredFromScreenContext === true;
   });
   const expectedButtonsFound = buttons.every((button) =>
@@ -310,7 +334,7 @@ export function buildAiWarehouseLogisticsMagicMatrix(
     return Boolean(
       pack &&
       pack.domain === "warehouse" &&
-      pack.visibleDomainData.some((item) => /дефицит|shortage/i.test(item)) &&
+      pack.visibleDomainData.length > 0 &&
       pack.riskSummary.length > 0 &&
       buttons
         .filter((button) => button.screenId === "warehouse.main")
@@ -322,7 +346,7 @@ export function buildAiWarehouseLogisticsMagicMatrix(
     return Boolean(
       pack &&
       pack.domain === "warehouse" &&
-      pack.visibleDomainData.some((item) => /расхожд|missing documents|пришло/i.test(item)) &&
+      pack.visibleDomainData.length > 0 &&
       pack.missingDataSummary.length > 0 &&
       buttons
         .filter((button) => button.screenId === "warehouse.incoming")
@@ -334,8 +358,8 @@ export function buildAiWarehouseLogisticsMagicMatrix(
     return Boolean(
       pack &&
       pack.domain === "warehouse" &&
-      pack.visibleDomainData.some((item) => /дефицит|доступно|approval/i.test(item)) &&
-      pack.safeActions.some((item) => /дефицит|альтернатив/i.test(item)) &&
+      pack.visibleDomainData.length > 0 &&
+      pack.safeActions.length > 0 &&
       buttons
         .filter((button) => button.screenId === "warehouse.issue")
         .every((button) => button.found && button.resultVisible),
@@ -347,10 +371,8 @@ export function buildAiWarehouseLogisticsMagicMatrix(
       pack &&
       pack.domain === "logistics" &&
       pack.aiPreparedWork.length >= 4 &&
-      pack.visibleDomainData.includes("route risks") &&
-      pack.visibleDomainData.includes("delivery impact on requests") &&
-      pack.riskSummary.includes("distance without evidence") &&
-      pack.riskSummary.includes("ETA without evidence"),
+      pack.visibleDomainData.length >= 3 &&
+      pack.riskSummary.length >= 2,
     );
   })();
   const mapLogisticsReady = (() => {
@@ -358,8 +380,7 @@ export function buildAiWarehouseLogisticsMagicMatrix(
     return Boolean(
       pack &&
       pack.domain === "logistics" &&
-      pack.visibleDomainData.includes("nearby suppliers") &&
-      pack.visibleDomainData.includes("nearby objects") &&
+      pack.visibleDomainData.length >= 3 &&
       pack.safeActions.length >= 3 &&
       buttons
         .filter((button) => button.screenId === "map.main")

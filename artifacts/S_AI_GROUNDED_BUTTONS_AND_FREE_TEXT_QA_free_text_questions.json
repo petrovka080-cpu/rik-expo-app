@@ -1,0 +1,3860 @@
+{
+  "freeTextTrace": [
+    {
+      "screenId": "accountant.main",
+      "context": "accountant",
+      "questionId": "accountant.main.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранного платежа, документа-основания или записи согласования\n\nЧто найдено:\n- Проверен экран «Финансы сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Финансы сегодня\n\nЧего не хватает:\n- документы-основания\n- подтверждение поставщика\n- обоснование для директора\n- платеж\n- документ-основание\n\nСледующий шаг:\nоткройте платеж или документ-основание\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "accountant.main",
+        "actionId": "accountant.main.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Финансы сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:accountant.main",
+            "sourceLabelRu": "Экран: Финансы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы-основания",
+          "подтверждение поставщика",
+          "обоснование для директора",
+          "платеж",
+          "документ-основание"
+        ],
+        "nextStepRu": "откройте платеж или документ-основание",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного платежа, документа-основания или записи согласования",
+        "exactNoDataReasonRu": "нет выбранного платежа, документа-основания или записи согласования",
+        "providerTrace": [
+          "aiFinanceGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiFinanceGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "context": "accountant",
+      "questionId": "accountant.main.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранного платежа, документа-основания или записи согласования\n\nЧто найдено:\n- Проверен экран «Финансы сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Финансы сегодня\n\nЧего не хватает:\n- документы-основания\n- подтверждение поставщика\n- обоснование для директора\n- платеж\n- документ-основание\n\nСледующий шаг:\nоткройте платеж или документ-основание\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "accountant.main",
+        "actionId": "accountant.main.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Финансы сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:accountant.main",
+            "sourceLabelRu": "Экран: Финансы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы-основания",
+          "подтверждение поставщика",
+          "обоснование для директора",
+          "платеж",
+          "документ-основание"
+        ],
+        "nextStepRu": "откройте платеж или документ-основание",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного платежа, документа-основания или записи согласования",
+        "exactNoDataReasonRu": "нет выбранного платежа, документа-основания или записи согласования",
+        "providerTrace": [
+          "aiFinanceGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiFinanceGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "context": "accountant",
+      "questionId": "accountant.main.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Финансы сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Финансы сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "accountant.main",
+        "actionId": "accountant.main.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Финансы сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:accountant.main",
+            "sourceLabelRu": "Экран: Финансы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "context": "buyer",
+      "questionId": "buyer.main.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- цены\n- наличие\n- надежность поставщика\n- срок поставки\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.main",
+        "actionId": "buyer.main.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.main",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "цены",
+          "наличие",
+          "надежность поставщика",
+          "срок поставки",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "context": "buyer",
+      "questionId": "buyer.main.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- цены\n- наличие\n- надежность поставщика\n- срок поставки\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.main",
+        "actionId": "buyer.main.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.main",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "цены",
+          "наличие",
+          "надежность поставщика",
+          "срок поставки",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "context": "buyer",
+      "questionId": "buyer.main.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.main",
+        "actionId": "buyer.main.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.main",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "context": "buyer",
+      "questionId": "buyer.requests.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- варианты закупа\n- цены\n- наличие\n- основание выбора\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.requests",
+        "actionId": "buyer.requests.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.requests",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "варианты закупа",
+          "цены",
+          "наличие",
+          "основание выбора",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "context": "buyer",
+      "questionId": "buyer.requests.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- варианты закупа\n- цены\n- наличие\n- основание выбора\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.requests",
+        "actionId": "buyer.requests.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.requests",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "варианты закупа",
+          "цены",
+          "наличие",
+          "основание выбора",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "context": "buyer",
+      "questionId": "buyer.requests.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.requests",
+        "actionId": "buyer.requests.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.requests",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "context": "buyer",
+      "questionId": "buyer.request.detail.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- цена сигнал\n- доставка сигнал\n- надёжность основание\n- заявка на материал\n- количество\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.request.detail",
+        "actionId": "buyer.request.detail.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.request.detail",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "цена сигнал",
+          "доставка сигнал",
+          "надёжность основание",
+          "заявка на материал",
+          "количество"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "context": "buyer",
+      "questionId": "buyer.request.detail.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- цена сигнал\n- доставка сигнал\n- надёжность основание\n- заявка на материал\n- количество\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.request.detail",
+        "actionId": "buyer.request.detail.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.request.detail",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "цена сигнал",
+          "доставка сигнал",
+          "надёжность основание",
+          "заявка на материал",
+          "количество"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "context": "buyer",
+      "questionId": "buyer.request.detail.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "buyer.request.detail",
+        "actionId": "buyer.request.detail.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:buyer.request.detail",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "context": "buyer",
+      "questionId": "procurement.copilot.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- ценовой сигнал\n- срок\n- надёжность\n- основание для директора\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "procurement.copilot",
+        "actionId": "procurement.copilot.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:procurement.copilot",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ценовой сигнал",
+          "срок",
+          "надёжность",
+          "основание для директора",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "context": "buyer",
+      "questionId": "procurement.copilot.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- ценовой сигнал\n- срок\n- надёжность\n- основание для директора\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "procurement.copilot",
+        "actionId": "procurement.copilot.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:procurement.copilot",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ценовой сигнал",
+          "срок",
+          "надёжность",
+          "основание для директора",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "context": "buyer",
+      "questionId": "procurement.copilot.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "procurement.copilot",
+        "actionId": "procurement.copilot.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:procurement.copilot",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "context": "market",
+      "questionId": "market.home.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- ссылка-основание\n- цена\n- наличие\n- доставка\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "market.home",
+        "actionId": "market.home.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:market.home",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ссылка-основание",
+          "цена",
+          "наличие",
+          "доставка",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "context": "market",
+      "questionId": "market.home.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- ссылка-основание\n- цена\n- наличие\n- доставка\n- заявка на материал\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "market.home",
+        "actionId": "market.home.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:market.home",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ссылка-основание",
+          "цена",
+          "наличие",
+          "доставка",
+          "заявка на материал"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "context": "market",
+      "questionId": "market.home.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "market.home",
+        "actionId": "market.home.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:market.home",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "context": "market",
+      "questionId": "supplier.showcase.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- надёжность история\n- цена\n- покрытие подтверждение\n- заявка на материал\n- количество\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "supplier.showcase",
+        "actionId": "supplier.showcase.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:supplier.showcase",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "надёжность история",
+          "цена",
+          "покрытие подтверждение",
+          "заявка на материал",
+          "количество"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "context": "market",
+      "questionId": "supplier.showcase.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет связанной заявки на материал, количества или поставщика для этой кнопки\n\nЧто найдено:\n- Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- надёжность история\n- цена\n- покрытие подтверждение\n- заявка на материал\n- количество\n\nСледующий шаг:\nоткройте заявку на материал или добавьте причину блокировки материалом\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "supplier.showcase",
+        "actionId": "supplier.showcase.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Снабжение сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:supplier.showcase",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "надёжность история",
+          "цена",
+          "покрытие подтверждение",
+          "заявка на материал",
+          "количество"
+        ],
+        "nextStepRu": "откройте заявку на материал или добавьте причину блокировки материалом",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "exactNoDataReasonRu": "нет связанной заявки на материал, количества или поставщика для этой кнопки",
+        "providerTrace": [
+          "aiProcurementGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiProcurementGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "context": "market",
+      "questionId": "supplier.showcase.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Снабжение сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "supplier.showcase",
+        "actionId": "supplier.showcase.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Снабжение сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:supplier.showcase",
+            "sourceLabelRu": "Экран: Снабжение сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "context": "warehouse",
+      "questionId": "warehouse.main.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- документы прихода\n- точный остаток\n- согласование для спорной позиции\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.main",
+        "actionId": "warehouse.main.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.main",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы прихода",
+          "точный остаток",
+          "согласование для спорной позиции",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "context": "warehouse",
+      "questionId": "warehouse.main.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- документы прихода\n- точный остаток\n- согласование для спорной позиции\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.main",
+        "actionId": "warehouse.main.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.main",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы прихода",
+          "точный остаток",
+          "согласование для спорной позиции",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "context": "warehouse",
+      "questionId": "warehouse.main.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Склад сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.main",
+        "actionId": "warehouse.main.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Склад сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.main",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "context": "warehouse",
+      "questionId": "warehouse.incoming.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- накладная\n- акт расхождения\n- подтверждение поставщика\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.incoming",
+        "actionId": "warehouse.incoming.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.incoming",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "накладная",
+          "акт расхождения",
+          "подтверждение поставщика",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "context": "warehouse",
+      "questionId": "warehouse.incoming.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- накладная\n- акт расхождения\n- подтверждение поставщика\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.incoming",
+        "actionId": "warehouse.incoming.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.incoming",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "накладная",
+          "акт расхождения",
+          "подтверждение поставщика",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "context": "warehouse",
+      "questionId": "warehouse.incoming.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Склад сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.incoming",
+        "actionId": "warehouse.incoming.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Склад сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.incoming",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "context": "warehouse",
+      "questionId": "warehouse.issue.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- точный остаток\n- согласование причина\n- альтернативная позиция\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.issue",
+        "actionId": "warehouse.issue.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.issue",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "точный остаток",
+          "согласование причина",
+          "альтернативная позиция",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "context": "warehouse",
+      "questionId": "warehouse.issue.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «Склад сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- точный остаток\n- согласование причина\n- альтернативная позиция\n- складская позиция\n- остаток\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.issue",
+        "actionId": "warehouse.issue.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Склад сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.issue",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "точный остаток",
+          "согласование причина",
+          "альтернативная позиция",
+          "складская позиция",
+          "остаток"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "context": "warehouse",
+      "questionId": "warehouse.issue.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Склад сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Склад сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "warehouse.issue",
+        "actionId": "warehouse.issue.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Склад сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:warehouse.issue",
+            "sourceLabelRu": "Экран: Склад сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "context": "supplierMap",
+      "questionId": "map.main.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- расстояние сигнал\n- срок доставки сигнал\n- связанные запрос\n- маршрут\n- поставщик\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "map.main",
+        "actionId": "map.main.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:map.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "расстояние сигнал",
+          "срок доставки сигнал",
+          "связанные запрос",
+          "маршрут",
+          "поставщик"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "context": "supplierMap",
+      "questionId": "map.main.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранной складской позиции, прихода, выдачи или связанной заявки\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- расстояние сигнал\n- срок доставки сигнал\n- связанные запрос\n- маршрут\n- поставщик\n\nСледующий шаг:\nвыберите складскую позицию, приход, выдачу или связанную заявку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "map.main",
+        "actionId": "map.main.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:map.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "расстояние сигнал",
+          "срок доставки сигнал",
+          "связанные запрос",
+          "маршрут",
+          "поставщик"
+        ],
+        "nextStepRu": "выберите складскую позицию, приход, выдачу или связанную заявку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "exactNoDataReasonRu": "нет выбранной складской позиции, прихода, выдачи или связанной заявки",
+        "providerTrace": [
+          "aiWarehouseGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWarehouseGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "context": "supplierMap",
+      "questionId": "map.main.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "map.main",
+        "actionId": "map.main.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:map.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "context": "foreman",
+      "questionId": "foreman.main.free_text.direct.1",
+      "questionRu": "что мешает закрыть работу?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что мешает закрыть работу?\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- фото\n- документ\n- подпись\n- норма или чек-лист источник\n- работа\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.main",
+        "actionId": "foreman.main.free_text.grounded_question",
+        "actionLabelRu": "что мешает закрыть работу?",
+        "userQuestion": "что мешает закрыть работу?",
+        "questionRu": "что мешает закрыть работу?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "документ",
+          "подпись",
+          "норма или чек-лист источник",
+          "работа"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "context": "foreman",
+      "questionId": "foreman.main.free_text.typo.2",
+      "questionRu": "чо мешает закрыт работу",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: чо мешает закрыт работу\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- фото\n- документ\n- подпись\n- норма или чек-лист источник\n- работа\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.main",
+        "actionId": "foreman.main.free_text.grounded_question",
+        "actionLabelRu": "чо мешает закрыт работу",
+        "userQuestion": "чо мешает закрыт работу",
+        "questionRu": "чо мешает закрыт работу",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "документ",
+          "подпись",
+          "норма или чек-лист источник",
+          "работа"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "context": "foreman",
+      "questionId": "foreman.main.free_text.ambiguous.3",
+      "questionRu": "что дальше",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что дальше\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Работы сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.main",
+        "actionId": "foreman.main.free_text.grounded_question",
+        "actionLabelRu": "что дальше",
+        "userQuestion": "что дальше",
+        "questionRu": "что дальше",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Работы сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "context": "foreman",
+      "questionId": "foreman.ai.quick_modal.free_text.direct.1",
+      "questionRu": "что мешает закрыть работу?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что мешает закрыть работу?\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- фото\n- подпись\n- документ\n- источник чек-лист\n- работа\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.ai.quick_modal",
+        "actionId": "foreman.ai.quick_modal.free_text.grounded_question",
+        "actionLabelRu": "что мешает закрыть работу?",
+        "userQuestion": "что мешает закрыть работу?",
+        "questionRu": "что мешает закрыть работу?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.ai.quick_modal",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "подпись",
+          "документ",
+          "источник чек-лист",
+          "работа"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "context": "foreman",
+      "questionId": "foreman.ai.quick_modal.free_text.typo.2",
+      "questionRu": "чо мешает закрыт работу",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: чо мешает закрыт работу\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- фото\n- подпись\n- документ\n- источник чек-лист\n- работа\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.ai.quick_modal",
+        "actionId": "foreman.ai.quick_modal.free_text.grounded_question",
+        "actionLabelRu": "чо мешает закрыт работу",
+        "userQuestion": "чо мешает закрыт работу",
+        "questionRu": "чо мешает закрыт работу",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.ai.quick_modal",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "подпись",
+          "документ",
+          "источник чек-лист",
+          "работа"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "context": "foreman",
+      "questionId": "foreman.ai.quick_modal.free_text.ambiguous.3",
+      "questionRu": "что дальше",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что дальше\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Работы сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.ai.quick_modal",
+        "actionId": "foreman.ai.quick_modal.free_text.grounded_question",
+        "actionLabelRu": "что дальше",
+        "userQuestion": "что дальше",
+        "questionRu": "что дальше",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Работы сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.ai.quick_modal",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "context": "foreman",
+      "questionId": "foreman.subcontract.free_text.direct.1",
+      "questionRu": "что мешает закрыть работу?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что мешает закрыть работу?\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- акт\n- подпись\n- документ подрядчика\n- работа\n- объект\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.subcontract",
+        "actionId": "foreman.subcontract.free_text.grounded_question",
+        "actionLabelRu": "что мешает закрыть работу?",
+        "userQuestion": "что мешает закрыть работу?",
+        "questionRu": "что мешает закрыть работу?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «что мешает закрыть работу?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.subcontract",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "акт",
+          "подпись",
+          "документ подрядчика",
+          "работа",
+          "объект"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "context": "foreman",
+      "questionId": "foreman.subcontract.free_text.typo.2",
+      "questionRu": "чо мешает закрыт работу",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: чо мешает закрыт работу\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».\n- Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.\n\nИсточники:\n- Экран: Работы сегодня\n- ПДФ: ежедневные отчёты прораба.пдф, стр. 1\n\nЧего не хватает:\n- акт\n- подпись\n- документ подрядчика\n- работа\n- объект\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.subcontract",
+        "actionId": "foreman.subcontract.free_text.grounded_question",
+        "actionLabelRu": "чо мешает закрыт работу",
+        "userQuestion": "чо мешает закрыт работу",
+        "questionRu": "чо мешает закрыт работу",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «чо мешает закрыт работу».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.subcontract",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: ежедневные отчёты прораба.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:foreman_daily_reports",
+            "sourceLabelRu": "ПДФ: ежедневные отчёты прораба.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "акт",
+          "подпись",
+          "документ подрядчика",
+          "работа",
+          "объект"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "context": "foreman",
+      "questionId": "foreman.subcontract.free_text.ambiguous.3",
+      "questionRu": "что дальше",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что дальше\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Работы сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "foreman.subcontract",
+        "actionId": "foreman.subcontract.free_text.grounded_question",
+        "actionLabelRu": "что дальше",
+        "userQuestion": "что дальше",
+        "questionRu": "что дальше",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Работы сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:foreman.subcontract",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "context": "contractor",
+      "questionId": "contractor.main.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- фото\n- документ\n- ответ прорабу\n- работа\n- объект\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "contractor.main",
+        "actionId": "contractor.main.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:contractor.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "документ",
+          "ответ прорабу",
+          "работа",
+          "объект"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "context": "contractor",
+      "questionId": "contractor.main.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт\n\nЧто найдено:\n- Проверен экран «Работы сегодня» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- фото\n- документ\n- ответ прорабу\n- работа\n- объект\n\nСледующий шаг:\nвыберите работу или объект, затем повторите проверку\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "contractor.main",
+        "actionId": "contractor.main.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Работы сегодня» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:contractor.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "фото",
+          "документ",
+          "ответ прорабу",
+          "работа",
+          "объект"
+        ],
+        "nextStepRu": "выберите работу или объект, затем повторите проверку",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "exactNoDataReasonRu": "не выбрана конкретная работа, объект или подрядчик; без этого нельзя назвать фото, акт, подпись или материал как подтвержденный факт",
+        "providerTrace": [
+          "aiWorkEvidenceProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiWorkEvidenceProvider"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "context": "contractor",
+      "questionId": "contractor.main.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Работы сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Работы сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "contractor.main",
+        "actionId": "contractor.main.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Работы сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:contractor.main",
+            "sourceLabelRu": "Экран: Работы сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "context": "reports",
+      "questionId": "documents.main.free_text.direct.1",
+      "questionRu": "что в этом документе важно?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что в этом документе важно?\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что в этом документе важно?».\n- Документный источник доступен: акты.пдф, стр. 1.\n\nИсточники:\n- Экран: AI помощник\n- ПДФ: акты.пдф, стр. 1\n\nЧего не хватает:\n- связанные объект\n- сумма\n- поставщик\n- условия\n- основание\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "documents.main",
+        "actionId": "documents.main.free_text.grounded_question",
+        "actionLabelRu": "что в этом документе важно?",
+        "userQuestion": "что в этом документе важно?",
+        "questionRu": "что в этом документе важно?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что в этом документе важно?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:documents.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: акты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:acts",
+            "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "связанные объект",
+          "сумма",
+          "поставщик",
+          "условия",
+          "основание"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "context": "reports",
+      "questionId": "documents.main.free_text.typo.2",
+      "questionRu": "с чем связан етот пдф",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: с чем связан етот пдф\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «с чем связан етот пдф».\n- Документный источник доступен: акты.пдф, стр. 1.\n\nИсточники:\n- Экран: AI помощник\n- ПДФ: акты.пдф, стр. 1\n\nЧего не хватает:\n- связанные объект\n- сумма\n- поставщик\n- условия\n- основание\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "documents.main",
+        "actionId": "documents.main.free_text.grounded_question",
+        "actionLabelRu": "с чем связан етот пдф",
+        "userQuestion": "с чем связан етот пдф",
+        "questionRu": "с чем связан етот пдф",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «с чем связан етот пдф».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:documents.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: акты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:acts",
+            "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "связанные объект",
+          "сумма",
+          "поставщик",
+          "условия",
+          "основание"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "context": "reports",
+      "questionId": "documents.main.free_text.ambiguous.3",
+      "questionRu": "что тут",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что тут\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "documents.main",
+        "actionId": "documents.main.free_text.grounded_question",
+        "actionLabelRu": "что тут",
+        "userQuestion": "что тут",
+        "questionRu": "что тут",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:documents.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "context": "reports",
+      "questionId": "agent.documents.knowledge.free_text.direct.1",
+      "questionRu": "что в этом документе важно?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что в этом документе важно?\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что в этом документе важно?».\n- Документный источник доступен: акты.пдф, стр. 1.\n\nИсточники:\n- Экран: AI помощник\n- ПДФ: акты.пдф, стр. 1\n\nЧего не хватает:\n- связанные объект\n- сумма\n- поставщик\n- условия\n- основание\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "agent.documents.knowledge",
+        "actionId": "agent.documents.knowledge.free_text.grounded_question",
+        "actionLabelRu": "что в этом документе важно?",
+        "userQuestion": "что в этом документе важно?",
+        "questionRu": "что в этом документе важно?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что в этом документе важно?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:agent.documents.knowledge",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: акты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:acts",
+            "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "связанные объект",
+          "сумма",
+          "поставщик",
+          "условия",
+          "основание"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "context": "reports",
+      "questionId": "agent.documents.knowledge.free_text.typo.2",
+      "questionRu": "с чем связан етот пдф",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: с чем связан етот пдф\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «с чем связан етот пдф».\n- Документный источник доступен: акты.пдф, стр. 1.\n\nИсточники:\n- Экран: AI помощник\n- ПДФ: акты.пдф, стр. 1\n\nЧего не хватает:\n- связанные объект\n- сумма\n- поставщик\n- условия\n- основание\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "agent.documents.knowledge",
+        "actionId": "agent.documents.knowledge.free_text.grounded_question",
+        "actionLabelRu": "с чем связан етот пдф",
+        "userQuestion": "с чем связан етот пдф",
+        "questionRu": "с чем связан етот пдф",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «с чем связан етот пдф».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:agent.documents.knowledge",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: акты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:acts",
+            "sourceLabelRu": "ПДФ: акты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "связанные объект",
+          "сумма",
+          "поставщик",
+          "условия",
+          "основание"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "context": "reports",
+      "questionId": "agent.documents.knowledge.free_text.ambiguous.3",
+      "questionRu": "что тут",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что тут\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "agent.documents.knowledge",
+        "actionId": "agent.documents.knowledge.free_text.grounded_question",
+        "actionLabelRu": "что тут",
+        "userQuestion": "что тут",
+        "questionRu": "что тут",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:agent.documents.knowledge",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "context": "reports",
+      "questionId": "reports.modal.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «Готово от AI» для действия «что важно на этом экране?».\n- Документный источник доступен: директорские отчёты.пдф, стр. 1.\n\nИсточники:\n- Экран: Готово от AI\n- ПДФ: директорские отчёты.пдф, стр. 1\n\nЧего не хватает:\n- основание\n- связанные объекты\n- не хватает данных\n- документ\n- ПДФ-источник\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "reports.modal",
+        "actionId": "reports.modal.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Готово от AI» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:reports.modal",
+            "sourceLabelRu": "Экран: Готово от AI",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: директорские отчёты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:director_reports",
+            "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "основание",
+          "связанные объекты",
+          "не хватает данных",
+          "документ",
+          "ПДФ-источник"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "context": "reports",
+      "questionId": "reports.modal.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану\n\nЧто найдено:\n- Проверен экран «Готово от AI» для действия «каких данных нехватаит».\n- Документный источник доступен: директорские отчёты.пдф, стр. 1.\n\nИсточники:\n- Экран: Готово от AI\n- ПДФ: директорские отчёты.пдф, стр. 1\n\nЧего не хватает:\n- основание\n- связанные объекты\n- не хватает данных\n- документ\n- ПДФ-источник\n\nСледующий шаг:\nоткройте конкретный документ или привяжите ПДФ к объекту\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "reports.modal",
+        "actionId": "reports.modal.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Готово от AI» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:reports.modal",
+            "sourceLabelRu": "Экран: Готово от AI",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: директорские отчёты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:director_reports",
+            "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "основание",
+          "связанные объекты",
+          "не хватает данных",
+          "документ",
+          "ПДФ-источник"
+        ],
+        "nextStepRu": "откройте конкретный документ или привяжите ПДФ к объекту",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "exactNoDataReasonRu": "не выбран конкретный документ или ПДФ-файл; документный провайдер может показать только источники, которые привязаны к роли и экрану",
+        "providerTrace": [
+          "aiDocumentGroundingProvider",
+          "aiPdfAggregatorSearchProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiDocumentGroundingProvider",
+        "aiPdfAggregatorSearchProvider"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "context": "reports",
+      "questionId": "reports.modal.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Готово от AI», но без выбранной записи.\n\nИсточники:\n- Экран: Готово от AI\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "reports.modal",
+        "actionId": "reports.modal.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Готово от AI», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:reports.modal",
+            "sourceLabelRu": "Экран: Готово от AI",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "context": "unknown",
+      "questionId": "chat.main.free_text.direct.1",
+      "questionRu": "что решили в чате?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что решили в чате?\n\nТочная причина:\n- нет выбранного обсуждения или сообщения, из которого можно извлечь задачи\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что решили в чате?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- ответственный\n- срок\n- связанные объект\n- согласование основание\n- сообщение\n\nСледующий шаг:\nподготовить сводка\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "chat.main",
+        "actionId": "chat.main.free_text.grounded_question",
+        "actionLabelRu": "что решили в чате?",
+        "userQuestion": "что решили в чате?",
+        "questionRu": "что решили в чате?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что решили в чате?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:chat.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ответственный",
+          "срок",
+          "связанные объект",
+          "согласование основание",
+          "сообщение"
+        ],
+        "nextStepRu": "подготовить сводка",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного обсуждения или сообщения, из которого можно извлечь задачи",
+        "exactNoDataReasonRu": "нет выбранного обсуждения или сообщения, из которого можно извлечь задачи",
+        "providerTrace": [
+          "aiChatGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiChatGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "context": "unknown",
+      "questionId": "chat.main.free_text.typo.2",
+      "questionRu": "кому чо сделать",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: кому чо сделать\n\nТочная причина:\n- нет выбранного обсуждения или сообщения, из которого можно извлечь задачи\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «кому чо сделать».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- ответственный\n- срок\n- связанные объект\n- согласование основание\n- сообщение\n\nСледующий шаг:\nподготовить сводка\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "chat.main",
+        "actionId": "chat.main.free_text.grounded_question",
+        "actionLabelRu": "кому чо сделать",
+        "userQuestion": "кому чо сделать",
+        "questionRu": "кому чо сделать",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «кому чо сделать».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:chat.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "ответственный",
+          "срок",
+          "связанные объект",
+          "согласование основание",
+          "сообщение"
+        ],
+        "nextStepRu": "подготовить сводка",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного обсуждения или сообщения, из которого можно извлечь задачи",
+        "exactNoDataReasonRu": "нет выбранного обсуждения или сообщения, из которого можно извлечь задачи",
+        "providerTrace": [
+          "aiChatGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiChatGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "context": "unknown",
+      "questionId": "chat.main.free_text.ambiguous.3",
+      "questionRu": "помоги",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: помоги\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "chat.main",
+        "actionId": "chat.main.free_text.grounded_question",
+        "actionLabelRu": "помоги",
+        "userQuestion": "помоги",
+        "questionRu": "помоги",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:chat.main",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "context": "director",
+      "questionId": "director.dashboard.free_text.direct.1",
+      "questionRu": "что мне решить сегодня?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что мне решить сегодня?\n\nТочная причина:\n- для экрана «Решения на сегодня» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «Решения на сегодня» для действия «что мне решить сегодня?».\n\nИсточники:\n- Экран: Решения на сегодня\n\nЧего не хватает:\n- документы\n- обоснование\n- связанные заявки или платежи\n- домен решения\n- основание\n\nСледующий шаг:\nоткрыть согласование входящие\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.dashboard",
+        "actionId": "director.dashboard.free_text.grounded_question",
+        "actionLabelRu": "что мне решить сегодня?",
+        "userQuestion": "что мне решить сегодня?",
+        "questionRu": "что мне решить сегодня?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Решения на сегодня» для действия «что мне решить сегодня?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.dashboard",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы",
+          "обоснование",
+          "связанные заявки или платежи",
+          "домен решения",
+          "основание"
+        ],
+        "nextStepRu": "открыть согласование входящие",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "context": "director",
+      "questionId": "director.dashboard.free_text.typo.2",
+      "questionRu": "какие риски самие важные",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: какие риски самие важные\n\nТочная причина:\n- для экрана «Решения на сегодня» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «Решения на сегодня» для действия «какие риски самие важные».\n\nИсточники:\n- Экран: Решения на сегодня\n\nЧего не хватает:\n- документы\n- обоснование\n- связанные заявки или платежи\n- домен решения\n- основание\n\nСледующий шаг:\nоткрыть согласование входящие\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.dashboard",
+        "actionId": "director.dashboard.free_text.grounded_question",
+        "actionLabelRu": "какие риски самие важные",
+        "userQuestion": "какие риски самие важные",
+        "questionRu": "какие риски самие важные",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Решения на сегодня» для действия «какие риски самие важные».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.dashboard",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "документы",
+          "обоснование",
+          "связанные заявки или платежи",
+          "домен решения",
+          "основание"
+        ],
+        "nextStepRu": "открыть согласование входящие",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "context": "director",
+      "questionId": "director.dashboard.free_text.ambiguous.3",
+      "questionRu": "что дальше",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что дальше\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Решения на сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Решения на сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.dashboard",
+        "actionId": "director.dashboard.free_text.grounded_question",
+        "actionLabelRu": "что дальше",
+        "userQuestion": "что дальше",
+        "questionRu": "что дальше",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Решения на сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.dashboard",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "context": "director",
+      "questionId": "director.reports.free_text.direct.1",
+      "questionRu": "что мне решить сегодня?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что мне решить сегодня?\n\nТочная причина:\n- для экрана «Решения на сегодня» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «Решения на сегодня» для действия «что мне решить сегодня?».\n- Документный источник доступен: директорские отчёты.пдф, стр. 1.\n\nИсточники:\n- Экран: Решения на сегодня\n- ПДФ: директорские отчёты.пдф, стр. 1\n\nЧего не хватает:\n- основание\n- связанные документы\n- согласование статус\n- домен решения\n- ответственный\n\nСледующий шаг:\nоткрыть риски\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.reports",
+        "actionId": "director.reports.free_text.grounded_question",
+        "actionLabelRu": "что мне решить сегодня?",
+        "userQuestion": "что мне решить сегодня?",
+        "questionRu": "что мне решить сегодня?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Решения на сегодня» для действия «что мне решить сегодня?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.reports",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: директорские отчёты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:director_reports",
+            "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "основание",
+          "связанные документы",
+          "согласование статус",
+          "домен решения",
+          "ответственный"
+        ],
+        "nextStepRu": "открыть риски",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "context": "director",
+      "questionId": "director.reports.free_text.typo.2",
+      "questionRu": "какие риски самие важные",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: какие риски самие важные\n\nТочная причина:\n- для экрана «Решения на сегодня» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «Решения на сегодня» для действия «какие риски самие важные».\n- Документный источник доступен: директорские отчёты.пдф, стр. 1.\n\nИсточники:\n- Экран: Решения на сегодня\n- ПДФ: директорские отчёты.пдф, стр. 1\n\nЧего не хватает:\n- основание\n- связанные документы\n- согласование статус\n- домен решения\n- ответственный\n\nСледующий шаг:\nоткрыть риски\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.reports",
+        "actionId": "director.reports.free_text.grounded_question",
+        "actionLabelRu": "какие риски самие важные",
+        "userQuestion": "какие риски самие важные",
+        "questionRu": "какие риски самие важные",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «Решения на сегодня» для действия «какие риски самие важные».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.reports",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          },
+          {
+            "textRu": "Документный источник доступен: директорские отчёты.пдф, стр. 1.",
+            "sourceType": "pdf_chunk",
+            "sourceId": "docsrc:director_reports",
+            "sourceLabelRu": "ПДФ: директорские отчёты.пдф, стр. 1",
+            "page": 1,
+            "confidence": "medium"
+          }
+        ],
+        "missingData": [
+          "основание",
+          "связанные документы",
+          "согласование статус",
+          "домен решения",
+          "ответственный"
+        ],
+        "nextStepRu": "открыть риски",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «Решения на сегодня» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider",
+          "aiPdfAggregatorSearchProvider",
+          "aiDocumentGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider",
+        "aiPdfAggregatorSearchProvider",
+        "aiDocumentGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "context": "director",
+      "questionId": "director.reports.free_text.ambiguous.3",
+      "questionRu": "что дальше",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что дальше\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «Решения на сегодня», но без выбранной записи.\n\nИсточники:\n- Экран: Решения на сегодня\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "director.reports",
+        "actionId": "director.reports.free_text.grounded_question",
+        "actionLabelRu": "что дальше",
+        "userQuestion": "что дальше",
+        "questionRu": "что дальше",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «Решения на сегодня», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:director.reports",
+            "sourceLabelRu": "Экран: Решения на сегодня",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "context": "director",
+      "questionId": "ai.command_center.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- для экрана «AI помощник» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- последний артефакт\n- основание метка\n- согласование кандидат\n- домен решения\n- основание\n\nСледующий шаг:\nоткрыть основание\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "ai.command_center",
+        "actionId": "ai.command_center.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:ai.command_center",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "последний артефакт",
+          "основание метка",
+          "согласование кандидат",
+          "домен решения",
+          "основание"
+        ],
+        "nextStepRu": "открыть основание",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "context": "director",
+      "questionId": "ai.command_center.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- для экрана «AI помощник» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- последний артефакт\n- основание метка\n- согласование кандидат\n- домен решения\n- основание\n\nСледующий шаг:\nоткрыть основание\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "ai.command_center",
+        "actionId": "ai.command_center.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:ai.command_center",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "последний артефакт",
+          "основание метка",
+          "согласование кандидат",
+          "домен решения",
+          "основание"
+        ],
+        "nextStepRu": "открыть основание",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "context": "director",
+      "questionId": "ai.command_center.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "ai.command_center",
+        "actionId": "ai.command_center.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:ai.command_center",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "context": "profile",
+      "questionId": "office.hub.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- для экрана «AI помощник» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- связанные документ\n- ответственный\n- срок\n- согласование маршрут\n- документ\n\nСледующий шаг:\nоткрыть просроченные\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "office.hub",
+        "actionId": "office.hub.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:office.hub",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "связанные документ",
+          "ответственный",
+          "срок",
+          "согласование маршрут",
+          "документ"
+        ],
+        "nextStepRu": "открыть просроченные",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "context": "profile",
+      "questionId": "office.hub.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- для экрана «AI помощник» не передан конкретный объект, запись или документ\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- связанные документ\n- ответственный\n- срок\n- согласование маршрут\n- документ\n\nСледующий шаг:\nоткрыть просроченные\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "office.hub",
+        "actionId": "office.hub.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:office.hub",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "связанные документ",
+          "ответственный",
+          "срок",
+          "согласование маршрут",
+          "документ"
+        ],
+        "nextStepRu": "открыть просроченные",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "exactNoDataReasonRu": "для экрана «AI помощник» не передан конкретный объект, запись или документ",
+        "providerTrace": [
+          "aiScreenGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "context": "profile",
+      "questionId": "office.hub.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "office.hub",
+        "actionId": "office.hub.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:office.hub",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "context": "security",
+      "questionId": "security.screen.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранного события аудита, роли или пробела политики для проверки\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- аудит основание\n- правила пробел\n- согласование след проверки\n- событие аудита\n- роль\n\nСледующий шаг:\nоткрыть роли с риском\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "security.screen",
+        "actionId": "security.screen.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:security.screen",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "аудит основание",
+          "правила пробел",
+          "согласование след проверки",
+          "событие аудита",
+          "роль"
+        ],
+        "nextStepRu": "открыть роли с риском",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного события аудита, роли или пробела политики для проверки",
+        "exactNoDataReasonRu": "нет выбранного события аудита, роли или пробела политики для проверки",
+        "providerTrace": [
+          "aiSecurityGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiSecurityGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "context": "security",
+      "questionId": "security.screen.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранного события аудита, роли или пробела политики для проверки\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- аудит основание\n- правила пробел\n- согласование след проверки\n- событие аудита\n- роль\n\nСледующий шаг:\nоткрыть роли с риском\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "security.screen",
+        "actionId": "security.screen.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:security.screen",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "аудит основание",
+          "правила пробел",
+          "согласование след проверки",
+          "событие аудита",
+          "роль"
+        ],
+        "nextStepRu": "открыть роли с риском",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного события аудита, роли или пробела политики для проверки",
+        "exactNoDataReasonRu": "нет выбранного события аудита, роли или пробела политики для проверки",
+        "providerTrace": [
+          "aiSecurityGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiSecurityGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "context": "security",
+      "questionId": "security.screen.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "security.screen",
+        "actionId": "security.screen.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:security.screen",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "context": "director",
+      "questionId": "screen.runtime.free_text.direct.1",
+      "questionRu": "что важно на этом экране?",
+      "kind": "direct",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: что важно на этом экране?\n\nТочная причина:\n- нет выбранного артефакта или сбойного проверочного запуска для диагностики\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «что важно на этом экране?».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- последний артефакт\n- результат проверки\n- команда проверки\n- артефакт\n- проверочный запуск\n\nСледующий шаг:\nпоказать точная причина\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "screen.runtime",
+        "actionId": "screen.runtime.free_text.grounded_question",
+        "actionLabelRu": "что важно на этом экране?",
+        "userQuestion": "что важно на этом экране?",
+        "questionRu": "что важно на этом экране?",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «что важно на этом экране?».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:screen.runtime",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "последний артефакт",
+          "результат проверки",
+          "команда проверки",
+          "артефакт",
+          "проверочный запуск"
+        ],
+        "nextStepRu": "показать точная причина",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного артефакта или сбойного проверочного запуска для диагностики",
+        "exactNoDataReasonRu": "нет выбранного артефакта или сбойного проверочного запуска для диагностики",
+        "providerTrace": [
+          "aiRuntimeGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiRuntimeGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "context": "director",
+      "questionId": "screen.runtime.free_text.typo.2",
+      "questionRu": "каких данных нехватаит",
+      "kind": "typo",
+      "resultTextRu": "Результат\n\nКоротко:\nНужен конкретный источник, поэтому точный ответ пока невозможен.\n\nДействие: каких данных нехватаит\n\nТочная причина:\n- нет выбранного артефакта или сбойного проверочного запуска для диагностики\n\nЧто найдено:\n- Проверен экран «AI помощник» для действия «каких данных нехватаит».\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- последний артефакт\n- результат проверки\n- команда проверки\n- артефакт\n- проверочный запуск\n\nСледующий шаг:\nпоказать точная причина\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "screen.runtime",
+        "actionId": "screen.runtime.free_text.grounded_question",
+        "actionLabelRu": "каких данных нехватаит",
+        "userQuestion": "каких данных нехватаит",
+        "questionRu": "каких данных нехватаит",
+        "answerKind": "exact_no_data_reason",
+        "shortAnswerRu": "Нужен конкретный источник, поэтому точный ответ пока невозможен.",
+        "facts": [
+          {
+            "textRu": "Проверен экран «AI помощник» для действия «каких данных нехватаит».",
+            "sourceType": "screen_context",
+            "sourceId": "screen:screen.runtime",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "последний артефакт",
+          "результат проверки",
+          "команда проверки",
+          "артефакт",
+          "проверочный запуск"
+        ],
+        "nextStepRu": "показать точная причина",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "exactNoDataReason": "нет выбранного артефакта или сбойного проверочного запуска для диагностики",
+        "exactNoDataReasonRu": "нет выбранного артефакта или сбойного проверочного запуска для диагностики",
+        "providerTrace": [
+          "aiRuntimeGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiRuntimeGroundingProvider"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "context": "director",
+      "questionId": "screen.runtime.free_text.ambiguous.3",
+      "questionRu": "что делать",
+      "kind": "ambiguous",
+      "resultTextRu": "Уточните вопрос\n\nКоротко:\nВопрос слишком общий, нужен объект проверки.\n\nДействие: что делать\n\nУточняющий вопрос:\nУточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?\n\nЧто найдено:\n- Вопрос задан на экране «AI помощник», но без выбранной записи.\n\nИсточники:\n- Экран: AI помощник\n\nЧего не хватает:\n- выбранная работа, документ, заявка, платеж или запись\n\nСледующий шаг:\nуточните, какую работу, документ, заявку или платеж нужно проверить\n\nСтатус: данные не изменены.",
+      "groundedAnswer": {
+        "screenId": "screen.runtime",
+        "actionId": "screen.runtime.free_text.grounded_question",
+        "actionLabelRu": "что делать",
+        "userQuestion": "что делать",
+        "questionRu": "что делать",
+        "answerKind": "clarifying_question",
+        "shortAnswerRu": "Вопрос слишком общий, нужен объект проверки.",
+        "facts": [
+          {
+            "textRu": "Вопрос задан на экране «AI помощник», но без выбранной записи.",
+            "sourceType": "screen_context",
+            "sourceId": "screen:screen.runtime",
+            "sourceLabelRu": "Экран: AI помощник",
+            "confidence": "high"
+          }
+        ],
+        "missingData": [
+          "выбранная работа, документ, заявка, платеж или запись"
+        ],
+        "nextStepRu": "уточните, какую работу, документ, заявку или платеж нужно проверить",
+        "changedData": false,
+        "finalSubmit": false,
+        "autoApproval": false,
+        "clarifyingQuestionRu": "Уточните, что именно проверить: работу, документ, заявку, платеж, складскую позицию или согласование?",
+        "providerTrace": [
+          "aiScreenContextGroundingProvider"
+        ]
+      },
+      "resultGrounded": true,
+      "hasSources": true,
+      "sourceSectionVisible": true,
+      "genericAnswer": false,
+      "technicalCopyVisible": false,
+      "clarifyingQuestionShown": true,
+      "providerTrace": [
+        "aiScreenContextGroundingProvider"
+      ]
+    }
+  ]
+}

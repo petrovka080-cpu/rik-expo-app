@@ -1,4 +1,4 @@
-import { getAiApprovalActionRoute } from "../../src/features/ai/approvalRouter/aiApprovalActionRouter";
+﻿import { getAiApprovalActionRoute } from "../../src/features/ai/approvalRouter/aiApprovalActionRouter";
 import {
   AI_FINANCE_APPROVAL_MAGIC_GREEN_STATUS,
   buildAiFinanceApprovalMagicMatrix,
@@ -8,8 +8,8 @@ import { getMagicPack } from "./aiScreenMagicTestHelpers";
 describe("AI approval inbox magic", () => {
   it("keeps approve and reject human-led through the approval ledger", () => {
     const pack = getMagicPack("approval.inbox");
-    const approve = pack.buttons.find((button) => button.label === "Approve");
-    const reject = pack.buttons.find((button) => button.label === "Reject");
+    const approve = pack.buttons.find((button) => /соглас/i.test(button.label) && button.actionKind === "approval_required");
+    const reject = pack.buttons.find((button) => /отклон/i.test(button.label) && button.actionKind === "approval_required");
     const route = getAiApprovalActionRoute("approval.inbox.approval");
 
     expect(approve).toMatchObject({

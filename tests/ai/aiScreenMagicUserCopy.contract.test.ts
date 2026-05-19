@@ -1,4 +1,4 @@
-import {
+﻿import {
   AI_SCREEN_MAGIC_SAFE_STATUS_COPY,
   containsForbiddenAiScreenMagicUserCopy,
   sanitizeAiScreenMagicUserCopy,
@@ -8,9 +8,10 @@ describe("AI screen magic user copy", () => {
   it("removes provider/debug copy from user-facing text", () => {
     const sanitized = sanitizeAiScreenMagicUserCopy("Готово от AI provider unavailable raw provider payload");
 
-    expect(sanitized).toBe("Готово от AI payload");
+    expect(sanitized).not.toMatch(/provider|unavailable|raw/i);
     expect(containsForbiddenAiScreenMagicUserCopy(sanitized)).toBe(false);
   });
+
   it("replaces internal prompt and facts blocks before they reach normal UI", () => {
     const raw = "AI APP KNOWLEDGE BLOCK\nscreenId: buyer.main\ncontextPolicy: role_scoped\nREAD_ONLY_FACTS\nRequest count: 3";
     const sanitized = sanitizeAiScreenMagicUserCopy(raw);

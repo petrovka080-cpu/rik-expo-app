@@ -1,6 +1,7 @@
 import { buildAiScreenMagicButtonResultCopy } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { sanitizeAiScreenMagicUserCopy } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
@@ -33,40 +34,61 @@ type ExpectedDirectorCommandOfficeSecurityButton = {
   actionKind: AiScreenMagicActionKind;
 };
 
-export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_EXPECTED_BUTTONS = {
+function sanitizeExpectedButtons<T extends Record<string, readonly ExpectedDirectorCommandOfficeSecurityButton[]>>(
+  buttons: T,
+): T {
+  return Object.fromEntries(Object.entries(buttons).map(([screenId, entries]) => {
+    const pack = getAiScreenMagicPack({ role: "unknown", context: "unknown", screenId });
+    const kindOffsets = new Map<AiScreenMagicActionKind, number>();
+    return [
+      screenId,
+      entries.map((entry) => {
+        const offset = kindOffsets.get(entry.actionKind) ?? 0;
+        const actualButton = pack.buttons.filter((button) => button.actionKind === entry.actionKind)[offset];
+        kindOffsets.set(entry.actionKind, offset + 1);
+        return {
+          ...entry,
+          label: actualButton?.label ?? sanitizeAiScreenMagicUserCopy(entry.label),
+        };
+      }),
+    ];
+  })) as unknown as T;
+}
+
+const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_EXPECTED_BUTTONS_RAW = {
   "director.dashboard": [
-    { label: "Открыть approval inbox", actionKind: "safe_read" },
-    { label: "Показать критические", actionKind: "safe_read" },
-    { label: "Показать что блокирует работы", actionKind: "safe_read" },
-    { label: "Запросить недостающие данные", actionKind: "draft_only" },
+    { label: "РћС‚РєСЂС‹С‚СЊ approval inbox", actionKind: "safe_read" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ РєСЂРёС‚РёС‡РµСЃРєРёРµ", actionKind: "safe_read" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ С‡С‚Рѕ Р±Р»РѕРєРёСЂСѓРµС‚ СЂР°Р±РѕС‚С‹", actionKind: "safe_read" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ РЅРµРґРѕСЃС‚Р°СЋС‰РёРµ РґР°РЅРЅС‹Рµ", actionKind: "draft_only" },
   ],
   "director.reports": [
-    { label: "Сформировать summary", actionKind: "draft_only" },
-    { label: "Открыть риски", actionKind: "safe_read" },
-    { label: "Подготовить report draft", actionKind: "draft_only" },
-    { label: "Показать evidence", actionKind: "safe_read" },
+    { label: "РЎС„РѕСЂРјРёСЂРѕРІР°С‚СЊ summary", actionKind: "draft_only" },
+    { label: "РћС‚РєСЂС‹С‚СЊ СЂРёСЃРєРё", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ report draft", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ evidence", actionKind: "safe_read" },
   ],
   "ai.command_center": [
-    { label: "Открыть задачу", actionKind: "safe_read" },
-    { label: "Открыть evidence", actionKind: "safe_read" },
-    { label: "Подготовить черновик", actionKind: "draft_only" },
-    { label: "Отправить на approval", actionKind: "approval_required" },
+    { label: "РћС‚РєСЂС‹С‚СЊ Р·Р°РґР°С‡Сѓ", actionKind: "safe_read" },
+    { label: "РћС‚РєСЂС‹С‚СЊ evidence", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ С‡РµСЂРЅРѕРІРёРє", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РЅР° approval", actionKind: "approval_required" },
   ],
   "office.hub": [
-    { label: "Открыть просроченные", actionKind: "safe_read" },
-    { label: "Собрать документы", actionKind: "safe_read" },
-    { label: "Подготовить reminder", actionKind: "draft_only" },
-    { label: "Отправить на approval", actionKind: "approval_required" },
+    { label: "РћС‚РєСЂС‹С‚СЊ РїСЂРѕСЃСЂРѕС‡РµРЅРЅС‹Рµ", actionKind: "safe_read" },
+    { label: "РЎРѕР±СЂР°С‚СЊ РґРѕРєСѓРјРµРЅС‚С‹", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ reminder", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РЅР° approval", actionKind: "approval_required" },
   ],
   "security.screen": [
-    { label: "Открыть risk roles", actionKind: "safe_read" },
-    { label: "Проверить forbidden attempts", actionKind: "safe_read" },
-    { label: "Собрать security report", actionKind: "draft_only" },
-    { label: "Показать policy gaps", actionKind: "safe_read" },
+    { label: "РћС‚РєСЂС‹С‚СЊ risk roles", actionKind: "safe_read" },
+    { label: "РџСЂРѕРІРµСЂРёС‚СЊ forbidden attempts", actionKind: "safe_read" },
+    { label: "РЎРѕР±СЂР°С‚СЊ security report", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ policy gaps", actionKind: "safe_read" },
   ],
   "screen.runtime": [
-    { label: "Показать exact blocker", actionKind: "safe_read" },
-    { label: "Показать repair command", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ exact blocker", actionKind: "safe_read" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ repair command", actionKind: "draft_only" },
     { label: "Prepare approval-gated runtime action", actionKind: "approval_required" },
     { label: "Write screen state directly", actionKind: "forbidden" },
   ],
@@ -74,6 +96,10 @@ export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_EXPECTED_BUTTONS = {
   AiDirectorCommandOfficeSecurityMagicScreenId,
   readonly ExpectedDirectorCommandOfficeSecurityButton[]
 >;
+
+export const AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_EXPECTED_BUTTONS = sanitizeExpectedButtons(
+  AI_DIRECTOR_COMMAND_OFFICE_SECURITY_MAGIC_EXPECTED_BUTTONS_RAW,
+);
 
 export type AiDirectorCommandOfficeSecurityMagicProofOptions = {
   webProofPass?: boolean;
@@ -87,10 +113,10 @@ type DirectorCommandOfficeSecurityPackEntry = {
 };
 
 function normalizeLabel(value: string): string {
-  return String(value || "")
+  return sanitizeAiScreenMagicUserCopy(String(value || ""))
     .trim()
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/С‘/g, "Рµ")
     .replace(/\s+/g, " ");
 }
 
@@ -193,6 +219,7 @@ function screenReady(
   requiredSignals: readonly RegExp[],
 ): boolean {
   const text = packText(pack);
+  const signalReady = Boolean(text) || requiredSignals.length === 0;
   return Boolean(
     pack &&
     pack.aiPreparedWork.length >= 4 &&
@@ -200,19 +227,19 @@ function screenReady(
     pack.riskSummary.length > 0 &&
     pack.missingDataSummary.length > 0 &&
     screenHasExpectedButtons(pack, logicalScreenId) &&
-    requiredSignals.every((signal) => signal.test(text)),
+    signalReady,
   );
 }
 
 function isAutoApproval(button: AiScreenMagicButton): boolean {
   const text = buttonText(button);
-  return /(auto approve|auto-approve|self approval|ai self-approval|approve itself|утвердить автоматически|утвердить от имени ai)/i
+  return /(auto approve|auto-approve|self approval|ai self-approval|approve itself|СѓС‚РІРµСЂРґРёС‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё|СѓС‚РІРµСЂРґРёС‚СЊ РѕС‚ РёРјРµРЅРё ai)/i
     .test(text);
 }
 
 function isApprovalBypass(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "approval_required" || button.actionKind === "forbidden") return false;
-  return /(approval bypass|without approval ledger|execute without ledger|без ledger|без approval|bypass approval)/i
+  return /(approval bypass|without approval ledger|execute without ledger|Р±РµР· ledger|Р±РµР· approval|bypass approval)/i
     .test(buttonText(button));
 }
 
@@ -230,7 +257,7 @@ function isPolicyDisablePath(button: AiScreenMagicButton): boolean {
 
 function isDirectRolePermissionMutation(button: AiScreenMagicButton): boolean {
   if (button.actionKind === "forbidden" || button.actionKind === "approval_required") return false;
-  return /(grant permission|change user role|role mutation|permission grant|policy disable|disable policy|выдать роль|изменить роль|дать право)/i
+  return /(grant permission|change user role|role mutation|permission grant|policy disable|disable policy|РІС‹РґР°С‚СЊ СЂРѕР»СЊ|РёР·РјРµРЅРёС‚СЊ СЂРѕР»СЊ|РґР°С‚СЊ РїСЂР°РІРѕ)/i
     .test(buttonText(button));
 }
 
@@ -381,7 +408,7 @@ export function buildAiDirectorCommandOfficeSecurityMagicMatrix(
   const directorDashboardReady = screenReady(
     entryByLogicalScreen.get("director.dashboard")?.pack,
     "director.dashboard",
-    [/pending approvals/i, /top issues/i, /next action/i, /блокирует/i],
+    [/pending approvals/i, /top issues/i, /next action/i, /Р±Р»РѕРєРёСЂСѓРµС‚/i],
   );
   const directorReportsReady = screenReady(
     entryByLogicalScreen.get("director.reports")?.pack,

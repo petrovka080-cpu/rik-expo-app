@@ -1,0 +1,5 @@
+{
+  "wave": "S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_POINT_OF_NO_RETURN",
+  "ios_testflight_blocker": false,
+  "note": "release:verify did not require a fresh iOS TestFlight signoff at artifact creation time"
+}

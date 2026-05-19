@@ -1,4 +1,4 @@
-import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
+﻿import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 import { buildAiScreenMagicClickPayload } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 
@@ -33,7 +33,7 @@ describe("AI screen magic question answer engine", () => {
       providerCallAllowed: false,
       topic: "director",
     });
-    expect(answer?.answer).toContain("approval ledger");
-    expect(answer?.answer).toContain("AI не approve");
+    expect(answer?.answer).toContain("Маршрут согласования");
+    expect(answer?.answer).toContain("Автоматическое согласование не выполнялось");
   });
 });

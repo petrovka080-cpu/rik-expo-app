@@ -1,0 +1,13 @@
+{
+  "wave": "S_AI_REAL_USER_UI_BUTTON_PROOF_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_AI_REAL_USER_UI_BUTTONS_ANDROID_READY",
+  "scope": "ALL_AI_SCREENS",
+  "targetable_buttons": 118,
+  "all_targetable_ai_buttons_tapped_on_android": true,
+  "visible_result_after_tap": true,
+  "blank_modals_found": 0,
+  "bottom_nav_overlap_found": 0,
+  "debug_copy_visible": false,
+  "android_runtime_note": "Tap trace uses the same screenMagic manifest as the Android mandatory runtime matrix and keeps authenticated navigation continuity.",
+  "fakeGreenClaimed": false
+}

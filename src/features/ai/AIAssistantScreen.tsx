@@ -28,7 +28,11 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
-import { isAiScreenMagicClickPayload } from "./screenMagic/aiScreenMagicButtonResolver";
+import {
+  buildAiScreenMagicButtonResultCopy,
+  buildAiScreenMagicFreeTextResultCopy,
+  isAiScreenMagicClickPayload,
+} from "./screenMagic/aiScreenMagicButtonResolver";
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { useAIAssistantScreenDerivedState } from "./useAIAssistantScreenDerivedState";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
@@ -69,6 +73,17 @@ function createMessage(role: AssistantMessage["role"], content: string): Assista
   };
 }
 
+function normalizeGroundedRouteParams(
+  params: Record<string, string | string[] | undefined>,
+): Record<string, string | number | boolean | null | undefined> {
+  return Object.fromEntries(
+    Object.entries(params).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value[0] : value,
+    ]),
+  );
+}
+
 export default function AIAssistantScreen() {
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -82,6 +97,7 @@ export default function AIAssistantScreen() {
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
   const handledPromptRef = useRef<string>("");
   const {
+    params,
     routePrompt,
     routeAutoSend,
     assistantContext,
@@ -193,6 +209,27 @@ export default function AIAssistantScreen() {
       setLoading(true);
 
       try {
+        if (isAiScreenMagicClickPayload(text) && screenMagicPack) {
+          const buttonResult = buildAiScreenMagicButtonResultCopy({
+            pack: screenMagicPack,
+            buttonIdOrLabel: text,
+          });
+          if (buttonResult) {
+            setMessages((prev) => [...prev, createMessage("assistant", buttonResult.answer)]);
+            return;
+          }
+        }
+
+        if (screenMagicPack) {
+          const groundedResult = buildAiScreenMagicFreeTextResultCopy({
+            pack: screenMagicPack,
+            userText: text,
+            routeParams: normalizeGroundedRouteParams(params),
+          });
+          setMessages((prev) => [...prev, createMessage("assistant", groundedResult.answer)]);
+          return;
+        }
+
         const actionResult = await tryRunAssistantAction({
           role,
           context: assistantContext,
@@ -229,7 +266,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, input, loading, messages, role, roleScreenAssistantPack, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, input, loading, messages, params, role, roleScreenAssistantPack, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {

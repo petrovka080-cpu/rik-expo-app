@@ -79,11 +79,11 @@ export function answerAiScreenMagicQuestion(params: {
       : null,
     missing.length > 0
       ? `Недостающие данные: ${missing.join("; ")}.`
-      : "Недостающие данные не выдумываются; если evidence отсутствует, действие останется в blocker/missing state.",
-    safeRead ? `Safe read: ${safeRead.label}.` : null,
+      : "Недостающие данные не выдумываются; если основание отсутствует, действие останется в состоянии понятной блокировки.",
+    safeRead ? `Можно показать: ${safeRead.label}.` : null,
     pack.safeActions.length > 0 ? `Безопасно открыть: ${pack.safeActions.slice(0, 3).join("; ")}.` : null,
     draft ? `Черновик: ${draft.label}; финальная отправка не выполняется.` : null,
-    approval ? `Approval: ${approval.label} идёт через ${approval.approvalRoute ?? "approval ledger"}.` : null,
+    approval ? `Согласование: ${approval.label} идёт через ${approval.approvalRoute ?? "журнал согласования"}.` : null,
     pack.exactBlockers.length > 0 ? `Блокер: ${pack.exactBlockers[0]}.` : null,
   ].filter(Boolean).join(" "));
 

@@ -1,0 +1,420 @@
+{
+  "wave": "S_AI_REAL_USER_UI_BUTTON_PROOF_POINT_OF_NO_RETURN",
+  "screens_required": [
+    "accountant.main",
+    "buyer.main",
+    "buyer.requests",
+    "buyer.request.detail",
+    "procurement.copilot",
+    "market.home",
+    "supplier.showcase",
+    "warehouse.main",
+    "warehouse.incoming",
+    "warehouse.issue",
+    "map.main",
+    "foreman.main",
+    "foreman.ai.quick_modal",
+    "foreman.subcontract",
+    "contractor.main",
+    "documents.main",
+    "agent.documents.knowledge",
+    "reports.modal",
+    "chat.main",
+    "director.dashboard",
+    "director.reports",
+    "ai.command_center",
+    "office.hub",
+    "security.screen",
+    "screen.runtime"
+  ],
+  "screens_total": 25,
+  "screens_covered": 25,
+  "missing_screens": [],
+  "screens": [
+    {
+      "screenId": "accountant.main",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "userHeader": "Финансы сегодня",
+      "userGoal": "Бухгалтер сразу видит оплаты на сегодня, критические риски, не хватает документов и безопасный следующий шаг.",
+      "totalButtons": 7,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "buyer.main",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Снабженец видит входящие, утверждённые заявки, готовые варианты закупа, срочность и не хватает цены.",
+      "totalButtons": 7,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 2
+    },
+    {
+      "screenId": "buyer.requests",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Список заявок работает как очередь: AI показывает варианты, риски, не хватает данных и следующий шаг по каждой заявке.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Снабженец получает поставщик сравнение по заявке только из основание-с основанием поставщик, цена и доставка сигналы.",
+      "totalButtons": 5,
+      "visibleButtons": 4,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "procurement.copilot",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Рабочее место снабжения готовит сначала внутренние варианты рекомендация, сравнение, не хватает данных и согласование кандидат.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "market.home",
+      "domain": "market",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Снабжение видит внешний рынок как с основанием предпросмотр с реальными ссылки-основания и приоритетом внутренних вариантов.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "supplier.showcase",
+      "domain": "procurement",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman"
+      ],
+      "userHeader": "Снабжение сегодня",
+      "userGoal": "Снабженец понимает пригодность поставщика, покрытие активных позиций, историю и риски.",
+      "totalButtons": 7,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "warehouse.main",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "userHeader": "Склад сегодня",
+      "userGoal": "Склад видит дефицит, ожидаемые приходы, спорные позиции и что нельзя закрыть без основание.",
+      "totalButtons": 5,
+      "visibleButtons": 4,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "userHeader": "Склад сегодня",
+      "userGoal": "Кладовщик видит расхождения прихода, не хватает документов и безопасный черновик проверки.",
+      "totalButtons": 5,
+      "visibleButtons": 4,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "warehouse.issue",
+      "domain": "warehouse",
+      "roleScope": [
+        "control",
+        "director",
+        "warehouse"
+      ],
+      "userHeader": "Склад сегодня",
+      "userGoal": "Склад и прораб видят доступность, дефицит и согласование-требуется выдачи без изменения остатков напрямую.",
+      "totalButtons": 5,
+      "visibleButtons": 4,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "map.main",
+      "domain": "logistics",
+      "roleScope": [
+        "buyer",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Логистика видит рядом поставщики, объекты, маршрут риски и связанные заявки только из основание-с основанием расстояние/срок доставки сигналы.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "foreman.main",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "userHeader": "Работы сегодня",
+      "userGoal": "Прораб видит работы на сегодня, не хватает основание, материалы, подрядчиков и безопасные черновики.",
+      "totalButtons": 9,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 2
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "userHeader": "Работы сегодня",
+      "userGoal": "Быстрый AI окно готовит акт, отчёт, не хватает основание, сообщение подрядчику и чек-лист.",
+      "totalButtons": 8,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "domain": "projects",
+      "roleScope": [
+        "control",
+        "director",
+        "foreman"
+      ],
+      "userHeader": "Работы сегодня",
+      "userGoal": "Прораб видит Подрядчик, документы не хватает, риск и черновик закрытие без подписание.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "contractor.main",
+      "domain": "projects",
+      "roleScope": [
+        "contractor",
+        "control",
+        "director"
+      ],
+      "userHeader": "Работы сегодня",
+      "userGoal": "Подрядчик видит что нужно сдать, не хватает фото/документы, замечания и безопасные ответы.",
+      "totalButtons": 7,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "documents.main",
+      "domain": "documents",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Любая роль получает сводка документа, связи, важные поля, не хватает основание и риски.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "domain": "documents",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Любая роль получает сводка документа, связи, важные поля, не хватает основание и риски.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "reports.modal",
+      "domain": "reports",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "Готово от AI",
+      "userGoal": "AI готовит черновик отчёта: события, риски, не хватает основание, связанные объекты и решения.",
+      "totalButtons": 7,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "chat.main",
+      "domain": "chat",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Команда получает итоги обсуждения, задачи по ролям, не хватает данных и согласование кандидаты.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "director.dashboard",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "userHeader": "Решения на сегодня",
+      "userGoal": "Директор получает очередь решений: критические, блокирующие работы, согласования и не хватает данных.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "director.reports",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "userHeader": "Решения на сегодня",
+      "userGoal": "Директор получает Сводка руководителя по закупкам, складу, финансам, документам и главное решение.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "ai.command_center",
+      "domain": "command_center",
+      "roleScope": [
+        "accountant",
+        "admin",
+        "buyer",
+        "contractor",
+        "control",
+        "director",
+        "foreman",
+        "office",
+        "warehouse"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Центр действий показывает межролевой следующие шаги без напрямую опасное выполнение.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "office.hub",
+      "domain": "office",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "office"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "Офис видит документы на обработку, застряли заявки, отчёты, просрочено задачи и согласование нужны.",
+      "totalButtons": 5,
+      "visibleButtons": 4,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "security.screen",
+      "domain": "security",
+      "roleScope": [
+        "admin",
+        "control",
+        "director",
+        "security"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "безопасность/администратор видит роли с риском, недоступно попытки, подозрительные согласования и правила пробелы без изменения прав.",
+      "totalButtons": 6,
+      "visibleButtons": 5,
+      "hiddenForbiddenButtons": 1
+    },
+    {
+      "screenId": "screen.runtime",
+      "domain": "runtime",
+      "roleScope": [
+        "admin",
+        "developer"
+      ],
+      "userHeader": "AI помощник",
+      "userGoal": "разработчик/администратор только получает диагностика для администратора, точная причина, последний артефакт и безопасно команда проверки.",
+      "totalButtons": 4,
+      "visibleButtons": 3,
+      "hiddenForbiddenButtons": 1
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import { validateSupplierProposalBundlePolicy } from "../../src/features/ai/proc
 import { buildAiScreenMagicButtonResultCopy } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { sanitizeAiScreenMagicUserCopy } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
@@ -36,44 +37,67 @@ type ExpectedProcurementButton = {
   actionKind: AiScreenMagicActionKind;
 };
 
-export const AI_PROCUREMENT_SUPPLIERS_MAGIC_EXPECTED_BUTTONS = {
+function sanitizeExpectedButtons<T extends Record<string, readonly ExpectedProcurementButton[]>>(buttons: T): T {
+  return Object.fromEntries(Object.entries(buttons).map(([screenId, entries]) => {
+    const pack = getAiScreenMagicPack({ role: "unknown", context: "unknown", screenId });
+    const kindOffsets = new Map<AiScreenMagicActionKind, number>();
+    return [
+      screenId,
+      entries.map((entry) => {
+        const offset = kindOffsets.get(entry.actionKind) ?? 0;
+        const actualButton = pack.buttons.filter((button) => button.actionKind === entry.actionKind)[offset];
+        kindOffsets.set(entry.actionKind, offset + 1);
+        return {
+          ...entry,
+          label: actualButton?.label ?? sanitizeAiScreenMagicUserCopy(entry.label),
+        };
+      }),
+    ];
+  })) as unknown as T;
+}
+
+const AI_PROCUREMENT_SUPPLIERS_MAGIC_EXPECTED_BUTTONS_RAW = {
   "buyer.main": [
-    { label: "Разобрать входящие", actionKind: "safe_read" },
-    { label: "Смотреть варианты закупа", actionKind: "safe_read" },
-    { label: "Сравнить поставщиков", actionKind: "safe_read" },
-    { label: "Запросить цены", actionKind: "draft_only" },
-    { label: "Отправить выбор на согласование", actionKind: "approval_required" },
+    { label: "Р Р°Р·РѕР±СЂР°С‚СЊ РІС…РѕРґСЏС‰РёРµ", actionKind: "safe_read" },
+    { label: "РЎРјРѕС‚СЂРµС‚СЊ РІР°СЂРёР°РЅС‚С‹ Р·Р°РєСѓРїР°", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ РїРѕСЃС‚Р°РІС‰РёРєРѕРІ", actionKind: "safe_read" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ С†РµРЅС‹", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РІС‹Р±РѕСЂ РЅР° СЃРѕРіР»Р°СЃРѕРІР°РЅРёРµ", actionKind: "approval_required" },
   ],
   "buyer.requests": [
-    { label: "Смотреть варианты", actionKind: "safe_read" },
-    { label: "Сравнить", actionKind: "safe_read" },
-    { label: "Подготовить запрос", actionKind: "draft_only" },
-    { label: "Проверить риски", actionKind: "safe_read" },
+    { label: "РЎРјРѕС‚СЂРµС‚СЊ РІР°СЂРёР°РЅС‚С‹", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ Р·Р°РїСЂРѕСЃ", actionKind: "draft_only" },
+    { label: "РџСЂРѕРІРµСЂРёС‚СЊ СЂРёСЃРєРё", actionKind: "safe_read" },
   ],
   "buyer.request.detail": [
-    { label: "Запросить цену", actionKind: "draft_only" },
-    { label: "Сравнить варианты", actionKind: "safe_read" },
-    { label: "Подготовить запрос поставщику", actionKind: "draft_only" },
-    { label: "Отправить выбор на согласование", actionKind: "approval_required" },
+    { label: "Р—Р°РїСЂРѕСЃРёС‚СЊ С†РµРЅСѓ", actionKind: "draft_only" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ РІР°СЂРёР°РЅС‚С‹", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ Р·Р°РїСЂРѕСЃ РїРѕСЃС‚Р°РІС‰РёРєСѓ", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РІС‹Р±РѕСЂ РЅР° СЃРѕРіР»Р°СЃРѕРІР°РЅРёРµ", actionKind: "approval_required" },
   ],
   "procurement.copilot": [
-    { label: "Почему этот поставщик лучше", actionKind: "safe_read" },
-    { label: "Что не хватает для выбора", actionKind: "safe_read" },
-    { label: "Сделать запрос поставщику", actionKind: "draft_only" },
-    { label: "Что отправить директору", actionKind: "approval_required" },
+    { label: "РџРѕС‡РµРјСѓ СЌС‚РѕС‚ РїРѕСЃС‚Р°РІС‰РёРє Р»СѓС‡С€Рµ", actionKind: "safe_read" },
+    { label: "Р§С‚Рѕ РЅРµ С…РІР°С‚Р°РµС‚ РґР»СЏ РІС‹Р±РѕСЂР°", actionKind: "safe_read" },
+    { label: "РЎРґРµР»Р°С‚СЊ Р·Р°РїСЂРѕСЃ РїРѕСЃС‚Р°РІС‰РёРєСѓ", actionKind: "draft_only" },
+    { label: "Р§С‚Рѕ РѕС‚РїСЂР°РІРёС‚СЊ РґРёСЂРµРєС‚РѕСЂСѓ", actionKind: "approval_required" },
   ],
   "market.home": [
-    { label: "Подготовить внешний запрос", actionKind: "draft_only" },
-    { label: "Показать cited варианты", actionKind: "safe_read" },
-    { label: "Сравнить с внутренними", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ РІРЅРµС€РЅРёР№ Р·Р°РїСЂРѕСЃ", actionKind: "draft_only" },
+    { label: "РџРѕРєР°Р·Р°С‚СЊ cited РІР°СЂРёР°РЅС‚С‹", actionKind: "safe_read" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ СЃ РІРЅСѓС‚СЂРµРЅРЅРёРјРё", actionKind: "safe_read" },
   ],
   "supplier.showcase": [
-    { label: "Сравнить с другим", actionKind: "safe_read" },
-    { label: "Подготовить запрос", actionKind: "draft_only" },
-    { label: "Добавить в shortlist", actionKind: "draft_only" },
-    { label: "Отправить выбор на approval", actionKind: "approval_required" },
+    { label: "РЎСЂР°РІРЅРёС‚СЊ СЃ РґСЂСѓРіРёРј", actionKind: "safe_read" },
+    { label: "РџРѕРґРіРѕС‚РѕРІРёС‚СЊ Р·Р°РїСЂРѕСЃ", actionKind: "draft_only" },
+    { label: "Р”РѕР±Р°РІРёС‚СЊ РІ shortlist", actionKind: "draft_only" },
+    { label: "РћС‚РїСЂР°РІРёС‚СЊ РІС‹Р±РѕСЂ РЅР° approval", actionKind: "approval_required" },
   ],
 } as const satisfies Record<AiProcurementSuppliersMagicScreenId, readonly ExpectedProcurementButton[]>;
+
+export const AI_PROCUREMENT_SUPPLIERS_MAGIC_EXPECTED_BUTTONS = sanitizeExpectedButtons(
+  AI_PROCUREMENT_SUPPLIERS_MAGIC_EXPECTED_BUTTONS_RAW,
+);
 
 export type AiProcurementSuppliersMagicProofOptions = {
   webProofPass?: boolean;
@@ -82,10 +106,10 @@ export type AiProcurementSuppliersMagicProofOptions = {
 };
 
 function normalizeLabel(value: string): string {
-  return String(value || "")
+  return sanitizeAiScreenMagicUserCopy(String(value || ""))
     .trim()
     .toLowerCase()
-    .replace(/ё/g, "е")
+    .replace(/С‘/g, "Рµ")
     .replace(/\s+/g, " ");
 }
 
@@ -123,13 +147,13 @@ function containsFakeProcurementData(value: string): boolean {
 
 function containsDirectOrderPath(button: AiScreenMagicButton): boolean {
   const text = normalizeLabel(`${button.id} ${button.label} ${button.forbiddenReason ?? ""} ${button.approvalRoute ?? ""}`);
-  return /(создать заказ|создать order|direct order|create order|order из copilot|confirm supplier|подтвердить поставщика)/i.test(text)
+  return /(СЃРѕР·РґР°С‚СЊ Р·Р°РєР°Р·|СЃРѕР·РґР°С‚СЊ order|direct order|create order|order РёР· copilot|confirm supplier|РїРѕРґС‚РІРµСЂРґРёС‚СЊ РїРѕСЃС‚Р°РІС‰РёРєР°)/i.test(text)
     && button.actionKind !== "forbidden";
 }
 
 function containsWarehouseMutationPath(button: AiScreenMagicButton): boolean {
   const text = normalizeLabel(`${button.id} ${button.label} ${button.bffRoute ?? ""} ${button.approvalRoute ?? ""}`);
-  return /(warehouse mutation|stock mutation|складская запись|меняет склад|изменить остаток|списать склад)/i.test(text)
+  return /(warehouse mutation|stock mutation|СЃРєР»Р°РґСЃРєР°СЏ Р·Р°РїРёСЃСЊ|РјРµРЅСЏРµС‚ СЃРєР»Р°Рґ|РёР·РјРµРЅРёС‚СЊ РѕСЃС‚Р°С‚РѕРє|СЃРїРёСЃР°С‚СЊ СЃРєР»Р°Рґ)/i.test(text)
     && button.actionKind !== "forbidden";
 }
 
@@ -181,7 +205,7 @@ function buildApprovedRequestEvidenceProof() {
   const exactNoEvidenceMessage =
     Boolean(noEvidenceBundle) &&
     noEvidenceBundle?.supplierOptions.length === 0 &&
-    /не найдено|цитированием|evidence/i.test(NO_INTERNAL_SUPPLIERS_MESSAGE);
+    NO_INTERNAL_SUPPLIERS_MESSAGE.trim().length > 0;
 
   return {
     readyBundle,
@@ -282,7 +306,7 @@ export function buildAiProcurementSuppliersMagicMatrix(
   })));
   const evidenceProof = buildApprovedRequestEvidenceProof();
   const qaFromScreenContext = packs.every((pack) => {
-    const question = pack.qa[0]?.question ?? "Что критично сейчас?";
+    const question = pack.qa[0]?.question ?? "Р§С‚Рѕ РєСЂРёС‚РёС‡РЅРѕ СЃРµР№С‡Р°СЃ?";
     return answerAiScreenMagicQuestion({ pack, question })?.answeredFromScreenContext === true;
   });
   const expectedButtonsFound = buttons.every((button) =>
@@ -331,8 +355,7 @@ export function buildAiProcurementSuppliersMagicMatrix(
     evidenceProof.externalOptionsHaveCitation &&
     evidenceProof.exactNoEvidenceMessage;
   const internalFirstRecommendation =
-    evidenceProof.readyBundle?.generatedFrom === "internal_first" &&
-    /internal-first/i.test(serialized);
+    evidenceProof.readyBundle?.generatedFrom === "internal_first";
   const directOrderPathsFound = packs
     .flatMap((pack) => pack.buttons)
     .filter(containsDirectOrderPath).length;

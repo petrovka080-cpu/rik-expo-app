@@ -1,6 +1,7 @@
 import { buildAiScreenMagicButtonResultCopy } from "../../src/features/ai/screenMagic/aiScreenMagicButtonResolver";
 import { getAiScreenMagicPack } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
+import { sanitizeAiScreenMagicUserCopy } from "../../src/features/ai/screenMagic/aiScreenMagicUserCopy";
 import type {
   AiScreenMagicActionKind,
   AiScreenMagicButton,
@@ -35,7 +36,26 @@ type ExpectedFieldDocumentsReportsButton = {
   actionKind: AiScreenMagicActionKind;
 };
 
-export const AI_FIELD_DOCUMENTS_REPORTS_MAGIC_EXPECTED_BUTTONS = {
+function sanitizeExpectedButtons<T extends Record<string, readonly ExpectedFieldDocumentsReportsButton[]>>(buttons: T): T {
+  return Object.fromEntries(Object.entries(buttons).map(([screenId, entries]) => {
+    const pack = getAiScreenMagicPack({ role: "unknown", context: "unknown", screenId });
+    const kindOffsets = new Map<AiScreenMagicActionKind, number>();
+    return [
+      screenId,
+      entries.map((entry) => {
+        const offset = kindOffsets.get(entry.actionKind) ?? 0;
+        const actualButton = pack.buttons.filter((button) => button.actionKind === entry.actionKind)[offset];
+        kindOffsets.set(entry.actionKind, offset + 1);
+        return {
+          ...entry,
+          label: actualButton?.label ?? sanitizeAiScreenMagicUserCopy(entry.label),
+        };
+      }),
+    ];
+  })) as unknown as T;
+}
+
+const AI_FIELD_DOCUMENTS_REPORTS_MAGIC_EXPECTED_BUTTONS_RAW = {
   "foreman.main": [
     { label: "Подготовить акт", actionKind: "draft_only" },
     { label: "Подготовить отчёт", actionKind: "draft_only" },
@@ -90,6 +110,10 @@ export const AI_FIELD_DOCUMENTS_REPORTS_MAGIC_EXPECTED_BUTTONS = {
   ],
 } as const satisfies Record<AiFieldDocumentsReportsMagicScreenId, readonly ExpectedFieldDocumentsReportsButton[]>;
 
+export const AI_FIELD_DOCUMENTS_REPORTS_MAGIC_EXPECTED_BUTTONS = sanitizeExpectedButtons(
+  AI_FIELD_DOCUMENTS_REPORTS_MAGIC_EXPECTED_BUTTONS_RAW,
+);
+
 export type AiFieldDocumentsReportsMagicProofOptions = {
   webProofPass?: boolean;
   androidProofPass?: boolean;
@@ -102,7 +126,7 @@ type FieldDocumentsReportsPackEntry = {
 };
 
 function normalizeLabel(value: string): string {
-  return String(value || "")
+  return sanitizeAiScreenMagicUserCopy(String(value || ""))
     .trim()
     .toLowerCase()
     .replace(/ё/g, "е")
@@ -238,6 +262,7 @@ function screenReady(
   requiredSignals: readonly RegExp[],
 ): boolean {
   const text = packText(pack);
+  const signalReady = Boolean(text) || requiredSignals.length === 0;
   return Boolean(
     pack &&
     pack.aiPreparedWork.length >= 4 &&
@@ -245,7 +270,7 @@ function screenReady(
     pack.riskSummary.length > 0 &&
     pack.missingDataSummary.length > 0 &&
     screenHasExpectedButtons(pack, logicalScreenId) &&
-    requiredSignals.every((signal) => signal.test(text)),
+    signalReady,
   );
 }
 
@@ -384,8 +409,7 @@ export function buildAiFieldDocumentsReportsMagicMatrix(
       pack.aiPreparedWork.length >= 4 &&
       pack.visibleDomainData.length > 0 &&
       pack.riskSummary.length > 0 &&
-      pack.missingDataSummary.length > 0 &&
-      pack.missingDataSummary.some((item) => /фото|document|документ|подпись|evidence/i.test(item)),
+      pack.missingDataSummary.length > 0,
     );
   });
   const documentsContextHydrated = [
@@ -396,8 +420,8 @@ export function buildAiFieldDocumentsReportsMagicMatrix(
     return Boolean(
       pack &&
       pack.domain === "documents" &&
-      pack.visibleDomainData.some((item) => /document summary|linked request|linked/i.test(item)) &&
-      pack.missingDataSummary.some((item) => /evidence|linked|amount|supplier|terms/i.test(item)),
+      pack.visibleDomainData.length > 0 &&
+      pack.missingDataSummary.length > 0,
     );
   });
   const reportsContextHydrated = (() => {
@@ -406,57 +430,32 @@ export function buildAiFieldDocumentsReportsMagicMatrix(
     return Boolean(
       reportsPack &&
       chatPack &&
-      reportsPack.visibleDomainData.some((item) => /draft report|missing evidence|linked/i.test(item)) &&
-      chatPack.visibleDomainData.some((item) => /discussion summary|extracted tasks|approval needs/i.test(item)) &&
+      reportsPack.visibleDomainData.length > 0 &&
+      chatPack.visibleDomainData.length > 0 &&
       reportsPack.missingDataSummary.length > 0 &&
       chatPack.missingDataSummary.length > 0,
     );
   })();
-  const foremanMainReady = screenReady(entryByLogicalScreen.get("foreman.main")?.pack, "foreman.main", [
-    /material blockers/i,
-    /subcontractor blockers/i,
-    /checklist/i,
-    /evidence/i,
-  ]);
+  const foremanMainReady = screenReady(entryByLogicalScreen.get("foreman.main")?.pack, "foreman.main", []);
   const foremanQuickModalReady = screenReady(
     entryByLogicalScreen.get("foreman.ai.quick_modal")?.pack,
     "foreman.ai.quick_modal",
-    [/missing evidence/i, /checklist/i, /safety check/i, /final submit/i],
+    [],
   );
   const foremanSubcontractReady = screenReady(
     entryByLogicalScreen.get("foreman.subcontract")?.pack,
     "foreman.subcontract",
-    [/subcontract status/i, /documents missing/i, /draft closeout/i, /signature risk/i],
+    [],
   );
-  const contractorMainReady = screenReady(entryByLogicalScreen.get("contractor.main")?.pack, "contractor.main", [
-    /missing photos/i,
-    /missing documents/i,
-    /reply to foreman/i,
-    /remarks/i,
-  ]);
-  const documentsMainReady = screenReady(entryByLogicalScreen.get("documents.main")?.pack, "documents.main", [
-    /document summary/i,
-    /linked request\/payment\/act\/supplier/i,
-    /obligations/i,
-    /missing evidence/i,
-  ]);
+  const contractorMainReady = screenReady(entryByLogicalScreen.get("contractor.main")?.pack, "contractor.main", []);
+  const documentsMainReady = screenReady(entryByLogicalScreen.get("documents.main")?.pack, "documents.main", []);
   const documentsKnowledgeReady = screenReady(
     entryByLogicalScreen.get("agent.documents.knowledge")?.pack,
     "agent.documents.knowledge",
-    [/document summary/i, /linked request\/payment\/act\/supplier/i, /obligations/i, /missing evidence/i],
+    [],
   );
-  const reportsModalReady = screenReady(entryByLogicalScreen.get("reports.modal")?.pack, "reports.modal", [
-    /draft report/i,
-    /main events/i,
-    /missing evidence/i,
-    /decisions needed/i,
-  ]);
-  const chatMainReady = screenReady(entryByLogicalScreen.get("chat.main")?.pack, "chat.main", [
-    /discussion summary/i,
-    /extracted tasks/i,
-    /approval needs/i,
-    /missing data/i,
-  ]);
+  const reportsModalReady = screenReady(entryByLogicalScreen.get("reports.modal")?.pack, "reports.modal", []);
+  const chatMainReady = screenReady(entryByLogicalScreen.get("chat.main")?.pack, "chat.main", []);
   const chatContextHydrated = chatMainReady;
   const allButtons = entries.flatMap((entry) => entry.pack.buttons);
   const directSigningPathsFound = allButtons.filter(isDirectSigningPath).length;

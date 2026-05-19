@@ -1,4 +1,4 @@
-import {
+﻿import {
   buildAiDirectorCommandOfficeSecurityMagicMatrix,
   listAiDirectorCommandOfficeSecurityMagicPackEntries,
 } from "../../scripts/ai/aiDirectorCommandOfficeSecurityMagic";
@@ -24,6 +24,6 @@ describe("AI director reports magic", () => {
       draft_only_not_final_submit: true,
       fake_report_content_created: false,
     });
-    expect(packText).toMatch(/procurement|warehouse|finance|documents|top decision/i);
+    expect(packText).toMatch(/снабжение|склад|финансы|документы|главное решение/i);
   });
 });

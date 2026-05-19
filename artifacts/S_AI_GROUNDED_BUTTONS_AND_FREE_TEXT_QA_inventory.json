@@ -1,0 +1,33 @@
+{
+  "wave": "S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_POINT_OF_NO_RETURN",
+  "screens_required": [
+    "accountant.main",
+    "buyer.main",
+    "buyer.requests",
+    "buyer.request.detail",
+    "procurement.copilot",
+    "market.home",
+    "supplier.showcase",
+    "warehouse.main",
+    "warehouse.incoming",
+    "warehouse.issue",
+    "map.main",
+    "foreman.main",
+    "foreman.ai.quick_modal",
+    "foreman.subcontract",
+    "contractor.main",
+    "documents.main",
+    "agent.documents.knowledge",
+    "reports.modal",
+    "chat.main",
+    "director.dashboard",
+    "director.reports",
+    "ai.command_center",
+    "office.hub",
+    "security.screen",
+    "screen.runtime"
+  ],
+  "screens_covered": 25,
+  "visible_buttons": 118,
+  "free_text_questions": 75
+}

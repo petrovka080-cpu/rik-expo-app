@@ -1,0 +1,1355 @@
+{
+  "screenshots": [
+    {
+      "screenId": "accountant.main",
+      "kind": "button",
+      "id": "accountant.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-01-accountant.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-01-accountant.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "button",
+      "id": "accountant.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-02-accountant.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-02-accountant.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "button",
+      "id": "accountant.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-03-accountant.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-03-accountant.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "button",
+      "id": "accountant.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-04-accountant.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-04-accountant.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "button",
+      "id": "accountant.main.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-05-accountant.main.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-button-05-accountant.main.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "free_text",
+      "id": "accountant.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "free_text",
+      "id": "accountant.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "accountant.main",
+      "kind": "free_text",
+      "id": "accountant.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\accountant.main-question-accountant.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "button",
+      "id": "buyer.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-01-buyer.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-01-buyer.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "button",
+      "id": "buyer.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-02-buyer.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-02-buyer.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "button",
+      "id": "buyer.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-03-buyer.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-03-buyer.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "button",
+      "id": "buyer.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-04-buyer.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-04-buyer.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "button",
+      "id": "buyer.main.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-05-buyer.main.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-button-05-buyer.main.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "free_text",
+      "id": "buyer.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "free_text",
+      "id": "buyer.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "buyer.main",
+      "kind": "free_text",
+      "id": "buyer.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.main-question-buyer.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "button",
+      "id": "buyer.requests.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-01-buyer.requests.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-01-buyer.requests.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "button",
+      "id": "buyer.requests.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-02-buyer.requests.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-02-buyer.requests.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "button",
+      "id": "buyer.requests.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-03-buyer.requests.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-03-buyer.requests.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "button",
+      "id": "buyer.requests.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-04-buyer.requests.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-04-buyer.requests.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "button",
+      "id": "buyer.requests.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-05-buyer.requests.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-button-05-buyer.requests.approval-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "free_text",
+      "id": "buyer.requests.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "free_text",
+      "id": "buyer.requests.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "buyer.requests",
+      "kind": "free_text",
+      "id": "buyer.requests.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.requests-question-buyer.requests.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "button",
+      "id": "buyer.request.detail.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-01-buyer.request.detail.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-01-buyer.request.detail.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "button",
+      "id": "buyer.request.detail.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-02-buyer.request.detail.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-02-buyer.request.detail.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "button",
+      "id": "buyer.request.detail.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-03-buyer.request.detail.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-03-buyer.request.detail.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "button",
+      "id": "buyer.request.detail.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-04-buyer.request.detail.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-button-04-buyer.request.detail.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "free_text",
+      "id": "buyer.request.detail.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "free_text",
+      "id": "buyer.request.detail.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "kind": "free_text",
+      "id": "buyer.request.detail.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\buyer.request.detail-question-buyer.request.detail.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "button",
+      "id": "procurement.copilot.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-01-procurement.copilot.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-01-procurement.copilot.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "button",
+      "id": "procurement.copilot.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-02-procurement.copilot.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-02-procurement.copilot.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "button",
+      "id": "procurement.copilot.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-03-procurement.copilot.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-03-procurement.copilot.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "button",
+      "id": "procurement.copilot.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-04-procurement.copilot.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-04-procurement.copilot.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "button",
+      "id": "procurement.copilot.safe_read",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-05-procurement.copilot.safe_read-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-button-05-procurement.copilot.safe_read-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "free_text",
+      "id": "procurement.copilot.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "free_text",
+      "id": "procurement.copilot.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "procurement.copilot",
+      "kind": "free_text",
+      "id": "procurement.copilot.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\procurement.copilot-question-procurement.copilot.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "button",
+      "id": "market.home.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-01-market.home.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-01-market.home.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "button",
+      "id": "market.home.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-02-market.home.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-02-market.home.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "button",
+      "id": "market.home.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-03-market.home.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-03-market.home.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "button",
+      "id": "market.home.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-04-market.home.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-04-market.home.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "button",
+      "id": "market.home.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-05-market.home.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-button-05-market.home.approval-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "free_text",
+      "id": "market.home.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "free_text",
+      "id": "market.home.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "market.home",
+      "kind": "free_text",
+      "id": "market.home.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\market.home-question-market.home.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "button",
+      "id": "supplier.showcase.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-01-supplier.showcase.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-01-supplier.showcase.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "button",
+      "id": "supplier.showcase.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-02-supplier.showcase.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-02-supplier.showcase.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "button",
+      "id": "supplier.showcase.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-03-supplier.showcase.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-03-supplier.showcase.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "button",
+      "id": "supplier.showcase.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-04-supplier.showcase.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-04-supplier.showcase.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "button",
+      "id": "supplier.showcase.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-05-supplier.showcase.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-button-05-supplier.showcase.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "free_text",
+      "id": "supplier.showcase.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "free_text",
+      "id": "supplier.showcase.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "supplier.showcase",
+      "kind": "free_text",
+      "id": "supplier.showcase.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\supplier.showcase-question-supplier.showcase.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "button",
+      "id": "warehouse.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-01-warehouse.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-01-warehouse.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "button",
+      "id": "warehouse.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-02-warehouse.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-02-warehouse.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "button",
+      "id": "warehouse.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-03-warehouse.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-03-warehouse.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "button",
+      "id": "warehouse.main.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-04-warehouse.main.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-button-04-warehouse.main.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "free_text",
+      "id": "warehouse.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "free_text",
+      "id": "warehouse.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "warehouse.main",
+      "kind": "free_text",
+      "id": "warehouse.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.main-question-warehouse.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "button",
+      "id": "warehouse.incoming.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-01-warehouse.incoming.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-01-warehouse.incoming.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "button",
+      "id": "warehouse.incoming.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-02-warehouse.incoming.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-02-warehouse.incoming.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "button",
+      "id": "warehouse.incoming.magic.intent.approval_required.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-03-warehouse.incoming.magic.intent.approval_required.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-03-warehouse.incoming.magic.intent.approval_required.3-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "button",
+      "id": "warehouse.incoming.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-04-warehouse.incoming.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-button-04-warehouse.incoming.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "free_text",
+      "id": "warehouse.incoming.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "free_text",
+      "id": "warehouse.incoming.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "kind": "free_text",
+      "id": "warehouse.incoming.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.incoming-question-warehouse.incoming.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "button",
+      "id": "warehouse.issue.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-01-warehouse.issue.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-01-warehouse.issue.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "button",
+      "id": "warehouse.issue.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-02-warehouse.issue.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-02-warehouse.issue.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "button",
+      "id": "warehouse.issue.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-03-warehouse.issue.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-03-warehouse.issue.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "button",
+      "id": "warehouse.issue.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-04-warehouse.issue.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-button-04-warehouse.issue.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "free_text",
+      "id": "warehouse.issue.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "free_text",
+      "id": "warehouse.issue.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "warehouse.issue",
+      "kind": "free_text",
+      "id": "warehouse.issue.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\warehouse.issue-question-warehouse.issue.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "button",
+      "id": "map.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-01-map.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-01-map.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "button",
+      "id": "map.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-02-map.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-02-map.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "button",
+      "id": "map.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-03-map.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-03-map.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "button",
+      "id": "map.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-04-map.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-04-map.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "button",
+      "id": "map.main.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-05-map.main.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-button-05-map.main.approval-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "free_text",
+      "id": "map.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "free_text",
+      "id": "map.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "map.main",
+      "kind": "free_text",
+      "id": "map.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\map.main-question-map.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "button",
+      "id": "foreman.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-01-foreman.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-01-foreman.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "button",
+      "id": "foreman.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-02-foreman.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-02-foreman.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "button",
+      "id": "foreman.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-03-foreman.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-03-foreman.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "button",
+      "id": "foreman.main.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-04-foreman.main.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-04-foreman.main.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "button",
+      "id": "foreman.main.magic.intent.safe_read.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-05-foreman.main.magic.intent.safe_read.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-button-05-foreman.main.magic.intent.safe_read.5-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "free_text",
+      "id": "foreman.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "free_text",
+      "id": "foreman.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "foreman.main",
+      "kind": "free_text",
+      "id": "foreman.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.main-question-foreman.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "button",
+      "id": "foreman.ai.quick_modal.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-01-foreman.ai.quick_modal.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-01-foreman.ai.quick_modal.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "button",
+      "id": "foreman.ai.quick_modal.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-02-foreman.ai.quick_modal.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-02-foreman.ai.quick_modal.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "button",
+      "id": "foreman.ai.quick_modal.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-03-foreman.ai.quick_modal.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-03-foreman.ai.quick_modal.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "button",
+      "id": "foreman.ai.quick_modal.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-04-foreman.ai.quick_modal.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-04-foreman.ai.quick_modal.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "button",
+      "id": "foreman.ai.quick_modal.magic.intent.safe_read.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-05-foreman.ai.quick_modal.magic.intent.safe_read.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-button-05-foreman.ai.quick_modal.magic.intent.safe_read.5-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "free_text",
+      "id": "foreman.ai.quick_modal.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "free_text",
+      "id": "foreman.ai.quick_modal.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "kind": "free_text",
+      "id": "foreman.ai.quick_modal.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.ai.quick_modal-question-foreman.ai.quick_modal.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "button",
+      "id": "foreman.subcontract.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-01-foreman.subcontract.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-01-foreman.subcontract.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "button",
+      "id": "foreman.subcontract.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-02-foreman.subcontract.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-02-foreman.subcontract.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "button",
+      "id": "foreman.subcontract.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-03-foreman.subcontract.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-03-foreman.subcontract.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "button",
+      "id": "foreman.subcontract.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-04-foreman.subcontract.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-04-foreman.subcontract.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "button",
+      "id": "foreman.subcontract.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-05-foreman.subcontract.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-button-05-foreman.subcontract.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "free_text",
+      "id": "foreman.subcontract.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "free_text",
+      "id": "foreman.subcontract.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "kind": "free_text",
+      "id": "foreman.subcontract.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\foreman.subcontract-question-foreman.subcontract.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "button",
+      "id": "contractor.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-01-contractor.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-01-contractor.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "button",
+      "id": "contractor.main.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-02-contractor.main.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-02-contractor.main.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "button",
+      "id": "contractor.main.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-03-contractor.main.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-03-contractor.main.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "button",
+      "id": "contractor.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-04-contractor.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-04-contractor.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "button",
+      "id": "contractor.main.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-05-contractor.main.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-button-05-contractor.main.approval-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "free_text",
+      "id": "contractor.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "free_text",
+      "id": "contractor.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "contractor.main",
+      "kind": "free_text",
+      "id": "contractor.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\contractor.main-question-contractor.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-01-documents.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-01-documents.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-02-documents.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-02-documents.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-03-documents.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-03-documents.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "button",
+      "id": "documents.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-04-documents.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-04-documents.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "button",
+      "id": "documents.main.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-05-documents.main.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-button-05-documents.main.approval-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "free_text",
+      "id": "documents.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "free_text",
+      "id": "documents.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "documents.main",
+      "kind": "free_text",
+      "id": "documents.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\documents.main-question-documents.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-01-documents.main.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-01-documents.main.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-02-documents.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-02-documents.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "button",
+      "id": "documents.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-03-documents.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-03-documents.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "button",
+      "id": "documents.main.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-04-documents.main.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-04-documents.main.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "button",
+      "id": "documents.main.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-05-documents.main.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-button-05-documents.main.approval-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "free_text",
+      "id": "agent.documents.knowledge.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "free_text",
+      "id": "agent.documents.knowledge.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "kind": "free_text",
+      "id": "agent.documents.knowledge.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\agent.documents.knowledge-question-agent.documents.knowledge.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "button",
+      "id": "reports.modal.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-01-reports.modal.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-01-reports.modal.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "button",
+      "id": "reports.modal.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-02-reports.modal.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-02-reports.modal.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "button",
+      "id": "reports.modal.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-03-reports.modal.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-03-reports.modal.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "button",
+      "id": "reports.modal.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-04-reports.modal.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-04-reports.modal.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "button",
+      "id": "reports.modal.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-05-reports.modal.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-button-05-reports.modal.approval-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "free_text",
+      "id": "reports.modal.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "free_text",
+      "id": "reports.modal.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "reports.modal",
+      "kind": "free_text",
+      "id": "reports.modal.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\reports.modal-question-reports.modal.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "button",
+      "id": "chat.main.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-01-chat.main.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-01-chat.main.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "button",
+      "id": "chat.main.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-02-chat.main.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-02-chat.main.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "button",
+      "id": "chat.main.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-03-chat.main.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-03-chat.main.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "button",
+      "id": "chat.main.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-04-chat.main.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-04-chat.main.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "button",
+      "id": "chat.main.magic.intent.draft_only.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-05-chat.main.magic.intent.draft_only.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-button-05-chat.main.magic.intent.draft_only.5-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "free_text",
+      "id": "chat.main.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "free_text",
+      "id": "chat.main.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "chat.main",
+      "kind": "free_text",
+      "id": "chat.main.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\chat.main-question-chat.main.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "button",
+      "id": "director.dashboard.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-01-director.dashboard.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-01-director.dashboard.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "button",
+      "id": "director.dashboard.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-02-director.dashboard.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-02-director.dashboard.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "button",
+      "id": "director.dashboard.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-03-director.dashboard.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-03-director.dashboard.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "button",
+      "id": "director.dashboard.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-04-director.dashboard.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-04-director.dashboard.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "button",
+      "id": "director.dashboard.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-05-director.dashboard.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-button-05-director.dashboard.approval-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "free_text",
+      "id": "director.dashboard.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "free_text",
+      "id": "director.dashboard.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "director.dashboard",
+      "kind": "free_text",
+      "id": "director.dashboard.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.dashboard-question-director.dashboard.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "button",
+      "id": "director.reports.magic.intent.draft_only.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-01-director.reports.magic.intent.draft_only.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-01-director.reports.magic.intent.draft_only.1-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "button",
+      "id": "director.reports.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-02-director.reports.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-02-director.reports.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "button",
+      "id": "director.reports.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-03-director.reports.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-03-director.reports.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "button",
+      "id": "director.reports.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-04-director.reports.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-04-director.reports.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "button",
+      "id": "director.reports.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-05-director.reports.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-button-05-director.reports.approval-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "free_text",
+      "id": "director.reports.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "free_text",
+      "id": "director.reports.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "director.reports",
+      "kind": "free_text",
+      "id": "director.reports.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\director.reports-question-director.reports.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "button",
+      "id": "ai.command_center.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-01-ai.command_center.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-01-ai.command_center.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "button",
+      "id": "ai.command_center.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-02-ai.command_center.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-02-ai.command_center.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "button",
+      "id": "ai.command_center.magic.intent.safe_read.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-03-ai.command_center.magic.intent.safe_read.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-03-ai.command_center.magic.intent.safe_read.3-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "button",
+      "id": "ai.command_center.magic.intent.draft_only.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-04-ai.command_center.magic.intent.draft_only.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-04-ai.command_center.magic.intent.draft_only.4-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "button",
+      "id": "ai.command_center.magic.intent.approval_required.5",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-05-ai.command_center.magic.intent.approval_required.5-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-button-05-ai.command_center.magic.intent.approval_required.5-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "free_text",
+      "id": "ai.command_center.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "free_text",
+      "id": "ai.command_center.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "ai.command_center",
+      "kind": "free_text",
+      "id": "ai.command_center.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\ai.command_center-question-ai.command_center.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "button",
+      "id": "office.hub.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-01-office.hub.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-01-office.hub.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "button",
+      "id": "office.hub.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-02-office.hub.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-02-office.hub.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "button",
+      "id": "office.hub.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-03-office.hub.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-03-office.hub.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "button",
+      "id": "office.hub.magic.intent.approval_required.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-04-office.hub.magic.intent.approval_required.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-button-04-office.hub.magic.intent.approval_required.4-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "free_text",
+      "id": "office.hub.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "free_text",
+      "id": "office.hub.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "office.hub",
+      "kind": "free_text",
+      "id": "office.hub.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\office.hub-question-office.hub.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "button",
+      "id": "security.screen.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-01-security.screen.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-01-security.screen.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "button",
+      "id": "security.screen.magic.intent.safe_read.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-02-security.screen.magic.intent.safe_read.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-02-security.screen.magic.intent.safe_read.2-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "button",
+      "id": "security.screen.magic.intent.draft_only.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-03-security.screen.magic.intent.draft_only.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-03-security.screen.magic.intent.draft_only.3-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "button",
+      "id": "security.screen.magic.intent.safe_read.4",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-04-security.screen.magic.intent.safe_read.4-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-04-security.screen.magic.intent.safe_read.4-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "button",
+      "id": "security.screen.approval",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-05-security.screen.approval-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-button-05-security.screen.approval-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "free_text",
+      "id": "security.screen.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "free_text",
+      "id": "security.screen.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "security.screen",
+      "kind": "free_text",
+      "id": "security.screen.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\security.screen-question-security.screen.free_text.ambiguous.3-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "button",
+      "id": "screen.runtime.magic.intent.safe_read.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-01-screen.runtime.magic.intent.safe_read.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-01-screen.runtime.magic.intent.safe_read.1-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "button",
+      "id": "screen.runtime.magic.intent.draft_only.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-02-screen.runtime.magic.intent.draft_only.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-02-screen.runtime.magic.intent.draft_only.2-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "button",
+      "id": "screen.runtime.magic.intent.approval_required.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-03-screen.runtime.magic.intent.approval_required.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-button-03-screen.runtime.magic.intent.approval_required.3-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "free_text",
+      "id": "screen.runtime.free_text.direct.1",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.direct.1-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.direct.1-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "free_text",
+      "id": "screen.runtime.free_text.typo.2",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.typo.2-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.typo.2-after.png"
+    },
+    {
+      "screenId": "screen.runtime",
+      "kind": "free_text",
+      "id": "screen.runtime.free_text.ambiguous.3",
+      "before": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.ambiguous.3-before.png",
+      "after": "artifacts\\ai-grounded-buttons-free-text-qa\\web\\screen.runtime-question-screen.runtime.free_text.ambiguous.3-after.png"
+    }
+  ]
+}

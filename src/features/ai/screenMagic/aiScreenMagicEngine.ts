@@ -95,8 +95,8 @@ export function buildAiScreenMagicPackFromWorkflowPack(
     id: `${workflowPack.screenId}.magic.prepared.${index + 1}`,
     title: sanitizeAiScreenMagicUserCopy(item.title),
     description: sanitizeAiScreenMagicUserCopy(item.description),
-    evidence,
-    missingData,
+    evidence: evidence.map(sanitizeAiScreenMagicUserCopy),
+    missingData: missingData.map(sanitizeAiScreenMagicUserCopy),
     riskLevel: item.riskLevel,
   }));
 
@@ -144,19 +144,19 @@ export function describeAiScreenMagicPack(pack: AiScreenMagicPack): string {
     .join("\n");
   const buttons = pack.buttons
     .slice(0, 6)
-    .map((button) => `- ${button.label}: ${button.actionKind} -> ${button.expectedResult}`)
+    .map((button) => `- ${button.label}`)
     .join("\n");
 
   return sanitizeAiScreenMagicUserCopy([
     pack.userHeader,
     pack.screenSummary,
     pack.userGoal,
-    pack.visibleDomainData.length > 0 ? `Visible data: ${pack.visibleDomainData.slice(0, 6).join("; ")}` : null,
-    pack.riskSummary.length > 0 ? `Risks: ${pack.riskSummary.slice(0, 5).join("; ")}` : null,
-    pack.approvalCandidates.length > 0 ? `Approval candidates: ${pack.approvalCandidates.slice(0, 3).join("; ")}` : null,
-    work ? `Prepared work:\n${work}` : null,
-    buttons ? `Buttons:\n${buttons}` : null,
-    "AI never performs direct dangerous mutations; approval-required actions route through the ledger.",
+    pack.visibleDomainData.length > 0 ? `Данные экрана: ${pack.visibleDomainData.slice(0, 6).join("; ")}` : null,
+    pack.riskSummary.length > 0 ? `Риски: ${pack.riskSummary.slice(0, 5).join("; ")}` : null,
+    pack.approvalCandidates.length > 0 ? `На согласование: ${pack.approvalCandidates.slice(0, 3).join("; ")}` : null,
+    work ? `Что подготовлено:\n${work}` : null,
+    buttons ? `Кнопки:\n${buttons}` : null,
+    "AI не выполняет опасные действия напрямую; для согласования используется журнал согласования.",
   ].filter(Boolean).join("\n"));
 }
 

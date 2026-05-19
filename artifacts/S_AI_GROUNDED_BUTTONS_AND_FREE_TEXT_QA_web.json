@@ -1,0 +1,16 @@
+{
+  "wave": "S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_POINT_OF_NO_RETURN",
+  "scope": "ALL_AI_SCREENS",
+  "final_status": "GREEN_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_WEB_READY",
+  "web_runtime_url": "http://localhost:8099",
+  "all_visible_ai_buttons_clicked_on_web": true,
+  "free_text_questions_answered_on_web": true,
+  "trace_entries": 193,
+  "expected_trace_entries": 193,
+  "generic_answers_found": 0,
+  "technical_copy_found": 0,
+  "console_errors_found": 0,
+  "screenshots_captured": 193,
+  "matrix_final_status_after_web": "GREEN_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_READY",
+  "fake_green_claimed": false
+}

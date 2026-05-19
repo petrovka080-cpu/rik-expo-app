@@ -1,6 +1,6 @@
 {
   "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
-  "checkedAt": "2026-05-18T21:06:34.111Z",
+  "checkedAt": "2026-05-19T09:51:44.691Z",
   "enterpriseTargets": [
     {
       "screenId": "buyer.requests",
@@ -270,7 +270,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 202,
+      "line": 208,
       "expression": "screenNativeAssistantPack.nextActions.slice(0, 5).map",
       "source": "{screenNativeAssistantPack.nextActions.slice(0, 5).map((action) => (",
       "selfBounded": true,
@@ -281,18 +281,18 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 252,
-      "expression": "screenMagicPack.buttons.map",
-      "source": "{screenMagicPack.buttons.map((button) => (",
+      "line": 250,
+      "expression": "screenMagicButtons.map",
+      "source": "{screenMagicButtons.map((button) => (",
       "selfBounded": false,
-      "classified": true,
-      "owner": "ai assistant owner",
-      "boundProof": "Screen magic buttons are produced by the bounded AI action registry.",
-      "maxItemsProof": "Registry-sized action panel."
+      "classified": false,
+      "owner": null,
+      "boundProof": null,
+      "maxItemsProof": null
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 290,
+      "line": 300,
       "expression": "screenWorkflowPack.actions.slice(0, 6).map",
       "source": "{screenWorkflowPack.actions.slice(0, 6).map((action) => (",
       "selfBounded": true,
@@ -303,7 +303,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 365,
+      "line": 375,
       "expression": "roleScreenAssistantPack.nextActions.slice(0, 5).map",
       "source": "{roleScreenAssistantPack.nextActions.slice(0, 5).map((action) => (",
       "selfBounded": true,
@@ -314,7 +314,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 395,
+      "line": 407,
       "expression": "readyProposals.map",
       "source": "{readyProposals.map((proposal) => (",
       "selfBounded": false,
@@ -325,7 +325,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "line": 306,
+      "line": 320,
       "expression": "messages.map",
       "source": "{messages.map((message, index) => {",
       "selfBounded": false,

@@ -1,0 +1,1917 @@
+{
+  "buttonQuestionMap": [
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.safe_read.1",
+      "labelRu": "Проверить критические",
+      "concreteQuestionRu": "Какой платеж, документ и маршрут согласования подтверждают действие «Проверить критические»?",
+      "requiredContext": [
+        "payment",
+        "approval"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "payment",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.2",
+      "labelRu": "Собрать отчет за сегодня",
+      "concreteQuestionRu": "Какой платеж, документ и маршрут согласования подтверждают действие «Собрать отчет за сегодня»?",
+      "requiredContext": [
+        "payment",
+        "approval",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "payment",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.3",
+      "labelRu": "Подготовить обоснование директору",
+      "concreteQuestionRu": "Какой платеж, документ и маршрут согласования подтверждают действие «Подготовить обоснование директору»?",
+      "requiredContext": [
+        "payment",
+        "approval"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "payment",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.draft_only.4",
+      "labelRu": "Запросить документы",
+      "concreteQuestionRu": "Какой платеж, документ и маршрут согласования подтверждают действие «Запросить документы»?",
+      "requiredContext": [
+        "payment",
+        "approval",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "payment",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "accountant.main",
+      "buttonId": "accountant.main.magic.intent.approval_required.5",
+      "labelRu": "Отправить на согласование",
+      "concreteQuestionRu": "Какой платеж, документ и маршрут согласования подтверждают действие «Отправить на согласование»?",
+      "requiredContext": [
+        "payment",
+        "approval"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "payment",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.1",
+      "labelRu": "Разобрать входящие",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Разобрать входящие»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.2",
+      "labelRu": "Смотреть варианты закупа",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Смотреть варианты закупа»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.safe_read.3",
+      "labelRu": "Сравнить поставщиков",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сравнить поставщиков»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.draft_only.4",
+      "labelRu": "Запросить цены",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Запросить цены»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.main",
+      "buttonId": "buyer.main.magic.intent.approval_required.5",
+      "labelRu": "Отправить выбор на согласование",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Отправить выбор на согласование»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.1",
+      "labelRu": "Смотреть варианты",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Смотреть варианты»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.2",
+      "labelRu": "Сравнить",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сравнить»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.draft_only.3",
+      "labelRu": "Подготовить запрос",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Подготовить запрос»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.magic.intent.safe_read.4",
+      "labelRu": "Проверить риски",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Проверить риски»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.requests",
+      "buttonId": "buyer.requests.approval",
+      "labelRu": "Отправить предложение пакет",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Отправить предложение пакет»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.draft_only.1",
+      "labelRu": "Запросить цену",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Запросить цену»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.safe_read.2",
+      "labelRu": "Сравнить варианты",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сравнить варианты»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.draft_only.3",
+      "labelRu": "Подготовить запрос поставщику",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Подготовить запрос поставщику»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "buyer.request.detail",
+      "buttonId": "buyer.request.detail.magic.intent.approval_required.4",
+      "labelRu": "Отправить выбор на согласование",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Отправить выбор на согласование»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.safe_read.1",
+      "labelRu": "Почему этот поставщик лучше",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Почему этот поставщик лучше»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.safe_read.2",
+      "labelRu": "Что не хватает для выбора",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Что не хватает для выбора»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.draft_only.3",
+      "labelRu": "Сделать запрос поставщику",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сделать запрос поставщику»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.magic.intent.approval_required.4",
+      "labelRu": "Что отправить директору",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Что отправить директору»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "procurement.copilot",
+      "buttonId": "procurement.copilot.safe_read",
+      "labelRu": "Почему вариант лучше",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Почему вариант лучше»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.draft_only.1",
+      "labelRu": "Подготовить внешний запрос",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Подготовить внешний запрос»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.safe_read.2",
+      "labelRu": "Показать с основанием варианты",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Показать с основанием варианты»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.safe_read.3",
+      "labelRu": "Сравнить с внутренними",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сравнить с внутренними»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.magic.intent.approval_required.4",
+      "labelRu": "Отправить выбор на согласование",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Отправить выбор на согласование»?",
+      "requiredContext": [
+        "approval"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "market.home",
+      "buttonId": "market.home.approval",
+      "labelRu": "Отправить с рыночным основанием запрос",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Отправить с рыночным основанием запрос»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.safe_read.1",
+      "labelRu": "Сравнить с внутренними",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Сравнить с внутренними»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.safe_read.2",
+      "labelRu": "Показать с основанием варианты",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Показать с основанием варианты»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.draft_only.3",
+      "labelRu": "Подготовить запрос",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Подготовить запрос»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.draft_only.4",
+      "labelRu": "Добавить в короткий список",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Добавить в короткий список»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "supplier.showcase",
+      "buttonId": "supplier.showcase.magic.intent.approval_required.5",
+      "labelRu": "Отправить выбор на согласование",
+      "concreteQuestionRu": "Какая заявка на материал, поставщик и основание нужны для действия «Отправить выбор на согласование»?",
+      "requiredContext": [
+        "material_request",
+        "supplier_offer"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "procurement_request",
+        "supplier_offer",
+        "warehouse_stock"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.safe_read.1",
+      "labelRu": "Показать дефицит",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Показать дефицит»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.draft_only.2",
+      "labelRu": "Подготовить проверку прихода",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Подготовить проверку прихода»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.draft_only.3",
+      "labelRu": "Черновик перемещения",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Черновик перемещения»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.main",
+      "buttonId": "warehouse.main.magic.intent.approval_required.4",
+      "labelRu": "Отправить спорные позиции на согласование",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Отправить спорные позиции на согласование»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.safe_read.1",
+      "labelRu": "Список расхождений",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Список расхождений»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.draft_only.2",
+      "labelRu": "Запросить документ",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Запросить документ»?",
+      "requiredContext": [
+        "stock",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request",
+        "pdf_chunk",
+        "document"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.approval_required.3",
+      "labelRu": "Отправить спорные позиции на согласование",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Отправить спорные позиции на согласование»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.incoming",
+      "buttonId": "warehouse.incoming.magic.intent.draft_only.4",
+      "labelRu": "Подготовить черновик проверки",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Подготовить черновик проверки»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.draft_only.1",
+      "labelRu": "Черновик выдачи",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Черновик выдачи»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.safe_read.2",
+      "labelRu": "Показать дефицит",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Показать дефицит»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.safe_read.3",
+      "labelRu": "Предложить альтернативу",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Предложить альтернативу»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "warehouse.issue",
+      "buttonId": "warehouse.issue.magic.intent.approval_required.4",
+      "labelRu": "Отправить на согласование",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Отправить на согласование»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "warehouse_stock",
+        "warehouse_incoming",
+        "warehouse_issue",
+        "procurement_request"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.1",
+      "labelRu": "Сравнить поставщиков по логистике",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Сравнить поставщиков по логистике»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.2",
+      "labelRu": "Показать риски маршрута",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Показать риски маршрута»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.draft_only.3",
+      "labelRu": "Подготовить запрос доставки",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Подготовить запрос доставки»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.magic.intent.safe_read.4",
+      "labelRu": "Открыть связанные заявки",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Открыть связанные заявки»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context"
+      ]
+    },
+    {
+      "screenId": "map.main",
+      "buttonId": "map.main.approval",
+      "labelRu": "Отправить данные объекта",
+      "concreteQuestionRu": "Какая складская позиция, остаток, приход или выдача подтверждает действие «Отправить данные объекта»?",
+      "requiredContext": [
+        "stock"
+      ],
+      "allowedSourceTypes": [
+        "screen_context"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.1",
+      "labelRu": "Подготовить акт",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Подготовить акт»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.2",
+      "labelRu": "Подготовить отчет",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Подготовить отчет»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.safe_read.3",
+      "labelRu": "Проверить не хватает основание",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Проверить не хватает основание»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.draft_only.4",
+      "labelRu": "Написать подрядчику",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Написать подрядчику»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.main",
+      "buttonId": "foreman.main.magic.intent.safe_read.5",
+      "labelRu": "Показать строительный чек-лист",
+      "concreteQuestionRu": "Что нужно проверить по текущей работе на основании работы, доказательств и связанных ПДФ или документов?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.1",
+      "labelRu": "Акт по текущей работе",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Акт по текущей работе»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.2",
+      "labelRu": "Отчет за день",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Отчет за день»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.safe_read.3",
+      "labelRu": "Список не хватает основание",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Список не хватает основание»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.draft_only.4",
+      "labelRu": "Сообщение подрядчику",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Сообщение подрядчику»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.ai.quick_modal",
+      "buttonId": "foreman.ai.quick_modal.magic.intent.safe_read.5",
+      "labelRu": "Строительный чек-лист",
+      "concreteQuestionRu": "Что нужно проверить по текущей работе на основании работы, доказательств и связанных ПДФ или документов?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.safe_read.1",
+      "labelRu": "Показать чек-лист",
+      "concreteQuestionRu": "Что нужно проверить по текущей работе на основании работы, доказательств и связанных ПДФ или документов?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.2",
+      "labelRu": "Подготовить акт",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Подготовить акт»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.3",
+      "labelRu": "Запросить документы",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Запросить документы»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.draft_only.4",
+      "labelRu": "Написать подрядчику",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Написать подрядчику»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "foreman.subcontract",
+      "buttonId": "foreman.subcontract.magic.intent.approval_required.5",
+      "labelRu": "Отправить подрядчик ход работ",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Отправить подрядчик ход работ»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.draft_only.1",
+      "labelRu": "Подготовить ответ",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Подготовить ответ»?",
+      "requiredContext": [
+        "work",
+        "object"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.2",
+      "labelRu": "Список документов",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Список документов»?",
+      "requiredContext": [
+        "work",
+        "object",
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.3",
+      "labelRu": "Что мешает приемке",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Что мешает приемке»?",
+      "requiredContext": [
+        "work",
+        "object"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.magic.intent.safe_read.4",
+      "labelRu": "Проверить замечания",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Проверить замечания»?",
+      "requiredContext": [
+        "work",
+        "object"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document"
+      ]
+    },
+    {
+      "screenId": "contractor.main",
+      "buttonId": "contractor.main.approval",
+      "labelRu": "Отправить подрядчик ход работ",
+      "concreteQuestionRu": "Что по текущей работе, объекту и доказательствам нужно показать для действия «Отправить подрядчик ход работ»?",
+      "requiredContext": [
+        "work",
+        "object"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "work",
+        "object",
+        "photo",
+        "act",
+        "document"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.1",
+      "labelRu": "Подготовить резюме",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Подготовить резюме»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.2",
+      "labelRu": "Запросить не хватает основание",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Запросить не хватает основание»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.draft_only.3",
+      "labelRu": "Подготовить комментарий",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Подготовить комментарий»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.magic.intent.safe_read.4",
+      "labelRu": "Открыть связанные объекты",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Открыть связанные объекты»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "documents.main",
+      "buttonId": "documents.main.approval",
+      "labelRu": "Отправить документ изменение",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Отправить документ изменение»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.1",
+      "labelRu": "Подготовить резюме",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Подготовить резюме»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.2",
+      "labelRu": "Запросить не хватает основание",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Запросить не хватает основание»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.draft_only.3",
+      "labelRu": "Подготовить комментарий",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Подготовить комментарий»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.magic.intent.safe_read.4",
+      "labelRu": "Открыть связанные объекты",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Открыть связанные объекты»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "agent.documents.knowledge",
+      "buttonId": "documents.main.approval",
+      "labelRu": "Отправить документ изменение",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Отправить документ изменение»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.1",
+      "labelRu": "Собрать отчет",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Собрать отчет»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.safe_read.2",
+      "labelRu": "Проверить основание",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Проверить основание»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.3",
+      "labelRu": "Добавить не хватает данных",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Добавить не хватает данных»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.magic.intent.draft_only.4",
+      "labelRu": "Сохранить черновик",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Сохранить черновик»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "reports.modal",
+      "buttonId": "reports.modal.approval",
+      "labelRu": "Отправить отчёт",
+      "concreteQuestionRu": "Что в документе или ПДФ подтверждает действие «Отправить отчёт»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "document",
+        "report",
+        "act",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.safe_read.1",
+      "labelRu": "Открыть сводка",
+      "concreteQuestionRu": "Какие сообщения и задачи из обсуждения подтверждают действие «Открыть сводка»?",
+      "requiredContext": [
+        "chat"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "chat_message",
+        "approval"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.2",
+      "labelRu": "Создать черновик задачи",
+      "concreteQuestionRu": "Какие сообщения и задачи из обсуждения подтверждают действие «Создать черновик задачи»?",
+      "requiredContext": [
+        "chat"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "chat_message",
+        "approval"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.3",
+      "labelRu": "Подготовить сводка",
+      "concreteQuestionRu": "Какие сообщения и задачи из обсуждения подтверждают действие «Подготовить сводка»?",
+      "requiredContext": [
+        "chat"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "chat_message",
+        "approval"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.approval_required.4",
+      "labelRu": "Отправить на согласование",
+      "concreteQuestionRu": "Какие сообщения и задачи из обсуждения подтверждают действие «Отправить на согласование»?",
+      "requiredContext": [
+        "chat"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "chat_message",
+        "approval"
+      ]
+    },
+    {
+      "screenId": "chat.main",
+      "buttonId": "chat.main.magic.intent.draft_only.5",
+      "labelRu": "Запросить не хватает данных",
+      "concreteQuestionRu": "Какие сообщения и задачи из обсуждения подтверждают действие «Запросить не хватает данных»?",
+      "requiredContext": [
+        "chat"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "chat_message",
+        "approval"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.1",
+      "labelRu": "Открыть согласование входящие",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть согласование входящие»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.2",
+      "labelRu": "Показать критические",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать критические»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.safe_read.3",
+      "labelRu": "Показать что блокирует работы",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать что блокирует работы»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.magic.intent.draft_only.4",
+      "labelRu": "Запросить недостающие данные",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Запросить недостающие данные»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "director.dashboard",
+      "buttonId": "director.dashboard.approval",
+      "labelRu": "Открыть согласование маршрут",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть согласование маршрут»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.draft_only.1",
+      "labelRu": "Сформировать сводка",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Сформировать сводка»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.safe_read.2",
+      "labelRu": "Открыть риски",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть риски»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.draft_only.3",
+      "labelRu": "Подготовить черновик отчёта",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Подготовить черновик отчёта»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.magic.intent.safe_read.4",
+      "labelRu": "Показать основание",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать основание»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "director.reports",
+      "buttonId": "director.reports.approval",
+      "labelRu": "Отправить отчёт пакет",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Отправить отчёт пакет»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.1",
+      "labelRu": "Открыть задачу",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть задачу»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.2",
+      "labelRu": "Открыть основание",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть основание»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.safe_read.3",
+      "labelRu": "Показать блокеры",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать блокеры»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.draft_only.4",
+      "labelRu": "Подготовить черновик",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Подготовить черновик»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "ai.command_center",
+      "buttonId": "ai.command_center.magic.intent.approval_required.5",
+      "labelRu": "Отправить на согласование",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Отправить на согласование»?",
+      "requiredContext": [
+        "approval"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.safe_read.1",
+      "labelRu": "Открыть просроченные",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть просроченные»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.safe_read.2",
+      "labelRu": "Собрать документы",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Собрать документы»?",
+      "requiredContext": [
+        "document",
+        "pdf"
+      ],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document",
+        "pdf_chunk"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.draft_only.3",
+      "labelRu": "Подготовить напоминание",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Подготовить напоминание»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "office.hub",
+      "buttonId": "office.hub.magic.intent.approval_required.4",
+      "labelRu": "Отправить на согласование",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Отправить на согласование»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.1",
+      "labelRu": "Открыть роли с риском",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Открыть роли с риском»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.2",
+      "labelRu": "Проверить недоступно попытки",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Проверить недоступно попытки»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.draft_only.3",
+      "labelRu": "Собрать безопасность отчёт",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Собрать безопасность отчёт»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.magic.intent.safe_read.4",
+      "labelRu": "Показать правила пробелы",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать правила пробелы»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "security.screen",
+      "buttonId": "security.screen.approval",
+      "labelRu": "Отправить безопасность изменение запрос",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Отправить безопасность изменение запрос»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.safe_read.1",
+      "labelRu": "Показать точная причина",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать точная причина»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.draft_only.2",
+      "labelRu": "Показать команда проверки",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Показать команда проверки»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    },
+    {
+      "screenId": "screen.runtime",
+      "buttonId": "screen.runtime.magic.intent.approval_required.3",
+      "labelRu": "Подготовить согласование-через согласование диагностика действие",
+      "concreteQuestionRu": "Какие источники на экране подтверждают действие «Подготовить согласование-через согласование диагностика действие»?",
+      "requiredContext": [],
+      "allowedSourceTypes": [
+        "screen_context",
+        "database_record",
+        "approval",
+        "document"
+      ]
+    }
+  ]
+}

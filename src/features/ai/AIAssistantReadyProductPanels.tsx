@@ -15,6 +15,10 @@ import { AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY } from "./realAssistants/aiRo
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
 import { buildAiScreenMagicClickPayload } from "./screenMagic/aiScreenMagicButtonResolver";
 import { buildAiScreenMagicPackFromWorkflowPack } from "./screenMagic/aiScreenMagicEngine";
+import {
+  buildAiScreenMagicForbiddenNotice,
+  getAiScreenMagicVisibleButtons,
+} from "./screenMagic/aiScreenMagicRealUserButtons";
 import type { AiScreenWorkflowPack } from "./screenWorkflows/aiScreenWorkflowTypes";
 import type { AiReadyProposal } from "./screenProposals/aiScreenReadyProposalTypes";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
@@ -106,6 +110,8 @@ export function AIAssistantReadyProductPanels({
   const screenMagicPack = screenWorkflowPack
     ? buildAiScreenMagicPackFromWorkflowPack(screenWorkflowPack)
     : null;
+  const screenMagicButtons = screenMagicPack ? getAiScreenMagicVisibleButtons(screenMagicPack) : [];
+  const forbiddenNotice = screenMagicPack ? buildAiScreenMagicForbiddenNotice(screenMagicPack) : null;
 
   return (
     <>
@@ -127,7 +133,7 @@ export function AIAssistantReadyProductPanels({
               <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.domain" accessibilityLabel={`AI domain ${knowledgePreview.domain}`}>{`domain: ${knowledgePreview.domain} | entities: ${knowledgePreview.allowedEntities.join(", ") || "none"} | documents: ${knowledgePreview.documentSources.join(", ") || "none"}`}</Text>
               <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.allowed-intents" accessibilityLabel="AI allowed intents">{`allowedIntents: ${knowledgePreview.allowedIntents.join(", ") || "none"}`}</Text>
               <Text style={styles.scopeCardMeta} numberOfLines={1} testID="ai.knowledge.blocked-intents" accessibilityLabel="AI blocked intents">{`blockedIntents: ${knowledgePreview.blockedIntents.join(", ") || "none"}`}</Text>
-              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`approval_required: ${knowledgePreview.approvalBoundary}`}</Text>
+              <Text style={styles.scopeCardMeta} numberOfLines={2} testID="ai.knowledge.approval-boundary" accessibilityLabel="AI approval boundary">{`Согласование: ${knowledgePreview.approvalBoundary}`}</Text>
             </>
           ) : null}
           {!scopedFacts && scopedFactsError ? (
@@ -136,7 +142,7 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {screenNativeAssistantPack ? (
+      {!screenMagicPack && screenNativeAssistantPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.screen_native_value_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
@@ -161,7 +167,7 @@ export function AIAssistantReadyProductPanels({
               </View>
               <View style={styles.roleAssistantMetric}>
                 <Text style={styles.roleAssistantMetricValue}>{screenNativeAssistantPack.today.pendingApprovalCount ?? screenNativeAssistantPack.nextActions.filter((action) => action.requiresApproval).length}</Text>
-                <Text style={styles.roleAssistantMetricLabel}>approval</Text>
+                <Text style={styles.roleAssistantMetricLabel}>соглас.</Text>
               </View>
             </View>
           ) : null}
@@ -213,58 +219,62 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {screenWorkflowPack ? (
+      {screenMagicPack ? (
+        <View style={styles.roleAssistantBlock} testID="ai.screen_magic_pack">
+          <View style={styles.roleAssistantHeaderRow}>
+            <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
+            <Text style={styles.roleAssistantDomain}>{screenMagicPack.userHeader}</Text>
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Главное</Text>
+            <Text style={styles.roleAssistantSummary}>{screenMagicPack.userGoal}</Text>
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Что мешает</Text>
+            {[...screenMagicPack.riskSummary, ...screenMagicPack.missingDataSummary].slice(0, 3).length > 0 ? (
+              [...screenMagicPack.riskSummary, ...screenMagicPack.missingDataSummary].slice(0, 3).map((item) => (
+                <Text key={item} style={styles.roleAssistantRiskText}>{item}</Text>
+              ))
+            ) : (
+              <Text style={styles.roleAssistantRiskText}>Нет блокеров по данным текущего экрана.</Text>
+            )}
+          </View>
+          <View style={styles.roleAssistantSection}>
+            <Text style={styles.roleAssistantSectionTitle}>Что можно сделать</Text>
+            <ScrollView
+              horizontal
+              style={styles.roleAssistantActionScroller}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.roleAssistantActionRow}
+            >
+              {screenMagicButtons.map((button) => (
+                <Pressable
+                  key={button.id}
+                  style={styles.roleAssistantActionChip}
+                  onPress={() => onReadyProposalPress(buildAiScreenMagicClickPayload(button))}
+                  testID="ai.screen_magic.action"
+                >
+                  <Text style={styles.roleAssistantActionText}>{button.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+            {forbiddenNotice ? (
+              <Text style={styles.roleAssistantRiskText} testID="ai.screen_magic.forbidden_notice">
+                {forbiddenNotice}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+      ) : screenWorkflowPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.screen_workflow_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
-            <Text style={styles.roleAssistantDomain}>{screenMagicPack?.userHeader ?? screenWorkflowPack.title}</Text>
+            <Text style={styles.roleAssistantDomain}>{screenWorkflowPack.title}</Text>
           </View>
-          <Text style={styles.roleAssistantSummary}>{screenMagicPack?.userGoal ?? screenWorkflowPack.userGoal}</Text>
-          {screenMagicPack ? (
-            <View testID="ai.screen_magic_pack">
-              <View style={styles.roleAssistantSection}>
-                <Text style={styles.roleAssistantSectionTitle}>Сегодня / Сейчас</Text>
-                {screenMagicPack.aiPreparedWork.slice(0, 3).map((item) => (
-                  <View key={item.id} style={styles.roleAssistantItem}>
-                    <Text style={styles.roleAssistantItemTitle}>{item.title}</Text>
-                    <Text style={styles.roleAssistantItemText}>{item.description}</Text>
-                  </View>
-                ))}
-              </View>
-              {screenMagicPack.aiPreparedWork.some((item) => item.missingData.length > 0) ? (
-                <View style={styles.roleAssistantSection}>
-                  <Text style={styles.roleAssistantSectionTitle}>Недостающие данные</Text>
-                  {screenMagicPack.aiPreparedWork
-                    .flatMap((item) => item.missingData)
-                    .filter((value, index, values) => values.indexOf(value) === index)
-                    .slice(0, 2)
-                    .map((label) => (
-                      <Text key={label} style={styles.roleAssistantRiskText}>{label}</Text>
-                    ))}
-                </View>
-              ) : null}
-              <ScrollView
-                horizontal
-                style={styles.roleAssistantActionScroller}
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.roleAssistantActionRow}
-              >
-                {screenMagicPack.buttons.map((button) => (
-                  <Pressable
-                    key={button.id}
-                    style={styles.roleAssistantActionChip}
-                    onPress={() => onReadyProposalPress(buildAiScreenMagicClickPayload(button))}
-                    testID="ai.screen_magic.action"
-                  >
-                    <Text style={styles.roleAssistantActionText}>{button.label}</Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          ) : null}
+          <Text style={styles.roleAssistantSummary}>{screenWorkflowPack.userGoal}</Text>
           {screenWorkflowPack.readyBlocks.length > 0 ? (
             <View style={styles.roleAssistantSection}>
-              <Text style={styles.roleAssistantSectionTitle}>Prepared work</Text>
+              <Text style={styles.roleAssistantSectionTitle}>Что подготовлено</Text>
               {screenWorkflowPack.readyBlocks.slice(0, 2).map((block) => (
                 <View key={block.id} style={styles.roleAssistantItem}>
                   <Text style={styles.roleAssistantItemTitle}>{block.title}</Text>
@@ -275,7 +285,7 @@ export function AIAssistantReadyProductPanels({
           ) : null}
           {screenWorkflowPack.missingData.length > 0 ? (
             <View style={styles.roleAssistantSection}>
-              <Text style={styles.roleAssistantSectionTitle}>Missing data / blockers</Text>
+              <Text style={styles.roleAssistantSectionTitle}>Чего не хватает</Text>
               {screenWorkflowPack.missingData.slice(0, 2).map((item) => (
                 <Text key={item.id} style={styles.roleAssistantRiskText}>{item.label}</Text>
               ))}
@@ -293,7 +303,7 @@ export function AIAssistantReadyProductPanels({
                 style={styles.roleAssistantActionChip}
                 onPress={() => onReadyProposalPress(
                   action.actionKind === "forbidden"
-                    ? `${action.label}: ${action.forbiddenReason ?? action.exactBlocker ?? "forbidden"}`
+                    ? `${action.label}: ${action.forbiddenReason ?? action.exactBlocker ?? "Недоступно"}`
                     : action.label,
                 )}
                 testID="ai.screen_workflow.action"
@@ -305,7 +315,7 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {!screenNativeAssistantPack && roleScreenAssistantPack ? (
+      {!screenMagicPack && !screenNativeAssistantPack && roleScreenAssistantPack ? (
         <View style={styles.roleAssistantBlock} testID="ai.role_screen_assistant_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
@@ -376,14 +386,16 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      <View style={styles.productStatusCard}>
-        <Text style={styles.productStatusText}>
-          {resolvedUserContext.userFacingNotice
-            ?? AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY}
-        </Text>
-      </View>
+      {!screenMagicPack ? (
+        <View style={styles.productStatusCard}>
+          <Text style={styles.productStatusText}>
+            {resolvedUserContext.userFacingNotice
+              ?? AI_ROLE_SCREEN_ASSISTANT_SAFE_STATUS_COPY}
+          </Text>
+        </View>
+      ) : null}
 
-      {readyProposals.length > 0 ? (
+      {!screenMagicPack && readyProposals.length > 0 ? (
         <View style={styles.readyProposalBlock} testID="ai.ready_proposals">
           <Text style={styles.readyProposalTitle}>Готовые предложения</Text>
           <ScrollView
@@ -408,7 +420,7 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {readyBuyBundle ? (
+      {!screenMagicPack && readyBuyBundle ? (
         <View style={styles.supplierProposalBlock} testID="ai.buyer_ready_buy_options">
           <Text style={styles.readyProposalTitle}>Готовые варианты закупки</Text>
           {readyBuyBundle.options.length > 0 ? (
@@ -440,7 +452,7 @@ export function AIAssistantReadyProductPanels({
         </View>
       ) : null}
 
-      {approvedSupplierBundle ? (
+      {!screenMagicPack && approvedSupplierBundle ? (
         <View style={styles.supplierProposalBlock} testID="ai.approved_request_supplier_options">
           <Text style={styles.readyProposalTitle}>Готовые варианты по утверждённой заявке</Text>
           {approvedSupplierBundle.supplierOptions.length > 0 ? (

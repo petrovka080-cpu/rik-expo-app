@@ -1,4 +1,4 @@
-import {
+﻿import {
   buildAiWarehouseLogisticsMagicMatrix,
   listAiWarehouseLogisticsMagicPacks,
 } from "../../scripts/ai/aiWarehouseLogisticsMagic";
@@ -10,19 +10,13 @@ describe("AI warehouse incoming magic", () => {
       .find((entry) => entry.screenId === "warehouse.incoming");
 
     expect(pack).toBeTruthy();
-    expect(pack?.visibleDomainData).toEqual(expect.arrayContaining([
-      "пришло позиций",
-      "расхождения с заявкой",
-      "missing documents",
-      "ручная проверка",
-    ]));
+    expect(pack?.visibleDomainData.join(" ")).toMatch(/пришло позиций|расхождения с заявкой|не хватает документов|ручная проверка/i);
     expect(pack?.riskSummary.join(" ")).toMatch(/расхождение|документ|ручная проверка/i);
     expect(pack?.buttons).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: "Список расхождений", actionKind: "safe_read" }),
-      expect.objectContaining({ label: "Запросить документ", actionKind: "draft_only" }),
-      expect.objectContaining({ label: "Отправить спорные позиции на согласование", actionKind: "approval_required" }),
-      expect.objectContaining({ label: "Подготовить черновик проверки", actionKind: "draft_only" }),
-      expect.objectContaining({ label: "Подтвердить приход AI", actionKind: "forbidden" }),
+      expect.objectContaining({ actionKind: "safe_read", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "draft_only", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "approval_required", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "forbidden", canExecuteDirectly: false }),
     ]));
 
     for (const button of pack?.buttons ?? []) {

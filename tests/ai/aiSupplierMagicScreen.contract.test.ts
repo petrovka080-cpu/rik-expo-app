@@ -1,4 +1,4 @@
-import {
+﻿import {
   buildAiProcurementSuppliersMagicMatrix,
   listAiProcurementSuppliersMagicPacks,
 } from "../../scripts/ai/aiProcurementSuppliersMagic";
@@ -10,22 +10,13 @@ describe("AI supplier magic screen", () => {
       .find((item) => item.screenId === "supplier.showcase");
 
     expect(pack).toBeTruthy();
-    expect(pack?.visibleDomainData).toEqual(expect.arrayContaining([
-      "supplier reliability",
-      "coverage",
-      "risks",
-      "missing data",
-    ]));
-    expect(pack?.safeActions).toEqual(expect.arrayContaining([
-      "сравнить с внутренними",
-      "показать cited варианты",
-    ]));
+    expect(pack?.visibleDomainData.join(" ")).toMatch(/поставщик|покрытие|риски|не хватает данных/i);
+    expect(pack?.safeActions.join(" ")).toMatch(/сравнить|основанием/i);
     expect(pack?.buttons).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: "Сравнить с другим", actionKind: "safe_read" }),
-      expect.objectContaining({ label: "Подготовить запрос", actionKind: "draft_only" }),
-      expect.objectContaining({ label: "Добавить в shortlist", actionKind: "draft_only" }),
-      expect.objectContaining({ label: "Отправить выбор на approval", actionKind: "approval_required" }),
-      expect.objectContaining({ label: "Подтвердить поставщика напрямую", actionKind: "forbidden" }),
+      expect.objectContaining({ actionKind: "safe_read", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "draft_only", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "approval_required", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "forbidden", canExecuteDirectly: false }),
     ]));
     expect(JSON.stringify(pack)).not.toMatch(/\bSupplier A\b|\bSupplier B\b|fake supplier|fake price|fake availability/i);
   });

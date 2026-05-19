@@ -1,0 +1,12 @@
+{
+  "wave": "S_AI_REAL_USER_UI_BUTTON_PROOF_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_AI_SIMPLE_USER_INTERFACE_READY",
+  "ai_blocks_per_screen_max": 1,
+  "max_visible_ai_actions_per_screen": 5,
+  "duplicate_action_labels_found": 0,
+  "dangerous_action_buttons_visible": 0,
+  "forbidden_actions_visible_as_buttons": 0,
+  "generic_results_found": 0,
+  "blank_results_found": 0,
+  "issues": []
+}

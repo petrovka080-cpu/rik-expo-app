@@ -47,7 +47,7 @@ function prepared(
 ) {
   return titles.map((title) => ({
     title,
-    description: "AI собирает этот блок только из hydrated screen context, audited routes и evidence labels; отсутствующие факты остаются missing data.",
+    description: "Ответ требует конкретного источника: выбранной записи, документа, ПДФ-фрагмента, заявки, платежа или точной причины отсутствия данных.",
     riskLevel,
   }));
 }

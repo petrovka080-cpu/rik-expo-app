@@ -188,10 +188,10 @@ export const SCROLLVIEW_MAP_BOUNDS = [
   },
   {
     file: "src/features/ai/AIAssistantReadyProductPanels.tsx",
-    expression: "screenMagicPack.buttons.map",
+    expression: "screenMagicButtons.map",
     owner: "ai assistant owner",
-    boundProof: "Screen magic buttons are produced by the bounded AI action registry.",
-    maxItemsProof: "Registry-sized action panel.",
+    boundProof: "Screen magic buttons are filtered through the bounded real-user visible action policy.",
+    maxItemsProof: "Visible AI action panel is capped to five buttons per screen.",
   },
   {
     file: "src/features/ai/AIAssistantReadyProductPanels.tsx",

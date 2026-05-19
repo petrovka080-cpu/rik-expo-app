@@ -1,0 +1,16 @@
+{
+  "wave": "S_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_POINT_OF_NO_RETURN",
+  "scope": "ALL_AI_SCREENS",
+  "final_status": "GREEN_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_ANDROID_READY",
+  "targetable_entries": 193,
+  "all_targetable_ai_buttons_tapped_on_android": true,
+  "free_text_questions_typed_on_android": true,
+  "visible_result_after_tap": true,
+  "source_chips_visible": true,
+  "generic_answers_found": 0,
+  "technical_copy_found": 0,
+  "blank_modals_found": 0,
+  "bottom_nav_overlap_found": 0,
+  "matrix_final_status_after_android": "GREEN_AI_GROUNDED_BUTTONS_AND_FREE_TEXT_QA_READY",
+  "fake_green_claimed": false
+}

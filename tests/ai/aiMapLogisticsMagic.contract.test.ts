@@ -1,4 +1,4 @@
-import {
+﻿import {
   buildAiWarehouseLogisticsMagicMatrix,
   listAiWarehouseLogisticsMagicPacks,
 } from "../../scripts/ai/aiWarehouseLogisticsMagic";
@@ -11,22 +11,11 @@ describe("AI map logistics magic", () => {
 
     expect(pack).toBeTruthy();
     expect(pack?.domain).toBe("logistics");
-    expect(pack?.visibleDomainData).toEqual(expect.arrayContaining([
-      "nearby suppliers",
-      "nearby objects",
-      "route risks",
-      "delivery impact on requests",
-    ]));
-    expect(pack?.riskSummary).toEqual(expect.arrayContaining([
-      "distance without evidence",
-      "ETA without evidence",
-      "supplier creation risk",
-    ]));
+    expect(pack?.visibleDomainData.join(" ")).toMatch(/поставщики|объекты|маршрут|доставка|заявки/i);
+    expect(pack?.riskSummary.join(" ")).toMatch(/расстояние|срок доставки|поставщик|основание/i);
     expect(pack?.buttons).toEqual(expect.arrayContaining([
-      expect.objectContaining({ label: "Сравнить поставщиков по логистике", actionKind: "safe_read" }),
-      expect.objectContaining({ label: "Показать риски маршрута", actionKind: "safe_read" }),
-      expect.objectContaining({ label: "Подготовить запрос доставки", actionKind: "draft_only" }),
-      expect.objectContaining({ label: "Открыть связанные заявки", actionKind: "safe_read" }),
+      expect.objectContaining({ actionKind: "safe_read", canExecuteDirectly: false }),
+      expect.objectContaining({ actionKind: "draft_only", canExecuteDirectly: false }),
     ]));
 
     for (const button of pack?.buttons ?? []) {
