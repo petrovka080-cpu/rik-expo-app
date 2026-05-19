@@ -4,7 +4,7 @@
  * WAVE O: Establishes measurable, repeatable performance baselines
  * for the heaviest screens and ensures they stay within thresholds.
  *
- * These are architectural budget tests — they catch scope creep early,
+ * These are architectural budget tests вЂ” they catch scope creep early,
  * before it becomes a runtime performance regression.
  *
  * Thresholds are set ~20% above the current measured baseline so they
@@ -25,7 +25,7 @@ function getFileStats(relativePath: string) {
   return { sizeKB, importCount, lineCount };
 }
 
-describe("performance budget — screen size", () => {
+describe("performance budget вЂ” screen size", () => {
   // Baseline 2026-04-14:
   //   OfficeHubScreen.tsx: 76KB, 14 imports
   //   BuyerScreen.tsx: 30KB, 63 imports
@@ -68,15 +68,15 @@ describe("performance budget — screen size", () => {
     describe(path.basename(budget.file), () => {
       const stats = getFileStats(budget.file);
 
-      it(`size ≤ ${budget.maxSizeKB}KB (current: ${stats.sizeKB}KB)`, () => {
+      it(`size в‰¤ ${budget.maxSizeKB}KB (current: ${stats.sizeKB}KB)`, () => {
         expect(stats.sizeKB).toBeLessThanOrEqual(budget.maxSizeKB);
       });
 
-      it(`imports ≤ ${budget.maxImports} (current: ${stats.importCount})`, () => {
+      it(`imports в‰¤ ${budget.maxImports} (current: ${stats.importCount})`, () => {
         expect(stats.importCount).toBeLessThanOrEqual(budget.maxImports);
       });
 
-      it(`lines ≤ ${budget.maxLines} (current: ${stats.lineCount})`, () => {
+      it(`lines в‰¤ ${budget.maxLines} (current: ${stats.lineCount})`, () => {
         expect(stats.lineCount).toBeLessThanOrEqual(budget.maxLines);
       });
     });
@@ -105,7 +105,7 @@ describe("performance budget - worker loop CPU spin", () => {
   });
 });
 
-describe("performance budget — bundle module count", () => {
+describe("performance budget вЂ” bundle module count", () => {
   // Metro reported 2405 modules on 2026-04-14
   // Threshold: alert if source file count grows beyond ~20% above baseline
   it("source module count within budget", () => {
@@ -592,6 +592,14 @@ describe("performance budget — bundle module count", () => {
     ].filter((file) => fs.existsSync(file)).length;
     const sAiConstructionEngineeringKnowledgeCoreFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "constructionKnowledgeCore"),
+      /\.ts$/,
+    );
+    const sAiForemanRealWorkdayIntelligenceFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "foremanIntelligence"),
+      /\.ts$/,
+    );
+    const sAiConstructionDataGraphFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "constructionDataGraph"),
       /\.ts$/,
     );
     const sAiAudit02AllScreenButtonRoleActionMapFiles = [
@@ -1501,6 +1509,8 @@ describe("performance budget — bundle module count", () => {
     expect(sAiMagic25McpAppsSdkBlueprintFiles).toBeLessThanOrEqual(4);
     expect(sAiPro02ConstructionKnowhowEngineFiles).toBeLessThanOrEqual(11);
     expect(sAiConstructionEngineeringKnowledgeCoreFiles).toBeLessThanOrEqual(20);
+    expect(sAiForemanRealWorkdayIntelligenceFiles).toBeLessThanOrEqual(9);
+    expect(sAiConstructionDataGraphFiles).toBeLessThanOrEqual(9);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
     expect(sAiApproval01ActionRouterFiles).toBeLessThanOrEqual(4);
@@ -1713,6 +1723,8 @@ describe("performance budget — bundle module count", () => {
         sAiMagic25McpAppsSdkBlueprintFiles -
         sAiPro02ConstructionKnowhowEngineFiles -
         sAiConstructionEngineeringKnowledgeCoreFiles -
+        sAiForemanRealWorkdayIntelligenceFiles -
+        sAiConstructionDataGraphFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -
         sAiApproval01ActionRouterFiles -

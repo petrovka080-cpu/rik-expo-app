@@ -290,6 +290,20 @@ const isApprovedAiConstructionKnowledgeCorePatch = (file: string) =>
   /^src\/lib\/ai\/constructionKnowledgeCore\//.test(file.replace(/\\/g, "/")) ||
   /^tests\/ai\/aiConstruction/.test(file.replace(/\\/g, "/"));
 
+const isApprovedAiForemanRealWorkdayPatch = (file: string) =>
+  /^src\/lib\/ai\/foremanIntelligence\//.test(file.replace(/\\/g, "/")) ||
+  /^src\/lib\/ai\/constructionDataGraph\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiForeman/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "scripts/ai/aiForemanRealWorkdayFunnelProof.ts" ||
+  /^scripts\/e2e\/runAiForemanRealWorkdayFunnel/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "tests/perf/performance-budget.test.ts" ||
+  [
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -441,6 +455,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiGroundedButtonsQaPatch(file) &&
         !isApprovedAiFieldWorkCopilotPatch(file) &&
         !isApprovedAiConstructionKnowledgeCorePatch(file) &&
+        !isApprovedAiForemanRealWorkdayPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
