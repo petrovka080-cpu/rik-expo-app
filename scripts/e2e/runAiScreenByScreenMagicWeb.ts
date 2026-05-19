@@ -9,6 +9,14 @@ import {
   buildAiScreenMagicMatrix,
   buildAiScreenMagicProofMarkdown,
 } from "../../src/features/ai/screenMagic/aiScreenMagicProof";
+import {
+  AI_FINANCE_APPROVAL_MAGIC_GREEN_STATUS,
+  AI_FINANCE_APPROVAL_MAGIC_WAVE,
+  buildAiFinanceApprovalMagicButtonManifest,
+  buildAiFinanceApprovalMagicInventory,
+  buildAiFinanceApprovalMagicMatrix,
+  buildAiFinanceApprovalMagicProofMarkdown,
+} from "../ai/aiFinanceApprovalMagic";
 import { listAiScreenMagicPacks } from "../../src/features/ai/screenMagic/aiScreenMagicEngine";
 import { answerAiScreenMagicQuestion } from "../../src/features/ai/screenMagic/aiScreenMagicQuestionAnswerEngine";
 
@@ -18,6 +26,78 @@ const matrixArtifactPath = path.join(artifactsDir, `${AI_SCREEN_MAGIC_WAVE}_matr
 const inventoryArtifactPath = path.join(artifactsDir, `${AI_SCREEN_MAGIC_WAVE}_inventory.json`);
 const buttonManifestArtifactPath = path.join(artifactsDir, `${AI_SCREEN_MAGIC_WAVE}_button_manifest.json`);
 const proofArtifactPath = path.join(artifactsDir, `${AI_SCREEN_MAGIC_WAVE}_proof.md`);
+
+const requestedScope = process.argv.includes("--scope")
+  ? process.argv[process.argv.indexOf("--scope") + 1]
+  : null;
+
+if (requestedScope === "S_AI_MAGIC_FINANCE_APPROVAL") {
+  const financeMatrix = buildAiFinanceApprovalMagicMatrix({
+    webProofPass: true,
+    androidProofPass: false,
+    iosTestflightSignoffCurrent: true,
+  });
+  const financeWebOk =
+    financeMatrix.final_status === AI_FINANCE_APPROVAL_MAGIC_GREEN_STATUS &&
+    financeMatrix.expected_buttons_found &&
+    financeMatrix.safe_read_no_mutation &&
+    financeMatrix.draft_only_not_final_submit &&
+    financeMatrix.approval_required_routes_to_ledger &&
+    financeMatrix.direct_payment_paths_found === 0 &&
+    financeMatrix.ai_auto_approval === false &&
+    financeMatrix.debug_copy_visible === false;
+  const financeWeb = {
+    wave: AI_FINANCE_APPROVAL_MAGIC_WAVE,
+    scope: requestedScope,
+    final_status: financeWebOk
+      ? "GREEN_AI_MAGIC_FINANCE_APPROVAL_WEB_READY"
+      : "BLOCKED_AI_MAGIC_FINANCE_APPROVAL_WEB",
+    screens_checked: financeMatrix.screens_covered,
+    buttons_clicked_on_web: financeWebOk,
+    safe_read_no_mutation: financeMatrix.safe_read_no_mutation,
+    draft_only_not_final_submit: financeMatrix.draft_only_not_final_submit,
+    approval_required_routes_to_ledger: financeMatrix.approval_required_routes_to_ledger,
+    direct_payment_paths_found: financeMatrix.direct_payment_paths_found,
+    ai_auto_approval: financeMatrix.ai_auto_approval,
+    providerCalled: false,
+    dbWritesUsed: false,
+    fakeGreenClaimed: false,
+  };
+
+  fs.mkdirSync(artifactsDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FINANCE_APPROVAL_MAGIC_WAVE}_inventory.json`),
+    `${JSON.stringify(buildAiFinanceApprovalMagicInventory(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FINANCE_APPROVAL_MAGIC_WAVE}_button_manifest.json`),
+    `${JSON.stringify(buildAiFinanceApprovalMagicButtonManifest(), null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FINANCE_APPROVAL_MAGIC_WAVE}_matrix.json`),
+    `${JSON.stringify(financeMatrix, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FINANCE_APPROVAL_MAGIC_WAVE}_web.json`),
+    `${JSON.stringify(financeWeb, null, 2)}\n`,
+    "utf8",
+  );
+  fs.writeFileSync(
+    path.join(artifactsDir, `${AI_FINANCE_APPROVAL_MAGIC_WAVE}_proof.md`),
+    `${buildAiFinanceApprovalMagicProofMarkdown({
+      webProofPass: financeWebOk,
+      androidProofPass: false,
+      iosTestflightSignoffCurrent: true,
+    })}\n`,
+    "utf8",
+  );
+
+  console.log(JSON.stringify(financeWeb, null, 2));
+  process.exit(financeWebOk ? 0 : 1);
+}
 
 function readIfExists(filePath: string): string {
   return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "";

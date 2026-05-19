@@ -1,0 +1,304 @@
+{
+  "wave": "S_AI_MAGIC_FINANCE_APPROVAL_POINT_OF_NO_RETURN",
+  "screens": [
+    {
+      "screenId": "accountant.main",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        "Поступило на оплату",
+        "Критические платежи",
+        "Без документов",
+        "Ждут согласования"
+      ],
+      "visibleDomainData": [
+        "платежи на проверке",
+        "общая сумма",
+        "критические платежи",
+        "платежи без документов",
+        "платежи ждут директора",
+        "первый платеж для открытия"
+      ],
+      "riskSummary": [
+        "критические платежи",
+        "missing documents",
+        "платежи без директорского решения"
+      ],
+      "missingDataSummary": [
+        "документы-основания",
+        "подтверждение поставщика",
+        "rationale для директора"
+      ],
+      "safeActions": [
+        "проверить критические",
+        "открыть платежи без документов"
+      ],
+      "approvalCandidates": [
+        "отправить платеж на согласование директору"
+      ],
+      "exactBlockers": [
+        "оплата напрямую запрещена без документов и human approval"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Проверить критические",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Собрать отчёт за сегодня",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Подготовить rationale директору",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Запросить документы",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить на согласование",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.payment",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        "Документы платежа",
+        "Риск суммы",
+        "Риск поставщика",
+        "Готовый rationale"
+      ],
+      "visibleDomainData": [
+        "поставщик",
+        "сумма",
+        "основание",
+        "связанные документы",
+        "missing documents",
+        "риск суммы",
+        "риск поставщика"
+      ],
+      "riskSummary": [
+        "риск суммы",
+        "риск поставщика",
+        "платеж без полного evidence"
+      ],
+      "missingDataSummary": [
+        "документ-основание",
+        "подтверждение поставщика",
+        "директорский rationale"
+      ],
+      "safeActions": [
+        "проверить документы",
+        "показать связанные документы"
+      ],
+      "approvalCandidates": [
+        "отправить платеж на согласование"
+      ],
+      "exactBlockers": [
+        "платеж нельзя проводить без evidence и approval ledger"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Проверить документы",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Подготовить rationale",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Запросить подтверждение",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Отправить на согласование",
+          "actionKind": "approval_required"
+        }
+      ]
+    },
+    {
+      "screenId": "accountant.history",
+      "domain": "finance",
+      "roleScope": [
+        "accountant",
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        "Повторяющиеся missing documents",
+        "Поставщики с отклонениями",
+        "Необычные суммы",
+        "Риск-отчёт"
+      ],
+      "visibleDomainData": [
+        "повторные missing documents",
+        "необычные суммы",
+        "ручные проверки",
+        "отклонения по истории"
+      ],
+      "riskSummary": [
+        "поставщики с повторными документными проблемами",
+        "аномальные суммы",
+        "частые ручные проверки"
+      ],
+      "missingDataSummary": [
+        "историческое evidence по поставщику",
+        "причины отклонений"
+      ],
+      "safeActions": [
+        "показать отклонения",
+        "сравнить поставщиков"
+      ],
+      "approvalCandidates": [
+        "передать risk report на review"
+      ],
+      "exactBlockers": [
+        "историю оплат нельзя переписывать AI-действием"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Показать отклонения",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сравнить поставщиков",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Собрать отчёт по рискам",
+          "actionKind": "draft_only"
+        }
+      ]
+    },
+    {
+      "screenId": "director.finance",
+      "domain": "control",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        "Платежи с высоким риском",
+        "Поставщики с отклонениями",
+        "Платежи без полного evidence",
+        "Approval queue"
+      ],
+      "visibleDomainData": [
+        "high-risk payments",
+        "supplier amount deviations",
+        "payments without full evidence",
+        "payments waiting approval"
+      ],
+      "riskSummary": [
+        "high-risk payment",
+        "supplier amount deviation",
+        "payment without evidence"
+      ],
+      "missingDataSummary": [
+        "rationale",
+        "supplier history",
+        "document evidence"
+      ],
+      "safeActions": [
+        "открыть рискованные платежи",
+        "сравнить историю поставщика",
+        "открыть approval inbox"
+      ],
+      "approvalCandidates": [
+        "Approve/Reject через inbox human only"
+      ],
+      "exactBlockers": [
+        "AI не approve/reject и не проводит платеж"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Открыть рискованные платежи",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Сравнить историю поставщика",
+          "actionKind": "safe_read"
+        },
+        {
+          "label": "Запросить rationale",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть approval inbox",
+          "actionKind": "safe_read"
+        }
+      ]
+    },
+    {
+      "screenId": "approval.inbox",
+      "domain": "approval",
+      "roleScope": [
+        "control",
+        "director"
+      ],
+      "preparedWork": [
+        "Что предлагается",
+        "Почему",
+        "Evidence",
+        "Что будет после approval"
+      ],
+      "visibleDomainData": [
+        "что предлагается",
+        "почему",
+        "evidence",
+        "risks",
+        "effect after approval",
+        "что запрещено без approval"
+      ],
+      "riskSummary": [
+        "approval без evidence",
+        "hidden risk",
+        "AI self-approval"
+      ],
+      "missingDataSummary": [
+        "rationale",
+        "evidence",
+        "effect after approval"
+      ],
+      "safeActions": [
+        "открыть evidence"
+      ],
+      "approvalCandidates": [
+        "Approve/Reject human only"
+      ],
+      "exactBlockers": [
+        "AI не approve itself и не меняет статус"
+      ],
+      "expectedButtons": [
+        {
+          "label": "Approve",
+          "actionKind": "approval_required"
+        },
+        {
+          "label": "Reject",
+          "actionKind": "approval_required"
+        },
+        {
+          "label": "Запросить данные",
+          "actionKind": "draft_only"
+        },
+        {
+          "label": "Открыть evidence",
+          "actionKind": "safe_read"
+        }
+      ]
+    }
+  ]
+}

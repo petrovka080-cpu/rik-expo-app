@@ -168,6 +168,90 @@ function runCommand(
   };
 }
 
+function appendCapped(current: string, chunk: Buffer | string, maxBytes: number): string {
+  const next = current + chunk.toString();
+  if (Buffer.byteLength(next, "utf8") <= maxBytes) return next;
+  return next.slice(Math.max(0, next.length - maxBytes));
+}
+
+function killProcessTree(pid: number): void {
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+      encoding: "utf8",
+      stdio: "ignore",
+      shell: false,
+    });
+    return;
+  }
+  try {
+    process.kill(-pid, "SIGKILL");
+  } catch {
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // Best-effort cleanup; the caller still receives a timeout result.
+    }
+  }
+}
+
+function runCommandWithProcessTreeTimeout(
+  command: string,
+  args: readonly string[] = [],
+  options: {
+    projectRoot?: string;
+    env?: NodeJS.ProcessEnv;
+    timeoutMs?: number;
+    maxBuffer?: number;
+  } = {},
+): Promise<CommandRunResult> {
+  const timeoutMs = options.timeoutMs ?? 120_000;
+  const maxBuffer = options.maxBuffer ?? 16 * 1024 * 1024;
+
+  return new Promise((resolve) => {
+    let stdout = "";
+    let stderr = "";
+    let settled = false;
+    let timedOut = false;
+    const child = spawn(command, [...args], {
+      cwd: options.projectRoot ?? process.cwd(),
+      env: options.env ?? process.env,
+      shell: commandShell(command),
+      stdio: ["ignore", "pipe", "pipe"],
+      detached: process.platform !== "win32",
+    });
+    const finish = (result: CommandRunResult): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+    const timer = setTimeout(() => {
+      timedOut = true;
+      if (child.pid) killProcessTree(child.pid);
+    }, timeoutMs);
+
+    child.stdout?.on("data", (chunk: Buffer) => {
+      stdout = appendCapped(stdout, chunk, maxBuffer);
+    });
+    child.stderr?.on("data", (chunk: Buffer) => {
+      stderr = appendCapped(stderr, chunk, maxBuffer);
+    });
+    child.on("error", (error) => {
+      finish({ status: null, stdout, stderr, error });
+    });
+    child.on("close", (code) => {
+      finish({
+        status: code,
+        stdout,
+        stderr,
+        error: timedOut
+          ? new Error(`Command timed out after ${timeoutMs}ms: ${command} ${args.join(" ")}`)
+          : undefined,
+      });
+    });
+  });
+}
+
 function runRequired(
   command: string,
   args: readonly string[],
@@ -796,15 +880,15 @@ function buildMaestroTestArgs(params: {
   return args;
 }
 
-function runMaestroOnce(params: {
+async function runMaestroOnce(params: {
   projectRoot: string;
   maestroBinary: string;
   args: readonly string[];
   env: Record<string, string>;
   secrets: readonly string[];
   timeoutMs: number;
-}): CommandRunResult {
-  const result = runCommand(params.maestroBinary, params.args, {
+}): Promise<CommandRunResult> {
+  const result = await runCommandWithProcessTreeTimeout(params.maestroBinary, params.args, {
     projectRoot: params.projectRoot,
     timeoutMs: params.timeoutMs,
     maxBuffer: 64 * 1024 * 1024,
@@ -902,7 +986,7 @@ export async function runMaestroTestWithDriverRepair(
     reportPath: options.reportPath,
     extraArgs: options.extraArgs,
   });
-  const first = runMaestroOnce({
+  const first = await runMaestroOnce({
     projectRoot,
     maestroBinary,
     args,
@@ -958,7 +1042,7 @@ export async function runMaestroTestWithDriverRepair(
     ensureAppInstalled: true,
     uninstallDeviceMaestroPackages: true,
   });
-  const retry = runMaestroOnce({
+  const retry = await runMaestroOnce({
     projectRoot,
     maestroBinary,
     args: buildMaestroTestArgs({

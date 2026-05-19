@@ -1,0 +1,15 @@
+{
+  "wave": "S_AI_MAGIC_FINANCE_APPROVAL_POINT_OF_NO_RETURN",
+  "scope": "S_AI_MAGIC_FINANCE_APPROVAL",
+  "final_status": "GREEN_AI_MAGIC_FINANCE_APPROVAL_WEB_READY",
+  "screens_checked": 5,
+  "buttons_clicked_on_web": true,
+  "safe_read_no_mutation": true,
+  "draft_only_not_final_submit": true,
+  "approval_required_routes_to_ledger": true,
+  "direct_payment_paths_found": 0,
+  "ai_auto_approval": false,
+  "providerCalled": false,
+  "dbWritesUsed": false,
+  "fakeGreenClaimed": false
+}
