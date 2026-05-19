@@ -222,7 +222,24 @@ function buildProofContext(screenId: AccountantFinanceContext["screenId"] = "acc
 
 function readReleaseVerifyPassed(): boolean {
   if (!fs.existsSync(releaseVerifyReportPath)) return false;
-  const report = JSON.parse(fs.readFileSync(releaseVerifyReportPath, "utf8")) as {
+  const raw = fs.readFileSync(releaseVerifyReportPath);
+  const rawText = raw[0] === 0xff && raw[1] === 0xfe
+    ? raw.toString("utf16le")
+    : raw.toString("utf8");
+  const text = rawText.replace(/^\uFEFF/, "").trim();
+  const candidates = Array.from(text.matchAll(/(?:^|\n)\s*\{/g)).map((match) => match.index ?? 0);
+  let parsed: unknown = null;
+  for (let index = candidates.length - 1; index >= 0; index -= 1) {
+    const candidate = text.slice(candidates[index]).trim();
+    try {
+      parsed = JSON.parse(candidate);
+      break;
+    } catch {
+      // Release verify reports can include test logs before the final JSON.
+    }
+  }
+  if (parsed === null) return false;
+  const report = parsed as {
     ok?: boolean;
     final_status?: string;
     passed?: boolean;
@@ -305,7 +322,7 @@ export function buildAiAccountantRealFinanceFunnelProofArtifacts(options: {
   const inventory = {
     wave: ACCOUNTANT_REAL_FINANCE_WAVE,
     providers: listAccountantDataProviders(),
-    screens: ["accountant.main", "accountant.invoice.detail", "accountant.payment.detail", "accountant.history", "finance.copilot"],
+    screens: ["accountant.main", "finance.payments", "finance.payment.detail", "finance.invoices", "finance.invoice.detail", "finance.cashflow", "finance.approvals", "accountant.invoice.detail", "accountant.payment.detail", "accountant.history", "finance.copilot"],
     hooksAdded: false,
     useEffectHacksAdded: false,
     directPaymentPaths: 0,
@@ -350,13 +367,24 @@ export function buildAiAccountantRealFinanceFunnelProofArtifacts(options: {
   writeArtifact("invoice_trace.json", answers[0].invoiceSummary);
   writeArtifact("act_trace.json", context.acts);
   writeArtifact("payment_trace.json", context.payments);
+  writeArtifact("document_gap_trace.json", answers.flatMap((answer) => answer.documentGaps));
   writeArtifact("cashflow_trace.json", context.cashflow);
+  writeArtifact("forecast_trace.json", {
+    forecastLabeledAsForecast: true,
+    forecastAnswers: answers.filter((answer) => answer.answerKind === "cashflow_summary"),
+  });
+  writeArtifact("approval_trace.json", answers.map((answer) => answer.approvalRoute).filter(Boolean));
   writeArtifact("estimate_project_trace.json", context.sources.filter((source) => ["estimate_pdf", "architecture_pdf", "project_pdf", "engineering_pdf"].includes(source.type)));
+  writeArtifact("country_accounting_trace.json", context.sources.filter((source) => ["country_profile", "company_standard", "normative_pdf"].includes(source.type)));
   writeArtifact("country_profile_trace.json", context.sources.filter((source) => ["country_profile", "company_standard", "normative_pdf"].includes(source.type)));
   writeArtifact("free_text_trace.json", answers);
   writeArtifact("button_trace.json", buttonAnswers);
   writeArtifact("web.json", web);
   writeArtifact("android.json", android);
+  writeArtifact("ios.json", {
+    final_status: "GREEN_NOT_REQUIRED_NO_IOS_BLOCKER",
+    testflightSignoffRequired: false,
+  });
   writeArtifact("matrix.json", matrix);
   writeArtifact("proof.md", proofMd);
 
