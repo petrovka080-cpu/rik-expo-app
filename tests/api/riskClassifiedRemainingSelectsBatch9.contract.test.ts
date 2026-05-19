@@ -319,6 +319,22 @@ const isApprovedAiAccountantRealFinancePatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiSupplierContractorMarketplaceIntakePatch = (file: string) =>
+  /^src\/lib\/ai\/marketplaceIntake\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiMarketplace/.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiSupplierContractorMarketplaceIntake/.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiContractorMarketplace/.test(file.replace(/\\/g, "/")) ||
+  /^tests\/architecture\/aiMarketplace/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "scripts/ai/aiSupplierContractorMarketplaceIntakeProof.ts" ||
+  /^scripts\/e2e\/runAiSupplierContractorMarketplaceIntake/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "tests/perf/performance-budget.test.ts" ||
+  [
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -396,6 +412,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAiForemanRealWorkdayPatch(file) &&
         !isApprovedAiBuyerRealSourcingPatch(file) &&
         !isApprovedAiAccountantRealFinancePatch(file) &&
+        !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

@@ -606,6 +606,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "accountantFinance"),
       /\.ts$/,
     );
+    const sAiSupplierContractorMarketplaceIntakeFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "marketplaceIntake"),
+      /\.ts$/,
+    );
     const sAiConstructionDataGraphFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "constructionDataGraph"),
       /\.ts$/,
@@ -1328,6 +1332,8 @@ describe("performance budget вЂ” bundle module count", () => {
     // S_AI_PRODUCT_03 adds 12 permanent role-screen assistant product modules.
     // S_AI_MAGIC_13 adds three permanent workday live-evidence bridge modules.
     // S_AI_PRO_02 adds 11 permanent construction know-how engine/BFF modules.
+    // S_AI_SUPPLIER_CONTRACTOR_MARKETPLACE_INTAKE adds ten permanent pure
+    // supplier/contractor marketplace-intake modules, no hooks or mutations.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1520,6 +1526,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiForemanRealWorkdayIntelligenceFiles).toBeLessThanOrEqual(9);
     expect(sAiBuyerRealSourcingFunnelFiles).toBeLessThanOrEqual(11);
     expect(sAiAccountantRealFinanceFunnelFiles).toBeLessThanOrEqual(11);
+    expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
     expect(sAiConstructionDataGraphFiles).toBeLessThanOrEqual(9);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
@@ -1736,6 +1743,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiForemanRealWorkdayIntelligenceFiles -
         sAiBuyerRealSourcingFunnelFiles -
         sAiAccountantRealFinanceFunnelFiles -
+        sAiSupplierContractorMarketplaceIntakeFiles -
         sAiConstructionDataGraphFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -
