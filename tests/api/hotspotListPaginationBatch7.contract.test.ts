@@ -317,6 +317,19 @@ const isApprovedAiBuyerRealSourcingPatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiAccountantRealFinancePatch = (file: string) =>
+  /^src\/lib\/ai\/accountantFinance\//.test(file.replace(/\\/g, "/")) ||
+  /^tests\/ai\/aiAccountant/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "scripts/ai/aiAccountantRealFinanceFunnelProof.ts" ||
+  /^scripts\/e2e\/runAiAccountantRealFinanceFunnel/.test(file.replace(/\\/g, "/")) ||
+  file.replace(/\\/g, "/") === "tests/perf/performance-budget.test.ts" ||
+  [
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    "tests/api/remainingSafeListPaginationBatch8.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -470,6 +483,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiConstructionKnowledgeCorePatch(file) &&
         !isApprovedAiForemanRealWorkdayPatch(file) &&
         !isApprovedAiBuyerRealSourcingPatch(file) &&
+        !isApprovedAiAccountantRealFinancePatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&

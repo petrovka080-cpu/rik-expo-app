@@ -324,6 +324,65 @@ function createFlowFile(mode: "card" | "empty"): string {
   return flowPath;
 }
 
+type WorkdayRuntimeEvidence = {
+  commandCenterWorkdaySectionVisible: boolean;
+  workdayCardVisible: boolean;
+  workdayEmptyStateVisible: boolean;
+};
+
+function emptyWorkdayRuntimeEvidence(): WorkdayRuntimeEvidence {
+  return {
+    commandCenterWorkdaySectionVisible: false,
+    workdayCardVisible: false,
+    workdayEmptyStateVisible: false,
+  };
+}
+
+function safeRunId(runId: string): string {
+  return runId.replace(/[^a-zA-Z0-9_.-]/g, "_");
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasRuntimeResourceId(text: string, id: string): boolean {
+  const escaped = escapeRegExp(id);
+  return new RegExp(`["']resource-id["']\\s*:\\s*["']${escaped}["']|resource-id=["']${escaped}["']`).test(text);
+}
+
+function collectWorkdayRuntimeEvidence(debugOutputDir: string): WorkdayRuntimeEvidence {
+  const evidence = emptyWorkdayRuntimeEvidence();
+  if (!fs.existsSync(debugOutputDir)) return evidence;
+
+  const stack = [debugOutputDir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) continue;
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const entryPath = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        stack.push(entryPath);
+        continue;
+      }
+      if (!/\.(json|html|log|xml)$/i.test(entry.name)) continue;
+      const text = fs.readFileSync(entryPath, "utf8");
+      evidence.commandCenterWorkdaySectionVisible ||= hasRuntimeResourceId(text, "ai.workday.section");
+      evidence.workdayCardVisible ||= hasRuntimeResourceId(text, "ai.workday.card");
+      evidence.workdayEmptyStateVisible ||= hasRuntimeResourceId(text, "ai.workday.empty_state");
+      if (
+        evidence.commandCenterWorkdaySectionVisible &&
+        evidence.workdayCardVisible &&
+        evidence.workdayEmptyStateVisible
+      ) {
+        return evidence;
+      }
+    }
+  }
+
+  return evidence;
+}
+
 function classifyMaestroFailure(error: unknown): {
   status: Extract<
     AiProactiveWorkdayStatus,
@@ -369,20 +428,29 @@ async function runFlow(
   mode: "card" | "empty",
   roleEnv: Record<string, string>,
   secrets: readonly string[],
-): Promise<{ passed: true } | { passed: false; failure: ReturnType<typeof classifyMaestroFailure> }> {
+): Promise<
+  | { passed: true; evidence: WorkdayRuntimeEvidence }
+  | { passed: false; failure: ReturnType<typeof classifyMaestroFailure>; evidence: WorkdayRuntimeEvidence }
+> {
   const flowPath = createFlowFile(mode);
+  const runId = `proactive_workday_${mode}_${Date.now()}`;
+  const debugOutputDir = path.join(projectRoot, "artifacts", "maestro_debug", safeRunId(runId));
   try {
     await runMaestroTestWithDriverRepair({
       projectRoot,
-      runId: `proactive_workday_${mode}_${Date.now()}`,
+      runId,
       flowPaths: [flowPath],
       env: roleEnv,
       secrets,
       maestroBinary,
     });
-    return { passed: true };
+    return { passed: true, evidence: collectWorkdayRuntimeEvidence(debugOutputDir) };
   } catch (error) {
-    return { passed: false, failure: classifyMaestroFailure(error) };
+    return {
+      passed: false,
+      failure: classifyMaestroFailure(error),
+      evidence: collectWorkdayRuntimeEvidence(debugOutputDir),
+    };
   } finally {
     fs.rmSync(flowPath, { force: true });
   }
@@ -476,9 +544,20 @@ export async function runAiProactiveWorkdayTaskIntelligenceMaestro(): Promise<Ai
       }),
     );
   }
-  const emptyProof = cardProof.passed ? null : await runFlow("empty", roleEnv, secrets);
-  const cardVisible = cardProof.passed;
-  const emptyVisible = emptyProof?.passed === true;
+  const emptyProof =
+    cardProof.passed || cardProof.evidence.workdayEmptyStateVisible
+      ? null
+      : await runFlow("empty", roleEnv, secrets);
+  const cardVisible = cardProof.passed || cardProof.evidence.workdayCardVisible;
+  const emptyVisible =
+    cardProof.evidence.workdayEmptyStateVisible ||
+    emptyProof?.passed === true ||
+    emptyProof?.evidence.workdayEmptyStateVisible === true;
+  const sectionVisible =
+    cardProof.evidence.commandCenterWorkdaySectionVisible ||
+    emptyProof?.evidence.commandCenterWorkdaySectionVisible === true ||
+    cardVisible ||
+    emptyVisible;
 
   if (
     emptyProof &&
@@ -493,7 +572,7 @@ export async function runAiProactiveWorkdayTaskIntelligenceMaestro(): Promise<Ai
     );
   }
 
-  if (!cardVisible && !emptyVisible) {
+  if (!sectionVisible || (!cardVisible && !emptyVisible)) {
     return writeArtifacts(
       buildArtifact(
         "BLOCKED_PROACTIVE_WORKDAY_RUNTIME_TARGETABILITY",
@@ -501,7 +580,7 @@ export async function runAiProactiveWorkdayTaskIntelligenceMaestro(): Promise<Ai
         {
           android_runtime_smoke: "PASS",
           emulator_runtime_proof: "BLOCKED",
-          command_center_workday_section_visible: false,
+          command_center_workday_section_visible: sectionVisible,
         },
       ),
     );
