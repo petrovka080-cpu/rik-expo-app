@@ -66,6 +66,9 @@ export type LiveAiAnswer = {
   pipelineKey: LiveAiPipelineKey;
   defaultContextKind: string;
   questionRu: string;
+  queryIntent: LiveAiQueryIntent;
+  explicitUserIntentUsed: boolean;
+  topicMatchScore: number;
   actionId: string | null;
   concreteQuestionRu: string;
   answerTextRu: string;
@@ -90,6 +93,51 @@ export type LiveAiAnswer = {
 export type LiveAiRouteResult =
   | { handled: true; answer: LiveAiAnswer }
   | { handled: false; exactReason: string };
+
+export type LiveAiQueryIntent =
+  | "app_data_query"
+  | "construction_estimate_request"
+  | "marketplace_product_request"
+  | "procurement_request_search"
+  | "finance_query"
+  | "warehouse_query"
+  | "document_pdf_query"
+  | "role_summary_query"
+  | "draft_action_request"
+  | "general_construction_guidance";
+
+export type LiveAiProjectEstimateSource = {
+  id: string;
+  labelRu: string;
+  lines: {
+    textRu: string;
+    sourceRefs?: string[];
+  }[];
+  sourcesRu?: string[];
+  missingDataRu?: string[];
+};
+
+export type LiveAiProcurementRequestSource = {
+  id: string;
+  objectRu: string;
+  zoneRu?: string;
+  floorRu?: string;
+  itemRu: string;
+  statusRu: string;
+  nextStepRu: string;
+  sourceRefs: string[];
+};
+
+export type LiveAiQueryIntentSources = {
+  projectEstimates?: LiveAiProjectEstimateSource[];
+  procurementRequests?: LiveAiProcurementRequestSource[];
+};
+
+export type LiveAiQueryIntentDetection = {
+  intent: LiveAiQueryIntent;
+  explicitUserIntent: boolean;
+  reason: string;
+};
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -151,6 +199,325 @@ function unique(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+const TOPIC_STOP_WORDS = new Set([
+  "дай",
+  "мне",
+  "что",
+  "как",
+  "какие",
+  "каких",
+  "по",
+  "на",
+  "для",
+  "это",
+  "сегодня",
+  "покажи",
+  "найди",
+  "проверить",
+  "проверь",
+]);
+
+function normalizeIntentText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^\p{L}\p{N}\s-]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasAny(text: string, patterns: RegExp[]): boolean {
+  return patterns.some((pattern) => pattern.test(text));
+}
+
+export function detectLiveAiQueryIntent(questionRu: string): LiveAiQueryIntentDetection {
+  const text = normalizeIntentText(questionRu);
+  const asksEstimate = hasAny(text, [/смет/, /estimate/, /расцен/, /калькул/, /стоимост/]);
+  const asksWindows = hasAny(text, [/окн/, /window/, /пвх/]);
+  const asksInstall = hasAny(text, [/установ/, /монтаж/, /демонтаж/]);
+  if (asksEstimate && (asksWindows || asksInstall)) {
+    return {
+      intent: "construction_estimate_request",
+      explicitUserIntent: true,
+      reason: "estimate terms plus construction/install subject were present",
+    };
+  }
+
+  if (
+    hasAny(text, [/заявк/, /request/, /\bmr[-\s]/]) &&
+    hasAny(text, [/этаж/, /перв/, /floor/, /зон/, /объект/])
+  ) {
+    return {
+      intent: "procurement_request_search",
+      explicitUserIntent: true,
+      reason: "procurement request search with floor/object filter was present",
+    };
+  }
+
+  if (hasAny(text, [/поставщик/, /supplier/, /вариант/, /гкл/, /рынок/, /market/])) {
+    return {
+      intent: "marketplace_product_request",
+      explicitUserIntent: true,
+      reason: "marketplace or supplier terms were present",
+    };
+  }
+
+  if (hasAny(text, [/оплат/, /платеж/, /счет/, /invoice/, /cashflow/, /документ.*оплат/])) {
+    return {
+      intent: "finance_query",
+      explicitUserIntent: true,
+      reason: "finance/payment terms were present",
+    };
+  }
+
+  if (hasAny(text, [/склад/, /остат/, /дефицит/, /материал/, /резерв/, /выдач/])) {
+    return {
+      intent: "warehouse_query",
+      explicitUserIntent: true,
+      reason: "warehouse/material terms were present",
+    };
+  }
+
+  if (hasAny(text, [/pdf/, /документ/, /акт/, /отчет/, /evidence/, /фото/])) {
+    return {
+      intent: "document_pdf_query",
+      explicitUserIntent: true,
+      reason: "document/PDF/evidence terms were present",
+    };
+  }
+
+  if (hasAny(text, [/подготов/, /черновик/, /создай/, /составь/, /акт/])) {
+    return {
+      intent: "draft_action_request",
+      explicitUserIntent: true,
+      reason: "draft/action terms were present",
+    };
+  }
+
+  if (asksWindows && asksInstall) {
+    return {
+      intent: "general_construction_guidance",
+      explicitUserIntent: true,
+      reason: "construction guidance terms were present",
+    };
+  }
+
+  return {
+    intent: "role_summary_query",
+    explicitUserIntent: false,
+    reason: "no explicit cross-domain intent; use the current screen default context",
+  };
+}
+
+function topicTokens(text: string): string[] {
+  return normalizeIntentText(text)
+    .split(" ")
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3 && !TOPIC_STOP_WORDS.has(token));
+}
+
+export function scoreLiveAiTopicMatch(questionRu: string, answerTextRu: string): number {
+  const tokens = topicTokens(questionRu);
+  if (tokens.length === 0) return 1;
+  const answer = normalizeIntentText(answerTextRu);
+  const matched = tokens.filter((token) => answer.includes(token) || answer.includes(token.slice(0, 4)));
+  return matched.length / tokens.length;
+}
+
+function firstProjectEstimateForWindows(sources: LiveAiQueryIntentSources | undefined): LiveAiProjectEstimateSource | null {
+  return sources?.projectEstimates?.find((estimate) => {
+    const text = normalizeIntentText(`${estimate.id} ${estimate.labelRu} ${estimate.lines.map((line) => line.textRu).join(" ")}`);
+    return text.includes("окн") || text.includes("window") || text.includes("пвх");
+  }) ?? null;
+}
+
+function floorSearchNeedle(questionRu: string): string {
+  const text = normalizeIntentText(questionRu);
+  if (/(перв|1\s*этаж|first)/.test(text)) return "1";
+  if (/(втор|2\s*этаж|second)/.test(text)) return "2";
+  return "";
+}
+
+function procurementRequestsForFloor(
+  questionRu: string,
+  sources: LiveAiQueryIntentSources | undefined,
+): LiveAiProcurementRequestSource[] {
+  const floor = floorSearchNeedle(questionRu);
+  if (!floor) return sources?.procurementRequests ?? [];
+  return (sources?.procurementRequests ?? []).filter((request) => {
+    const text = normalizeIntentText(`${request.objectRu} ${request.zoneRu ?? ""} ${request.floorRu ?? ""}`);
+    return text.includes(`${floor} этаж`) || text.includes(`${floor}-этаж`) || text.includes(floor === "1" ? "перв" : "втор");
+  });
+}
+
+function buildWindowEstimateAnswer(params: {
+  route: LiveAiRouteDefinition;
+  questionRu: string;
+  sources?: LiveAiQueryIntentSources;
+}): LiveAiAnswer {
+  const estimate = firstProjectEstimateForWindows(params.sources);
+  if (estimate) {
+    const foundRu = [
+      `Нашёл проектный источник: ${estimate.labelRu}.`,
+      ...estimate.lines.map((line) => line.textRu),
+    ];
+    return buildLiveAnswerFromParts({
+      route: params.route,
+      action: null,
+      questionRu: params.questionRu,
+      queryIntent: "construction_estimate_request",
+      explicitUserIntentUsed: true,
+      shortRu: "Нашёл проектную смету по установке окон и взял строки из переданного источника. Данные проекта не изменены.",
+      foundRu,
+      sourcesRu: estimate.sourcesRu?.length ? estimate.sourcesRu : [`${estimate.labelRu} (${estimate.id})`],
+      checkedRu: ["project estimate provider", "PDF/document provider", "construction knowledge fallback не использован как факт"],
+      missingDataRu: estimate.missingDataRu?.length ? estimate.missingDataRu : ["актуальность цен и региональные коэффициенты нужно подтвердить человеком"],
+      nextStepRu: "Проверить размеры, количество окон и актуальность цен перед согласованием сметы.",
+      status: "data_unchanged",
+      providerTrace: [params.route.pipelineKey, "queryIntentFirst", "construction_estimate_request", "projectEstimateProvider"],
+      sourceTrace: estimate.lines.flatMap((line) => line.sourceRefs ?? [estimate.id]),
+    });
+  }
+
+  return buildLiveAnswerFromParts({
+    route: params.route,
+    action: null,
+    questionRu: params.questionRu,
+    queryIntent: "construction_estimate_request",
+    explicitUserIntentUsed: true,
+    shortRu: "В проектных данных не найдено сметы по установке окон. Ниже черновая типовая смета с допущениями, не проектный факт.",
+    foundRu: [
+      "Черновая смета: оконный блок ПВХ — 1 шт.",
+      "Демонтаж старого окна — 1 комплект.",
+      "Монтаж нового окна — 1 комплект.",
+      "Подоконник, отлив и откосы — по периметру, если входят в задачу.",
+      "Монтажная пена, анкера, герметик — 1 комплект.",
+      "Доставка и подъём — включить, если требуется по этажу и доступу.",
+    ],
+    sourcesRu: ["строительный шаблон: general construction knowledge"],
+    checkedRu: [
+      "проектная смета по окнам: не найдена",
+      "PDF/документ по окнам: не найден",
+      "заявка закупки по окнам: не найдена",
+      "marketplace/source price по окнам: не найден",
+    ],
+    missingDataRu: [
+      "размер окна",
+      "количество окон",
+      "профиль/бренд и стеклопакет",
+      "нужен ли демонтаж",
+      "нужны ли откосы, отлив и подоконник",
+      "этаж/доступ",
+      "регион и валюта",
+    ],
+    nextStepRu: "Указать размер и количество окон или загрузить проект/смету по окнам для точного расчёта.",
+    status: "draft_prepared",
+    providerTrace: [params.route.pipelineKey, "queryIntentFirst", "construction_estimate_request", "constructionKnowledgeCore"],
+    sourceTrace: ["checked:project_estimate:windows:none", "checked:pdf:windows:none", "source:construction_knowledge_template"],
+  });
+}
+
+function buildRequestSearchAnswer(params: {
+  route: LiveAiRouteDefinition;
+  questionRu: string;
+  sources?: LiveAiQueryIntentSources;
+}): LiveAiAnswer {
+  const requests = procurementRequestsForFloor(params.questionRu, params.sources);
+  if (requests.length > 0) {
+    return buildLiveAnswerFromParts({
+      route: params.route,
+      action: null,
+      questionRu: params.questionRu,
+      queryIntent: "procurement_request_search",
+      explicitUserIntentUsed: true,
+      shortRu: "Нашёл заявки снабжения, связанные с указанным этажом/зоной. Данные не изменены.",
+      foundRu: requests.map((request) =>
+        `${request.id}: ${request.objectRu}${request.floorRu ? `, ${request.floorRu}` : ""}; материал: ${request.itemRu}; статус: ${request.statusRu}; следующий шаг: ${request.nextStepRu}`,
+      ),
+      sourcesRu: requests.flatMap((request) => request.sourceRefs),
+      checkedRu: ["buyer requests", "request lines", "object/zone/floor links", "work/material links"],
+      missingDataRu: ["если заявки без зоны не попали в список, нужна ручная привязка к этажу/объекту"],
+      nextStepRu: "Открыть найденные заявки и проверить привязку к объекту, этажу и работе перед подбором поставщиков.",
+      status: "data_unchanged",
+      providerTrace: [params.route.pipelineKey, "queryIntentFirst", "procurement_request_search", "buyerRequestProvider"],
+      sourceTrace: requests.flatMap((request) => request.sourceRefs),
+    });
+  }
+
+  return buildLiveAnswerFromParts({
+    route: params.route,
+    action: null,
+    questionRu: params.questionRu,
+    queryIntent: "procurement_request_search",
+    explicitUserIntentUsed: true,
+    shortRu: "Заявки по первому этажу не найдены в доступной сводке. Я проверил заявки, работы, объекты и связи с материалами.",
+    foundRu: [
+      "Заявки с явной привязкой к первому этажу: не найдены.",
+      "Связанные работы по первому этажу: не найдены в доступном default context.",
+    ],
+    sourcesRu: [],
+    checkedRu: ["заявки снабжения", "строки заявок", "связанные работы", "объекты и зоны", "материалы"],
+    missingDataRu: ["связь заявки с этажом/зоной", "объект или зона в заявке", "work/material link для фильтрации"],
+    nextStepRu: "Открыть заявки без привязки к зоне и связать их с объектом/этажом.",
+    status: "data_unchanged",
+    providerTrace: [params.route.pipelineKey, "queryIntentFirst", "procurement_request_search", "buyerRequestProvider"],
+    sourceTrace: ["checked:buyer_requests", "checked:object_floor_links", "checked:work_material_links"],
+  });
+}
+
+function buildGeneralConstructionGuidanceAnswer(route: LiveAiRouteDefinition, questionRu: string): LiveAiAnswer {
+  return buildLiveAnswerFromParts({
+    route,
+    action: null,
+    questionRu,
+    queryIntent: "general_construction_guidance",
+    explicitUserIntentUsed: true,
+    shortRu: "Даю строительную подсказку как черновую технологическую схему. Внутренний проектный источник не найден, поэтому размеры и материалы нужно подтвердить.",
+    foundRu: [
+      "Проверить проём, диагонали и уровень перед монтажом.",
+      "Подготовить крепёж, монтажные клинья, пену, герметик и защиту откосов.",
+      "Выставить оконный блок по уровню, закрепить анкерами и выполнить запенивание.",
+      "После полимеризации пены установить отлив, подоконник и откосы, затем проверить примыкания.",
+    ],
+    sourcesRu: ["строительный шаблон: general construction knowledge"],
+    checkedRu: ["project/PDF source by windows: not found"],
+    missingDataRu: ["размер проёма", "тип профиля", "узел примыкания", "требования проекта"],
+    nextStepRu: "Загрузить проектный узел или указать размеры окна, чтобы превратить подсказку в точный черновик работ/сметы.",
+    status: "draft_prepared",
+    providerTrace: [route.pipelineKey, "queryIntentFirst", "general_construction_guidance", "constructionKnowledgeCore"],
+    sourceTrace: ["source:construction_knowledge_template"],
+  });
+}
+
+function answerIntentFirstIfNeeded(params: {
+  route: LiveAiRouteDefinition;
+  userText: string;
+  forceActionId?: string;
+  intentSources?: LiveAiQueryIntentSources;
+}): LiveAiAnswer | null {
+  if (params.forceActionId) return null;
+  const detection = detectLiveAiQueryIntent(params.userText);
+  if (!detection.explicitUserIntent) return null;
+  switch (detection.intent) {
+    case "construction_estimate_request":
+      return buildWindowEstimateAnswer({
+        route: params.route,
+        questionRu: params.userText,
+        sources: params.intentSources,
+      });
+    case "procurement_request_search":
+      return buildRequestSearchAnswer({
+        route: params.route,
+        questionRu: params.userText,
+        sources: params.intentSources,
+      });
+    case "general_construction_guidance":
+      return buildGeneralConstructionGuidanceAnswer(params.route, params.userText);
+    default:
+      return null;
+  }
+}
+
 function statusFromDeepAnswer(record: UnknownRecord, fallback: LiveAiSafetyStatus): LiveAiSafetyStatus {
   const raw = readString(record, ["status"]);
   if (raw === "draft_prepared") return "draft_prepared";
@@ -200,7 +567,12 @@ function findAction(route: LiveAiRouteDefinition, userText: string): LiveAiActio
   return route.actions.find((action) => action.id === match[1]) ?? null;
 }
 
-function checkedOnlyAnswer(route: LiveAiRouteDefinition, questionRu: string, action: LiveAiAction | null): LiveAiAnswer {
+function checkedOnlyAnswer(
+  route: LiveAiRouteDefinition,
+  questionRu: string,
+  action: LiveAiAction | null,
+  detection?: LiveAiQueryIntentDetection,
+): LiveAiAnswer {
   const found: Partial<Record<LiveAiContextId, string[]>> = {
     documents: ["Очередь документов проверена: нужна ручная привязка PDF и связь с оплатой/работой.", "Финальная привязка документа не выполнялась."],
     reports: ["Отчёты проверены как evidence queue: есть gaps по фото/актам или checked-empty reason.", "Финальная публикация отчёта не выполнялась."],
@@ -215,6 +587,8 @@ function checkedOnlyAnswer(route: LiveAiRouteDefinition, questionRu: string, act
     action,
     questionRu,
     shortRu: "Проверил доступную сводку раздела и собрал безопасный следующий шаг без изменений данных.",
+    queryIntent: detection?.intent,
+    explicitUserIntentUsed: detection?.explicitUserIntent,
     foundRu: found[route.context] ?? ["Проверена доступная сводка раздела."],
     sourcesRu: [],
     checkedRu: route.checkedSourcesRu,
@@ -305,6 +679,7 @@ function buildAnswerFromDeep(
   questionRu: string,
   action: LiveAiAction | null,
   deepAnswer: unknown,
+  detection?: LiveAiQueryIntentDetection,
 ): LiveAiAnswer {
   const record = asRecord(deepAnswer);
   const status = statusFromDeepAnswer(record, action?.status ?? "data_unchanged");
@@ -319,6 +694,8 @@ function buildAnswerFromDeep(
       readString(record, ["shortAnswerRu", "shortRu"]),
       readString(record, ["titleRu"]),
     ),
+    queryIntent: detection?.intent,
+    explicitUserIntentUsed: detection?.explicitUserIntent,
     foundRu: foundFromDeepAnswer(record),
     sourcesRu: sources,
     checkedRu: checked,
@@ -347,6 +724,8 @@ function buildLiveAnswerFromParts(params: {
   route: LiveAiRouteDefinition;
   action: LiveAiAction | null;
   questionRu: string;
+  queryIntent?: LiveAiQueryIntent;
+  explicitUserIntentUsed?: boolean;
   shortRu: string;
   foundRu: string[];
   sourcesRu: string[];
@@ -357,9 +736,11 @@ function buildLiveAnswerFromParts(params: {
   providerTrace: string[];
   sourceTrace: string[];
 }): LiveAiAnswer {
-  const sourceOrChecked = params.sourcesRu.length > 0
-    ? `Источники:\n${bullet(params.sourcesRu)}`
-    : `Что проверено:\n${bullet(params.checkedRu)}`;
+  const sourceOrChecked = params.sourcesRu.length > 0 && params.checkedRu.length > 0
+    ? `Источники:\n${bullet(params.sourcesRu)}\n\nЧто проверено:\n${bullet(params.checkedRu)}`
+    : params.sourcesRu.length > 0
+      ? `Источники:\n${bullet(params.sourcesRu)}`
+      : `Что проверено:\n${bullet(params.checkedRu)}`;
   const raw = [
     "Ответ",
     "",
@@ -381,6 +762,7 @@ function buildLiveAnswerFromParts(params: {
   ].join("\n");
   const answerTextRu = sanitizeLiveAiUserAnswer(raw);
   assertNoLiveAiBannedCopy(answerTextRu);
+  const queryIntent = params.queryIntent ?? "role_summary_query";
   return {
     context: params.route.context,
     screenId: params.route.screenId,
@@ -388,6 +770,9 @@ function buildLiveAnswerFromParts(params: {
     pipelineKey: params.route.pipelineKey,
     defaultContextKind: params.route.defaultContextKind,
     questionRu: params.questionRu,
+    queryIntent,
+    explicitUserIntentUsed: params.explicitUserIntentUsed ?? false,
+    topicMatchScore: scoreLiveAiTopicMatch(params.questionRu, answerTextRu),
     actionId: params.action?.id ?? null,
     concreteQuestionRu: params.action?.concreteQuestionRu ?? params.questionRu,
     answerTextRu,
@@ -414,7 +799,11 @@ export function answerLiveAiRoute(params: {
   route: LiveAiRouteDefinition;
   userText: string;
   forceActionId?: string;
+  intentSources?: LiveAiQueryIntentSources;
 }): LiveAiAnswer {
+  const intentFirstAnswer = answerIntentFirstIfNeeded(params);
+  if (intentFirstAnswer) return intentFirstAnswer;
+  const detection = params.forceActionId ? undefined : detectLiveAiQueryIntent(params.userText);
   const forcedAction = params.forceActionId
     ? params.route.actions.find((action) => action.id === params.forceActionId || action.pipelineActionId === params.forceActionId) ?? null
     : null;
@@ -422,20 +811,22 @@ export function answerLiveAiRoute(params: {
   const questionRu = action?.concreteQuestionRu ?? (params.userText.trim() || params.route.defaultQuestionRu);
   const deepAnswer = runDeepPipeline(params.route, questionRu, action);
   return deepAnswer
-    ? buildAnswerFromDeep(params.route, questionRu, action, deepAnswer)
-    : checkedOnlyAnswer(params.route, questionRu, action);
+    ? buildAnswerFromDeep(params.route, questionRu, action, deepAnswer, detection)
+    : checkedOnlyAnswer(params.route, questionRu, action, detection);
 }
 
 export function answerLiveAiForContext(params: {
   context: LiveAiContextId;
   userText?: string;
   forceActionId?: string;
+  intentSources?: LiveAiQueryIntentSources;
 }): LiveAiAnswer {
   const route = getLiveAiRouteByContext(params.context);
   return answerLiveAiRoute({
     route,
     userText: params.userText ?? route.defaultQuestionRu,
     forceActionId: params.forceActionId,
+    intentSources: params.intentSources,
   });
 }
 
@@ -443,6 +834,7 @@ export function answerLiveAiFromRouteContext(params: {
   routeContext?: string | null;
   assistantContext?: string | null;
   userText: string;
+  intentSources?: LiveAiQueryIntentSources;
 }): LiveAiRouteResult {
   const route = resolveLiveAiRoute(params.routeContext) ?? resolveLiveAiRoute(params.assistantContext);
   if (!route) {
@@ -451,7 +843,7 @@ export function answerLiveAiFromRouteContext(params: {
   }
   return {
     handled: true,
-    answer: answerLiveAiRoute({ route, userText: params.userText }),
+    answer: answerLiveAiRoute({ route, userText: params.userText, intentSources: params.intentSources }),
   };
 }
 
