@@ -1,0 +1,23 @@
+{
+  "wave": "S_AI_LIVE_UI_ALL_SCREENS_REAL_ANSWERS_RECOVERY_POINT_OF_NO_RETURN",
+  "routeCount": 16,
+  "contexts": [
+    "warehouse",
+    "director",
+    "foreman",
+    "contractor",
+    "buyer",
+    "accountant",
+    "office",
+    "documents",
+    "reports",
+    "chat",
+    "market",
+    "supplier",
+    "admin",
+    "security",
+    "runtime",
+    "client"
+  ],
+  "answersChecked": 64
+}

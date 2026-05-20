@@ -1,0 +1,8 @@
+{
+  "final_status": "GREEN_AI_LIVE_UI_CROSS_ROLE_GUARD_READY",
+  "cross_role_leaks_found": 0,
+  "dangerous_mutations_found": 0,
+  "approval_bypass_found": 0,
+  "runtime_debug_visible_to_normal_user": false,
+  "raw_secrets_visible": false
+}

@@ -1,0 +1,445 @@
+[
+  {
+    "context": "warehouse",
+    "aliases": [
+      "warehouse",
+      "warehouse.main",
+      "warehouseStock"
+    ],
+    "screenId": "warehouse.main",
+    "role": "warehouse",
+    "pipelineKey": "warehouseStock",
+    "defaultContextKind": "warehouse.day_snapshot",
+    "actions": [
+      {
+        "id": "critical_deficits",
+        "labelRu": "Показать дефицит",
+        "pipelineActionId": "critical_deficits",
+        "concreteQuestionRu": "Покажи критичные дефициты склада: какие материалы блокируют работы, сколько нужно, сколько доступно, что зарезервировано и какой следующий шаг.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "issue_readiness",
+        "labelRu": "Что можно выдать",
+        "pipelineActionId": "issue_readiness",
+        "concreteQuestionRu": "Проверь готовность выдачи по складской дневной сводке: остатки, резервы, заявки, объект, missing data и безопасный следующий шаг.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "director",
+    "aliases": [
+      "director",
+      "director.dashboard",
+      "company"
+    ],
+    "screenId": "director.dashboard",
+    "role": "director",
+    "pipelineKey": "directorCompany",
+    "defaultContextKind": "director.company_decision_snapshot",
+    "actions": [
+      {
+        "id": "today_decision_queue",
+        "labelRu": "Открыть сводка",
+        "pipelineActionId": "today_decision_queue",
+        "concreteQuestionRu": "Собери директорскую сводку по компании: approvals, финансы, закупки, склад, поле, документы, office, риски и следующий шаг без approve/reject.",
+        "status": "approval_required"
+      },
+      {
+        "id": "warehouse_deficits",
+        "labelRu": "Риски по складу",
+        "pipelineActionId": "warehouse_deficits",
+        "concreteQuestionRu": "Покажи складские дефициты для директора: что блокирует объекты, какие источники проверены, чего не хватает и кому поручить следующий шаг.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "foreman",
+    "aliases": [
+      "foreman",
+      "foreman.main",
+      "field"
+    ],
+    "screenId": "foreman.main",
+    "role": "foreman",
+    "pipelineKey": "foremanIntelligence",
+    "defaultContextKind": "foreman.workday_snapshot",
+    "actions": [
+      {
+        "id": "daily_object_report",
+        "labelRu": "Подготовить отчёт",
+        "pipelineActionId": "daily_object_report",
+        "concreteQuestionRu": "Подготовь дневной отчёт прораба по работам, объектам, evidence, актам, документам, подрядчикам и материалам без финального закрытия работ.",
+        "status": "draft_prepared"
+      },
+      {
+        "id": "closeout_readiness",
+        "labelRu": "Что мешает закрыть",
+        "pipelineActionId": "closeout_readiness",
+        "concreteQuestionRu": "Покажи, что мешает закрыть работы сегодня: missing evidence, акты, материалы, документы, sources и безопасный следующий шаг.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "contractor",
+    "aliases": [
+      "contractor",
+      "contractor.main"
+    ],
+    "screenId": "contractor.main",
+    "role": "contractor",
+    "pipelineKey": "contractorAcceptance",
+    "defaultContextKind": "contractor.own_works_snapshot",
+    "actions": [
+      {
+        "id": "contractor_acceptance_blockers",
+        "labelRu": "Что мешает приёмке",
+        "pipelineActionId": "contractor_acceptance_blockers",
+        "concreteQuestionRu": "Покажи подрядчику только его работы: что мешает приёмке, какие документы/evidence нужны, какие источники проверены и следующий шаг без смены статуса.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "contractor_response_draft",
+        "labelRu": "Подготовить ответ",
+        "pipelineActionId": "contractor_response_draft",
+        "concreteQuestionRu": "Подготовь черновик ответа подрядчика по замечаниям и evidence, без финальной отправки и без изменения статуса работы.",
+        "status": "draft_prepared"
+      }
+    ]
+  },
+  {
+    "context": "buyer",
+    "aliases": [
+      "buyer",
+      "procurement",
+      "buyer.main"
+    ],
+    "screenId": "buyer.main",
+    "role": "buyer",
+    "pipelineKey": "buyerSourcing",
+    "defaultContextKind": "buyer.procurement_queue",
+    "actions": [
+      {
+        "id": "find_5_10_suppliers",
+        "labelRu": "Найти поставщиков / варианты",
+        "pipelineActionId": "find_5_10_suppliers",
+        "concreteQuestionRu": "Найди варианты поставщиков по очереди закупки: approved requests, warehouse deficits, sourcing status, marketplace options, риски и следующий шаг.",
+        "status": "draft_prepared"
+      },
+      {
+        "id": "compare_suppliers",
+        "labelRu": "Сравнить варианты",
+        "pipelineActionId": "compare_suppliers",
+        "concreteQuestionRu": "Сравни варианты закупки по цене, сроку, наличию, документам и рискам без создания заказа.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "accountant",
+    "aliases": [
+      "accountant",
+      "finance",
+      "accountant.main"
+    ],
+    "screenId": "accountant.main",
+    "role": "accountant",
+    "pipelineKey": "accountantFinance",
+    "defaultContextKind": "accountant.finance_period_snapshot",
+    "actions": [
+      {
+        "id": "critical_payments",
+        "labelRu": "Проверить критические",
+        "pipelineActionId": "critical_payments",
+        "concreteQuestionRu": "Проверь критические платежи за период: счета, акты, missing docs, approvals, cashflow sources и следующий шаг без оплаты.",
+        "status": "approval_required"
+      },
+      {
+        "id": "missing_documents_for_payment",
+        "labelRu": "Чего не хватает для оплаты",
+        "pipelineActionId": "missing_documents_for_payment",
+        "concreteQuestionRu": "Покажи, какие документы блокируют оплату, по каким источникам это видно и кому нужен следующий шаг.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "office",
+    "aliases": [
+      "office",
+      "office.hub"
+    ],
+    "screenId": "office.hub",
+    "role": "office",
+    "pipelineKey": "officeDocumentControl",
+    "defaultContextKind": "office.stuck_work_document_queue",
+    "actions": [
+      {
+        "id": "stuck_today",
+        "labelRu": "Что застряло",
+        "pipelineActionId": "stuck_today",
+        "concreteQuestionRu": "Покажи, что застряло сегодня: документы, approval packages, reminders, deadlines, unlinked PDFs, owner role, missing data и следующий шаг.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "reminder_draft",
+        "labelRu": "Кому напомнить",
+        "pipelineActionId": "reminder_draft",
+        "concreteQuestionRu": "Подготовь черновик напоминания: кому, почему, что блокирует оплату/закрытие работ, sources и missing data, без финальной отправки.",
+        "status": "draft_prepared"
+      }
+    ]
+  },
+  {
+    "context": "documents",
+    "aliases": [
+      "documents",
+      "documents.main",
+      "document"
+    ],
+    "screenId": "documents.main",
+    "role": "documents",
+    "pipelineKey": "documentsDocumentCore",
+    "defaultContextKind": "documents.queue_snapshot",
+    "actions": [
+      {
+        "id": "documents_to_process",
+        "labelRu": "Документы к обработке",
+        "pipelineActionId": "documents_to_process",
+        "concreteQuestionRu": "Проверь очередь документов: какие PDF или документы не связаны, что блокирует оплату/закрытие работ и какой следующий шаг.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "unlinked_documents",
+        "labelRu": "Несвязанные PDF",
+        "pipelineActionId": "unlinked_documents",
+        "concreteQuestionRu": "Покажи несвязанные PDF/документы, что проверено, чего не хватает для связи и безопасный следующий шаг без финальной привязки.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "reports",
+    "aliases": [
+      "reports",
+      "reports.modal"
+    ],
+    "screenId": "reports.modal",
+    "role": "director",
+    "pipelineKey": "reportsDocumentCore",
+    "defaultContextKind": "reports.evidence_snapshot",
+    "actions": [
+      {
+        "id": "document_evidence_gaps",
+        "labelRu": "Отчёты без evidence",
+        "pipelineActionId": "document_evidence_gaps",
+        "concreteQuestionRu": "Проверь отчёты: где нет evidence, какие источники проверены, кто следующий owner и что подготовить.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "daily_object_report",
+        "labelRu": "Сводка по отчётам",
+        "pipelineActionId": "daily_object_report",
+        "concreteQuestionRu": "Собери безопасную сводку отчётов: период, источники, missing evidence, next step и статус без публикации финального отчёта.",
+        "status": "draft_prepared"
+      }
+    ]
+  },
+  {
+    "context": "chat",
+    "aliases": [
+      "chat",
+      "chat.main"
+    ],
+    "screenId": "chat.main",
+    "role": "foreman",
+    "pipelineKey": "chatExtraction",
+    "defaultContextKind": "chat.safe_extraction_snapshot",
+    "actions": [
+      {
+        "id": "chat_context_summary",
+        "labelRu": "Что важно из чата",
+        "pipelineActionId": "chat_context_summary",
+        "concreteQuestionRu": "Вытащи из чата рабочие факты: что застряло, кто owner, какие документы/evidence упомянуты, источники и следующий шаг.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "chat_task_draft",
+        "labelRu": "Черновик задачи",
+        "pipelineActionId": "chat_task_draft",
+        "concreteQuestionRu": "Подготовь черновик задачи из чата с owner, missing data, sources и safe status без закрытия задачи.",
+        "status": "draft_prepared"
+      }
+    ]
+  },
+  {
+    "context": "market",
+    "aliases": [
+      "market",
+      "market.home",
+      "marketplace"
+    ],
+    "screenId": "market.home",
+    "role": "buyer",
+    "pipelineKey": "marketplaceIntake",
+    "defaultContextKind": "market.marketplace_queue",
+    "actions": [
+      {
+        "id": "show_request_matches",
+        "labelRu": "Варианты рынка",
+        "pipelineActionId": "show_request_matches",
+        "concreteQuestionRu": "Покажи варианты marketplace для очереди закупки: совпадения, документы, риски, missing data и следующий шаг без заказа.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "marketplace_source_check",
+        "labelRu": "Проверить источники",
+        "pipelineActionId": "marketplace_source_check",
+        "concreteQuestionRu": "Проверь источники marketplace: карточки, документы, связи с заявками, риски и следующий шаг.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "supplier",
+    "aliases": [
+      "supplier",
+      "supplier.showcase",
+      "supplierMap",
+      "suppliers-map"
+    ],
+    "screenId": "supplier.showcase",
+    "role": "supplier",
+    "pipelineKey": "marketplaceIntake",
+    "defaultContextKind": "supplier.showcase_snapshot",
+    "actions": [
+      {
+        "id": "check_cards",
+        "labelRu": "Проверить витрину",
+        "pipelineActionId": "check_cards",
+        "concreteQuestionRu": "Проверь витрину поставщика: карточки, документы, missing data, риски модерации и следующий шаг без публикации.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "add_product_draft",
+        "labelRu": "Черновик позиции",
+        "pipelineActionId": "add_product_draft",
+        "concreteQuestionRu": "Подготовь безопасный черновик позиции поставщика из доступных источников без публикации и без fake price/availability.",
+        "status": "draft_prepared"
+      }
+    ]
+  },
+  {
+    "context": "admin",
+    "aliases": [
+      "admin",
+      "admin.org",
+      "profile"
+    ],
+    "screenId": "admin.org",
+    "role": "admin",
+    "pipelineKey": "adminOrgGovernance",
+    "defaultContextKind": "admin.org_governance_snapshot",
+    "actions": [
+      {
+        "id": "org_governance_snapshot",
+        "labelRu": "Проверить роли",
+        "pipelineActionId": "org_governance_snapshot",
+        "concreteQuestionRu": "Проверь org governance snapshot: роли, pending owners, missing data, sources и следующий шаг без изменения прав.",
+        "status": "approval_required"
+      },
+      {
+        "id": "owner_gap_report",
+        "labelRu": "Owner gaps",
+        "pipelineActionId": "owner_gap_report",
+        "concreteQuestionRu": "Покажи задачи без owner и что нужно подготовить для admin/org review без изменения ролей.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "security",
+    "aliases": [
+      "security",
+      "security.screen"
+    ],
+    "screenId": "security.screen",
+    "role": "security",
+    "pipelineKey": "securityRuntime",
+    "defaultContextKind": "security.safe_summary",
+    "actions": [
+      {
+        "id": "security_safe_summary",
+        "labelRu": "Safe security summary",
+        "pipelineActionId": "security_safe_summary",
+        "concreteQuestionRu": "Покажи безопасную security summary: только redacted risks, forbidden attempts count, checked sources и следующий шаг без raw runtime/secrets.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "runtime_permission_check",
+        "labelRu": "Проверить доступ runtime",
+        "pipelineActionId": "runtime_permission_check",
+        "concreteQuestionRu": "Проверь, может ли normal user видеть runtime детали: ответ должен быть sanitized и без raw secrets.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "runtime",
+    "aliases": [
+      "runtime",
+      "screen.runtime"
+    ],
+    "screenId": "screen.runtime",
+    "role": "security",
+    "pipelineKey": "securityRuntime",
+    "defaultContextKind": "runtime.sanitized_health",
+    "actions": [
+      {
+        "id": "runtime_permission_check",
+        "labelRu": "Runtime health",
+        "pipelineActionId": "runtime_permission_check",
+        "concreteQuestionRu": "Покажи только sanitized runtime health для разрешённой роли; normal user не должен видеть raw runtime, transport, provider payload или secrets.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "security_safe_summary",
+        "labelRu": "Security gate",
+        "pipelineActionId": "security_safe_summary",
+        "concreteQuestionRu": "Проверь runtime/security gate и выведи безопасную сводку без debug payload и без секретов.",
+        "status": "data_unchanged"
+      }
+    ]
+  },
+  {
+    "context": "client",
+    "aliases": [
+      "client",
+      "client.dashboard",
+      "owner"
+    ],
+    "screenId": "client.dashboard",
+    "role": "client",
+    "pipelineKey": "clientOwnerProgress",
+    "defaultContextKind": "client.visible_project_snapshot",
+    "actions": [
+      {
+        "id": "client_project_snapshot",
+        "labelRu": "Сводка проекта",
+        "pipelineActionId": "client_project_snapshot",
+        "concreteQuestionRu": "Покажи client-visible project snapshot: прогресс, документы, upcoming steps, missing data и next step без внутренних финансов/склада.",
+        "status": "data_unchanged"
+      },
+      {
+        "id": "client_document_gap",
+        "labelRu": "Документы клиента",
+        "pipelineActionId": "client_document_gap",
+        "concreteQuestionRu": "Покажи клиентские document gaps и что подготовить офису без раскрытия внутренних runtime/security данных.",
+        "status": "data_unchanged"
+      }
+    ]
+  }
+]

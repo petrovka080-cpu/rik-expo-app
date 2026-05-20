@@ -1,0 +1,328 @@
+{
+  "final_status": "GREEN_AI_LIVE_UI_BANNED_COPY_AUDIT_READY",
+  "banned_copy_found": 0,
+  "generic_answers_found": 0,
+  "checked_screen_only_answers_found": 0,
+  "answers": [
+    {
+      "context": "warehouse",
+      "actionId": "critical_deficits",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "warehouse",
+      "actionId": "issue_readiness",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "director",
+      "actionId": "today_decision_queue",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "director",
+      "actionId": "warehouse_deficits",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "foreman",
+      "actionId": "daily_object_report",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "foreman",
+      "actionId": "closeout_readiness",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "contractor",
+      "actionId": "contractor_acceptance_blockers",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "contractor",
+      "actionId": "contractor_response_draft",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "buyer",
+      "actionId": "find_5_10_suppliers",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "buyer",
+      "actionId": "compare_suppliers",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "accountant",
+      "actionId": "critical_payments",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "accountant",
+      "actionId": "missing_documents_for_payment",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "office",
+      "actionId": "stuck_today",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "office",
+      "actionId": "reminder_draft",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "documents",
+      "actionId": "documents_to_process",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "documents",
+      "actionId": "unlinked_documents",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "reports",
+      "actionId": "document_evidence_gaps",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "reports",
+      "actionId": "daily_object_report",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "chat",
+      "actionId": "chat_context_summary",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "chat",
+      "actionId": "chat_task_draft",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "market",
+      "actionId": "show_request_matches",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "market",
+      "actionId": "marketplace_source_check",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "supplier",
+      "actionId": "check_cards",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "supplier",
+      "actionId": "add_product_draft",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "admin",
+      "actionId": "org_governance_snapshot",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "admin",
+      "actionId": "owner_gap_report",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "security",
+      "actionId": "security_safe_summary",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "security",
+      "actionId": "runtime_permission_check",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "runtime",
+      "actionId": "runtime_permission_check",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "runtime",
+      "actionId": "security_safe_summary",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "client",
+      "actionId": "client_project_snapshot",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "client",
+      "actionId": "client_document_gap",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "warehouse",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "warehouse",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "director",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "director",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "foreman",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "foreman",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "contractor",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "contractor",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "buyer",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "buyer",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "accountant",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "accountant",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "office",
+      "actionId": "stuck_today",
+      "bannedCopyFound": []
+    },
+    {
+      "context": "office",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "documents",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "documents",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "reports",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "reports",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "chat",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "chat",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "market",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "market",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "supplier",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "supplier",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "admin",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "admin",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "security",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "security",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "runtime",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "runtime",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "client",
+      "actionId": null,
+      "bannedCopyFound": []
+    },
+    {
+      "context": "client",
+      "actionId": null,
+      "bannedCopyFound": []
+    }
+  ]
+}

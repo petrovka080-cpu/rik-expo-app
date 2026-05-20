@@ -1,0 +1,27 @@
+{
+  "final_status": "GREEN_AI_LIVE_UI_ALL_SCREENS_REAL_ANSWERS_WEB_READY",
+  "opened_routes": [
+    "/ai?context=warehouse",
+    "/ai?context=director",
+    "/ai?context=foreman",
+    "/ai?context=contractor",
+    "/ai?context=buyer",
+    "/ai?context=accountant",
+    "/ai?context=office",
+    "/ai?context=documents",
+    "/ai?context=reports",
+    "/ai?context=chat",
+    "/ai?context=market",
+    "/ai?context=supplier",
+    "/ai?context=admin",
+    "/ai?context=security",
+    "/ai?context=runtime",
+    "/ai?context=client"
+  ],
+  "ai_block_visible": true,
+  "all_visible_buttons_clicked": true,
+  "all_free_text_questions_answered": true,
+  "useful_result_visible": true,
+  "banned_copy_found": 0,
+  "sources_or_checked_reason_visible": true
+}

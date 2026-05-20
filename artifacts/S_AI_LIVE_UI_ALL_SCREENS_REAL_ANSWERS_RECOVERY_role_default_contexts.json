@@ -1,0 +1,209 @@
+[
+  {
+    "context": "warehouse",
+    "screenId": "warehouse.main",
+    "role": "warehouse",
+    "defaultContextKind": "warehouse.day_snapshot",
+    "checkedSourcesRu": [
+      "stock overview",
+      "critical deficits",
+      "incoming",
+      "issue queue",
+      "reservations",
+      "material blockers"
+    ]
+  },
+  {
+    "context": "director",
+    "screenId": "director.dashboard",
+    "role": "director",
+    "defaultContextKind": "director.company_decision_snapshot",
+    "checkedSourcesRu": [
+      "approvals",
+      "finance",
+      "procurement",
+      "warehouse",
+      "field",
+      "documents",
+      "office",
+      "safe security summary"
+    ]
+  },
+  {
+    "context": "foreman",
+    "screenId": "foreman.main",
+    "role": "foreman",
+    "defaultContextKind": "foreman.workday_snapshot",
+    "checkedSourcesRu": [
+      "works today",
+      "objects",
+      "evidence",
+      "acts",
+      "reports",
+      "contractors",
+      "material blockers"
+    ]
+  },
+  {
+    "context": "contractor",
+    "screenId": "contractor.main",
+    "role": "contractor",
+    "defaultContextKind": "contractor.own_works_snapshot",
+    "checkedSourcesRu": [
+      "own works",
+      "own remarks",
+      "own evidence",
+      "own acts",
+      "own documents",
+      "limited payment status"
+    ]
+  },
+  {
+    "context": "buyer",
+    "screenId": "buyer.main",
+    "role": "buyer",
+    "defaultContextKind": "buyer.procurement_queue",
+    "checkedSourcesRu": [
+      "approved requests",
+      "pending requests",
+      "warehouse deficits",
+      "sourcing status",
+      "marketplace options"
+    ]
+  },
+  {
+    "context": "accountant",
+    "screenId": "accountant.main",
+    "role": "accountant",
+    "defaultContextKind": "accountant.finance_period_snapshot",
+    "checkedSourcesRu": [
+      "payments",
+      "invoices",
+      "acts",
+      "missing docs",
+      "approvals",
+      "cashflow"
+    ]
+  },
+  {
+    "context": "office",
+    "screenId": "office.hub",
+    "role": "office",
+    "defaultContextKind": "office.stuck_work_document_queue",
+    "checkedSourcesRu": [
+      "documents to process",
+      "approval packages",
+      "reminders",
+      "deadlines",
+      "unlinked docs"
+    ]
+  },
+  {
+    "context": "documents",
+    "screenId": "documents.main",
+    "role": "documents",
+    "defaultContextKind": "documents.queue_snapshot",
+    "checkedSourcesRu": [
+      "document queue",
+      "PDF chunks",
+      "links to work/payment/approval",
+      "missing signatures"
+    ]
+  },
+  {
+    "context": "reports",
+    "screenId": "reports.modal",
+    "role": "director",
+    "defaultContextKind": "reports.evidence_snapshot",
+    "checkedSourcesRu": [
+      "reports",
+      "evidence links",
+      "missing photos",
+      "objects",
+      "period"
+    ]
+  },
+  {
+    "context": "chat",
+    "screenId": "chat.main",
+    "role": "foreman",
+    "defaultContextKind": "chat.safe_extraction_snapshot",
+    "checkedSourcesRu": [
+      "linked chat messages",
+      "mentioned works",
+      "mentioned documents",
+      "owners",
+      "dates"
+    ]
+  },
+  {
+    "context": "market",
+    "screenId": "market.home",
+    "role": "buyer",
+    "defaultContextKind": "market.marketplace_queue",
+    "checkedSourcesRu": [
+      "marketplace offers",
+      "buyer requests",
+      "documents",
+      "moderation state"
+    ]
+  },
+  {
+    "context": "supplier",
+    "screenId": "supplier.showcase",
+    "role": "supplier",
+    "defaultContextKind": "supplier.showcase_snapshot",
+    "checkedSourcesRu": [
+      "supplier cards",
+      "documents",
+      "moderation state",
+      "linked requests"
+    ]
+  },
+  {
+    "context": "admin",
+    "screenId": "admin.org",
+    "role": "admin",
+    "defaultContextKind": "admin.org_governance_snapshot",
+    "checkedSourcesRu": [
+      "role registry",
+      "owner gaps",
+      "approval policy",
+      "organization settings"
+    ]
+  },
+  {
+    "context": "security",
+    "screenId": "security.screen",
+    "role": "security",
+    "defaultContextKind": "security.safe_summary",
+    "checkedSourcesRu": [
+      "safe security summary",
+      "redacted policy status",
+      "forbidden action counters"
+    ]
+  },
+  {
+    "context": "runtime",
+    "screenId": "screen.runtime",
+    "role": "security",
+    "defaultContextKind": "runtime.sanitized_health",
+    "checkedSourcesRu": [
+      "sanitized runtime health",
+      "permission boundary",
+      "redacted error classes"
+    ]
+  },
+  {
+    "context": "client",
+    "screenId": "client.dashboard",
+    "role": "client",
+    "defaultContextKind": "client.visible_project_snapshot",
+    "checkedSourcesRu": [
+      "client-visible progress",
+      "client documents",
+      "public milestones",
+      "office-prepared next steps"
+    ]
+  }
+]

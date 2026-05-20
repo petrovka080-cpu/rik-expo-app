@@ -1,0 +1,11 @@
+{
+  "final_status": "GREEN_AI_LIVE_UI_ALL_SCREENS_REAL_ANSWERS_ANDROID_READY",
+  "ai_input_visible": true,
+  "question_can_be_typed": true,
+  "answer_appears": true,
+  "result_not_hidden_behind_bottom_nav": true,
+  "buttons_targetable": true,
+  "no_blank_modal": true,
+  "no_generic_answer": true,
+  "no_final_send_link_close_button": true
+}
