@@ -1,0 +1,22 @@
+{
+  "final_status": "GREEN_AI_OFFICE_DOCUMENT_CONTROL_WEB_PROOF_READY",
+  "office_hub_opens": true,
+  "ai_block_visible": true,
+  "free_text_question_works": true,
+  "all_visible_buttons_clicked": true,
+  "stuck_work_answer_visible": true,
+  "document_queue_answer_visible": true,
+  "approval_package_draft_visible": true,
+  "reminder_draft_visible": true,
+  "deadline_answer_visible": true,
+  "sources_visible": true,
+  "missing_data_visible": true,
+  "owner_role_visible": true,
+  "no_final_reminder_send": true,
+  "no_final_document_link": true,
+  "no_task_close_mutation": true,
+  "no_approval_mutation": true,
+  "no_generic_answer": true,
+  "no_technical_copy": true,
+  "no_runtime_or_secrets_leak": true
+}

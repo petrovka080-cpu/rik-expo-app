@@ -1,0 +1,207 @@
+[
+  {
+    "intent": "stuck_today",
+    "examplesRu": [
+      "what is stuck today",
+      "office stuck today"
+    ],
+    "requiredContext": "period",
+    "allowedSources": [
+      "office_task",
+      "document",
+      "pdf_chunk",
+      "approval_package",
+      "approval",
+      "invoice",
+      "payment",
+      "work",
+      "object",
+      "report",
+      "act",
+      "warehouse_issue",
+      "procurement_request",
+      "chat_message",
+      "deadline",
+      "reminder",
+      "safe_security_summary"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "documents_to_process",
+    "examplesRu": [
+      "which documents need processing",
+      "documents queue"
+    ],
+    "requiredContext": "period",
+    "allowedSources": [
+      "document",
+      "pdf_chunk",
+      "act",
+      "invoice",
+      "report",
+      "approval_package"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "unlinked_documents",
+    "examplesRu": [
+      "which pdfs are unlinked",
+      "unlinked documents"
+    ],
+    "requiredContext": "document",
+    "allowedSources": [
+      "document",
+      "pdf_chunk",
+      "approval_package",
+      "payment",
+      "work"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "incomplete_approval_packages",
+    "examplesRu": [
+      "which approval packages are incomplete",
+      "approval package gaps"
+    ],
+    "requiredContext": "package",
+    "allowedSources": [
+      "approval_package",
+      "approval",
+      "document",
+      "invoice",
+      "payment",
+      "work"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "next_owner",
+    "examplesRu": [
+      "who is next owner",
+      "who should act next"
+    ],
+    "requiredContext": "owner",
+    "allowedSources": [
+      "office_task",
+      "document",
+      "pdf_chunk",
+      "approval_package",
+      "approval",
+      "invoice",
+      "payment",
+      "work",
+      "object",
+      "report",
+      "act",
+      "warehouse_issue",
+      "procurement_request",
+      "chat_message",
+      "deadline",
+      "reminder",
+      "safe_security_summary"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "reminder_draft",
+    "examplesRu": [
+      "whom to remind",
+      "prepare reminder"
+    ],
+    "requiredContext": "owner",
+    "allowedSources": [
+      "reminder",
+      "office_task",
+      "document",
+      "approval_package",
+      "deadline",
+      "chat_message"
+    ],
+    "answerMode": "draft"
+  },
+  {
+    "intent": "deadline_review",
+    "examplesRu": [
+      "what is overdue",
+      "deadlines"
+    ],
+    "requiredContext": "period",
+    "allowedSources": [
+      "deadline",
+      "office_task",
+      "document",
+      "approval_package"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "payment_blockers",
+    "examplesRu": [
+      "what blocks payment",
+      "payment blocker"
+    ],
+    "requiredContext": "none",
+    "allowedSources": [
+      "payment",
+      "invoice",
+      "document",
+      "approval_package",
+      "approval",
+      "warehouse_issue"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "work_closeout_blockers",
+    "examplesRu": [
+      "what blocks work closeout",
+      "acts without signature"
+    ],
+    "requiredContext": "none",
+    "allowedSources": [
+      "work",
+      "act",
+      "document",
+      "report",
+      "approval_package"
+    ],
+    "answerMode": "read"
+  },
+  {
+    "intent": "prepare_director_package",
+    "examplesRu": [
+      "what to prepare for director",
+      "director package"
+    ],
+    "requiredContext": "package",
+    "allowedSources": [
+      "approval_package",
+      "approval",
+      "document",
+      "payment",
+      "invoice",
+      "work"
+    ],
+    "answerMode": "draft"
+  },
+  {
+    "intent": "document_detail",
+    "examplesRu": [
+      "document detail",
+      "selected document"
+    ],
+    "requiredContext": "document",
+    "allowedSources": [
+      "document",
+      "pdf_chunk",
+      "approval_package",
+      "payment",
+      "work",
+      "act"
+    ],
+    "answerMode": "read"
+  }
+]

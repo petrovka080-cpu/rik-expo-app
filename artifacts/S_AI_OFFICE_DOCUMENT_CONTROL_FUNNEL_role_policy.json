@@ -1,0 +1,19 @@
+{
+  "role": "office",
+  "canReadOfficeControlDomains": true,
+  "canPrepareReminderDraft": true,
+  "canPrepareDirectorPackageDraft": true,
+  "canPrepareMissingDataRequest": true,
+  "finalReminderSendAllowed": false,
+  "directDocumentLinkAllowed": false,
+  "taskCloseAllowed": false,
+  "approvalStatusMutationAllowed": false,
+  "directPaymentAllowed": false,
+  "directWorkCloseAllowed": false,
+  "signingAllowed": false,
+  "autoApprovalAllowed": false,
+  "approvalBypassAllowed": false,
+  "rawRuntimeAccessAllowed": false,
+  "rawSecurityAccessAllowed": false,
+  "secretsAccessAllowed": false
+}

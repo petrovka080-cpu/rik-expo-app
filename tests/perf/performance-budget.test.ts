@@ -614,6 +614,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "directorCompany"),
       /\.ts$/,
     );
+    const sAiOfficeDocumentControlFunnelFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "officeDocumentControl"),
+      /\.ts$/,
+    );
     const sAiSupplierContractorMarketplaceIntakeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "marketplaceIntake"),
       /\.ts$/,
@@ -1342,6 +1346,8 @@ describe("performance budget вЂ” bundle module count", () => {
     // S_AI_PRO_02 adds 11 permanent construction know-how engine/BFF modules.
     // S_AI_SUPPLIER_CONTRACTOR_MARKETPLACE_INTAKE adds ten permanent pure
     // supplier/contractor marketplace-intake modules, no hooks or mutations.
+    // S_AI_OFFICE_DOCUMENT_CONTROL_FUNNEL adds ten permanent pure
+    // office document-control modules, no hooks or mutations.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1536,6 +1542,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiAccountantRealFinanceFunnelFiles).toBeLessThanOrEqual(11);
     expect(sAiWarehouseRealStockFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiDirectorRealCompanyFunnelFiles).toBeLessThanOrEqual(10);
+    expect(sAiOfficeDocumentControlFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
     expect(sAiConstructionDataGraphFiles).toBeLessThanOrEqual(9);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
@@ -1755,6 +1762,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiAccountantRealFinanceFunnelFiles -
         sAiWarehouseRealStockFunnelFiles -
         sAiDirectorRealCompanyFunnelFiles -
+        sAiOfficeDocumentControlFunnelFiles -
         sAiSupplierContractorMarketplaceIntakeFiles -
         sAiConstructionDataGraphFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -

@@ -1,0 +1,136 @@
+{
+  "screenId": "office.hub",
+  "questionRu": "Show today's stuck office work: documents, approval packages, reminders, deadlines, payment blockers and work closeout blockers with sources.",
+  "answerKind": "stuck_work_queue",
+  "status": "data_unchanged",
+  "stuckItems": [
+    {
+      "id": "task:TASK-17",
+      "itemType": "task",
+      "ownerRole": "accountant",
+      "missingData": [
+        "waybill",
+        "linked PDF evidence"
+      ],
+      "sourceRefs": [
+        "src:office:TASK-17",
+        "src:invoice:INV-900"
+      ],
+      "nextStepRu": "Ask accountant to provide the missing office evidence.",
+      "status": "data_unchanged"
+    },
+    {
+      "id": "document:DOC-17",
+      "itemType": "document",
+      "ownerRole": "office",
+      "missingData": [
+        "human link review",
+        "waybill number"
+      ],
+      "sourceRefs": [
+        "src:doc:DOC-17",
+        "src:pdf:DOC-17:1",
+        "src:invoice:INV-900"
+      ],
+      "nextStepRu": "Prepare a link-review note for a human owner; do not link the document finally by AI.",
+      "status": "data_unchanged"
+    },
+    {
+      "id": "document:ACT-900",
+      "itemType": "document",
+      "ownerRole": "foreman",
+      "missingData": [
+        "foreman signature",
+        "contractor evidence"
+      ],
+      "sourceRefs": [
+        "src:act:ACT-900",
+        "src:work:WRK-900"
+      ],
+      "nextStepRu": "Request the missing document evidence from the owner.",
+      "status": "data_unchanged"
+    },
+    {
+      "id": "approval_package:PKG-9",
+      "itemType": "approval_package",
+      "ownerRole": "office",
+      "missingData": [
+        "Missing document: waybill",
+        "Missing document: warehouse receipt",
+        "document link not reviewed"
+      ],
+      "sourceRefs": [
+        "src:package:PKG-9",
+        "src:approval:APR-9",
+        "src:payment:PAY-900",
+        "src:request:MR-900",
+        "src:warehouse:WH-900"
+      ],
+      "nextStepRu": "Prepare the package checklist and request missing documents from the owner.",
+      "status": "data_unchanged"
+    },
+    {
+      "id": "deadline:DL-9",
+      "itemType": "deadline",
+      "ownerRole": "office",
+      "missingData": [
+        "deadline extension rationale"
+      ],
+      "sourceRefs": [
+        "src:deadline:DL-9",
+        "src:package:PKG-9"
+      ],
+      "nextStepRu": "Ask office to clear the deadline blocker or provide missing evidence.",
+      "status": "data_unchanged"
+    },
+    {
+      "id": "reminder:REM-9",
+      "itemType": "reminder",
+      "ownerRole": "accountant",
+      "missingData": [],
+      "sourceRefs": [
+        "src:reminder:REM-9",
+        "src:package:PKG-9"
+      ],
+      "nextStepRu": "Review the reminder draft and send manually; AI does not send final reminders.",
+      "status": "draft_prepared"
+    }
+  ],
+  "sourceTrace": [
+    "src:office:TASK-17",
+    "src:doc:DOC-17",
+    "src:pdf:DOC-17:1",
+    "src:package:PKG-9",
+    "src:approval:APR-9",
+    "src:invoice:INV-900",
+    "src:payment:PAY-900",
+    "src:request:MR-900",
+    "src:warehouse:WH-900",
+    "src:work:WRK-900",
+    "src:act:ACT-900",
+    "src:deadline:DL-9",
+    "src:reminder:REM-9"
+  ],
+  "missingData": [
+    "waybill",
+    "linked PDF evidence",
+    "human link review",
+    "waybill number",
+    "Document DOC-NOSOURCE: source missing; AI cannot treat it as a stuck-work fact.",
+    "source",
+    "foreman signature",
+    "contractor evidence",
+    "Approval package PKG-9: missing document waybill.",
+    "Approval package PKG-9: missing document warehouse receipt.",
+    "document link not reviewed",
+    "deadline extension rationale",
+    "Document DOC-NOSOURCE: source missing; item is not treated as confirmed stuck work.",
+    "Missing document: waybill",
+    "Missing document: warehouse receipt"
+  ],
+  "changedData": false,
+  "reminderSentFinal": false,
+  "documentLinkedByAi": false,
+  "taskClosedByAi": false,
+  "approvalStatusChangedByAi": false
+}

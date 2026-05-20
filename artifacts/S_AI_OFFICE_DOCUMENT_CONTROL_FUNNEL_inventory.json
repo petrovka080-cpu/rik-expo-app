@@ -1,0 +1,159 @@
+{
+  "wave": "S_AI_OFFICE_DOCUMENT_CONTROL_FUNNEL_POINT_OF_NO_RETURN",
+  "screens": [
+    "office.hub",
+    "office.tasks",
+    "office.documents_queue",
+    "office.approval_packages",
+    "office.reminders",
+    "office.deadlines",
+    "office.document.detail"
+  ],
+  "aiBlock": {
+    "titleRu": "AI office control ready",
+    "stuckCount": 5,
+    "documentsCount": 3,
+    "unlinkedDocumentsCount": 1,
+    "incompletePackagesCount": 1,
+    "overdueCount": 1,
+    "missingData": [
+      "Document DOC-NOSOURCE: source missing"
+    ],
+    "inputPlaceholderRu": "Ask about office documents, stuck work, packages, reminders, deadlines...",
+    "visibleActionLabelsRu": [
+      "What is stuck today",
+      "Documents to process",
+      "Unlinked PDFs",
+      "Incomplete packages",
+      "Prepare reminder"
+    ],
+    "hiddenActionLabelsRu": [
+      "Deadlines",
+      "Payment blockers",
+      "Work closeout blockers",
+      "Prepare for director"
+    ]
+  },
+  "providers": [
+    {
+      "key": "aiOfficeSourceSanitizer",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeScreenContextProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeTasksProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeDocumentsQueueProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeApprovalPackagesProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeRemindersProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeDeadlinesProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeDocumentDetailProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficePaymentBlockersProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeWorkCloseoutBlockersProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeDirectorPrepProvider",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    },
+    {
+      "key": "aiOfficeAnswerComposer",
+      "pure": true,
+      "usesHooks": false,
+      "usesUseEffectHack": false,
+      "dbWrites": false,
+      "directMutation": false,
+      "createsFakeData": false,
+      "ready": true
+    }
+  ]
+}
