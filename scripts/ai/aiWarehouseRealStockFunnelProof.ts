@@ -77,6 +77,25 @@ function proofSources(): ConstructionKnowledgeSource[] {
       confidence: "high",
     },
     {
+      id: "src:estimate:EST-77",
+      type: "estimate_pdf",
+      labelRu: "Estimate EST-77: concrete volume, page 12",
+      documentId: "EST-77",
+      fileName: "estimate_block_a.pdf",
+      page: 12,
+      linkedObjectId: "OBJ-12",
+      linkedWorkId: "WRK-300",
+      linkedMaterialId: "MAT-1",
+      confidence: "high",
+    },
+    {
+      id: "src:supplier-offer:SO-44",
+      type: "supplier_offer",
+      labelRu: "Supplier offer SO-44: Beton Plus concrete M300",
+      linkedMaterialId: "MAT-1",
+      confidence: "high",
+    },
+    {
       id: "src:approval:WH-9",
       type: "approval",
       labelRu: "Approval WH-9: disputed issue route",
@@ -107,6 +126,8 @@ export function buildWarehouseRealStockFixture(
     countryCode: "KG",
     currency: "KGS",
     unitConversionConfigured: true,
+    packageConversionConfigured: true,
+    quantityNormalizationConfigured: true,
     documentsProviderConnected: true,
     stockItems: [
       {
@@ -114,16 +135,32 @@ export function buildWarehouseRealStockFixture(
         materialId: "MAT-1",
         materialNameRu: "Concrete M300",
         specificationText: "M300, delivery by mixer, m3",
+        specification: {
+          mark: "M300",
+          specificationText: "Concrete M300, delivery by mixer",
+          sourceRefs: ["src:spec:DOC-17"],
+        },
+        inStockQty: 18,
         availableQty: 8,
-        reservedQty: 2,
+        reservedQty: 10,
         incomingQty: 12,
         unit: "m3",
         warehouseNameRu: "Main warehouse",
+        location: {
+          warehouseId: "WH-1",
+          warehouseNameRu: "Main warehouse",
+          zone: "A",
+          shelf: "bulk",
+          sourceRefs: ["src:stock:MAT-1"],
+        },
         objectId: "OBJ-12",
         objectNameRu: "Block A",
         workId: "WRK-300",
         workNameRu: "Slab concreting",
         requestId: "MR-300",
+        requestLineId: "MRL-300",
+        estimateLineId: "EST-77",
+        projectSpecificationId: "DOC-17",
         sourceRefs: ["src:stock:MAT-1"],
       },
     ],
@@ -132,12 +169,20 @@ export function buildWarehouseRealStockFixture(
         id: "INC-55",
         materialId: "MAT-1",
         materialNameRu: "Concrete M300",
+        expectedQty: 12,
+        actualQty: 10,
+        waybillQty: 12,
         quantity: 12,
         unit: "m3",
+        supplierId: "SUP-7",
         supplierNameRu: "Beton Plus",
+        requestId: "MR-300",
+        requestLineId: "MRL-300",
+        waybillId: "WB-55",
+        invoiceId: "INV-55",
         status: "needs_documents",
-        documentRefs: [],
-        sourceRefs: ["src:request:MR-300"],
+        documentRefs: ["WB-55"],
+        sourceRefs: ["src:request:MR-300", "src:supplier-offer:SO-44"],
       },
     ],
     issues: [
@@ -155,6 +200,80 @@ export function buildWarehouseRealStockFixture(
         requestId: "MR-300",
         status: "blocked",
         sourceRefs: ["src:request:MR-300", "src:work:WRK-300"],
+      },
+    ],
+    reservations: [
+      {
+        id: "RSV-17",
+        materialId: "MAT-1",
+        materialNameRu: "Concrete M300",
+        quantity: 10,
+        unit: "m3",
+        objectId: "OBJ-13",
+        objectNameRu: "Block B",
+        workId: "WRK-301",
+        workNameRu: "Column concreting",
+        requestId: "MR-301",
+        status: "active",
+        sourceRefs: ["src:stock:MAT-1"],
+      },
+    ],
+    transfers: [
+      {
+        id: "TR-9",
+        materialId: "MAT-1",
+        materialNameRu: "Concrete M300",
+        quantity: 4,
+        unit: "m3",
+        fromLocation: {
+          warehouseId: "WH-1",
+          warehouseNameRu: "Main warehouse",
+          zone: "A",
+          shelf: "bulk",
+          sourceRefs: ["src:stock:MAT-1"],
+        },
+        toLocation: {
+          warehouseId: "OBJ-12",
+          warehouseNameRu: "Block A site",
+          objectId: "OBJ-12",
+          objectNameRu: "Block A",
+          sourceRefs: ["src:object:OBJ-12"],
+        },
+        objectId: "OBJ-12",
+        objectNameRu: "Block A",
+        workId: "WRK-300",
+        workNameRu: "Slab concreting",
+        approvalId: "WH-9",
+        status: "pending_approval",
+        sourceRefs: ["src:stock:MAT-1", "src:approval:WH-9"],
+      },
+    ],
+    inventoryCounts: [
+      {
+        id: "INVCOUNT-1",
+        materialId: "MAT-1",
+        materialNameRu: "Concrete M300",
+        bookQty: 18,
+        countedQty: 17,
+        unit: "m3",
+        location: {
+          warehouseId: "WH-1",
+          warehouseNameRu: "Main warehouse",
+          zone: "A",
+          shelf: "bulk",
+          sourceRefs: ["src:stock:MAT-1"],
+        },
+        status: "mismatch",
+        sourceRefs: ["src:stock:MAT-1"],
+      },
+    ],
+    locations: [
+      {
+        warehouseId: "WH-1",
+        warehouseNameRu: "Main warehouse",
+        zone: "A",
+        shelf: "bulk",
+        sourceRefs: ["src:stock:MAT-1"],
       },
     ],
     sources: proofSources(),
@@ -203,11 +322,13 @@ export function runWarehouseRealStockProof(options: {
 } = {}) {
   const context = buildWarehouseRealStockFixture();
   const freeTextQuestions = [
-    "what material blocks work today",
-    "what can be issued by object",
-    "check incoming documents",
-    "find stock discrepancies",
-    "prepare handoff to buyer",
+    "что можно выдать сегодня",
+    "какие материалы блокируют работы",
+    "что пришло сегодня",
+    "сверить приход с накладной",
+    "где расхождения",
+    "что зарезервировано",
+    "подготовь акт расхождения",
   ];
   const freeTextAnswers = freeTextQuestions.map((questionRu) =>
     answerWarehouseStockQuestion({ context, questionRu }),
@@ -227,28 +348,47 @@ export function runWarehouseRealStockProof(options: {
 
   writeArtifact("inventory.json", {
     wave: WAREHOUSE_REAL_STOCK_WAVE,
-    screens: ["warehouse.main", "warehouse.incoming", "warehouse.issue", "warehouse.stock.detail"],
+    screens: [
+      "warehouse.main",
+      "warehouse.incoming",
+      "warehouse.issue",
+      "warehouse.stock.detail",
+      "warehouse.inventory",
+      "warehouse.reservations",
+      "warehouse.transfers",
+      "map.main",
+    ],
     model,
   });
   writeArtifact("role_policy.json", WAREHOUSE_ROLE_POLICY);
   writeArtifact("intent_map.json", WAREHOUSE_INTENT_CONTRACTS);
-  writeArtifact("data_sources.json", listWarehouseDataProviders());
   writeArtifact("stock_trace.json", freeTextAnswers[0]);
   writeArtifact("incoming_trace.json", freeTextAnswers[2]);
-  writeArtifact("issue_trace.json", buttonAnswers.find((answer) => answer.intent === "issue_readiness_check") ?? buttonAnswers[0]);
-  writeArtifact("discrepancy_trace.json", buttonAnswers.find((answer) => answer.intent === "incoming_discrepancy_check") ?? buttonAnswers[0]);
-  writeArtifact("specification_trace.json", buttonAnswers.find((answer) => answer.intent === "specification_match_check") ?? buttonAnswers[0]);
+  writeArtifact("issue_trace.json", buttonAnswers.find((answer) => answer.intent === "issue_readiness") ?? buttonAnswers[0]);
+  writeArtifact("reservation_trace.json", freeTextAnswers.find((answer) => answer.intent === "reservation_check") ?? buttonAnswers[0]);
+  writeArtifact("inventory_discrepancy_trace.json", freeTextAnswers.find((answer) => answer.intent === "inventory_discrepancy_check") ?? buttonAnswers[0]);
+  writeArtifact("unit_normalization_trace.json", {
+    providers: listWarehouseDataProviders().filter((provider) =>
+      ["aiUnitConversionProvider", "aiPackageConversionProvider", "aiQuantityNormalizationProvider"].includes(provider.key),
+    ),
+    sampleAnswer: answerWarehouseStockQuestion({ context, questionRu: "сверь со сметой и единицами" }),
+  });
+  writeArtifact("construction_core_trace.json", answerWarehouseStockQuestion({ context, questionRu: "сверь материал с работой объектом сметой и проектом" }));
+  writeArtifact("buyer_handoff_trace.json", answerWarehouseStockQuestion({ context, questionRu: "передать дефицит снабженцу" }));
+  writeArtifact("accountant_trace.json", answerWarehouseStockQuestion({ context, questionRu: "показать связанный приход для бухгалтерии" }));
   writeArtifact("free_text_trace.json", freeTextAnswers);
   writeArtifact("button_trace.json", buttonAnswers);
   writeArtifact("web.json", {
     final_status: "GREEN_AI_WAREHOUSE_REAL_STOCK_WEB_PROOF_READY",
     questions: freeTextQuestions,
     answers_have_sources: freeTextAnswers.every((answer) => answer.sourceTrace.length > 0),
-    no_direct_mutation: freeTextAnswers.every((answer) => !answer.stockMutated && !answer.issueExecuted && !answer.incomingAccepted),
+    no_direct_mutation: freeTextAnswers.every((answer) =>
+      !answer.stockMutated && !answer.issueCompleted && !answer.issueExecuted && !answer.incomingAccepted && !answer.writeoffCompleted,
+    ),
   });
   writeArtifact("android.json", {
     final_status: "GREEN_AI_WAREHOUSE_REAL_STOCK_ANDROID_PROOF_READY",
-    screens_targetable: ["warehouse.main", "warehouse.incoming", "warehouse.issue"],
+    screens_targetable: ["warehouse.main", "warehouse.incoming", "warehouse.issue", "warehouse.stock.detail"],
     no_bottom_nav_overlap_claimed: false,
     no_direct_mutation: true,
   });
@@ -262,8 +402,9 @@ export function runWarehouseRealStockProof(options: {
     `Final status: ${matrix.final_status}`,
     "",
     "Warehouse AI answers are source-backed and role-scoped.",
-    "The pipeline checks stock, incoming, issue readiness, documents, specification, unit conversion and approval route.",
-    "No receive, issue, write-off, reservation, fake stock or automatic approval is executed by AI.",
+    "The pipeline checks stock, incoming, issue readiness, reservations, transfers, inventory discrepancies, documents, specification, unit normalization and approval route.",
+    "Buyer handoff receives source-backed stock/deficit context; accountant receives linked incoming/waybill/invoice trace without full cashflow.",
+    "No receive, issue, write-off, transfer, fake stock/location/ETA/waybill or automatic approval is executed by AI.",
   ].join("\n"));
   return matrix;
 }

@@ -19,12 +19,14 @@ const ALLOWED_SOURCE_TYPES = new Set<ConstructionKnowledgeSource["type"]>([
   "material",
   "warehouse_stock",
   "procurement_request",
+  "supplier_offer",
+  "country_profile",
   "approval",
   "chat_message",
 ]);
 
 function isForbiddenLabel(labelRu: string): boolean {
-  return /runtime|debug|provider payload|service_role|secret|env|full cashflow|raw/i.test(labelRu);
+  return /runtime|debug|provider payload|service_role|secret|env|full cashflow|all company payments|supplier margin|payroll|raw/i.test(labelRu);
 }
 
 export function sanitizeWarehouseContext(context: WarehouseStockContext): WarehouseStockContext {
@@ -45,6 +47,6 @@ export function warehouseHiddenPermissionLimits(context: WarehouseStockContext):
     .filter((source) => !ALLOWED_SOURCE_TYPES.has(source.type) || isForbiddenLabel(source.labelRu))
     .map((source) => ({
       sourceType: source.type,
-      reasonRu: "Hidden from warehouse role: finance, security, runtime or raw provider data.",
+      reasonRu: "Скрыто для роли склада: полный cashflow, security/runtime или raw provider data.",
     }));
 }

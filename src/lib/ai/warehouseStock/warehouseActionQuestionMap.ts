@@ -1,112 +1,135 @@
+import { normalizeWarehouseIntent } from "./warehouseIntentRouter";
 import type { WarehouseActionQuestion, WarehouseScreenId, WarehouseStockIntent } from "./warehouseStockTypes";
 
 export const WAREHOUSE_ACTION_QUESTION_MAP: readonly WarehouseActionQuestion[] = [
   {
     screenId: "warehouse.main",
-    actionId: "today_stock_summary",
-    labelRu: "Stock today",
-    concreteQuestionRu: "Summarize stock today: critical materials, incoming, issue blockers, missing documents, and next safe action.",
-    requiredContext: ["screen"],
-    allowedSources: ["warehouse_stock", "warehouse_incoming", "warehouse_issue", "material", "document", "approval"],
+    actionId: "critical_deficits",
+    labelRu: "Что критично",
+    concreteQuestionRu:
+      "Покажи критичные дефициты склада: какие материалы блокируют работы, сколько нужно, сколько доступно, что зарезервировано и какой следующий шаг.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "reservation", "work", "object", "procurement_request", "incoming"],
     answerMode: "read",
   },
   {
     screenId: "warehouse.main",
-    actionId: "critical_materials",
-    labelRu: "Critical materials",
-    concreteQuestionRu: "Show materials that are critical for works, with stock, reserved quantity, incoming quantity, deficit and sources.",
-    requiredContext: ["screen"],
-    allowedSources: ["warehouse_stock", "warehouse_issue", "material", "procurement_request"],
+    actionId: "issue_readiness",
+    labelRu: "Что можно выдать",
+    concreteQuestionRu:
+      "Проверь, какие материалы можно выдать на объекты сегодня, а какие нельзя из-за дефицита, резерва, документов или approval.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "issue", "reservation", "work", "object", "approval"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "incoming_review",
+    labelRu: "Проверить приход",
+    concreteQuestionRu:
+      "Проверь ожидаемые и фактические приходы: количество, накладные, поставщика, расхождения, документы и что можно принять только после проверки.",
+    requiredContext: ["period"],
+    allowedSources: ["incoming", "waybill", "supplier_offer", "procurement_request", "document", "pdf_chunk"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "inventory_discrepancy_check",
+    labelRu: "Найти расхождения",
+    concreteQuestionRu:
+      "Найди расхождения между учетным остатком, фактом, приходом, выдачей, резервом, заявкой и документами.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "inventory_count", "incoming", "issue", "reservation", "document"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "material_blockers",
+    labelRu: "Материалы блокируют работы",
+    concreteQuestionRu:
+      "Покажи материалы, которые блокируют работы на объектах, и объясни связь: работа, объект, количество, склад, заявка, приход.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "work", "object", "procurement_request", "incoming", "estimate_line"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "reservation_check",
+    labelRu: "Показать резервы",
+    concreteQuestionRu:
+      "Покажи резервы: под какие объекты и работы зарезервирован материал, что просрочено и что нельзя освобождать без approval.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "reservation", "work", "object", "approval"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "draft_issue_document",
+    labelRu: "Подготовить выдачу",
+    concreteQuestionRu:
+      "Подготовь черновик выдачи материала на объект с количеством, основанием, работой и проверками, без фактической складской мутации.",
+    requiredContext: ["material"],
+    allowedSources: ["stock_item", "issue", "work", "object", "approval"],
+    answerMode: "draft",
+  },
+  {
+    screenId: "warehouse.main",
+    actionId: "draft_discrepancy_act",
+    labelRu: "Подготовить акт расхождения",
+    concreteQuestionRu:
+      "Подготовь черновик акта расхождения по приходу/остатку/инвентаризации с источниками и missing data, без финального списания.",
+    requiredContext: ["incoming"],
+    allowedSources: ["incoming", "waybill", "inventory_count", "document", "supplier_offer"],
+    answerMode: "draft",
+  },
+  {
+    screenId: "warehouse.incoming",
+    actionId: "incoming_waybill_reconciliation",
+    labelRu: "Сверить с накладной",
+    concreteQuestionRu:
+      "Сверь приход с заявкой, предложением поставщика, накладной и фактическим количеством; покажи расхождения и документы.",
+    requiredContext: ["incoming"],
+    allowedSources: ["incoming", "waybill", "procurement_request", "supplier_offer", "document", "pdf_chunk"],
     answerMode: "read",
   },
   {
     screenId: "warehouse.issue",
-    actionId: "what_to_issue_by_object",
-    labelRu: "Issue by object",
-    concreteQuestionRu: "Show what can be issued by object and work, what is blocked, and what source confirms the request.",
-    requiredContext: ["object", "work"],
-    allowedSources: ["warehouse_stock", "warehouse_issue", "material", "object", "work", "procurement_request"],
-    answerMode: "read",
-  },
-  {
-    screenId: "warehouse.issue",
-    actionId: "issue_readiness_check",
-    labelRu: "Check issue readiness",
-    concreteQuestionRu: "Check issue readiness: stock, reserved quantity, work/object link, approval, and documents. Do not issue material.",
+    actionId: "issue_readiness",
+    labelRu: "Проверить доступность",
+    concreteQuestionRu:
+      "Проверь доступность выдачи: нужно, на складе, резерв, доступно, объект, работа, документы и approval. Не выдавай материал.",
     requiredContext: ["issue"],
-    allowedSources: ["warehouse_stock", "warehouse_issue", "material", "work", "object", "approval"],
+    allowedSources: ["stock_item", "issue", "reservation", "work", "object", "approval"],
     answerMode: "read",
   },
   {
-    screenId: "warehouse.incoming",
-    actionId: "incoming_readiness",
-    labelRu: "Check incoming",
-    concreteQuestionRu: "Check incoming materials: quantity, unit, documents, supplier label, discrepancy and safe receiving status. Do not accept stock.",
-    requiredContext: ["incoming"],
-    allowedSources: ["warehouse_incoming", "material", "document", "pdf_chunk", "approval"],
-    answerMode: "read",
-  },
-  {
-    screenId: "warehouse.incoming",
-    actionId: "incoming_discrepancy_check",
-    labelRu: "Incoming discrepancies",
-    concreteQuestionRu: "Find incoming discrepancies by material, quantity, unit and documents, then prepare an approval-safe route.",
-    requiredContext: ["incoming"],
-    allowedSources: ["warehouse_incoming", "warehouse_stock", "material", "document", "approval"],
-    answerMode: "read",
-  },
-  {
-    screenId: "warehouse.main",
-    actionId: "specification_match_check",
-    labelRu: "Check specification",
-    concreteQuestionRu: "Compare warehouse materials against linked specification, project PDFs and documents. Do not invent specification facts.",
+    screenId: "warehouse.stock.detail",
+    actionId: "warehouse_to_work_link",
+    labelRu: "Показать связанные работы",
+    concreteQuestionRu:
+      "Покажи движение материала и связанные работы/объекты/заявки/документы с source trace.",
     requiredContext: ["material"],
-    allowedSources: ["material", "specification", "pdf_chunk", "document", "work", "object"],
+    allowedSources: ["stock_item", "issue", "reservation", "work", "object", "procurement_request", "document"],
+    answerMode: "read",
+  },
+  {
+    screenId: "warehouse.transfers",
+    actionId: "transfer_readiness",
+    labelRu: "Проверить перемещение",
+    concreteQuestionRu:
+      "Проверь перемещение: откуда, куда, что, сколько, основание, документы и approval. Не перемещай материал.",
+    requiredContext: ["period"],
+    allowedSources: ["transfer", "stock_item", "warehouse_location", "document", "approval"],
     answerMode: "read",
   },
   {
     screenId: "warehouse.main",
-    actionId: "unit_conversion_check",
-    labelRu: "Check units",
-    concreteQuestionRu: "Check units and conversion basis before comparing or issuing material. If conversion factor is missing, say so exactly.",
-    requiredContext: ["material"],
-    allowedSources: ["material", "specification", "warehouse_stock", "document"],
-    answerMode: "read",
-  },
-  {
-    screenId: "warehouse.main",
-    actionId: "procurement_handoff",
-    labelRu: "Handoff to buyer",
-    concreteQuestionRu: "Prepare a draft handoff to buyer for material deficit with object, work, quantity, unit and source. Do not create purchase request.",
-    requiredContext: ["material"],
-    allowedSources: ["warehouse_stock", "warehouse_issue", "procurement_request", "material", "approval"],
-    answerMode: "draft",
-  },
-  {
-    screenId: "warehouse.issue",
-    actionId: "foreman_handoff",
-    labelRu: "Tell foreman",
-    concreteQuestionRu: "Prepare a draft message to foreman about what material blocks the work and what is missing. Do not change work status.",
-    requiredContext: ["work"],
-    allowedSources: ["warehouse_stock", "warehouse_issue", "work", "object", "chat_message"],
-    answerMode: "draft",
-  },
-  {
-    screenId: "warehouse.incoming",
-    actionId: "document_request_draft",
-    labelRu: "Request documents",
-    concreteQuestionRu: "Prepare a draft request for missing incoming documents, certificates or waybills. Do not send it finally.",
-    requiredContext: ["incoming"],
-    allowedSources: ["warehouse_incoming", "document", "pdf_chunk", "material"],
-    answerMode: "draft",
-  },
-  {
-    screenId: "warehouse.main",
-    actionId: "approval_route",
-    labelRu: "Route to approval",
-    concreteQuestionRu: "Prepare an approval route for disputed stock, incoming or issue blockers. Do not approve automatically.",
-    requiredContext: ["screen"],
-    allowedSources: ["warehouse_stock", "warehouse_incoming", "warehouse_issue", "approval", "document"],
+    actionId: "warehouse_approval_handoff",
+    labelRu: "Отправить на согласование",
+    concreteQuestionRu:
+      "Подготовь маршрут согласования для спорного прихода, выдачи, резерва или перемещения без автоматического approval.",
+    requiredContext: ["period"],
+    allowedSources: ["stock_item", "incoming", "issue", "reservation", "transfer", "approval", "document"],
     answerMode: "approval_route",
   },
 ] as const;
@@ -115,7 +138,8 @@ export function getWarehouseActionQuestion(
   actionId: WarehouseStockIntent,
   screenId?: WarehouseScreenId,
 ): WarehouseActionQuestion | null {
+  const normalized = normalizeWarehouseIntent(actionId);
   return WAREHOUSE_ACTION_QUESTION_MAP.find((action) =>
-    action.actionId === actionId && (!screenId || action.screenId === screenId),
-  ) ?? WAREHOUSE_ACTION_QUESTION_MAP.find((action) => action.actionId === actionId) ?? null;
+    action.actionId === normalized && (!screenId || action.screenId === screenId),
+  ) ?? WAREHOUSE_ACTION_QUESTION_MAP.find((action) => action.actionId === normalized) ?? null;
 }

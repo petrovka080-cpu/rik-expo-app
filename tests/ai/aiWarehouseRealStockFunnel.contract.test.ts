@@ -27,7 +27,7 @@ describe("warehouse real stock funnel", () => {
   it("exposes one focused warehouse AI block model", () => {
     const model = buildWarehouseAiBlockViewModel(buildWarehouseRealStockFixture());
 
-    expect(model.titleRu).toBe("Ready from AI");
+    expect(model.titleRu).toBe("Готово от AI");
     expect(model.stockItemsCount).toBe(1);
     expect(model.incomingCount).toBe(1);
     expect(model.issueCount).toBe(1);

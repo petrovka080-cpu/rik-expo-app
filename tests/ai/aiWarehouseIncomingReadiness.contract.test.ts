@@ -8,8 +8,9 @@ describe("warehouse incoming readiness", () => {
       questionRu: "check incoming documents",
     });
 
-    expect(answer.intent).toBe("incoming_readiness");
-    expect(answer.missingData).toEqual(expect.arrayContaining(["Incoming INC-55 has no source document/certificate/waybill."]));
+    expect(answer.intent).toBe("incoming_review");
+    expect(answer.providerTrace).toContain("aiWaybillProvider");
+    expect(answer.events.some((event) => event.eventType === "incoming_check")).toBe(true);
     expect(answer.incomingAccepted).toBe(false);
     expect(answer.stockMutated).toBe(false);
   });

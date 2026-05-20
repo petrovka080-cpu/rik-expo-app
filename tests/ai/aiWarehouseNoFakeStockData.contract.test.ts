@@ -9,6 +9,9 @@ describe("warehouse no fake stock data", () => {
         stockItems: [],
         incoming: [],
         issues: [],
+        reservations: [],
+        transfers: [],
+        inventoryCounts: [],
       },
       questionRu: "warehouse today",
     });
@@ -18,6 +21,6 @@ describe("warehouse no fake stock data", () => {
     expect(answer.fakeIncomingCreated).toBe(false);
     expect(answer.fakeIssueCreated).toBe(false);
     expect(answer.fakeDocumentCreated).toBe(false);
-    expect(answer.answerRu).toContain("No source-backed material rows found.");
+    expect(answer.answerRu).toContain("Подтвержденные материалы не найдены");
   });
 });

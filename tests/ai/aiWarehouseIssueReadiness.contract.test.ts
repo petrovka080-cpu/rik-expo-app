@@ -8,8 +8,9 @@ describe("warehouse issue readiness", () => {
       questionRu: "what can be issued by object",
     });
 
-    expect(answer.intent).toBe("what_to_issue_by_object");
-    expect(answer.events.some((event) => event.eventType === "approval_item")).toBe(true);
+    expect(answer.intent).toBe("issue_readiness");
+    expect(answer.events.some((event) => event.eventType === "issue_readiness")).toBe(true);
+    expect(answer.events.some((event) => event.quantity.reserved === 10 && event.quantity.available === 8)).toBe(true);
     expect(answer.issueExecuted).toBe(false);
     expect(answer.reservationCreated).toBe(false);
   });

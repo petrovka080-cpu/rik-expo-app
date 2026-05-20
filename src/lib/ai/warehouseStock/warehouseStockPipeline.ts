@@ -1,7 +1,7 @@
 import { getWarehouseActionQuestion } from "./warehouseActionQuestionMap";
 import { composeWarehouseStockAnswer } from "./warehouseAnswerComposer";
 import { WAREHOUSE_DATA_PROVIDER_FUNCTIONS } from "./warehouseDataProviders";
-import { routeWarehouseIntent } from "./warehouseIntentRouter";
+import { normalizeWarehouseIntent, routeWarehouseIntent } from "./warehouseIntentRouter";
 import {
   sanitizeWarehouseContext,
   warehouseHiddenPermissionLimits,
@@ -15,46 +15,59 @@ import type {
 } from "./warehouseStockTypes";
 
 function providerKeysForIntent(intent: WarehouseStockIntent): WarehouseProviderKey[] {
+  const normalized = normalizeWarehouseIntent(intent);
   const always: WarehouseProviderKey[] = [
     "aiWarehouseSourceSanitizer",
     "aiWarehouseScreenContextProvider",
+    "aiMaterialIdentityProvider",
     "aiWarehouseStockProvider",
     "aiWarehouseIncomingProvider",
     "aiWarehouseIssueProvider",
+    "aiWarehouseReservationProvider",
+    "aiWarehouseTransferProvider",
+    "aiWarehouseInventoryProvider",
     "aiWarehouseDiscrepancyProvider",
     "aiWarehouseAnswerComposer",
   ];
   const byIntent: Partial<Record<WarehouseStockIntent, WarehouseProviderKey[]>> = {
-    today_stock_summary: ["aiMaterialSpecificationProvider", "aiDocumentsProvider", "aiApprovalProvider"],
-    what_to_issue_by_object: ["aiWorkObjectLinkedProvider", "aiProcurementLinkedRequestProvider", "aiApprovalProvider"],
-    critical_materials: ["aiMaterialSpecificationProvider", "aiProcurementLinkedRequestProvider"],
-    material_blockers: ["aiWorkObjectLinkedProvider", "aiProcurementLinkedRequestProvider"],
-    warehouse_linked_status: ["aiMaterialSpecificationProvider"],
-    incoming_readiness: ["aiDocumentsProvider", "aiPdfAggregatorProvider", "aiApprovalProvider"],
-    incoming_discrepancy_check: ["aiDocumentsProvider", "aiApprovalProvider", "aiWarehouseDiscrepancyProvider"],
-    issue_readiness_check: ["aiWorkObjectLinkedProvider", "aiApprovalProvider"],
-    missing_documents_check: ["aiDocumentsProvider", "aiPdfAggregatorProvider"],
-    specification_match_check: ["aiMaterialSpecificationProvider", "aiPdfAggregatorProvider"],
-    unit_conversion_check: ["aiUnitConversionProvider", "aiMaterialSpecificationProvider"],
-    procurement_handoff: ["aiProcurementLinkedRequestProvider", "aiApprovalProvider"],
-    foreman_handoff: ["aiWorkObjectLinkedProvider"],
-    approval_route: ["aiApprovalProvider", "aiDocumentsProvider"],
-    document_request_draft: ["aiDocumentsProvider", "aiPdfAggregatorProvider"],
-    inventory_reconciliation: ["aiWarehouseDiscrepancyProvider", "aiDocumentsProvider"],
+    stock_overview: ["aiWarehouseStockDetailProvider", "aiWarehouseLocationProvider", "aiDocumentsProvider", "aiApprovalProvider"],
+    critical_deficits: ["aiWarehouseLocationProvider", "aiProcurementLinkedRequestProvider", "aiSupplierLinkedOfferProvider"],
+    material_blockers: ["aiWorkObjectLinkedProvider", "aiProcurementLinkedRequestProvider", "aiEstimateLinkedLineProvider", "aiProjectSpecificationProvider"],
+    issue_readiness: ["aiWarehouseLocationProvider", "aiWorkObjectLinkedProvider", "aiApprovalProvider", "aiQuantityNormalizationProvider"],
+    incoming_review: ["aiWaybillProvider", "aiInvoiceLinkedProvider", "aiDocumentsProvider", "aiPdfAggregatorProvider", "aiApprovalProvider"],
+    incoming_waybill_reconciliation: ["aiWaybillProvider", "aiProcurementLinkedRequestProvider", "aiSupplierLinkedOfferProvider", "aiDocumentsProvider", "aiPdfAggregatorProvider"],
+    inventory_discrepancy_check: ["aiWarehouseLocationProvider", "aiDocumentsProvider", "aiApprovalProvider"],
+    reservation_check: ["aiWorkObjectLinkedProvider", "aiApprovalProvider"],
+    transfer_readiness: ["aiWarehouseLocationProvider", "aiDocumentsProvider", "aiApprovalProvider"],
+    location_missing_check: ["aiWarehouseLocationProvider", "aiWarehouseInventoryProvider"],
+    stock_without_documents: ["aiDocumentsProvider", "aiPdfAggregatorProvider", "aiWaybillProvider"],
+    warehouse_to_work_link: ["aiWorkObjectLinkedProvider", "aiApprovalProvider"],
+    warehouse_to_procurement_link: ["aiProcurementLinkedRequestProvider", "aiSupplierLinkedOfferProvider", "aiMarketplaceLinkedOfferProvider", "aiApprovalProvider"],
+    warehouse_to_estimate_spec_check: ["aiEstimateLinkedLineProvider", "aiUnitConversionProvider", "aiQuantityNormalizationProvider"],
+    warehouse_to_project_spec_check: ["aiProjectSpecificationProvider", "aiPdfAggregatorProvider", "aiMaterialSpecificationProvider"],
+    draft_issue_document: ["aiWorkObjectLinkedProvider", "aiApprovalProvider", "aiQuantityNormalizationProvider"],
+    draft_discrepancy_act: ["aiWaybillProvider", "aiDocumentsProvider", "aiApprovalProvider"],
+    warehouse_approval_handoff: ["aiApprovalProvider", "aiDocumentsProvider"],
   };
-  return [...new Set([...always, ...(byIntent[intent] ?? [])])];
+  const normalizationProviders: WarehouseProviderKey[] = [
+    "aiUnitConversionProvider",
+    "aiPackageConversionProvider",
+    "aiCountryProfileProvider",
+  ];
+  return [...new Set([...always, ...(byIntent[normalized] ?? []), ...normalizationProviders])];
 }
 
 function runProviders(context: WarehouseStockContext, intent: WarehouseStockIntent): {
   results: WarehouseDataProviderResult[];
   providerTrace: string[];
 } {
-  const keys = providerKeysForIntent(intent);
+  const normalized = normalizeWarehouseIntent(intent);
+  const keys = providerKeysForIntent(normalized);
   return {
     providerTrace: [
       "warehouseStockPipeline",
       "role:warehouse",
-      "source_chain:material>specification>stock>incoming>issue>object>work>approval",
+      "source_chain:material>specification>request>supplier>waybill>incoming>stock>reservation>issue>object>work>approval",
       ...keys,
     ],
     results: keys.map((key) => WAREHOUSE_DATA_PROVIDER_FUNCTIONS[key](context)),
@@ -70,7 +83,7 @@ export function answerWarehouseStockQuestion(params: {
   const safeContext = sanitizeWarehouseContext(params.context);
   const action = params.actionId ? getWarehouseActionQuestion(params.actionId, safeContext.screenId) : null;
   const questionRu = action?.concreteQuestionRu ?? params.questionRu;
-  const intent = action?.actionId ?? routeWarehouseIntent(questionRu).intent;
+  const intent = normalizeWarehouseIntent(action?.actionId ?? routeWarehouseIntent(questionRu).intent);
   const { results, providerTrace } = runProviders(safeContext, intent);
   const missingData = [
     ...results.flatMap((result) => result.missingData),
@@ -104,34 +117,49 @@ export function buildWarehouseAiBlockViewModel(context: WarehouseStockContext): 
   incomingCount: number;
   issueCount: number;
   criticalCount: number;
+  readyToIssueCount: number;
+  discrepancyCount: number;
+  missingLocationCount: number;
   missingData: string[];
   inputPlaceholderRu: string;
   visibleActionLabelsRu: string[];
   hiddenActionLabelsRu: string[];
 } {
-  const criticalCount = context.issues.filter((issue) => issue.status === "blocked" || issue.status === "needs_approval").length;
+  const stockAvailable = context.stockItems.reduce((sum, item) => sum + Math.max(0, (item.inStockQty ?? item.availableQty + item.reservedQty) - item.reservedQty), 0);
+  const requested = context.issues.reduce((sum, issue) => sum + Math.max(0, issue.requestedQty - issue.issuedQty), 0);
+  const discrepancyCount = [
+    ...context.incoming.filter((item) => (item.expectedQty ?? item.waybillQty ?? item.quantity) !== (item.actualQty ?? item.quantity) || item.status === "disputed"),
+    ...(context.inventoryCounts ?? []).filter((item) => typeof item.countedQty !== "number" || item.countedQty !== item.bookQty),
+  ].length;
   const actions = [
-    "Stock today",
-    "Critical materials",
-    "Issue by object",
-    "Check incoming",
-    "Incoming discrepancies",
-    "Check specification",
-    "Handoff to buyer",
-    "Route to approval",
+    "Что критично",
+    "Что можно выдать",
+    "Проверить приход",
+    "Найти расхождения",
+    "Материалы блокируют работы",
+    "Показать резервы",
+    "Подготовить выдачу",
+    "Подготовить акт расхождения",
   ];
   return {
-    titleRu: "Ready from AI",
+    titleRu: "Готово от AI",
     stockItemsCount: context.stockItems.length,
     incomingCount: context.incoming.length,
     issueCount: context.issues.length,
-    criticalCount,
+    criticalCount: Math.max(0, requested - stockAvailable) > 0 ? 1 : 0,
+    readyToIssueCount: context.issues.filter((issue) => {
+      const stock = context.stockItems.find((item) => item.materialId === issue.materialId);
+      const available = stock ? Math.max(0, (stock.inStockQty ?? stock.availableQty + stock.reservedQty) - stock.reservedQty) : 0;
+      return available > 0 && issue.status !== "issued";
+    }).length,
+    discrepancyCount,
+    missingLocationCount: context.stockItems.filter((item) => !item.location).length,
     missingData: [
-      ...(context.unitConversionConfigured ? [] : ["unit conversion source is not configured"]),
-      ...(context.documentsProviderConnected ? [] : ["documents/PDF provider is not connected"]),
-      ...(context.stockItems.length ? [] : ["stock rows are not loaded"]),
+      ...(context.unitConversionConfigured ? [] : ["не настроен источник нормализации единиц"]),
+      ...(context.documentsProviderConnected ? [] : ["не подключен documents/PDF provider"]),
+      ...(context.stockItems.length ? [] : ["строки склада не загружены"]),
     ],
-    inputPlaceholderRu: "Ask about stock, incoming, issue, object, work, documents...",
+    inputPlaceholderRu: "Спросить по складу, материалам, приходу, выдаче...",
     visibleActionLabelsRu: actions.slice(0, 5),
     hiddenActionLabelsRu: actions.slice(5),
   };
