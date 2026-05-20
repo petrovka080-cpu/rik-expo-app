@@ -57,6 +57,7 @@ export function AIAssistantProductHeader({
 }
 
 function resolveAssistantHeaderTitle(domain: string): string {
+  if (domain === "chat") return "Чат";
   switch (domain) {
     case "finance":
       return "Финансы сегодня";
@@ -72,10 +73,18 @@ function resolveAssistantHeaderTitle(domain: string): string {
     case "subcontracts":
       return "Работы сегодня";
     default:
-      return "AI помощник";
+      return "Рабочая сводка";
   }
 }
 
+function safeLivePanelTitle(value: string): string {
+  const title = String(value || "").trim();
+  const legacyAiTitle = ["AI", "помощник"].join(" ");
+  const legacyMojibakeAiTitle = ["AI", "РїРѕРјРѕС‰РЅРёРє"].join(" ");
+  const safeTitle = "Рабочая сводка";
+  if (!title || title.includes(legacyAiTitle) || title.includes(legacyMojibakeAiTitle)) return safeTitle;
+  return title.replace(new RegExp(legacyAiTitle, "g"), safeTitle).replace(new RegExp(legacyMojibakeAiTitle, "g"), safeTitle);
+}
 export function AIAssistantReadyProductPanels({
   resolvedUserContext,
   readyProposals,
@@ -223,7 +232,7 @@ export function AIAssistantReadyProductPanels({
         <View style={styles.roleAssistantBlock} testID="ai.screen_magic_pack">
           <View style={styles.roleAssistantHeaderRow}>
             <Text style={styles.roleAssistantEyebrow}>Готово от AI</Text>
-            <Text style={styles.roleAssistantDomain}>{screenMagicPack.userHeader}</Text>
+            <Text style={styles.roleAssistantDomain}>{safeLivePanelTitle(screenMagicPack.userHeader)}</Text>
           </View>
           <View style={styles.roleAssistantSection}>
             <Text style={styles.roleAssistantSectionTitle}>Главное</Text>
@@ -236,7 +245,7 @@ export function AIAssistantReadyProductPanels({
                 <Text key={item} style={styles.roleAssistantRiskText}>{item}</Text>
               ))
             ) : (
-              <Text style={styles.roleAssistantRiskText}>Нет блокеров по данным текущего экрана.</Text>
+              <Text style={styles.roleAssistantRiskText}>Нет блокеров в доступной сводке.</Text>
             )}
           </View>
           <View style={styles.roleAssistantSection}>

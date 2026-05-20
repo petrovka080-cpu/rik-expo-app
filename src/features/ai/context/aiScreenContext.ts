@@ -23,6 +23,22 @@ export function resolveAiScreenIdForAssistantContext(context: AssistantContext):
       return "contractor.main";
     case "foreman":
       return "foreman.main";
+    case "security":
+      return "security.screen";
+    case "office":
+      return "office.hub";
+    case "documents":
+      return "documents.main";
+    case "chat":
+      return "chat.main";
+    case "admin":
+      return "admin.org";
+    case "runtime":
+      return "screen.runtime";
+    case "client":
+      return "client.dashboard";
+    case "supplier":
+      return "supplier.showcase";
     case "market":
       return "market.home";
     case "supplierMap":

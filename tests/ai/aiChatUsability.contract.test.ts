@@ -24,9 +24,10 @@ describe("AI chat usability contract", () => {
       panels.indexOf("export function AIAssistantReadyProductPanels"),
     );
 
-    expect(header).toContain("AI помощник");
+    expect(header).toContain("Рабочая сводка");
     expect(header).toContain("Финансы сегодня");
     expect(header).toContain("Снабжение сегодня");
+    expect(header).not.toContain("AI помощник");
     expect(header).not.toContain("AI ассистент ·");
     expect(header).not.toMatch(/screenId|route key|provider|transport|runtime|policy:/i);
   });

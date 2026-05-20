@@ -28,6 +28,7 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
+import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
   buildAiScreenMagicButtonResultCopy,
   buildAiScreenMagicFreeTextResultCopy,
@@ -98,6 +99,7 @@ export default function AIAssistantScreen() {
   const handledPromptRef = useRef<string>("");
   const {
     params,
+    routeContext,
     routePrompt,
     routeAutoSend,
     assistantContext,
@@ -209,6 +211,20 @@ export default function AIAssistantScreen() {
       setLoading(true);
 
       try {
+        const liveAiResult = answerResolvedLiveAiContext({
+          routeContext,
+          assistantContext,
+          userText: text,
+        });
+        if (liveAiResult.handled) {
+          setMessages((prev) => [...prev, createMessage("assistant", liveAiResult.answer.answerTextRu)]);
+          return;
+        }
+        if (String(routeContext || "").trim()) {
+          setMessages((prev) => [...prev, createMessage("assistant", liveAiResult.exactReason)]);
+          return;
+        }
+
         if (isAiScreenMagicClickPayload(text) && screenMagicPack) {
           const buttonResult = buildAiScreenMagicButtonResultCopy({
             pack: screenMagicPack,
@@ -266,7 +282,7 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, input, loading, messages, params, role, roleScreenAssistantPack, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, input, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {

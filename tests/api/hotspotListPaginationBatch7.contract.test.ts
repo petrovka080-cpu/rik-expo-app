@@ -346,6 +346,30 @@ const isApprovedAiSupplierContractorMarketplaceIntakePatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedAiLiveUiRealAnswersRecoveryPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    /^src\/lib\/ai\/liveUi\//.test(normalized) ||
+    /^tests\/ai\/aiLive/.test(normalized) ||
+    /^tests\/architecture\/aiLiveUi/.test(normalized) ||
+    /^scripts\/e2e\/runAiLiveUiAllScreensRealAnswers/.test(normalized) ||
+    /^artifacts\/S_AI_LIVE_UI_ALL_SCREENS_REAL_ANSWERS_RECOVERY_/.test(normalized) ||
+    [
+      "src/features/ai/AIAssistantScreen.tsx",
+      "src/features/ai/useAIAssistantScreenDerivedState.ts",
+      "src/features/ai/AIAssistantReadyProductPanels.tsx",
+      "src/features/ai/assistant.types.ts",
+      "src/features/ai/assistantPrompts.ts",
+      "src/features/ai/context/aiScreenContext.ts",
+      "src/features/ai/assistantUx/aiAssistantContextResolver.ts",
+      "scripts/ai/aiLiveUiAllScreensRealAnswersProof.ts",
+      "tests/perf/performance-budget.test.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+    ].includes(normalized)
+  );
+};
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -501,6 +525,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiBuyerRealSourcingPatch(file) &&
         !isApprovedAiAccountantRealFinancePatch(file) &&
         !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
+        !isApprovedAiLiveUiRealAnswersRecoveryPatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&

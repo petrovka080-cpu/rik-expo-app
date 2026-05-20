@@ -41,6 +41,21 @@ export function normalizeAssistantContext(value: string | null | undefined): Ass
       return "contractor";
     case "security":
       return "security";
+    case "office":
+      return "office";
+    case "documents":
+    case "document":
+      return "documents";
+    case "chat":
+      return "chat";
+    case "admin":
+      return "admin";
+    case "runtime":
+      return "runtime";
+    case "client":
+      return "client";
+    case "supplier":
+      return "supplier";
     case "market":
       return "market";
     case "supplierMap":
@@ -74,6 +89,20 @@ export function getAssistantContextLabel(context: AssistantContext): string {
       return "Подрядчик";
     case "security":
       return "Безопасность";
+    case "office":
+      return "Офис";
+    case "documents":
+      return "Документы";
+    case "chat":
+      return "Чат";
+    case "admin":
+      return "Админ";
+    case "runtime":
+      return "Runtime";
+    case "client":
+      return "Клиент";
+    case "supplier":
+      return "Поставщик";
     case "market":
       return "Маркет";
     case "supplierMap":
@@ -115,6 +144,20 @@ export function getAssistantContextIntro(context: AssistantContext): string | nu
       return "Сейчас AI открыт из контура подрядчика.";
     case "security":
       return "Сейчас AI открыт из модуля безопасности.";
+    case "office":
+      return "Сейчас открыт офисный контур документов, задач и напоминаний.";
+    case "documents":
+      return "Сейчас открыт контур документов и PDF.";
+    case "chat":
+      return "Сейчас открыт контур чата для безопасного извлечения рабочих фактов.";
+    case "admin":
+      return "Сейчас открыт read-only контур org governance.";
+    case "runtime":
+      return "Сейчас открыт только безопасный health summary.";
+    case "client":
+      return "Сейчас открыт клиентский контур прогресса проекта.";
+    case "supplier":
+      return "Сейчас открыта витрина поставщика.";
     default:
       return null;
   }

@@ -180,6 +180,7 @@ export function useAIAssistantScreenDerivedState({
 
   return {
     params,
+    routeContext,
     routePrompt,
     routeAutoSend,
     assistantContext,

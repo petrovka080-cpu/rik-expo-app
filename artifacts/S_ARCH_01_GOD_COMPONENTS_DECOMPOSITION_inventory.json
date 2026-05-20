@@ -1,9 +1,14 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-05-18T21:31:34.802Z",
+  "generatedAt": "2026-05-20T06:25:20.389Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
+    {
+      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
+      "lineCount": 499,
+      "hookCount": 0
+    },
     {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
@@ -28,11 +33,6 @@
       "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
       "lineCount": 480,
       "hookCount": 2
-    },
-    {
-      "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "lineCount": 478,
-      "hookCount": 0
     },
     {
       "file": "src/features/auctions/AuctionDetailScreen.tsx",
@@ -60,9 +60,9 @@
       "hookCount": 13
     },
     {
-      "file": "src/screens/profile/components/ProfileMainSections.tsx",
-      "lineCount": 464,
-      "hookCount": 0
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 465,
+      "hookCount": 14
     }
   ],
   "top_by_hooks": [
@@ -98,7 +98,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 412,
+      "lineCount": 465,
       "hookCount": 14
     },
     {

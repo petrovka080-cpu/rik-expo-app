@@ -622,6 +622,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "marketplaceIntake"),
       /\.ts$/,
     );
+    const sAiLiveUiRealAnswersRecoveryFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "liveUi"),
+      /\.ts$/,
+    );
     const sAiConstructionDataGraphFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "constructionDataGraph"),
       /\.ts$/,
@@ -1544,6 +1548,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiDirectorRealCompanyFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiOfficeDocumentControlFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
+    expect(sAiLiveUiRealAnswersRecoveryFiles).toBeLessThanOrEqual(7);
     expect(sAiConstructionDataGraphFiles).toBeLessThanOrEqual(9);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
@@ -1764,6 +1769,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiDirectorRealCompanyFunnelFiles -
         sAiOfficeDocumentControlFunnelFiles -
         sAiSupplierContractorMarketplaceIntakeFiles -
+        sAiLiveUiRealAnswersRecoveryFiles -
         sAiConstructionDataGraphFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -

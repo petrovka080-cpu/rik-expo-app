@@ -80,6 +80,13 @@ const CONTEXT_DOMAIN: Partial<Record<AssistantContext, AiDomain>> = {
   foreman: "projects",
   contractor: "subcontracts",
   profile: "documents",
+  office: "documents",
+  documents: "documents",
+  chat: "chat",
+  admin: "documents",
+  runtime: "documents",
+  client: "projects",
+  supplier: "marketplace",
   security: "documents",
 };
 
