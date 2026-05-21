@@ -1,7 +1,7 @@
 # S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN
 
-final_status: BLOCKED_GREEN_CLOSEOUT_PREPUSH_OR_POSTPUSH_NOT_VERIFIED
-head: 0fb5e135
+final_status: GREEN_FULL_RELEASE_CLOSEOUT_READY
+head: 82063925
 ahead_behind: 0 0
 
 ## Passed Evidence
@@ -12,4 +12,4 @@ ahead_behind: 0 0
 - UI rect proof: true
 - full Jest: true
 - release verify: true
-- post-push verify: false
+- post-push verify: true

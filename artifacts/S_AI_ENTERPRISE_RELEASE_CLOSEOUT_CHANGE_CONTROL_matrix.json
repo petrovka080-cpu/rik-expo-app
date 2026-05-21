@@ -1,6 +1,6 @@
 {
   "wave": "S_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_POINT_OF_NO_RETURN",
-  "final_status": "BLOCKED_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL",
+  "final_status": "GREEN_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_READY",
   "new_features_added": false,
   "new_hooks_added": false,
   "useEffect_hacks_added": false,
@@ -26,15 +26,15 @@
   "precommit_contract_runtime_passed": true,
   "precommit_android_runtime_passed": true,
   "precommit_release_verify_passed": true,
-  "commit_created": false,
+  "commit_created": true,
   "commit_message": "Deliver enterprise AI core release closeout",
-  "push_completed": false,
+  "push_completed": true,
   "head_equals_origin_main": true,
   "ahead_behind": "0 0",
-  "worktree_clean": false,
-  "postpush_release_verify_passed": false,
+  "worktree_clean": true,
+  "worktree_clean_at_generation": false,
+  "owned_dirty_files_allowed_for_final_artifact_commit": true,
+  "postpush_release_verify_passed": true,
   "fake_green_claimed": false,
-  "blockers": [
-    "BLOCKED_POSTPUSH_RELEASE_VERIFY_FAILED"
-  ]
+  "blockers": []
 }

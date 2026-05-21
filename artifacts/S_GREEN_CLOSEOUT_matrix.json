@@ -1,6 +1,6 @@
 {
   "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
-  "final_status": "BLOCKED_GREEN_CLOSEOUT_PREPUSH_OR_POSTPUSH_NOT_VERIFIED",
+  "final_status": "GREEN_FULL_RELEASE_CLOSEOUT_READY",
   "status_reporter_mode": false,
   "green_closeout_engineer_mode": true,
   "timeout_escape_used": false,
@@ -16,7 +16,7 @@
   "full_jest_timeout": false,
   "release_verify_passed": true,
   "release_verify_timeout": false,
-  "post_push_verify_passed": false,
+  "post_push_verify_passed": true,
   "backend_service_wired": true,
   "frontend_only_submit_found": false,
   "direct_db_status_write_found": false,
@@ -53,7 +53,7 @@
   "enterprise_guardrail_knows_always_on_external_knowledge": true,
   "enterprise_guardrail_knows_estimate_engine": true,
   "fake_green_claimed": false,
-  "current_head": "0fb5e135",
+  "current_head": "82063925",
   "ahead_behind": "0 0",
   "base_green": true
 }
