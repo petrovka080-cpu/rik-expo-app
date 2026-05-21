@@ -133,6 +133,8 @@ export type CloseoutReport = {
     head_equals_origin_main: boolean;
     ahead_behind: string;
     worktree_clean: boolean;
+    worktree_clean_at_generation: boolean;
+    owned_dirty_files_allowed_for_final_artifact_commit: boolean;
     postpush_release_verify_passed: boolean;
     fake_green_claimed: false;
     blockers: string[];
@@ -768,6 +770,7 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
     pushCompleted: false,
     releaseVerifyPassed: false,
   };
+  const worktreeCleanForGate = worktreeClean || (postpush.pushCompleted && unownedDirtyFiles.length === 0);
   const headEqualsOriginMain = aheadBehind === "0 0";
   const blockers = [
     ...unownedDirtyFiles.map((file) => `BLOCKED_UNOWNED_DIRTY_FILES_FOUND:${file}`),
@@ -779,7 +782,7 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
     ...(!precommit.releaseVerify ? ["BLOCKED_PRECOMMIT_VERIFY_FAILED"] : []),
     ...(!postpush.releaseVerifyPassed ? ["BLOCKED_POSTPUSH_RELEASE_VERIFY_FAILED"] : []),
     ...(!headEqualsOriginMain ? ["BLOCKED_HEAD_NOT_EQUAL_ORIGIN_MAIN"] : []),
-    ...(!worktreeClean && postpush.pushCompleted ? ["BLOCKED_UNRELATED_DIRTY_WORKTREE_NEEDS_OWNER_REVIEW"] : []),
+    ...(!worktreeCleanForGate && postpush.pushCompleted ? ["BLOCKED_UNRELATED_DIRTY_WORKTREE_NEEDS_OWNER_REVIEW"] : []),
   ];
   const finalGreen =
     blockers.length === 0 &&
@@ -800,7 +803,7 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
     postpush.pushCompleted &&
     postpush.releaseVerifyPassed &&
     headEqualsOriginMain &&
-    worktreeClean;
+    worktreeCleanForGate;
 
   return {
     inventory: {
@@ -856,7 +859,9 @@ export function buildAiEnterpriseReleaseCloseoutReport(params: {
       push_completed: postpush.pushCompleted,
       head_equals_origin_main: headEqualsOriginMain,
       ahead_behind: aheadBehind,
-      worktree_clean: worktreeClean,
+      worktree_clean: worktreeCleanForGate,
+      worktree_clean_at_generation: worktreeClean,
+      owned_dirty_files_allowed_for_final_artifact_commit: postpush.pushCompleted && !worktreeClean && unownedDirtyFiles.length === 0,
       postpush_release_verify_passed: postpush.releaseVerifyPassed,
       fake_green_claimed: false,
       blockers,
