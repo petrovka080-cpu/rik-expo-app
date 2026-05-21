@@ -13,8 +13,8 @@ describe("S_SCALE_02 route error boundary closeout", () => {
     });
 
     expect(verification.final_status).toBe(GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY);
-    expect(verification.metrics.routes_total).toBe(41);
-    expect(verification.metrics.routes_with_boundary_or_exception).toBe(41);
+    expect(verification.metrics.routes_total).toBe(42);
+    expect(verification.metrics.routes_with_boundary_or_exception).toBe(42);
     expect(verification.metrics.routes_missing_boundary).toBe(0);
     expect(verification.metrics.real_screen_routes_without_boundary).toBe(0);
     expect(verification.metrics.exception_routes_documented).toBe(true);

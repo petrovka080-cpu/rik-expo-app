@@ -57,6 +57,21 @@ function resolveAssistantBackFallback(context: AssistantContext): Href {
   }
 }
 
+function resolveRoleForExplicitContext(context: AssistantContext): AssistantRole | null {
+  switch (context) {
+    case "foreman":
+    case "director":
+    case "buyer":
+    case "accountant":
+    case "warehouse":
+    case "contractor":
+    case "security":
+      return context;
+    default:
+      return null;
+  }
+}
+
 export function useAIAssistantScreenDerivedState({
   role,
   scopedFacts,
@@ -87,6 +102,10 @@ export function useAIAssistantScreenDerivedState({
       }),
     [assistantContext, assistantScreenId, role],
   );
+  const assistantPresentationRole = useMemo(
+    () => resolveRoleForExplicitContext(assistantContext) ?? role,
+    [assistantContext, role],
+  );
   const readyProposals = useMemo(
     () =>
       getAiScreenReadyProposals({
@@ -110,25 +129,25 @@ export function useAIAssistantScreenDerivedState({
   );
   const roleScreenAssistantPack = useMemo(
     () => getAiRoleScreenAssistantPack({
-      role,
+      role: assistantPresentationRole,
       context: assistantContext,
       screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId,
       searchParams: params,
       scopedFactsSummary: scopedFacts?.summary ?? null,
       readyBuyBundle,
     }),
-    [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
+    [assistantContext, assistantPresentationRole, params, readyBuyBundle, resolvedUserContext.screenId, scopedFacts?.summary],
   );
   const screenNativeAssistantPack = useMemo(
     () => getAiScreenNativeAssistantPack({
-      role,
+      role: assistantPresentationRole,
       context: assistantContext,
       screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId,
       searchParams: params,
       scopedFactsSummary: scopedFacts?.summary ?? null,
       readyBuyBundle,
     }),
-    [assistantContext, params, readyBuyBundle, resolvedUserContext.screenId, role, scopedFacts?.summary],
+    [assistantContext, assistantPresentationRole, params, readyBuyBundle, resolvedUserContext.screenId, scopedFacts?.summary],
   );
   const screenNativeAssistantSummary = useMemo(
     () => describeAiScreenNativeAssistantPack(screenNativeAssistantPack),
@@ -137,13 +156,13 @@ export function useAIAssistantScreenDerivedState({
   const screenWorkflowPack = useMemo(
     () =>
       getAiScreenWorkflowPack({
-        role,
+        role: assistantPresentationRole,
         context: assistantContext,
         screenId: firstAssistantRouteParam(params.screenId) || resolvedUserContext.screenId,
         searchParams: params,
         scopedFactsSummary: scopedFacts?.summary ?? null,
       }),
-    [assistantContext, params, resolvedUserContext.screenId, role, scopedFacts?.summary],
+    [assistantContext, assistantPresentationRole, params, resolvedUserContext.screenId, scopedFacts?.summary],
   );
   const screenMagicPack = buildAiScreenMagicPackFromWorkflowPack(screenWorkflowPack);
   const assistantFactsSummary = useMemo(
@@ -158,13 +177,21 @@ export function useAIAssistantScreenDerivedState({
     [readyBuyFactsSummary, screenMagicPack, screenNativeAssistantSummary, screenWorkflowPack, scopedFacts?.summary],
   );
   const assistantVoiceScreen = useMemo(
-    () => (role === "buyer" || role === "director" || role === "foreman" ? role : null),
-    [role],
+    () =>
+      assistantPresentationRole === "buyer" ||
+      assistantPresentationRole === "director" ||
+      assistantPresentationRole === "foreman"
+        ? assistantPresentationRole
+        : null,
+    [assistantPresentationRole],
   );
   const quickPrompts = useMemo(() => {
+    const explicitContextRole = resolveRoleForExplicitContext(assistantContext);
     const merged = [
       ...getAssistantContextQuickPrompts(assistantContext),
-      ...getAssistantQuickPrompts(role),
+      ...(explicitContextRole && explicitContextRole !== role
+        ? []
+        : getAssistantQuickPrompts(assistantPresentationRole)),
     ];
     const seen = new Set<string>();
     return merged.filter((item) => {
@@ -172,7 +199,7 @@ export function useAIAssistantScreenDerivedState({
       seen.add(item.id);
       return true;
     });
-  }, [assistantContext, role]);
+  }, [assistantContext, assistantPresentationRole, role]);
   const backFallbackRoute = useMemo(
     () => resolveAssistantBackFallback(assistantContext),
     [assistantContext],
@@ -186,6 +213,7 @@ export function useAIAssistantScreenDerivedState({
     assistantContext,
     debugAiContext,
     resolvedUserContext,
+    assistantPresentationRole,
     readyProposals,
     approvedSupplierBundle,
     readyBuyBundle,

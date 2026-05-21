@@ -1,5 +1,7 @@
 import { Platform, StyleSheet } from "react-native";
 
+import { APP_LAYOUT } from "../../components/layout/appLayout";
+
 const webViewportHeight = (Platform.OS === "web" ? "100dvh" : "100%") as "100%";
 
 export const aiAssistantScreenStyles = StyleSheet.create({
@@ -395,7 +397,7 @@ export const aiAssistantScreenStyles = StyleSheet.create({
     maxWidth: 1088,
     alignSelf: "center",
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingBottom: APP_LAYOUT.bottomNavHeightPx + 128,
     gap: 12,
   },
   messageBubble: {

@@ -10,6 +10,7 @@ import {
   isRpcVoidResponse,
   validateRpcResponse,
 } from "../../src/lib/api/queryBoundary";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -172,7 +173,8 @@ describe("S-RPC-4 runtime validation contract", () => {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+      .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file))
+      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

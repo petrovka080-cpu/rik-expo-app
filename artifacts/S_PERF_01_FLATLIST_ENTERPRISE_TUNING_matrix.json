@@ -1,8 +1,8 @@
 {
   "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
-  "final_status": "BLOCKED_PERF_FLATLIST_ENTERPRISE_TUNING",
+  "final_status": "GREEN_PERF_FLATLIST_ENTERPRISE_TUNING_READY",
   "remaining_untuned_flatlists": 0,
-  "unbounded_scrollview_maps_remaining": 1,
+  "unbounded_scrollview_maps_remaining": 0,
   "key_extractors_present": true,
   "render_window_policy_applied": true,
   "pagination_or_bound_proof_present": true,

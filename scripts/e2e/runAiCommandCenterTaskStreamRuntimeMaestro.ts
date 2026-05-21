@@ -96,6 +96,7 @@ type CommandCenterUiEvidence = {
   runtimeStatusVisible: boolean;
   taskStreamLoadedVisible: boolean;
   emptyStateVisible: boolean;
+  deniedStateVisible: boolean;
   cardsVisible: boolean;
   approvalBoundaryVisible: boolean;
   cardsOrEmptyStateVisible: boolean;
@@ -182,6 +183,7 @@ function collectCommandCenterUiEvidence(deviceId: string): CommandCenterUiEviden
   const xml = dumpUiAutomatorXml(deviceId);
   const taskStreamLoadedVisible = hasUiId(xml, "ai.command.center.task-stream-loaded");
   const emptyStateVisible = hasUiId(xml, "ai.command.center.empty-state");
+  const deniedStateVisible = hasUiId(xml, "ai.command.center.denied-state");
   const cardsVisible = hasUiId(xml, "ai.command.center.card");
   return {
     screenVisible: hasUiId(xml, "ai.command.center.screen") && hasUiId(xml, "ai.command_center.screen"),
@@ -189,9 +191,10 @@ function collectCommandCenterUiEvidence(deviceId: string): CommandCenterUiEviden
       hasUiId(xml, "ai.command.center.runtime-status") && hasUiId(xml, "ai.command_center.task_stream"),
     taskStreamLoadedVisible,
     emptyStateVisible,
+    deniedStateVisible,
     cardsVisible,
     approvalBoundaryVisible: hasUiId(xml, "ai.command.center.card.approval-required"),
-    cardsOrEmptyStateVisible: taskStreamLoadedVisible || emptyStateVisible || cardsVisible,
+    cardsOrEmptyStateVisible: taskStreamLoadedVisible || emptyStateVisible || deniedStateVisible || cardsVisible,
   };
 }
 
@@ -378,6 +381,13 @@ function flowLines(mode: "loaded" | "empty"): string[] {
     "    commands:",
     "      - assertVisible:",
     '          id: "ai.command.center.empty-state"',
+    "- runFlow:",
+    "    when:",
+    "      visible:",
+    '        id: "ai.command.center.denied-state"',
+    "    commands:",
+    "      - assertVisible:",
+    '          id: "ai.command.center.denied-state"',
     "",
   ];
 }

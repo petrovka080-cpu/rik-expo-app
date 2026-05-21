@@ -1,0 +1,63 @@
+export const AI_GOLDEN_FIELD_DATA = {
+  objects: [
+    {
+      id: "object_dom_1",
+      nameRu: "Дом 1",
+      floors: [1, 2],
+      zones: ["санузел", "коридор", "комнаты"],
+    },
+    {
+      id: "object_dom_2",
+      nameRu: "Дом 2",
+      floors: [1, 2],
+      zones: ["коридор", "комнаты"],
+    },
+  ],
+  works: [
+    {
+      id: "work_31",
+      number: 31,
+      titleRu: "ГКЛ перегородки",
+      objectId: "object_dom_1",
+      floor: 1,
+      status: "blocked",
+      blockers: ["не хватает 60 листов ГКЛ"],
+    },
+    {
+      id: "work_32",
+      number: 32,
+      titleRu: "Электрика",
+      objectId: "object_dom_1",
+      floor: 1,
+      status: "needs_act",
+      blockers: ["нужен акт скрытых работ"],
+    },
+    {
+      id: "work_33",
+      number: 33,
+      titleRu: "Штукатурка",
+      objectId: "object_dom_1",
+      floor: 1,
+      status: "needs_photo",
+      blockers: ["нужно фото"],
+    },
+    {
+      id: "work_34",
+      number: 34,
+      titleRu: "Гидроизоляция санузла",
+      objectId: "object_dom_1",
+      floor: 1,
+      status: "needs_photo",
+      blockers: ["требуется фото подтверждения"],
+    },
+    {
+      id: "work_35",
+      number: 35,
+      titleRu: "Монтаж дверей",
+      objectId: "object_dom_1",
+      floor: 2,
+      status: "open",
+      blockers: [],
+    },
+  ],
+} as const;

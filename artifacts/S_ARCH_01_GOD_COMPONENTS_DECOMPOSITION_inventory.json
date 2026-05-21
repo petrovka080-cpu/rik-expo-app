@@ -1,6 +1,6 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-05-20T06:25:20.389Z",
+  "generatedAt": "2026-05-20T16:25:33.019Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
@@ -18,6 +18,11 @@
       "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
       "lineCount": 490,
       "hookCount": 1
+    },
+    {
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 489,
+      "hookCount": 14
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",
@@ -58,11 +63,6 @@
       "file": "src/components/map/ResultsBottomSheet.tsx",
       "lineCount": 465,
       "hookCount": 13
-    },
-    {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 465,
-      "hookCount": 14
     }
   ],
   "top_by_hooks": [
@@ -98,7 +98,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 465,
+      "lineCount": 489,
       "hookCount": 14
     },
     {

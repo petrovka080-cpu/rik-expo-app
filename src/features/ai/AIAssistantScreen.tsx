@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppChatComposerBar } from "../../components/layout/AppChatComposerBar";
+import { AIAssistantLiveScreenCopilotPanel } from "./AIAssistantLiveScreenCopilotPanel";
 import {
   AIAssistantProductHeader,
   AIAssistantReadyProductPanels,
@@ -28,7 +30,13 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
+import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
+import {
+  answerAiLiveScreenButton,
+  resolveAiLiveScreenConcreteQuestion,
+  resolveAiLiveScreenId,
+} from "../../lib/ai/liveScreenCopilot";
 import {
   buildAiScreenMagicButtonResultCopy,
   buildAiScreenMagicFreeTextResultCopy,
@@ -37,53 +45,13 @@ import {
 import { useAssistantVoiceInput } from "./useAssistantVoiceInput";
 import { useAIAssistantScreenDerivedState } from "./useAIAssistantScreenDerivedState";
 import { loadCurrentProfileIdentity } from "../profile/currentProfileIdentity";
-import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { safeBack } from "../../lib/navigation/safeBack";
+import {
+  createAssistantScreenMessage as createMessage,
+  normalizeGroundedRouteParams,
+  recordAssistantScreenFallback,
+} from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
-
-const recordAssistantScreenFallback = (
-  event: string,
-  error: unknown,
-  extra?: Record<string, unknown>,
-) =>
-  recordPlatformObservability({
-    screen: "ai",
-    surface: "assistant_screen",
-    category: "ui",
-    event,
-    result: "error",
-    fallbackUsed: true,
-    errorClass: error instanceof Error ? error.name : undefined,
-    errorMessage: error instanceof Error ? error.message : String(error ?? "assistant_screen_failed"),
-    extra: {
-      module: "ai.AIAssistantScreen",
-      route: "/ai",
-      role: "ai",
-      owner: "assistant_screen",
-      severity: "error",
-      ...extra,
-    },
-  });
-
-function createMessage(role: AssistantMessage["role"], content: string): AssistantMessage {
-  return {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    role,
-    content,
-    createdAt: new Date().toISOString(),
-  };
-}
-
-function normalizeGroundedRouteParams(
-  params: Record<string, string | string[] | undefined>,
-): Record<string, string | number | boolean | null | undefined> {
-  return Object.fromEntries(
-    Object.entries(params).map(([key, value]) => [
-      key,
-      Array.isArray(value) ? value[0] : value,
-    ]),
-  );
-}
 
 export default function AIAssistantScreen() {
   const [booting, setBooting] = useState(true);
@@ -103,6 +71,7 @@ export default function AIAssistantScreen() {
     routePrompt,
     routeAutoSend,
     assistantContext,
+    assistantPresentationRole,
     debugAiContext,
     resolvedUserContext,
     readyProposals,
@@ -135,14 +104,16 @@ export default function AIAssistantScreen() {
       const nextFullName = identity.fullName;
       setFullName(nextFullName);
 
-      const stored = await loadAssistantMessages(nextUserId);
-      if (stored.length > 0) {
+      const shouldRestoreStoredMessages = assistantContext === "unknown";
+      const stored = shouldRestoreStoredMessages ? await loadAssistantMessages(nextUserId) : [];
+      if (shouldRestoreStoredMessages && stored.length > 0) {
         setMessages(stored);
         setBooting(false);
         return;
       }
 
-      setMessages([createMessage("assistant", getAssistantGreeting(nextRole, nextFullName, assistantContext))]);
+      const greetingRole = assistantContext === "unknown" ? nextRole : assistantPresentationRole;
+      setMessages([createMessage("assistant", getAssistantGreeting(greetingRole, nextFullName, assistantContext))]);
     } catch (error) {
       recordAssistantScreenFallback("initialize_assistant_failed", error, {
         action: "initialize",
@@ -152,7 +123,7 @@ export default function AIAssistantScreen() {
     } finally {
       setBooting(false);
     }
-  }, [assistantContext]);
+  }, [assistantContext, assistantPresentationRole]);
 
   useFocusEffect(
     useCallback(() => {
@@ -161,9 +132,10 @@ export default function AIAssistantScreen() {
   );
 
   useEffect(() => {
+    if (assistantContext !== "unknown") return;
     if (!userId || messages.length === 0) return;
     void saveAssistantMessages(userId, messages);
-  }, [messages, userId]);
+  }, [assistantContext, messages, userId]);
 
   useEffect(() => {
     if (booting) return;
@@ -211,6 +183,35 @@ export default function AIAssistantScreen() {
       setLoading(true);
 
       try {
+        const answerFirstResult = answerAlwaysOnExternalKnowledgeQuestion({
+          questionRu: text,
+          screenId: resolveAiLiveScreenId(assistantContext),
+          role: assistantPresentationRole,
+          context: assistantContext,
+          countryCode: "KG",
+          cityOrRegion: "Bishkek",
+          currency: "KGS",
+        });
+        const answerFirstText = answerFirstResult.answerTextRu;
+        if (answerFirstResult.handled && answerFirstText) {
+          setMessages((prev) => [...prev, createMessage("assistant", sanitizeAssistantUserFacingCopy(answerFirstText))]);
+          return;
+        }
+
+        const liveScreenButton = resolveAiLiveScreenConcreteQuestion({
+          screenId: resolveAiLiveScreenId(assistantContext),
+          buttonIdOrPayloadOrLabel: text,
+        });
+        if (liveScreenButton) {
+          const liveAnswer = answerAiLiveScreenButton(liveScreenButton.button, {
+            userId: userId ?? undefined,
+            companyId: "company-scope",
+            referenceDate: "2026-05-20",
+          });
+          setMessages((prev) => [...prev, createMessage("assistant", liveAnswer.presentedTextRu)]);
+          return;
+        }
+
         const liveAiResult = answerResolvedLiveAiContext({
           routeContext,
           assistantContext,
@@ -282,14 +283,15 @@ export default function AIAssistantScreen() {
         setLoading(false);
       }
     },
-    [assistantContext, assistantFactsSummary, input, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
+    [assistantContext, assistantFactsSummary, assistantPresentationRole, input, loading, messages, params, role, roleScreenAssistantPack, routeContext, screenMagicPack, screenNativeAssistantPack, scopedFacts, userId],
   );
 
   const clearChat = useCallback(async () => {
-    const greeting = createMessage("assistant", getAssistantGreeting(role, fullName, assistantContext));
+    const greetingRole = assistantContext === "unknown" ? role : assistantPresentationRole;
+    const greeting = createMessage("assistant", getAssistantGreeting(greetingRole, fullName, assistantContext));
     setMessages([greeting]);
     await clearAssistantMessages(userId);
-  }, [assistantContext, fullName, role, userId]);
+  }, [assistantContext, assistantPresentationRole, fullName, role, userId]);
 
   useEffect(() => {
     if (booting) return;
@@ -336,6 +338,10 @@ export default function AIAssistantScreen() {
           />
 
           <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
+          <AIAssistantLiveScreenCopilotPanel
+            assistantContext={assistantContext}
+            onReadyProposalPress={(text) => void send(text)}
+          />
           <AIAssistantReadyProductPanels
             resolvedUserContext={resolvedUserContext}
             readyProposals={readyProposals}
@@ -400,6 +406,12 @@ export default function AIAssistantScreen() {
           ) : null}
         </ScrollView>
 
+        <AppChatComposerBar
+          placeholderRu="Напишите вопрос..."
+          canAttach
+          canSend={Boolean(input.trim()) && !loading}
+          safeAboveBottomNav
+        >
         <View style={styles.composer}>
           <Pressable
             style={[
@@ -457,6 +469,7 @@ export default function AIAssistantScreen() {
             </Text>
           </View>
         ) : null}
+        </AppChatComposerBar>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

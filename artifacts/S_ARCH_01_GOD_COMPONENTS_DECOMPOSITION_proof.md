@@ -1,7 +1,7 @@
 # S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT
 
 final_status: GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY
-generated_at: 2026-05-20T06:25:20.389Z
+generated_at: 2026-05-20T16:25:33.019Z
 
 ## Current Truth
 
@@ -26,6 +26,7 @@ Current HEAD is already below the decomposition thresholds after earlier owner-s
 - src/features/ai/AIAssistantReadyProductPanels.tsx: 499 lines, 0 hooks
 - src/screens/director/DirectorReportsModal.tsx: 496 lines, 20 hooks
 - src/screens/accountant/components/ActivePaymentForm.tsx: 490 lines, 1 hooks
+- src/features/ai/AIAssistantScreen.tsx: 489 lines, 14 hooks
 - src/components/PeriodPickerSheet.tsx: 487 lines, 4 hooks
 - src/screens/foreman/ForemanAiQuickModal.tsx: 487 lines, 2 hooks
 - src/screens/accountant/components/ReadOnlyReceipt.tsx: 480 lines, 2 hooks
@@ -34,4 +35,3 @@ Current HEAD is already below the decomposition thresholds after earlier owner-s
 - src/screens/buyer/components/BuyerRfqSheetBody.tsx: 468 lines, 5 hooks
 - src/features/reports/ReportsDashboardScreen.tsx: 466 lines, 9 hooks
 - src/components/map/ResultsBottomSheet.tsx: 465 lines, 13 hooks
-- src/features/ai/AIAssistantScreen.tsx: 465 lines, 14 hooks

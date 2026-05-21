@@ -49,6 +49,7 @@ const ACTIVE_VISIBLE_TABS = [
   "(tabs)/_layout.tsx",
   "(tabs)/market.tsx",
   "(tabs)/add.tsx",
+  "(tabs)/request/index.tsx",
   "(tabs)/chat.tsx",
   "(tabs)/profile.tsx",
 ] as const;

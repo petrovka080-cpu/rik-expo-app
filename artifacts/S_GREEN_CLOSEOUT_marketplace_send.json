@@ -1,0 +1,12 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "source_artifacts": [
+    "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_web_pdf_open.json",
+    "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_idempotency.json"
+  ],
+  "valid_send_status": 201,
+  "valid_send_after_backend_success_only": true,
+  "send_marketplace_idempotent": true,
+  "duplicate_marketplace_demand_created": false,
+  "idempotent_replay_event_recorded": true
+}

@@ -1,9 +1,10 @@
 import { Platform, StyleSheet } from 'react-native';
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 import { TYPO, UI } from './foreman.ui';
 
 export const s = StyleSheet.create({
   container: { flex: 1 },
-  pagePad: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 120 },
+  pagePad: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: APP_LAYOUT.scrollBottomPaddingPx },
 
   small: {
     color: UI.sub,

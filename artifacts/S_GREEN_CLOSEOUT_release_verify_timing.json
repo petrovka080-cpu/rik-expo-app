@@ -1,0 +1,239 @@
+{
+  "wave": "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_RELEASE_VERIFY_GATES_TIMED",
+  "release_verify_timeout_without_step": false,
+  "timeout_root_cause_isolated": false,
+  "steps": [
+    {
+      "step": "tsc",
+      "command": "npx tsc --noEmit --pretty false",
+      "started_at": "2026-05-21T13:54:54.711Z",
+      "finished_at": "2026-05-21T13:55:53.751Z",
+      "duration_ms": 59041,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "step": "expo-lint",
+      "command": "npx expo lint",
+      "started_at": "2026-05-21T13:55:53.753Z",
+      "finished_at": "2026-05-21T13:55:58.138Z",
+      "duration_ms": 4385,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "env: load .env.local\nenv: export EXPO_PUBLIC_SUPABASE_URL EXPO_PUBLIC_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY EXPO_PUBLIC_JOB_QUEUE_ENABLED WORKER_BATCH_SIZE WORKER_CONCURRENCY COMPACTION_DELAY_MS EXPO_PUBLIC_DIRECTOR_FINANCE_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PRODUCTION_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_SUBCONTRACT_PDF_SOURCE_RPC_V1 EXPO_PUBLIC_DIRECTOR_REPORT_TRANSPORT_SCOPE_RPC_V1 EXPO_PUBLIC_DIRECTOR_PDF_RENDER_OFFLOAD_V1 EXPO_PUBLIC_FOREMAN_PDF_FUNCTION_URL EXPO_PUBLIC_WAREHOUSE_PDF_FUNCTION_URL ANTHROPIC_API_KEY\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "architecture-anti-regression",
+      "command": "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+      "started_at": "2026-05-21T13:55:58.139Z",
+      "finished_at": "2026-05-21T13:56:02.557Z",
+      "duration_ms": 4418,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": " 15\n      },\n      {\n        \"file\": \"src/features/ai/AIAssistantScreen.tsx\",\n        \"lineCount\": 478,\n        \"hookCount\": 14\n      },\n      {\n        \"file\": \"src/screens/buyer/components/BuyerMobileItemEditorModal.tsx\",\n        \"lineCount\": 325,\n        \"hookCount\": 14\n      },\n      {\n        \"file\": \"src/screens/contractor/components/ContractorSubcontractsList.tsx\",\n        \"lineCount\": 247,\n        \"hookCount\": 14\n      },\n      {\n        \"file\": \"src/components/map/ResultsBottomSheet.tsx\",\n        \"lineCount\": 465,\n        \"hookCount\": 13\n      },\n      {\n        \"file\": \"src/screens/accountant/AccountantSubcontractTab.tsx\",\n        \"lineCount\": 239,\n        \"hookCount\": 13\n      },\n      {\n        \"file\": \"src/features/supplierShowcase/SupplierShowcaseScreen.tsx\",\n        \"lineCount\": 380,\n        \"hookCount\": 11\n      }\n    ]\n  },\n  \"checks\": [\n    {\n      \"name\": \"direct_supabase_service_bypass_budget\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"direct_supabase_exception_registry\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"production_readonly_canary_contract\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"cache_rate_route_scope\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"cache_cold_miss_deterministic_proof\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"rate_limit_marketplace_1_percent_canary_proof\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"rate_limit_marketplace_5pct_canary_proof\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"unbounded_select_ratchet\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"production_raw_loop_boundary\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"unsafe_cast_ratchet_contract\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"flatlist_tuning_regression\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"error_handling_gap_ratchet\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_model_provider_boundary\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_role_risk_approval_control_plane\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_app_knowledge_registry\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_tool_registry_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_tool_read_bindings_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_tool_plan_policy_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_tool_transport_boundary\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_tool_rate_limit_policy\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"submit_for_approval_audit_trail\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_policy_gate_scale_proof\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_explicit_e2e_fixture_registry\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_trace_observability\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"agent_bff_route_shell_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_command_center_task_stream_runtime\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_screen_local_action_source_policy\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_command_center_state_budget\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_app_action_graph_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_procurement_context_engine\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_external_intel_gateway\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_procurement_copilot_runtime_chain\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_cross_screen_runtime_matrix\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_persistent_action_ledger\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_approval_inbox_runtime\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_approved_procurement_executor\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_knowledge_preview_e2e_contract\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_response_smoke_non_blocking_contract\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_role_screen_emulator_gate\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_explicit_role_secrets_e2e_gate\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"developer_control_e2e_mode\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"developer_control_runtime_targetability\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"android_emulator_ios_build_submit_gate\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"post_install_release_signoff_gate\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_mandatory_emulator_runtime_gate\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"ai_construction_knowhow_architecture\",\n      \"status\": \"pass\",\n      \"errors\": []\n    },\n    {\n      \"name\": \"component_debt_report\",\n      \"status\": \"report_only\",\n      \"errors\": []\n    }\n  ],\n  \"safety\": {\n    \"productionCalls\": false,\n    \"dbWrites\": false,\n    \"migrations\": false,\n    \"supabaseProjectChanges\": false,\n    \"envChanges\": false,\n    \"secretsPrinted\": false\n  }\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-app-context-graph-deep-link-proof",
+      "command": "npx tsx scripts/e2e/runAiAppContextGraphDeepLinkWebProof.ts",
+      "started_at": "2026-05-21T13:56:02.558Z",
+      "finished_at": "2026-05-21T13:56:03.683Z",
+      "duration_ms": 1125,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"final_status\": \"GREEN_AI_APP_CONTEXT_GRAPH_DEEP_LINKED_SOURCE_REFS_READY\",\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-universal-role-qa-source-planner-proof",
+      "command": "npx tsx scripts/e2e/runAiUniversalRoleQaWebProof.ts",
+      "started_at": "2026-05-21T13:56:03.684Z",
+      "finished_at": "2026-05-21T13:56:04.903Z",
+      "duration_ms": 1219,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"final_status\": \"GREEN_AI_UNIVERSAL_ROLE_QA_ORCHESTRATOR_SOURCE_PLANNER_READY\",\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-live-screen-copilot-buttons-proof",
+      "command": "npx tsx scripts/e2e/runAiLiveScreenCopilotButtonsWebProof.ts",
+      "started_at": "2026-05-21T13:56:04.904Z",
+      "finished_at": "2026-05-21T13:56:06.286Z",
+      "duration_ms": 1382,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "final_status GREEN_AI_LIVE_SCREEN_COPILOT_UI_BUTTONS_RUSSIAN_PROOF_READY\nblockers []\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "enterprise-ai-architecture-guardrails",
+      "command": "npx tsx scripts/ai/runAiEnterpriseArchitectureGuardrails.ts",
+      "started_at": "2026-05-21T13:56:06.287Z",
+      "finished_at": "2026-05-21T13:56:07.721Z",
+      "duration_ms": 1434,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"final_status\": \"GREEN_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_READY\",\n  \"blockers\": [],\n  \"green_status\": \"GREEN_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_READY\"\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-verified-external-knowledge-proof",
+      "command": "npx tsx scripts/e2e/runAiVerifiedExternalKnowledgeWebProof.ts",
+      "started_at": "2026-05-21T13:56:07.722Z",
+      "finished_at": "2026-05-21T13:56:08.851Z",
+      "duration_ms": 1129,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"wave\": \"S_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE_POINT_OF_NO_RETURN\",\n  \"final_status\": \"GREEN_AI_VERIFIED_EXTERNAL_KNOWLEDGE_WEB_PROOF_READY\",\n  \"web_proof_reads_actual_answer_text\": true,\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-role-mixed-150-real-answers-proof",
+      "command": "npx tsx scripts/e2e/runAiRoleMixed150RealAnswersWebProof.ts",
+      "started_at": "2026-05-21T13:56:08.852Z",
+      "finished_at": "2026-05-21T13:56:09.964Z",
+      "duration_ms": 1112,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"final_status\": \"GREEN_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_READY\",\n  \"green_status\": \"GREEN_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_READY\",\n  \"web_proof_reads_actual_dom_text\": true,\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-role-business-copilots-workflow-proof",
+      "command": "npx tsx scripts/e2e/runAiRoleBusinessCopilotsWorkflowWebProof.ts",
+      "started_at": "2026-05-21T13:56:09.965Z",
+      "finished_at": "2026-05-21T13:56:11.273Z",
+      "duration_ms": 1308,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"wave\": \"S_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_POINT_OF_NO_RETURN\",\n  \"final_status\": \"GREEN_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_READY\",\n  \"web_proof_reads_actual_dom_text\": true,\n  \"web_proof_clicks_open_links\": true,\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "media-photo-video-intelligence-proof",
+      "command": "npx tsx scripts/e2e/runMediaPhotoVideoIntelligenceWebProof.ts",
+      "started_at": "2026-05-21T13:56:11.274Z",
+      "finished_at": "2026-05-21T13:56:12.453Z",
+      "duration_ms": 1179,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"ok\": true,\n  \"matrix\": {\n    \"wave\": \"S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_POINT_OF_NO_RETURN\",\n    \"final_status\": \"GREEN_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_READY\",\n    \"new_hooks_added\": false,\n    \"useEffect_hacks_added\": false,\n    \"second_media_framework_created\": false,\n    \"second_ai_framework_created\": false,\n    \"screen_local_upload_logic_found\": 0,\n    \"media_limits_centralized\": true,\n    \"max_photos_per_group\": 5,\n    \"max_videos_per_group\": 1,\n    \"max_video_duration_ms\": 15000,\n    \"media_asset_contract_ready\": true,\n    \"media_asset_group_ready\": true,\n    \"media_upload_session_ready\": true,\n    \"media_role_policy_ready\": true,\n    \"media_visibility_policy_ready\": true,\n    \"media_cache_policy_ready\": true,\n    \"media_signed_url_policy_ready\": true,\n    \"base64_stored_in_db\": false,\n    \"raw_media_payload_stored_in_app_state\": false,\n    \"signed_urls_logged\": false,\n    \"storage_keys_logged\": false,\n    \"photo_five_limit_enforced\": true,\n    \"sixth_photo_rejected\": true,\n    \"video_duration_limit_enforced\": true,\n    \"long_video_rejected\": true,\n    \"short_video_accepted\": true,\n    \"variants_generated\": true,\n    \"thumbnail_visible\": true,\n    \"video_poster_visible\": true,\n    \"original_loaded_only_on_click\": true,\n    \"no_original_prefetch_in_feed\": true,\n    \"media_handoff_uses_ids_only\": true,\n    \"media_source_refs_enabled\": true,\n    \"media_context_graph_integrated\": true,\n    \"media_deep_links_clickable\": true,\n    \"ai_media_analysis_ready\": true,\n    \"ai_analysis_final_fact\": false,\n    \"ai_suggestions_require_human_review\": true,\n    \"face_identification_attempted\": false,\n    \"marketplace_product_draft_ready\": true,\n    \"marketplace_product_published_by_ai\": false,\n    \"warehouse_evidence_draft_ready\": true,\n    \"warehouse_stock_mutated_by_ai\": false,\n    \"field_evidence_draft_ready\": true,\n    \"work_closed_by_ai\": false,\n    \"document_scan_draft_ready\": true,\n    \"document_final_linked_by_ai\": false,\n    \"client_visibility_enforced\": true,\n    \"cross_role_media_leaks_found\": 0,\n    \"private_media_cache_leaks_found\": 0,\n    \"web_proof_passed\": true,\n    \"android_proof_passed\": true,\n    \"web_proof_checks_upload_limits\": true,\n    \"android_proof_checks_upload_limits\": true,\n    \"dangerous_mutations_found\": 0,\n    \"approval_bypass_found\": 0,\n    \"release_verify_passed\": true,\n    \"fake_green_claimed\": false\n  }\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "document-pdf-evidence-intelligence-proof",
+      "command": "npx tsx scripts/e2e/runAiDocumentPdfEvidenceIntelligenceWebProof.ts",
+      "started_at": "2026-05-21T13:56:12.454Z",
+      "finished_at": "2026-05-21T13:56:13.640Z",
+      "duration_ms": 1186,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"ok\": true,\n  \"matrix\": {\n    \"wave\": \"S_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_POINT_OF_NO_RETURN\",\n    \"final_status\": \"GREEN_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_READY\",\n    \"new_hooks_added\": false,\n    \"useEffect_hacks_added\": false,\n    \"second_document_framework_created\": false,\n    \"second_pdf_framework_created\": false,\n    \"second_ai_framework_created\": false,\n    \"db_writes_from_ai_answer_used\": false,\n    \"migrations_used\": false,\n    \"document_asset_contract_ready\": true,\n    \"document_chunk_contract_ready\": true,\n    \"document_source_refs_ready\": true,\n    \"document_deep_links_ready\": true,\n    \"document_role_policy_ready\": true,\n    \"document_visibility_policy_ready\": true,\n    \"document_ingestion_ready\": true,\n    \"document_parser_ready\": true,\n    \"document_chunking_ready\": true,\n    \"document_extraction_ready\": true,\n    \"document_preview_ready\": true,\n    \"ai_document_classifier_ready\": true,\n    \"ai_document_extraction_ready\": true,\n    \"ai_link_suggestions_ready\": true,\n    \"evidence_matrix_ready\": true,\n    \"missing_data_detector_ready\": true,\n    \"media_bridge_ready\": true,\n    \"app_context_graph_integrated\": true,\n    \"universal_qa_integrated\": true,\n    \"role_workflows_integrated\": true,\n    \"invoice_45_amount_found\": 125000,\n    \"payment_77_amount_found\": 125000,\n    \"invoice_45_company_found\": true,\n    \"invoice_45_linked_to_payment_77\": true,\n    \"invoice_45_linked_to_request_124\": true,\n    \"missing_act_detected\": true,\n    \"extracted_fields_have_source_refs\": true,\n    \"extracted_fields_have_chunk_refs\": true,\n    \"pdf_links_open_correct_document\": true,\n    \"pdf_links_support_page_highlight\": true,\n    \"document_extraction_presented_as_final_fact\": false,\n    \"document_final_linked_by_ai\": false,\n    \"payment_mutated_by_ai\": false,\n    \"work_closed_by_ai\": false,\n    \"act_signed_by_ai\": false,\n    \"stock_mutated_by_ai\": false,\n    \"invented_amount_found\": 0,\n    \"invented_company_found\": 0,\n    \"invented_document_number_found\": 0,\n    \"invented_date_found\": 0,\n    \"cross_role_document_leaks_found\": 0,\n    \"client_private_document_leaks_found\": 0,\n    \"signed_urls_logged\": false,\n    \"storage_keys_logged\": false,\n    \"web_proof_passed\": true,\n    \"android_proof_passed\": true,\n    \"web_proof_reads_actual_dom_text\": true,\n    \"android_proof_reads_actual_hierarchy_text\": true,\n    \"dangerous_mutations_found\": 0,\n    \"approval_bypass_found\": 0,\n    \"release_verify_passed\": true,\n    \"fake_green_claimed\": false\n  }\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-domain-data-gateway-context-retrieval-proof",
+      "command": "npx tsx scripts/e2e/runAiDomainDataGatewayContextRetrievalWebProof.ts",
+      "started_at": "2026-05-21T13:56:13.641Z",
+      "finished_at": "2026-05-21T13:56:14.913Z",
+      "duration_ms": 1272,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"passed\": true,\n  \"requiredNumbersPresent\": true,\n  \"final_status\": \"GREEN_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE_READY\"\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "enterprise-ai-contract-runtime-invariant-proof",
+      "command": "npx tsx scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts",
+      "started_at": "2026-05-21T13:56:14.914Z",
+      "finished_at": "2026-05-21T13:56:16.244Z",
+      "duration_ms": 1330,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-safe-action-draft-approval-proof",
+      "command": "npx tsx scripts/ai/runAiSafeActionDraftApprovalProof.ts",
+      "started_at": "2026-05-21T13:56:16.245Z",
+      "finished_at": "2026-05-21T13:56:17.508Z",
+      "duration_ms": 1263,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"wave\": \"S_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_POINT_OF_NO_RETURN\",\n  \"final_status\": \"GREEN_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_READY\",\n  \"green_status\": \"GREEN_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_READY\",\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ai-human-approval-ledger-execution-boundary-proof",
+      "command": "npx tsx scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts",
+      "started_at": "2026-05-21T13:56:17.509Z",
+      "finished_at": "2026-05-21T13:56:18.836Z",
+      "duration_ms": 1327,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"wave\": \"S_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_POINT_OF_NO_RETURN\",\n  \"final_status\": \"GREEN_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_READY\",\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "universal-qa-smoke-release-gate",
+      "command": "npx tsx scripts/e2e/runAiUniversalQaSmokeToReleaseGate.ts",
+      "started_at": "2026-05-21T13:56:18.837Z",
+      "finished_at": "2026-05-21T13:56:21.490Z",
+      "duration_ms": 2653,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"summary\": {\n    \"wave\": \"S_AI_UNIVERSAL_50_SCREEN_70_WEB_SMOKE_PROOF\",\n    \"final_status\": \"GREEN_AI_UNIVERSAL_50_SCREEN_70_WEB_SMOKE_READY\",\n    \"questions_total\": 120,\n    \"screen_questions\": 50,\n    \"internet_questions\": 70,\n    \"screen_questions_used_public_web_fact\": 0,\n    \"internet_questions_used_public_web_fact\": 70,\n    \"generic_answers_found\": 0,\n    \"dangerous_mutations_found\": 0,\n    \"blockers\": [],\n    \"fake_green_claimed\": false\n  },\n  \"sample\": [\n    {\n      \"id\": \"screen-buyer-count-may\",\n      \"intent\": \"app_data_count\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"За май 2026 найдено заявок: 2. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"screen-buyer-count-april\",\n      \"intent\": \"app_data_count\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"За апрель 2026 найдено заявок: 1. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"screen-foreman-first-floor-requests\",\n      \"intent\": \"procurement_request_search\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Нашёл заявки снабжения, связанные с указанным этажом/зоной. Данные не изменены.\"\n    },\n    {\n      \"id\": \"screen-buyer-first-floor-requests\",\n      \"intent\": \"procurement_request_search\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Нашёл заявки снабжения, связанные с указанным этажом/зоной. Данные не изменены.\"\n    },\n    {\n      \"id\": \"screen-warehouse-deficits\",\n      \"intent\": \"warehouse_query\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Найдено 1 складских позиций, 1 приходов на проверке, 1 выдач можно готовить как черновик; 2 событий требуют внимания.\"\n    },\n    {\n      \"id\": \"screen-warehouse-stock\",\n      \"intent\": \"warehouse_query\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Найдено 1 складских позиций, 1 приходов на проверке, 1 выдач можно готовить как черновик; 2 событий требуют внимания.\"\n    },\n    {\n      \"id\": \"screen-warehouse-issue\",\n      \"intent\": \"warehouse_query\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Найдено 1 складских позиций, 1 приходов на проверке, 1 выдач можно готовить как черновик; 2 событий требуют внимания.\"\n    },\n    {\n      \"id\": \"screen-director-today\",\n      \"intent\": \"role_summary_query\",\n      \"publicWebFacts\": 0,\n      \"blockers\": [],\n      \"shortRu\": \"Главное решение: Платёж PAY-GKL. Источники: [Источник приложения], [Источник приложения].\"\n    }\n  ],\n  \"internetSample\": [\n    {\n      \"id\": \"internet-asphalt-1\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка асфальта». Ниже черновая типовая смета на 100 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-asphalt-2\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка асфальта». Ниже черновая типовая смета на 100 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-asphalt-3\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка асфальта». Ниже черновая типовая смета на 100 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-paving-1\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка брусчатки». Ниже черновая типовая смета на 80 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-paving-2\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка брусчатки». Ниже черновая типовая смета на 80 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-paving-3\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «укладка брусчатки». Ниже черновая типовая смета на 80 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-screed-1\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «бетонная стяжка». Ниже черновая типовая смета на 50 м². Это не проектный факт. Данные проекта не изменены.\"\n    },\n    {\n      \"id\": \"internet-screed-2\",\n      \"intent\": \"construction_estimate_request\",\n      \"publicWebFacts\": 1,\n      \"blockers\": [],\n      \"shortRu\": \"В доступных данных приложения не найдена проектная смета по работе «бетонная стяжка». Ниже черновая типовая смета на 50 м². Это не проектный факт. Данные проекта не изменены.\"\n    }\n  ]\n}\n{\n  \"wave\": \"S_AI_UNIVERSAL_QA_SMOKE_TO_RELEASE_GATE_POINT_OF_NO_RETURN\",\n  \"final_status\": \"PARTIAL_AI_UNIVERSAL_QA_SMOKE_RELEASE_GATE_READY\",\n  \"questions_total\": 120,\n  \"blockers\": []\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "universal-qa-smoke-maestro",
+      "command": "npx tsx scripts/e2e/runAiUniversalLargeQuestionSmokeMaestroProof.ts",
+      "started_at": "2026-05-21T13:56:21.492Z",
+      "finished_at": "2026-05-21T13:56:22.873Z",
+      "duration_ms": 1381,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "{\n  \"proof\": \"S_AI_UNIVERSAL_QA_SMOKE_TO_RELEASE_GATE_MAESTRO\",\n  \"androidProofPassed\": true,\n  \"transcripts\": 6,\n  \"blockers\": [],\n  \"finalStatus\": \"PARTIAL_AI_UNIVERSAL_QA_SMOKE_RELEASE_GATE_READY\"\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "ios-eas-update-native-impact-classifier",
+      "command": "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json",
+      "started_at": "2026-05-21T13:56:22.875Z",
+      "finished_at": "2026-05-21T13:56:24.099Z",
+      "duration_ms": 1224,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "scale/routeErrorBoundaryCoverage.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/scale/s50kQueueRuntimeAdapter2.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/scale/sQueue1Backpressure.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/bottomTabsRequestLabelNoDuplicatePlus.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/AppDetailSheet.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/AppScreen.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/AppStickyActionBar.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/AppStickyHeaderStack.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/BottomNavCollision.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/CurrencyEncoding.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/FloatingAiButtonNoOverlap.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/NoTechnicalAiMediaText.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/canonicalMobileLayout/SearchHeaderNoOverlap.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/floatingAiButtonNoOverlap.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/globalBottomNavSafeArea.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/liveLayoutSheetsChatContractorMedia.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/primaryActionsAboveBottomNav.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    },\n    {\n      \"file\": \"tests/ui/stickyActionBar.contract.test.ts\",\n      \"kind\": \"proof_or_test\",\n      \"nativeImpact\": false,\n      \"otaSafe\": true,\n      \"backendMigration\": false,\n      \"reason\": \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\"\n    }\n  ],\n  \"reasons\": [\n    \"JS/TS/UI runtime code is OTA-safe when native dependencies and app config are unchanged.\",\n    \"Proof, artifact, documentation, or test changes do not require a new iOS binary.\",\n    \"Release tooling changes do not change the installed iOS native runtime.\",\n    \"Backend/server changes do not change the iOS native runtime; deploy backend separately and ship frontend by OTA if needed.\"\n  ],\n  \"iosBuildForbiddenForJsOnlyChanges\": true,\n  \"nextDeliveryAction\": \"publish_ota_to_installed_channel_branch\"\n}\n",
+      "stderr_tail": ""
+    },
+    {
+      "step": "jest-run-in-band",
+      "command": "npm test -- --runInBand",
+      "started_at": "2026-05-21T13:56:24.100Z",
+      "finished_at": "2026-05-21T14:05:05.813Z",
+      "duration_ms": 521713,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "\n> rik-expo-app@1.0.0 test\n> jest --runInBand\n\n",
+      "stderr_tail": "est.ts\nPASS tests/api/accountantReturnTransport.contract.test.ts\nPASS tests/api/accountantInboxTransport.contract.test.ts\nPASS tests/api/accountantHistoryTransport.contract.test.ts\nPASS src/screens/profile/components/ListingModal.contract.test.ts\nPASS tests/ui/canonicalMobileLayout/AppDetailSheet.contract.test.ts\nPASS tests/media/backend/mediaCompleteUpload.contract.test.ts\nPASS tests/observability/performanceTracingFlows.test.ts\nPASS tests/media/mediaUploadNoBase64Db.contract.test.ts\nPASS tests/foreman/foreman.draftBoundaryFailure.model.test.ts\nPASS tests/foreman/foreman.draftBoundary.requestDetails.test.ts\nPASS tests/e2e/authStableTestIds.contract.test.ts\nPASS tests/e2e/aiCrossScreenRuntime.e2e.test.ts\nPASS tests/architecture/uiNoTechnicalAiMediaText.contract.test.ts\nPASS tests/architecture/consumerRepairNoDirectMarketplaceDbWrite.contract.test.ts\nPASS tests/architecture/aiWarehouseNoDirectMutation.contract.test.ts\nPASS tests/architecture/aiUniversalSmokeNoSecondFramework.contract.test.ts\nPASS tests/architecture/aiRuntimeNoDestructiveRepairCommand.contract.test.ts\nPASS tests/architecture/aiRoleMixed150NoSecondFramework.contract.test.ts\nPASS tests/architecture/aiRoleBusinessCopilotsNoMigrations.contract.test.ts\nPASS tests/architecture/aiReleaseCloseoutNoHooks.contract.test.ts\nPASS tests/architecture/aiOperationalTruthNoRuntimeMutation.contract.test.ts\nPASS tests/architecture/aiLiveUiNoSecondFramework.contract.test.ts\nPASS tests/architecture/aiLiveSemanticProofNoHooks.contract.test.ts\nPASS tests/architecture/aiContractRuntimeNoSecondFramework.contract.test.ts\nPASS tests/architecture/aiAppContextGraphNoUseEffectHacks.contract.test.ts\nPASS tests/architecture/aiAlwaysOnExternalNoHooks.contract.test.ts\nPASS tests/ai/externalSourceRegistry.contract.test.ts\nPASS tests/ai/aiUniversalControlledExternalNotPublicWeb.contract.test.ts\nPASS tests/ai/aiScreenRuntimeEvidence.contract.test.ts\nPASS tests/ai/aiMarketplaceDocumentsRequired.contract.test.ts\nPASS tests/ai/aiIntentRegistry.contract.test.ts\nPASS tests/ai/aiContractorOfficeDocumentGapTrace.contract.test.ts\nPASS tests/ai/aiChatScreenValuePack.contract.test.ts\nPASS tests/ai/aiBuyerApprovalRouteNoBypass.contract.test.ts\nPASS tests/api/subcontractsSelectStarBatchA.contract.test.ts\nPASS tests/api/buyerSummaryAuthTransport.contract.test.ts\nPASS tests/api/marketAuthTransport.contract.test.ts\nPASS tests/api/jobQueueTransport.contract.test.ts\nPASS tests/api/calcModalRpcTransportBoundary.contract.test.ts\nPASS tests/media/backend/mediaNoStorageKeyLeak.contract.test.ts\nPASS tests/release/androidEmulatorApkProfile.contract.test.ts\nPASS tests/observability/devStyleGuardCatchDiscipline.test.ts\nPASS tests/e2e/developerControlApprovalTargetability.contract.test.ts\nPASS tests/architecture/noRawRouteLabelsInBottomNav.contract.test.ts\nPASS tests/architecture/documentNoSignedUrlLeak.contract.test.ts\nPASS tests/architecture/documentNoDangerousMutation.contract.test.ts\nPASS tests/architecture/consumerRepairNoOfficeLeak.contract.test.ts\nPASS tests/architecture/aiSecurityNoRoleMutation.contract.test.ts\nPASS tests/architecture/aiRoleBusinessCopilotsNoUseEffectHacks.contract.test.ts\nPASS tests/architecture/aiExternalKnowledgeNoApprovalBypass.contract.test.ts\nPASS tests/architecture/aiDomainGatewayNoSecondDataGateway.contract.test.ts\nPASS tests/architecture/aiContractRuntimeNoUseEffectHacks.contract.test.ts\nPASS tests/architecture/aiAppContextGraphNoUnboundedQueries.contract.test.ts\nPASS tests/ai/aiApprovalLedgerLiveActionE2E.contract.test.ts\nPASS tests/ai/aiActionLedgerAudit.contract.test.ts\nPASS tests/api/warehouseIssueTransportBoundary.contract.test.ts\nPASS tests/api/warehouseDayMaterialsPdfTransport.contract.test.ts\nPASS tests/api/paymentPdfTransportBoundary.contract.test.ts\nPASS tests/api/directorProposalsTransport.contract.test.ts\nPASS tests/api/contractorProfileAuthTransport.contract.test.ts\nPASS tests/api/buyerRfqPrefillAuthTransport.contract.test.ts\nPASS tests/media/backend/mediaUploadSession.contract.test.ts\nPASS tests/media/backend/mediaNoSignedUrlLeak.contract.test.ts\nPASS tests/media/mediaHandoffRef.contract.test.ts\nPASS tests/e2e/aiWorkdayLiveEvidenceBridgeRunner.contract.test.ts\nPASS tests/e2e/aiScreenByScreenMagicWeb.contract.test.ts\nPASS tests/e2e/aiRoleMagicBlueprintMaestro.contract.test.ts\nPASS tests/director/directorReportsModalStyleBoundary.decomposition.test.ts\nPASS tests/architecture/aiUniversalRoleQaNoRuntimeLeak.contract.test.ts\nPASS tests/architecture/aiRoleMixed150ApprovedLayerOnly.contract.test.ts\nPASS tests/architecture/aiDocumentKnowledgeArchitecture.contract.test.ts\nPASS tests/architecture/aiAppContextGraphNoSecondFramework.contract.test.ts\nPASS tests/api/foremanAiResolveTransportBoundary.contract.test.ts\nPASS tests/api/buyerRepoIntegrityTransport.contract.test.ts\nPASS tests/ui/canonicalMobileLayout/AppStickyActionBar.contract.test.ts\nPASS src/screens/warehouse/warehouseIssueQueueTotalCountMigration.test.ts\nPASS src/screens/profile/profile.helpers.test.ts\nPASS tests/e2e/developerControlFullAccessRuntime.e2e.test.ts\nPASS tests/e2e/aiExplicitFixtureRegistry.contract.test.ts\nPASS tests/architecture/mediaNoSecondFramework.contract.test.ts\nPASS tests/architecture/aiRoleMixed150NoHooks.contract.test.ts\nPASS tests/architecture/aiAppContextGraphNoHooks.contract.test.ts\nPASS tests/ai/aiUniversalScreenQuestionsDoNotUsePublicWeb.contract.test.ts\nPASS tests/ai/aiSupplierProposalReadinessPolicy.contract.test.ts\nPASS tests/ai/aiLiveApprovalToExecutionLifecycle.contract.test.ts\nPASS tests/ai/aiAccountantMainProfessionalPanel.contract.test.ts\nPASS tests/api/directorReportsTransportBoundary.contract.test.ts\nPASS tests/api/authLifecycleTransport.contract.test.ts\nPASS tests/architecture/aiForemanNoFinalSubmit.contract.test.ts\nPASS tests/ai/aiUniversalSmokeQuestionBankCoverage.contract.test.ts\n\nTest Suites: 1 skipped, 2160 passed, 2160 of 2161 total\nTests:       1 skipped, 6436 passed, 6437 total\nSnapshots:   0 total\nTime:        519.764 s\nRan all test suites.\n"
+    },
+    {
+      "step": "git-diff-check",
+      "command": "git diff --check",
+      "started_at": "2026-05-21T14:05:05.815Z",
+      "finished_at": "2026-05-21T14:05:05.988Z",
+      "duration_ms": 173,
+      "status": "passed",
+      "exit_code": 0,
+      "stdout_tail": "",
+      "stderr_tail": ""
+    }
+  ]
+}

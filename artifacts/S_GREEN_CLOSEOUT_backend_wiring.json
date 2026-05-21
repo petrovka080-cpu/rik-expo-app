@@ -1,0 +1,19 @@
+{
+  "wave": "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K",
+  "migration_exists": true,
+  "service_files_exist": true,
+  "route_imports_consumer_screen": true,
+  "request_imports_service_boundary": true,
+  "no_direct_supabase_writes_from_screen": true,
+  "no_direct_supabase_writes_from_feature": true,
+  "no_direct_insert_into_consumer_marketplace_links_outside_service": true,
+  "no_direct_status_sent_to_marketplace_outside_service": true,
+  "approve_uses_service": true,
+  "send_uses_marketplace_service": true,
+  "pdf_open_uses_service": true,
+  "pdf_service_uploads_before_row": true,
+  "validation_service_blocks_empty_submit": true,
+  "direct_marketplace_link_write_files": [],
+  "direct_sent_status_write_files": [],
+  "passed": true
+}

@@ -1,0 +1,9 @@
+{
+  "wave": "S_CONTRACTOR_EXPANDED_WORK_MEDIA_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_CONTRACTOR_EXPANDED_WORK_MEDIA_READY",
+  "contractor_media_inside_expanded_work": true,
+  "contractor_media_visible_in_collapsed_list": false,
+  "contractor_floating_media_block_found": 0,
+  "source_artifact": "artifacts/S_UI_LIVE_LAYOUT_SHEETS_CHAT_CONTRACTOR_MEDIA_BLOCKER_FIX_matrix.json",
+  "fake_green_claimed": false
+}

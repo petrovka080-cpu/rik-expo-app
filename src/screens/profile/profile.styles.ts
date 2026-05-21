@@ -1,4 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 import { PROFILE_UI } from "./profile.helpers";
 
 export const profileStyles = StyleSheet.create({
@@ -743,7 +744,7 @@ export const profileStyles = StyleSheet.create({
   listingFullscreenScrollContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 28,
+    paddingBottom: APP_LAYOUT.scrollBottomPaddingPx,
   },
   modalTallCard: {
     maxHeight: "90%",

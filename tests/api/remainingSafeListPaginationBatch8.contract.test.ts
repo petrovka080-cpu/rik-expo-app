@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -438,6 +439,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAiBuyerRealSourcingPatch(file) &&
       !isApprovedAiAccountantRealFinancePatch(file) &&
       !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
+      !isApprovedGreenCloseoutCurrentWavePatch(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

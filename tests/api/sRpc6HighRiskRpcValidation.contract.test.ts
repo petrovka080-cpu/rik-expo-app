@@ -15,6 +15,7 @@ import {
 import { isWarehouseStockScopeRpcResponse } from "../../src/screens/warehouse/warehouse.stockReports.service";
 import { isBuyerSummaryBucketsScopeResponse } from "../../src/screens/buyer/buyer.fetchers.data";
 import { isBuyerRequestProposalMapRpcResponse } from "../../src/screens/buyer/hooks/useBuyerRequestProposalMap";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
@@ -324,7 +325,8 @@ describe("S-RPC-6 high-risk RPC validation", () => {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file));
+      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file))
+      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

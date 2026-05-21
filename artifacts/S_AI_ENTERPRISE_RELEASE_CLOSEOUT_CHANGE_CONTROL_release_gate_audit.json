@@ -1,0 +1,42 @@
+{
+  "requiredCommands": [
+    "npx tsx scripts/e2e/runAiAppContextGraphDeepLinkWebProof.ts",
+    "npx tsx scripts/e2e/runAiUniversalRoleQaWebProof.ts",
+    "npx tsx scripts/e2e/runAiLiveScreenCopilotButtonsWebProof.ts",
+    "npx tsx scripts/ai/runAiEnterpriseArchitectureGuardrails.ts",
+    "npx tsx scripts/e2e/runAiVerifiedExternalKnowledgeWebProof.ts",
+    "npx tsx scripts/e2e/runAiRoleMixed150RealAnswersWebProof.ts",
+    "npx tsx scripts/e2e/runAiRoleBusinessCopilotsWorkflowWebProof.ts",
+    "npx tsx scripts/e2e/runMediaPhotoVideoIntelligenceWebProof.ts",
+    "npx tsx scripts/e2e/runAiDocumentPdfEvidenceIntelligenceWebProof.ts",
+    "npx tsx scripts/e2e/runAiDomainDataGatewayContextRetrievalWebProof.ts",
+    "npx tsx scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts",
+    "npx tsx scripts/ai/runAiSafeActionDraftApprovalProof.ts",
+    "npx tsx scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts"
+  ],
+  "presentCommands": [
+    "npx tsc --noEmit --pretty false",
+    "npx expo lint",
+    "npx tsx scripts/architecture_anti_regression_suite.ts --json",
+    "npx tsx scripts/e2e/runAiAppContextGraphDeepLinkWebProof.ts",
+    "npx tsx scripts/e2e/runAiUniversalRoleQaWebProof.ts",
+    "npx tsx scripts/e2e/runAiLiveScreenCopilotButtonsWebProof.ts",
+    "npx tsx scripts/ai/runAiEnterpriseArchitectureGuardrails.ts",
+    "npx tsx scripts/e2e/runAiVerifiedExternalKnowledgeWebProof.ts",
+    "npx tsx scripts/e2e/runAiRoleMixed150RealAnswersWebProof.ts",
+    "npx tsx scripts/e2e/runAiRoleBusinessCopilotsWorkflowWebProof.ts",
+    "npx tsx scripts/e2e/runMediaPhotoVideoIntelligenceWebProof.ts",
+    "npx tsx scripts/e2e/runAiDocumentPdfEvidenceIntelligenceWebProof.ts",
+    "npx tsx scripts/e2e/runAiDomainDataGatewayContextRetrievalWebProof.ts",
+    "npx tsx scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts",
+    "npx tsx scripts/ai/runAiSafeActionDraftApprovalProof.ts",
+    "npx tsx scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts",
+    "npx tsx scripts/e2e/runAiUniversalQaSmokeToReleaseGate.ts",
+    "npx tsx scripts/e2e/runAiUniversalLargeQuestionSmokeMaestroProof.ts",
+    "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json",
+    "npm test -- --runInBand",
+    "git diff --check"
+  ],
+  "missingCommands": [],
+  "passed": true
+}

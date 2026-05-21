@@ -1,0 +1,119 @@
+[
+  {
+    "path": "artifacts/S_AI_APP_CONTEXT_GRAPH_DEEP_LINKED_SOURCE_REFS_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_APP_CONTEXT_GRAPH_DEEP_LINKED_SOURCE_REFS_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_UNIVERSAL_ROLE_QA_ORCHESTRATOR_SOURCE_PLANNER_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_UNIVERSAL_ROLE_QA_ORCHESTRATOR_SOURCE_PLANNER_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_LIVE_SCREEN_COPILOT_UI_BUTTONS_RUSSIAN_PROOF_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_LIVE_SCREEN_COPILOT_UI_BUTTONS_RUSSIAN_PROOF_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  },
+  {
+    "path": "artifacts/S_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_matrix.json",
+    "present": true,
+    "finalStatus": "GREEN_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_READY",
+    "green": true,
+    "releaseVerifyPassed": true,
+    "stale": false,
+    "reason": "matrix present and green"
+  }
+]

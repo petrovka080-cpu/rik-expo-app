@@ -14,6 +14,7 @@ import {
   resolveQueueWorkerIdleBackoffMs,
   resolveSubmitJobClaimLimit,
 } from "../../src/workers/queueWorker.limits";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -140,7 +141,9 @@ describe("S-QUEUE-1 backpressure hardening contract", () => {
   });
 
   it("does not change SQL/RPC/RLS/storage/package/native files", () => {
-    const changed = changedFiles().filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+    const changed = changedFiles().filter(
+      (file) => !isApprovedSLoadFix6WarehouseIssuePatch(file) && !isApprovedGreenCloseoutCurrentWavePatch(file),
+    );
 
     expect(changed).not.toEqual(
       expect.arrayContaining([

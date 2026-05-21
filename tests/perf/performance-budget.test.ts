@@ -626,6 +626,97 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "liveUi"),
       /\.ts$/,
     );
+    const sB2CConsumerRepairRequestFiles =
+      countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /\.tsx?$/) +
+      countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /\.ts$/);
+    const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
+      /\.ts$/,
+    );
+    const sAiEstimateEngineFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "estimateEngine"),
+      /\.ts$/,
+    );
+    const sGreenCloseoutLayoutPrimitiveFiles = [
+      path.join(SRC, "components", "layout", "AppBottomNavSafeArea.tsx"),
+      path.join(SRC, "components", "layout", "AppChatComposerBar.tsx"),
+      path.join(SRC, "components", "layout", "AppContractorExpandableWorkCard.tsx"),
+      path.join(SRC, "components", "layout", "AppDetailSheet.tsx"),
+      path.join(SRC, "components", "layout", "AppScreen.tsx"),
+      path.join(SRC, "components", "layout", "AppScreenHeader.tsx"),
+      path.join(SRC, "components", "layout", "AppScreenScroll.tsx"),
+      path.join(SRC, "components", "layout", "AppSheet.tsx"),
+      path.join(SRC, "components", "layout", "AppSheetFooter.tsx"),
+      path.join(SRC, "components", "layout", "AppStickyActionBar.tsx"),
+      path.join(SRC, "components", "layout", "AppStickyHeaderStack.tsx"),
+      path.join(SRC, "components", "layout", "StickyActionBar.tsx"),
+      path.join(SRC, "components", "layout", "appLayout.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sGreenCloseoutLiveRouteMediaFiles = [
+      path.join(SRC, "features", "ai", "liveRouteWiring", "LiveRouteMediaEntrypointPanel.tsx"),
+      path.join(SRC, "features", "ai", "AIAssistantScreen.helpers.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiAppContextGraphDeepLinkedSourceRefsFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "appContextGraph"),
+      /\.ts$/,
+    );
+    const sAiUniversalRoleQaOrchestratorSourcePlannerFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "universalRoleQa"),
+      /\.ts$/,
+    );
+    const sAiLiveScreenCopilotUiButtonsRussianProofFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "liveScreenCopilot"),
+      /\.ts$/,
+    );
+    const sAiEnterpriseArchitectureGuardrailsNoKostylFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "enterpriseGuardrails"),
+      /\.ts$/,
+    );
+    const sAiVerifiedExternalKnowledgeEngineFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "externalKnowledge"),
+      /\.ts$/,
+    );
+    const sAiRoleMixed150QuestionBankRealAnswersGateFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "evaluation", "goldenBusinessDataset"),
+      /\.ts$/,
+    );
+    const sAiRoleBusinessCopilotsFullWorkflowsFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "roleBusinessCopilots"),
+      /\.ts$/,
+    );
+    const sMediaPhotoVideoIntelligenceCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "media"),
+      /\.ts$/,
+    );
+    const sAiDocumentPdfEvidenceIntelligenceCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "documents", "evidenceIntelligence"),
+      /\.ts$/,
+    );
+    const sAiDomainDataGatewayContextRetrievalArchitectureFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "domainDataGateway"),
+      /\.ts$/,
+    );
+    const sAiEnterpriseContractRuntimeInvariantProofCoreFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "contractRuntime"),
+      /\.ts$/,
+    );
+    const sAiSafeActionDraftApprovalOrchestratorFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "safeActions"),
+      /\.ts$/,
+    );
+    const sAiHumanApprovalLedgerExecutionBoundaryFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "approvalExecutionBoundary"),
+      /\.ts$/,
+    );
+    const sAiLiveScreenCopilotUiPanelFiles = [
+      path.join(SRC, "features", "ai", "AIAssistantLiveScreenCopilotPanel.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiContractorRealAcceptanceDeliveryFunnelFiles = [
+      path.join(SRC, "lib", "ai", "contractorAcceptance.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sAiSecurityRuntimeGovernanceFunnelFiles = [
+      path.join(SRC, "lib", "ai", "securityRuntime.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiConstructionDataGraphFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "constructionDataGraph"),
       /\.ts$/,
@@ -1352,6 +1443,8 @@ describe("performance budget вЂ” bundle module count", () => {
     // supplier/contractor marketplace-intake modules, no hooks or mutations.
     // S_AI_OFFICE_DOCUMENT_CONTROL_FUNNEL adds ten permanent pure
     // office document-control modules, no hooks or mutations.
+    // S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE adds a pure
+    // contract trace/invariant/root-cause proof layer, no hooks or mutations.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1549,6 +1642,26 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiOfficeDocumentControlFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
     expect(sAiLiveUiRealAnswersRecoveryFiles).toBeLessThanOrEqual(7);
+    expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
+    expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
+    expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
+    expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);
+    expect(sGreenCloseoutLiveRouteMediaFiles).toBeLessThanOrEqual(2);
+    expect(sAiAppContextGraphDeepLinkedSourceRefsFiles).toBeLessThanOrEqual(14);
+    expect(sAiUniversalRoleQaOrchestratorSourcePlannerFiles).toBeLessThanOrEqual(23);
+    expect(sAiLiveScreenCopilotUiButtonsRussianProofFiles).toBeLessThanOrEqual(12);
+    expect(sAiEnterpriseArchitectureGuardrailsNoKostylFiles).toBeLessThanOrEqual(20);
+    expect(sAiVerifiedExternalKnowledgeEngineFiles).toBeLessThanOrEqual(21);
+    expect(sAiRoleMixed150QuestionBankRealAnswersGateFiles).toBeLessThanOrEqual(11);
+    expect(sAiRoleBusinessCopilotsFullWorkflowsFiles).toBeLessThanOrEqual(18);
+    expect(sMediaPhotoVideoIntelligenceCoreFiles).toBeLessThanOrEqual(35);
+    expect(sAiDocumentPdfEvidenceIntelligenceCoreFiles).toBeLessThanOrEqual(35);
+    expect(sAiDomainDataGatewayContextRetrievalArchitectureFiles).toBeLessThanOrEqual(35);
+    expect(sAiEnterpriseContractRuntimeInvariantProofCoreFiles).toBeLessThanOrEqual(30);
+    expect(sAiSafeActionDraftApprovalOrchestratorFiles).toBeLessThanOrEqual(32);
+    expect(sAiHumanApprovalLedgerExecutionBoundaryFiles).toBeLessThanOrEqual(32);
+    expect(sAiLiveScreenCopilotUiPanelFiles).toBeLessThanOrEqual(1);
+    expect(sAiSecurityRuntimeGovernanceFunnelFiles).toBeLessThanOrEqual(1);
     expect(sAiConstructionDataGraphFiles).toBeLessThanOrEqual(9);
     expect(sAiAudit02AllScreenButtonRoleActionMapFiles).toBeLessThanOrEqual(6);
     expect(sAiBff01MissingRouteCoverageFiles).toBeLessThanOrEqual(4);
@@ -1770,6 +1883,27 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiOfficeDocumentControlFunnelFiles -
         sAiSupplierContractorMarketplaceIntakeFiles -
         sAiLiveUiRealAnswersRecoveryFiles -
+        sB2CConsumerRepairRequestFiles -
+        sAiAlwaysOnExternalKnowledgeFiles -
+        sAiEstimateEngineFiles -
+        sGreenCloseoutLayoutPrimitiveFiles -
+        sGreenCloseoutLiveRouteMediaFiles -
+        sAiAppContextGraphDeepLinkedSourceRefsFiles -
+        sAiUniversalRoleQaOrchestratorSourcePlannerFiles -
+        sAiLiveScreenCopilotUiButtonsRussianProofFiles -
+        sAiEnterpriseArchitectureGuardrailsNoKostylFiles -
+        sAiVerifiedExternalKnowledgeEngineFiles -
+        sAiRoleMixed150QuestionBankRealAnswersGateFiles -
+        sAiRoleBusinessCopilotsFullWorkflowsFiles -
+        sMediaPhotoVideoIntelligenceCoreFiles -
+        sAiDocumentPdfEvidenceIntelligenceCoreFiles -
+        sAiDomainDataGatewayContextRetrievalArchitectureFiles -
+        sAiEnterpriseContractRuntimeInvariantProofCoreFiles -
+        sAiSafeActionDraftApprovalOrchestratorFiles -
+        sAiHumanApprovalLedgerExecutionBoundaryFiles -
+        sAiLiveScreenCopilotUiPanelFiles -
+        sAiContractorRealAcceptanceDeliveryFunnelFiles -
+        sAiSecurityRuntimeGovernanceFunnelFiles -
         sAiConstructionDataGraphFiles -
         sAiAudit02AllScreenButtonRoleActionMapFiles -
         sAiBff01MissingRouteCoverageFiles -

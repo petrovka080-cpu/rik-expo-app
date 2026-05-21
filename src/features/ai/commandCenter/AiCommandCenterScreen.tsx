@@ -229,7 +229,7 @@ export default function AiCommandCenterScreen(props: AiCommandCenterScreenProps)
         ) : null}
 
         {!state.loading && state.viewModel.denied ? (
-          <View style={styles.stateBox}>
+          <View testID="ai.command.center.denied-state" style={styles.stateBox}>
             <Text style={styles.stateTitle}>
               \u041d\u0435\u0442 \u0434\u043e\u0441\u0442\u0443\u043f\u0430
             </Text>

@@ -1,0 +1,10 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "source_artifact": "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_web_pdf_open.json",
+  "pdf_open_signed_url_created": true,
+  "pdf_open_content_type": "application/pdf",
+  "pdf_open_works_web": true,
+  "pdf_open_works_mobile": true,
+  "storage_key_visible_to_user": false,
+  "pdf_storage_object_verified": true
+}

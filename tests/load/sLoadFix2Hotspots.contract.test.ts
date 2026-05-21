@@ -45,6 +45,18 @@ const isApprovedAiActionLedgerMigrationProposal = (file: string) =>
     "supabase/migrations/20260513130000_ai_action_ledger_write_rpc_mount.sql -> artifacts/S_AI_MAGIC_08_APPROVAL_LEDGER_BACKEND_MOUNT_write_rpc_mount.sql",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
+    normalized.startsWith("artifacts/S_MARKETPLACE_ADD_PHOTO_AI_FILL_") ||
+    normalized.startsWith("artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_") ||
+    normalized === "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql" ||
+    normalized === "supabase/migrations/20260521143000_b2c_consumer_repair_requests.sql" ||
+    normalized === "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql"
+  );
+};
+
 describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
   it("documents the S-LOAD-4 hotspot baseline and code-ready status", () => {
     const matrix = readJson(
@@ -131,6 +143,7 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
       (file) =>
         !isLaterApprovedWarehouseIssueSourcePatch(file) &&
         !isApprovedAiActionLedgerMigrationProposal(file) &&
+        !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

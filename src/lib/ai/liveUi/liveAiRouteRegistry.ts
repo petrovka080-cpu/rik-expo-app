@@ -117,19 +117,75 @@ const ACTIONS: Record<LiveAiContextId, LiveAiAction[]> = {
   ],
   contractor: [
     {
-      id: "contractor_acceptance_blockers",
-      labelRu: "Что мешает приёмке",
+      id: "acceptance_readiness",
+      labelRu: "Что нужно сдать",
       concreteQuestionRu:
-        "Покажи подрядчику только его работы: что мешает приёмке, какие документы/evidence нужны, какие источники проверены и следующий шаг без смены статуса.",
-      pipelineActionId: "contractor_acceptance_blockers",
+        "Покажи мои работы и что нужно сдать для приёмки: фото, документы, акт, подпись, ответы по замечаниям.",
+      pipelineActionId: "acceptance_readiness",
       status: "data_unchanged",
     },
     {
-      id: "contractor_response_draft",
-      labelRu: "Подготовить ответ",
+      id: "acceptance_blockers",
+      labelRu: "Что мешает приёмке",
       concreteQuestionRu:
-        "Подготовь черновик ответа подрядчика по замечаниям и evidence, без финальной отправки и без изменения статуса работы.",
-      pipelineActionId: "contractor_response_draft",
+        "Покажи, почему мои работы не приняты: missing evidence, открытые замечания, документы, подписи, approval.",
+      pipelineActionId: "acceptance_blockers",
+      status: "data_unchanged",
+    },
+    {
+      id: "missing_photos_check",
+      labelRu: "Каких фото не хватает",
+      concreteQuestionRu:
+        "Проверь мои работы и покажи, где не хватает фото до/после или другого evidence.",
+      pipelineActionId: "missing_photos_check",
+      status: "data_unchanged",
+    },
+    {
+      id: "open_remarks_check",
+      labelRu: "Какие замечания открыты",
+      concreteQuestionRu:
+        "Покажи открытые замечания по моим работам и что нужно приложить.",
+      pipelineActionId: "open_remarks_check",
+      status: "data_unchanged",
+    },
+    {
+      id: "remark_response_draft",
+      labelRu: "Подготовить ответ прорабу",
+      concreteQuestionRu:
+        "Подготовь черновик ответа прорабу по открытым замечаниям и missing evidence, без изменения статуса работы.",
+      pipelineActionId: "remark_response_draft",
+      status: "draft_prepared",
+    },
+    {
+      id: "act_draft",
+      labelRu: "Подготовить акт",
+      concreteQuestionRu:
+        "Подготовь черновик акта по моим работам, покажи что можно включить, что нельзя и чего не хватает.",
+      pipelineActionId: "act_draft",
+      status: "draft_prepared",
+    },
+    {
+      id: "review_request_draft",
+      labelRu: "Запросить повторную проверку",
+      concreteQuestionRu:
+        "Подготовь черновик запроса на повторную проверку после устранения замечаний, без смены статуса.",
+      pipelineActionId: "review_request_draft",
+      status: "approval_required",
+    },
+    {
+      id: "limited_payment_status_check",
+      labelRu: "Документы для оплаты",
+      concreteQuestionRu:
+        "Покажи, какие документы нужны для оплаты по моим работам, без раскрытия полного cashflow компании.",
+      pipelineActionId: "limited_payment_status_check",
+      status: "data_unchanged",
+    },
+    {
+      id: "contractor_marketplace_service_draft",
+      labelRu: "+ Добавить услугу",
+      concreteQuestionRu:
+        "Подготовь черновик карточки услуги для marketplace: тип работ, дисциплина, единица, регион, цена, документы, без публикации.",
+      pipelineActionId: "contractor_marketplace_service_draft",
       status: "draft_prepared",
     },
   ],
@@ -297,38 +353,118 @@ const ACTIONS: Record<LiveAiContextId, LiveAiAction[]> = {
   ],
   security: [
     {
-      id: "security_safe_summary",
-      labelRu: "Safe security summary",
+      id: "security_overview",
+      labelRu: "Показать риски",
       concreteQuestionRu:
-        "Покажи безопасную security summary: только redacted risks, forbidden attempts count, checked sources и следующий шаг без raw runtime/secrets.",
-      pipelineActionId: "security_safe_summary",
+        "Покажи security risks: risky roles, forbidden attempts, suspicious approvals, policy gaps, debug leaks, privileged service and Auth Admin paths.",
+      pipelineActionId: "security_overview",
       status: "data_unchanged",
     },
     {
-      id: "runtime_permission_check",
-      labelRu: "Проверить доступ runtime",
+      id: "forbidden_attempts_report",
+      labelRu: "Forbidden attempts",
       concreteQuestionRu:
-        "Проверь, может ли normal user видеть runtime детали: ответ должен быть sanitized и без raw secrets.",
-      pipelineActionId: "runtime_permission_check",
+        "Покажи попытки запрещенных действий по ролям и экранам без раскрытия секретов и без мутации прав.",
+      pipelineActionId: "forbidden_attempts_report",
       status: "data_unchanged",
+    },
+    {
+      id: "role_policy_review",
+      labelRu: "Проверить роли",
+      concreteQuestionRu:
+        "Проверь role policy и permission matrix: где роль видит больше, чем должна, или может unsafe action.",
+      pipelineActionId: "role_policy_review",
+      status: "data_unchanged",
+    },
+    {
+      id: "approval_bypass_review",
+      labelRu: "Проверить approval bypass",
+      concreteQuestionRu:
+        "Проверь, есть ли пути approve/reject/submit/payment/order/stock/work mutation без approval ledger.",
+      pipelineActionId: "approval_bypass_review",
+      status: "data_unchanged",
+    },
+    {
+      id: "privileged_service_guard_report",
+      labelRu: "Проверить service-role",
+      concreteQuestionRu:
+        "Проверь privileged service path: нет ли обходного пути через server admin, Auth Admin, listUsers, seed или fake green.",
+      pipelineActionId: "privileged_service_guard_report",
+      status: "data_unchanged",
+    },
+    {
+      id: "auth_admin_guard_report",
+      labelRu: "Проверить Auth Admin",
+      concreteQuestionRu:
+        "Проверь Auth Admin/listUsers path: нет ли green path через admin API, listUsers, seed or test-only privilege.",
+      pipelineActionId: "auth_admin_guard_report",
+      status: "data_unchanged",
+    },
+    {
+      id: "debug_runtime_leak_review",
+      labelRu: "Проверить debug leaks",
+      concreteQuestionRu:
+        "Проверь, видят ли normal users debug, diagnostics, provider copy, payloads, redacted settings or internal health details.",
+      pipelineActionId: "debug_runtime_leak_review",
+      status: "data_unchanged",
+    },
+    {
+      id: "security_report_draft",
+      labelRu: "Подготовить security report",
+      concreteQuestionRu:
+        "Подготовь черновик security report с рисками, источниками, missing data и safe remediation steps без изменения прав.",
+      pipelineActionId: "security_report_draft",
+      status: "draft_prepared",
     },
   ],
   runtime: [
     {
-      id: "runtime_permission_check",
+      id: "runtime_diagnosis",
       labelRu: "Runtime health",
       concreteQuestionRu:
-        "Покажи только sanitized runtime health для разрешённой роли; normal user не должен видеть raw runtime, transport, provider payload или secrets.",
-      pipelineActionId: "runtime_permission_check",
+        "Покажи sanitized health, release status, transport binding, fallback entries and exact blockers without exposing secrets.",
+      pipelineActionId: "runtime_diagnosis",
       status: "data_unchanged",
     },
     {
-      id: "security_safe_summary",
-      labelRu: "Security gate",
+      id: "release_verify_report",
+      labelRu: "Release verify",
       concreteQuestionRu:
-        "Проверь runtime/security gate и выведи безопасную сводку без debug payload и без секретов.",
-      pipelineActionId: "security_safe_summary",
+        "Покажи release verify status, failed gates and exact blockers from artifacts without exposing secret values.",
+      pipelineActionId: "release_verify_report",
       status: "data_unchanged",
+    },
+    {
+      id: "failed_runner_report",
+      labelRu: "Failed runner",
+      concreteQuestionRu:
+        "Покажи failed runner, last status, artifact and non-destructive verification command.",
+      pipelineActionId: "failed_runner_report",
+      status: "data_unchanged",
+    },
+    {
+      id: "artifact_integrity_report",
+      labelRu: "Artifacts",
+      concreteQuestionRu:
+        "Проверь required artifacts: exists, stale, missing and exact reason without raw payload.",
+      pipelineActionId: "artifact_integrity_report",
+      status: "data_unchanged",
+    },
+    {
+      id: "ios_signoff_report",
+      labelRu: "iOS signoff",
+      concreteQuestionRu:
+        "Покажи iOS signoff status: required, not required, stale or missing, with artifact source.",
+      pipelineActionId: "ios_signoff_report",
+      status: "data_unchanged",
+    },
+    {
+      id: "safe_repair_suggestion",
+      labelRu: "Safe repair check",
+      concreteQuestionRu:
+        "Предложи только safe non-destructive repair/check commands. Do not suggest destructive commands.",
+      pipelineActionId: "safe_repair_suggestion",
+      status: "draft_prepared",
     },
   ],
   client: [
@@ -510,7 +646,7 @@ export const LIVE_AI_ROUTE_REGISTRY: readonly LiveAiRouteDefinition[] = [
     context: "runtime",
     routeAliases: ["runtime", "screen.runtime"],
     screenId: "screen.runtime",
-    role: "security",
+    role: "dev",
     pipelineKey: "securityRuntime",
     defaultContextKind: "runtime.sanitized_health",
     defaultQuestionRu: ACTIONS.runtime[0].concreteQuestionRu,

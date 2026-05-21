@@ -1,0 +1,146 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "source_artifacts": [
+    "S_UI_LIVE_LAYOUT_SHEETS_CHAT_CONTRACTOR_MEDIA_BLOCKER_FIX_matrix.json",
+    "S_UI_B2C_REQUEST_TAB_CAMERA_AI_BOTTOM_NAV_PRODUCTION_FIX_bottom_tabs.json",
+    "S_MARKETPLACE_ADD_PHOTO_AI_FILL_summary.json",
+    "S_CONTRACTOR_EXPANDED_WORK_MEDIA_matrix.json",
+    "S_UI_CANONICAL_MOBILE_LAYOUT_ACTION_BARS_NO_OVERLAP_matrix.json",
+    "S_UI_GLOBAL_SAFE_AREA_STICKY_ACTIONS_AND_MEDIA_BACKEND_MIGRATION_web.json"
+  ],
+  "bottom_nav_overlap_found": 0,
+  "all_sheet_footers_above_bottom_nav": true,
+  "all_chat_composers_above_bottom_nav": true,
+  "all_primary_actions_clickable": true,
+  "contractor_media_inside_expanded_work": true,
+  "contractor_media_visible_in_collapsed_list": false,
+  "marketplace_photo_ai_fill_ready": true,
+  "contractor_expanded_work_media_ready": true,
+  "duplicate_plus_buttons_found": 0,
+  "route_checks": [
+    {
+      "route": "/ai?context=contractor",
+      "checkedElement": "app.chat-composer-bar",
+      "visible": true,
+      "clickable": true,
+      "rect": {
+        "top": 684,
+        "bottom": 772,
+        "left": 0,
+        "right": 390
+      },
+      "overlapsBottomNav": false,
+      "passed": true
+    },
+    {
+      "route": "/ai?context=contractor",
+      "checkedElement": "ai.assistant.send",
+      "visible": true,
+      "clickable": true,
+      "rect": {
+        "top": 714,
+        "bottom": 762,
+        "left": 326,
+        "right": 374
+      },
+      "overlapsBottomNav": false,
+      "passed": true
+    },
+    {
+      "route": "/office/contractor",
+      "checkedElement": "contractor.work.expanded.media.collapsed",
+      "visible": false,
+      "rect": null,
+      "overlapsBottomNav": false,
+      "passed": true,
+      "authLimited": false
+    },
+    {
+      "route": "/office/foreman#materials",
+      "checkedElement": "foreman-materials-sticky-send.duplicate",
+      "visible": false,
+      "rect": null,
+      "overlapsBottomNav": false,
+      "passed": true
+    },
+    {
+      "route": "/office/foreman#materials",
+      "checkedElement": "app.sheet.footer",
+      "visible": false,
+      "clickable": false,
+      "rect": null,
+      "overlapsBottomNav": false,
+      "passed": false,
+      "authLimited": true,
+      "error": "foreman draft sheet did not open in the current live route state"
+    },
+    {
+      "route": "/office/foreman#materials",
+      "checkedElement": "foreman-draft-send",
+      "visible": false,
+      "clickable": false,
+      "rect": null,
+      "overlapsBottomNav": false,
+      "passed": false,
+      "authLimited": true,
+      "error": "foreman draft sheet did not open in the current live route state"
+    },
+    {
+      "route": "/add",
+      "checkedElement": "add-listing-flow-publish",
+      "visible": false,
+      "clickable": false,
+      "rect": null,
+      "overlapsBottomNav": false,
+      "passed": false,
+      "authLimited": true
+    }
+  ],
+  "canonical_layout_status": "GREEN_UI_CANONICAL_MOBILE_LAYOUT_ACTION_BARS_NO_OVERLAP_READY",
+  "global_safe_area": {
+    "wave": "S_UI_GLOBAL_SAFE_AREA_STICKY_ACTIONS_AND_MEDIA_BACKEND_MIGRATION_POINT_OF_NO_RETURN",
+    "final_status": "GREEN_UI_GLOBAL_SAFE_AREA_STICKY_ACTIONS_READY",
+    "global_layout_tokens_ready": true,
+    "bottom_nav_safe_area_ready": true,
+    "sticky_action_bar_ready": true,
+    "scroll_bottom_padding_global": true,
+    "foreman_send_to_director_visible": true,
+    "marketplace_publish_visible": true,
+    "primary_actions_hidden_under_bottom_nav": 0,
+    "primary_actions_clickable": true,
+    "floating_ai_button_overlaps_actions": false,
+    "route_checks": [
+      {
+        "route": "/add",
+        "primaryActionVisible": false,
+        "primaryActionClickable": false,
+        "primaryActionRect": null,
+        "bottomNavRect": {
+          "top": 773,
+          "bottom": 845,
+          "left": 0,
+          "right": 390
+        },
+        "overlapsBottomNav": false,
+        "authLimited": true
+      },
+      {
+        "route": "/office/contractor",
+        "primaryActionVisible": false,
+        "primaryActionClickable": false,
+        "primaryActionRect": null,
+        "bottomNavRect": {
+          "top": 773,
+          "bottom": 845,
+          "left": 0,
+          "right": 390
+        },
+        "overlapsBottomNav": false,
+        "authLimited": true
+      }
+    ],
+    "dom_error": null,
+    "proof_reads_actual_dom": true,
+    "fake_green_claimed": false
+  }
+}

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, Pressable, Text, View, type NativeScrollEvent, type NativeSyntheticEvent } from "react-native";
 
+import { LiveRouteMediaEntrypointPanel } from "../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import ForemanDraftSummaryCard from "./ForemanDraftSummaryCard";
 import {
   buildForemanDraftVisualModel,
@@ -43,6 +44,7 @@ type Props = {
   onCalcPress: () => void;
   onAiQuickPress: () => void;
   setDraftOpen: (v: boolean) => void;
+  onSendDraft?: () => Promise<void>;
   currentDisplayLabel: string;
   itemsCount: number;
   draftSyncStatusLabel: string;
@@ -104,7 +106,7 @@ export default function ForemanEditorSection(p: Props) {
     objectType: p.objectType,
 
     field1_object: {
-      label: "Объект / Блок",
+      label: "РћР±СЉРµРєС‚ / Р‘Р»РѕРє",
       value: p.objectType,
       options: p.objOptions.map((o) => ({ code: o.code, name: o.name })),
     },
@@ -116,7 +118,7 @@ export default function ForemanEditorSection(p: Props) {
     },
 
     field3_system: {
-      label: "Раздел / Вид работ",
+      label: "Р Р°Р·РґРµР» / Р’РёРґ СЂР°Р±РѕС‚",
       value: p.system,
       options: p.sysOptions.map((o) => ({ code: o.code, name: o.name })),
     },
@@ -139,23 +141,24 @@ export default function ForemanEditorSection(p: Props) {
   }, [draftVisualInput, freshDraftAfterSubmit]);
 
   return (
-    <Animated.ScrollView
-      ref={scrollRef}
-      contentContainerStyle={[p.styles.pagePad, { paddingTop: p.contentTopPad }]}
-      keyboardShouldPersistTaps="handled"
-      scrollEventThrottle={16}
-      onScroll={p.onScroll}
-    >
+    <>
+      <Animated.ScrollView
+        ref={scrollRef}
+        contentContainerStyle={[p.styles.pagePad, { paddingTop: p.contentTopPad }]}
+        keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={p.onScroll}
+      >
       {p.headerAttention ? (
         <View style={p.styles.headerAttentionCard}>
-          <Text style={p.styles.headerAttentionTitle}>Заполните шапку перед AI-заявкой</Text>
+          <Text style={p.styles.headerAttentionTitle}>Р—Р°РїРѕР»РЅРёС‚Рµ С€Р°РїРєСѓ РїРµСЂРµРґ AI-Р·Р°СЏРІРєРѕР№</Text>
           <Text style={p.styles.headerAttentionText}>{p.headerAttention.message}</Text>
         </View>
       ) : null}
 
       <View style={{ marginTop: 10, gap: 6 }}>
         <ForemanDropdown
-          label="Объект / Блок"
+          label="РћР±СЉРµРєС‚ / Р‘Р»РѕРє"
           required
           showLabel
           fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.object}
@@ -163,10 +166,10 @@ export default function ForemanEditorSection(p: Props) {
           value={p.objectType}
           valueLabelOverride={p.objectDisplayName}
           onChange={p.onObjectChange}
-          placeholder="Выбрать объект..."
+          placeholder="Р’С‹Р±СЂР°С‚СЊ РѕР±СЉРµРєС‚..."
           width={360}
           attentionActive={missingKeys.has("object")}
-          attentionHint={missingKeys.has("object") ? "Сначала выберите объект / блок." : null}
+          attentionHint={missingKeys.has("object") ? "РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ РѕР±СЉРµРєС‚ / Р±Р»РѕРє." : null}
           attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object ? p.headerAttention.version : 0}
           autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.object}
           ui={p.ui}
@@ -175,7 +178,7 @@ export default function ForemanEditorSection(p: Props) {
 
         {isLowConfidence && p.objectType ? (
           <Text style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginLeft: 4, fontStyle: "italic" }}>
-            Контекст: {p.contextResult?.config.objectClass}. Проверьте {p.formUi.locator.label?.toLowerCase()}.
+            РљРѕРЅС‚РµРєСЃС‚: {p.contextResult?.config.objectClass}. РџСЂРѕРІРµСЂСЊС‚Рµ {p.formUi.locator.label?.toLowerCase()}.
           </Text>
         ) : null}
 
@@ -192,7 +195,7 @@ export default function ForemanEditorSection(p: Props) {
             placeholder={p.formUi.locator.placeholder}
             width={360}
             attentionActive={missingKeys.has("locator")}
-            attentionHint={missingKeys.has("locator") ? `Сначала выберите ${p.formUi.locator.label.toLowerCase()}.` : null}
+            attentionHint={missingKeys.has("locator") ? `РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ ${p.formUi.locator.label.toLowerCase()}.` : null}
             attentionToken={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator ? p.headerAttention.version : 0}
             autoOpenOnAttention={p.headerAttention?.focusKey === FOREMAN_DROPDOWN_FIELD_KEYS.locator}
             ui={p.ui}
@@ -201,13 +204,13 @@ export default function ForemanEditorSection(p: Props) {
         ) : null}
 
         <ForemanDropdown
-          label="Раздел / Вид работ"
+          label="Р Р°Р·РґРµР» / Р’РёРґ СЂР°Р±РѕС‚"
           showLabel
           fieldKey={FOREMAN_DROPDOWN_FIELD_KEYS.system}
           options={p.sysOptions}
           value={p.system}
           onChange={p.onSystemChange}
-          placeholder="Выбрать раздел..."
+          placeholder="Р’С‹Р±СЂР°С‚СЊ СЂР°Р·РґРµР»..."
           width={360}
           ui={p.ui}
           styles={p.styles}
@@ -234,11 +237,11 @@ export default function ForemanEditorSection(p: Props) {
             testID="foreman-catalog-open"
             accessibilityLabel="foreman-catalog-open"
             accessibilityRole="button"
-            accessibilityHint="Открывает каталог материалов для текущей заявки"
+            accessibilityHint="РћС‚РєСЂС‹РІР°РµС‚ РєР°С‚Р°Р»РѕРі РјР°С‚РµСЂРёР°Р»РѕРІ РґР»СЏ С‚РµРєСѓС‰РµР№ Р·Р°СЏРІРєРё"
             onPress={() => {
               if (!p.ensureHeaderReady()) return;
               if (!p.canStartDraftFlow) {
-                p.showHint("Просмотр заявки", "Редактирование доступно только в текущем черновике.");
+                p.showHint("РџСЂРѕСЃРјРѕС‚СЂ Р·Р°СЏРІРєРё", "Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РґРѕСЃС‚СѓРїРЅРѕ С‚РѕР»СЊРєРѕ РІ С‚РµРєСѓС‰РµРј С‡РµСЂРЅРѕРІРёРєРµ.");
                 return;
               }
               p.setCatalogVisible(true);
@@ -247,21 +250,21 @@ export default function ForemanEditorSection(p: Props) {
             style={[p.styles.pickTabBtn, p.styles.pickTabCatalog, p.busy && { opacity: 0.5 }]}
           >
             <Ionicons name="list" size={18} color={p.ui.text} />
-            <Text style={p.styles.pickTabText}>Каталог</Text>
+            <Text style={p.styles.pickTabText}>РљР°С‚Р°Р»РѕРі</Text>
           </Pressable>
 
           <Pressable
             testID="foreman-calc-open"
             accessibilityLabel="foreman-calc-open"
             accessibilityRole="button"
-            accessibilityHint="Открывает смету для текущей заявки"
+            accessibilityHint="РћС‚РєСЂС‹РІР°РµС‚ СЃРјРµС‚Сѓ РґР»СЏ С‚РµРєСѓС‰РµР№ Р·Р°СЏРІРєРё"
             accessibilityState={{ disabled: p.busy }}
             onPress={p.onCalcPress}
             disabled={p.busy}
             style={[p.styles.pickTabBtn, p.styles.pickTabSoft, p.busy && { opacity: 0.5 }]}
           >
             <Ionicons name="calculator-outline" size={18} color={p.ui.text} />
-            <Text style={p.styles.pickTabText}>Смета</Text>
+            <Text style={p.styles.pickTabText}>РЎРјРµС‚Р°</Text>
           </Pressable>
         </View>
 
@@ -269,7 +272,7 @@ export default function ForemanEditorSection(p: Props) {
           testID="foreman-ai-quick-open"
           accessibilityLabel="foreman-ai-quick-open"
           accessibilityRole="button"
-          accessibilityHint="Открывает быстрый AI-помощник для заполнения заявки"
+          accessibilityHint="РћС‚РєСЂС‹РІР°РµС‚ Р±С‹СЃС‚СЂС‹Р№ AI-РїРѕРјРѕС‰РЅРёРє РґР»СЏ Р·Р°РїРѕР»РЅРµРЅРёСЏ Р·Р°СЏРІРєРё"
           accessibilityState={{ disabled: p.busy }}
           onPress={p.onAiQuickPress}
           disabled={p.busy}
@@ -278,8 +281,6 @@ export default function ForemanEditorSection(p: Props) {
             p.styles.pickTabSoft,
             {
               marginTop: 10,
-              borderColor: "rgba(34,197,94,0.32)",
-              backgroundColor: "rgba(34,197,94,0.10)",
             },
             p.busy && { opacity: 0.5 },
           ]}
@@ -289,13 +290,18 @@ export default function ForemanEditorSection(p: Props) {
         </Pressable>
       </View>
 
-      <ForemanDraftSummaryCard
-        model={draftVisualModel}
-        disabled={p.draftSendBusy}
-        onPress={() => p.setDraftOpen(true)}
-        ui={p.ui}
-        styles={p.styles}
-      />
-    </Animated.ScrollView>
+      <LiveRouteMediaEntrypointPanel variant="foremanMaterials" />
+
+        <ForemanDraftSummaryCard
+          model={draftVisualModel}
+          disabled={p.draftSendBusy}
+          onPress={() => p.setDraftOpen(true)}
+          ui={p.ui}
+          styles={p.styles}
+        />
+      </Animated.ScrollView>
+
+
+    </>
   );
 }

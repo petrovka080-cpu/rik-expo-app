@@ -1,0 +1,1 @@
+export { createDocumentContentHash } from "../documentHashService";

@@ -1,0 +1,12 @@
+{
+  "wave": "S_MARKETPLACE_ADD_PHOTO_AI_FILL_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_MARKETPLACE_ADD_PHOTO_AI_FILL_READY",
+  "marketplace_photo_button_visible": true,
+  "marketplace_video_button_visible": true,
+  "marketplace_ai_fills_fields_inline": true,
+  "large_ai_media_debug_cards_visible": false,
+  "sourceRef_visible": false,
+  "mediaAssetId_visible": false,
+  "storageKey_visible": false,
+  "fake_green_claimed": false
+}

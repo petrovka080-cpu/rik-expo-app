@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 
 import RoleScreenLayout from "../../components/layout/RoleScreenLayout";
+import { LiveRouteMediaEntrypointPanel } from "../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import ForemanMaterialsContent from "./ForemanMaterialsContent";
 import ForemanSubcontractTab from "./ForemanSubcontractTab";
 import { useForemanScreenController } from "./useForemanScreenController";
@@ -157,6 +158,8 @@ export function ForemanScreen() {
             >
               <Text style={{ color: vm.ui.text, fontWeight: "600", fontSize: 22, lineHeight: 28 }}>[ Подряды ]</Text>
             </Pressable>
+
+            <LiveRouteMediaEntrypointPanel variant="foreman" />
           </View>
         ) : null}
 

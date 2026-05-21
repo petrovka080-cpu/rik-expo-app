@@ -163,6 +163,7 @@ export default function ForemanMaterialsContent(props: ForemanMaterialsContentPr
         onAiQuickPress={props.onAiQuickPress}
         onOpenDraft={props.onOpenDraft}
         closeDraft={props.closeDraft}
+        onSendDraft={props.onSendDraft}
         currentDisplayLabel={props.currentDisplayLabel}
         itemsCount={props.itemsCount}
         draftSyncStatusLabel={props.draftSyncStatusLabel}

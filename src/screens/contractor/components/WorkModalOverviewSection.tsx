@@ -1,5 +1,7 @@
 import React from "react";
 import { Pressable, Text, View } from "react-native";
+import { AppContractorExpandableWorkCard } from "../../../components/layout/AppContractorExpandableWorkCard";
+import { LiveRouteMediaEntrypointPanel } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { normalizeRuText } from "../../../lib/text/encoding";
 
 type OverviewStyles = {
@@ -96,6 +98,18 @@ export default function WorkModalOverviewSection(props: Props) {
           {objectName || "Объект не указан. Проверьте привязку к approved lineage."}
         </Text>
       </View>
+
+      <AppContractorExpandableWorkCard
+        workId={workCode || "contractor-work"}
+        expanded
+        mediaControlsVisibleOnlyWhenExpanded
+        photoButtonVisible
+        videoButtonVisible
+        attachTarget="contractor_work"
+        titleRu="Подтверждение"
+      >
+        <LiveRouteMediaEntrypointPanel variant="contractor" />
+      </AppContractorExpandableWorkCard>
 
       <View style={props.styles.workModalActions}>
         <View

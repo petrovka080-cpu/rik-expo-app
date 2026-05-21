@@ -303,7 +303,7 @@ describe("maestro critical business phase 1 contracts", () => {
       'foreman-dropdown-option-${toSelectorToken(key)}-${toSelectorToken(item.code) || "empty"}',
     );
     expect(foremanAiSource).toContain('testID="foreman-ai-apply"');
-    expect(foremanDraftSource).toContain('testID="foreman-draft-send"');
+    expect(foremanDraftSource).toMatch(/testID(?:=|:\s*)["']foreman-draft-send["']/);
     expect(foremanCatalogSource).toContain('testID="foreman-catalog-search-input"');
     expect(foremanCatalogSource).toContain('testID="foreman-catalog-close"');
     expect(foremanCatalogSource).toContain('testID={`foreman-catalog-add-${token}`}');

@@ -3,11 +3,11 @@ import { Alert, Platform, Pressable, Text, View } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
 import RNModal from "../../ui/React19SafeModal";
 
+import { AppSheet } from "../../components/layout/AppSheet";
+import { AppSheetFooter } from "../../components/layout/AppSheetFooter";
 import type { ReqItemRow } from "../../lib/catalog_api";
 import type { ForemanDraftRecoveryAction } from "../../lib/offline/foremanSyncRuntime";
 import CloseIconButton from "../../ui/CloseIconButton";
-import DeleteAllButton from "../../ui/DeleteAllButton";
-import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import { buildForemanDraftVisualModel } from "./foremanDraftVisualState";
 
 type WebUiApi = {
@@ -105,6 +105,49 @@ export default function ForemanDraftModal(p: Props) {
   );
   const syncToneStyle = useMemo(() => resolveToneStyle(draftVisualModel.tone), [draftVisualModel.tone]);
 
+  const confirmDeleteDraft = () => {
+    const doIt = async () => {
+      await p.onDeleteDraft();
+    };
+
+    if (Platform.OS === "web") {
+      const ok = webUi.confirm(
+        "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ Р В»Р С•Р С”Р В°Р В»РЎРЉР Р…РЎС“РЎР‹ Р Р†Р ВµРЎР‚РЎРѓР С‘РЎР‹ РЎвЂЎР ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”Р В°?\n\nР СњР ВµРЎРѓР С‘Р Р…РЎвЂ¦РЎР‚Р С•Р Р…Р С‘Р В·Р С‘РЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р Вµ Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ Р Р…Р В° РЎРЊРЎвЂљР С•Р С РЎС“РЎРѓРЎвЂљРЎР‚Р С•Р в„–РЎРѓРЎвЂљР Р†Р Вµ Р В±РЎС“Р Т‘РЎС“РЎвЂљ Р С—Р С•РЎвЂљР ВµРЎР‚РЎРЏР Р…РЎвЂ№.",
+      );
+      if (!ok) return;
+      void doIt();
+      return;
+    }
+
+    Alert.alert(
+      "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ Р В»Р С•Р С”Р В°Р В»РЎРЉР Р…РЎС“РЎР‹ Р Р†Р ВµРЎР‚РЎРѓР С‘РЎР‹ РЎвЂЎР ВµРЎР‚Р Р…Р С•Р Р†Р С‘Р С”Р В°?",
+      "Р СњР ВµРЎРѓР С‘Р Р…РЎвЂ¦РЎР‚Р С•Р Р…Р С‘Р В·Р С‘РЎР‚Р С•Р Р†Р В°Р Р…Р Р…РЎвЂ№Р Вµ Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ Р Р…Р В° РЎРЊРЎвЂљР С•Р С РЎС“РЎРѓРЎвЂљРЎР‚Р С•Р в„–РЎРѓРЎвЂљР Р†Р Вµ Р В±РЎС“Р Т‘РЎС“РЎвЂљ Р С—Р С•РЎвЂљР ВµРЎР‚РЎРЏР Р…РЎвЂ№.",
+      [
+        { text: "Р С›РЎвЂљР СР ВµР Р…Р В°", style: "cancel" },
+        { text: "Р Р€Р Т‘Р В°Р В»Р С‘РЎвЂљРЎРЉ", style: "destructive", onPress: () => void doIt() },
+      ],
+    );
+  };
+
+  const handlePdf = async () => {
+    if (p.screenLock || p.pdfBusy) return;
+    try {
+      await p.onPdf();
+    } catch (e) {
+      const message =
+        e && typeof e === "object" && "message" in e
+          ? String((e as { message?: unknown }).message ?? "")
+          : String(e ?? "");
+      if (message.toLowerCase().includes("busy")) return;
+      Alert.alert("Р С›РЎв‚¬Р С‘Р В±Р С”Р В°", message || "PDF Р Р…Р Вµ РЎРѓРЎвЂћР С•РЎР‚Р СР С‘РЎР‚Р С•Р Р†Р В°Р Р…");
+    }
+  };
+
+  const handleExcel = () => {
+    if (p.screenLock) return;
+    Alert.alert("Excel", "Р В­Р С”РЎРѓР С—Р С•РЎР‚РЎвЂљ Excel Р В±РЎС“Р Т‘Р ВµРЎвЂљ Р Т‘Р С•Р В±Р В°Р Р†Р В»Р ВµР Р… Р С—Р С•Р В·Р В¶Р Вµ. UI Р Т‘Р В»РЎРЏ РЎРЊРЎвЂљР С•Р С–Р С• РЎС“Р В¶Р Вµ Р С–Р С•РЎвЂљР С•Р Р†.");
+  };
+
   return (
     <RNModal
       isVisible={p.visible}
@@ -116,14 +159,14 @@ export default function ForemanDraftModal(p: Props) {
       hideModalContentWhileAnimating
       style={{ margin: 0, justifyContent: "flex-end" }}
     >
-      <View style={p.styles.sheet}>
+      <AppSheet style={p.styles.sheet}>
         <View style={p.styles.sheetHandle} />
 
         <View style={p.styles.sheetTopBar}>
           <Text style={p.styles.sheetTitle} numberOfLines={1}>
-            Черновик {draftVisualModel.requestLabel}
+            Р§РµСЂРЅРѕРІРёРє {draftVisualModel.requestLabel}
           </Text>
-          <CloseIconButton onPress={p.onClose} accessibilityLabel="Закрыть черновик" size={24} color={p.ui.text} />
+          <CloseIconButton onPress={p.onClose} accessibilityLabel="Р—Р°РєСЂС‹С‚СЊ С‡РµСЂРЅРѕРІРёРє" size={24} color={p.ui.text} />
         </View>
 
         <View style={p.styles.sheetMetaBox}>
@@ -148,36 +191,36 @@ export default function ForemanDraftModal(p: Props) {
           ) : null}
           {!!p.objectName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Объект: <Text style={p.styles.sheetMetaValue}>{p.objectName}</Text>
+              РћР±СЉРµРєС‚: <Text style={p.styles.sheetMetaValue}>{p.objectName}</Text>
             </Text>
           ) : null}
           {!!p.levelName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Этаж / уровень: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
+              Р­С‚Р°Р¶ / СѓСЂРѕРІРµРЅСЊ: <Text style={p.styles.sheetMetaValue}>{p.levelName}</Text>
             </Text>
           ) : null}
           {!!p.systemName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Система: <Text style={p.styles.sheetMetaValue}>{p.systemName}</Text>
+              РЎРёСЃС‚РµРјР°: <Text style={p.styles.sheetMetaValue}>{p.systemName}</Text>
             </Text>
           ) : null}
           {!!p.zoneName ? (
             <Text style={p.styles.sheetMetaLine} numberOfLines={1}>
-              Зона: <Text style={p.styles.sheetMetaValue}>{p.zoneName}</Text>
+              Р—РѕРЅР°: <Text style={p.styles.sheetMetaValue}>{p.zoneName}</Text>
             </Text>
           ) : null}
         </View>
 
         {p.availableRecoveryActions.length ? (
           <View style={[p.styles.sheetMetaBox, { marginTop: 10, gap: 8 }]}>
-            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Восстановление</Text>
+            <Text style={[p.styles.sheetMetaLine, { fontWeight: "800" }]}>Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
               {hasRecoveryAction(p.availableRecoveryActions, "retry_now") ? (
                 <Pressable
                   onPress={() => void p.onRetryNow()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Повторить</Text>
+                  <Text style={p.styles.actionText}>РџРѕРІС‚РѕСЂРёС‚СЊ</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "rehydrate_server") ? (
@@ -185,7 +228,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRehydrateFromServer()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Взять с сервера</Text>
+                  <Text style={p.styles.actionText}>Р’Р·СЏС‚СЊ СЃ СЃРµСЂРІРµСЂР°</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "restore_local") ? (
@@ -193,7 +236,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onRestoreLocal()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Вернуть локальную</Text>
+                  <Text style={p.styles.actionText}>Р’РµСЂРЅСѓС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "clear_failed_queue") ? (
@@ -201,7 +244,7 @@ export default function ForemanDraftModal(p: Props) {
                   onPress={() => void p.onClearFailedQueue()}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: p.ui.btnNeutral }]}
                 >
-                  <Text style={p.styles.actionText}>Очистить очередь</Text>
+                  <Text style={p.styles.actionText}>РћС‡РёСЃС‚РёС‚СЊ РѕС‡РµСЂРµРґСЊ</Text>
                 </Pressable>
               ) : null}
               {hasRecoveryAction(p.availableRecoveryActions, "discard_local") ? (
@@ -213,7 +256,7 @@ export default function ForemanDraftModal(p: Props) {
 
                     if (Platform.OS === "web") {
                       const ok = webUi.confirm(
-                        "Удалить локальную версию черновика?\n\nНесинхронизированные изменения на этом устройстве будут потеряны.",
+                        "РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ РІРµСЂСЃРёСЋ С‡РµСЂРЅРѕРІРёРєР°?\n\nРќРµСЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ Р±СѓРґСѓС‚ РїРѕС‚РµСЂСЏРЅС‹.",
                       );
                       if (!ok) return;
                       void doDiscard();
@@ -221,17 +264,17 @@ export default function ForemanDraftModal(p: Props) {
                     }
 
                     Alert.alert(
-                      "Удалить локальную версию черновика?",
-                      "Несинхронизированные изменения на этом устройстве будут потеряны.",
+                      "РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ РІРµСЂСЃРёСЋ С‡РµСЂРЅРѕРІРёРєР°?",
+                      "РќРµСЃРёРЅС…СЂРѕРЅРёР·РёСЂРѕРІР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРёСЏ РЅР° СЌС‚РѕРј СѓСЃС‚СЂРѕР№СЃС‚РІРµ Р±СѓРґСѓС‚ РїРѕС‚РµСЂСЏРЅС‹.",
                       [
-                        { text: "Отмена", style: "cancel" },
-                        { text: "Удалить", style: "destructive", onPress: () => void doDiscard() },
+                        { text: "РћС‚РјРµРЅР°", style: "cancel" },
+                        { text: "РЈРґР°Р»РёС‚СЊ", style: "destructive", onPress: () => void doDiscard() },
                       ],
                     );
                   }}
                   style={[p.styles.actionBtnWide, { width: "48%", backgroundColor: "rgba(239,68,68,0.16)" }]}
                 >
-                  <Text style={p.styles.actionText}>Удалить локальную</Text>
+                  <Text style={p.styles.actionText}>РЈРґР°Р»РёС‚СЊ Р»РѕРєР°Р»СЊРЅСѓСЋ</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -249,98 +292,63 @@ export default function ForemanDraftModal(p: Props) {
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
               <Text style={{ color: p.ui.sub, fontWeight: "800", paddingVertical: 12 }}>
-                Позиции не найдены
+                РџРѕР·РёС†РёРё РЅРµ РЅР°Р№РґРµРЅС‹
               </Text>
             }
           />
         </View>
 
-        <View style={p.styles.reqActionsBottom}>
-          <View style={p.styles.actionBtnSquare}>
-            <DeleteAllButton
-              disabled={p.screenLock}
-              loading={p.draftDeleteBusy}
-              accessibilityLabel="Удалить черновик"
-              onPress={() => {
-                const doIt = async () => {
-                  await p.onDeleteDraft();
-                };
-
-                if (Platform.OS === "web") {
-                  const ok = webUi.confirm(
-                    "Удалить черновик?\n\nВесь черновик будет отменён и очищен.",
-                  );
-                  if (!ok) return;
-                  void doIt();
-                  return;
-                }
-
-                Alert.alert(
-                  "Удалить черновик?",
-                  "Весь черновик будет отменён и очищен.",
-                  [
-                    { text: "Отмена", style: "cancel" },
-                    { text: "Да, удалить", style: "destructive", onPress: () => void doIt() },
-                  ],
-                );
-              }}
-            />
-          </View>
-
-          <View style={p.styles.sp8} />
-
-          <Pressable
-            disabled={p.screenLock || p.pdfBusy}
-            onPress={async () => {
-              if (p.screenLock || p.pdfBusy) return;
-              try {
-                await p.onPdf();
-              } catch (e) {
-                const message =
-                  e && typeof e === "object" && "message" in e
-                    ? String((e as { message?: unknown }).message ?? "")
-                    : String(e ?? "");
-                if (message.toLowerCase().includes("busy")) return;
-                Alert.alert("Ошибка", message || "PDF не сформирован");
-              }
-            }}
-            style={[
-              p.styles.actionBtnWide,
-              { backgroundColor: p.ui.btnNeutral, opacity: p.screenLock || p.pdfBusy ? 0.6 : 1 },
-            ]}
-          >
-            <Text style={p.styles.actionText}>{p.pdfBusy ? "PDF..." : "PDF"}</Text>
-          </Pressable>
-
-          <View style={p.styles.sp8} />
-
-          <Pressable
-            disabled={p.screenLock}
-            onPress={() => {
-              if (p.screenLock) return;
-              Alert.alert("Excel", "Экспорт Excel будет добавлен позже. UI для этого уже готов.");
-            }}
-            style={[p.styles.actionBtnWide, { backgroundColor: p.ui.btnNeutral, opacity: p.screenLock ? 0.6 : 1 }]}
-          >
-            <Text style={p.styles.actionText}>Excel</Text>
-          </Pressable>
-
-          <View style={p.styles.sp8} />
-
-          <View style={p.styles.actionBtnSquare}>
-            <SendPrimaryButton
-              variant="green"
-              disabled={p.screenLock || p.items.length === 0}
-              loading={p.draftSendBusy}
-              testID="foreman-draft-send"
-              onPress={async () => {
-                if (p.screenLock || p.items.length === 0) return;
-                await p.onSend();
-              }}
-            />
-          </View>
-        </View>
-      </View>
+        <AppSheetFooter
+          placement="inside_sheet_above_bottom_nav"
+          safeAreaAware
+          avoidBottomNav
+          actions={[
+            {
+              labelRu: "Отмена",
+              kind: "neutral",
+              onPress: p.onClose,
+              testID: "foreman-draft-footer-cancel",
+            },
+            {
+              labelRu: "PDF",
+              kind: "secondary",
+              onPress: handlePdf,
+              disabled: p.screenLock || p.pdfBusy,
+              loading: p.pdfBusy,
+              testID: "foreman-draft-footer-pdf",
+            },
+            {
+              labelRu: "Excel",
+              kind: "secondary",
+              onPress: handleExcel,
+              disabled: p.screenLock,
+              testID: "foreman-draft-footer-excel",
+            },
+            {
+              labelRu: "Домой",
+              kind: "secondary",
+              onPress: p.onClose,
+              testID: "foreman-draft-footer-home",
+            },
+            {
+              labelRu: "Удалить",
+              kind: "danger",
+              onPress: confirmDeleteDraft,
+              disabled: p.screenLock || p.draftDeleteBusy,
+              loading: p.draftDeleteBusy,
+              testID: "foreman-draft-footer-delete",
+            },
+            {
+              labelRu: "Отправить директору",
+              kind: "primary",
+              onPress: p.onSend,
+              disabled: p.screenLock || p.items.length === 0 || p.draftSendBusy,
+              loading: p.draftSendBusy,
+              testID: "foreman-draft-send",
+            },
+          ]}
+        />
+      </AppSheet>
     </RNModal>
   );
 }

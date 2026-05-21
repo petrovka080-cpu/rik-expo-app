@@ -1,0 +1,10 @@
+# S_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL_POINT_OF_NO_RETURN
+
+final_status: BLOCKED_AI_ENTERPRISE_RELEASE_CLOSEOUT_CHANGE_CONTROL
+ahead_behind: 0 0
+worktree_clean: false
+unowned_dirty_files_found: 0
+release_gate_audit_passed: true
+
+## Blockers
+- BLOCKED_POSTPUSH_RELEASE_VERIFY_FAILED

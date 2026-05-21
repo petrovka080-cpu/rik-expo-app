@@ -5,6 +5,19 @@ html, body, #root {
   padding: 0;
 }
 
+:root {
+  --app-bottom-nav-height: 72px;
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-sticky-action-height: 64px;
+  --app-sticky-action-gap: 12px;
+  --app-sticky-action-bottom: calc(
+    var(--app-bottom-nav-height) + var(--app-safe-bottom) + var(--app-sticky-action-gap)
+  );
+  --app-scroll-bottom-padding: calc(
+    var(--app-bottom-nav-height) + var(--app-sticky-action-height) + var(--app-safe-bottom) + 48px
+  );
+}
+
 body {
   overflow: auto;
 }

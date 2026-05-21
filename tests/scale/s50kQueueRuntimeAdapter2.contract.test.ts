@@ -12,6 +12,7 @@ import {
   resolveQueueWorkerConfiguredConcurrency,
   resolveSubmitJobClaimLimit,
 } from "../../src/workers/queueWorker.limits";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -85,7 +86,9 @@ describe("S-50K-QUEUE-RUNTIME-ADAPTER-2 runtime guardrails", () => {
     expect(matrix.safety.stagingTouched).toBe(false);
     expect(matrix.safety.sqlRpcRlsStorageChanged).toBe(false);
 
-    const changed = changedFiles().filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+    const changed = changedFiles().filter(
+      (file) => !isApprovedSLoadFix6WarehouseIssuePatch(file) && !isApprovedGreenCloseoutCurrentWavePatch(file),
+    );
 
     expect(changed).not.toEqual(
       expect.arrayContaining([

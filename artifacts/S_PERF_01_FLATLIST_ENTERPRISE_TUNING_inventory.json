@@ -1,6 +1,6 @@
 {
   "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
-  "checkedAt": "2026-05-19T09:51:44.691Z",
+  "checkedAt": "2026-05-20T16:25:33.378Z",
   "enterpriseTargets": [
     {
       "screenId": "buyer.requests",
@@ -269,8 +269,19 @@
       "maxItemsProof": "Single-detail modal, not a list feed."
     },
     {
+      "file": "src/features/ai/AIAssistantLiveScreenCopilotPanel.tsx",
+      "line": 37,
+      "expression": "unknown.map",
+      "source": "{listAiLiveScreenButtonsForScreen(liveManifest.screenId).slice(0, 7).map((button) => (",
+      "selfBounded": true,
+      "classified": true,
+      "owner": "syntactic bound",
+      "boundProof": "Expression uses a local slice or static uppercase registry.",
+      "maxItemsProof": "Bound is visible at the map callsite."
+    },
+    {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 208,
+      "line": 217,
       "expression": "screenNativeAssistantPack.nextActions.slice(0, 5).map",
       "source": "{screenNativeAssistantPack.nextActions.slice(0, 5).map((action) => (",
       "selfBounded": true,
@@ -281,18 +292,18 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 250,
+      "line": 259,
       "expression": "screenMagicButtons.map",
       "source": "{screenMagicButtons.map((button) => (",
       "selfBounded": false,
-      "classified": false,
-      "owner": null,
-      "boundProof": null,
-      "maxItemsProof": null
+      "classified": true,
+      "owner": "ai assistant owner",
+      "boundProof": "Screen magic buttons are filtered through the bounded real-user visible action policy.",
+      "maxItemsProof": "Visible AI action panel is capped to five buttons per screen."
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 300,
+      "line": 309,
       "expression": "screenWorkflowPack.actions.slice(0, 6).map",
       "source": "{screenWorkflowPack.actions.slice(0, 6).map((action) => (",
       "selfBounded": true,
@@ -303,7 +314,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 375,
+      "line": 384,
       "expression": "roleScreenAssistantPack.nextActions.slice(0, 5).map",
       "source": "{roleScreenAssistantPack.nextActions.slice(0, 5).map((action) => (",
       "selfBounded": true,
@@ -314,7 +325,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantReadyProductPanels.tsx",
-      "line": 407,
+      "line": 416,
       "expression": "readyProposals.map",
       "source": "{readyProposals.map((proposal) => (",
       "selfBounded": false,
@@ -325,7 +336,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "line": 320,
+      "line": 383,
       "expression": "messages.map",
       "source": "{messages.map((message, index) => {",
       "selfBounded": false,

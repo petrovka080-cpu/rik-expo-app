@@ -1,0 +1,145 @@
+[
+  {
+    "wave": "S_AI_APP_CONTEXT_GRAPH_DEEP_LINKED_SOURCE_REFS",
+    "layerPath": "src/lib/ai/appContextGraph",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_APP_CONTEXT_GRAPH_DEEP_LINKED_SOURCE_REFS_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiAppContextGraphDeepLinkWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_UNIVERSAL_ROLE_QA_ORCHESTRATOR_SOURCE_PLANNER",
+    "layerPath": "src/lib/ai/universalRoleQa",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_UNIVERSAL_ROLE_QA_ORCHESTRATOR_SOURCE_PLANNER_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiUniversalRoleQaWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_LIVE_SCREEN_COPILOT_UI_BUTTONS_RUSSIAN_PROOF",
+    "layerPath": "src/lib/ai/liveScreenCopilot",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_LIVE_SCREEN_COPILOT_UI_BUTTONS_RUSSIAN_PROOF_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiLiveScreenCopilotButtonsWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL",
+    "layerPath": "src/lib/ai/enterpriseGuardrails",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/ai/runAiEnterpriseArchitectureGuardrails.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE",
+    "layerPath": "src/lib/ai/externalKnowledge",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiVerifiedExternalKnowledgeWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE",
+    "layerPath": "src/lib/ai/evaluation/goldenBusinessDataset",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiRoleMixed150RealAnswersWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS",
+    "layerPath": "src/lib/ai/roleBusinessCopilots",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiRoleBusinessCopilotsWorkflowWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE",
+    "layerPath": "src/lib/media",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runMediaPhotoVideoIntelligenceWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE",
+    "layerPath": "src/lib/documents/evidenceIntelligence",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiDocumentPdfEvidenceIntelligenceWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE",
+    "layerPath": "src/lib/ai/domainDataGateway",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/e2e/runAiDomainDataGatewayContextRetrievalWebProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE",
+    "layerPath": "src/lib/ai/contractRuntime",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR",
+    "layerPath": "src/lib/ai/safeActions",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/ai/runAiSafeActionDraftApprovalProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  },
+  {
+    "wave": "S_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY",
+    "layerPath": "src/lib/ai/approvalExecutionBoundary",
+    "layerPresent": true,
+    "indexPresent": true,
+    "matrixPath": "artifacts/S_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_matrix.json",
+    "matrixPresent": true,
+    "proofRunner": "scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts",
+    "proofRunnerPresent": true,
+    "testsPresent": true
+  }
+]

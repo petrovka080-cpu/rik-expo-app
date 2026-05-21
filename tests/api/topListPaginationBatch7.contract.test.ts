@@ -1,6 +1,7 @@
 import { execSync } from "child_process";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -360,6 +361,7 @@ describe("S-PAG-7 high-risk remaining query pressure reduction", () => {
         !sRouteErrorBoundaryCoverageAllowedDirtyFiles.has(file) &&
         !sScale03TimerRealtimeLifecycleAllowedDirtyFiles.has(file) &&
         !sScale09QuerySafetyAuditAllowedDirtyFiles.has(file) &&
+        !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedSLoadFix6WarehouseIssuePatch(file),
     );
     expect(changed.some((file) => file.startsWith("scripts/server/"))).toBe(

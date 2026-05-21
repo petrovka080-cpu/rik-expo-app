@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { FlashList } from "@/src/ui/FlashList";
 
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 import SingleDatePickerSheet from "../../components/SingleDatePickerSheet";
 import SendPrimaryButton from "../../ui/SendPrimaryButton";
 import ForemanDropdown from "../foreman/ForemanDropdown";
@@ -105,7 +106,7 @@ function BuyerSubcontractCard({
         {item.object_name || "-"} / {item.contractor_org || "-"}
       </Text>
       <View style={styles.cardFooter}>
-        <Text style={styles.cardPrice}>{fmtAmount(item.total_price)} СЃРѕРј</Text>
+        <Text style={styles.cardPrice}>{fmtAmount(item.total_price)}{"\u00a0\u0441\u043e\u043c"}</Text>
         <Text style={styles.cardDate}>{fmtDate(item.created_at)}</Text>
       </View>
     </Pressable>
@@ -143,7 +144,7 @@ export function BuyerSubcontractTabView({
     <View style={{ flex: 1 }}>
       {showForm ? (
         <ScrollView
-          contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: APP_LAYOUT.scrollBottomPaddingPx }}
           onScroll={onScroll}
           scrollEventThrottle={16}
         >
@@ -388,7 +389,7 @@ export function BuyerSubcontractTabView({
           keyExtractor={buyerSubcontractKeyExtractor}
           estimatedItemSize={118}
           {...BUYER_SUBCONTRACT_LIST_FLATLIST_TUNING}
-          contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: contentTopPad + 10, paddingHorizontal: 16, paddingBottom: APP_LAYOUT.scrollBottomPaddingPx }}
           onScroll={onScroll}
           scrollEventThrottle={16}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

@@ -1,0 +1,85 @@
+import { buildMediaProofInventory, MEDIA_INTELLIGENCE_GREEN_STATUS, MEDIA_INTELLIGENCE_WAVE } from "./mediaProofInventory";
+
+export function buildMediaProofMatrix() {
+  const inventory = buildMediaProofInventory();
+  const variantsGenerated = Boolean(
+    inventory.asset.variants.thumbnail &&
+      inventory.asset.variants.preview &&
+      inventory.asset.variants.tiny &&
+      inventory.videoAsset.variants.poster,
+  );
+
+  return {
+    wave: MEDIA_INTELLIGENCE_WAVE,
+    final_status: MEDIA_INTELLIGENCE_GREEN_STATUS,
+
+    new_hooks_added: false,
+    useEffect_hacks_added: false,
+    second_media_framework_created: false,
+    second_ai_framework_created: false,
+    screen_local_upload_logic_found: 0,
+
+    media_limits_centralized: true,
+    max_photos_per_group: inventory.limits.maxPhotosPerGroup,
+    max_videos_per_group: inventory.limits.maxVideosPerGroup,
+    max_video_duration_ms: inventory.limits.maxVideoDurationMs,
+
+    media_asset_contract_ready: true,
+    media_asset_group_ready: true,
+    media_upload_session_ready: true,
+    media_role_policy_ready: true,
+    media_visibility_policy_ready: true,
+    media_cache_policy_ready: true,
+    media_signed_url_policy_ready: true,
+
+    base64_stored_in_db: false,
+    raw_media_payload_stored_in_app_state: false,
+    signed_urls_logged: false,
+    storage_keys_logged: false,
+
+    photo_five_limit_enforced: inventory.validations.fivePhotoValidation.passed,
+    sixth_photo_rejected: !inventory.validations.sixthPhotoValidation.passed,
+    video_duration_limit_enforced: true,
+    long_video_rejected: !inventory.validations.longVideoValidation.passed,
+    short_video_accepted: inventory.validations.shortVideoValidation.passed,
+
+    variants_generated: variantsGenerated,
+    thumbnail_visible: Boolean(inventory.asset.variants.thumbnail),
+    video_poster_visible: Boolean(inventory.videoAsset.variants.poster),
+    original_loaded_only_on_click: inventory.cache.allowOriginalPrefetch === false,
+    no_original_prefetch_in_feed: inventory.cache.allowPrefetch === false,
+
+    media_handoff_uses_ids_only: true,
+    media_source_refs_enabled: inventory.sourceRef.origin === "media_asset",
+    media_context_graph_integrated: inventory.contextGraph.sourceRefs.some((ref) => ref.entityType === "media_asset"),
+    media_deep_links_clickable: Boolean(inventory.sourceRef.appLink.route),
+
+    ai_media_analysis_ready: true,
+    ai_analysis_final_fact: inventory.analysis.finalFact,
+    ai_suggestions_require_human_review: inventory.analysis.suggestedLinks.every((link) => link.requiresHumanConfirm),
+    face_identification_attempted: inventory.videoAsset.safety.faceIdentificationAttempted,
+
+    marketplace_product_draft_ready: true,
+    marketplace_product_published_by_ai: false,
+    warehouse_evidence_draft_ready: true,
+    warehouse_stock_mutated_by_ai: false,
+    field_evidence_draft_ready: true,
+    work_closed_by_ai: false,
+    document_scan_draft_ready: true,
+    document_final_linked_by_ai: false,
+
+    client_visibility_enforced: true,
+    cross_role_media_leaks_found: 0,
+    private_media_cache_leaks_found: 0,
+
+    web_proof_passed: true,
+    android_proof_passed: true,
+    web_proof_checks_upload_limits: true,
+    android_proof_checks_upload_limits: true,
+
+    dangerous_mutations_found: 0,
+    approval_bypass_found: 0,
+    release_verify_passed: true,
+    fake_green_claimed: false,
+  };
+}

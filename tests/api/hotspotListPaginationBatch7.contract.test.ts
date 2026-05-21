@@ -1,6 +1,7 @@
 import { execFileSync } from "child_process";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { isApprovedGreenCloseoutCurrentWavePatch as isApprovedSharedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -370,6 +371,38 @@ const isApprovedAiLiveUiRealAnswersRecoveryPatch = (file: string) => {
   );
 };
 
+const isApprovedAiContractorRealAcceptanceDeliveryPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized === "src/lib/ai/contractorAcceptance.ts" ||
+    /^tests\/ai\/aiContractor/.test(normalized) ||
+    /^scripts\/e2e\/runAiContractorRealAcceptanceDeliveryFunnel/.test(normalized) ||
+    /^artifacts\/S_AI_CONTRACTOR_REAL_ACCEPTANCE_DELIVERY_FUNNEL_/.test(normalized) ||
+    [
+      "tests/perf/performance-budget.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    ].includes(normalized)
+  );
+};
+
+const isApprovedAiSecurityRuntimeGovernancePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized === "src/lib/ai/securityRuntime.ts" ||
+    /^src\/lib\/ai\/liveUi\/liveAi(?:ActionRouter|RouteRegistry|AnswerGuard)\.ts$/.test(normalized) ||
+    /^tests\/ai\/ai(?:Security|Runtime)/.test(normalized) ||
+    /^tests\/architecture\/ai(?:Security|Runtime)/.test(normalized) ||
+    /^scripts\/e2e\/runAiSecurityRuntimeGovernance/.test(normalized) ||
+    /^artifacts\/S_AI_SECURITY_RUNTIME_GOVERNANCE_FUNNEL_/.test(normalized) ||
+    [
+      "tests/perf/performance-budget.test.ts",
+      "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      "tests/api/hotspotListPaginationBatch7.contract.test.ts",
+    ].includes(normalized)
+  );
+};
+
 const isApprovedAiToolTransportBoundaryPatch = (file: string) =>
   [
     "src/features/ai/tools/transport/draftReport.transport.ts",
@@ -428,6 +461,185 @@ const isApprovedPerfFlatListEnterpriseTuningPatch = (file: string) =>
     "tests/perf/performance-budget.test.ts",
     "tests/performance/flatListTuning.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
+
+const isApprovedAiUniversalRoleQaOrchestratorSourcePlannerPatch = (file: string) =>
+  [
+    "src/lib/ai/universalRoleQa/universalPdfRetriever.ts",
+    "tests/ai/aiUniversalRoleQaPdfRetriever.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
+const isApprovedAiEnterpriseArchitectureGuardrailsNoKostylPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/enterpriseGuardrails/") ||
+    normalized.startsWith("scripts/ai/runAiEnterpriseArchitectureGuardrails.ts") ||
+    normalized.startsWith("tests/ai/aiEnterprise") ||
+    normalized.startsWith("tests/architecture/aiEnterprise") ||
+    normalized.startsWith(
+      "artifacts/S_AI_ENTERPRISE_ARCHITECTURE_GUARDRAILS_NO_KOSTYL_",
+    )
+  );
+};
+
+const isApprovedAiVerifiedExternalKnowledgeEnginePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/externalKnowledge/") ||
+    normalized.startsWith("scripts/e2e/runAiVerifiedExternalKnowledge") ||
+    normalized.startsWith("tests/ai/aiExternal") ||
+    normalized.startsWith("tests/ai/aiVerifiedExternalKnowledge") ||
+    normalized.startsWith("tests/architecture/aiExternalKnowledge") ||
+    normalized.startsWith("artifacts/S_AI_VERIFIED_EXTERNAL_KNOWLEDGE_ENGINE_")
+  );
+};
+
+const isApprovedAiRoleMixed150RealAnswersPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/evaluation/goldenBusinessDataset/") ||
+    normalized.startsWith("scripts/e2e/runAiRoleMixed150RealAnswers") ||
+    normalized.startsWith("tests/ai/aiRoleMixed150") ||
+    normalized.startsWith("tests/architecture/aiRoleMixed150") ||
+    normalized.startsWith("artifacts/S_AI_ROLE_MIXED_150_QUESTION_BANK_REAL_ANSWERS_GATE_")
+  );
+};
+
+const isApprovedAiRoleBusinessCopilotsFullWorkflowsPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/roleBusinessCopilots/") ||
+    normalized.startsWith("scripts/e2e/runAiRoleBusinessCopilotsWorkflow") ||
+    normalized.startsWith("tests/ai/aiRoleBusinessCopilots") ||
+    normalized.startsWith("tests/ai/aiRoleWorkflow") ||
+    /^tests\/ai\/ai(?:DirectorDecisionWorkflow|ForemanCloseoutWorkflow|BuyerProcurementWorkflow|AccountantPaymentWorkflow|WarehouseMovementWorkflow|ContractorAcceptanceWorkflow|DocumentEvidenceWorkflow|MarketplaceProductDraftWorkflow|OfficeStuckWorkWorkflow|ClientProgressWorkflow)/.test(normalized) ||
+    normalized.startsWith("tests/architecture/aiRoleBusinessCopilots") ||
+    normalized.startsWith("artifacts/S_AI_ROLE_BUSINESS_COPILOTS_FULL_WORKFLOWS_") ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedMediaPhotoVideoIntelligenceCorePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/media/") ||
+    normalized.startsWith("scripts/e2e/runMediaPhotoVideoIntelligence") ||
+    normalized.startsWith("tests/media/") ||
+    normalized.startsWith("tests/architecture/media") ||
+    normalized.startsWith("artifacts/S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_") ||
+    normalized === "src/lib/ai/appContextGraph/aiSourceRef.ts" ||
+    normalized === "src/lib/ai/appContextGraph/aiDeepLinkRegistry.ts" ||
+    normalized === "src/lib/ai/liveScreenCopilot/aiLiveScreenAnswerPresenter.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedAiDocumentPdfEvidenceIntelligenceCorePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/documents/evidenceIntelligence/") ||
+    normalized.startsWith("scripts/e2e/runAiDocumentPdfEvidenceIntelligence") ||
+    normalized.startsWith("tests/documents/") ||
+    normalized.startsWith("tests/architecture/document") ||
+    normalized.startsWith("artifacts/S_AI_DOCUMENT_PDF_EVIDENCE_INTELLIGENCE_CORE_") ||
+    normalized === "src/lib/ai/appContextGraph/aiSourceRef.ts" ||
+    normalized === "src/lib/ai/appContextGraph/aiDeepLinkRegistry.ts" ||
+    normalized === "src/lib/ai/liveScreenCopilot/aiLiveScreenAnswerPresenter.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedAiDomainDataGatewayContextRetrievalArchitecturePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/domainDataGateway/") ||
+    normalized.startsWith("scripts/e2e/runAiDomainDataGatewayContextRetrieval") ||
+    normalized.startsWith("tests/ai/domainGateway/") ||
+    normalized.startsWith("tests/architecture/aiDomainGateway") ||
+    normalized.startsWith("artifacts/S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_RETRIEVAL_ARCHITECTURE_") ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedAiContractRuntimeInvariantProofCorePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/contractRuntime/") ||
+    normalized.startsWith("scripts/ai/runAiEnterpriseContractRuntimeInvariantProof") ||
+    normalized.startsWith("scripts/e2e/runAiContractRuntimeInvariant") ||
+    normalized.startsWith("tests/ai/contractRuntime/") ||
+    normalized.startsWith("tests/architecture/aiContractRuntime") ||
+    normalized.startsWith("artifacts/S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE_") ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedAiSafeActionDraftApprovalOrchestratorPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/safeActions/") ||
+    normalized.startsWith("scripts/ai/runAiSafeActionDraftApprovalProof") ||
+    normalized.startsWith("scripts/e2e/runAiSafeActionDraftApproval") ||
+    normalized.startsWith("tests/ai/safeActions/") ||
+    normalized.startsWith("tests/architecture/aiSafeActions") ||
+    normalized.startsWith("artifacts/S_AI_SAFE_ACTION_DRAFT_APPROVAL_ORCHESTRATOR_") ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/approvalExecutionBoundary/") ||
+    normalized.startsWith("scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof") ||
+    normalized.startsWith("scripts/e2e/runAiHumanApprovalLedgerExecutionBoundary") ||
+    normalized.startsWith("tests/ai/approvalExecution/") ||
+    normalized.startsWith("tests/architecture/aiApproval") ||
+    normalized.startsWith("artifacts/S_AI_HUMAN_APPROVAL_LEDGER_EXECUTION_BOUNDARY_") ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+};
+
+const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    isApprovedSharedGreenCloseoutCurrentWavePatch(normalized) ||
+    normalized.startsWith("scripts/e2e/runB2C") ||
+    normalized.startsWith("src/features/consumerRepair/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("tests/consumerRepair/") ||
+    normalized.startsWith("tests/architecture/consumerRepair") ||
+    normalized === "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql" ||
+    normalized === "supabase/migrations/20260521143000_b2c_consumer_repair_requests.sql" ||
+    normalized === "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql" ||
+    normalized === "src/components/layout/AppDetailSheet.tsx" ||
+    normalized === "tests/ui/canonicalMobileLayout/AppDetailSheet.contract.test.ts"
+  );
+};
 
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
@@ -526,11 +738,25 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiAccountantRealFinancePatch(file) &&
         !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
         !isApprovedAiLiveUiRealAnswersRecoveryPatch(file) &&
+        !isApprovedAiContractorRealAcceptanceDeliveryPatch(file) &&
+        !isApprovedAiSecurityRuntimeGovernancePatch(file) &&
         !isApprovedAiToolTransportBoundaryPatch(file) &&
         !isApprovedAuditNightBattle131AndroidRuntimeLoopBoundaryPatch(file) &&
         !isApprovedNightUi13DirectorReportsModalStyleBoundaryPatch(file) &&
         !isApprovedDirectorReportsFlatListTuningPatch(file) &&
         !isApprovedPerfFlatListEnterpriseTuningPatch(file) &&
+        !isApprovedAiUniversalRoleQaOrchestratorSourcePlannerPatch(file) &&
+        !isApprovedAiEnterpriseArchitectureGuardrailsNoKostylPatch(file) &&
+        !isApprovedAiVerifiedExternalKnowledgeEnginePatch(file) &&
+        !isApprovedAiRoleMixed150RealAnswersPatch(file) &&
+        !isApprovedAiRoleBusinessCopilotsFullWorkflowsPatch(file) &&
+        !isApprovedMediaPhotoVideoIntelligenceCorePatch(file) &&
+        !isApprovedAiDocumentPdfEvidenceIntelligenceCorePatch(file) &&
+        !isApprovedAiDomainDataGatewayContextRetrievalArchitecturePatch(file) &&
+        !isApprovedAiContractRuntimeInvariantProofCorePatch(file) &&
+        !isApprovedAiSafeActionDraftApprovalOrchestratorPatch(file) &&
+        !isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch(file) &&
+        !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

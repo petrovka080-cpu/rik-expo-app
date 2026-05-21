@@ -17,7 +17,7 @@ describe("buyer.screen.model", () => {
         isDev: true,
       }),
     ).toEqual({
-      mainListHeaderPad: 238,
+      mainListHeaderPad: 264,
       inboxKeyboardLayoutActive: true,
       showInboxFooter: false,
       disableClear: false,

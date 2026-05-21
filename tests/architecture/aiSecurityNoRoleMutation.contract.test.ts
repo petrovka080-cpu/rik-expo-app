@@ -1,14 +1,11 @@
-import { buildAiDirectorCommandOfficeSecurityMagicMatrix } from "../../scripts/ai/aiDirectorCommandOfficeSecurityMagic";
+import { securityAnswer } from "../ai/aiSecurityRuntimeTestHelpers";
 
 describe("AI security no role mutation", () => {
-  it("does not expose role, permission, or policy mutation as a green path", () => {
-    const matrix = buildAiDirectorCommandOfficeSecurityMagicMatrix({
-      webProofPass: true,
-      androidProofPass: true,
-      iosTestflightSignoffCurrent: true,
-    });
-
-    expect(matrix.direct_role_permission_mutation_paths_found).toBe(0);
-    expect(matrix.policy_disable_paths_found).toBe(0);
+  it("does not mutate roles or grant/revoke permissions from AI answers", () => {
+    const answer = securityAnswer("проверить роли");
+    expect(answer.rolePolicyMutated).toBe(false);
+    expect(answer.permissionGranted).toBe(false);
+    expect(answer.permissionRevoked).toBe(false);
+    expect(answer.changedData).toBe(false);
   });
 });

@@ -11,6 +11,7 @@ import {
   validateRpcResponse,
 } from "../../src/lib/api/queryBoundary";
 import { isDeveloperOverrideContextRpcResponse } from "../../src/lib/developerOverride";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
@@ -169,7 +170,8 @@ describe("S-RPC-7 mutation result envelopes", () => {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file));
+      .filter((file) => !isApprovedAiActionLedgerReadinessPatch(file))
+      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

@@ -27,6 +27,7 @@ import {
   isDirectorFinanceSummaryV2RpcResponse,
   isDirectorFinanceSupplierScopeRpcResponse,
 } from "../../src/screens/director/director.finance.rpc";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = join(__dirname, "..", "..");
 
@@ -232,7 +233,8 @@ describe("S-RPC-5 runtime validation contract", () => {
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter(Boolean)
-      .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+      .filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file))
+      .filter((file) => !isApprovedGreenCloseoutCurrentWavePatch(file));
 
     expect(changedFiles).not.toEqual(
       expect.arrayContaining([

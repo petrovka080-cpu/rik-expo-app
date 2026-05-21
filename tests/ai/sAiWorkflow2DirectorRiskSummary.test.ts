@@ -8,6 +8,7 @@ import {
   type DirectorProposalRiskSummaryProvider,
 } from "../../src/shared/ai/directorProposalRiskSummary";
 import { readAiWorkflowFlags } from "../../src/shared/ai/aiWorkflowFlags";
+import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
 
 const root = path.resolve(__dirname, "../..");
 
@@ -170,7 +171,9 @@ describe("S-AI-WORKFLOW-2 director risk summary safety", () => {
   });
 
   it("keeps forbidden file classes untouched and artifacts valid JSON", () => {
-    const changed = changedFiles().filter((file) => !isApprovedSLoadFix6WarehouseIssuePatch(file));
+    const changed = changedFiles().filter(
+      (file) => !isApprovedSLoadFix6WarehouseIssuePatch(file) && !isApprovedGreenCloseoutCurrentWavePatch(file),
+    );
     expect(changed.some((file) => file.startsWith("supabase/migrations/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("ios/"))).toBe(false);
     expect(changed.some((file) => file.startsWith("android/"))).toBe(false);

@@ -69,7 +69,9 @@ type MainSectionsProps = Pick<
   | "closeHistory"
   | "ui"
   | "styles"
->;
+> & {
+  onSendDraft?: () => Promise<void>;
+};
 
 type ModalStackProps = Pick<
   ForemanMaterialsContentProps,
@@ -183,6 +185,7 @@ export function ForemanMaterialsMainSections(props: MainSectionsProps) {
           if (value) props.onOpenDraft();
           else props.closeDraft();
         }}
+        onSendDraft={props.onSendDraft}
         currentDisplayLabel={props.currentDisplayLabel}
         itemsCount={props.itemsCount}
         draftSyncStatusLabel={props.draftSyncStatusLabel}

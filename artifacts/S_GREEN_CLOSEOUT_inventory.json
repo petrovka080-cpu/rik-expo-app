@@ -1,0 +1,18 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "generated_at": "2026-05-21T14:05:21.978Z",
+  "head": "0fb5e135",
+  "ahead_behind": "0 0",
+  "working_tree_dirty_at_generation": true,
+  "source_artifacts": [
+    "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_backend_wiring.json",
+    "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_web_pdf_open.json",
+    "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_scale_summary.json",
+    "S_B2C_REQUEST_RELEASE_CLOSEOUT_release_verify_timing.json",
+    "S_UI_LIVE_LAYOUT_SHEETS_CHAT_CONTRACTOR_MEDIA_BLOCKER_FIX_matrix.json",
+    "S_UI_B2C_REQUEST_TAB_CAMERA_AI_BOTTOM_NAV_PRODUCTION_FIX_bottom_tabs.json",
+    "S_MARKETPLACE_ADD_PHOTO_AI_FILL_summary.json",
+    "S_CONTRACTOR_EXPANDED_WORK_MEDIA_matrix.json",
+    "S_IOS_EAS_UPDATE_CHANNEL_FAST_QA_NO_REBUILD_native_impact.json"
+  ]
+}

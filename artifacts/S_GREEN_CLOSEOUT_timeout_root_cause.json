@@ -1,0 +1,11 @@
+{
+  "timeout_seen": true,
+  "gate": "npm test -- --runInBand",
+  "hanging_step": "jest_full_suite",
+  "hanging_file": "tests/architecture/noUncleanedLifecycleTimers.contract.test.ts",
+  "root_cause": "Lifecycle timer audit exposed an uncleaned delayed suggestion timer in the media entrypoint flow during the full closeout run.",
+  "fix_applied": "Cleared the delayed media suggestion timer on unmount and before replacement; aligned related architecture proofs and reran the exact file plus full Jest.",
+  "single_test_after_fix": "passed",
+  "shard_after_fix": "covered_by_full_jest_pass",
+  "full_gate_after_fix": "passed"
+}

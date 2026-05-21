@@ -1,4 +1,4 @@
-import { hasLiveAiBannedCopy } from "./liveAiAnswerGuard";
+import { findLiveAiBannedCopy, hasLiveAiBannedCopy } from "./liveAiAnswerGuard";
 import {
   answerLiveAiForContext,
   getAllLiveAiContextIds,
@@ -8,6 +8,7 @@ import {
 import {
   LIVE_AI_REAL_ANSWERS_WAVE,
   listLiveAiRouteDefinitions,
+  type LiveAiContextId,
 } from "./liveAiRouteRegistry";
 
 export type LiveAiRealAnswersMatrix = {
@@ -180,4 +181,293 @@ export function buildLiveAiRealAnswersMatrix(options: {
     release_verify_passed: options.releaseVerifyPassed,
     fake_green_claimed: false,
   };
+}
+
+export type LiveSemanticAnswerExpectation = {
+  id: string;
+  context: Exclude<LiveAiContextId, "chat" | "reports" | "runtime">;
+  questionRu: string;
+  expectedIntent:
+    | "construction_estimate_request"
+    | "procurement_request_search"
+    | "workday_summary"
+    | "warehouse_deficit"
+    | "finance_missing_docs"
+    | "acceptance_blockers"
+    | "document_explanation"
+    | "marketplace_sourcing"
+    | "company_decision_summary";
+  requiredAnswerSignals: string[];
+  forbiddenAnswerSignals: string[];
+  requiredSections: (
+    | "Коротко"
+    | "Что найдено"
+    | "Смета"
+    | "Заявки"
+    | "Источники"
+    | "Что проверено"
+    | "Чего не хватает"
+    | "Следующий шаг"
+    | "Статус"
+  )[];
+  allowCheckedEmptyReason: boolean;
+  failIfOnlyDefaultScreenSummary: boolean;
+};
+
+export type LiveSemanticAnswerAssertionResult = {
+  passed: boolean;
+  reasonRu: string;
+  missingRequiredSignals: string[];
+  forbiddenSignalsFound: string[];
+  missingSections: string[];
+  bannedCopyFound: string[];
+};
+
+export const LIVE_SEMANTIC_ANSWER_EXPECTATIONS: LiveSemanticAnswerExpectation[] = [
+  {
+    id: "foreman-asphalt-estimate-100m2",
+    context: "foreman",
+    questionRu: "дай мне смету на укладку асфальта на площади 100 кв метров",
+    expectedIntent: "construction_estimate_request",
+    requiredAnswerSignals: [
+      "асфальт|асфальтобетон",
+      "100",
+      "м²|м2",
+      "смета",
+      "основан",
+      "укладка",
+      "уплотнение",
+      "следующий шаг",
+      "данные проекта не изменены|данные не изменены",
+    ],
+    forbiddenAnswerSignals: [
+      "ГКЛ",
+      "монтаж перегородок",
+      "фото после выполнения",
+      "акт не подготовлен",
+      "PAY-GKL",
+      "платёж",
+      "платеж",
+      "главное решение",
+    ],
+    requiredSections: ["Коротко", "Смета", "Источники", "Что проверено", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: true,
+  },
+  {
+    id: "foreman-door-estimate",
+    context: "foreman",
+    questionRu: "дай мне смету на установку дверей",
+    expectedIntent: "construction_estimate_request",
+    requiredAnswerSignals: [
+      "смета",
+      "дверь|дверей|двери|дверное",
+      "установка|монтаж",
+      "материалы|работы|полотно|коробка|фурнитура",
+      "чего не хватает",
+      "следующий шаг",
+      "данные проекта не изменены|черновик подготовлен",
+    ],
+    forbiddenAnswerSignals: [
+      "ГКЛ",
+      "монтаж перегородок",
+      "PAY-GKL",
+      "главное решение",
+      "фото после выполнения",
+      "акт не подготовлен",
+    ],
+    requiredSections: ["Коротко", "Смета", "Что проверено", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: true,
+  },
+  {
+    id: "foreman-first-floor-requests",
+    context: "foreman",
+    questionRu: "выдай мне заявки все по первому этажу",
+    expectedIntent: "procurement_request_search",
+    requiredAnswerSignals: [
+      "заявки|заявка",
+      "первому этажу|первый этаж|1 этаж",
+      "что проверено",
+      "следующий шаг",
+    ],
+    forbiddenAnswerSignals: [
+      "PAY-GKL",
+      "главное решение",
+      "нет выбранной работы",
+      "Нужен конкретный источник",
+      "монтаж перегородок",
+      "фото после выполнения",
+    ],
+    requiredSections: ["Коротко", "Заявки", "Что проверено", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: true,
+  },
+  {
+    id: "director-window-estimate",
+    context: "director",
+    questionRu: "дай мне смету на установку окон",
+    expectedIntent: "construction_estimate_request",
+    requiredAnswerSignals: [
+      "смета",
+      "окна|окон|оконный",
+      "установка|монтаж",
+      "материалы|работы|ПВХ|подоконник",
+      "следующий шаг",
+    ],
+    forbiddenAnswerSignals: [
+      "PAY-GKL",
+      "ГКЛ",
+      "платёж",
+      "платеж",
+      "approval summary",
+      "главное решение",
+    ],
+    requiredSections: ["Коротко", "Смета", "Источники", "Что проверено", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: true,
+  },
+  {
+    id: "warehouse-door-estimate",
+    context: "warehouse",
+    questionRu: "дай мне смету на установку дверей",
+    expectedIntent: "construction_estimate_request",
+    requiredAnswerSignals: [
+      "смета",
+      "дверь|дверей|двери|дверное",
+      "установка|монтаж",
+      "следующий шаг",
+    ],
+    forbiddenAnswerSignals: [
+      "складской дефицит",
+      "остатки",
+      "резерв",
+      "ГКЛ",
+      "нет выбранной складской позиции",
+    ],
+    requiredSections: ["Коротко", "Смета", "Что проверено", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: true,
+  },
+  {
+    id: "warehouse-material-deficit",
+    context: "warehouse",
+    questionRu: "покажи дефицит по материалам",
+    expectedIntent: "warehouse_deficit",
+    requiredAnswerSignals: [
+      "дефицит|материал",
+      "склад|остаток|stock",
+      "следующий шаг",
+    ],
+    forbiddenAnswerSignals: [
+      "Нужен конкретный источник",
+      "нет выбранной складской позиции",
+      "PAY-GKL",
+    ],
+    requiredSections: ["Коротко", "Что найдено", "Источники", "Чего не хватает", "Следующий шаг", "Статус"],
+    allowCheckedEmptyReason: true,
+    failIfOnlyDefaultScreenSummary: false,
+  },
+];
+
+function normalizeSemanticText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^\p{L}\p{N}\s:-]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function signalPresent(answer: string, signal: string): boolean {
+  return signal
+    .split("|")
+    .map((part) => normalizeSemanticText(part))
+    .filter(Boolean)
+    .some((part) => answer.includes(part));
+}
+
+function sectionPresent(answer: string, section: LiveSemanticAnswerExpectation["requiredSections"][number]): boolean {
+  const normalized = normalizeSemanticText(answer);
+  switch (section) {
+    case "Смета":
+      return /(^|\s)(смета|черновая смета):?/.test(normalized);
+    case "Заявки":
+      return normalized.includes("заявк");
+    case "Источники":
+      return normalized.includes("источники:");
+    case "Что проверено":
+      return normalized.includes("что проверено:");
+    case "Коротко":
+    case "Что найдено":
+    case "Чего не хватает":
+    case "Следующий шаг":
+    case "Статус":
+      return normalized.includes(`${normalizeSemanticText(section)}:`);
+    default:
+      return false;
+  }
+}
+
+function hasSourceOrCheckedReason(answer: string): boolean {
+  const normalized = normalizeSemanticText(answer);
+  return normalized.includes("источники:") ||
+    normalized.includes("что проверено:") ||
+    normalized.includes("не найдена") ||
+    normalized.includes("не найден") ||
+    normalized.includes("checked");
+}
+
+export function assertAnswerMatchesQuestion(input: {
+  questionRu: string;
+  answerRu: string;
+  expectedIntent: string;
+  requiredSignals: string[];
+  forbiddenSignals: string[];
+  requiredSections?: LiveSemanticAnswerExpectation["requiredSections"];
+  allowCheckedEmptyReason?: boolean;
+  failIfOnlyDefaultScreenSummary?: boolean;
+}): LiveSemanticAnswerAssertionResult {
+  const answer = normalizeSemanticText(input.answerRu);
+  const missingRequiredSignals = input.requiredSignals.filter((signal) => !signalPresent(answer, signal));
+  const forbiddenSignalsFound = input.forbiddenSignals.filter((signal) => signalPresent(answer, signal));
+  const missingSections = (input.requiredSections ?? []).filter((section) => !sectionPresent(input.answerRu, section));
+  const bannedCopyFound = findLiveAiBannedCopy(input.answerRu);
+  const sourceMissing = input.allowCheckedEmptyReason === false ? false : !hasSourceOrCheckedReason(input.answerRu);
+  const defaultSummaryOnly = Boolean(input.failIfOnlyDefaultScreenSummary) &&
+    forbiddenSignalsFound.length > 0 &&
+    missingRequiredSignals.length > 0;
+  const blockers = [
+    ...missingRequiredSignals.map((signal) => `missing required signal: ${signal}`),
+    ...forbiddenSignalsFound.map((signal) => `forbidden signal found: ${signal}`),
+    ...missingSections.map((section) => `missing required section: ${section}`),
+    ...bannedCopyFound.map((copy) => `banned UI copy found: ${copy}`),
+    ...(sourceMissing ? ["missing sources or checked-empty reason"] : []),
+    ...(defaultSummaryOnly ? ["answer looks like default screen summary instead of the question intent"] : []),
+  ];
+
+  return {
+    passed: blockers.length === 0,
+    reasonRu: blockers.length === 0 ? "Ответ соответствует вопросу." : `FAIL_TOPIC_MISMATCH: ${blockers.join("; ")}`,
+    missingRequiredSignals,
+    forbiddenSignalsFound,
+    missingSections,
+    bannedCopyFound,
+  };
+}
+
+export function assertLiveSemanticExpectation(input: {
+  expectation: LiveSemanticAnswerExpectation;
+  answerRu: string;
+}): LiveSemanticAnswerAssertionResult {
+  return assertAnswerMatchesQuestion({
+    questionRu: input.expectation.questionRu,
+    answerRu: input.answerRu,
+    expectedIntent: input.expectation.expectedIntent,
+    requiredSignals: input.expectation.requiredAnswerSignals,
+    forbiddenSignals: input.expectation.forbiddenAnswerSignals,
+    requiredSections: input.expectation.requiredSections,
+    allowCheckedEmptyReason: input.expectation.allowCheckedEmptyReason,
+    failIfOnlyDefaultScreenSummary: input.expectation.failIfOnlyDefaultScreenSummary,
+  });
 }

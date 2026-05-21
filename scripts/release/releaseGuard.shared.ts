@@ -23,6 +23,22 @@ export type ReleaseGateName =
   | "tsc"
   | "expo-lint"
   | "architecture-anti-regression"
+  | "ai-app-context-graph-deep-link-proof"
+  | "ai-universal-role-qa-source-planner-proof"
+  | "ai-live-screen-copilot-buttons-proof"
+  | "enterprise-ai-architecture-guardrails"
+  | "ai-verified-external-knowledge-proof"
+  | "ai-role-mixed-150-real-answers-proof"
+  | "ai-role-business-copilots-workflow-proof"
+  | "media-photo-video-intelligence-proof"
+  | "document-pdf-evidence-intelligence-proof"
+  | "ai-domain-data-gateway-context-retrieval-proof"
+  | "enterprise-ai-contract-runtime-invariant-proof"
+  | "ai-safe-action-draft-approval-proof"
+  | "ai-human-approval-ledger-execution-boundary-proof"
+  | "universal-qa-smoke-release-gate"
+  | "universal-qa-smoke-maestro"
+  | "ios-eas-update-native-impact-classifier"
   | "jest-run-in-band"
   | "jest"
   | "git-diff-check";
@@ -207,8 +223,23 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "tsc", command: "npx tsc --noEmit --pretty false" },
   { name: "expo-lint", command: "npx expo lint" },
   { name: "architecture-anti-regression", command: "npx tsx scripts/architecture_anti_regression_suite.ts --json" },
+  { name: "ai-app-context-graph-deep-link-proof", command: "npx tsx scripts/e2e/runAiAppContextGraphDeepLinkWebProof.ts" },
+  { name: "ai-universal-role-qa-source-planner-proof", command: "npx tsx scripts/e2e/runAiUniversalRoleQaWebProof.ts" },
+  { name: "ai-live-screen-copilot-buttons-proof", command: "npx tsx scripts/e2e/runAiLiveScreenCopilotButtonsWebProof.ts" },
+  { name: "enterprise-ai-architecture-guardrails", command: "npx tsx scripts/ai/runAiEnterpriseArchitectureGuardrails.ts" },
+  { name: "ai-verified-external-knowledge-proof", command: "npx tsx scripts/e2e/runAiVerifiedExternalKnowledgeWebProof.ts" },
+  { name: "ai-role-mixed-150-real-answers-proof", command: "npx tsx scripts/e2e/runAiRoleMixed150RealAnswersWebProof.ts" },
+  { name: "ai-role-business-copilots-workflow-proof", command: "npx tsx scripts/e2e/runAiRoleBusinessCopilotsWorkflowWebProof.ts" },
+  { name: "media-photo-video-intelligence-proof", command: "npx tsx scripts/e2e/runMediaPhotoVideoIntelligenceWebProof.ts" },
+  { name: "document-pdf-evidence-intelligence-proof", command: "npx tsx scripts/e2e/runAiDocumentPdfEvidenceIntelligenceWebProof.ts" },
+  { name: "ai-domain-data-gateway-context-retrieval-proof", command: "npx tsx scripts/e2e/runAiDomainDataGatewayContextRetrievalWebProof.ts" },
+  { name: "enterprise-ai-contract-runtime-invariant-proof", command: "npx tsx scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts" },
+  { name: "ai-safe-action-draft-approval-proof", command: "npx tsx scripts/ai/runAiSafeActionDraftApprovalProof.ts" },
+  { name: "ai-human-approval-ledger-execution-boundary-proof", command: "npx tsx scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts" },
+  { name: "universal-qa-smoke-release-gate", command: "npx tsx scripts/e2e/runAiUniversalQaSmokeToReleaseGate.ts" },
+  { name: "universal-qa-smoke-maestro", command: "npx tsx scripts/e2e/runAiUniversalLargeQuestionSmokeMaestroProof.ts" },
+  { name: "ios-eas-update-native-impact-classifier", command: "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json" },
   { name: "jest-run-in-band", command: "npm test -- --runInBand" },
-  { name: "jest", command: "npm test" },
   { name: "git-diff-check", command: "git diff --check" },
 ];
 
@@ -291,6 +322,14 @@ export const RELEASE_GUARD_MIGRATION_DB_APPROVAL_KEYS = [
 ] as const;
 export const RELEASE_GUARD_MIGRATION_NEXT_SAFE_WAVE =
   "S-PRODUCTION-MIGRATION-GAP-APPLY-OR-REPAIR-1-WITH-EXPLICIT-DB-WRITE-APPROVAL";
+export const RELEASE_GUARD_IOS_EAS_UPDATE_FAST_QA_POLICY = {
+  wave: "S_IOS_EAS_UPDATE_CHANNEL_FAST_QA_NO_REBUILD_GATE_POINT_OF_NO_RETURN",
+  nativeImpactFalse:
+    "iOS build is forbidden for JS/UI/layout/AI-text/backend-only changes; publish OTA to the installed build channel branch.",
+  nativeImpactTrue: "iOS build is required only when native runtime impact is proven.",
+  physicalIphoneProofRequired:
+    "iPhone QA green requires installed channel/runtime, compatible OTA update, and physical device confirmation.",
+} as const;
 function isReleaseGuardApprovalEnabled(value: unknown): boolean {
   const normalized = String(value ?? "").trim().toLowerCase();
   return normalized === "true" || normalized === "1" || normalized === "yes";
@@ -749,7 +788,7 @@ export function evaluateReleaseGuardReadiness(params: {
 }): ReleaseGuardReadiness {
   const blockers: string[] = [];
 
-  if (!params.repo.worktreeClean) {
+  if (params.mode === "ota" && !params.repo.worktreeClean) {
     blockers.push("Worktree is dirty. Release automation requires a clean repository state.");
   }
 
@@ -757,7 +796,7 @@ export function evaluateReleaseGuardReadiness(params: {
     blockers.push(`Tracked environment file is not allowed in release automation: ${filePath}.`);
   }
 
-  if (!params.repo.headMatchesOriginMain) {
+  if (params.mode === "ota" && !params.repo.headMatchesOriginMain) {
     const syncDetail =
       params.repo.localCommitsAheadOriginMain > 0 || params.repo.originMainCommitsAheadHead > 0
         ? ` Local branch is ahead by ${params.repo.localCommitsAheadOriginMain} commit(s) and behind by ${params.repo.originMainCommitsAheadHead} commit(s).`

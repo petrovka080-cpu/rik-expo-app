@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { Animated, StyleSheet } from "react-native";
 
+import { APP_LAYOUT } from "../../../components/layout/appLayout";
 import { UI } from "../buyerUi";
 import {
   BuyerScreenContentListSection,
@@ -27,7 +28,6 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
   onRefresh,
   showWebRefreshButton,
   refreshAccessibilityLabel,
-  measuredHeaderMax,
   scrollY,
   stickyHeader,
   mainListHeaderPad,
@@ -65,7 +65,6 @@ export const BuyerScreenContent = React.memo(function BuyerScreenContent({
         s={s}
         tab={tab}
         buyerFio={buyerFio}
-        measuredHeaderMax={measuredHeaderMax}
         scrollY={scrollY}
         subcontractScrollHandler={subcontractScrollHandler}
         mainListHeaderPad={mainListHeaderPad}
@@ -86,6 +85,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 40,
+    minHeight: APP_LAYOUT.stickySearchHeightPx,
     backgroundColor: UI.bg,
     paddingHorizontal: 16,
     paddingBottom: 10,

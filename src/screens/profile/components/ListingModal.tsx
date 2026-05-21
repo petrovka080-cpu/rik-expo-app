@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ActivityIndicator,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -12,6 +11,8 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
+import { LiveRouteMediaEntrypointPanel } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { profileStyles } from "../profile.styles";
 import React19SafeModal from "../../../ui/React19SafeModal";
 import type {
@@ -215,6 +216,8 @@ export function ListingModal({
                 })}
               </View>
 
+              <LiveRouteMediaEntrypointPanel variant="marketplace" />
+
               <LabeledInput
                 ref={titleInputRef}
                 label={UI_COPY.titleLabel}
@@ -312,41 +315,26 @@ export function ListingModal({
               />
             </ScrollView>
 
-            <View style={styles.listingBottomBar}>
-              <Pressable
-                testID="add-listing-flow-close"
-                style={[styles.modalBtn, styles.modalBtnSecondary]}
-                onPress={handleRequestClose}
-                disabled={savingListing}
-              >
-                <Text style={styles.modalBtnSecondaryText}>
-                  {UI_COPY.cancelAction}
-                </Text>
-              </Pressable>
-              <Pressable
-                testID="add-listing-flow-publish"
-                style={[
-                  styles.modalBtn,
-                  styles.modalBtnPrimary,
-                  savingListing && styles.buttonDisabled,
-                ]}
-                onPress={onPublish}
-                disabled={savingListing}
-              >
-                {savingListing ? (
-                  <View style={styles.listingBusyRow}>
-                    <ActivityIndicator color="#ffffff" size="small" />
-                    <Text style={styles.modalBtnPrimaryText}>
-                      {UI_COPY.publishingAction}
-                    </Text>
-                  </View>
-                ) : (
-                  <Text style={styles.modalBtnPrimaryText}>
-                    {UI_COPY.publishAction}
-                  </Text>
-                )}
-              </Pressable>
-            </View>
+            <AppStickyActionBar
+              visible
+              safeAreaAware
+              placement="above_bottom_nav"
+              secondary={[
+                {
+                  labelRu: UI_COPY.cancelAction,
+                  onPress: handleRequestClose,
+                  disabled: savingListing,
+                  testID: "add-listing-flow-close",
+                },
+              ]}
+              primary={{
+                labelRu: savingListing ? UI_COPY.publishingAction : UI_COPY.publishAction,
+                onPress: onPublish,
+                disabled: savingListing,
+                loading: savingListing,
+                testID: "add-listing-flow-publish",
+              }}
+            />
           </KeyboardAvoidingView>
         </SafeAreaView>
       </React19SafeModal>

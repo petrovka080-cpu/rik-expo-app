@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { ROLE_COLOR, ROLE_SPACE, ROLE_TYPE } from "../../ui/roleVisual";
+import { APP_LAYOUT } from "./appLayout";
 
 type RoleScreenLayoutProps = {
   title?: string;
@@ -95,5 +96,6 @@ const styles = StyleSheet.create({
     minHeight: 0,
     width: "100%",
     alignSelf: "stretch",
+    paddingBottom: APP_LAYOUT.pageBottomExtraPaddingPx,
   },
 });

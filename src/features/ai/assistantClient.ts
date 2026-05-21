@@ -8,6 +8,7 @@ import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFa
 import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAssistantTypes";
 import type { AiScreenMagicPack } from "./screenMagic/aiScreenMagicTypes";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
+import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
@@ -120,6 +121,19 @@ export async function sendAssistantMessage(options: {
     userId,
   } = options;
   const model = getAssistantModel();
+  const answerFirst = answerAlwaysOnExternalKnowledgeQuestion({
+    questionRu: message,
+    screenId: context,
+    role,
+    context,
+    countryCode: "KG",
+    cityOrRegion: "Bishkek",
+    currency: "KGS",
+  });
+  if (answerFirst.handled && answerFirst.answerTextRu) {
+    return sanitizeAssistantUserFacingCopy(answerFirst.answerTextRu);
+  }
+
   const deterministicAnswer = getAiAssistantDeterministicAnswer({
     role,
     context,

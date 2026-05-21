@@ -1,6 +1,8 @@
 import React from "react";
 import { Animated, type StyleProp, type ViewStyle } from "react-native";
 
+import { APP_LAYOUT } from "../../../components/layout/appLayout";
+import { AppStickyHeaderStack } from "../../../components/layout/AppStickyHeaderStack";
 import RoleScreenLayout from "../../../components/layout/RoleScreenLayout";
 import BuyerSubcontractTab from "../BuyerSubcontractTab";
 import { BuyerMainList, BuyerStickyHeader } from "../buyer.components";
@@ -49,13 +51,21 @@ export const BuyerScreenSearchHostSection = React.memo(function BuyerScreenSearc
 }) {
   return (
     <Animated.View style={searchBarHostStyle}>
-      <BuyerSearchBar
-        s={s}
-        searchQuery={searchQuery}
-        onChangeSearchQuery={onChangeSearchQuery}
-        showWebRefreshButton={showWebRefreshButton}
-        onRefresh={onRefresh}
-        refreshAccessibilityLabel={refreshAccessibilityLabel}
+      <AppStickyHeaderStack
+        route="/office/buyer"
+        headerHeightPx={APP_LAYOUT.headerHeightPx}
+        mustNotOverlapContent
+        testID="buyer-sticky-search-stack"
+        search={
+          <BuyerSearchBar
+            s={s}
+            searchQuery={searchQuery}
+            onChangeSearchQuery={onChangeSearchQuery}
+            showWebRefreshButton={showWebRefreshButton}
+            onRefresh={onRefresh}
+            refreshAccessibilityLabel={refreshAccessibilityLabel}
+          />
+        }
       />
     </Animated.View>
   );
@@ -65,7 +75,6 @@ export const BuyerScreenContentListSection = React.memo(function BuyerScreenCont
   s,
   tab,
   buyerFio,
-  measuredHeaderMax,
   scrollY,
   subcontractScrollHandler,
   mainListHeaderPad,
@@ -74,7 +83,6 @@ export const BuyerScreenContentListSection = React.memo(function BuyerScreenCont
   s: StylesBag;
   tab: BuyerMainListProps["tab"];
   buyerFio: string;
-  measuredHeaderMax: number;
   scrollY: Animated.Value;
   subcontractScrollHandler: BuyerSubcontractTabProps["onScroll"];
   mainListHeaderPad: number;
@@ -83,7 +91,7 @@ export const BuyerScreenContentListSection = React.memo(function BuyerScreenCont
   if (tab === "subcontracts") {
     return (
       <BuyerSubcontractTab
-        contentTopPad={measuredHeaderMax}
+        contentTopPad={mainListHeaderPad}
         onScroll={subcontractScrollHandler}
         buyerFio={buyerFio}
       />

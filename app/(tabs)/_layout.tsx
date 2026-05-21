@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { APP_LAYOUT } from "../../src/components/layout/appLayout";
 import AssistantFab from "../../src/features/ai/AssistantFab";
 import {
   recordOfficeTabOwnerBlur,
@@ -16,6 +17,10 @@ import {
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
 function iconForRoute(name: string, focused: boolean): TabIconName {
+  if (name === "request" || name === "request/index") {
+    return focused ? "document-text" : "document-text-outline";
+  }
+
   switch (name) {
     case "market":
       return focused ? "storefront" : "storefront-outline";
@@ -59,11 +64,17 @@ export default function TabsLayout() {
   segmentsRef.current = segmentsLabel;
   const wasOfficePathRef = useRef(isOfficeTabPath(pathname));
 
-  const tabHeight = 56;
+  const tabHeight = APP_LAYOUT.bottomNavHeightPx;
   const bottomInset = isWeb ? 0 : insets.bottom || 0;
   const leafSegment = segments[segments.length - 1];
   const assistantContext = resolveAssistantContext(segments);
   const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
+  const routeOftenHasStickyAction =
+    pathname === "/add" || pathname === "/request" || String(pathname ?? "").startsWith("/office/");
+  const assistantBottomOffset =
+    (routeOftenHasStickyAction
+      ? APP_LAYOUT.floatingAiButtonWithStickyActionOffsetPx
+      : APP_LAYOUT.floatingAiButtonOffsetPx) + bottomInset;
   const officeTabExtra = useMemo(
     () => ({
       owner: "office_tab_owner",
@@ -128,23 +139,11 @@ export default function TabsLayout() {
         }}
       >
         <Tabs.Screen
-          name="market"
-          options={{
-            title: "Главная",
-            tabBarButtonTestID: "tabs.market",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("market", focused)}
-                color={color}
-                size={size}
-              />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="office"
           options={{
             title: "Офис",
+            tabBarLabel: "Офис",
+            tabBarAccessibilityLabel: "Офис",
             tabBarButtonTestID: "tabs.office",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
@@ -156,24 +155,44 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="add"
+          name="request/index"
           options={{
-            title: "+",
-            tabBarLabel: "+",
-            tabBarLabelStyle: { fontSize: 18, fontWeight: "900" },
+            title: "Заявка",
+            tabBarLabel: "Заявка",
+            tabBarAccessibilityLabel: "Заявка",
+            tabBarButtonTestID: "tabs.request",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
-                name={iconForRoute("add", focused)}
+                name={iconForRoute("request/index", focused)}
                 color={color}
-                size={size + 2}
+                size={size}
               />
             ),
           }}
         />
         <Tabs.Screen
+          name="market"
+          options={{
+            title: "Маркет",
+            tabBarLabel: "Маркет",
+            tabBarAccessibilityLabel: "Маркет",
+            tabBarButtonTestID: "tabs.market",
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons
+                name={iconForRoute("market", focused)}
+                color={color}
+                size={size}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen name="add" options={{ href: null }} />
+        <Tabs.Screen
           name="chat"
           options={{
-            title: "Чаты",
+            title: "Чат",
+            tabBarLabel: "Чат",
+            tabBarAccessibilityLabel: "Чат",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={iconForRoute("chat", focused)}
@@ -187,6 +206,8 @@ export default function TabsLayout() {
           name="profile"
           options={{
             title: "Профиль",
+            tabBarLabel: "Профиль",
+            tabBarAccessibilityLabel: "Профиль",
             tabBarButtonTestID: "tabs.profile",
             tabBarIcon: ({ focused, color, size }) => (
               <Ionicons
@@ -210,7 +231,7 @@ export default function TabsLayout() {
 
       {showAssistantFab ? (
         <AssistantFab
-          bottomOffset={tabHeight + bottomInset + 14}
+          bottomOffset={assistantBottomOffset}
           onPress={() =>
             router.push({
               pathname: "/(tabs)/ai",

@@ -269,6 +269,34 @@ describe("releaseGuard.shared", () => {
       );
     });
 
+    it("allows verify mode to run against the current working diff before commit", () => {
+      const readiness = evaluateReleaseGuardReadiness({
+        mode: "verify",
+        repo: createRepoState({
+          worktreeClean: false,
+          headMatchesOriginMain: false,
+          originMainCommit: "origin-sha",
+          localCommitsAheadOriginMain: 1,
+          syncStatus: "local_ahead",
+          syncAction: "push_with_explicit_approval",
+          requiredSyncApprovalKeys: ["S_PRODUCTION_MAIN_PUSH_APPROVED"],
+        }),
+        gates: createPassedGates(),
+        classification: classifyReleaseChanges({
+          changedFiles: ["src/screens/office/OfficeShellContent.tsx"],
+        }),
+        runtimePolicy: createRuntimePolicyTruth(),
+        startupPolicy: createStartupPolicyTruth(),
+        targetChannel: null,
+        releaseMessage: null,
+        missingArtifacts: [],
+        expectedBranch: null,
+      });
+
+      expect(readiness.status).toBe("pass");
+      expect(readiness.blockers).toEqual([]);
+    });
+
     it("blocks tracked env files other than the root example file", () => {
       expect(
         resolveTrackedEnvFilePolicy([

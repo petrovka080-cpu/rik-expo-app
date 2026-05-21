@@ -1,0 +1,11 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "source_artifact": "S_B2C_REQUEST_MARKETPLACE_VALIDATION_PDF_BACKEND_50K_web_pdf_open.json",
+  "send_without_contact_blocked": true,
+  "send_without_description_blocked": true,
+  "send_without_media_blocked": true,
+  "send_without_pdf_blocked": true,
+  "send_before_approve_blocked": true,
+  "backend_validation_returns_422": true,
+  "ui_renders_backend_validation_errors": true
+}

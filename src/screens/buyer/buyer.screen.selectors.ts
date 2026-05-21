@@ -1,6 +1,7 @@
 import type { BuyerProposalBucketRow } from "./buyer.fetchers";
 import { readBuyerBucketCanonicalCount } from "./buyer.fetchers.data";
 import type { BuyerGroup } from "./buyer.types";
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 
 export type BuyerTabCounts = {
   inboxCount: number;
@@ -29,7 +30,7 @@ export function selectBuyerTabCounts(params: {
 }
 
 export function selectBuyerMainListHeaderPad(measuredHeaderMax: number) {
-  return measuredHeaderMax + 58;
+  return measuredHeaderMax + APP_LAYOUT.stickySearchHeightPx + APP_LAYOUT.filterStackGapPx;
 }
 
 export function selectInboxKeyboardLayoutActive(kbOpen: boolean, isMobileEditorVisible: boolean) {

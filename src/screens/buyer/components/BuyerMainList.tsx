@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { FlashList } from "@/src/ui/FlashList";
+import { APP_LAYOUT } from "../../../components/layout/appLayout";
 import { UI } from "../buyerUi";
 import {
   normalizeBuyerPublicationMessage,
@@ -101,7 +102,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
       : "Не удалось загрузить данные. Повторите обновление.");
 
   const contentContainerStyle = useMemo(
-    () => [styles.contentContainer, { paddingTop: measuredHeaderMax + 10 }],
+    () => [styles.contentContainer, { paddingTop: measuredHeaderMax + APP_LAYOUT.filterStackGapPx }],
     [measuredHeaderMax],
   );
   const scrollHandler = useMemo(
@@ -236,7 +237,7 @@ export const BuyerMainList = React.memo(function BuyerMainList(props: {
 
 const styles = StyleSheet.create({
   contentContainer: {
-    paddingBottom: 30,
+    paddingBottom: APP_LAYOUT.scrollBottomPaddingPx,
   },
   degradedBanner: {
     marginBottom: 12,

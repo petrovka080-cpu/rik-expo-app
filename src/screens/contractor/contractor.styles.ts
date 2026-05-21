@@ -1,4 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
+import { APP_LAYOUT } from "../../components/layout/appLayout";
 
 const UI = {
   bg: "#F8FAFC",
@@ -28,7 +29,7 @@ const MODAL_BORDER = "#e2e8f0";
 const DIVIDER = "#f1f5f9";
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16, paddingTop: 10, paddingBottom: 30, backgroundColor: UI.bg },
+  container: { flex: 1, paddingHorizontal: 16, paddingTop: 10, paddingBottom: APP_LAYOUT.scrollBottomPaddingPx, backgroundColor: UI.bg },
   homeContainer: {
     backgroundColor: "#071124",
   },

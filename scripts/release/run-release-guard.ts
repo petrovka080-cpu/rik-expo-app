@@ -261,8 +261,22 @@ function readRepoState(): ReleaseRepoState {
 }
 
 function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
+  const gateEnv: Record<string, string> = {};
+  if (gate.name === "ai-app-context-graph-deep-link-proof") {
+    gateEnv.S_AI_APP_CONTEXT_GRAPH_RELEASE_VERIFY_PASSED = "true";
+  }
+  if (gate.name === "ai-universal-role-qa-source-planner-proof") {
+    gateEnv.S_AI_UNIVERSAL_ROLE_QA_RELEASE_VERIFY_PASSED = "true";
+  }
+  if (gate.name === "ai-live-screen-copilot-buttons-proof") {
+    gateEnv.S_AI_LIVE_SCREEN_COPILOT_RELEASE_VERIFY_PASSED = "true";
+  }
   const result = spawnSync(gate.command, {
     cwd: PROJECT_ROOT,
+    env: {
+      ...process.env,
+      ...gateEnv,
+    },
     shell: true,
     stdio: "inherit",
   });

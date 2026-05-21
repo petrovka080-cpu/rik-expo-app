@@ -1,0 +1,15 @@
+{
+  "wave": "S_GREEN_CLOSEOUT_ENGINEER_FULL_RELEASE_NO_ESCAPE_POINT_OF_NO_RETURN",
+  "source_artifacts": [
+    "S_B2C_REQUEST_RELEASE_CLOSEOUT_jest_shards.json",
+    "S_B2C_REQUEST_RELEASE_CLOSEOUT_hanging_test.json",
+    "S_GREEN_CLOSEOUT_lifecycle_timer_single_test.json",
+    "S_GREEN_CLOSEOUT_full_jest_stdout.txt"
+  ],
+  "original_timeout_or_failure_isolated": true,
+  "hanging_step": "jest_full_suite",
+  "hanging_file": "tests/architecture/noUncleanedLifecycleTimers.contract.test.ts",
+  "single_test_after_fix_passed": true,
+  "full_jest_after_fix_passed": true,
+  "full_jest_timeout_after_fix": false
+}

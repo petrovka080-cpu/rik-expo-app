@@ -8,12 +8,15 @@ describe("ListingModal source contract", () => {
       "src/screens/profile/components/ListingModal.tsx",
     );
     const source = fs.readFileSync(filePath, "utf8");
+    const expectTestId = (testId: string) => {
+      expect(source).toMatch(new RegExp(`testID(?:=|:\\s*)["']${testId}["']`));
+    };
 
-    expect(source).toContain('testID="add-listing-owner-shell"');
-    expect(source).toContain('testID="add-listing-header-back"');
-    expect(source).toContain('testID="add-listing-flow-close"');
-    expect(source).toContain('testID="add-listing-flow-publish"');
-    expect(source).toContain('testID="add-listing-item-confirm"');
+    expectTestId("add-listing-owner-shell");
+    expectTestId("add-listing-header-back");
+    expectTestId("add-listing-flow-close");
+    expectTestId("add-listing-flow-publish");
+    expectTestId("add-listing-item-confirm");
     expect(source).toContain("React19SafeModal");
     expect(source).toContain("KeyboardAvoidingView");
     expect(source).toContain("SafeAreaView");
