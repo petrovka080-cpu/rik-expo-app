@@ -1,0 +1,52 @@
+{
+  "wave": "S_50K_FIXTURE_RETENTION_CLEANUP_POLICY_CLOSEOUT",
+  "generated_at": "2026-05-22T23:07:05.830Z",
+  "source_artifacts": {
+    "fixture": "artifacts/S_50K_SYNTHETIC_FIXTURE_matrix.json",
+    "whole_app_50k": "artifacts/S_WHOLE_APP_50K_matrix.json",
+    "final_50k": "artifacts/S_FINAL_50K_92_SCORE_matrix.json",
+    "release_candidate": "artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_matrix.json"
+  },
+  "required_archive_artifacts": [
+    {
+      "file": "artifacts/S_50K_SYNTHETIC_FIXTURE_matrix.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_50K_SYNTHETIC_FIXTURE_proof.md",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_WHOLE_APP_50K_matrix.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_WHOLE_APP_50K_live_query_results.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_WHOLE_APP_50K_query_plans.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_WHOLE_APP_50K_p95_summary.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_WHOLE_APP_50K_proof.md",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_FINAL_50K_92_SCORE_matrix.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_FINAL_50K_92_SCORE_scorecard.json",
+      "exists": true
+    },
+    {
+      "file": "artifacts/S_FINAL_50K_92_SCORE_proof.md",
+      "exists": true
+    }
+  ]
+}

@@ -440,6 +440,7 @@ function isRlsDynamicCrossTenantReleasePath(file: string): boolean {
 
 function isWholeApp50kExplainP95ReleasePath(file: string): boolean {
   return (
+    file.startsWith("artifacts/S_50K_FIXTURE_RETENTION_") ||
     file.startsWith("artifacts/S_50K_SYNTHETIC_FIXTURE_") ||
     file.startsWith("artifacts/S_50K_SYNTHETIC_FIXTURE_TZ_LOCK_") ||
     file.startsWith("artifacts/S_WHOLE_APP_50K_") ||
@@ -448,6 +449,7 @@ function isWholeApp50kExplainP95ReleasePath(file: string): boolean {
     file.startsWith("scripts/audit/auditWholeAppNPlusOne") ||
     file.startsWith("scripts/audit/auditWholeAppUnboundedQueries") ||
     file.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
+    file.startsWith("scripts/audit/run50kFixtureRetentionCleanupPolicyProof") ||
     file.startsWith("scripts/audit/run50kSyntheticFixtureTzLockProof") ||
     file.startsWith("scripts/e2e/runWholeApp50kExplainP95LiveProof") ||
     file.startsWith("scripts/e2e/runWholeApp50kExplainP95Proof") ||

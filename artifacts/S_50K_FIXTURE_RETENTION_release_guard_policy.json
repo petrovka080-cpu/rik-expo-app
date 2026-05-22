@@ -1,0 +1,7 @@
+{
+  "release_guard_uses_live_fixture_for_fresh_green": true,
+  "archived_evidence_accepted_for_fresh_green": false,
+  "current_evidence_mode": "live_fixture",
+  "release_guard_passed": true,
+  "release_guard_blockers": []
+}

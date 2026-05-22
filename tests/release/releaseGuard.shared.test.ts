@@ -118,6 +118,26 @@ describe("releaseGuard.shared", () => {
         blockers: [],
       });
     });
+
+    it("does not accept archived 50k artifacts as fresh live fixture evidence", () => {
+      const result = evaluateFinal50k92GreenReleaseGuard({
+        finalStatus: FINAL_50K_92_GREEN_STATUS,
+        fixtureSufficient: false,
+        proofRunId: "proof_50k_live_001",
+        wholeApp50kLiveProofPassed: false,
+        evidenceMode: "archived_evidence_only",
+        rlsGreen: true,
+        fullJestPassed: true,
+        releaseVerifyPassed: true,
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.requiresLiveFixtureEvidence).toBe(true);
+      expect(result.archivedEvidenceAcceptedForFreshGreen).toBe(false);
+      expect(result.blockers).toContain(
+        "BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_LIVE_FIXTURE_REQUIRED_ARCHIVED_EVIDENCE_ONLY",
+      );
+    });
   });
 
   describe("classifyPackageJsonMutation", () => {
@@ -713,6 +733,10 @@ describe("releaseGuard.shared", () => {
     });
 
     it("refreshes final 50k live-proof evidence during release verify without forcing fake green", () => {
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "50k-fixture-retention-cleanup-policy-proof",
+        command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts",
+      });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "final-50k-92-external-live-proof-closeout",
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",

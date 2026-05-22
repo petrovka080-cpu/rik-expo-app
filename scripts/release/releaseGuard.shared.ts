@@ -67,6 +67,7 @@ export type ReleaseGateName =
   | "universal-qa-smoke-maestro"
   | "ios-eas-update-native-impact-classifier"
   | "jest-run-in-band"
+  | "50k-fixture-retention-cleanup-policy-proof"
   | "final-50k-92-external-live-proof-closeout"
   | "jest"
   | "git-diff-check";
@@ -296,16 +297,19 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ios-eas-update-native-impact-classifier", command: "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json" },
   { name: "jest-run-in-band", command: "npm test -- --runInBand" },
   { name: "git-diff-check", command: "git diff --check" },
+  { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts" },
   { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },
 ];
 
 export const FINAL_50K_92_GREEN_STATUS = "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY";
+export type Final50k92EvidenceMode = "live_fixture" | "archived_evidence_only" | "missing";
 
 export type Final50k92GreenClaimEvidence = {
   finalStatus: string;
   fixtureSufficient: boolean;
   proofRunId: string | null;
   wholeApp50kLiveProofPassed: boolean;
+  evidenceMode?: Final50k92EvidenceMode;
   rlsGreen: boolean;
   fullJestPassed: boolean;
   releaseVerifyPassed: boolean;
@@ -318,9 +322,12 @@ export type Final50k92GreenReleaseGuardResult = {
   requiresFixtureSufficient: true;
   requiresProofRunId: true;
   requiresWholeApp50kLiveProof: true;
+  requiresLiveFixtureEvidence: true;
   requiresRlsGreen: true;
   requiresFullJestPassed: true;
   requiresReleaseVerifyPassed: true;
+  evidenceMode: Final50k92EvidenceMode;
+  archivedEvidenceAcceptedForFreshGreen: false;
 };
 
 export function evaluateFinal50k92GreenReleaseGuard(
@@ -328,11 +335,18 @@ export function evaluateFinal50k92GreenReleaseGuard(
 ): Final50k92GreenReleaseGuardResult {
   const blockers: string[] = [];
   const checked = evidence.finalStatus === FINAL_50K_92_GREEN_STATUS;
+  const evidenceMode = evidence.evidenceMode
+    ?? (evidence.fixtureSufficient && evidence.proofRunId && evidence.wholeApp50kLiveProofPassed ? "live_fixture" : "missing");
 
   if (checked) {
     if (!evidence.fixtureSufficient) blockers.push("BLOCKED_EXTERNAL_ONLY_50K_FIXTURE_DATA_REQUIRED");
     if (!evidence.proofRunId) blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_PROOF_RUN_ID_REQUIRED");
     if (!evidence.wholeApp50kLiveProofPassed) blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_LIVE_PROOF_REQUIRED");
+    if (evidenceMode === "archived_evidence_only") {
+      blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_LIVE_FIXTURE_REQUIRED_ARCHIVED_EVIDENCE_ONLY");
+    } else if (evidenceMode !== "live_fixture") {
+      blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_LIVE_FIXTURE_REQUIRED");
+    }
     if (!evidence.rlsGreen) blockers.push("BLOCKED_EXTERNAL_ONLY_RLS_DYNAMIC_CROSS_TENANT_REQUIRED");
     if (!evidence.fullJestPassed) blockers.push("BLOCKED_INTERNAL_FULL_JEST_REQUIRED");
     if (!evidence.releaseVerifyPassed) blockers.push("BLOCKED_INTERNAL_RELEASE_VERIFY_REQUIRED");
@@ -345,9 +359,12 @@ export function evaluateFinal50k92GreenReleaseGuard(
     requiresFixtureSufficient: true,
     requiresProofRunId: true,
     requiresWholeApp50kLiveProof: true,
+    requiresLiveFixtureEvidence: true,
     requiresRlsGreen: true,
     requiresFullJestPassed: true,
     requiresReleaseVerifyPassed: true,
+    evidenceMode,
+    archivedEvidenceAcceptedForFreshGreen: false,
   };
 }
 

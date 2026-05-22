@@ -9,6 +9,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/S_CORE_PRODUCT_GOLDEN_PATHS_") ||
     normalized.startsWith("artifacts/S_RLS_DYNAMIC_CROSS_TENANT_") ||
     normalized.startsWith("artifacts/S_WHOLE_APP_50K_") ||
+    normalized.startsWith("artifacts/S_50K_FIXTURE_RETENTION_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
@@ -77,6 +78,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/audit/runExternalLiveProofCloseout") ||
     normalized.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
     normalized.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
+    normalized.startsWith("scripts/audit/run50kFixtureRetentionCleanupPolicyProof") ||
     normalized.startsWith("scripts/audit/run50kSyntheticFixtureTzLockProof") ||
     normalized.startsWith("scripts/e2e/seedWholeApp50kSyntheticFixture") ||
     normalized.startsWith("scripts/e2e/runWholeApp50kExplainP95LiveProof") ||
