@@ -183,10 +183,10 @@ async function loadBuyerScopedFacts(): Promise<AssistantScopedFacts | null> {
 
   const nextActionRows = inbox.rows.slice(0, 3);
   const factLines = toLineList([
-    `РЎРЅР°Р±Р¶РµРЅРёРµ: РІС…РѕРґСЏС‰РёС… РіСЂСѓРїРї ${inbox.meta.totalGroupCount}, РЅР° СЌРєСЂР°РЅРµ ${inbox.meta.returnedGroupCount}.`,
-    `РџСЂРµРґР»РѕР¶РµРЅРёСЏ: pending ${buckets.pending.length}, approved ${buckets.approved.length}, rejected ${buckets.rejected.length}.`,
+    `Снабжение: входящих групп ${inbox.meta.totalGroupCount}, на экране ${inbox.meta.returnedGroupCount}.`,
+    `Предложения: pending ${buckets.pending.length}, approved ${buckets.approved.length}, rejected ${buckets.rejected.length}.`,
     nextActionRows.length
-      ? `РџРµСЂРІС‹Рµ РІС…РѕРґСЏС‰РёРµ РїРѕР·РёС†РёРё: ${nextActionRows
+      ? `Первые входящие позиции: ${nextActionRows
           .map((row) => `${row.name_human || row.rik_code || row.request_id} x${Number(row.qty ?? 0)}`)
           .join("; ")}.`
       : null,
@@ -222,19 +222,19 @@ async function _loadDirectorScopedFactsLegacy(): Promise<AssistantScopedFacts | 
 
   const factLines = toLineList([
     summary
-      ? `Р¤РёРЅР°РЅСЃС‹: payable ${formatAmount(summary.approvedTotal)}, debt ${formatAmount(summary.debtTotal)}, overdue ${formatAmount(summary.overdueAmount)}, critical ${formatAmount(summary.criticalAmount)}.`
+      ? `Финансы: payable ${formatAmount(summary.approvedTotal)}, debt ${formatAmount(summary.debtTotal)}, overdue ${formatAmount(summary.overdueAmount)}, critical ${formatAmount(summary.criticalAmount)}.`
       : null,
     summary
-      ? `РџРѕСЃС‚Р°РІС‰РёРєРѕРІ РІ СЃСЂРµР·Рµ ${supplierRows.length}, СЃС‚СЂРѕРє РІ РїР°РЅРµР»Рё ${financeScope.panelScope?.pagination.total ?? 0}.`
+      ? `Поставщиков в срезе ${supplierRows.length}, строк в панели ${financeScope.panelScope?.pagination.total ?? 0}.`
       : null,
     topSuppliers.length
-      ? `РўРѕРї РґРѕР»Р¶РЅРёРєРё: ${topSuppliers
+      ? `Топ должники: ${topSuppliers
           .map((row) => `${row.supplierName} ${formatAmount(row.debtTotal)}`)
           .join("; ")}.`
       : null,
-    `РћР¶РёРґР°СЋС‰РёС… РїСЂРµРґР»РѕР¶РµРЅРёР№ ${proposalWindow.meta.totalHeadCount}, РїРѕР·РёС†РёР№ ${proposalWindow.meta.totalPositionsCount}.`,
+    `Ожидающих предложений ${proposalWindow.meta.totalHeadCount}, позиций ${proposalWindow.meta.totalPositionsCount}.`,
     proposalHeads.length
-      ? `Р‘Р»РёР¶Р°Р№С€РёРµ РїСЂРµРґР»РѕР¶РµРЅРёСЏ: ${proposalHeads
+      ? `Ближайшие предложения: ${proposalHeads
           .map((head) => head.pretty || head.id)
           .join(", ")}.`
       : null,
