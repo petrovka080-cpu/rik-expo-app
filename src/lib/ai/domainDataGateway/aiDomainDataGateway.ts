@@ -10,6 +10,8 @@ import { mediaDomainProvider } from "./providers/mediaDomainProvider";
 import { officeDomainProvider } from "./providers/officeDomainProvider";
 import { procurementDomainProvider } from "./providers/procurementDomainProvider";
 import { warehouseDomainProvider } from "./providers/warehouseDomainProvider";
+import { applyAiContextBudgetToBundle } from "../contextBudget";
+import { sanitizeAiDomainContextBundle } from "../sourceSanitizer";
 import {
   createAiDomainSafeStatus,
   mergeAiDomainStatus,
@@ -147,16 +149,18 @@ function buildBundle(request: AiDomainGatewayRequest, domainResults: AiDomainQue
     safety: createAiDomainSafeStatus(),
   };
 
-  const guard = assertAiDomainContextBundleSafe(bundle);
+  const sanitizedBundle = sanitizeAiDomainContextBundle(bundle);
+  const budgetedBundle = applyAiContextBudgetToBundle(sanitizedBundle);
+  const guard = assertAiDomainContextBundleSafe(budgetedBundle);
   if (!guard.passed) {
     return {
-      ...bundle,
+      ...budgetedBundle,
       status: "failed",
-      missingData: [...bundle.missingData, ...guard.failureReasons],
+      missingData: [...budgetedBundle.missingData, ...guard.failureReasons],
     };
   }
 
-  return bundle;
+  return budgetedBundle;
 }
 
 export async function executeAiDomainGatewayRequest(

@@ -33,6 +33,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimatePdf",
+    root: "src/lib/ai/estimatePdf",
+    purpose: "Structured AI estimate to existing PDF lifecycle bridge. No markdown-as-truth and no second PDF framework.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "globalEstimate",
+    root: "src/lib/ai/globalEstimate",
+    purpose: "Backend-first global construction estimate engine with localization, units, regional rates, tax rules, and professional BOQ output.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "universalRoleQa",
     root: "src/lib/ai/universalRoleQa",
     purpose: "Question understanding, source planning, retrieval adapters, answer composition, and semantic guard.",
@@ -48,6 +60,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "domainDataGateway",
     root: "src/lib/ai/domainDataGateway",
     purpose: "Typed, bounded, permission-scoped internal app data retrieval for AI answers and workflows.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "contextBudget",
+    root: "src/lib/ai/contextBudget",
+    purpose: "Role-specific AI context fact budgets before answer composition.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "sourceSanitizer",
+    root: "src/lib/ai/sourceSanitizer",
+    purpose: "Sanitizes provider/debug/source internals before AI-facing context.",
     screenMayImportDirectly: false,
   },
   {

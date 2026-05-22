@@ -637,6 +637,15 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "estimateEngine"),
       /\.ts$/,
     );
+    const sGlobalEstimateProfessionalBoqFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "globalEstimate"),
+      /\.tsx?$/,
+    );
+    const sAiEstimateToExistingPdfFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "estimatePdf"), /\.tsx?$/) +
+      [path.join(SRC, "features", "ai", "AIAssistantEstimatePdfActions.tsx")].filter((file) =>
+        fs.existsSync(file),
+      ).length;
     const sGreenCloseoutLayoutPrimitiveFiles = [
       path.join(SRC, "components", "layout", "AppBottomNavSafeArea.tsx"),
       path.join(SRC, "components", "layout", "AppChatComposerBar.tsx"),
@@ -696,6 +705,9 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "domainDataGateway"),
       /\.ts$/,
     );
+    const sAiDomainGatewayContextBudgetFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "contextBudget"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "sourceSanitizer"), /\.ts$/);
     const sAiEnterpriseContractRuntimeInvariantProofCoreFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "contractRuntime"),
       /\.ts$/,
@@ -833,6 +845,23 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "api", "rpcRateLimitedClient.ts"),
       path.join(SRC, "lib", "api", "supabaseRpcAdapter.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sBackendServiceBoundaryDisciplineFiles = [
+      path.join(SRC, "screens", "director", "director.request.boundary.ts"),
+      path.join(SRC, "screens", "director", "director.proposalDecision.boundary.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sCoreMutationIdempotencyHardeningFiles = [
+      path.join(SRC, "lib", "api", "coreMutationId.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sObservabilityOpsRateLimitProductionFiles = [
+      path.join(SRC, "lib", "ops", "productionOpsTelemetry.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sSecurityPrivacyHardeningFiles = [
+      path.join(SRC, "lib", "security", "securityPrivacyHardening.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const s50kSyntheticFixtureTzLockContractFiles = countFilesRecursive(
+      path.join(SRC, "lib", "proofFixtures"),
+      /\.ts$/,
+    );
     const sPdfInstantFirstOpenCacheFiles = [
       path.join(SRC, "lib", "pdf", "pdfInstantCache.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1645,6 +1674,8 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
+    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(28);
+    expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
     expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);
     expect(sGreenCloseoutLiveRouteMediaFiles).toBeLessThanOrEqual(2);
     expect(sAiAppContextGraphDeepLinkedSourceRefsFiles).toBeLessThanOrEqual(14);
@@ -1657,6 +1688,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sMediaPhotoVideoIntelligenceCoreFiles).toBeLessThanOrEqual(35);
     expect(sAiDocumentPdfEvidenceIntelligenceCoreFiles).toBeLessThanOrEqual(35);
     expect(sAiDomainDataGatewayContextRetrievalArchitectureFiles).toBeLessThanOrEqual(35);
+    expect(sAiDomainGatewayContextBudgetFiles).toBeLessThanOrEqual(8);
     expect(sAiEnterpriseContractRuntimeInvariantProofCoreFiles).toBeLessThanOrEqual(30);
     expect(sAiSafeActionDraftApprovalOrchestratorFiles).toBeLessThanOrEqual(32);
     expect(sAiHumanApprovalLedgerExecutionBoundaryFiles).toBeLessThanOrEqual(32);
@@ -1886,6 +1918,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sB2CConsumerRepairRequestFiles -
         sAiAlwaysOnExternalKnowledgeFiles -
         sAiEstimateEngineFiles -
+        sGlobalEstimateProfessionalBoqFiles -
+        sAiEstimateToExistingPdfFiles -
         sGreenCloseoutLayoutPrimitiveFiles -
         sGreenCloseoutLiveRouteMediaFiles -
         sAiAppContextGraphDeepLinkedSourceRefsFiles -
@@ -1898,6 +1932,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sMediaPhotoVideoIntelligenceCoreFiles -
         sAiDocumentPdfEvidenceIntelligenceCoreFiles -
         sAiDomainDataGatewayContextRetrievalArchitectureFiles -
+        sAiDomainGatewayContextBudgetFiles -
         sAiEnterpriseContractRuntimeInvariantProofCoreFiles -
         sAiSafeActionDraftApprovalOrchestratorFiles -
         sAiHumanApprovalLedgerExecutionBoundaryFiles -
@@ -1921,7 +1956,12 @@ describe("performance budget вЂ” bundle module count", () => {
         sComponentDebtCloseoutFiles -
         s50kWarehouseReqIssueModalMarginFiles -
         sPerf01FlatListEnterprisePolicyFiles -
-        sScale12RpcRuntimeEnforcementFiles,
+        sScale12RpcRuntimeEnforcementFiles -
+        sBackendServiceBoundaryDisciplineFiles -
+        sCoreMutationIdempotencyHardeningFiles -
+        sObservabilityOpsRateLimitProductionFiles -
+        sSecurityPrivacyHardeningFiles -
+        s50kSyntheticFixtureTzLockContractFiles,
     ).toBeLessThanOrEqual(1300);
   });
 });

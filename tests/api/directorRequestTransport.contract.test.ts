@@ -13,14 +13,19 @@ const read = (relativePath: string) =>
 
 describe("director request transport boundary", () => {
   it("keeps director request mutation RPC calls behind the transport boundary", () => {
-    const serviceSource = read("src/screens/director/director.request.ts");
+    const screenSource = read("src/screens/director/director.request.ts");
+    const boundarySource = read("src/screens/director/director.request.boundary.ts");
     const transportSource = read("src/screens/director/director.request.transport.ts");
 
-    expect(serviceSource).toContain("director.request.transport");
-    expect(serviceSource).not.toContain("supabase.rpc(");
-    expect(serviceSource).toContain('rpcName: "reject_request_item"');
-    expect(serviceSource).toContain('rpcName: "reject_request_all"');
-    expect(serviceSource).toContain('rpcName: "director_approve_request_v1"');
+    expect(screenSource).toContain("director.request.boundary");
+    expect(screenSource).not.toContain("director.request.transport");
+    expect(screenSource).not.toContain("supabase.rpc(");
+
+    expect(boundarySource).toContain("director.request.transport");
+    expect(boundarySource).not.toContain("supabase.rpc(");
+    expect(boundarySource).toContain('rpcName: "reject_request_item"');
+    expect(boundarySource).toContain('rpcName: "reject_request_all"');
+    expect(boundarySource).toContain('rpcName: "director_approve_request_v1"');
 
     expect(transportSource).toContain("callRateLimitedSupabaseRpc");
     expect(transportSource).toContain('"reject_request_item"');

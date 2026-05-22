@@ -16,6 +16,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "../api/queryBoundary";
+import { buildCoreMutationIntentId } from "../api/coreMutationId";
 import { traceAsync } from "../observability/sentry";
 import {
   callProposalAtomicSubmitRpc,
@@ -141,31 +142,24 @@ const buildProposalSubmitMutationId = (
   const explicit = norm(opts.clientMutationId ?? null);
   if (explicit) return explicit;
 
-  const cryptoLike =
-    typeof globalThis !== "undefined"
-      ? (globalThis as typeof globalThis & {
-          crypto?: {
-            randomUUID?: () => string;
-            getRandomValues?: (array: Uint8Array) => Uint8Array;
-          };
-        }).crypto
-      : undefined;
-
-  if (typeof cryptoLike?.randomUUID === "function") {
-    return cryptoLike.randomUUID();
-  }
-
   const requestId = norm(opts.requestId ?? null) || "request";
-  const bucketFingerprint = buckets
-    .map((bucket) =>
-      (bucket.request_item_ids ?? [])
-        .map((requestItemId) => String(requestItemId ?? "").trim())
-        .filter(Boolean)
-        .sort()
-        .join(","),
-    )
-    .join("|");
-  return `proposal-submit:${requestId}:${bucketFingerprint}:${Date.now().toString(36)}`;
+  return buildCoreMutationIntentId({
+    scope: "proposal.submit",
+    entityId: requestId,
+    payload: {
+      requestId,
+      submit: opts.submit === true,
+      buyerFio: norm(opts.buyerFio ?? null),
+      requestItemStatus: norm(opts.requestItemStatus ?? null),
+      buckets: buckets.map((bucket) => ({
+        supplier: norm(bucket.supplier ?? null),
+        requestItemIds: (bucket.request_item_ids ?? [])
+          .map((requestItemId) => String(requestItemId ?? "").trim())
+          .filter(Boolean)
+          .sort(),
+      })),
+    },
+  });
 };
 
 const bucketSupplierLabel = (bucket: ProposalBucketInput | undefined): string => {

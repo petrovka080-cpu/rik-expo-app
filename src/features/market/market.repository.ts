@@ -205,6 +205,7 @@ const toScopeBaseRow = (row: MarketMarketplaceScopeRow): MarketListingRow => ({
   catalog_item_id: null,
   catalog_kind: row.category ?? null,
   city: row.city,
+  client_mutation_id: null,
   company_id: row.company_id,
   contacts_email: row.contacts_email,
   contacts_phone: row.contacts_phone,

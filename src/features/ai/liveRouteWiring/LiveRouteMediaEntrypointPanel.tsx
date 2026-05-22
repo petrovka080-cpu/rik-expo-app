@@ -50,10 +50,21 @@ export type DraftMediaBundle = {
   finalLinkRequiresHuman: true;
 };
 
+export type LiveRouteMediaEntrypointSnapshot = {
+  photoCount: number;
+  videoCount: number;
+  mediaAssetIds: string[];
+  bundle?: DraftMediaBundle;
+  suggestion?: InlineMediaSuggestion;
+};
+
 type DirectMediaCopy = {
   testID: string;
   targetType: CompactMediaButtonsProps["targetType"];
   title?: string;
+  photoButtonLabel?: string;
+  videoButtonLabel?: string;
+  checkingText?: string;
   countPrefix?: string;
   introLines: string[];
   positionLines: string[];
@@ -91,6 +102,9 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
       testID: "marketplace.media.entrypoints",
       targetType: "marketplace_product",
       title: "Фото и видео",
+      photoButtonLabel: "＋ Фото",
+      videoButtonLabel: "＋ Видео",
+      checkingText: "Проверяю товар...",
       introLines: [`До ${MEDIA_LIMITS.maxPhotosPerGroup} фото · видео до ${MEDIA_LIMITS.maxVideoDurationMs / 1000} сек`],
       positionLines: [],
       photoCount: 0,
@@ -181,7 +195,10 @@ function copyForVariant(variant: LiveRouteMediaEntrypointVariant): DirectMediaCo
 }
 
 export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
-  { variant: LiveRouteMediaEntrypointVariant },
+  {
+    variant: LiveRouteMediaEntrypointVariant;
+    onSnapshotChange?: (snapshot: LiveRouteMediaEntrypointSnapshot) => void;
+  },
   LiveRouteMediaEntrypointPanelState
 > {
   override state: LiveRouteMediaEntrypointPanelState = {
@@ -205,9 +222,24 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
     this.setState({ checking: true, suggestionVisible: false });
     this.suggestionTimer = setTimeout(() => {
       this.suggestionTimer = null;
-      this.setState({ checking: false, suggestionVisible: true });
+      this.setState({ checking: false, suggestionVisible: true }, () => {
+        this.emitSnapshot();
+      });
     }, 250);
   };
+
+  private emitSnapshot() {
+    const copy = copyForVariant(this.props.variant);
+    this.props.onSnapshotChange?.({
+      photoCount: this.state.suggestionVisible ? 1 : copy.photoCount,
+      videoCount: copy.videoCount,
+      mediaAssetIds: this.state.suggestionVisible
+        ? copy.bundle?.mediaAssetIds ?? [copy.suggestion.mediaAssetId]
+        : [],
+      bundle: this.state.suggestionVisible ? copy.bundle : undefined,
+      suggestion: this.state.suggestionVisible ? copy.suggestion : undefined,
+    });
+  }
 
   override render() {
     const copy = copyForVariant(this.props.variant);
@@ -231,7 +263,11 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
         {copy.countPrefix ? <Text style={styles.smallLabel}>{copy.countPrefix}</Text> : null}
         {this.renderCounts(mediaProps)}
         {this.renderButtons(copy)}
-        {this.state.checking ? <Text style={styles.checkingText}>Фото добавлено · проверяю...</Text> : null}
+        {this.state.checking ? (
+          <Text style={styles.checkingText}>
+            {copy.checkingText ?? "Фото добавлено · проверяю..."}
+          </Text>
+        ) : null}
         {this.renderSuggestion(copy)}
         {copy.introLines.map((line) => (
           <Text key={line} style={line === "Пока пусто" ? styles.emptyText : styles.bodyText}>
@@ -257,22 +293,26 @@ export class LiveRouteMediaEntrypointPanel extends React.PureComponent<
         <Pressable
           testID={`${copy.testID}.photo`}
           accessibilityRole="button"
-          accessibilityLabel="Фото"
+          accessibilityLabel={copy.photoButtonLabel ?? "Фото"}
           onPress={this.addMedia}
           style={styles.mediaButton}
         >
           <Ionicons name="camera-outline" size={17} color="#0F172A" />
-          <Text style={styles.mediaButtonText}>Фото</Text>
+          <Text style={styles.mediaButtonText}>
+            {copy.photoButtonLabel ?? "Фото"}
+          </Text>
         </Pressable>
         <Pressable
           testID={`${copy.testID}.video`}
           accessibilityRole="button"
-          accessibilityLabel="Видео"
+          accessibilityLabel={copy.videoButtonLabel ?? "Видео"}
           onPress={this.addMedia}
           style={styles.mediaButton}
         >
           <Ionicons name="videocam-outline" size={17} color="#0F172A" />
-          <Text style={styles.mediaButtonText}>Видео</Text>
+          <Text style={styles.mediaButtonText}>
+            {copy.videoButtonLabel ?? "Видео"}
+          </Text>
         </Pressable>
       </View>
     );

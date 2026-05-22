@@ -1,6 +1,7 @@
 // src/screens/warehouse/warehouse.issue.ts
 import type { ReqItemUiRow, ReqPickLine, StockPickLine } from "./warehouse.types";
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
+import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { ensureRequestItemsBelongToRequest } from "../../lib/api/integrity.guards";
 import { normMatCode, normUomId } from "./warehouse.utils";
 import {
@@ -18,29 +19,16 @@ const ensureWarehouseRpcData = <T,>(value: T | null | undefined, message: string
 const DUPLICATE_ISSUE_SUBMIT_MESSAGE =
   "\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u044f \u0443\u0436\u0435 \u0432\u044b\u043f\u043e\u043b\u043d\u044f\u0435\u0442\u0441\u044f. \u0414\u043e\u0436\u0434\u0438\u0442\u0435\u0441\u044c \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0438\u044f.";
 
-const buildWarehouseIssueMutationId = (kind: "req_pick" | "stock_pick" | "request_item"): string => {
-  const cryptoLike =
-    typeof globalThis !== "undefined"
-      ? (globalThis as typeof globalThis & {
-          crypto?: {
-            randomUUID?: () => string;
-            getRandomValues?: (array: Uint8Array) => Uint8Array;
-          };
-        }).crypto
-      : undefined;
-
-  if (typeof cryptoLike?.randomUUID === "function") {
-    return cryptoLike.randomUUID();
-  }
-
-  if (typeof cryptoLike?.getRandomValues === "function") {
-    const bytes = cryptoLike.getRandomValues(new Uint8Array(8));
-    const suffix = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-    return `warehouse-issue:${kind}:${Date.now().toString(36)}:${suffix}`;
-  }
-
-  return `warehouse-issue:${kind}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2)}`;
-};
+const buildWarehouseIssueMutationId = (input: {
+  kind: "req_pick" | "stock_pick" | "request_item";
+  entityId: string;
+  payload: unknown;
+}): string =>
+  buildCoreMutationIntentId({
+    scope: `warehouse.issue.${input.kind}`,
+    entityId: input.entityId,
+    payload: input.payload,
+  });
 
 export function makeWarehouseIssueActions(args: {
   supabase: AppSupabaseClient;
@@ -242,7 +230,11 @@ export function makeWarehouseIssueActions(args: {
         p_object_name: getObjName(),
         p_work_name: getWorkName(),
         p_lines: issueLines,
-        p_client_mutation_id: buildWarehouseIssueMutationId("req_pick"),
+        p_client_mutation_id: buildWarehouseIssueMutationId({
+          kind: "req_pick",
+          entityId: rid,
+          payload: { who, note, issueLines },
+        }),
       });
       if (r.error) throw r.error;
       ensureWarehouseRpcData(r.data ?? true, "Сервер не подтвердил выдачу по заявке");
@@ -302,7 +294,15 @@ export function makeWarehouseIssueActions(args: {
         p_work_name: getWorkName(),
         p_note: getWarehousemanFio() ? `Кладовщик: ${getWarehousemanFio()}` : null,
         p_lines: payloadLines,
-        p_client_mutation_id: buildWarehouseIssueMutationId("stock_pick"),
+        p_client_mutation_id: buildWarehouseIssueMutationId({
+          kind: "stock_pick",
+          entityId: who,
+          payload: {
+            objectName: getObjName(),
+            workName: getWorkName(),
+            payloadLines,
+          },
+        }),
       });
 
       if (r.error) {
@@ -415,7 +415,18 @@ export function makeWarehouseIssueActions(args: {
             request_item_id: requestItemId,
           },
         ],
-        p_client_mutation_id: buildWarehouseIssueMutationId("request_item"),
+        p_client_mutation_id: buildWarehouseIssueMutationId({
+          kind: "request_item",
+          entityId: requestItemId,
+          payload: {
+            who,
+            requestId,
+            note,
+            rikCode,
+            uomCode,
+            qty,
+          },
+        }),
       });
       if (r.error) throw r.error;
       ensureWarehouseRpcData(r.data ?? true, "Сервер не подтвердил точечную выдачу");

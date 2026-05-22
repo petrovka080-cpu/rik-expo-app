@@ -320,7 +320,7 @@ describe("profile.services createMarketListing transport boundary", () => {
     mockFrom.mockReset();
   });
 
-  it("omits kind when the listing kind contract resolves to missing", async () => {
+  it("blocks publish when the listing category is missing", async () => {
     const { mockInsert } = mockMarketListingsInsert({ error: null });
 
     await expect(
@@ -329,15 +329,31 @@ describe("profile.services createMarketListing transport boundary", () => {
         companyId: "company-1",
         form: buildListingForm({ listingKind: null }),
         listingCartItems: [],
+        marketplaceMediaAssetIds: ["media-1"],
         lat: 42,
         lng: 74,
       }),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow();
 
-    const payload = mockInsert.mock.calls[0][0];
-    expect(payload.kind).toBeUndefined();
-    expect(payload.items_json).toEqual([]);
-    expect(payload.title).toBe("Cement");
+    expect(mockInsert).not.toHaveBeenCalled();
+  });
+
+  it("blocks publish without marketplace media evidence", async () => {
+    const { mockInsert } = mockMarketListingsInsert({ error: null });
+
+    await expect(
+      createMarketListing({
+        userId: "user-1",
+        companyId: "company-1",
+        form: buildListingForm({ listingKind: "material" }),
+        listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: [],
+        lat: 42,
+        lng: 74,
+      }),
+    ).rejects.toThrow();
+
+    expect(mockInsert).not.toHaveBeenCalled();
   });
 
   it("keeps the explicit listing kind on the success path even when cart items still carry older kinds", async () => {
@@ -349,6 +365,7 @@ describe("profile.services createMarketListing transport boundary", () => {
         companyId: "company-1",
         form: buildListingForm({ listingKind: "rent" }),
         listingCartItems: [buildListingCartItem({ kind: "material" })],
+        marketplaceMediaAssetIds: ["media-1"],
         lat: 42,
         lng: 74,
       }),
@@ -387,6 +404,7 @@ describe("profile.services createMarketListing transport boundary", () => {
             price: "1200",
           }),
         ],
+        marketplaceMediaAssetIds: ["media-1"],
         lat: 42,
         lng: 74,
       }),

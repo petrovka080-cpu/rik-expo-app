@@ -15,18 +15,22 @@ describe("director proposal decision transport boundary", () => {
   it("keeps director proposal decision orchestration out of provider ownership", () => {
     const proposalSource = read("src/screens/director/director.proposal.ts");
     const detailSource = read("src/screens/director/director.proposal.detail.ts");
+    const boundarySource = read("src/screens/director/director.proposalDecision.boundary.ts");
     const transportSource = read("src/screens/director/director.proposalDecision.transport.ts");
 
-    expect(proposalSource).toContain('from "./director.proposalDecision.transport"');
-    expect(detailSource).toContain('from "./director.proposalDecision.transport"');
-    expect(proposalSource).toContain("callDirectorDecideProposalItemsRpc(supabase, {");
-    expect(detailSource).toContain("callDirectorDecideProposalItemsRpc(supabase, {");
-    expect(proposalSource).toContain("p_finalize: isLast");
-    expect(detailSource).toContain("p_finalize: true");
+    expect(proposalSource).toContain('from "./director.proposalDecision.boundary"');
+    expect(detailSource).toContain('from "./director.proposalDecision.boundary"');
+    expect(proposalSource).toContain("runDirectorProposalRejectItemAction({");
+    expect(detailSource).toContain("runDirectorProposalReturnAllAction({");
+    expect(boundarySource).toContain('from "./director.proposalDecision.transport"');
+    expect(boundarySource).toContain("callDirectorDecideProposalItemsRpc(supabase, {");
+    expect(boundarySource).toContain("finalize: params.finalize");
+    expect(boundarySource).toContain("finalize: true");
     expect(proposalSource).toContain("Alert.alert");
     expect(detailSource).toContain("Alert.alert");
     expect(proposalSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
     expect(detailSource).not.toContain('supabase.rpc("director_decide_proposal_items"');
+    expect(boundarySource).not.toContain('supabase.rpc("director_decide_proposal_items"');
     expect(transportSource).toContain("callRateLimitedSupabaseRpc");
     expect(transportSource).toContain('"director_decide_proposal_items"');
     expect(transportSource).not.toContain("Alert.alert");

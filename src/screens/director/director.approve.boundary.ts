@@ -1,4 +1,5 @@
 import type { AppSupabaseClient } from "../../lib/dbContract.types";
+import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
   classifyProposalActionFailure,
@@ -19,6 +20,7 @@ import { callDirectorApprovePipelineRpc } from "./director.approve.transport";
 
 export type DirectorApprovePipelineResult = {
   proposalId: string;
+  clientMutationId: string;
   purchaseId: string | null;
   workSeedOk: boolean;
   workSeedError: string | null;
@@ -85,10 +87,15 @@ const recordApproveEvent = (
 export async function runDirectorApprovePipelineAction(params: {
   supabase: AppSupabaseClient;
   proposalId: string;
-  clientMutationId: string;
+  clientMutationId?: string | null;
 }): Promise<DirectorApprovePipelineResult> {
   const proposalId = text(params.proposalId);
-  const clientMutationId = text(params.clientMutationId);
+  const clientMutationId =
+    text(params.clientMutationId) ||
+    buildCoreMutationIntentId({
+      scope: "director.approve.proposal",
+      entityId: proposalId,
+    });
   const eventBase = { proposalId, clientMutationId };
 
   recordApproveEvent("director_approve_started", "success", eventBase);
@@ -149,6 +156,7 @@ export async function runDirectorApprovePipelineAction(params: {
 
     const approved: DirectorApprovePipelineResult = {
       proposalId,
+      clientMutationId,
       purchaseId: result ? text(result.purchase_id) || null : null,
       workSeedOk: result ? result.work_seed_ok !== false : true,
       workSeedError: result ? text(result.work_seed_error) || null : null,

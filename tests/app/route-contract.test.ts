@@ -45,6 +45,19 @@ const ACTIVE_FEATURE_ROUTES = [
   "reports/dashboard.tsx",
 ] as const;
 
+const ACTIVE_ADMIN_ROUTES = [
+  "admin/global-estimate/index.tsx",
+  "admin/global-estimate/work-types.tsx",
+  "admin/global-estimate/templates.tsx",
+  "admin/global-estimate/pricebook.tsx",
+  "admin/global-estimate/tax-rules.tsx",
+  "admin/global-estimate/sources.tsx",
+  "admin/global-estimate/import.tsx",
+  "admin/global-estimate/coverage.tsx",
+  "admin/global-estimate/qa.tsx",
+  "admin/global-estimate/audit.tsx",
+] as const;
+
 const ACTIVE_VISIBLE_TABS = [
   "(tabs)/_layout.tsx",
   "(tabs)/market.tsx",
@@ -112,6 +125,7 @@ describe("route contract", () => {
       ...ACTIVE_ROOT_ROUTES,
       ...ACTIVE_AUTH_ROUTES,
       ...ACTIVE_FEATURE_ROUTES,
+      ...ACTIVE_ADMIN_ROUTES,
       ...ACTIVE_VISIBLE_TABS,
       ...ACTIVE_HIDDEN_TABS,
       ...ACTIVE_OFFICE_ROUTES,
@@ -200,6 +214,7 @@ describe("route contract", () => {
         ...ACTIVE_ROOT_ROUTES,
         ...ACTIVE_AUTH_ROUTES,
         ...ACTIVE_FEATURE_ROUTES,
+        ...ACTIVE_ADMIN_ROUTES,
         ...ACTIVE_VISIBLE_TABS,
         ...ACTIVE_HIDDEN_TABS,
         ...ACTIVE_OFFICE_ROUTES,

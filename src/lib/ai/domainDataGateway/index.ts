@@ -10,6 +10,7 @@ export * from "./aiDomainProviderContract";
 export * from "./aiDomainQueryBoundsPolicy";
 export * from "./aiDomainQueryTypes";
 export * from "./aiDomainReadModel";
+export * from "./aiDomainRoleAllowlist";
 export * from "./adapters/appContextGraphGatewayAdapter";
 export * from "./adapters/goldenDatasetGatewayAdapter";
 export * from "./adapters/roleWorkflowGatewayAdapter";

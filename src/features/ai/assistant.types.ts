@@ -1,3 +1,5 @@
+import type { AiEstimatePdfAction, AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+
 export type AssistantRole =
   | "foreman"
   | "director"
@@ -37,6 +39,8 @@ export interface AssistantMessage {
   role: AssistantMessageRole;
   content: string;
   createdAt: string;
+  estimatePdfSource?: AiEstimatePdfSource;
+  actions?: AiEstimatePdfAction[];
 }
 
 export interface AssistantQuickPrompt {

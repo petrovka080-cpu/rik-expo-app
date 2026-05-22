@@ -316,7 +316,10 @@ describe("attachment opener storage transport source contract", () => {
     const transportSource = read("src/lib/documents/attachmentOpener.storage.transport.ts");
     const storageToken = "supabase" + ".storage";
 
-    expect(serviceSource).toContain("createAttachmentSignedUrl(bucketId, storagePath, 60 * 60)");
+    expect(serviceSource).toContain("PRIVATE_PDF_SIGNED_URL_MAX_TTL_SECONDS");
+    expect(serviceSource).toContain(
+      "createAttachmentSignedUrl(bucketId, storagePath, PRIVATE_PDF_SIGNED_URL_MAX_TTL_SECONDS)",
+    );
     expect(serviceSource).not.toContain(storageToken);
     expect(transportSource).toContain(storageToken);
     expect(transportSource).toContain(".createSignedUrl(storagePath, expiresInSeconds)");

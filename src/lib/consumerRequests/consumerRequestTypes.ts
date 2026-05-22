@@ -86,6 +86,17 @@ export type ConsumerRepairRequestPdf = {
   createdAt: string;
 };
 
+export type ConsumerRepairPdfSupplement = {
+  estimateAssumptions?: string[];
+  costIncreaseFactors?: string[];
+  clarifyingQuestions?: string[];
+  taxStatus?: string;
+  sourceConfidence?: "high" | "medium" | "low";
+  sourceLabels?: string[];
+  safetyMessage?: string;
+  originSourceType?: string;
+};
+
 export type ConsumerRepairPdfOpenResult = {
   requestId: string;
   pdfId: string;
@@ -134,6 +145,7 @@ export type ConsumerRepairAiDraft = {
     quantity: number;
     unit: string;
     unitPrice?: number;
+    currency?: string;
     source: ConsumerRepairItemSource;
   }[];
   missingData: string[];

@@ -8,6 +8,7 @@ import {
   isRpcRecord,
   validateRpcResponse,
 } from "./queryBoundary";
+import { recordPlatformObservability } from "../observability/platformObservability";
 import { resolveRequestDraftSyncAccessToken } from "./requestDraftSync.auth.transport";
 import {
   createDirectorHandoffBroadcastChannel,
@@ -64,6 +65,25 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const asTrimmedString = (value: unknown): string => String(value ?? "").trim();
 const redactedPresence = (value: unknown): "present_redacted" | "missing" =>
   asTrimmedString(value) ? "present_redacted" : "missing";
+
+const recordRequestDraftSyncMutationEvent = (
+  event: string,
+  result: "success" | "error",
+  extra: Record<string, unknown>,
+  error?: unknown,
+) => {
+  recordPlatformObservability({
+    screen: "foreman",
+    surface: "request_draft_sync",
+    category: "ui",
+    event,
+    result,
+    sourceKind: "mutation:foreman:request_draft_sync",
+    errorClass: error instanceof Error ? error.name : error ? "RequestDraftSyncError" : undefined,
+    errorMessage: error instanceof Error ? error.message : error ? String(error) : undefined,
+    extra,
+  });
+};
 
 const ensureRealtimeAuth = async () => {
   const accessToken = await resolveRequestDraftSyncAccessToken();
@@ -258,6 +278,20 @@ export async function syncRequestDraftViaRpc(params: {
     throw new Error("request_sync_draft_v2 is disabled");
   }
 
+  const requestDraftSyncItems = (params.lines || []).map((line) => ({
+    request_item_id: asTrimmedString(line.request_item_id) || null,
+    rik_code: asTrimmedString(line.rik_code) || null,
+    qty: Number(line.qty ?? 0),
+    note: line.note ?? null,
+    app_code: line.app_code ?? null,
+    kind: line.kind ?? null,
+    name_human: line.name_human ?? null,
+    uom: line.uom ?? null,
+  }));
+  const pendingDeleteIds = Array.from(
+    new Set((params.pendingDeleteIds || []).map((id) => asTrimmedString(id)).filter(Boolean)),
+  );
+
   const argsV2: RequestDraftSyncArgsV2 = {
     p_request_id: asTrimmedString(params.requestId) || null,
     p_submit: params.submit === true,
@@ -268,19 +302,8 @@ export async function syncRequestDraftViaRpc(params: {
     p_level_code: params.meta?.level_code ?? null,
     p_system_code: params.meta?.system_code ?? null,
     p_zone_code: params.meta?.zone_code ?? null,
-    p_items: (params.lines || []).map((line) => ({
-      request_item_id: asTrimmedString(line.request_item_id) || null,
-      rik_code: asTrimmedString(line.rik_code) || null,
-      qty: Number(line.qty ?? 0),
-      note: line.note ?? null,
-      app_code: line.app_code ?? null,
-      kind: line.kind ?? null,
-      name_human: line.name_human ?? null,
-      uom: line.uom ?? null,
-    })),
-    p_pending_delete_ids: Array.from(
-      new Set((params.pendingDeleteIds || []).map((id) => asTrimmedString(id)).filter(Boolean)),
-    ),
+    p_items: requestDraftSyncItems,
+    p_pending_delete_ids: pendingDeleteIds,
     p_subcontract_id: params.subcontractId ?? null,
     p_contractor_job_id: params.contractorJobId ?? null,
     p_object_name: params.objectName ?? null,
@@ -289,9 +312,21 @@ export async function syncRequestDraftViaRpc(params: {
     p_zone_name: params.zoneName ?? null,
   };
 
+  recordRequestDraftSyncMutationEvent("request_draft_sync_rpc_started", "success", {
+    submit: params.submit === true,
+    lineCount: requestDraftSyncItems.length,
+    pendingDeleteCount: pendingDeleteIds.length,
+  });
+
   const { data, error } = await invokeRequestDraftSyncRpcV2(argsV2);
   if (error) {
-    throw new Error(`request_sync_draft_v2 failed: ${error.message}`);
+    const normalizedError = new Error(`request_sync_draft_v2 failed: ${error.message}`);
+    recordRequestDraftSyncMutationEvent("request_draft_sync_rpc_terminal_failure", "error", {
+      submit: params.submit === true,
+      lineCount: requestDraftSyncItems.length,
+      pendingDeleteCount: pendingDeleteIds.length,
+    }, normalizedError);
+    throw normalizedError;
   }
 
   const envelope = parseEnvelope(
@@ -308,6 +343,11 @@ export async function syncRequestDraftViaRpc(params: {
 
   const items = parseItemsPayload(envelope.items_payload);
   if (__DEV__) logger.info("log", "[draft-sync] source=rpc_v2");
+  recordRequestDraftSyncMutationEvent("request_draft_sync_rpc_terminal_success", "success", {
+    submit: envelope.submitted,
+    requestCreated: envelope.request_created,
+    lineCount: items.length,
+  });
   logger.info("request-draft-sync", {
     sourceBranch: "rpc_v2",
     requestIdScope: redactedPresence(request.id),

@@ -46,6 +46,12 @@ const UI_COPY = {
   itemValidationMessage:
     "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0438 \u043a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e, \u0438 \u0446\u0435\u043d\u0443 \u0437\u0430 \u0435\u0434\u0438\u043d\u0438\u0446\u0443.",
   missingTitle: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0437\u0430\u0433\u043e\u043b\u043e\u0432\u043e\u043a \u043e\u0431\u044a\u044f\u0432\u043b\u0435\u043d\u0438\u044f.",
+  missingMedia:
+    "\u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u043d\u043e \u0444\u043e\u0442\u043e \u0442\u043e\u0432\u0430\u0440\u0430.",
+  missingDescription:
+    "\u0414\u043e\u0431\u0430\u0432\u044c\u0442\u0435 \u043e\u043f\u0438\u0441\u0430\u043d\u0438\u0435 \u0442\u043e\u0432\u0430\u0440\u0430.",
+  missingPrice: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0446\u0435\u043d\u0443.",
+  missingCity: "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0433\u043e\u0440\u043e\u0434.",
   missingContacts:
     "\u0423\u043a\u0430\u0436\u0438\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u0438\u043d \u043a\u043e\u043d\u0442\u0430\u043a\u0442: \u0442\u0435\u043b\u0435\u0444\u043e\u043d, WhatsApp \u0438\u043b\u0438 email.",
   locationTitle: "\u0413\u0435\u043e\u043b\u043e\u043a\u0430\u0446\u0438\u044f",
@@ -101,6 +107,7 @@ export function AddListingScreen() {
     useState<AppAccessSourceSnapshot | null>(null);
   const [storedActiveContext, setStoredActiveContext] =
     useState<AppContext | null>(null);
+  const [marketplaceMediaAssetIds, setMarketplaceMediaAssetIds] = useState<string[]>([]);
 
   const {
     listingForm,
@@ -118,6 +125,7 @@ export function AddListingScreen() {
     listingCity,
     setListingCity,
     listingPrice,
+    setListingPrice,
     listingUom,
     setListingUom,
     listingDescription,
@@ -211,6 +219,7 @@ export function AddListingScreen() {
     setItemModalOpen(false);
     setEditingItem(null);
     setCatalogResults([]);
+    setMarketplaceMediaAssetIds([]);
     router.replace(returnRoute);
   }, [
     accessModel.activeContext,
@@ -340,6 +349,26 @@ export function AddListingScreen() {
       return;
     }
 
+    if (marketplaceMediaAssetIds.length < 1) {
+      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingMedia);
+      return;
+    }
+
+    if (!listingDescription.trim()) {
+      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingDescription);
+      return;
+    }
+
+    if (!listingPrice.trim()) {
+      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingPrice);
+      return;
+    }
+
+    if (!listingCity.trim()) {
+      Alert.alert(UI_COPY.alertTitle, UI_COPY.missingCity);
+      return;
+    }
+
     try {
       setSavingListing(true);
 
@@ -394,6 +423,7 @@ export function AddListingScreen() {
           listingRikCode,
         },
         listingCartItems,
+        marketplaceMediaAssetIds,
         lat,
         lng,
       });
@@ -438,8 +468,13 @@ export function AddListingScreen() {
         onPublish={publishListing}
         onChangeListingKind={handleListingKindChange}
         onChangeListingTitle={handleListingTitleChange}
+        onChangeListingCity={setListingCity}
+        onChangeListingPrice={setListingPrice}
         onChangeListingDescription={setListingDescription}
         onChangeListingPhone={setListingPhone}
+        onMarketplaceMediaSnapshotChange={(snapshot) =>
+          setMarketplaceMediaAssetIds(snapshot.mediaAssetIds)
+        }
         onInlineCatalogPick={handleInlineCatalogPick}
         onItemModalClose={closeItemModal}
         onChangeEditingItemCity={handleEditingItemCityChange}

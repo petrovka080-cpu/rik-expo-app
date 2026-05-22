@@ -2,9 +2,13 @@ export type AiEnterpriseLayer =
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
   | "estimateEngine"
+  | "estimatePdf"
+  | "globalEstimate"
   | "universalRoleQa"
   | "liveScreenCopilot"
   | "domainDataGateway"
+  | "contextBudget"
+  | "sourceSanitizer"
   | "contractRuntime"
   | "externalKnowledge"
   | "roleBusinessCopilots"
@@ -66,9 +70,13 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "alwaysOnExternalKnowledge",
     "appContextGraph",
     "estimateEngine",
+    "estimatePdf",
+    "globalEstimate",
     "universalRoleQa",
     "liveScreenCopilot",
     "domainDataGateway",
+    "contextBudget",
+    "sourceSanitizer",
     "contractRuntime",
     "externalKnowledge",
     "roleBusinessCopilots",

@@ -1,5 +1,7 @@
 import {
   RELEASE_GUARD_OTA_PUBLISH_MAX_BUFFER_BYTES,
+  FINAL_50K_92_GREEN_STATUS,
+  REQUIRED_RELEASE_GATES,
   buildReleaseChangedFilesGitArgs,
   buildReleaseGuardOtaPublishCommand,
   buildReleaseGuardOtaPublishEnv,
@@ -7,6 +9,7 @@ import {
   buildReleaseGuardMigrationPolicy,
   classifyPackageJsonMutation,
   classifyReleaseChanges,
+  evaluateFinal50k92GreenReleaseGuard,
   evaluateReleaseGuardReadiness,
   parseEasUpdateOutput,
   resolveReleaseGuardCommitRange,
@@ -84,6 +87,39 @@ function createStartupPolicyTruth(
 }
 
 describe("releaseGuard.shared", () => {
+  describe("evaluateFinal50k92GreenReleaseGuard", () => {
+    it("rejects final 9.2 green claims without sufficient 50k fixture evidence", () => {
+      const result = evaluateFinal50k92GreenReleaseGuard({
+        finalStatus: FINAL_50K_92_GREEN_STATUS,
+        fixtureSufficient: false,
+        proofRunId: "proof_50k_live_001",
+        wholeApp50kLiveProofPassed: true,
+        rlsGreen: true,
+        fullJestPassed: true,
+        releaseVerifyPassed: true,
+      });
+
+      expect(result.passed).toBe(false);
+      expect(result.requiresFixtureSufficient).toBe(true);
+      expect(result.blockers).toContain("BLOCKED_EXTERNAL_ONLY_50K_FIXTURE_DATA_REQUIRED");
+    });
+
+    it("accepts final 9.2 green claims only with all release proof gates present", () => {
+      expect(evaluateFinal50k92GreenReleaseGuard({
+        finalStatus: FINAL_50K_92_GREEN_STATUS,
+        fixtureSufficient: true,
+        proofRunId: "proof_50k_live_001",
+        wholeApp50kLiveProofPassed: true,
+        rlsGreen: true,
+        fullJestPassed: true,
+        releaseVerifyPassed: true,
+      })).toMatchObject({
+        passed: true,
+        blockers: [],
+      });
+    });
+  });
+
   describe("classifyPackageJsonMutation", () => {
     it("treats scripts-only package.json changes as non-runtime", () => {
       const previousSource = JSON.stringify(
@@ -589,6 +625,98 @@ describe("releaseGuard.shared", () => {
       expect(readiness.blockers).toContain(
         "Startup policy invalid: expo.updates.fallbackToCacheTimeout must be 30000 for the guarded release startup contract, but found 0.",
       );
+    });
+  });
+
+  describe("REQUIRED_RELEASE_GATES", () => {
+    it("includes global estimate production-safe runtime proof gates", () => {
+      expect(REQUIRED_RELEASE_GATES).toEqual(
+        expect.arrayContaining([
+          {
+            name: "global-estimate-production-safe-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateProductionSafeProof.ts",
+          },
+          {
+            name: "global-estimate-b2c-request-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateB2CRequestProof.ts",
+          },
+          {
+            name: "global-estimate-pdf-marketplace-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimatePdfMarketplaceProof.ts",
+          },
+          {
+            name: "global-estimate-localization-runtime-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateLocalizationRuntimeProof.ts",
+          },
+          {
+            name: "global-estimate-data-ops-admin-governance-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsAdminGovernanceProof.ts",
+          },
+          {
+            name: "global-estimate-data-ops-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsProof.ts",
+          },
+          {
+            name: "global-estimate-data-ops-import-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsImportProof.ts",
+          },
+          {
+            name: "global-estimate-data-ops-coverage-proof",
+            command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts",
+          },
+          {
+            name: "ai-estimate-to-pdf-proof",
+            command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts",
+          },
+          {
+            name: "consumer-estimate-tab-pdf-proof",
+            command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts",
+          },
+          {
+            name: "bottom-nav-estimate-marketplace-plus-proof",
+            command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts",
+          },
+          {
+            name: "ai-estimate-pdf-open-runtime-proof",
+            command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts",
+          },
+          {
+            name: "all-screens-enterprise-web-proof",
+            command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts",
+          },
+          {
+            name: "all-screens-enterprise-android-emulator-proof",
+            command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts",
+          },
+          {
+            name: "all-screens-pdf-open-proof",
+            command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts",
+          },
+          {
+            name: "all-screens-bottom-nav-proof",
+            command: "npx tsx scripts/e2e/runAllScreensBottomNavProof.ts",
+          },
+          {
+            name: "all-screens-backend-boundary-proof",
+            command: "npx tsx scripts/e2e/runAllScreensBackendBoundaryProof.ts",
+          },
+          {
+            name: "all-screens-role-ai-proof",
+            command: "npx tsx scripts/e2e/runAllScreensRoleAiProof.ts",
+          },
+          {
+            name: "all-screens-no-overlap-proof",
+            command: "npx tsx scripts/e2e/runAllScreensNoOverlapProof.ts",
+          },
+        ]),
+      );
+    });
+
+    it("refreshes final 50k live-proof evidence during release verify without forcing fake green", () => {
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "final-50k-92-external-live-proof-closeout",
+        command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
+      });
     });
   });
 

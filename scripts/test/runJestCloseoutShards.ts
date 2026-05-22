@@ -16,10 +16,13 @@ type ShardResult = {
   stderr_tail: string;
 };
 
-const WAVE = "S_B2C_REQUEST_RELEASE_CLOSEOUT";
+const DEFAULT_WAVE = "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN";
+const DEFAULT_ARTIFACT_PREFIX = "S_B2C_REQUEST_RELEASE_CLOSEOUT";
+const WAVE = argValue("--wave") ?? DEFAULT_WAVE;
+const ARTIFACT_PREFIX = argValue("--artifact-prefix") ?? DEFAULT_ARTIFACT_PREFIX;
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
-const SHARDS_ARTIFACT = path.join(ARTIFACT_DIR, `${WAVE}_jest_shards.json`);
-const HANGING_ARTIFACT = path.join(ARTIFACT_DIR, `${WAVE}_hanging_test.json`);
+const SHARDS_ARTIFACT = path.join(ARTIFACT_DIR, `${ARTIFACT_PREFIX}_jest_shards.json`);
+const HANGING_ARTIFACT = path.join(ARTIFACT_DIR, `${ARTIFACT_PREFIX}_hanging_test.json`);
 
 function argValue(name: string): string | null {
   const index = process.argv.indexOf(name);
@@ -66,7 +69,7 @@ function writeArtifacts(results: ShardResult[], hanging: unknown | null): void {
   fs.writeFileSync(
     SHARDS_ARTIFACT,
     `${JSON.stringify({
-      wave: "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
+      wave: WAVE,
       batch_count: results.length,
       failed_or_timeout_count: results.filter((result) => result.status !== "passed").length,
       results,
@@ -77,7 +80,7 @@ function writeArtifacts(results: ShardResult[], hanging: unknown | null): void {
     fs.writeFileSync(
       HANGING_ARTIFACT,
       `${JSON.stringify({
-        wave: "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
+        wave: WAVE,
         ...hanging,
       }, null, 2)}\n`,
       "utf8",
@@ -171,7 +174,7 @@ async function bisect(files: string[], timeoutMs: number, prefix: string, result
 async function main() {
   const listPath = argValue("--list");
   if (!listPath) {
-    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts --list <file> [--batch-size 40] [--timeout-ms 180000]");
+    throw new Error("Usage: npx tsx scripts/test/runJestCloseoutShards.ts --list <file> [--batch-size 40] [--timeout-ms 180000] [--artifact-prefix S_RELEASE_PIPELINE] [--wave WAVE_NAME]");
   }
   const batchSize = argNumber("--batch-size", 40);
   const timeoutMs = argNumber("--timeout-ms", 180000);
@@ -211,7 +214,7 @@ async function main() {
     full_jest_timeout: false,
   });
   console.info(JSON.stringify({
-    wave: "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
+    wave: WAVE,
     final_status: "GREEN_FULL_JEST_SHARDS_PASSED",
     test_file_count: allFiles.length,
     shard_count: results.length,

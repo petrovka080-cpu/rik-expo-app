@@ -3,8 +3,11 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 
 import type { Database } from "../../lib/database.types";
+import { insertMarketplaceListingDraft } from "../../features/market/market.repository.transport";
 import { normalizePage } from "../../lib/api/_core";
+import { buildCoreMutationIntentId } from "../../lib/api/coreMutationId";
 import { getMyRole } from "../../lib/api/profile";
+import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import { supabase } from "../../lib/supabaseClient";
 import {
   loadCurrentAuthUser,
@@ -48,6 +51,7 @@ type MarketListingInsertParams = {
   companyId: string | null;
   form: ListingFormState;
   listingCartItems: ListingCartItem[];
+  marketplaceMediaAssetIds: string[];
   lat: number;
   lng: number;
 };
@@ -64,6 +68,151 @@ type MarketListingKindContract =
 
 const asSupabaseCode = (error: unknown) =>
   String((error as SupabaseCodeError | null)?.code ?? "").trim();
+
+const isUniqueViolation = (error: unknown) => asSupabaseCode(error) === "23505";
+
+const toMarketplaceListingErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message.trim();
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    for (const key of ["message", "details", "hint", "code"] as const) {
+      const value = String(record[key] ?? "").trim();
+      if (value) return value;
+    }
+  }
+  return String(error ?? "").trim() || "marketplace listing publish failed";
+};
+
+const recordMarketplaceListingMutationEvent = (
+  event: string,
+  result: "success" | "error",
+  extra: Record<string, unknown>,
+  error?: unknown,
+) => {
+  recordPlatformObservability({
+    screen: "add_listing",
+    surface: "marketplace_listing_publish",
+    category: "ui",
+    event,
+    result,
+    sourceKind: "mutation:marketplace_listing_publish",
+    errorClass: error instanceof Error ? error.name : error ? "MarketplaceListingPublishError" : undefined,
+    errorMessage: error ? toMarketplaceListingErrorMessage(error) : undefined,
+    extra,
+  });
+};
+
+function createMarketplaceListingDraft(
+  payload: MarketListingInsertPayload,
+): MarketListingInsertPayload {
+  return {
+    ...payload,
+    status: payload.status ?? "active",
+  };
+}
+
+async function attachMarketplaceListingMedia(
+  draft: MarketListingInsertPayload,
+  mediaAssetIds: readonly string[],
+): Promise<MarketListingInsertPayload> {
+  if (mediaAssetIds.length < 1) {
+    throw new Error("Добавьте хотя бы одно фото товара.");
+  }
+  return draft;
+}
+
+async function suggestMarketplaceListingFieldsFromMedia(
+  draft: MarketListingInsertPayload,
+): Promise<MarketListingInsertPayload> {
+  return draft;
+}
+
+function validateMarketplaceListingForPublish(
+  draft: MarketListingInsertPayload,
+  mediaAssetIds: readonly string[],
+): MarketListingInsertPayload {
+  if (mediaAssetIds.length < 1) {
+    throw new Error("Добавьте хотя бы одно фото товара.");
+  }
+  if (!String(draft.user_id ?? "").trim()) {
+    throw new Error("Не найден текущий пользователь");
+  }
+  if (!String(draft.title ?? "").trim()) {
+    throw new Error("Укажите заголовок объявления.");
+  }
+  if (!String(draft.description ?? "").trim()) {
+    throw new Error("Добавьте описание товара.");
+  }
+  if (!String(draft.kind ?? "").trim()) {
+    throw new Error("Выберите категорию объявления.");
+  }
+  if (typeof draft.price !== "number" || !Number.isFinite(draft.price)) {
+    throw new Error("Укажите цену.");
+  }
+  if (!String(draft.city ?? "").trim()) {
+    throw new Error("Укажите город.");
+  }
+  if (
+    !String(draft.contacts_phone ?? "").trim() &&
+    !String(draft.contacts_whatsapp ?? "").trim() &&
+    !String(draft.contacts_email ?? "").trim()
+  ) {
+    throw new Error("Укажите хотя бы один контакт.");
+  }
+  if (typeof draft.lat !== "number" || typeof draft.lng !== "number") {
+    throw new Error("Не удалось получить координаты объявления.");
+  }
+
+  return draft;
+}
+
+async function publishMarketplaceListing(
+  draft: MarketListingInsertPayload,
+  options: { mediaAssetIds: readonly string[] },
+): Promise<void> {
+  const clientMutationId =
+    draft.client_mutation_id ??
+    buildCoreMutationIntentId({
+      scope: "marketplace.publish",
+      entityId: draft.user_id,
+      payload: {
+        companyId: draft.company_id ?? null,
+        title: draft.title,
+        kind: draft.kind ?? null,
+        price: draft.price ?? null,
+        city: draft.city ?? null,
+        mediaAssetIds: options.mediaAssetIds,
+      },
+    });
+  const publishDraft: MarketListingInsertPayload = {
+    ...draft,
+    client_mutation_id: clientMutationId,
+  };
+  const eventBase = {
+    userId: publishDraft.user_id,
+    companyId: publishDraft.company_id ?? null,
+    kind: publishDraft.kind ?? null,
+    hasMedia: true,
+    clientMutationId,
+  };
+  recordMarketplaceListingMutationEvent("marketplace_listing_publish_started", "success", eventBase);
+  try {
+    const { error } = await insertMarketplaceListingDraft(publishDraft);
+    if (error) throw error;
+    recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_success", "success", eventBase);
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      recordMarketplaceListingMutationEvent(
+        "marketplace_listing_publish_idempotent_replay",
+        "success",
+        eventBase,
+      );
+      return;
+    }
+    recordMarketplaceListingMutationEvent("marketplace_listing_publish_terminal_failure", "error", eventBase, error);
+    throw error;
+  }
+}
 
 const isListingKind = (value: unknown): value is ListingKind =>
   value === "material" || value === "service" || value === "rent";
@@ -415,11 +564,21 @@ export const createMarketListing = async (
     ...(kindContract.status === "ready" ? { kind: kindContract.kind } : {}),
   };
 
-  const { error } = await supabase
-    .from("market_listings")
-    .insert(insertPayload);
+  const draft = createMarketplaceListingDraft(insertPayload);
+  const draftWithMedia = await attachMarketplaceListingMedia(
+    draft,
+    params.marketplaceMediaAssetIds,
+  );
+  const suggestedDraft =
+    await suggestMarketplaceListingFieldsFromMedia(draftWithMedia);
+  const validatedDraft = validateMarketplaceListingForPublish(
+    suggestedDraft,
+    params.marketplaceMediaAssetIds,
+  );
 
-  if (error) throw error;
+  await publishMarketplaceListing(validatedDraft, {
+    mediaAssetIds: params.marketplaceMediaAssetIds,
+  });
 };
 
 const buildCatalogQuery = (listingKind: ListingKind | null) => {

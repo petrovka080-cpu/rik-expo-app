@@ -1,3 +1,5 @@
+import { PRIVATE_PDF_SIGNED_URL_DEFAULT_TTL_SECONDS } from "../security/securityPrivacyHardening";
+
 type ConsumerRepairPdfStorageObject = {
   storageBucket: string;
   storageKey: string;
@@ -48,7 +50,9 @@ export function createConsumerRepairPdfSignedUrl(input: {
   const object = pdfStorage.get(storageId(input.storageBucket, input.storageKey));
   if (!object) throw new Error("Consumer repair PDF storage object is missing.");
 
-  const expiresAt = new Date(Date.now() + (input.expiresInSeconds ?? 900) * 1000).toISOString();
+  const expiresAt = new Date(
+    Date.now() + (input.expiresInSeconds ?? PRIVATE_PDF_SIGNED_URL_DEFAULT_TTL_SECONDS) * 1000,
+  ).toISOString();
   return {
     signedUrl: `data:application/pdf;charset=utf-8,${encodeURIComponent(object.body)}`,
     expiresAt,

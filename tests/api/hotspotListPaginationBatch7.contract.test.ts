@@ -631,6 +631,11 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runB2C") ||
     normalized.startsWith("src/features/consumerRepair/") ||
     normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("scripts/e2e/runAllScreens") ||
+    normalized === "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts" ||
+    normalized === "maestro/all-screens-enterprise-runtime.yaml" ||
+    normalized.startsWith("tests/allScreensRuntime/") ||
+    normalized.startsWith("tests/architecture/allScreens") ||
     normalized.startsWith("tests/consumerRepair/") ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
     normalized === "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql" ||

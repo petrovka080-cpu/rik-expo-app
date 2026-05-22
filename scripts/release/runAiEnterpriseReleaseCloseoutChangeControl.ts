@@ -17,6 +17,27 @@ const B2C_REQUEST_RELEASE_CLOSEOUT_WAVE =
 const UI_CANONICAL_LAYOUT_WAVE = "S_UI_CANONICAL_MOBILE_LAYOUT_SAFE_AREA_POINT_OF_NO_RETURN";
 const IOS_OTA_CHANNEL_PROOF_WAVE = "S_IOS_EAS_UPDATE_CHANNEL_FAST_QA_NO_REBUILD_GATE_POINT_OF_NO_RETURN";
 const BACKEND_MEDIA_STORAGE_WAVE = "S_BACKEND_MEDIA_MIGRATION_UPLOAD_PROCESSING_CORE";
+const CORE_PRODUCT_GOLDEN_PATHS_WAVE =
+  "S_CORE_PRODUCT_GOLDEN_PATHS_ROLE_AI_ACCEPTANCE_CLOSEOUT_POINT_OF_NO_RETURN";
+const RLS_DYNAMIC_CROSS_TENANT_WAVE = "S_RLS_DYNAMIC_CROSS_TENANT_PROOF_CLOSEOUT";
+const WHOLE_APP_50K_EXPLAIN_P95_WAVE = "S_WHOLE_APP_50K_EXPLAIN_P95_PROOF_CLOSEOUT";
+const QUERY_BOUNDARY_CLEANUP_WAVE = "S_QUERY_BOUNDARY_LIMIT_CURSOR_INDEX_CLEANUP_CLOSEOUT";
+const MEDIA_STORAGE_100K_WAVE = "S_MEDIA_STORAGE_100K_ORPHAN_RETRY_BACKPRESSURE_CLOSEOUT";
+const AI_ROLE_LIVE_TRANSCRIPT_VALUE_WAVE = "S_AI_ROLE_LIVE_TRANSCRIPT_VALUE_CLOSEOUT";
+const AI_DOMAIN_GATEWAY_CONTEXT_BUDGET_WAVE = "S_AI_DOMAIN_DATA_GATEWAY_CONTEXT_BUDGET_CLOSEOUT";
+const BACKEND_SERVICE_BOUNDARY_DISCIPLINE_WAVE = "S_BACKEND_SERVICE_BOUNDARY_DISCIPLINE_CLOSEOUT";
+const CORE_MUTATION_IDEMPOTENCY_HARDENING_WAVE =
+  "S_CORE_MUTATION_IDEMPOTENCY_AUDIT_TRAIL_HARDENING_CLOSEOUT";
+const CORE_WORKFLOWS_TRANSACTION_IDEMPOTENCY_AUDIT_WAVE =
+  "S_CORE_WORKFLOWS_TRANSACTION_IDEMPOTENCY_AUDIT_CLOSEOUT";
+const OBSERVABILITY_OPS_RATE_LIMIT_PRODUCTION_WAVE =
+  "S_OBSERVABILITY_OPS_RATE_LIMIT_PRODUCTION_CLOSEOUT";
+const SECURITY_PRIVACY_HARDENING_WAVE = "S_SECURITY_PRIVACY_HARDENING_CLOSEOUT";
+const RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_WAVE =
+  "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT";
+const FINAL_50K_92_SCORE_REAUDIT_WAVE = "S_FINAL_50K_92_SCORE_REAUDIT_CLOSEOUT";
+const GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_WAVE =
+  "S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_ENGINE_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -304,6 +325,7 @@ function isB2cConsumerRepairReleasePath(file: string): boolean {
     file.startsWith("tests/architecture/consumerRepair") ||
     file.startsWith("scripts/audit/auditConsumerRepair") ||
     file.startsWith("scripts/e2e/runB2C") ||
+    file.startsWith("scripts/e2e/runConsumerEstimateTabPdfProof") ||
     file.includes("b2c_consumer_repair")
   );
 }
@@ -321,6 +343,7 @@ function isUiLayoutReleasePath(file: string): boolean {
       "tests/ui",
     ]) ||
     file.startsWith("scripts/e2e/runBottomTabs") ||
+    file.startsWith("scripts/e2e/runBottomNav") ||
     file.startsWith("scripts/e2e/runCanonicalMobileLayout") ||
     file.startsWith("scripts/e2e/runContractorExpandedWorkMediaProof") ||
     file.startsWith("scripts/e2e/runGlobalBottomNavSafeArea") ||
@@ -374,8 +397,536 @@ function isAdditionalAiRuntimePath(file: string): boolean {
   return pathMatchesPrefix(file, ["src/lib/ai/alwaysOnExternalKnowledge", "src/lib/ai/estimateEngine"]);
 }
 
+function isCoreProductGoldenPathsReleasePath(file: string): boolean {
+  return (
+    file === "docs/architecture/transport_ownership_map.md" ||
+    pathMatchesPrefix(file, ["src/features/market", "src/screens/profile"]) ||
+    file.startsWith("scripts/audit/auditCoreProductBackendBoundary") ||
+    file.startsWith("scripts/e2e/coreProductGoldenPaths.shared") ||
+    file.startsWith("scripts/e2e/runB2CRequestGoldenPathProof") ||
+    file.startsWith("scripts/e2e/runContractorEvidenceGoldenPathProof") ||
+    file.startsWith("scripts/e2e/runCoreProductGoldenPathsProof") ||
+    file.startsWith("scripts/e2e/runGlobalLayoutNoOverlapGoldenPathProof") ||
+    file.startsWith("scripts/e2e/runMarketplaceAddProductGoldenPathProof") ||
+    file.startsWith("scripts/e2e/runOfficeApprovalProcurementGoldenPathProof") ||
+    file.startsWith("scripts/e2e/runRestoreMarketplaceAddPlusAfterMarketProof") ||
+    file.startsWith("scripts/e2e/runRoleAiHelpfulnessGoldenPathProof") ||
+    file.startsWith("tests/e2e/coreProductGoldenPaths") ||
+    file.startsWith("tests/architecture/coreProduct") ||
+    file.startsWith("tests/architecture/marketplaceAdd") ||
+    file.startsWith("tests/architecture/noBottomNavTabDeletion") ||
+    file.startsWith("tests/architecture/noRawAddRouteInBottomTabs")
+  );
+}
+
+function isRlsDynamicCrossTenantReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_RLS_DYNAMIC_CROSS_TENANT_") ||
+    file.startsWith("scripts/audit/auditStorageBucketPolicies") ||
+    file.startsWith("scripts/audit/auditSupabasePrivateTableRlsCoverage") ||
+    file.startsWith("scripts/audit/rlsDynamicCrossTenant.shared") ||
+    file.startsWith("scripts/audit/runRlsDynamicCrossTenantLiveProof") ||
+    file.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
+    file.startsWith("tests/security/companyUserCannotReadOtherCompany") ||
+    file.startsWith("tests/security/consumerCannotReadOfficeData") ||
+    file.startsWith("tests/security/marketplaceDraftOwnerOnly") ||
+    file.startsWith("tests/security/privatePdfOwnerOnly") ||
+    file.startsWith("tests/security/rlsDynamicCrossTenant") ||
+    file.startsWith("tests/security/rlsLiveRunner") ||
+    file.startsWith("tests/architecture/noServiceRoleInFrontend") ||
+    file === "supabase/migrations/20260522123000_rls_dynamic_cross_tenant_static_coverage.sql"
+  );
+}
+
+function isWholeApp50kExplainP95ReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_50K_SYNTHETIC_FIXTURE_") ||
+    file.startsWith("artifacts/S_50K_SYNTHETIC_FIXTURE_TZ_LOCK_") ||
+    file.startsWith("artifacts/S_WHOLE_APP_50K_") ||
+    (file === "src/lib/proofFixtures" || file.startsWith("src/lib/proofFixtures/")) ||
+    file.startsWith("scripts/audit/auditWholeAppIndexes") ||
+    file.startsWith("scripts/audit/auditWholeAppNPlusOne") ||
+    file.startsWith("scripts/audit/auditWholeAppUnboundedQueries") ||
+    file.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
+    file.startsWith("scripts/audit/run50kSyntheticFixtureTzLockProof") ||
+    file.startsWith("scripts/e2e/runWholeApp50kExplainP95LiveProof") ||
+    file.startsWith("scripts/e2e/runWholeApp50kExplainP95Proof") ||
+    file.startsWith("scripts/e2e/seedWholeApp50kSyntheticFixture") ||
+    file.startsWith("tests/performance/wholeApp") ||
+    (file === "tests/proofFixtures" || file.startsWith("tests/proofFixtures/")) ||
+    (file === "tests/architecture/wholeApp50k" || file.startsWith("tests/architecture/wholeApp50k")) ||
+    file.startsWith("tests/architecture/noUnboundedLargeTableQueries") ||
+    file === "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql"
+  );
+}
+
+function isQueryBoundaryCleanupReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_QUERY_BOUNDARY_") ||
+    file.startsWith("scripts/audit/auditCursorPaginationCoverage") ||
+    file.startsWith("scripts/audit/auditIndexCoverageForListQueries") ||
+    file.startsWith("scripts/audit/auditLargeTableSelectStar") ||
+    file.startsWith("scripts/audit/auditQueryBoundaryCandidates") ||
+    file.startsWith("scripts/audit/queryBoundaryCleanup.shared") ||
+    file.startsWith("scripts/audit/runQueryBoundaryCleanupProof") ||
+    file.startsWith("tests/architecture/noFrontendSliceAfterUnboundedFetch") ||
+    file.startsWith("tests/architecture/noLargeTableSelectStar") ||
+    file.startsWith("tests/architecture/noOffsetPaginationOnLargeTables") ||
+    file.startsWith("tests/architecture/queryBoundaryAllCandidatesResolved") ||
+    file.startsWith("tests/performance/queryBoundaryCursorIndex")
+  );
+}
+
+function isMediaStorage100kReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_MEDIA_STORAGE_100K_") ||
+    file.startsWith("scripts/audit/auditMediaStorage100k") ||
+    file === "scripts/audit/maxArchitectureScaleRiskAudit50k.shared.ts" ||
+    file.startsWith("scripts/audit/mediaStorage100k.shared") ||
+    file.startsWith("scripts/audit/runMediaStorage100kOrphanRetryBackpressureProof") ||
+    file.startsWith("tests/architecture/mediaStorage100k") ||
+    file.startsWith("tests/performance/mediaStorage100k") ||
+    file === "supabase/migrations/20260522100000_media_storage_100k_orphan_retry_backpressure.sql" ||
+    file === "src/lib/media/services/mediaBackendUploadService.ts"
+  );
+}
+
+function isAiRoleLiveTranscriptValueReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_ROLE_LIVE_TRANSCRIPT_") ||
+    file.startsWith("scripts/audit/auditAiGenericAnswerRate") ||
+    file.startsWith("scripts/audit/auditAiRoleDataAccess") ||
+    file === "scripts/audit/maxArchitectureScaleRiskAudit50k.shared.ts" ||
+    file.startsWith("scripts/e2e/aiRoleLiveTranscriptValue.shared") ||
+    file.startsWith("scripts/e2e/runAiRoleLiveTranscriptValueProof") ||
+    file.startsWith("tests/ai/roleAi") ||
+    file.startsWith("tests/architecture/aiRoleNoGenericAnswers") ||
+    file.startsWith("tests/architecture/aiRoleNoUnsafeMutation")
+  );
+}
+
+function isAiDomainGatewayContextBudgetReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_DOMAIN_GATEWAY_") ||
+    file.startsWith("scripts/audit/auditAiContextBudget") ||
+    file.startsWith("scripts/audit/auditAiDomainDataGateway") ||
+    file.startsWith("scripts/e2e/aiDomainGatewayContextBudget.shared") ||
+    file.startsWith("scripts/e2e/runAiDomainGatewayContextProof") ||
+    file === "src/lib/ai/contextBudget" ||
+    file.startsWith("src/lib/ai/contextBudget/") ||
+    file === "src/lib/ai/sourceSanitizer" ||
+    file.startsWith("src/lib/ai/sourceSanitizer/") ||
+    file === "src/lib/ai/domainDataGateway/aiDomainDataGateway.ts" ||
+    file === "src/lib/ai/domainDataGateway/aiDomainPermissionScope.ts" ||
+    file === "src/lib/ai/domainDataGateway/aiDomainRoleAllowlist.ts" ||
+    file === "src/lib/ai/domainDataGateway/index.ts" ||
+    file.startsWith("tests/ai/aiDomainGatewayRoleAllowlist") ||
+    file.startsWith("tests/ai/aiContextBudget") ||
+    file.startsWith("tests/ai/aiConsumerNoOfficeContext") ||
+    file.startsWith("tests/ai/aiAccountantNoForemanChecklist") ||
+    file.startsWith("tests/ai/aiBuyerApprovedRequestsOnly") ||
+    file.startsWith("tests/ai/aiWarehouseMovementFacts") ||
+    file.startsWith("tests/architecture/noRawDbDumpInAiContext") ||
+    file.startsWith("tests/architecture/noProviderPayloadInAiUi")
+  );
+}
+
+function isBackendServiceBoundaryDisciplineReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_BACKEND_SERVICE_BOUNDARY_") ||
+    file.startsWith("scripts/audit/auditCoreMutationAuditTrail") ||
+    file.startsWith("scripts/audit/auditCoreServiceBoundaries") ||
+    file.startsWith("scripts/audit/auditDirectSupabaseWritesFromScreens") ||
+    file.startsWith("scripts/audit/backendServiceBoundary.shared") ||
+    file.startsWith("tests/architecture/noFrontendOnlyCoreSubmit") ||
+    file.startsWith("tests/architecture/noDirectStatusWriteFromScreens") ||
+    file.startsWith("tests/architecture/noDirectMarketplacePublishFromUi") ||
+    file.startsWith("tests/architecture/noFakePdfStatus") ||
+    file.startsWith("tests/architecture/coreActionsUseServiceLayer") ||
+    file.startsWith("tests/architecture/coreMutationsWriteAuditEvents") ||
+    file === "tests/api/directorRequestTransport.contract.test.ts" ||
+    file === "tests/api/rpcRuntimeValidationBatch2.contract.test.ts" ||
+    file === "src/screens/director/director.request.ts" ||
+    file === "src/screens/director/director.request.boundary.ts" ||
+    file === "src/screens/director/director.proposal.ts" ||
+    file === "src/screens/director/director.proposal.detail.ts" ||
+    file === "src/screens/director/director.proposalDecision.boundary.ts" ||
+    file === "src/screens/director/director.proposalDecision.transport.contract.test.ts" ||
+    file === "src/screens/profile/profile.services.ts" ||
+    file === "src/lib/api/requestDraftSync.service.ts" ||
+    file === "src/lib/media/services/mediaBackendUploadService.ts" ||
+    file === "src/screens/warehouse/warehouse.issue.repo.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts"
+  );
+}
+
+function isCoreMutationIdempotencyHardeningReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_CORE_MUTATION_IDEMPOTENCY_") ||
+    file.startsWith("scripts/audit/auditCoreMutationIdempotencyDiscipline") ||
+    file.startsWith("scripts/audit/coreMutationIdempotency.shared") ||
+    file.startsWith("tests/architecture/coreMutationIdempotencyDiscipline") ||
+    file.startsWith("tests/architecture/noScreenRandomClientMutationIds") ||
+    file.startsWith("tests/api/coreMutationId") ||
+    file === "src/lib/api/coreMutationId.ts" ||
+    file === "src/lib/catalog/catalog.proposalCreation.service.ts" ||
+    file === "src/screens/director/director.approve.boundary.ts" ||
+    file === "src/screens/director/director.approve.boundary.test.ts" ||
+    file === "src/screens/director/director.request.boundary.ts" ||
+    file === "src/screens/director/director.request.ts" ||
+    file === "src/screens/director/director.proposal.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/load/sLoadFix1Hotspots.contract.test.ts"
+  );
+}
+
+function isCoreWorkflowsTransactionIdempotencyAuditReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_CORE_WORKFLOWS_") ||
+    file.startsWith("scripts/audit/auditCoreAuditTrail") ||
+    file.startsWith("scripts/audit/auditCoreWorkflowTransactions") ||
+    file.startsWith("scripts/audit/coreWorkflows.shared") ||
+    file.startsWith("scripts/e2e/runCoreWorkflowIdempotencyProof") ||
+    file === "tests/core" ||
+    file.startsWith("tests/core/") ||
+    file.startsWith("tests/core/idempotency") ||
+    file.startsWith("tests/core/transactionRollbackOnFailure") ||
+    file.startsWith("tests/core/coreAuditTrail") ||
+    file.startsWith("tests/architecture/coreWorkflowNoDuplicateMutation") ||
+    file === "src/lib/database.types.ts" ||
+    file === "src/screens/profile/profile.services.ts" ||
+    file === "src/features/market/market.repository.transport.ts" ||
+    file === "src/features/market/market.repository.ts" ||
+    file === "src/screens/warehouse/warehouse.issue.ts" ||
+    file === "supabase/migrations/20260522110000_core_txn_marketplace_publish_idempotency.sql" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    file === "tests/load/sLoadFix2Hotspots.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isObservabilityOpsRateLimitReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_OBSERVABILITY_") ||
+    file === "src/lib/ops" ||
+    file === "src/lib/ops/productionOpsTelemetry.ts" ||
+    file.startsWith("scripts/audit/auditObservabilityCoverage") ||
+    file.startsWith("scripts/audit/auditRateLimitCoverage") ||
+    file.startsWith("scripts/audit/auditArtifactsNoPii") ||
+    file.startsWith("scripts/audit/observabilityOps.shared") ||
+    file === "tests/ops" ||
+    file.startsWith("tests/ops/") ||
+    file === "tests/architecture/noSensitiveDataInArtifacts.contract.test.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    file === "tests/load/sLoadFix2Hotspots.contract.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isSecurityPrivacyHardeningReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_SECURITY_PRIVACY_") ||
+    file === "src/lib/security/securityPrivacyHardening.ts" ||
+    file === "src/lib/consumerRequests/consumerRequestPdfStorage.ts" ||
+    file === "src/lib/documents/attachmentOpener.ts" ||
+    file === "src/lib/documents/attachmentOpener.test.ts" ||
+    file === "src/features/market/marketHome.data.ts" ||
+    file.startsWith("scripts/audit/securityPrivacyHardening.shared") ||
+    file.startsWith("scripts/audit/auditSecurityPrivacyHardening") ||
+    file.startsWith("scripts/audit/auditPiiInArtifacts") ||
+    file.startsWith("scripts/audit/auditPublicMarketplaceSafeFields") ||
+    file.startsWith("scripts/audit/auditSignedUrlExpiry") ||
+    file.startsWith("scripts/audit/auditSecretsInFrontend") ||
+    file.startsWith("tests/security/noPiiInArtifacts") ||
+    file.startsWith("tests/security/noSecretsInFrontend") ||
+    file.startsWith("tests/security/signedUrlExpiry") ||
+    file.startsWith("tests/security/publicMarketplaceSafeFields") ||
+    file.startsWith("tests/security/aiContextSanitizer") ||
+    file.startsWith("tests/security/noDebugRuntimeProviderUi") ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    file === "tests/load/sLoadFix2Hotspots.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isReleasePipelineNoTimeoutMobileRuntimeReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_RELEASE_PIPELINE_") ||
+    file === "scripts/release/releasePipelineNoTimeoutMobileRuntime.shared.ts" ||
+    file === "scripts/release/runReleasePipelineNoTimeoutMobileRuntimeProof.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runIosOtaRuntimeResolutionProof.ts" ||
+    file === "scripts/release/verifyAndroidInstalledBuildRuntime.ts" ||
+    file === "scripts/test/runJestGreenCloseoutShards.ts" ||
+    file === "scripts/test/runJestCloseoutShards.ts" ||
+    file.startsWith("tests/release/releaseVerifyStepTiming") ||
+    file.startsWith("tests/release/jestShardTimeoutIsolation") ||
+    file.startsWith("tests/release/iosOtaRuntimeResolution") ||
+    file.startsWith("tests/release/androidInstalledRuntime") ||
+    file.startsWith("tests/release/postPushVerifyRequired") ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isFinal50k92ScoreReauditReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_FINAL_50K_92_SCORE_") ||
+    file === "scripts/audit/externalLiveProofCloseout.shared.ts" ||
+    file === "scripts/audit/final50k92ScoreReaudit.shared.ts" ||
+    file === "scripts/audit/runExternalLiveProofCloseout.ts" ||
+    file === "scripts/audit/runFinal50k92ScoreReaudit.ts" ||
+    file === "scripts/audit/auditFinalScoreCaps.ts" ||
+    file === "scripts/audit/auditFinalRiskRegister.ts" ||
+    file === "tests/audit" ||
+    file.startsWith("tests/audit/externalLiveProofCloseoutHarness") ||
+    file.startsWith("tests/audit/finalScorecardEvidence") ||
+    file.startsWith("tests/audit/finalScoreCaps") ||
+    file.startsWith("tests/audit/finalRiskRegisterResolved") ||
+    file.startsWith("tests/audit/final50kReadiness") ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
+function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_") ||
+    file.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
+    file.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
+    file.startsWith("artifacts/S_ALL_SCREENS_") ||
+    file.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
+    file === "app/admin" ||
+    file === "app/admin/global-estimate" ||
+    file.startsWith("app/admin/global-estimate/") ||
+    file === "src/lib/ai/globalEstimate" ||
+    file.startsWith("src/lib/ai/globalEstimate/") ||
+    file === "src/lib/ai/estimatePdf" ||
+    file.startsWith("src/lib/ai/estimatePdf/") ||
+    file === "scripts/e2e/runGlobalEstimateLocalizationProfessionalBoqProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateProductionSafeProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateB2CRequestProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimatePdfMarketplaceProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateLocalizationRuntimeProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateDataOpsAdminGovernanceProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateDataOpsProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" ||
+    file === "scripts/e2e/runAiEstimateToPdfProof.ts" ||
+    file === "scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" ||
+    file === "scripts/e2e/runConsumerEstimateTabPdfProof.ts" ||
+    file === "scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" ||
+    file === "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts" ||
+    file === "scripts/e2e/runAllScreensEnterpriseWebProof.ts" ||
+    file === "scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" ||
+    file === "scripts/e2e/runAllScreensPdfOpenProof.ts" ||
+    file === "scripts/e2e/runAllScreensBottomNavProof.ts" ||
+    file === "scripts/e2e/runAllScreensBackendBoundaryProof.ts" ||
+    file === "scripts/e2e/runAllScreensRoleAiProof.ts" ||
+    file === "scripts/e2e/runAllScreensNoOverlapProof.ts" ||
+    file === "scripts/e2e/enterpriseReleaseCandidate.shared.ts" ||
+    file === "scripts/e2e/enterpriseReleaseCandidatePolicy.ts" ||
+    file.startsWith("scripts/e2e/runEnterpriseReleaseCandidate") ||
+    file === "supabase/functions/calculate-global-estimate" ||
+    file.startsWith("supabase/functions/calculate-global-estimate/") ||
+    file === "supabase/functions/refresh-global-estimate-sources" ||
+    file.startsWith("supabase/functions/refresh-global-estimate-sources/") ||
+    file === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
+    file === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
+    file === "tests/globalEstimate" ||
+    file.startsWith("tests/globalEstimate/") ||
+    file === "tests/globalEstimateDataOps" ||
+    file.startsWith("tests/globalEstimateDataOps/") ||
+    file === "tests/aiEstimatePdf" ||
+    file.startsWith("tests/aiEstimatePdf/") ||
+    file.startsWith("tests/architecture/aiEstimatePdf") ||
+    file.startsWith("tests/architecture/consumerEstimate") ||
+    file.startsWith("tests/architecture/globalEstimate") ||
+    file.startsWith("tests/architecture/allScreens") ||
+    file.startsWith("tests/architecture/releaseCandidate") ||
+    file === "tests/allScreensRuntime" ||
+    file.startsWith("tests/allScreensRuntime/") ||
+    file === "tests/releaseCandidate" ||
+    file.startsWith("tests/releaseCandidate/") ||
+    file === "maestro/all-screens-enterprise-runtime.yaml" ||
+    file === "maestro/enterprise-release-candidate.yaml" ||
+    file === "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts" ||
+    file === "src/lib/consumerRequests/index.ts" ||
+    file === "src/lib/consumerRequests/consumerRequestTypes.ts" ||
+    file === "src/lib/consumerRequests/consumerRequestPdfService.ts" ||
+    file === "src/lib/ai/estimateEngine/index.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    file === "tests/load/sLoadFix2Hotspots.contract.test.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isGlobalEstimateProfessionalBoqReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "global estimate localization professional BOQ backend engine, proof runner, contracts, migration, and evidence artifacts",
+    };
+  }
+  if (isFinal50k92ScoreReauditReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: FINAL_50K_92_SCORE_REAUDIT_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "final 50k 9.2 readiness re-audit scorecard, score caps, risk register, exact external blocker accounting, and evidence artifacts",
+    };
+  }
+  if (isReleasePipelineNoTimeoutMobileRuntimeReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "release pipeline no-timeout proof, timed release gates, Jest shard isolation, Android runtime, iOS exact runtime status, and post-push verify closeout",
+    };
+  }
+  if (isSecurityPrivacyHardeningReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: SECURITY_PRIVACY_HARDENING_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "security/privacy hardening for PII-safe artifacts, signed URLs, public marketplace fields, AI sanitizer, and frontend secret scans",
+    };
+  }
+  if (isObservabilityOpsRateLimitReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: OBSERVABILITY_OPS_RATE_LIMIT_PRODUCTION_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "observability, structured metrics, PII-safe logs/artifacts, rate limits, and alert threshold closeout",
+    };
+  }
+  if (isCoreWorkflowsTransactionIdempotencyAuditReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: CORE_WORKFLOWS_TRANSACTION_IDEMPOTENCY_AUDIT_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "core workflows transaction, idempotency, retry, and audit trail closeout",
+    };
+  }
+  if (isCoreMutationIdempotencyHardeningReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: CORE_MUTATION_IDEMPOTENCY_HARDENING_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "core mutation idempotency hardening for stable approve/submit mutation intents",
+    };
+  }
+  if (isBackendServiceBoundaryDisciplineReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: BACKEND_SERVICE_BOUNDARY_DISCIPLINE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "backend service boundary discipline proof for core submit/publish/approve/PDF/payment/warehouse mutations",
+    };
+  }
+  if (isAiDomainGatewayContextBudgetReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_DOMAIN_GATEWAY_CONTEXT_BUDGET_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI domain data gateway role allowlist, source sanitizer, and context budget proof",
+    };
+  }
+  if (isAiRoleLiveTranscriptValueReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_ROLE_LIVE_TRANSCRIPT_VALUE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI role live transcript value pack with 8 roles, 80 questions, data access, generic-rate, and no-mutation proof",
+    };
+  }
+  if (isMediaStorage100kReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "backend_media_release",
+      wave: MEDIA_STORAGE_100K_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "media/PDF 100k orphan cleanup, retry, backpressure, signed URL, and storage privacy proof",
+    };
+  }
+  if (isQueryBoundaryCleanupReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "performance_budget",
+      wave: QUERY_BOUNDARY_CLEANUP_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "query-boundary candidate resolution, select-star, cursor, tenant, and index proof",
+    };
+  }
+  if (isWholeApp50kExplainP95ReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "performance_budget",
+      wave: WHOLE_APP_50K_EXPLAIN_P95_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "whole-app 50k EXPLAIN/P95 proof, query-bound audit, index audit, and N+1 contracts",
+    };
+  }
+  if (isRlsDynamicCrossTenantReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: RLS_DYNAMIC_CROSS_TENANT_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "RLS dynamic cross-tenant proof, storage policy audit, and security contracts",
+    };
+  }
+  if (isCoreProductGoldenPathsReleasePath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: CORE_PRODUCT_GOLDEN_PATHS_WAVE,
+      include_in_commit: true,
+      force_add: false,
+      reason: "core product golden paths acceptance proof, UI contracts, and backend boundary audit",
+    };
+  }
   if (isB2cConsumerRepairReleasePath(normalized)) {
     return {
       file: normalized,
@@ -485,7 +1036,8 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
   if (
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     normalized.startsWith("tests/release/aiEnterpriseReleaseCloseout") ||
-    normalized.startsWith("tests/architecture/aiReleaseCloseout")
+    normalized.startsWith("tests/architecture/aiReleaseCloseout") ||
+    normalized === "tests/architecture/maxArchitectureScaleRiskAuditCurrentEvidence.contract.test.ts"
   ) {
     return {
       file: normalized,

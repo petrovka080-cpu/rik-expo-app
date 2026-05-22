@@ -151,7 +151,7 @@ describe("S-RPC-2 source contract", () => {
   it("validates exactly the selected runtime RPC call-sites", () => {
     const warehouseRepo = readSource("src/screens/warehouse/warehouse.issue.repo.ts");
     const buyerRepo = readSource("src/screens/buyer/buyer.actions.repo.ts");
-    const directorRequest = readSource("src/screens/director/director.request.ts");
+    const directorRequest = readSource("src/screens/director/director.request.boundary.ts");
     const catalogRequest = readSource("src/lib/catalog/catalog.request.service.ts");
     const accountantApi = readSource("src/lib/api/accountant.ts");
 

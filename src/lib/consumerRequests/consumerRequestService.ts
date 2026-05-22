@@ -24,6 +24,7 @@ import { validateConsumerRepairRequestForApprove } from "./consumerRequestValida
 import type {
   ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
+  ConsumerRepairPdfSupplement,
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
@@ -237,6 +238,43 @@ export function getConsumerRepairRequestPdf(input: {
     : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
   if (!pdf) throw new Error("Consumer repair request PDF not found.");
   return openConsumerRepairRequestPdf({ requestId: input.requestDraftId, pdf });
+}
+
+export function generateConsumerRepairRequestPdfForDraft(input: {
+  requestDraftId: string;
+  userId?: string;
+  supplement?: ConsumerRepairPdfSupplement;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const userId = input.userId ?? bundle.draft.consumerUserId;
+  if (userId !== bundle.draft.consumerUserId) {
+    throw new ConsumerRepairValidationError([
+      {
+        code: "OWNER_MISMATCH",
+        messageRu: "PDF доступен только владельцу заявки.",
+        field: "userId",
+      },
+    ]);
+  }
+  const pdf = generateConsumerRepairRequestPdf({
+    draft: bundle.draft,
+    items: bundle.items,
+    media: bundle.media,
+    supplement: input.supplement,
+  });
+  return saveConsumerRepairBundle(withEvent(
+    {
+      ...bundle,
+      pdfs: [pdf, ...bundle.pdfs],
+    },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "consumer_pdf_generated_without_marketplace_send",
+      actorType: "consumer",
+      actorUserId: userId,
+      payload: { pdfId: pdf.id, marketplaceSend: false },
+    }),
+  ));
 }
 
 export function __resetConsumerRepairRequestStoreForTests(): void {

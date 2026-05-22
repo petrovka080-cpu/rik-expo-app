@@ -1,6 +1,6 @@
 import React from "react";
-import { Linking, Platform, Pressable, Text, TextInput, View } from "react-native";
-
+import { router } from "expo-router";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
@@ -11,6 +11,7 @@ import {
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
   createConsumerRepairRequestDraft,
+  generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
@@ -26,7 +27,6 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
-
 const CONSUMER_USER_ID = "consumer-demo-user";
 
 const REPAIR_TYPES = [
@@ -38,7 +38,6 @@ const REPAIR_TYPES = [
   "Двери/окна",
   "Другое",
 ] as const;
-
 type State = {
   problemText: string;
   repairType: string;
@@ -171,6 +170,21 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
     }
   };
 
+  private makePdf = () => {
+    try {
+      const current = this.ensureDraftBundle();
+      const synced = this.syncCurrentDraftFields(current);
+      const bundle = generateConsumerRepairRequestPdfForDraft({
+        requestDraftId: synced.draft.id,
+        userId: CONSUMER_USER_ID,
+      });
+      this.updateCurrentBundle(bundle, "PDF создан. PDF можно открыть без отправки в маркет.");
+      this.openPdf(bundle.draft.id);
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  };
+
   private sendToMarketplace = () => {
     try {
       const current = this.ensureDraftBundle();
@@ -190,16 +204,22 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
   };
 
   private openPdf = (requestDraftId?: string) => {
-    const current = requestDraftId
-      ? this.state.history.find((bundle) => bundle.draft.id === requestDraftId)
-      : this.state.bundle;
-    if (!current) return;
-    const pdf = getConsumerRepairRequestPdf({ requestDraftId: current.draft.id });
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      window.open(pdf.signedUrl, "_blank", "noopener,noreferrer");
-    } else {
-      void Linking.openURL(pdf.signedUrl);
-    }
+    const draftId = requestDraftId ?? this.state.bundle?.draft.id;
+    if (!draftId) return;
+    const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
+    router.push({
+      pathname: "/pdf-viewer",
+      params: {
+        uri: pdf.signedUrl,
+        title: pdf.titleRu,
+        fileName: `${pdf.pdfId}.pdf`,
+        sourceKind: "remote-url",
+        documentType: "request",
+        originModule: "reports",
+        source: "generated",
+        entityId: pdf.requestId,
+      },
+    });
     this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
   };
 
@@ -329,7 +349,7 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
 
     return (
       <AppScreen hasStickyAction style={styles.screen}>
-        <AppScreenHeader title="Заявка" subtitle="Ремонт дома" />
+        <AppScreenHeader title="Смета" subtitle="Ремонт дома" />
         <AppScreenScroll contentStyle={styles.content} testID="consumer-repair-screen">
           <Text style={styles.lead}>
             Опишите проблему, добавьте фото — AI подготовит черновик заявки и список того, что нужно уточнить.
@@ -426,6 +446,12 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
             onRemove={this.removeItem}
             onAddManual={this.addManualItem}
           />
+
+          {bundle && !approved && !sent ? (
+            <Pressable accessibilityRole="button" accessibilityLabel="Сделать PDF" onPress={this.makePdf} style={styles.makePdfButton} testID="consumer-estimate-make-pdf">
+              <Text style={styles.makePdfButtonText}>Сделать PDF</Text>
+            </Pressable>
+          ) : null}
 
           <ConsumerRepairMarketplaceSend bundle={bundle} errors={marketplaceSendErrors} />
 

@@ -11,10 +11,7 @@ import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
 import type { ProposalItem } from "./director.types";
 import { runDirectorApprovePipelineAction } from "./director.approve.boundary";
-import {
-  callDirectorDecideProposalItemsRpc,
-  type DirectorProposalItemDecision,
-} from "./director.proposalDecision.transport";
+import { runDirectorProposalRejectItemAction } from "./director.proposalDecision.boundary";
 
 type BusyLike = { isBusy: (key: string) => boolean };
 type Deps = {
@@ -180,33 +177,16 @@ export function useDirectorProposalActions({
       setDecidingId(pidStr);
       setActingPropItemId(Number(it.id));
 
-      const q = await supabase
-        .from("proposal_items")
-        .select("request_item_id")
-        .eq("proposal_id", pidStr)
-        .eq("id", it.id)
-        .maybeSingle();
-      if (q.error) throw q.error;
-
-      const rid = String(q.data?.request_item_id || "").trim();
-      requestItemIdForError = rid || null;
-      if (!rid) {
-        Alert.alert("Данные не найдены", "В строке предложения отсутствует request_item_id.");
-        return;
-      }
-
       const beforeCount = (itemsByProp[pidStr] || items || []).length;
       const isLast = beforeCount <= 1;
-      const payload: DirectorProposalItemDecision[] = [
-        { request_item_id: rid, decision: "rejected", comment: "Отклонено директором" },
-      ];
-
-      const res = await callDirectorDecideProposalItemsRpc(supabase, {
-        p_proposal_id: pidStr,
-        p_decisions: payload,
-        p_finalize: isLast,
+      const result = await runDirectorProposalRejectItemAction({
+        supabase,
+        proposalId: pidStr,
+        proposalItemId: it.id,
+        finalize: isLast,
+        comment: "Отклонено директором",
       });
-      if (res.error) throw res.error;
+      requestItemIdForError = result.requestItemId;
 
       setItemsByProp((prev) => {
         const before = prev[pidStr] || [];
@@ -319,22 +299,19 @@ export function useDirectorProposalActions({
       return;
     }
 
-    const clientMutationId = `dap_${pid}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-
     try {
       approveInFlightRef.current[pid] = true;
       setPropApproveId(pid);
 
       recordDirectorProposalCatch("cleanup_only", "director_pipeline_start", null, {
         proposalId: pid,
-        clientMutationId,
       });
 
       const result = await runDirectorApprovePipelineAction({
         supabase,
         proposalId: pid,
-        clientMutationId,
       });
+      const clientMutationId = result.clientMutationId;
       const workSeedOk = result.workSeedOk;
       const workSeedError = result.workSeedError;
       const idempotentReplay = result.idempotentReplay;
@@ -363,7 +340,6 @@ export function useDirectorProposalActions({
       const normalizedError = toProposalRequestItemIntegrityDegradedError(e) ?? e;
       recordDirectorProposalCatch("critical_fail", "proposal_approve_failed", normalizedError, {
         proposalId: pid,
-        clientMutationId,
       });
       Alert.alert("Не удалось утвердить", errText(normalizedError) || "Попробуйте еще раз.");
     } finally {

@@ -36,10 +36,38 @@ export type ReleaseGateName =
   | "enterprise-ai-contract-runtime-invariant-proof"
   | "ai-safe-action-draft-approval-proof"
   | "ai-human-approval-ledger-execution-boundary-proof"
+  | "global-estimate-professional-boq-proof"
+  | "global-estimate-production-safe-proof"
+  | "global-estimate-b2c-request-proof"
+  | "global-estimate-pdf-marketplace-proof"
+  | "global-estimate-localization-runtime-proof"
+  | "global-estimate-data-ops-admin-governance-proof"
+  | "global-estimate-data-ops-proof"
+  | "global-estimate-data-ops-import-proof"
+  | "global-estimate-data-ops-coverage-proof"
+  | "ai-estimate-to-pdf-proof"
+  | "consumer-estimate-tab-pdf-proof"
+  | "bottom-nav-estimate-marketplace-plus-proof"
+  | "ai-estimate-pdf-open-runtime-proof"
+  | "all-screens-enterprise-web-proof"
+  | "all-screens-enterprise-android-emulator-proof"
+  | "all-screens-pdf-open-proof"
+  | "all-screens-bottom-nav-proof"
+  | "all-screens-backend-boundary-proof"
+  | "all-screens-role-ai-proof"
+  | "all-screens-no-overlap-proof"
+  | "enterprise-release-candidate-proof"
+  | "enterprise-release-candidate-web-proof"
+  | "enterprise-release-candidate-android-proof"
+  | "enterprise-release-candidate-backend-proof"
+  | "enterprise-release-candidate-ota-runtime-proof"
+  | "enterprise-release-candidate-rollback-proof"
+  | "enterprise-release-candidate-observability-proof"
   | "universal-qa-smoke-release-gate"
   | "universal-qa-smoke-maestro"
   | "ios-eas-update-native-impact-classifier"
   | "jest-run-in-band"
+  | "final-50k-92-external-live-proof-closeout"
   | "jest"
   | "git-diff-check";
 
@@ -236,12 +264,92 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "enterprise-ai-contract-runtime-invariant-proof", command: "npx tsx scripts/ai/runAiEnterpriseContractRuntimeInvariantProof.ts" },
   { name: "ai-safe-action-draft-approval-proof", command: "npx tsx scripts/ai/runAiSafeActionDraftApprovalProof.ts" },
   { name: "ai-human-approval-ledger-execution-boundary-proof", command: "npx tsx scripts/ai/runAiHumanApprovalLedgerExecutionBoundaryProof.ts" },
+  { name: "global-estimate-professional-boq-proof", command: "npx tsx scripts/e2e/runGlobalEstimateLocalizationProfessionalBoqProof.ts" },
+  { name: "global-estimate-production-safe-proof", command: "npx tsx scripts/e2e/runGlobalEstimateProductionSafeProof.ts" },
+  { name: "global-estimate-b2c-request-proof", command: "npx tsx scripts/e2e/runGlobalEstimateB2CRequestProof.ts" },
+  { name: "global-estimate-pdf-marketplace-proof", command: "npx tsx scripts/e2e/runGlobalEstimatePdfMarketplaceProof.ts" },
+  { name: "global-estimate-localization-runtime-proof", command: "npx tsx scripts/e2e/runGlobalEstimateLocalizationRuntimeProof.ts" },
+  { name: "global-estimate-data-ops-admin-governance-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsAdminGovernanceProof.ts" },
+  { name: "global-estimate-data-ops-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsProof.ts" },
+  { name: "global-estimate-data-ops-import-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" },
+  { name: "global-estimate-data-ops-coverage-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" },
+  { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
+  { name: "consumer-estimate-tab-pdf-proof", command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts" },
+  { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
+  { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
+  { name: "all-screens-enterprise-web-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts" },
+  { name: "all-screens-enterprise-android-emulator-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" },
+  { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },
+  { name: "all-screens-bottom-nav-proof", command: "npx tsx scripts/e2e/runAllScreensBottomNavProof.ts" },
+  { name: "all-screens-backend-boundary-proof", command: "npx tsx scripts/e2e/runAllScreensBackendBoundaryProof.ts" },
+  { name: "all-screens-role-ai-proof", command: "npx tsx scripts/e2e/runAllScreensRoleAiProof.ts" },
+  { name: "all-screens-no-overlap-proof", command: "npx tsx scripts/e2e/runAllScreensNoOverlapProof.ts" },
+  { name: "enterprise-release-candidate-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateProof.ts" },
+  { name: "enterprise-release-candidate-web-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateWebProof.ts" },
+  { name: "enterprise-release-candidate-android-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateAndroidProof.ts" },
+  { name: "enterprise-release-candidate-backend-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateBackendProof.ts" },
+  { name: "enterprise-release-candidate-ota-runtime-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateOtaRuntimeProof.ts" },
+  { name: "enterprise-release-candidate-rollback-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateRollbackProof.ts" },
+  { name: "enterprise-release-candidate-observability-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateObservabilityProof.ts" },
   { name: "universal-qa-smoke-release-gate", command: "npx tsx scripts/e2e/runAiUniversalQaSmokeToReleaseGate.ts" },
   { name: "universal-qa-smoke-maestro", command: "npx tsx scripts/e2e/runAiUniversalLargeQuestionSmokeMaestroProof.ts" },
   { name: "ios-eas-update-native-impact-classifier", command: "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json" },
   { name: "jest-run-in-band", command: "npm test -- --runInBand" },
   { name: "git-diff-check", command: "git diff --check" },
+  { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },
 ];
+
+export const FINAL_50K_92_GREEN_STATUS = "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY";
+
+export type Final50k92GreenClaimEvidence = {
+  finalStatus: string;
+  fixtureSufficient: boolean;
+  proofRunId: string | null;
+  wholeApp50kLiveProofPassed: boolean;
+  rlsGreen: boolean;
+  fullJestPassed: boolean;
+  releaseVerifyPassed: boolean;
+};
+
+export type Final50k92GreenReleaseGuardResult = {
+  passed: boolean;
+  checked: boolean;
+  blockers: string[];
+  requiresFixtureSufficient: true;
+  requiresProofRunId: true;
+  requiresWholeApp50kLiveProof: true;
+  requiresRlsGreen: true;
+  requiresFullJestPassed: true;
+  requiresReleaseVerifyPassed: true;
+};
+
+export function evaluateFinal50k92GreenReleaseGuard(
+  evidence: Final50k92GreenClaimEvidence,
+): Final50k92GreenReleaseGuardResult {
+  const blockers: string[] = [];
+  const checked = evidence.finalStatus === FINAL_50K_92_GREEN_STATUS;
+
+  if (checked) {
+    if (!evidence.fixtureSufficient) blockers.push("BLOCKED_EXTERNAL_ONLY_50K_FIXTURE_DATA_REQUIRED");
+    if (!evidence.proofRunId) blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_PROOF_RUN_ID_REQUIRED");
+    if (!evidence.wholeApp50kLiveProofPassed) blockers.push("BLOCKED_EXTERNAL_ONLY_WHOLE_APP_50K_LIVE_PROOF_REQUIRED");
+    if (!evidence.rlsGreen) blockers.push("BLOCKED_EXTERNAL_ONLY_RLS_DYNAMIC_CROSS_TENANT_REQUIRED");
+    if (!evidence.fullJestPassed) blockers.push("BLOCKED_INTERNAL_FULL_JEST_REQUIRED");
+    if (!evidence.releaseVerifyPassed) blockers.push("BLOCKED_INTERNAL_RELEASE_VERIFY_REQUIRED");
+  }
+
+  return {
+    passed: blockers.length === 0,
+    checked,
+    blockers,
+    requiresFixtureSufficient: true,
+    requiresProofRunId: true,
+    requiresWholeApp50kLiveProof: true,
+    requiresRlsGreen: true,
+    requiresFullJestPassed: true,
+    requiresReleaseVerifyPassed: true,
+  };
+}
 
 export const RELEASE_GUARD_MAIN_PUSH_APPROVAL_KEYS = ["S_PRODUCTION_MAIN_PUSH_APPROVED"] as const;
 

@@ -8,11 +8,7 @@ import {
 } from "../../lib/api/proposalAttachments.service";
 import { recordCatchDiscipline } from "../../lib/observability/catchDiscipline";
 import type { ProposalAttachmentRow, ProposalItem } from "./director.types";
-import {
-  callDirectorDecideProposalItemsRpc,
-  type DirectorProposalItemDecision,
-} from "./director.proposalDecision.transport";
-import { MAX_LIST_LIMIT } from "../../lib/api/queryLimits";
+import { runDirectorProposalReturnAllAction } from "./director.proposalDecision.boundary";
 
 type Deps = {
   supabase: any;
@@ -147,40 +143,12 @@ export function useDirectorProposalDetail({
 
       setPropReturnId(pidStr);
 
-      const q = await supabase
-        .from("proposal_items")
-        .select("request_item_id")
-        .eq("proposal_id", pidStr)
-        .limit(MAX_LIST_LIMIT);
-
-      if (q.error) throw q.error;
-
-      const ids = Array.from(
-        new Set(
-          ((q.data || []) as { request_item_id?: string | null }[])
-            .map((row) => String(row.request_item_id || "").trim())
-            .filter(Boolean),
-        ),
-      );
-
-      if (!ids.length) {
-        Alert.alert("Пусто", "В предложении нет строк для возврата.");
-        return;
-      }
-
       const comment = (note || "").trim() || "Отклонено директором";
-      const payload: DirectorProposalItemDecision[] = ids.map((requestItemId) => ({
-        request_item_id: requestItemId,
-        decision: "rejected",
+      await runDirectorProposalReturnAllAction({
+        supabase,
+        proposalId: pidStr,
         comment,
-      }));
-
-      const res = await callDirectorDecideProposalItemsRpc(supabase, {
-        p_proposal_id: pidStr,
-        p_decisions: payload,
-        p_finalize: true,
       });
-      if (res.error) throw res.error;
 
       setItemsByProp((map) => {
         const clone = { ...map };

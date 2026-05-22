@@ -21,6 +21,9 @@ export type MarketSupplierMessageInsert = {
   message: string;
 };
 
+export type MarketplaceListingInsert =
+  Database["public"]["Tables"]["market_listings"]["Insert"];
+
 export async function callMarketplaceItemsScopePageRpc(args: MarketItemsScopePageRpcArgs) {
   return await supabase.rpc("marketplace_items_scope_page_v1" as never, {
     p_offset: args.p_offset,
@@ -42,4 +45,8 @@ export async function updateMarketplaceProposalHead(proposalId: string, patch: M
 
 export async function insertMarketplaceSupplierMessage(payload: MarketSupplierMessageInsert) {
   return await supabase.from("supplier_messages" as never).insert(payload as never).select("id").single();
+}
+
+export async function insertMarketplaceListingDraft(payload: MarketplaceListingInsert) {
+  return await supabase.from("market_listings").insert(payload);
 }

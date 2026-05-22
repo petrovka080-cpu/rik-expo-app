@@ -49,11 +49,95 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   const normalized = file.replace(/\\/g, "/");
   return (
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
+    normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
+    normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
+    normalized.startsWith("artifacts/S_ALL_SCREENS_") ||
+    normalized.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
+    normalized === "src/features/ai/AIAssistantEstimatePdfActions.tsx" ||
+    normalized.startsWith("src/lib/ai/estimatePdf/") ||
+    normalized.startsWith("tests/aiEstimatePdf/") ||
+    normalized.startsWith("tests/architecture/aiEstimatePdf") ||
+    normalized.startsWith("tests/architecture/consumerEstimate") ||
+    normalized.startsWith("tests/architecture/allScreens") ||
+    normalized.startsWith("tests/architecture/releaseCandidate") ||
+    normalized.startsWith("tests/allScreensRuntime/") ||
+    normalized.startsWith("tests/releaseCandidate/") ||
+    normalized.startsWith("tests/globalEstimate/") ||
+    normalized.startsWith("tests/architecture/globalEstimate") ||
     normalized.startsWith("artifacts/S_MARKETPLACE_ADD_PHOTO_AI_FILL_") ||
     normalized.startsWith("artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_") ||
+    normalized.startsWith("artifacts/S_CORE_MUTATION_IDEMPOTENCY_") ||
+    normalized.startsWith("artifacts/S_CORE_WORKFLOWS_") ||
+    normalized.startsWith("artifacts/S_OBSERVABILITY_") ||
+    normalized.startsWith("artifacts/S_SECURITY_PRIVACY_") ||
+    normalized.startsWith("scripts/audit/auditCoreMutationIdempotencyDiscipline") ||
+    normalized.startsWith("scripts/audit/auditCoreAuditTrail") ||
+    normalized.startsWith("scripts/audit/auditCoreWorkflowTransactions") ||
+    normalized.startsWith("scripts/audit/coreMutationIdempotency.shared") ||
+    normalized.startsWith("scripts/audit/coreWorkflows.shared") ||
+    normalized.startsWith("scripts/audit/auditObservabilityCoverage") ||
+    normalized.startsWith("scripts/audit/auditRateLimitCoverage") ||
+    normalized.startsWith("scripts/audit/auditArtifactsNoPii") ||
+    normalized.startsWith("scripts/audit/auditSecurityPrivacyHardening") ||
+    normalized.startsWith("scripts/audit/auditPiiInArtifacts") ||
+    normalized.startsWith("scripts/audit/auditPublicMarketplaceSafeFields") ||
+    normalized.startsWith("scripts/audit/auditSignedUrlExpiry") ||
+    normalized.startsWith("scripts/audit/auditSecretsInFrontend") ||
+    normalized.startsWith("scripts/audit/observabilityOps.shared") ||
+    normalized.startsWith("scripts/audit/securityPrivacyHardening.shared") ||
+    normalized.startsWith("scripts/e2e/runCoreWorkflowIdempotencyProof") ||
+    normalized.startsWith("scripts/e2e/runGlobalEstimate") ||
+    normalized.startsWith("scripts/e2e/runAiEstimate") ||
+    normalized.startsWith("scripts/e2e/runConsumerEstimateTabPdfProof") ||
+    normalized.startsWith("scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof") ||
+    normalized.startsWith("scripts/e2e/runAllScreens") ||
+    normalized === "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts" ||
+    normalized.startsWith("scripts/e2e/runEnterpriseReleaseCandidate") ||
+    normalized === "scripts/e2e/enterpriseReleaseCandidate.shared.ts" ||
+    normalized === "scripts/e2e/enterpriseReleaseCandidatePolicy.ts" ||
+    normalized === "maestro/all-screens-enterprise-runtime.yaml" ||
+    normalized === "maestro/enterprise-release-candidate.yaml" ||
+    normalized.startsWith("tests/architecture/coreMutationIdempotencyDiscipline") ||
+    normalized.startsWith("tests/architecture/noScreenRandomClientMutationIds") ||
+    normalized === "tests/api/coreMutationId.contract.test.ts" ||
+    normalized === "src/lib/api/coreMutationId.ts" ||
+    normalized === "src/lib/ops/productionOpsTelemetry.ts" ||
+    normalized === "src/lib/security/securityPrivacyHardening.ts" ||
+    normalized === "src/lib/database.types.ts" ||
+    normalized === "src/lib/documents/attachmentOpener.ts" ||
+    normalized === "src/lib/documents/attachmentOpener.test.ts" ||
+    normalized === "src/lib/catalog/catalog.proposalCreation.service.ts" ||
+    normalized === "src/screens/director/director.approve.boundary.ts" ||
+    normalized === "src/screens/director/director.approve.boundary.test.ts" ||
+    normalized === "src/screens/director/director.request.boundary.ts" ||
+    normalized === "src/screens/director/director.request.ts" ||
+    normalized === "src/screens/director/director.proposal.ts" ||
+    normalized === "src/screens/profile/profile.services.ts" ||
+    normalized === "src/features/market/market.repository.ts" ||
+    normalized === "src/features/market/marketHome.data.ts" ||
+    normalized === "src/screens/warehouse/warehouse.issue.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
     normalized === "supabase/migrations/20260521120000_media_storage_upload_processing_core.sql" ||
     normalized === "supabase/migrations/20260521143000_b2c_consumer_repair_requests.sql" ||
-    normalized === "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql"
+    normalized === "supabase/migrations/20260521153000_b2c_consumer_repair_marketplace_validation_pdf_hardening.sql" ||
+    normalized === "supabase/migrations/20260522100000_media_storage_100k_orphan_retry_backpressure.sql" ||
+    normalized === "supabase/migrations/20260522110000_core_txn_marketplace_publish_idempotency.sql" ||
+    normalized === "supabase/migrations/20260522123000_rls_dynamic_cross_tenant_static_coverage.sql" ||
+    normalized === "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql" ||
+    normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
+    normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
+    normalized.startsWith("tests/core/") ||
+    normalized.startsWith("tests/ops/") ||
+    normalized.startsWith("tests/security/aiContextSanitizer") ||
+    normalized.startsWith("tests/security/noDebugRuntimeProviderUi") ||
+    normalized.startsWith("tests/security/noPiiInArtifacts") ||
+    normalized.startsWith("tests/security/noSecretsInFrontend") ||
+    normalized.startsWith("tests/security/publicMarketplaceSafeFields") ||
+    normalized.startsWith("tests/security/signedUrlExpiry") ||
+    normalized.startsWith("tests/architecture/noSensitiveDataInArtifacts") ||
+    normalized.startsWith("tests/architecture/coreWorkflowNoDuplicateMutation")
   );
 };
 

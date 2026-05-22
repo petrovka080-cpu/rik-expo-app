@@ -8,6 +8,7 @@ import { getUriScheme, hashString32, isHttpUri, normalizeLocalFileUri } from "..
 import { registerTimeout } from "../lifecycle/timerRegistry";
 import { fetchWithRequestTimeout } from "../requestTimeoutPolicy";
 import { redactSensitiveText } from "../security/redaction";
+import { PRIVATE_PDF_SIGNED_URL_MAX_TTL_SECONDS } from "../security/securityPrivacyHardening";
 import { recordPlatformObservability } from "../observability/platformObservability";
 import { createAttachmentSignedUrl } from "./attachmentOpener.storage.transport";
 
@@ -227,7 +228,7 @@ async function resolveAttachmentSource(input: AppAttachmentOpenInput): Promise<R
   const bucketId = String(input.bucketId || "").trim();
   const storagePath = String(input.storagePath || "").trim();
   if (bucketId && storagePath) {
-    const signed = await createAttachmentSignedUrl(bucketId, storagePath, 60 * 60);
+    const signed = await createAttachmentSignedUrl(bucketId, storagePath, PRIVATE_PDF_SIGNED_URL_MAX_TTL_SECONDS);
     if (signed.error) throw new Error(`Attachment signed URL failed: ${signed.error.message}`);
     const signedUrl = String(signed.data?.signedUrl || "").trim();
     if (!signedUrl) throw new Error("Attachment signed URL is empty");

@@ -12,8 +12,10 @@ describe("consumer repair backend wiring contract", () => {
     expect(screen).toContain("approveConsumerRepairRequestDraft(");
     expect(screen).toContain("sendConsumerRepairRequestToMarketplace(");
     expect(screen).toContain("getConsumerRepairRequestPdf(");
-    expect(screen).toContain("window.open(pdf.signedUrl");
-    expect(screen).toContain("Linking.openURL(pdf.signedUrl");
+    expect(screen).toContain("router.push({");
+    expect(screen).toContain('pathname: "/pdf-viewer"');
+    expect(screen).not.toContain("window.open(pdf.signedUrl");
+    expect(screen).not.toContain("Linking.openURL(pdf.signedUrl");
     expect(marketplaceService).toContain("validateConsumerRepairRequestForMarketplace(input.requestDraftId, input.userId)");
     expect(validationService).toContain("CONTACT_REQUIRED");
     expect(validationService).toContain("PDF_FILE_MISSING");

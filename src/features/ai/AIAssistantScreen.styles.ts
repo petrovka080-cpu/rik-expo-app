@@ -426,6 +426,29 @@ export const aiAssistantScreenStyles = StyleSheet.create({
   userText: {
     color: "#FFFFFF",
   },
+  estimateActionRow: {
+    alignSelf: "flex-start",
+    maxWidth: "100%",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: -6,
+  },
+  estimateActionButton: {
+    minHeight: 36,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+  estimateActionText: {
+    color: "#0F172A",
+    fontSize: 12,
+    fontWeight: "800",
+  },
   loadingBubble: {
     flexDirection: "row",
     alignItems: "center",

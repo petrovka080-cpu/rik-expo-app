@@ -12,7 +12,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppStickyActionBar } from "../../../components/layout/AppStickyActionBar";
-import { LiveRouteMediaEntrypointPanel } from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
+import {
+  LiveRouteMediaEntrypointPanel,
+  type LiveRouteMediaEntrypointSnapshot,
+} from "../../../features/ai/liveRouteWiring/LiveRouteMediaEntrypointPanel";
 import { profileStyles } from "../profile.styles";
 import React19SafeModal from "../../../ui/React19SafeModal";
 import type {
@@ -91,8 +94,13 @@ type ListingModalProps = {
   onPublish: () => void;
   onChangeListingKind: (kind: ListingKind) => void;
   onChangeListingTitle: (value: string) => void;
+  onChangeListingCity: (value: string) => void;
+  onChangeListingPrice: (value: string) => void;
   onChangeListingDescription: (value: string) => void;
   onChangeListingPhone: (value: string) => void;
+  onMarketplaceMediaSnapshotChange: (
+    snapshot: LiveRouteMediaEntrypointSnapshot,
+  ) => void;
   onInlineCatalogPick: (item: CatalogSearchItem) => void;
   onItemModalClose: () => void;
   onChangeEditingItemCity: (value: string) => void;
@@ -115,8 +123,11 @@ export function ListingModal({
   onPublish,
   onChangeListingKind,
   onChangeListingTitle,
+  onChangeListingCity,
+  onChangeListingPrice,
   onChangeListingDescription,
   onChangeListingPhone,
+  onMarketplaceMediaSnapshotChange,
   onInlineCatalogPick,
   onItemModalClose,
   onChangeEditingItemCity,
@@ -216,7 +227,10 @@ export function ListingModal({
                 })}
               </View>
 
-              <LiveRouteMediaEntrypointPanel variant="marketplace" />
+              <LiveRouteMediaEntrypointPanel
+                variant="marketplace"
+                onSnapshotChange={onMarketplaceMediaSnapshotChange}
+              />
 
               <LabeledInput
                 ref={titleInputRef}
@@ -300,6 +314,24 @@ export function ListingModal({
                 onSubmitEditing={focusPhoneInput}
                 blurOnSubmit
                 autoCapitalize="sentences"
+              />
+
+              <LabeledInput
+                label={UI_COPY.cityLabel}
+                value={listingForm.listingCity}
+                onChangeText={onChangeListingCity}
+                placeholder={UI_COPY.cityPlaceholder}
+                returnKeyType="next"
+                autoCapitalize="words"
+              />
+
+              <LabeledInput
+                label={UI_COPY.priceLabel}
+                value={listingForm.listingPrice}
+                onChangeText={onChangeListingPrice}
+                placeholder={UI_COPY.pricePlaceholder}
+                keyboardType="numeric"
+                returnKeyType="next"
               />
 
               <LabeledInput

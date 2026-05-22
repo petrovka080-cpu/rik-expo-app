@@ -6,3 +6,4 @@ export * from "./estimateProofMatrix";
 export * from "./estimateQuantityCalculator";
 export * from "./estimateTableComposer";
 export * from "./estimateTypes";
+export * from "../globalEstimate";

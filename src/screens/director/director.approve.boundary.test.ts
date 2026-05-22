@@ -92,6 +92,7 @@ describe("director approve boundary", () => {
 
     expect(result).toEqual({
       proposalId: "proposal-1",
+      clientMutationId: "mutation-1",
       purchaseId: "purchase-1",
       workSeedOk: true,
       workSeedError: null,

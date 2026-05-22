@@ -16,11 +16,18 @@ export {
   validateConsumerRepairRequestForMarketplace,
 } from "./consumerRequestValidationService";
 export {
+  assertConsumerRepairGlobalEstimateDraftSafe,
+  buildConsumerRepairAiDraftFromGlobalEstimate,
+  createConsumerRepairDraftFromGlobalEstimate,
+  createGlobalEstimateB2cDraftTrace,
+} from "./consumerRequestGlobalEstimateIntegration";
+export {
   __resetConsumerRepairRequestStoreForTests,
   addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   createConsumerRepairRequestDraft,
+  generateConsumerRepairRequestPdfForDraft,
   getConsumerRepairRequest,
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
@@ -42,6 +49,7 @@ export type {
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
   ConsumerRepairRequestPdf,
+  ConsumerRepairPdfSupplement,
   ConsumerRepairPdfOpenResult,
   ConsumerRepairRole,
   ConsumerRepairStatus,

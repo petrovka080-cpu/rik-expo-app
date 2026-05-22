@@ -79,4 +79,18 @@ export const consumerRepairRequestScreenStyles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "900",
   },
+  makePdfButton: {
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#CBD5E1",
+  },
+  makePdfButtonText: {
+    color: "#0F172A",
+    fontSize: 13,
+    fontWeight: "900",
+  },
 });

@@ -1,13 +1,15 @@
 import "../global.css";
 
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs, router, usePathname, useSegments } from "expo-router";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { Link, Tabs, router, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useMemo, useRef } from "react";
-import { Platform, StyleSheet, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { APP_LAYOUT } from "../../src/components/layout/appLayout";
 import AssistantFab from "../../src/features/ai/AssistantFab";
+import { ADD_LISTING_ROUTE } from "../../src/lib/navigation/coreRoutes";
 import {
   recordOfficeTabOwnerBlur,
   recordOfficeTabOwnerFocus,
@@ -16,26 +18,51 @@ import {
 
 type TabIconName = keyof typeof Ionicons.glyphMap;
 
-function iconForRoute(name: string, focused: boolean): TabIconName {
-  if (name === "request" || name === "request/index") {
-    return focused ? "document-text" : "document-text-outline";
-  }
+type BottomNavItem = {
+  routeName: "office" | "request/index" | "market" | "chat" | "profile";
+  label: string;
+  testID: string;
+  legacyTestID: string;
+  icon: (focused: boolean) => TabIconName;
+};
 
-  switch (name) {
-    case "market":
-      return focused ? "storefront" : "storefront-outline";
-    case "office":
-      return focused ? "briefcase" : "briefcase-outline";
-    case "add":
-      return focused ? "add-circle" : "add-circle-outline";
-    case "chat":
-      return focused ? "chatbubbles" : "chatbubbles-outline";
-    case "profile":
-      return focused ? "person-circle" : "person-circle-outline";
-    default:
-      return focused ? "ellipse" : "ellipse-outline";
-  }
-}
+const BOTTOM_NAV_ITEMS: BottomNavItem[] = [
+  {
+    routeName: "office",
+    label: "Офис",
+    testID: "bottom-tab-office",
+    legacyTestID: "tabs.office",
+    icon: (focused) => (focused ? "briefcase" : "briefcase-outline"),
+  },
+  {
+    routeName: "request/index",
+    label: "Смета",
+    testID: "bottom-tab-request",
+    legacyTestID: "tabs.request",
+    icon: (focused) => (focused ? "document-text" : "document-text-outline"),
+  },
+  {
+    routeName: "market",
+    label: "Маркет",
+    testID: "bottom-tab-market",
+    legacyTestID: "tabs.market",
+    icon: (focused) => (focused ? "storefront" : "storefront-outline"),
+  },
+  {
+    routeName: "chat",
+    label: "Чат",
+    testID: "bottom-tab-chat",
+    legacyTestID: "tabs.chat",
+    icon: (focused) => (focused ? "chatbubbles" : "chatbubbles-outline"),
+  },
+  {
+    routeName: "profile",
+    label: "Профиль",
+    testID: "bottom-tab-profile",
+    legacyTestID: "tabs.profile",
+    icon: (focused) => (focused ? "person-circle" : "person-circle-outline"),
+  },
+];
 
 function resolveAssistantContext(segments: string[]): string {
   const leaf = segments[segments.length - 1] || "";
@@ -47,6 +74,94 @@ function resolveAssistantContext(segments: string[]): string {
 
 function isOfficeTabPath(pathname: string | null | undefined) {
   return pathname === "/office" || String(pathname ?? "").startsWith("/office/");
+}
+
+function AppBottomNav({
+  state,
+  descriptors,
+  navigation,
+  bottomInset,
+  tabHeight,
+}: BottomTabBarProps & { bottomInset: number; tabHeight: number }) {
+  const routeByName = new Map(
+    state.routes.map((route, index) => [route.name, { route, index }]),
+  );
+
+  const renderTab = (item: BottomNavItem) => {
+    const match = routeByName.get(item.routeName);
+    if (!match) return null;
+
+    const { route, index } = match;
+    const focused = state.index === index;
+    const descriptor = descriptors[route.key];
+    const color = focused
+      ? (descriptor?.options.tabBarActiveTintColor ?? "#2563EB")
+      : (descriptor?.options.tabBarInactiveTintColor ?? "#64748B");
+
+    const onPress = () => {
+      const event = navigation.emit({
+        type: "tabPress",
+        target: route.key,
+        canPreventDefault: true,
+      });
+
+      if (!focused && !event.defaultPrevented) {
+        navigation.navigate(route.name, route.params);
+      }
+    };
+
+    return (
+      <View key={item.routeName} testID={item.testID} style={styles.navSlot}>
+        <Pressable
+          testID={item.legacyTestID}
+          accessibilityRole="tab"
+          accessibilityLabel={item.label}
+          accessibilityState={{ selected: focused }}
+          onPress={onPress}
+          style={({ pressed }) => [
+            styles.navTabButton,
+            pressed ? styles.navPressed : null,
+          ]}
+        >
+          <Ionicons name={item.icon(focused)} size={22} color={color} />
+          <Text style={[styles.navTabLabel, { color }]} numberOfLines={1}>
+            {item.label}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  return (
+    <View
+      testID="app-bottom-nav"
+      style={[
+        styles.navShell,
+        { height: tabHeight + bottomInset, paddingBottom: bottomInset },
+      ]}
+    >
+      <View style={styles.navRow}>
+        {renderTab(BOTTOM_NAV_ITEMS[0])}
+        {renderTab(BOTTOM_NAV_ITEMS[1])}
+        {renderTab(BOTTOM_NAV_ITEMS[2])}
+        <View testID="bottom-nav-marketplace-add-slot" style={styles.navSlot}>
+          <Link
+            href={ADD_LISTING_ROUTE}
+            testID="bottom-nav-marketplace-add"
+            accessibilityRole="button"
+            accessibilityLabel="Добавить товар в маркет"
+            style={styles.navAddButton}
+          >
+            <Text style={styles.navAddText} numberOfLines={1}>
+              ＋
+            </Text>
+          </Link>
+        </View>
+        {renderTab(BOTTOM_NAV_ITEMS[3])}
+        {renderTab(BOTTOM_NAV_ITEMS[4])}
+      </View>
+    </View>
+  );
 }
 
 export default function TabsLayout() {
@@ -70,7 +185,9 @@ export default function TabsLayout() {
   const assistantContext = resolveAssistantContext(segments);
   const showAssistantFab = leafSegment !== "ai" && leafSegment !== "chat";
   const routeOftenHasStickyAction =
-    pathname === "/add" || pathname === "/request" || String(pathname ?? "").startsWith("/office/");
+    pathname === "/add" ||
+    pathname === "/request" ||
+    String(pathname ?? "").startsWith("/office/");
   const assistantBottomOffset =
     (routeOftenHasStickyAction
       ? APP_LAYOUT.floatingAiButtonWithStickyActionOffsetPx
@@ -123,6 +240,13 @@ export default function TabsLayout() {
     <View style={styles.shell}>
       <Tabs
         initialRouteName="market"
+        tabBar={(props) => (
+          <AppBottomNav
+            {...props}
+            bottomInset={bottomInset}
+            tabHeight={tabHeight}
+          />
+        )}
         screenOptions={{
           headerShown: false,
           headerTitle: "",
@@ -145,29 +269,15 @@ export default function TabsLayout() {
             tabBarLabel: "Офис",
             tabBarAccessibilityLabel: "Офис",
             tabBarButtonTestID: "tabs.office",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("office", focused)}
-                color={color}
-                size={size}
-              />
-            ),
           }}
         />
         <Tabs.Screen
           name="request/index"
           options={{
-            title: "Заявка",
-            tabBarLabel: "Заявка",
-            tabBarAccessibilityLabel: "Заявка",
+            title: "Смета",
+            tabBarLabel: "Смета",
+            tabBarAccessibilityLabel: "Смета",
             tabBarButtonTestID: "tabs.request",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("request/index", focused)}
-                color={color}
-                size={size}
-              />
-            ),
           }}
         />
         <Tabs.Screen
@@ -177,13 +287,6 @@ export default function TabsLayout() {
             tabBarLabel: "Маркет",
             tabBarAccessibilityLabel: "Маркет",
             tabBarButtonTestID: "tabs.market",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("market", focused)}
-                color={color}
-                size={size}
-              />
-            ),
           }}
         />
         <Tabs.Screen name="add" options={{ href: null }} />
@@ -193,13 +296,7 @@ export default function TabsLayout() {
             title: "Чат",
             tabBarLabel: "Чат",
             tabBarAccessibilityLabel: "Чат",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("chat", focused)}
-                color={color}
-                size={size}
-              />
-            ),
+            tabBarButtonTestID: "tabs.chat",
           }}
         />
         <Tabs.Screen
@@ -209,13 +306,6 @@ export default function TabsLayout() {
             tabBarLabel: "Профиль",
             tabBarAccessibilityLabel: "Профиль",
             tabBarButtonTestID: "tabs.profile",
-            tabBarIcon: ({ focused, color, size }) => (
-              <Ionicons
-                name={iconForRoute("profile", focused)}
-                color={color}
-                size={size}
-              />
-            ),
           }}
         />
 
@@ -248,5 +338,57 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  navShell: {
+    borderTopWidth: 1,
+    borderTopColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+  },
+  navRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "stretch",
+  },
+  navSlot: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navTabButton: {
+    width: "100%",
+    minHeight: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 3,
+    paddingHorizontal: 2,
+  },
+  navTabLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  navAddButton: {
+    width: 48,
+    height: 48,
+    minWidth: 48,
+    minHeight: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#16A34A",
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.14,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  navAddText: {
+    color: "#FFFFFF",
+    fontSize: 28,
+    lineHeight: 30,
+    fontWeight: "900",
+  },
+  navPressed: {
+    opacity: 0.72,
   },
 });

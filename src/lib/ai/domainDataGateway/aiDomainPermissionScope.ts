@@ -1,4 +1,5 @@
 import type { AiDomainName } from "./aiDomainQueryTypes";
+import { getAiDomainRoleForbiddenDomains, getAiDomainRoleAllowlist, isAiDomainGatewayRole } from "./aiDomainRoleAllowlist";
 
 export type AiDomainPermissionScope = {
   role: string;
@@ -43,21 +44,28 @@ export function buildAiDomainPermissionScope(input: {
   const clientRestricted = role === "client";
   const contractorRestricted = role === "contractor";
   const consumerRestricted = role === "consumer";
+  const roleHasStrictAllowlist = isAiDomainGatewayRole(role);
 
-  const forbiddenDomains = clientRestricted
-    ? ["finance", "approvals"] as AiDomainName[]
-    : contractorRestricted
-      ? ["finance", "client"] as AiDomainName[]
-      : consumerRestricted
-        ? ALL_DOMAINS.filter((domain) => domain !== "consumer_repair" && domain !== "marketplace")
-      : [];
+  const forbiddenDomains = roleHasStrictAllowlist
+    ? getAiDomainRoleForbiddenDomains(role)
+    : clientRestricted
+      ? ["finance", "approvals"] as AiDomainName[]
+      : contractorRestricted
+        ? ["finance", "client"] as AiDomainName[]
+        : consumerRestricted
+          ? ALL_DOMAINS.filter((domain) => domain !== "consumer_repair" && domain !== "marketplace")
+        : [];
+
+  const allowedDomains = roleHasStrictAllowlist
+    ? [...getAiDomainRoleAllowlist(role)]
+    : ALL_DOMAINS.filter((domain) => !forbiddenDomains.includes(domain));
 
   return {
     role,
     userId: input.userId,
     orgId: input.orgId,
     projectId: input.projectId,
-    allowedDomains: ALL_DOMAINS.filter((domain) => !forbiddenDomains.includes(domain)),
+    allowedDomains,
     forbiddenDomains,
     allowedEntityScopes: [
       {

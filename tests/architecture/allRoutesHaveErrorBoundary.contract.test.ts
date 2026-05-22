@@ -10,7 +10,7 @@ describe("architecture: all app routes have error boundary coverage", () => {
     });
 
     expect(verification.final_status).toBe(GREEN_SCALE_ROUTE_ERROR_BOUNDARY_COVERAGE_READY);
-    expect(verification.metrics.routes_total).toBe(42);
+    expect(verification.metrics.routes_total).toBe(52);
     expect(verification.metrics.screenRoutesWithBoundary).toBe(
       verification.metrics.screenRoutesTotal,
     );

@@ -2375,6 +2375,7 @@ export type Database = {
           catalog_item_id: string | null
           catalog_kind: string | null
           city: string | null
+          client_mutation_id: string | null
           company_id: string | null
           contacts_email: string | null
           contacts_phone: string | null
@@ -2402,6 +2403,7 @@ export type Database = {
           catalog_item_id?: string | null
           catalog_kind?: string | null
           city?: string | null
+          client_mutation_id?: string | null
           company_id?: string | null
           contacts_email?: string | null
           contacts_phone?: string | null
@@ -2429,6 +2431,7 @@ export type Database = {
           catalog_item_id?: string | null
           catalog_kind?: string | null
           city?: string | null
+          client_mutation_id?: string | null
           company_id?: string | null
           contacts_email?: string | null
           contacts_phone?: string | null

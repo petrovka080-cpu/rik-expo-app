@@ -1,4 +1,5 @@
 import type {
+  ConsumerRepairPdfSupplement,
   ConsumerRepairRequestDraft,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
@@ -25,6 +26,7 @@ export function generateConsumerRepairRequestPdf(input: {
   draft: ConsumerRepairRequestDraft;
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
+  supplement?: ConsumerRepairPdfSupplement;
 }): ConsumerRepairRequestPdf {
   const createdAt = new Date().toISOString();
   const title = input.draft.title || input.draft.aiSummaryRu || "Заявка на ремонт";
@@ -59,6 +61,7 @@ function buildConsumerRepairPdfBody(input: {
   draft: ConsumerRepairRequestDraft;
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
+  supplement?: ConsumerRepairPdfSupplement;
 }): string {
   const summary = buildConsumerRepairPdfSummary(input)
     .replace(/[()\\]/g, " ")
@@ -90,10 +93,33 @@ export function buildConsumerRepairPdfSummary(input: {
   draft: ConsumerRepairRequestDraft;
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
+  supplement?: ConsumerRepairPdfSupplement;
 }): string {
+  const pricedRows = input.items.filter((item) => item.unitPrice != null && item.totalPrice != null);
+  const estimatedTotal = pricedRows.reduce((sum, item) => sum + (item.totalPrice ?? 0), 0);
+  const totalCurrency = pricedRows[0]?.currency ?? "KGS";
   const itemLines = input.items.map((item, index) =>
-    `${index + 1}. ${item.titleRu} — ${item.quantity ?? "уточнить"} ${item.unit ?? ""}`.trim(),
+    [
+      `${index + 1}. ${item.titleRu}`,
+      `${item.quantity ?? "уточнить"} ${item.unit ?? ""}`.trim(),
+      item.unitPrice != null ? `${item.unitPrice} ${item.currency} / ${item.unit ?? "unit"}` : null,
+      item.totalPrice != null ? `${item.totalPrice} ${item.currency}` : null,
+    ].filter(Boolean).join(" - "),
   );
+  const supplement = input.supplement;
+  const supplementLines = supplement
+    ? [
+        "",
+        "Estimate PDF supplement:",
+        `Tax status: ${supplement.taxStatus || "not calculated"}`,
+        `Source confidence: ${supplement.sourceConfidence || "medium"}`,
+        supplement.safetyMessage ? `Safety: ${supplement.safetyMessage}` : null,
+        supplement.estimateAssumptions?.length ? `Assumptions: ${supplement.estimateAssumptions.join("; ")}` : null,
+        supplement.costIncreaseFactors?.length ? `Cost increase factors: ${supplement.costIncreaseFactors.join("; ")}` : null,
+        supplement.clarifyingQuestions?.length ? `Clarifying questions: ${supplement.clarifyingQuestions.join("; ")}` : null,
+        supplement.sourceLabels?.length ? `Sources: ${supplement.sourceLabels.join("; ")}` : null,
+      ].filter((line): line is string => typeof line === "string")
+    : [];
   return [
     `Заявка: ${input.draft.title || "Ремонт дома"}`,
     `Дата: ${input.draft.approvedAt ?? input.draft.createdAt}`,
@@ -101,13 +127,18 @@ export function buildConsumerRepairPdfSummary(input: {
     `Город/адрес: ${[input.draft.city, input.draft.addressText].filter(Boolean).join(", ") || "не указан"}`,
     `Тип ремонта: ${input.draft.repairType}`,
     `Описание: ${input.draft.problemText || "не указано"}`,
+    `Estimate summary: ${input.draft.aiSummaryRu || "not provided"}`,
     "",
     "Позиции:",
     ...itemLines,
     "",
-    `Вложения: фото/видео/документы — ${input.media.length}`,
+    `Estimate total from rows: ${estimatedTotal > 0 ? `${estimatedTotal} ${totalCurrency}` : "not available"}`,
+    "Tax status: see estimate summary; tax is never calculated in PDF rendering.",
+    "",
+    `Вложения: фото/видео/документы - ${input.media.length}`,
     "",
     `Что уточнить: ${input.draft.missingData.join("; ") || "нет"}`,
+    ...supplementLines,
   ].join("\n");
 }
 

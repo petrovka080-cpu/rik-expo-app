@@ -25,7 +25,7 @@ import type {
 } from "./marketHome.types";
 
 export const MARKET_HOME_SELECT =
-  "id,title,user_id,company_id,city,price,kind,side,description,contacts_phone,contacts_whatsapp,contacts_email,items_json,uom,uom_code,rik_code,status,created_at";
+  "id,title,city,price,kind,side,description,contacts_phone,contacts_whatsapp,contacts_email,items_json,uom,uom_code,rik_code,status,created_at" as const;
 
 function toMaybeNumber(value: unknown): number | null {
   if (typeof value === "number" && Number.isFinite(value)) return value;
@@ -112,9 +112,9 @@ export function toMarketHomeListingCard(row: MarketListingRow): MarketHomeListin
   return {
     id: row.id,
     title: row.title,
-    sellerUserId: row.user_id,
-    sellerCompanyId: row.company_id,
-    supplierId: row.company_id,
+    sellerUserId: typeof row.user_id === "string" ? row.user_id : "",
+    sellerCompanyId: typeof row.company_id === "string" ? row.company_id : null,
+    supplierId: typeof row.company_id === "string" ? row.company_id : null,
     subtitle: `${getSideLabel(side)}${row.city ? ` • ${row.city}` : ""}`,
     city: row.city,
     price: row.price,

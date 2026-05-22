@@ -20,6 +20,7 @@ type StepTiming = {
 
 const WAVE = "S_B2C_REQUEST_RELEASE_CLOSEOUT";
 const ARTIFACT_PATH = path.resolve(process.cwd(), "artifacts", `${WAVE}_release_verify_timing.json`);
+const RELEASE_PIPELINE_ARTIFACT_PATH = path.resolve(process.cwd(), "artifacts", "S_RELEASE_PIPELINE_step_timing.json");
 const DEFAULT_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 
 function parseArgNumber(name: string, fallback: number): number {
@@ -40,17 +41,27 @@ function tail(value: string, limit = 6000): string {
 
 function writeArtifact(steps: StepTiming[], final_status: string): void {
   fs.mkdirSync(path.dirname(ARTIFACT_PATH), { recursive: true });
-  fs.writeFileSync(
-    ARTIFACT_PATH,
-    `${JSON.stringify({
-      wave: "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
-      final_status,
-      release_verify_timeout_without_step: false,
-      timeout_root_cause_isolated: steps.some((step) => step.status === "timeout" || step.status === "failed"),
-      steps,
-    }, null, 2)}\n`,
-    "utf8",
-  );
+  const legacyArtifact = {
+    wave: "S_B2C_REQUEST_RELEASE_CLOSEOUT_NO_TIMEOUT_ESCAPE_POINT_OF_NO_RETURN",
+    final_status,
+    release_verify_timeout_without_step: false,
+    timeout_root_cause_isolated: steps.some((step) => step.status === "timeout" || step.status === "failed"),
+    steps,
+  };
+  const releasePipelineArtifact = {
+    wave: "S_RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_CLOSEOUT",
+    final_status: final_status === "GREEN_RELEASE_VERIFY_GATES_TIMED"
+      ? "GREEN_RELEASE_VERIFY_STEP_TIMING_READY"
+      : final_status,
+    release_verify_step_timing_enabled: true,
+    release_verify_timeout: steps.some((step) => step.status === "timeout"),
+    release_verify_timeout_without_step: false,
+    timeout_root_cause_isolated: steps.some((step) => step.status === "timeout" || step.status === "failed"),
+    timeout_protocol: ["exact_step", "exact_file_or_script", "root_cause", "fix", "rerun_parent_gate", "rerun_full_gate"],
+    steps,
+  };
+  fs.writeFileSync(ARTIFACT_PATH, `${JSON.stringify(legacyArtifact, null, 2)}\n`, "utf8");
+  fs.writeFileSync(RELEASE_PIPELINE_ARTIFACT_PATH, `${JSON.stringify(releasePipelineArtifact, null, 2)}\n`, "utf8");
 }
 
 function releaseVerifyEnvForStep(step: string): Record<string, string> {

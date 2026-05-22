@@ -1,6 +1,6 @@
 {
   "wave": "S_PERF_01_FLATLIST_ENTERPRISE_TUNING_CLOSEOUT",
-  "checkedAt": "2026-05-20T16:25:33.378Z",
+  "checkedAt": "2026-05-22T19:46:25.743Z",
   "enterpriseTargets": [
     {
       "screenId": "buyer.requests",
@@ -9,7 +9,7 @@
       "kind": "FlashList",
       "ordinal": 1,
       "owner": "buyer requests owner",
-      "line": 215,
+      "line": 216,
       "present": true,
       "hasInitialNumToRender": true,
       "hasMaxToRenderPerBatch": true,
@@ -336,7 +336,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "line": 383,
+      "line": 379,
       "expression": "messages.map",
       "source": "{messages.map((message, index) => {",
       "selfBounded": false,
@@ -501,7 +501,7 @@
     },
     {
       "file": "src/screens/buyer/BuyerSubcontractTab.view.tsx",
-      "line": 320,
+      "line": 321,
       "expression": "WORK_MODE_OPTIONS.map",
       "source": "{WORK_MODE_OPTIONS.map((opt) => {",
       "selfBounded": true,
@@ -512,7 +512,7 @@
     },
     {
       "file": "src/screens/buyer/BuyerSubcontractTab.view.tsx",
-      "line": 338,
+      "line": 339,
       "expression": "PRICE_TYPE_OPTIONS.map",
       "source": "{PRICE_TYPE_OPTIONS.map((opt) => {",
       "selfBounded": true,
@@ -611,7 +611,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 194,
+      "line": 206,
       "expression": "LISTING_KIND_OPTIONS.map",
       "source": "{LISTING_KIND_OPTIONS.map((option) => {",
       "selfBounded": true,
@@ -622,7 +622,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 242,
+      "line": 259,
       "expression": "catalogResults.map",
       "source": "{catalogResults.map((item) => (",
       "selfBounded": false,
@@ -633,7 +633,7 @@
     },
     {
       "file": "src/screens/profile/components/ListingModal.tsx",
-      "line": 263,
+      "line": 280,
       "expression": "listingCartItems.map",
       "source": "{listingCartItems.map((item, index) => {",
       "selfBounded": false,

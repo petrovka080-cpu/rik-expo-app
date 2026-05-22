@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-05-20T16:25:33.019Z",
+  "generatedAt": "2026-05-22T19:44:39.142Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -29,19 +29,29 @@
       "hookCount": 0
     },
     {
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 498,
+      "hookCount": 14
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 497,
+      "hookCount": 0
+    },
+    {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
     },
     {
+      "file": "src/screens/profile/AddListingScreen.tsx",
+      "lineCount": 491,
+      "hookCount": 8
+    },
+    {
       "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
       "lineCount": 490,
       "hookCount": 1
-    },
-    {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 489,
-      "hookCount": 14
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",
@@ -72,16 +82,6 @@
       "file": "src/screens/buyer/components/BuyerRfqSheetBody.tsx",
       "lineCount": 468,
       "hookCount": 5
-    },
-    {
-      "file": "src/features/reports/ReportsDashboardScreen.tsx",
-      "lineCount": 466,
-      "hookCount": 9
-    },
-    {
-      "file": "src/components/map/ResultsBottomSheet.tsx",
-      "lineCount": 465,
-      "hookCount": 13
     }
   ],
   "top_by_hooks": [
@@ -117,7 +117,7 @@
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 489,
+      "lineCount": 498,
       "hookCount": 14
     },
     {

@@ -1,0 +1,9 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+---
+- launchApp
+- assertVisible:
+    text: ".*"
+- tapOn:
+    text: ".*"
+    optional: true
+

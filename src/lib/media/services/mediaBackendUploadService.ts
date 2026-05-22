@@ -1,4 +1,5 @@
 import type { MediaKind, MediaOwnerRole, MediaPurpose } from "../mediaTypes";
+import { recordPlatformObservability } from "../../observability/platformObservability";
 
 export type BackendMediaTargetType =
   | "request_draft"
@@ -18,7 +19,13 @@ export type MediaBackendOperation =
   | "confirmMediaLink"
   | "attachDraftMediaToRequest"
   | "queueMediaProcessingJob"
-  | "runMediaAiAnalysisJob";
+  | "runMediaAiAnalysisJob"
+  | "expireStaleMediaUploadSessions"
+  | "enqueueOrphanMediaStorageCleanup"
+  | "claimMediaProcessingJobs"
+  | "recordMediaProcessingJobResult"
+  | "claimMediaStorageCleanupJobs"
+  | "recordMediaStorageCleanupResult";
 
 export type MediaBackendTransport = {
   call: <TResult>(
@@ -77,28 +84,94 @@ export type SignedReadUrlResult = {
   storageKeyVisibleToUser: false;
 };
 
+export type MediaBackpressureResult = {
+  bounded: true;
+  skipLocked?: true;
+  limit: number;
+};
+
+export type MediaProcessingJobResult = {
+  status: "completed" | "retry_scheduled" | "failed_final";
+  retryScheduled: boolean;
+  delayMinutes?: number;
+};
+
 function toMediaBackendPayload(input: object): Record<string, unknown> {
   return Object.fromEntries(Object.entries(input));
 }
+
+const recordMediaUploadMutationEvent = (
+  event: string,
+  result: "success" | "error",
+  extra: Record<string, unknown>,
+  error?: unknown,
+) => {
+  recordPlatformObservability({
+    screen: "contractor",
+    surface: "media_backend_upload",
+    category: "ui",
+    event,
+    result,
+    sourceKind: "mutation:media_upload",
+    errorClass: error instanceof Error ? error.name : error ? "MediaUploadMutationError" : undefined,
+    errorMessage: error instanceof Error ? error.message : error ? String(error) : undefined,
+    extra,
+  });
+};
 
 export function createMediaUploadSession(
   transport: MediaBackendTransport,
   input: CreateMediaUploadSessionBackendInput,
 ): Promise<CreateMediaUploadSessionBackendResult> {
+  recordMediaUploadMutationEvent("media_upload_session_create_started", "success", {
+    targetType: input.targetType,
+    requestedByRole: input.requestedByRole,
+    mediaKind: input.mediaKind,
+  });
   return transport.call<CreateMediaUploadSessionBackendResult>(
     "createMediaUploadSession",
     toMediaBackendPayload(input),
-  );
+  ).then((result) => {
+    recordMediaUploadMutationEvent("media_upload_session_create_terminal_success", "success", {
+      targetType: input.targetType,
+      requestedByRole: input.requestedByRole,
+      mediaKind: input.mediaKind,
+      uploadSessionId: result.uploadSessionId,
+    });
+    return result;
+  }).catch((error) => {
+    recordMediaUploadMutationEvent("media_upload_session_create_terminal_failure", "error", {
+      targetType: input.targetType,
+      requestedByRole: input.requestedByRole,
+      mediaKind: input.mediaKind,
+    }, error);
+    throw error;
+  });
 }
 
 export function completeMediaUploadSession(
   transport: MediaBackendTransport,
   input: CompleteMediaUploadSessionBackendInput,
 ): Promise<CompleteMediaUploadSessionBackendResult> {
+  recordMediaUploadMutationEvent("media_upload_session_complete_started", "success", {
+    uploadSessionId: input.uploadSessionId,
+    mimeType: input.mimeType,
+  });
   return transport.call<CompleteMediaUploadSessionBackendResult>(
     "completeMediaUploadSession",
     toMediaBackendPayload(input),
-  );
+  ).then((result) => {
+    recordMediaUploadMutationEvent("media_upload_session_complete_terminal_success", "success", {
+      uploadSessionId: input.uploadSessionId,
+      mediaAssetId: result.mediaAssetId,
+    });
+    return result;
+  }).catch((error) => {
+    recordMediaUploadMutationEvent("media_upload_session_complete_terminal_failure", "error", {
+      uploadSessionId: input.uploadSessionId,
+    }, error);
+    throw error;
+  });
 }
 
 export function getMediaSignedReadUrl(
@@ -159,6 +232,66 @@ export function runMediaAiAnalysisJob(
 ): Promise<{ analysisId: string; finalFact: false }> {
   return transport.call<{ analysisId: string; finalFact: false }>(
     "runMediaAiAnalysisJob",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function expireStaleMediaUploadSessions(
+  transport: MediaBackendTransport,
+  input: { limit?: number; nowIso?: string } = {},
+): Promise<MediaBackpressureResult & { expiredCount: number }> {
+  return transport.call<MediaBackpressureResult & { expiredCount: number }>(
+    "expireStaleMediaUploadSessions",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function enqueueOrphanMediaStorageCleanup(
+  transport: MediaBackendTransport,
+  input: { limit?: number; olderThanSeconds?: number } = {},
+): Promise<MediaBackpressureResult & { cleanupJobsEnqueued: number; storageDeleteExecutedInDb: false }> {
+  return transport.call<MediaBackpressureResult & { cleanupJobsEnqueued: number; storageDeleteExecutedInDb: false }>(
+    "enqueueOrphanMediaStorageCleanup",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function claimMediaProcessingJobs(
+  transport: MediaBackendTransport,
+  input: { limit?: number; workerId?: string } = {},
+): Promise<MediaBackpressureResult & { claimedCount: number }> {
+  return transport.call<MediaBackpressureResult & { claimedCount: number }>(
+    "claimMediaProcessingJobs",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function recordMediaProcessingJobResult(
+  transport: MediaBackendTransport,
+  input: { jobId: string; completed: boolean; errorCode?: string; errorRu?: string },
+): Promise<MediaProcessingJobResult> {
+  return transport.call<MediaProcessingJobResult>(
+    "recordMediaProcessingJobResult",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function claimMediaStorageCleanupJobs(
+  transport: MediaBackendTransport,
+  input: { limit?: number; workerId?: string } = {},
+): Promise<MediaBackpressureResult & { claimedCount: number }> {
+  return transport.call<MediaBackpressureResult & { claimedCount: number }>(
+    "claimMediaStorageCleanupJobs",
+    toMediaBackendPayload(input),
+  );
+}
+
+export function recordMediaStorageCleanupResult(
+  transport: MediaBackendTransport,
+  input: { jobId: string; deleted: boolean; errorCode?: string },
+): Promise<MediaProcessingJobResult> {
+  return transport.call<MediaProcessingJobResult>(
+    "recordMediaStorageCleanupResult",
     toMediaBackendPayload(input),
   );
 }

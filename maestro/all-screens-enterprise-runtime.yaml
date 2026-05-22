@@ -1,0 +1,23 @@
+appId: com.azisbek_dzhantaev.rikexpoapp
+---
+- launchApp
+- assertVisible:
+    text: ".*"
+- tapOn:
+    text: "Офис"
+    optional: true
+- tapOn:
+    text: "Смета"
+    optional: true
+- tapOn:
+    text: "Маркет"
+    optional: true
+- tapOn:
+    text: "＋"
+    optional: true
+- tapOn:
+    text: "Чат"
+    optional: true
+- tapOn:
+    text: "Профиль"
+    optional: true

@@ -31,6 +31,11 @@ import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } 
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
 import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
+import {
+  buildAiEstimatePdfActions,
+  buildAiEstimatePdfSourceFromConstructionEstimate,
+} from "../../lib/ai/estimatePdf";
+import { AIAssistantEstimatePdfActions } from "./AIAssistantEstimatePdfActions";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
   answerAiLiveScreenButton,
@@ -52,7 +57,6 @@ import {
   recordAssistantScreenFallback,
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
-
 export default function AIAssistantScreen() {
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -91,7 +95,6 @@ export default function AIAssistantScreen() {
     value: input,
     onChangeText: setInput,
   });
-
   const initialize = useCallback(async () => {
     setBooting(true);
     try {
@@ -103,7 +106,6 @@ export default function AIAssistantScreen() {
       setUserId(nextUserId);
       const nextFullName = identity.fullName;
       setFullName(nextFullName);
-
       const shouldRestoreStoredMessages = assistantContext === "unknown";
       const stored = shouldRestoreStoredMessages ? await loadAssistantMessages(nextUserId) : [];
       if (shouldRestoreStoredMessages && stored.length > 0) {
@@ -170,7 +172,6 @@ export default function AIAssistantScreen() {
       cancelled = true;
     };
   }, [assistantContext, booting, role]);
-
   const send = useCallback(
     async (textParam?: string) => {
       const text = String(textParam ?? input).trim();
@@ -181,7 +182,6 @@ export default function AIAssistantScreen() {
       setMessages(nextHistory);
       setInput("");
       setLoading(true);
-
       try {
         const answerFirstResult = answerAlwaysOnExternalKnowledgeQuestion({
           questionRu: text,
@@ -194,7 +194,21 @@ export default function AIAssistantScreen() {
         });
         const answerFirstText = answerFirstResult.answerTextRu;
         if (answerFirstResult.handled && answerFirstText) {
-          setMessages((prev) => [...prev, createMessage("assistant", sanitizeAssistantUserFacingCopy(answerFirstText))]);
+          const estimatePdfSource = answerFirstResult.estimate
+            ? buildAiEstimatePdfSourceFromConstructionEstimate(answerFirstResult.estimate, {
+                userId: userId ?? undefined,
+              })
+            : undefined;
+          setMessages((prev) => [...prev, createMessage(
+            "assistant",
+            sanitizeAssistantUserFacingCopy(answerFirstText),
+            estimatePdfSource
+              ? {
+                  estimatePdfSource,
+                  actions: buildAiEstimatePdfActions(estimatePdfSource),
+                }
+              : {},
+          )]);
           return;
         }
 
@@ -377,25 +391,31 @@ export default function AIAssistantScreen() {
                 : undefined;
 
             return (
-              <View
-                key={message.id}
-                testID={responseTestId}
-                style={[
-                  styles.messageBubble,
-                  message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
-                ]}
-              >
-                <Text
+              <React.Fragment key={message.id}>
+                <View
+                  testID={responseTestId}
                   style={[
-                    styles.messageText,
-                    message.role === "assistant" ? styles.assistantText : styles.userText,
+                    styles.messageBubble,
+                    message.role === "assistant" ? styles.assistantBubble : styles.userBubble,
                   ]}
-                  numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
-                  ellipsizeMode="tail"
                 >
-                  {message.content}
-                </Text>
-              </View>
+                  <Text
+                    style={[
+                      styles.messageText,
+                      message.role === "assistant" ? styles.assistantText : styles.userText,
+                    ]}
+                    numberOfLines={shouldCompactAssistantHistory ? 2 : undefined}
+                    ellipsizeMode="tail"
+                  >
+                    {message.content}
+                  </Text>
+                </View>
+                <AIAssistantEstimatePdfActions
+                  message={message}
+                  onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}
+                  onFallback={recordAssistantScreenFallback}
+                />
+              </React.Fragment>
             );
           })}
           {loading ? (

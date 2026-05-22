@@ -6,18 +6,13 @@ import { generateRequestPdfDocument } from "../../lib/catalog_api";
 import { buildPdfFileName } from "../../lib/documents/pdfDocument";
 import { getPdfFlowErrorMessage } from "../../lib/documents/pdfDocumentActions";
 import { exportAoaWorkbookWeb } from "../../lib/exports/xlsxExport";
-import {
-  isDirectorApproveRequestResponse,
-  isRpcVoidResponse,
-  validateRpcResponse,
-} from "../../lib/api/queryBoundary";
 import { createModalAwarePdfOpener } from "../../lib/pdf/pdf.runner";
 import { toFilterId } from "./director.helpers";
 import {
-  approveDirectorRequestRpc,
-  rejectDirectorRequestAllRpc,
-  rejectDirectorRequestItemRpc,
-} from "./director.request.transport";
+  runDirectorRequestApproveAction,
+  runDirectorRequestRejectAllAction,
+  runDirectorRequestRejectItemAction,
+} from "./director.request.boundary";
 import type { Group, PendingRow } from "./director.types";
 
 type BusyLike = {
@@ -157,15 +152,9 @@ export function useDirectorRequestActions({
     if (!it.request_item_id) return;
     setActingId(it.request_item_id);
     try {
-      const { data, error } = await rejectDirectorRequestItemRpc(
+      await runDirectorRequestRejectItemAction({
         supabase,
-        it.request_item_id,
-      );
-      if (error) throw error;
-      validateRpcResponse(data, isRpcVoidResponse, {
-        rpcName: "reject_request_item",
-        caller: "src/screens/director/director.request.rejectRequestItem",
-        domain: "director",
+        requestItemId: it.request_item_id,
       });
 
       setRows((prev) => prev.filter((r) => r.request_item_id !== it.request_item_id));
@@ -182,15 +171,9 @@ export function useDirectorRequestActions({
       const reqId = toFilterId(g.request_id);
       if (reqId == null) throw new Error("request_id пустой");
 
-      const { data, error } = await rejectDirectorRequestAllRpc(
+      await runDirectorRequestRejectAllAction({
         supabase,
-        String(reqId),
-      );
-      if (error) throw error;
-      validateRpcResponse(data, isRpcVoidResponse, {
-        rpcName: "reject_request_all",
-        caller: "src/screens/director/director.request.deleteRequestAll",
-        domain: "director",
+        requestId: String(reqId),
       });
 
       setRows((prev) => prev.filter((r) => r.request_id !== g.request_id));
@@ -216,25 +199,11 @@ export function useDirectorRequestActions({
       if (reqId == null) throw new Error("request_id пустой");
 
       const reqIdStr = String(reqId);
-      const clientMutationId = `dar_${reqIdStr}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      const { data, error } = await approveDirectorRequestRpc(supabase, {
+      await runDirectorRequestApproveAction({
+        supabase,
         requestId: reqIdStr,
-        clientMutationId,
       });
-
-      if (error) throw error;
-      validateRpcResponse(data, isDirectorApproveRequestResponse, {
-        rpcName: "director_approve_request_v1",
-        caller: "src/screens/director/director.request.approveRequestAndSend",
-        domain: "director",
-      });
-
-      const result = data && typeof data === "object" ? (data as Record<string, unknown>) : null;
-      if (result && result.ok === false) {
-        const failureMessage = String(result.failure_message ?? "Не удалось утвердить заявку");
-        throw new Error(failureMessage);
-      }
 
       const reqIdCmp = String(g.request_id ?? "");
       setRows((prev) => prev.filter((r) => String(r.request_id ?? "") !== reqIdCmp));
