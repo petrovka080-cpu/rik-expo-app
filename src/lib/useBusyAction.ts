@@ -9,21 +9,21 @@ type Opts = {
 
 export function useBusyAction(opts?: Opts) {
   const [busyKey, setBusyKey] = useState<string | null>(null);
+  const timeoutMs = opts?.timeoutMs ?? 30000;
+  const onError = opts?.onError;
 
   const run = useCallback(
     async (key: string, fn: () => Promise<void>) => {
       if (busyKey) return;
 
-      const timeoutMs = opts?.timeoutMs ?? 30000;
-
       setBusyKey(key);
       try {
-        // таймаут чтобы не висло вечно
+        // Таймаут, чтобы операция не висела бесконечно.
         const timeoutDelay = createCancellableDelay(timeoutMs);
         try {
           const timeoutPromise = timeoutDelay.promise.then((status) => {
             if (status === 'elapsed') {
-              throw new Error('Таймаут операции (30с)');
+              throw new Error(`Таймаут операции (${Math.round(timeoutMs / 1000)}с)`);
             }
           });
 
@@ -32,15 +32,14 @@ export function useBusyAction(opts?: Opts) {
           timeoutDelay.cancel();
         }
       } catch (e) {
-        // покажем ошибку в консоль и наружу
+        // Показываем ошибку в логах и наружу.
         logger.error('useBusyAction', key, e);
-        opts?.onError?.(e);
+        onError?.(e);
       } finally {
         setBusyKey(null);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-    [busyKey, opts?.timeoutMs, opts?.onError]
+    [busyKey, onError, timeoutMs]
   );
 
   return { busyKey, run, isBusy: (k: string) => busyKey === k };
