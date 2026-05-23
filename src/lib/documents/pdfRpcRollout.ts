@@ -1,3 +1,5 @@
+import { logger } from "../logger";
+
 export type PdfRpcRolloutId =
   | "payment_pdf_source_v1"
   | "warehouse_incoming_source_v1"
@@ -291,13 +293,7 @@ export function getPdfRpcRolloutApplyPlan(ids?: PdfRpcRolloutId[]) {
 
 export function printPdfRpcRolloutApplyPlan(ids?: PdfRpcRolloutId[]) {
   const plan = getPdfRpcRolloutApplyPlan(ids);
-  // eslint-disable-next-line no-console
-  if (typeof console.table === "function") {
-    // eslint-disable-next-line no-console
-    console.table(plan);
-  } else {
-    if (__DEV__) console.info("[pdf-rpc-rollout-apply-plan]", plan);
-  }
+  logger.info("pdf-rpc-rollout-apply-plan", plan);
   return plan;
 }
 
@@ -316,13 +312,7 @@ export function getPdfRpcRolloutSmokeChecklist(ids?: PdfRpcRolloutId[]) {
 
 export function printPdfRpcRolloutSmokeChecklist(ids?: PdfRpcRolloutId[]) {
   const checklist = getPdfRpcRolloutSmokeChecklist(ids);
-  // eslint-disable-next-line no-console
-  if (typeof console.table === "function") {
-    // eslint-disable-next-line no-console
-    console.table(checklist);
-  } else {
-    if (__DEV__) console.info("[pdf-rpc-rollout-smoke-checklist]", checklist);
-  }
+  logger.info("pdf-rpc-rollout-smoke-checklist", checklist);
   return checklist;
 }
 
@@ -345,13 +335,7 @@ export function printPdfRpcRolloutSummary(ids?: PdfRpcRolloutId[]) {
     lastUpdatedAt: item.lastUpdatedAt,
   }));
 
-  // eslint-disable-next-line no-console
-  if (typeof console.table === "function") {
-    // eslint-disable-next-line no-console
-    console.table(snapshot);
-  } else {
-    if (__DEV__) console.info("[pdf-rpc-rollout]", snapshot);
-  }
+  logger.info("pdf-rpc-rollout", snapshot);
 
   return snapshot;
 }
