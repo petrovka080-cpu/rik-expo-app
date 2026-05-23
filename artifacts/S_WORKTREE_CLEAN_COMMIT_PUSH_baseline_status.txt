@@ -1,19 +1,8 @@
 git status --short
- M artifacts/S_50K_FIXTURE_RETENTION_inventory.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md
+
 
 git status -sb
 ## main...origin/main
- M artifacts/S_50K_FIXTURE_RETENTION_inventory.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json
- M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md
 
 git branch --show-current
 main
@@ -22,15 +11,15 @@ git rev-parse --abbrev-ref HEAD
 main
 
 git rev-parse HEAD
-6231a7746925f92a9455444b056015354659c753
+e10a4cba607a45d9a1c884d769faff2c596a03b8
 
 git remote -v
 origin	https://github.com/petrovka080-cpu/rik-expo-app.git (fetch)
 origin	https://github.com/petrovka080-cpu/rik-expo-app.git (push)
 
 git log --oneline -5
+e10a4cba chore: establish clean worktree commit push discipline
 6231a774 chore: establish clean worktree commit push discipline
 7ed4fe94 chore(ai-estimate): record core completion live proof
 290a74b5 fix(ai-estimate): complete unfinished source-backed estimate core
 b318bfbc Fix live AI estimate PDF reality gate
-071b2ad4 Route PDF rollout logs through logger

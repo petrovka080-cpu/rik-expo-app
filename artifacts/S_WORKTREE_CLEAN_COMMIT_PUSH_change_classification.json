@@ -1,47 +1,5 @@
 [
   {
-    "path": "artifacts/S_50K_FIXTURE_RETENTION_inventory.json",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
-    "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
-    "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
-    "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
-    "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
-    "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md",
-    "status": "modified",
-    "classification": "generated_artifact_needed",
-    "reason": "Generated evidence artifact from earlier AI/estimate/architecture waves; commit it to remove hidden state.",
-    "action": "commit"
-  },
-  {
     "path": "artifacts/S_WORKTREE_CLEAN_COMMIT_PUSH_baseline_diff_stat.txt",
     "status": "modified",
     "classification": "current_wave_needed",

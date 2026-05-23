@@ -1,6 +1,6 @@
 {
   "wave": "S_WORKTREE_CLEAN_COMMIT_PUSH_DISCIPLINE_POINT_OF_NO_RETURN",
-  "final_status": "BLOCKED_WORKTREE_NOT_CLEAN",
+  "final_status": "GREEN_WORKTREE_CLEAN_COMMIT_PUSH_READY",
   "baseline_status_recorded": true,
   "all_dirty_files_classified": true,
   "unknown_dirty_files_found": false,
@@ -11,12 +11,12 @@
   "targeted_tests_passed": true,
   "release_verify_passed": true,
   "commit_created": true,
-  "commit_sha": "6231a7746925f92a9455444b056015354659c753",
+  "commit_sha": "e10a4cba607a45d9a1c884d769faff2c596a03b8",
   "branch_pushed": true,
   "remote_branch": "origin/main",
   "remote_contains_commit": true,
-  "final_worktree_clean": false,
-  "dirty_files_count": 6,
+  "final_worktree_clean": true,
+  "dirty_files_count": 0,
   "blocked_files": [],
   "fake_green_claimed": false
 }
