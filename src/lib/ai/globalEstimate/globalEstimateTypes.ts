@@ -95,10 +95,54 @@ export type GlobalSurfaceCondition = "good" | "needs_preparation" | "unknown";
 export type GlobalPriceSourceType =
   | "internal_marketplace"
   | "external_marketplace"
+  | "supplier_catalog_api"
+  | "uploaded_price_list"
   | "configured_reference"
   | "official_tax_source"
   | "tax_provider"
   | "manual_admin_rate";
+
+export type GlobalEstimateSourceFreshness =
+  | "fresh"
+  | "aging"
+  | "stale"
+  | "expired"
+  | "unknown";
+
+export type EstimateRowSourceEvidence = {
+  sourceId: string;
+  sourceType:
+    | "internal_marketplace"
+    | "external_marketplace"
+    | "supplier_catalog_api"
+    | "uploaded_price_list"
+    | "official_tax_source"
+    | "configured_reference"
+    | "manual_admin_rate";
+  label: string;
+  url?: string;
+  checkedAt: string;
+  freshness: GlobalEstimateSourceFreshness;
+  confidence: GlobalEstimateConfidence;
+};
+
+export type SourceBackedEstimateRow = {
+  rowNumber: string;
+  code: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  displayQuantity: string;
+  unitPrice: number;
+  displayUnitPrice: string;
+  total: number;
+  displayTotal: string;
+  currency: string;
+  priceStatus: "priced" | "unavailable" | "stale_fallback" | "manual_fallback";
+  sourceId: string;
+  sourceEvidence: EstimateRowSourceEvidence[];
+  confidence: GlobalEstimateConfidence;
+};
 
 export type GlobalLocalizedText = Record<string, string>;
 
@@ -258,6 +302,7 @@ export type GlobalEstimateInput = {
   includeDelivery?: boolean;
   includeTax?: boolean;
   taxPreference?: "included" | "added" | "auto";
+  confidenceOverride?: GlobalEstimateConfidence;
 };
 
 export type GlobalEstimateResult = {
@@ -290,21 +335,7 @@ export type GlobalEstimateResult = {
     sectionNumber: string;
     title: string;
     type: GlobalEstimateSectionType;
-    rows: {
-      rowNumber: string;
-      code: string;
-      name: string;
-      quantity: number;
-      unit: string;
-      displayQuantity: string;
-      unitPrice: number;
-      displayUnitPrice: string;
-      total: number;
-      displayTotal: string;
-      currency: string;
-      sourceId: string;
-      confidence: GlobalEstimateConfidence;
-    }[];
+    rows: SourceBackedEstimateRow[];
   }[];
   tax: {
     taxType: GlobalTaxType;

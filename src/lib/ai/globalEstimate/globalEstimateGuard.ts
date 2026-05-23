@@ -23,8 +23,14 @@ export function assertGlobalEstimateResultSafe(result: GlobalEstimateResult): as
 
   for (const section of result.sections) {
     for (const row of section.rows) {
-      if (!row.sourceId || row.unitPrice <= 0 || row.total < 0) {
+      if (!row.sourceId || row.unitPrice <= 0 || row.total < 0 || row.sourceEvidence.length === 0) {
         throw new UnsafeGlobalEstimateOutputError(`GLOBAL_ESTIMATE_ROW_REQUIRES_BACKEND_PRICE_SOURCE:${row.rowNumber}`);
+      }
+      if (row.sourceEvidence.some((evidence) => !evidence.sourceId || !evidence.label || !evidence.checkedAt)) {
+        throw new UnsafeGlobalEstimateOutputError(`GLOBAL_ESTIMATE_ROW_REQUIRES_SOURCE_EVIDENCE:${row.rowNumber}`);
+      }
+      if (row.confidence === "high" && row.sourceEvidence.some((evidence) => evidence.freshness === "stale" || evidence.freshness === "expired" || evidence.freshness === "unknown")) {
+        throw new UnsafeGlobalEstimateOutputError(`GLOBAL_ESTIMATE_ROW_STALE_SOURCE_CANNOT_BE_HIGH_CONFIDENCE:${row.rowNumber}`);
       }
     }
   }

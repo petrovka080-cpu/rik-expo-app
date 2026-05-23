@@ -1,0 +1,129 @@
+import {
+  createConsumerRepairDraftFromGlobalEstimate,
+} from "../../consumerRequests";
+import {
+  buildGlobalEstimateInputFromRoute,
+  routeUniversalEstimateIntent,
+} from "../estimateRouting";
+import {
+  calculateGlobalConstructionEstimateSync,
+  formatGlobalEstimateAnswer,
+  GLOBAL_RATE_MATERIALS,
+  type EstimateRowSourceEvidence,
+} from "../globalEstimate";
+import type {
+  BuiltInAiInput,
+  BuiltInAiIntentRoute,
+  BuiltInAiProductCandidate,
+  BuiltInAiProductSearchResult,
+  BuiltInAiToolName,
+  BuiltInAiToolResult,
+} from "./builtInAiTypes";
+
+function evidenceFromRate(rate: (typeof GLOBAL_RATE_MATERIALS)[number]): EstimateRowSourceEvidence {
+  return {
+    sourceId: rate.id,
+    sourceType: rate.sourceType,
+    label: rate.sourceLabel,
+    url: rate.sourceUrl,
+    checkedAt: rate.checkedAt,
+    freshness: "fresh",
+    confidence: "medium",
+  };
+}
+
+function pickRatesForProductSearch(text: string, route: BuiltInAiIntentRoute) {
+  const lower = text.toLowerCase();
+  if (/арматур|rebar/i.test(lower)) {
+    return GLOBAL_RATE_MATERIALS.filter((rate) => rate.rateKey.includes("rebar") || rate.rateKey.includes("foundation") || rate.rateKey.includes("concrete")).slice(0, 3);
+  }
+  if (/ламинат|laminate/i.test(lower)) {
+    return GLOBAL_RATE_MATERIALS.filter((rate) => ["laminate_board", "underlayment", "baseboard"].includes(rate.rateKey)).slice(0, 3);
+  }
+  if (/плитк|tile|кафель/i.test(lower)) {
+    return GLOBAL_RATE_MATERIALS.filter((rate) => rate.rateKey.includes("ceramic_tile_laying") || rate.rateKey.includes("tile")).slice(0, 3);
+  }
+  if (route.workKey) {
+    const matchedRates = GLOBAL_RATE_MATERIALS.filter((rate) => rate.rateKey.includes(route.workKey ?? "")).slice(0, 3);
+    if (matchedRates.length > 0) return matchedRates;
+  }
+  return GLOBAL_RATE_MATERIALS.slice(0, 3);
+}
+
+function buildProductSearchResult(input: BuiltInAiInput, route: BuiltInAiIntentRoute): BuiltInAiProductSearchResult {
+  const rates = pickRatesForProductSearch(input.text, route);
+  const quantity = Math.max(1, route.volume ?? 1);
+  const candidates: BuiltInAiProductCandidate[] = rates.map((rate) => ({
+    id: `product_${rate.rateKey}_${rate.countryCode}_${rate.unit}`,
+    title: rate.names.ru ?? rate.names.en ?? rate.rateKey.replace(/_/g, " "),
+    category: route.category ?? "materials",
+    neededQuantity: quantity,
+    unit: rate.unit,
+    unitPrice: rate.priceDefault,
+    currency: rate.currency,
+    sourceEvidence: [evidenceFromRate(rate)],
+    availabilityStatus: "unknown",
+    stockKnown: false,
+  }));
+  return {
+    query: input.text,
+    category: route.category ?? "materials",
+    candidates,
+    sourceBacked: candidates.every((candidate) => candidate.sourceEvidence.length > 0),
+    fakeStockOrAvailabilityFound: candidates.some((candidate) => candidate.stockKnown && candidate.availabilityStatus === "known_available"),
+  };
+}
+
+function calculateGlobalEstimate(input: BuiltInAiInput) {
+  const estimateRoute = routeUniversalEstimateIntent(input.text);
+  return calculateGlobalConstructionEstimateSync(buildGlobalEstimateInputFromRoute(estimateRoute, {
+    countryCode: input.countryCode ?? estimateRoute.location?.countryCode ?? "KG",
+    city: input.cityOrRegion ?? estimateRoute.location?.city ?? "Bishkek",
+  }));
+}
+
+export function runBuiltInAiTool(input: BuiltInAiInput, route: BuiltInAiIntentRoute): BuiltInAiToolResult {
+  const primaryTool = route.allowedTools[0] as BuiltInAiToolName | undefined;
+
+  if (route.intent === "estimate") {
+    const estimate = calculateGlobalEstimate(input);
+    return { toolName: "calculate_global_estimate", backendCalled: true, estimate };
+  }
+
+  if (route.intent === "product_search" || route.intent === "marketplace_lookup" || route.intent === "procurement") {
+    return {
+      toolName: route.intent === "marketplace_lookup" ? "search_marketplace_products" : "search_material_products",
+      backendCalled: true,
+      productSearch: buildProductSearchResult(input, route),
+    };
+  }
+
+  if (route.intent === "request_draft") {
+    const estimateRoute = routeUniversalEstimateIntent(input.text);
+    if (estimateRoute.shouldCallEstimateTool) {
+      const estimate = calculateGlobalEstimate(input);
+      const requestDraft = createConsumerRepairDraftFromGlobalEstimate({
+        consumerUserId: input.userId ?? "consumer-demo-user",
+        estimate,
+        originalText: input.text,
+        city: input.cityOrRegion ?? estimate.locale.city ?? null,
+      });
+      return { toolName: "create_consumer_repair_draft", backendCalled: true, estimate, requestDraft };
+    }
+    return { toolName: "create_consumer_repair_draft", backendCalled: false, fallbackUsed: "request_draft_without_estimate_intent" };
+  }
+
+  if (route.intent === "pdf_action") {
+    return { toolName: "generate_estimate_pdf", backendCalled: false, fallbackUsed: "pdf_action_requires_existing_structured_payload" };
+  }
+
+  if (route.intent === "role_status_qa") {
+    return { toolName: "get_role_data", backendCalled: true, fallbackUsed: "role_status_only_no_stronger_intent" };
+  }
+
+  return { toolName: primaryTool, backendCalled: false, fallbackUsed: "general_chat_no_domain_tool" };
+}
+
+export function builtInAiEstimateText(result: BuiltInAiToolResult): string | null {
+  return result.estimate ? formatGlobalEstimateAnswer(result.estimate) : null;
+}

@@ -9,6 +9,7 @@ import type { AiRoleScreenAssistantPack } from "./realAssistants/aiRoleScreenAss
 import type { AiScreenMagicPack } from "./screenMagic/aiScreenMagicTypes";
 import type { AiScreenNativeAssistantPack } from "./screenNative/aiScreenNativeAssistantTypes";
 import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
+import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 import { loadAiConfig, saveAiReport } from "../../lib/ai_reports";
 import { recordPlatformObservability } from "../../lib/observability/platformObservability";
 import {
@@ -121,6 +122,19 @@ export async function sendAssistantMessage(options: {
     userId,
   } = options;
   const model = getAssistantModel();
+  const builtInAi = answerBuiltInAi({
+    text: message,
+    screenContext: context,
+    route: context === "request" ? "/request" : "/ai",
+    role,
+    userId,
+    countryCode: "KG",
+    cityOrRegion: "Bishkek",
+  });
+  if (builtInAi.handled) {
+    return sanitizeAssistantUserFacingCopy(builtInAi.answerTextRu);
+  }
+
   const answerFirst = answerAlwaysOnExternalKnowledgeQuestion({
     questionRu: message,
     screenId: context,

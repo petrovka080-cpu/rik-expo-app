@@ -19,5 +19,11 @@ module.exports = {
       lines: 60,
     },
   },
-  testPathIgnorePatterns: ["/node_modules/", "/dist/", "/dist-export-*/", "/.expo/"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/dist/",
+    "/dist-export-*/",
+    "/.expo/",
+    "/tests/e2e/.*\\.spec\\.ts$",
+  ],
 };

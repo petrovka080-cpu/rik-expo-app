@@ -30,11 +30,6 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
-import { answerAlwaysOnExternalKnowledgeQuestion } from "../../lib/ai/alwaysOnExternalKnowledge";
-import {
-  buildAiEstimatePdfActions,
-  buildAiEstimatePdfSourceFromConstructionEstimate,
-} from "../../lib/ai/estimatePdf";
 import { AIAssistantEstimatePdfActions } from "./AIAssistantEstimatePdfActions";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
@@ -57,6 +52,10 @@ import {
   recordAssistantScreenFallback,
 } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
+import {
+  createBuiltInAiAssistantMessage,
+  createExternalKnowledgeAssistantMessage,
+} from "./assistantAnswerPipeline";
 export default function AIAssistantScreen() {
   const [booting, setBooting] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -183,32 +182,27 @@ export default function AIAssistantScreen() {
       setInput("");
       setLoading(true);
       try {
-        const answerFirstResult = answerAlwaysOnExternalKnowledgeQuestion({
-          questionRu: text,
-          screenId: resolveAiLiveScreenId(assistantContext),
-          role: assistantPresentationRole,
-          context: assistantContext,
-          countryCode: "KG",
-          cityOrRegion: "Bishkek",
-          currency: "KGS",
+        const builtInAiMessage = createBuiltInAiAssistantMessage({
+          text,
+          assistantContext,
+          routeContext,
+          assistantPresentationRole,
+          userId,
         });
-        const answerFirstText = answerFirstResult.answerTextRu;
-        if (answerFirstResult.handled && answerFirstText) {
-          const estimatePdfSource = answerFirstResult.estimate
-            ? buildAiEstimatePdfSourceFromConstructionEstimate(answerFirstResult.estimate, {
-                userId: userId ?? undefined,
-              })
-            : undefined;
-          setMessages((prev) => [...prev, createMessage(
-            "assistant",
-            sanitizeAssistantUserFacingCopy(answerFirstText),
-            estimatePdfSource
-              ? {
-                  estimatePdfSource,
-                  actions: buildAiEstimatePdfActions(estimatePdfSource),
-                }
-              : {},
-          )]);
+        if (builtInAiMessage) {
+          setMessages((prev) => [...prev, builtInAiMessage]);
+          return;
+        }
+
+        const externalKnowledgeMessage = createExternalKnowledgeAssistantMessage({
+          text,
+          assistantContext,
+          routeContext,
+          assistantPresentationRole,
+          userId,
+        });
+        if (externalKnowledgeMessage) {
+          setMessages((prev) => [...prev, externalKnowledgeMessage]);
           return;
         }
 

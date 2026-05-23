@@ -1,3 +1,5 @@
+import type { GlobalEstimateResult } from "../globalEstimate/globalEstimateTypes";
+
 export type AiEstimatePdfSourceType =
   | "global_estimate_result"
   | "consumer_repair_draft"
@@ -18,6 +20,7 @@ export type AiEstimatePdfSource = {
   sourceType: AiEstimatePdfSourceType;
   sourceId?: string;
   userId?: string;
+  structuredEstimate?: GlobalEstimateResult;
   title: string;
   language: string;
   locale: string;
@@ -37,6 +40,14 @@ export type AiEstimatePdfSource = {
         total?: number;
         currency?: string;
         sourceId?: string;
+        sourceEvidence?: {
+          sourceId: string;
+          label: string;
+          checkedAt?: string;
+          freshness?: string;
+          confidence?: AiEstimatePdfConfidence;
+          url?: string;
+        }[];
         confidence?: AiEstimatePdfConfidence;
       }[];
     }[];
@@ -126,6 +137,7 @@ export type ExistingPdfModelEstimateSupplement = {
   taxStatus: string;
   sourceConfidence: AiEstimatePdfConfidence;
   sourceLabels: string[];
+  sourceEvidenceLabels?: string[];
   safetyMessage?: string;
   originSourceType: AiEstimatePdfSourceType;
 };

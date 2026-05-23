@@ -13,6 +13,14 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
+    normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_BLOCKER_AUDIT_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_REAL_ARCHITECTURE_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_LIVE_ACCEPTANCE_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_150_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_10000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_") ||
     normalized.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
     normalized === "app/admin" ||
     normalized === "app/admin/global-estimate" ||
@@ -76,6 +84,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/audit/runQueryBoundaryCleanupProof") ||
     normalized.startsWith("scripts/audit/rlsDynamicCrossTenant.shared") ||
     normalized.startsWith("scripts/audit/runExternalLiveProofCloseout") ||
+    normalized.startsWith("scripts/audit/greenClaimArtifactReconciliation") ||
+    normalized.startsWith("scripts/audit/runGreenClaimArtifactReconciliation") ||
     normalized.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
     normalized.startsWith("scripts/audit/wholeApp50kExplainP95.shared") ||
     normalized.startsWith("scripts/audit/run50kFixtureRetentionCleanupPolicyProof") ||
@@ -107,6 +117,14 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runGlobalEstimateDataOpsProof") ||
     normalized.startsWith("scripts/e2e/runGlobalEstimateDataOpsImportProof") ||
     normalized.startsWith("scripts/e2e/runGlobalEstimateDataOpsCoverageProof") ||
+    normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
+    normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
+    normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
+    normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
+    normalized.startsWith("scripts/e2e/runAnyEstimate") ||
+    normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
+    normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
+    normalized.startsWith("scripts/e2e/runBuiltInAi") ||
     normalized.startsWith("scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared") ||
     normalized.startsWith("scripts/e2e/runAllScreens") ||
     normalized.startsWith("scripts/e2e/enterpriseReleaseCandidate.shared") ||
@@ -136,6 +154,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("src/features/market/") ||
     normalized === "src/lib/database.types.ts" ||
     normalized.startsWith("src/lib/ai/") ||
+    normalized.startsWith("src/lib/estimatePdf/") ||
     normalized.startsWith("supabase/functions/calculate-global-estimate/") ||
     normalized.startsWith("supabase/functions/refresh-global-estimate-sources/") ||
     (normalized === "src/lib/proofFixtures" || normalized.startsWith("src/lib/proofFixtures/")) ||
@@ -163,10 +182,29 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized === "src/screens/warehouse/warehouse.issue.ts" ||
     normalized.startsWith("tests/ai/") ||
     normalized.startsWith("tests/aiEstimatePdf/") ||
+    normalized.startsWith("tests/pdf/estimatePdf") ||
+    normalized.startsWith("tests/liveAcceptance/") ||
+    normalized.startsWith("tests/e2e/liveEstimatePdf") ||
     normalized.startsWith("tests/allScreensRuntime/") ||
     normalized.startsWith("tests/audit/externalLiveProofCloseoutHarness") ||
     normalized.startsWith("tests/audit/final") ||
+    normalized.startsWith("tests/audit/greenClaim") ||
+    normalized === "tests/audit/replayVerifiedMatrices.contract.test.ts" ||
+    normalized === "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts" ||
+    normalized === "tests/audit/dataOpsUiTruthSplit.contract.test.ts" ||
     normalized.startsWith("tests/architecture/ai") ||
+    normalized.startsWith("tests/architecture/pdfNo") ||
+    normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
+    normalized === "tests/architecture/knownWorkNoGenericRows.contract.test.ts" ||
+    normalized.startsWith("tests/architecture/anyEstimate") ||
+    normalized.startsWith("tests/architecture/builtInAi") ||
+    normalized === "tests/builtInAi1000" ||
+    normalized.startsWith("tests/builtInAi1000/") ||
+    normalized === "tests/builtInAi10000" ||
+    normalized.startsWith("tests/builtInAi10000/") ||
+    normalized === "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts" ||
+    normalized === "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts" ||
+    normalized === "tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts" ||
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/architecture/globalEstimate") ||
     normalized.startsWith("tests/architecture/consumerRepair") ||
@@ -209,6 +247,16 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/e2e/ai") ||
     normalized.startsWith("tests/e2e/coreProductGoldenPaths") ||
     normalized.startsWith("tests/globalEstimate/") ||
+    normalized === "tests/estimateIntent" ||
+    normalized.startsWith("tests/estimateIntent/") ||
+    normalized === "tests/builtInAi" ||
+    normalized.startsWith("tests/builtInAi/") ||
+    normalized === "tests/builtInAi150" ||
+    normalized.startsWith("tests/builtInAi150/") ||
+    normalized === "tests/globalEstimateAnyWork" ||
+    normalized.startsWith("tests/globalEstimateAnyWork/") ||
+    normalized === "tests/globalEstimateExternalSources" ||
+    normalized.startsWith("tests/globalEstimateExternalSources/") ||
     normalized.startsWith("tests/globalEstimateDataOps/") ||
     normalized.startsWith("tests/media/") ||
     normalized === "tests/ops" ||
@@ -244,6 +292,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized === "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql" ||
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
+    normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
     normalized === "tests/perf/performance-budget.test.ts" ||
     normalized === "tests/release/releaseGuard.shared.test.ts" ||
     normalized === "maestro/all-screens-enterprise-runtime.yaml" ||

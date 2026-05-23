@@ -25,6 +25,14 @@ export function buildAiEstimatePdfSourceFromGlobalEstimate(
       total: row.total,
       currency: row.currency,
       sourceId: row.sourceId,
+      sourceEvidence: row.sourceEvidence.map((evidence) => ({
+        sourceId: evidence.sourceId,
+        label: evidence.label,
+        checkedAt: evidence.checkedAt,
+        freshness: evidence.freshness,
+        confidence: evidence.confidence,
+        url: evidence.url,
+      })),
       confidence: row.confidence,
     })),
   }));
@@ -32,6 +40,7 @@ export function buildAiEstimatePdfSourceFromGlobalEstimate(
     sourceType: input.sourceType ?? "global_estimate_result",
     sourceId: result.estimateId,
     userId: input.userId,
+    structuredEstimate: result,
     title: `Смета: ${result.work.title}`,
     language: result.locale.language,
     locale: result.locale.locale,

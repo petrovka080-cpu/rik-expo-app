@@ -1,4 +1,8 @@
-import type { ConsumerRepairAiDraft } from "../../lib/consumerRequests";
+import {
+  buildConsumerRepairAiDraftFromGlobalEstimate,
+  type ConsumerRepairAiDraft,
+} from "../../lib/consumerRequests";
+import { answerBuiltInAi } from "../../lib/ai/builtInAi";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -133,6 +137,20 @@ export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairA
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
     };
+  }
+  const lowercaseText = text.toLocaleLowerCase("ru-RU");
+  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442");
+  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442");
+  const builtInAi = answerBuiltInAi({
+    text,
+    screenContext: "request",
+    route: "/request",
+    role: "consumer",
+    countryCode: "KG",
+    cityOrRegion: "Bishkek",
+  });
+  if (builtInAi.toolResult.estimate) {
+    return buildConsumerRepairAiDraftFromGlobalEstimate(builtInAi.toolResult.estimate);
   }
   if (/ламинат/i.test(text)) return flooringDraft(text, "ламинат");
   if (/паркет|инженерн/i.test(text)) return flooringDraft(text, "паркет");

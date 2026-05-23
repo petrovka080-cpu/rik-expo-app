@@ -586,7 +586,7 @@ function main() {
         console.info("OTA skipped because this release commit is classified as non-runtime.");
       }
     }
-    return;
+    process.exit(0);
   }
 
   const targetChannel = assertCanonicalChannel(args.channel);

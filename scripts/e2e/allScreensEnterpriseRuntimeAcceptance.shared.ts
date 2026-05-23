@@ -11,6 +11,7 @@ export const ALL_SCREENS_ARTIFACT_PREFIX = "S_ALL_SCREENS";
 const ARTIFACTS_DIR = path.join(process.cwd(), "artifacts");
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const APP_ACTIVITY = `${APP_PACKAGE}/.MainActivity`;
+const DEBUG_APK_PATH = path.join(process.cwd(), "android/app/build/outputs/apk/debug/app-debug.apk");
 
 type JsonRecord = Record<string, unknown>;
 
@@ -102,6 +103,26 @@ function tryShell(command: string, args: string[], timeoutMs = 15_000): { ok: bo
     const message = error instanceof Error ? error.message : String(error);
     return { ok: false, output: message };
   }
+}
+
+function isPackageInstalled(): boolean {
+  const packages = tryShell("adb", ["shell", "pm", "list", "packages", APP_PACKAGE], 20_000);
+  return packages.ok && packages.output.includes(APP_PACKAGE);
+}
+
+function installDebugApkIfPresent(): boolean {
+  if (!fs.existsSync(DEBUG_APK_PATH)) return false;
+
+  const install = tryShell("adb", ["install", "-r", DEBUG_APK_PATH], 180_000);
+  if (install.ok || /Success/i.test(install.output)) return true;
+
+  if (/INSTALL_FAILED_INSUFFICIENT_STORAGE|INSTALL_FAILED_UPDATE_INCOMPATIBLE|INSTALL_FAILED_VERSION_DOWNGRADE/i.test(install.output)) {
+    tryShell("adb", ["uninstall", APP_PACKAGE], 60_000);
+    const retry = tryShell("adb", ["install", "-r", DEBUG_APK_PATH], 180_000);
+    return retry.ok || /Success/i.test(retry.output);
+  }
+
+  return false;
 }
 
 function extractUiText(xml: string): string[] {
@@ -240,6 +261,7 @@ export function buildAllScreensBottomNavTrace() {
 function buildScreenReadiness() {
   const consumer = read("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx");
   const ai = read("src/features/ai/AIAssistantScreen.tsx");
+  const aiAnswerPipeline = read("src/features/ai/assistantAnswerPipeline.ts");
   const aiActions = read("src/features/ai/AIAssistantEstimatePdfActions.tsx");
   const add = read("src/screens/profile/AddListingScreen.tsx") +
     read("src/screens/profile/components/ListingModal.tsx");
@@ -264,7 +286,7 @@ function buildScreenReadiness() {
     chat_screen_ready: ai.includes("AIAssistantEstimatePdfActions") && aiActions.includes("make_estimate_pdf"),
     profile_screen_ready: profile.includes("profile") || profile.includes("Profile"),
     pdf_viewer_ready: pdfViewer.includes("pdf-viewer") || pdfViewer.includes("PdfViewer"),
-    ai_estimate_to_pdf_ready: ai.includes("estimatePdfSource") && aiActions.includes("generateAiEstimatePdf"),
+    ai_estimate_to_pdf_ready: (ai + aiAnswerPipeline).includes("estimatePdfSource") && aiActions.includes("generateAiEstimatePdf"),
     consumer_estimate_to_pdf_ready: consumer.includes("generateConsumerRepairRequestPdfForDraft") && consumer.includes('pathname: "/pdf-viewer"'),
     pdf_history_ready: consumer.includes("ConsumerRepairHistory") || consumer.includes("history"),
   };
@@ -441,8 +463,10 @@ function buildWebProof() {
 function probeAndroidRuntime(): AndroidProbe {
   const devices = tryShell("adb", ["devices"], 10_000);
   const emulatorConnected = devices.ok && /\bdevice\b/.test(devices.output.split(/\r?\n/).slice(1).join("\n"));
-  const packages = emulatorConnected ? tryShell("adb", ["shell", "pm", "list", "packages", APP_PACKAGE], 20_000) : { ok: false, output: "" };
-  const packageInstalled = packages.ok && packages.output.includes(APP_PACKAGE);
+  let packageInstalled = emulatorConnected ? isPackageInstalled() : false;
+  if (emulatorConnected && !packageInstalled) {
+    packageInstalled = installDebugApkIfPresent() && isPackageInstalled();
+  }
   let launchAttempted = false;
   let uiDump = "";
   let uiDumpCollected = false;

@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useCallback } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Platform, Pressable, Text, View } from "react-native";
 
 import {
   buildAiEstimatePdfConfirmation,
@@ -65,6 +65,10 @@ export function AIAssistantEstimatePdfActions({
           activeEstimatePdfCreations.delete(creationKey);
         }
       };
+      if (Platform.OS === "web") {
+        createPdf();
+        return;
+      }
       Alert.alert(confirmation.copy.title, confirmation.copy.body, [
         { text: confirmation.copy.cancelLabel, style: "cancel" },
         { text: confirmation.copy.createLabel, onPress: createPdf },

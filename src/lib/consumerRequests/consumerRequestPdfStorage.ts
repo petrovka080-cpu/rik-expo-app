@@ -54,10 +54,26 @@ export function createConsumerRepairPdfSignedUrl(input: {
     Date.now() + (input.expiresInSeconds ?? PRIVATE_PDF_SIGNED_URL_DEFAULT_TTL_SECONDS) * 1000,
   ).toISOString();
   return {
-    signedUrl: `data:application/pdf;charset=utf-8,${encodeURIComponent(object.body)}`,
+    signedUrl: `data:application/pdf;base64,${stringToBase64(object.body)}`,
     expiresAt,
     contentType: object.contentType,
   };
+}
+
+function stringToBase64(value: string): string {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  let output = "";
+  for (let index = 0; index < value.length; index += 3) {
+    const a = value.charCodeAt(index) & 255;
+    const b = index + 1 < value.length ? value.charCodeAt(index + 1) & 255 : 0;
+    const c = index + 2 < value.length ? value.charCodeAt(index + 2) & 255 : 0;
+    const triplet = (a << 16) | (b << 8) | c;
+    output += alphabet[(triplet >> 18) & 63];
+    output += alphabet[(triplet >> 12) & 63];
+    output += index + 1 < value.length ? alphabet[(triplet >> 6) & 63] : "=";
+    output += index + 2 < value.length ? alphabet[triplet & 63] : "=";
+  }
+  return output;
 }
 
 export function getConsumerRepairPdfStorageObject(input: {

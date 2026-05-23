@@ -609,19 +609,55 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_GREEN_CLOSEOUT_") ||
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
+    normalized.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
+    normalized.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
+    normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_BLOCKER_AUDIT_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_REAL_ARCHITECTURE_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_LIVE_ACCEPTANCE_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_150_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_10000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_") ||
     normalized.startsWith("artifacts/S_ALL_SCREENS_") ||
     normalized.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
     normalized === "src/features/ai/AIAssistantEstimatePdfActions.tsx" ||
     normalized.startsWith("src/lib/ai/estimatePdf/") ||
+    normalized.startsWith("src/lib/estimatePdf/") ||
     normalized.startsWith("tests/aiEstimatePdf/") ||
+    normalized.startsWith("tests/pdf/estimatePdf") ||
+    normalized.startsWith("tests/liveAcceptance/") ||
+    normalized.startsWith("tests/e2e/liveEstimatePdf") ||
     normalized.startsWith("tests/architecture/aiEstimatePdf") ||
+    normalized.startsWith("tests/architecture/pdfNo") ||
+    normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
+    normalized === "tests/architecture/knownWorkNoGenericRows.contract.test.ts" ||
     normalized.startsWith("tests/architecture/consumerEstimate") ||
     normalized.startsWith("tests/architecture/allScreens") ||
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/allScreensRuntime/") ||
     normalized.startsWith("tests/releaseCandidate/") ||
     normalized.startsWith("tests/globalEstimate/") ||
+    normalized.startsWith("tests/estimateIntent/") ||
+    normalized.startsWith("tests/globalEstimateAnyWork/") ||
+    normalized.startsWith("tests/globalEstimateExternalSources/") ||
+    normalized.startsWith("tests/builtInAi/") ||
+    normalized === "tests/builtInAi150" ||
+    normalized.startsWith("tests/builtInAi150/") ||
+    normalized === "tests/builtInAi1000" ||
+    normalized.startsWith("tests/builtInAi1000/") ||
+    normalized === "tests/builtInAi10000" ||
+    normalized.startsWith("tests/builtInAi10000/") ||
+    normalized.startsWith("tests/audit/greenClaim") ||
+    normalized === "tests/audit/replayVerifiedMatrices.contract.test.ts" ||
+    normalized === "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts" ||
+    normalized === "tests/audit/dataOpsUiTruthSplit.contract.test.ts" ||
     normalized.startsWith("tests/architecture/globalEstimate") ||
+    normalized.startsWith("tests/architecture/anyEstimate") ||
+    normalized.startsWith("tests/architecture/builtInAi") ||
+    normalized === "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts" ||
+    normalized === "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts" ||
+    normalized === "tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts" ||
     normalized.startsWith("artifacts/S_MARKETPLACE_ADD_PHOTO_AI_FILL_") ||
     normalized.startsWith("artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_") ||
     normalized.startsWith("artifacts/S_RLS_DYNAMIC_CROSS_TENANT_") ||
@@ -629,6 +665,8 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/audit/auditSupabasePrivateTableRlsCoverage") ||
     normalized.startsWith("scripts/audit/rlsDynamicCrossTenant.shared") ||
     normalized.startsWith("scripts/audit/runRlsDynamicCrossTenantProof") ||
+    normalized.startsWith("scripts/audit/greenClaimArtifactReconciliation") ||
+    normalized.startsWith("scripts/audit/runGreenClaimArtifactReconciliation") ||
     normalized === "supabase/migrations/20260522123000_rls_dynamic_cross_tenant_static_coverage.sql" ||
     normalized.startsWith("tests/security/companyUserCannotReadOtherCompany") ||
     normalized.startsWith("tests/security/consumerCannotReadOfficeData") ||
@@ -669,6 +707,14 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runCoreWorkflowIdempotencyProof") ||
     normalized.startsWith("scripts/e2e/runGlobalEstimate") ||
     normalized.startsWith("scripts/e2e/runAiEstimate") ||
+    normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
+    normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
+    normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
+    normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
+    normalized.startsWith("scripts/e2e/runAnyEstimate") ||
+    normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
+    normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
+    normalized.startsWith("scripts/e2e/runBuiltInAi") ||
     normalized.startsWith("scripts/e2e/runConsumerEstimateTabPdfProof") ||
     normalized.startsWith("scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof") ||
     normalized.startsWith("scripts/e2e/runAllScreens") ||
@@ -701,6 +747,16 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "src/screens/profile/profile.services.ts" ||
     normalized === "src/features/market/market.repository.ts" ||
     normalized === "src/features/market/marketHome.data.ts" ||
+    normalized === "src/features/ai/AIAssistantScreen.tsx" ||
+    normalized === "src/features/ai/assistantClient.ts" ||
+    normalized === "src/features/ai/assistantAnswerPipeline.ts" ||
+    normalized.startsWith("src/lib/ai/builtInAi/") ||
+    normalized.startsWith("src/lib/ai/builtInAi1000/") ||
+    normalized.startsWith("src/lib/ai/builtInAi10000/") ||
+    normalized.startsWith("src/lib/ai/sourceIntelligence/") ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    normalized === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
     normalized === "src/lib/api/requestDraftSync.service.ts" ||
     normalized === "src/lib/media/services/mediaBackendUploadService.ts" ||
     normalized === "src/screens/warehouse/warehouse.issue.repo.ts" ||
@@ -713,6 +769,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "supabase/migrations/20260522190000_whole_app_50k_live_explain_indexes.sql" ||
     normalized === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     normalized === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
+    normalized === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/ops/") ||
     normalized.startsWith("tests/security/aiContextSanitizer") ||

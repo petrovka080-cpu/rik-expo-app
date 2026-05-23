@@ -2,18 +2,18 @@ import type { GlobalUnitInput, GlobalUnitSystem } from "./globalEstimateTypes";
 
 export function normalizeGlobalUnit(rawUnit: string | undefined): GlobalUnitInput["normalizedUnit"] {
   const unit = (rawUnit ?? "").toLowerCase().replace(/\s+/g, "_");
-  if (unit === "m2" || unit === "sqm" || unit === "sq_m" || unit === "м2" || unit === "м²" || unit.includes("квадрат") || unit.includes("quadratmeter")) return "sq_m";
+  if (unit === "m2" || unit === "sqm" || unit === "sq_m" || unit === "м2" || unit === "м²" || unit.includes("кв") || unit.includes("квадрат") || unit.includes("quadratmeter")) return "sq_m";
   if (unit === "sq_ft" || unit === "sqft" || unit === "ft2" || unit === "ft²") return "sq_ft";
   if (unit === "sq_yd" || unit === "yd2" || unit === "yd²") return "sq_ft";
-  if (unit === "m" || unit === "linear_m" || unit === "пог._м" || unit === "пог.м") return "linear_m";
+  if (unit === "m" || unit === "linear_m" || unit === "пог._м" || unit === "пог.м" || unit.includes("погон")) return "linear_m";
   if (unit === "ft" || unit === "linear_ft") return "linear_ft";
-  if (unit === "pcs" || unit === "pc" || unit === "шт") return "pcs";
-  if (unit === "set" || unit === "комплект") return "set";
+  if (unit === "pcs" || unit === "pc" || unit === "шт" || unit.includes("точ")) return "pcs";
+  if (unit === "set" || unit === "комплект" || unit === "компл." || unit === "компл") return "set";
   if (unit === "kg" || unit === "кг") return "kg";
   if (unit === "lbs" || unit === "lb") return "lbs";
   if (unit === "m3" || unit === "м3") return "m3";
   if (unit === "cu_ft" || unit === "ft3" || unit === "ft³") return "cu_ft";
-  if (unit === "ton" || unit === "т") return "ton";
+  if (unit === "ton" || unit === "т" || unit === "тонн" || unit === "тонна" || unit === "тонны") return "ton";
   return "sq_m";
 }
 

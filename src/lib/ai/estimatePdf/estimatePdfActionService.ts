@@ -2,6 +2,7 @@ import {
   generateConsumerRepairRequestPdf,
   openConsumerRepairRequestPdf,
 } from "../../consumerRequests/consumerRequestPdfService";
+import { createEstimatePdf } from "../../estimatePdf";
 import { assertAiEstimatePdfSource } from "./estimatePdfGuard";
 import { mapAiEstimatePdfSourceToExistingConsumerPdfModel } from "./estimatePdfModelMapper";
 import type { AiEstimatePdfConfirmation, AiEstimatePdfResult, AiEstimatePdfSource } from "./estimatePdfTypes";
@@ -42,6 +43,38 @@ export function generateAiEstimatePdf(input: {
     throw new Error("AI estimate PDF generation requires explicit confirmation.");
   }
   assertAiEstimatePdfSource(input.source);
+  if (input.source.structuredEstimate) {
+    const pdf = createEstimatePdf({
+      estimate: input.source.structuredEstimate,
+      runtimeTrace: {
+        traceId: `ai_estimate_pdf:${input.source.sourceId ?? input.source.structuredEstimate.estimateId}`,
+        selectedRoute: "estimate",
+        selectedTool: "calculate_global_estimate",
+        workKey: input.source.structuredEstimate.work.workKey,
+        sourceType: input.source.sourceType,
+      },
+      generatedAt: new Date().toISOString(),
+      language: input.source.language,
+    });
+    const result: AiEstimatePdfResult = {
+      pdfId: pdf.pdfId,
+      estimateId: input.source.sourceId,
+      sourceType: input.source.sourceType,
+      status: "openable",
+      title: pdf.title,
+      createdAt: input.source.createdAt,
+      access: {
+        kind: "signed-url",
+        uri: pdf.dataUri,
+      },
+      openAction: {
+        route: "/pdf-viewer",
+        sourceKind: "signed-url",
+      },
+    };
+    history.unshift(result);
+    return { ...result, access: { ...result.access }, openAction: { ...result.openAction } };
+  }
   const model = mapAiEstimatePdfSourceToExistingConsumerPdfModel(input.source);
   const pdf = generateConsumerRepairRequestPdf(model);
   const open = openConsumerRepairRequestPdf({ requestId: model.draft.id, pdf });

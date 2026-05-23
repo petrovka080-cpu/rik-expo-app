@@ -19,6 +19,11 @@ export function assertGlobalEstimateDataIntegrity(result: GlobalEstimateResult):
     for (const row of section.rows) {
       if (row.unitPrice > 0 && !row.sourceId) blockers.push(`GLOBAL_ESTIMATE_PRICE_WITHOUT_SOURCE:${row.rowNumber}`);
       if (row.sourceId && !sourceIds.has(row.sourceId)) blockers.push(`GLOBAL_ESTIMATE_SOURCE_NOT_FOUND:${row.sourceId}`);
+      if (row.unitPrice > 0 && row.sourceEvidence.length === 0) blockers.push(`GLOBAL_ESTIMATE_PRICE_WITHOUT_SOURCE_EVIDENCE:${row.rowNumber}`);
+      if (row.sourceEvidence.some((evidence) => !evidence.label || !evidence.checkedAt)) blockers.push(`GLOBAL_ESTIMATE_SOURCE_EVIDENCE_INCOMPLETE:${row.rowNumber}`);
+      if (row.confidence === "high" && row.sourceEvidence.some((evidence) => evidence.freshness === "stale" || evidence.freshness === "expired" || evidence.freshness === "unknown")) {
+        blockers.push(`GLOBAL_ESTIMATE_HIGH_CONFIDENCE_WITH_STALE_ROW_SOURCE:${row.rowNumber}`);
+      }
     }
   }
   if (result.tax.taxAmount > 0) {

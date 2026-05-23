@@ -10,6 +10,7 @@ import {
   createConsumerRepairPdfSignedUrl,
   uploadConsumerRepairPdfObject,
 } from "./consumerRequestPdfStorage";
+import { renderTextPdfDocument } from "../estimatePdf";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -63,30 +64,12 @@ function buildConsumerRepairPdfBody(input: {
   media: ConsumerRepairRequestMedia[];
   supplement?: ConsumerRepairPdfSupplement;
 }): string {
-  const summary = buildConsumerRepairPdfSummary(input)
-    .replace(/[()\\]/g, " ")
-    .split("\n")
-    .map((line) => `(${line}) Tj`)
-    .join("\n");
-
-  return [
-    "%PDF-1.4",
-    "1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj",
-    "2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj",
-    "3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R >> endobj",
-    "4 0 obj << /Length 64 >> stream",
-    "BT /F1 10 Tf 40 800 Td",
-    summary,
-    "ET",
-    "endstream endobj",
-    "xref",
-    "0 5",
-    "0000000000 65535 f ",
-    "trailer << /Root 1 0 R /Size 5 >>",
-    "startxref",
-    "0",
-    "%%EOF",
-  ].join("\n");
+  return renderTextPdfDocument({
+    pdfId: input.draft.id,
+    title: input.draft.title || input.draft.aiSummaryRu || "Заявка на ремонт",
+    fileName: `${safeSegment(input.draft.id)}.pdf`,
+    lines: buildConsumerRepairPdfSummary(input).split("\n"),
+  }).body;
 }
 
 export function buildConsumerRepairPdfSummary(input: {

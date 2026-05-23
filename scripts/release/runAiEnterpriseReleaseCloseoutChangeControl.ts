@@ -702,6 +702,16 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
     file.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
+    file.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
+    file.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
+    file.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_BLOCKER_AUDIT_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_REAL_ARCHITECTURE_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_LIVE_ACCEPTANCE_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_150_WORK_TYPES_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_1000_WORK_TYPES_") ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_10000_WORK_TYPES_") ||
+    file.startsWith("artifacts/S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_") ||
     file.startsWith("artifacts/S_ALL_SCREENS_") ||
     file.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
     file === "app/admin" ||
@@ -709,8 +719,20 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file.startsWith("app/admin/global-estimate/") ||
     file === "src/lib/ai/globalEstimate" ||
     file.startsWith("src/lib/ai/globalEstimate/") ||
+    file === "src/lib/ai/estimateRouting" ||
+    file.startsWith("src/lib/ai/estimateRouting/") ||
     file === "src/lib/ai/estimatePdf" ||
     file.startsWith("src/lib/ai/estimatePdf/") ||
+    file === "src/lib/estimatePdf" ||
+    file.startsWith("src/lib/estimatePdf/") ||
+    file === "src/lib/ai/builtInAi" ||
+    file.startsWith("src/lib/ai/builtInAi/") ||
+    file === "src/lib/ai/builtInAi1000" ||
+    file.startsWith("src/lib/ai/builtInAi1000/") ||
+    file === "src/lib/ai/builtInAi10000" ||
+    file.startsWith("src/lib/ai/builtInAi10000/") ||
+    file === "src/lib/ai/sourceIntelligence" ||
+    file.startsWith("src/lib/ai/sourceIntelligence/") ||
     file === "scripts/e2e/runGlobalEstimateLocalizationProfessionalBoqProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateProductionSafeProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateB2CRequestProof.ts" ||
@@ -721,7 +743,17 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" ||
     file === "scripts/e2e/runAiEstimateToPdfProof.ts" ||
+    file === "scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" ||
+    file === "scripts/e2e/runAndroidEstimatePdfSmoke.ts" ||
     file === "scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" ||
+    file === "scripts/e2e/anyEstimateSourceBackedProofShared.ts" ||
+    file.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
+    file.startsWith("scripts/e2e/runAnyEstimate") ||
+    file === "scripts/e2e/runAsphalt10000SqMEstimateProof.ts" ||
+    file === "scripts/e2e/builtInAiProofShared.ts" ||
+    file.startsWith("scripts/e2e/runBuiltInAi") ||
+    file.startsWith("scripts/audit/greenClaimArtifactReconciliation") ||
+    file === "scripts/audit/runGreenClaimArtifactReconciliation.ts" ||
     file === "scripts/e2e/runConsumerEstimateTabPdfProof.ts" ||
     file === "scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" ||
     file === "scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared.ts" ||
@@ -741,13 +773,40 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file.startsWith("supabase/functions/refresh-global-estimate-sources/") ||
     file === "supabase/migrations/20260522220000_global_estimate_localization_professional_boq_engine.sql" ||
     file === "supabase/migrations/20260522233000_global_estimate_data_ops_governance.sql" ||
+    file === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
     file === "tests/globalEstimate" ||
     file.startsWith("tests/globalEstimate/") ||
+    file === "tests/estimateIntent" ||
+    file.startsWith("tests/estimateIntent/") ||
+    file === "tests/globalEstimateAnyWork" ||
+    file.startsWith("tests/globalEstimateAnyWork/") ||
+    file === "tests/globalEstimateExternalSources" ||
+    file.startsWith("tests/globalEstimateExternalSources/") ||
+    file === "tests/builtInAi" ||
+    file.startsWith("tests/builtInAi/") ||
+    file === "tests/builtInAi150" ||
+    file.startsWith("tests/builtInAi150/") ||
+    file === "tests/builtInAi1000" ||
+    file.startsWith("tests/builtInAi1000/") ||
+    file === "tests/builtInAi10000" ||
+    file.startsWith("tests/builtInAi10000/") ||
     file === "tests/globalEstimateDataOps" ||
     file.startsWith("tests/globalEstimateDataOps/") ||
     file === "tests/aiEstimatePdf" ||
     file.startsWith("tests/aiEstimatePdf/") ||
+    file.startsWith("tests/pdf/estimatePdf") ||
+    file === "tests/liveAcceptance" ||
+    file.startsWith("tests/liveAcceptance/") ||
+    file.startsWith("tests/e2e/liveEstimatePdf") ||
     file.startsWith("tests/architecture/aiEstimatePdf") ||
+    file.startsWith("tests/architecture/pdfNo") ||
+    file === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
+    file === "tests/architecture/knownWorkNoGenericRows.contract.test.ts" ||
+    file.startsWith("tests/architecture/anyEstimate") ||
+    file.startsWith("tests/architecture/builtInAi") ||
+    file === "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts" ||
+    file === "tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts" ||
+    file === "tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts" ||
     file.startsWith("tests/architecture/consumerEstimate") ||
     file.startsWith("tests/architecture/globalEstimate") ||
     file.startsWith("tests/architecture/allScreens") ||
@@ -762,6 +821,12 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "src/lib/consumerRequests/index.ts" ||
     file === "src/lib/consumerRequests/consumerRequestTypes.ts" ||
     file === "src/lib/consumerRequests/consumerRequestPdfService.ts" ||
+    file === "src/features/ai/AIAssistantScreen.tsx" ||
+    file === "src/features/ai/assistantClient.ts" ||
+    file === "src/features/ai/assistantAnswerPipeline.ts" ||
+    file === "src/features/consumerRepair/consumerRepairAiAdapter.ts" ||
+    file === "app/(tabs)/chat.tsx" ||
+    file === "jest.config.js" ||
     file === "src/lib/ai/estimateEngine/index.ts" ||
     file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
     file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
@@ -769,6 +834,10 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "scripts/release/releaseGuard.shared.ts" ||
     file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     file === "tests/release/releaseGuard.shared.test.ts" ||
+    file.startsWith("tests/audit/greenClaim") ||
+    file === "tests/audit/replayVerifiedMatrices.contract.test.ts" ||
+    file === "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts" ||
+    file === "tests/audit/dataOpsUiTruthSplit.contract.test.ts" ||
     file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
     file === "tests/perf/performance-budget.test.ts" ||
     file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||

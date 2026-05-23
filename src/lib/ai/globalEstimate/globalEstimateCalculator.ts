@@ -1,6 +1,8 @@
 import { formatGlobalCurrency, formatGlobalNumber, localizedText, resolveGlobalLocalization } from "./globalLocalizationCore";
 import { getGlobalEstimateTemplate } from "./globalEstimateTemplateService";
+import { resolveGlobalPriceSourceFreshness } from "./dataOps/globalPriceSourceFreshnessService";
 import type {
+  EstimateRowSourceEvidence,
   GlobalEstimateConfidence,
   GlobalEstimateInput,
   GlobalEstimateResult,
@@ -13,7 +15,7 @@ import { calculateGlobalTax } from "./globalTaxEngine";
 import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
-import { resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -26,7 +28,7 @@ function estimateIdFor(input: GlobalEstimateInput): string {
 
 function parseVolume(text?: string): { volume: number; unit: string } | null {
   if (!text) return null;
-  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(m2|m²|м2|м²|квадрат(?:ов|а|ные)?|quadratmeter|sq\s*ft|sqft|ft2|ft²|m3|м3|cu\s*ft|пог\.?\s*м|linear\s*ft|linear\s*m|шт|pcs|set|компл)/i);
+  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(m2|m²|м2|м²|кв\.?\s*м|квадрат(?:ов|а|ные|ных)?|quadratmeter|sq\s*ft|sqft|ft2|ft²|m3|м3|м³|cu\s*ft|пог\.?\s*м|погонн(?:ых|ый|ые)?\s*метр(?:ов|а)?|linear\s*ft|linear\s*m|кг|kg|тонн?|т(?=$|\s|,|\.)|шт|pcs|set|компл\.?|комплект|точек|точки|точка)/i);
   if (!match) return null;
   return {
     volume: Number(match[1].replace(",", ".")),
@@ -34,13 +36,23 @@ function parseVolume(text?: string): { volume: number; unit: string } | null {
   };
 }
 
-function defaultInputQuantity(input: GlobalEstimateInput, locale: GlobalLocaleContext): { volume: number; unit: string; photoBased: boolean } {
+function defaultVolumeForUnit(unit: GlobalUnitInput["normalizedUnit"], locale: GlobalLocaleContext): { volume: number; unit: string } {
+  if (unit === "pcs" || unit === "set") return { volume: 1, unit };
+  if (unit === "linear_m" || unit === "linear_ft") return { volume: locale.unitSystem === "imperial" ? 30 : 10, unit: locale.unitSystem === "imperial" ? "linear_ft" : "linear_m" };
+  if (unit === "m3" || unit === "cu_ft") return { volume: locale.unitSystem === "imperial" ? 35 : 1, unit: locale.unitSystem === "imperial" ? "cu_ft" : "m3" };
+  if (unit === "kg" || unit === "lbs") return { volume: locale.unitSystem === "imperial" ? 100 : 50, unit: locale.unitSystem === "imperial" ? "lbs" : "kg" };
+  if (unit === "ton") return { volume: 1, unit: "ton" };
+  return { volume: locale.unitSystem === "imperial" ? 100 : 10, unit: locale.unitSystem === "imperial" ? "sq_ft" : "sq_m" };
+}
+
+function defaultInputQuantity(input: GlobalEstimateInput, locale: GlobalLocaleContext, defaultUnit?: GlobalUnitInput["normalizedUnit"]): { volume: number; unit: string; photoBased: boolean } {
   const parsed = parseVolume(input.text);
   if (input.volume && input.unit) return { volume: input.volume, unit: input.unit, photoBased: input.photoAnalysis !== undefined };
   if (input.volume) return { volume: input.volume, unit: input.unit ?? (locale.unitSystem === "imperial" ? "sq_ft" : "sq_m"), photoBased: input.photoAnalysis !== undefined };
   if (parsed) return { ...parsed, photoBased: input.photoAnalysis !== undefined };
-  if (input.photoAnalysis) return { volume: locale.unitSystem === "imperial" ? 100 : 10, unit: locale.unitSystem === "imperial" ? "sq_ft" : "sq_m", photoBased: true };
-  return { volume: locale.unitSystem === "imperial" ? 100 : 10, unit: locale.unitSystem === "imperial" ? "sq_ft" : "sq_m", photoBased: false };
+  const fallback = defaultVolumeForUnit(defaultUnit ?? "sq_m", locale);
+  if (input.photoAnalysis) return { ...fallback, photoBased: true };
+  return { ...fallback, photoBased: false };
 }
 
 function localRowUnit(rowUnitMetric: GlobalUnitInput["normalizedUnit"], rowUnitImperial: GlobalUnitInput["normalizedUnit"] | undefined, locale: GlobalLocaleContext): GlobalUnitInput["normalizedUnit"] {
@@ -88,6 +100,15 @@ function minConfidence(values: GlobalEstimateConfidence[]): GlobalEstimateConfid
   if (values.includes("low")) return "low";
   if (values.includes("medium")) return "medium";
   return "high";
+}
+
+function rowPriceStatus(input: {
+  freshness: EstimateRowSourceEvidence["freshness"];
+  sourceType: EstimateRowSourceEvidence["sourceType"];
+}): GlobalEstimateResult["sections"][number]["rows"][number]["priceStatus"] {
+  if (input.sourceType === "manual_admin_rate") return "manual_fallback";
+  if (input.freshness === "stale" || input.freshness === "expired" || input.freshness === "unknown") return "stale_fallback";
+  return "priced";
 }
 
 function risksFor(keys: string[], locale: GlobalLocaleContext, dangerous: boolean): GlobalEstimateResult["regionalRisks"] {
@@ -144,7 +165,7 @@ function costFactors(locale: GlobalLocaleContext, dangerous: boolean): string[] 
   if (locale.language === "ru") {
     return [
       "Неровное или поврежденное основание.",
-      "Демонтаж старых материалов.",
+      "Удаление старых материалов.",
       "Сложная геометрия, углы и примыкания.",
       "Доставка, подъем и ограниченный доступ.",
       "Срочность работ.",
@@ -163,8 +184,9 @@ function costFactors(locale: GlobalLocaleContext, dangerous: boolean): string[] 
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const locale = resolveGlobalLocalization(input);
-  const quantity = defaultInputQuantity(input, locale);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
+  const workDefinition = getGlobalWorkTypeDefinition(work.workKey);
+  const quantity = defaultInputQuantity(input, locale, workDefinition.defaultMeasureUnit);
   const template = getGlobalEstimateTemplate(work.workKey);
   const normalizedInput = normalizeGlobalUnitForLocale({
     value: quantity.volume,
@@ -173,6 +195,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   });
   const sourceMap = new Map<string, GlobalEstimateResult["sources"][number]>();
   const confidences: GlobalEstimateConfidence[] = [locale.confidence, work.confidence];
+  if (input.confidenceOverride) confidences.push(input.confidenceOverride);
 
   const sections: GlobalEstimateResult["sections"] = template.sections
     .filter((section) => section.type === "materials" ? input.includeMaterials !== false : section.type === "labor" ? input.includeLabor !== false : true)
@@ -193,7 +216,18 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           priceTier: input.priceTier,
         });
         sourceMap.set(rate.source.id, rate.source);
-        confidences.push(rate.confidence);
+        const freshness = resolveGlobalPriceSourceFreshness(rate.source.checkedAt);
+        const rowConfidence = minConfidence([rate.confidence, freshness.confidence]);
+        const sourceEvidence: EstimateRowSourceEvidence[] = [{
+          sourceId: rate.source.id,
+          sourceType: rate.source.type as EstimateRowSourceEvidence["sourceType"],
+          label: rate.source.label,
+          url: rate.source.url,
+          checkedAt: rate.source.checkedAt,
+          freshness: freshness.status,
+          confidence: rowConfidence,
+        }];
+        confidences.push(rowConfidence);
         const total = round2(quantityValue * rate.rate.priceDefault);
         return {
           rowNumber: templateRow.rowNumber,
@@ -207,8 +241,13 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           total,
           displayTotal: formatGlobalCurrency(total, { ...locale, currency: rate.rate.currency }),
           currency: rate.rate.currency,
+          priceStatus: rowPriceStatus({
+            freshness: freshness.status,
+            sourceType: rate.source.type as EstimateRowSourceEvidence["sourceType"],
+          }),
           sourceId: rate.source.id,
-          confidence: rate.confidence,
+          sourceEvidence,
+          confidence: rowConfidence,
         };
       });
       return {

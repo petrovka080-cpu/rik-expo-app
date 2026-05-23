@@ -15,6 +15,24 @@ function taxText(result: GlobalEstimateResult): string {
   return `${result.tax.taxLabel}${rate ? ` (${rate})` : ""}: ${mode}.`;
 }
 
+function sourceEvidenceLines(result: GlobalEstimateResult, ru: boolean): string[] {
+  const lines = result.sections
+    .flatMap((section) => section.rows)
+    .flatMap((row) => row.sourceEvidence.map((evidence) => {
+      const checkedDate = evidence.checkedAt.slice(0, 10);
+      return ru
+        ? `- ${row.rowNumber} ${row.name}: ${evidence.label}, проверено ${checkedDate}, freshness ${evidence.freshness}, confidence ${evidence.confidence}.`
+        : `- ${row.rowNumber} ${row.name}: ${evidence.label}, checked ${checkedDate}, freshness ${evidence.freshness}, confidence ${evidence.confidence}.`;
+    }));
+
+  return lines.length > 0
+    ? lines
+    : [ru
+      ? "- Нет подтвержденных источников для рассчитанных строк; уверенная цена недоступна."
+      : "- No approved source evidence is attached to priced rows; confident pricing is unavailable."
+    ];
+}
+
 export function formatGlobalEstimateAnswer(result: GlobalEstimateResult): string {
   const ru = isRu(result);
   const intro = ru
@@ -32,9 +50,14 @@ export function formatGlobalEstimateAnswer(result: GlobalEstimateResult): string
   ]);
   const totalsTitle = ru ? "## Итого" : "## Totals";
   const taxTitle = ru ? "## Налог / VAT / GST / sales tax" : "## Tax / VAT / GST / sales tax";
+  const sourcesTitle = ru ? "## Источники и точность" : "## Sources and accuracy";
   const regionalRisksTitle = ru ? "## Региональные и технические риски" : "## Regional and technical risks";
   const risksTitle = ru ? "## Что может увеличить стоимость" : "## What may increase cost";
   const questionsTitle = ru ? "## Чтобы сделать расчет точнее, уточните" : "## To make this more precise, please clarify";
+  const actionsTitle = ru ? "## Действия" : "## Actions";
+  const actions = ru
+    ? ["Сделать PDF", "Сохранить в сметы", "Создать заявку", "Уточнить город", "Обновить цены"]
+    : ["Make PDF", "Save estimate", "Create request", "Clarify city", "Refresh prices"];
   const safetyLine = result.requiresReview
     ? [
       "",
@@ -66,6 +89,9 @@ export function formatGlobalEstimateAnswer(result: GlobalEstimateResult): string
     taxTitle,
     taxText(result),
     "",
+    sourcesTitle,
+    ...sourceEvidenceLines(result, ru),
+    "",
     regionalRisksTitle,
     ...result.regionalRisks.map((risk) => `- ${risk.title}: ${risk.text}`),
     "",
@@ -74,6 +100,9 @@ export function formatGlobalEstimateAnswer(result: GlobalEstimateResult): string
     "",
     questionsTitle,
     ...result.clarifyingQuestions.map((item) => `- ${item}`),
+    "",
+    actionsTitle,
+    ...actions.map((item) => `- ${item}`),
     ...safetyLine,
   ].join("\n");
 }

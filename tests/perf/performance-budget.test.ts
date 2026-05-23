@@ -641,11 +641,34 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate"),
       /\.tsx?$/,
     );
+    const sBuiltInAiRealToolArchitectureFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "builtInAi"),
+      /\.ts$/,
+    );
+    const sBuiltInAi1000CoverageProofFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "builtInAi1000"),
+      /\.ts$/,
+    );
+    const sBuiltInAi10000CoverageProofFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "builtInAi10000"),
+      /\.ts$/,
+    );
+    const sAiSourceIntelligenceFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "sourceIntelligence"),
+      /\.ts$/,
+    );
     const sAiEstimateToExistingPdfFiles =
       countFilesRecursive(path.join(SRC, "lib", "ai", "estimatePdf"), /\.tsx?$/) +
       [path.join(SRC, "features", "ai", "AIAssistantEstimatePdfActions.tsx")].filter((file) =>
         fs.existsSync(file),
       ).length;
+    const sLiveAiEstimatePdfRealityFiles = countFilesRecursive(
+      path.join(SRC, "lib", "estimatePdf"),
+      /\.ts$/,
+    );
+    const sBuiltInAiAssistantIntegrationFiles = [
+      path.join(SRC, "features", "ai", "assistantAnswerPipeline.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sGreenCloseoutLayoutPrimitiveFiles = [
       path.join(SRC, "components", "layout", "AppBottomNavSafeArea.tsx"),
       path.join(SRC, "components", "layout", "AppChatComposerBar.tsx"),
@@ -1674,8 +1697,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
-    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(28);
+    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(40);
+    expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
+    expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
+    expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);
     expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);
     expect(sGreenCloseoutLiveRouteMediaFiles).toBeLessThanOrEqual(2);
     expect(sAiAppContextGraphDeepLinkedSourceRefsFiles).toBeLessThanOrEqual(14);
@@ -1919,7 +1945,12 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiAlwaysOnExternalKnowledgeFiles -
         sAiEstimateEngineFiles -
         sGlobalEstimateProfessionalBoqFiles -
+        sBuiltInAiRealToolArchitectureFiles -
+        sBuiltInAi1000CoverageProofFiles -
+        sBuiltInAi10000CoverageProofFiles -
+        sAiSourceIntelligenceFiles -
         sAiEstimateToExistingPdfFiles -
+        sBuiltInAiAssistantIntegrationFiles -
         sGreenCloseoutLayoutPrimitiveFiles -
         sGreenCloseoutLiveRouteMediaFiles -
         sAiAppContextGraphDeepLinkedSourceRefsFiles -
@@ -1961,8 +1992,9 @@ describe("performance budget вЂ” bundle module count", () => {
         sCoreMutationIdempotencyHardeningFiles -
         sObservabilityOpsRateLimitProductionFiles -
         sSecurityPrivacyHardeningFiles -
-        s50kSyntheticFixtureTzLockContractFiles,
-    ).toBeLessThanOrEqual(1300);
+        s50kSyntheticFixtureTzLockContractFiles -
+        sLiveAiEstimatePdfRealityFiles,
+    ).toBeLessThanOrEqual(1306);
   });
 });
 

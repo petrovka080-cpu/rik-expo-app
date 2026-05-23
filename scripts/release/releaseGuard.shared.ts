@@ -46,6 +46,7 @@ export type ReleaseGateName =
   | "global-estimate-data-ops-import-proof"
   | "global-estimate-data-ops-coverage-proof"
   | "ai-estimate-to-pdf-proof"
+  | "live-ai-estimate-pdf-reality-proof"
   | "consumer-estimate-tab-pdf-proof"
   | "bottom-nav-estimate-marketplace-plus-proof"
   | "ai-estimate-pdf-open-runtime-proof"
@@ -275,6 +276,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "global-estimate-data-ops-import-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" },
   { name: "global-estimate-data-ops-coverage-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" },
   { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
+  { name: "live-ai-estimate-pdf-reality-proof", command: "npx tsx scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" },
   { name: "consumer-estimate-tab-pdf-proof", command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts" },
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
