@@ -1,6 +1,6 @@
 {
   "wave": "S_AI_ESTIMATE_CORE_COMPLETION_UNFINISHED_SMETAS_WEB_ANDROID_COMMIT_PUSH_POINT_OF_NO_RETURN",
-  "final_status": "BLOCKED_AI_ESTIMATE_CORE_GAP_AUDIT_FAILED",
+  "final_status": "BLOCKED_FINAL_WORKTREE_DIRTY",
   "gap_audit_completed": true,
   "unfinished_cases_total": 80,
   "unfinished_cases_passed": 80,
@@ -39,10 +39,10 @@
   "git_preflight_recorded": true,
   "all_dirty_files_classified": true,
   "unknown_dirty_files_found": false,
-  "commit_created": false,
-  "commit_sha": null,
-  "branch_pushed": false,
-  "remote_contains_commit": false,
+  "commit_created": true,
+  "commit_sha": "290a74b57c231ec14d0260a4bc58bfbd35eb7121",
+  "branch_pushed": true,
+  "remote_contains_commit": true,
   "final_worktree_clean": false,
   "fake_green_claimed": false
 }

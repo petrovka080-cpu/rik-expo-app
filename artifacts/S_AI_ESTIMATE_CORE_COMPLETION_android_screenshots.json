@@ -16,7 +16,7 @@
   "apk_path": "C:\\dev\\rik-expo-app\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
   "apk_exists": true,
   "install_output": "Performing Streamed Install\r\nSuccess\r\n",
-  "launch_output": "  bash arg: -p\r\n  bash arg: com.azisbek_dzhantaev.rikexpoapp\r\n  bash arg: -c\r\n  bash arg: android.intent.category.LAUNCHER\r\n  bash arg: 1\r\nEvents injected: 1\r\n## Network stats: elapsed time=758ms (0ms mobile, 0ms wifi, 758ms not connected)\r\n",
-  "screenshot_output": "buffer:53844",
+  "launch_output": "  bash arg: -p\r\n  bash arg: com.azisbek_dzhantaev.rikexpoapp\r\n  bash arg: -c\r\n  bash arg: android.intent.category.LAUNCHER\r\n  bash arg: 1\r\nEvents injected: 1\r\n## Network stats: elapsed time=2748ms (0ms mobile, 0ms wifi, 2748ms not connected)\r\n",
+  "screenshot_output": "buffer:54111",
   "fake_green_claimed": false
 }

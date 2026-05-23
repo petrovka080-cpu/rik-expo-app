@@ -140,21 +140,32 @@ function main(): void {
         ...(webPassed ? [] : [{ code: "WEB_PLAYWRIGHT_NOT_RUN", message: "Playwright web artifact is missing or not passed" }]),
         ...(androidPassed ? [] : [{ code: "ANDROID_EMULATOR_NOT_RUN", message: "Android emulator artifact is missing or not passed" }]),
         ...(commitCreated ? [] : [{ code: "COMMIT_PUSH_PROOF_MISSING", message: "Commit/push proof artifact is missing" }]),
+        ...(branchPushed ? [] : [{ code: "BRANCH_PUSH_PROOF_MISSING", message: "Remote push proof is missing" }]),
         ...(finalWorktreeClean ? [] : [{ code: "FINAL_WORKTREE_NOT_CLEAN", message: "Final clean worktree proof is missing" }]),
       ]
     : [];
   const allFailures = [...failures, ...requireLiveFailures];
+  const failureCodes = new Set(allFailures.map((failure) => failure.code));
+  const finalStatus =
+    allFailures.length === 0 && webPassed && androidPassed && commitCreated && branchPushed && finalWorktreeClean
+      ? "GREEN_AI_ESTIMATE_CORE_COMPLETION_READY"
+      : failureCodes.has("ANDROID_EMULATOR_NOT_RUN")
+        ? "BLOCKED_ANDROID_EMULATOR_NOT_RUN"
+        : failureCodes.has("WEB_PLAYWRIGHT_NOT_RUN")
+          ? "BLOCKED_WEB_PLAYWRIGHT_FAILED"
+          : failureCodes.has("COMMIT_PUSH_PROOF_MISSING") || failureCodes.has("BRANCH_PUSH_PROOF_MISSING")
+            ? "BLOCKED_REMOTE_PUSH_NOT_AVAILABLE"
+            : failureCodes.has("FINAL_WORKTREE_NOT_CLEAN")
+              ? "BLOCKED_FINAL_WORKTREE_DIRTY"
+              : failures.some((failure) => String(failure.id ?? "").startsWith("00"))
+                ? "BLOCKED_P0_ESTIMATE_CASE_FAILED"
+                : allFailures.length === 0
+                  ? "BLOCKED_LIVE_OR_COMMIT_GATES_PENDING"
+                  : "BLOCKED_AI_ESTIMATE_CORE_GAP_AUDIT_FAILED";
 
   const matrix = {
     wave: WAVE,
-    final_status:
-      allFailures.length === 0 && webPassed && androidPassed && commitCreated && branchPushed && finalWorktreeClean
-        ? "GREEN_AI_ESTIMATE_CORE_COMPLETION_READY"
-        : androidPassed === false && REQUIRE_LIVE
-          ? "BLOCKED_ANDROID_EMULATOR_NOT_RUN"
-          : allFailures.length === 0
-            ? "BLOCKED_LIVE_OR_COMMIT_GATES_PENDING"
-            : "BLOCKED_AI_ESTIMATE_CORE_GAP_AUDIT_FAILED",
+    final_status: finalStatus,
     gap_audit_completed: true,
     unfinished_cases_total: UNFINISHED_AI_ESTIMATE_CASES.length,
     unfinished_cases_passed: backendResults.filter((result) => result.validation.passed).length,

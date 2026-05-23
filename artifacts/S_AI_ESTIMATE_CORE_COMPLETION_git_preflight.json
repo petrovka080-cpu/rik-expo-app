@@ -1,18 +1,20 @@
 {
   "branch": "main",
-  "head": "b318bfbc0d960ab17dabfc181637c1469e4b77d0",
+  "head": "290a74b57c231ec14d0260a4bc58bfbd35eb7121",
   "remote": "origin\thttps://github.com/petrovka080-cpu/rik-expo-app.git (fetch)\norigin\thttps://github.com/petrovka080-cpu/rik-expo-app.git (push)",
   "status_short": [
     "M artifacts/S_50K_FIXTURE_RETENTION_inventory.json",
+    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_android_screenshots.json",
+    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json",
+    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json",
+    " M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
     " M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json",
     " M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json",
     " M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md",
-    " M scripts/release/releaseGuard.shared.ts",
+    " M scripts/e2e/runAiEstimateCoreCompletionProof.ts",
     " M src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
     " M src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts",
     " M src/lib/ai/estimatePdf/estimatePdfModelMapper.ts",
-    " M src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
-    " M src/lib/ai/globalEstimate/index.ts",
     " M src/lib/ai/universalRoleQa/universalAnswerComposer.ts",
     " M src/lib/ai/universalRoleQa/universalIntentClassifier.ts",
     " M tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts",
@@ -20,12 +22,9 @@
     " M tests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts",
     " M tests/release/releaseGuard.shared.test.ts",
     "?? scripts/audit/greenClaimArtifactReconciliation.shared.ts",
-    "?? scripts/audit/runAiEstimateCoreGapAudit.ts",
     "?? scripts/audit/runGreenClaimArtifactReconciliation.ts",
     "?? scripts/e2e/anyEstimateSourceBackedProofShared.ts",
     "?? scripts/e2e/builtInAiProofShared.ts",
-    "?? scripts/e2e/runAiEstimateCoreCompletionProof.ts",
-    "?? scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts",
     "?? scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts",
     "?? scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts",
     "?? scripts/e2e/runAnyConstructionEstimateRoutingProof.ts",
@@ -46,19 +45,8 @@
     "?? scripts/e2e/runBuiltInAiSourceEvidenceProof.ts",
     "?? src/lib/ai/builtInAi10000/",
     "?? src/lib/ai/globalEstimate/externalSources/",
-    "?? src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts",
-    "?? src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts",
     "?? src/lib/ai/sourceIntelligence/",
     "?? supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql",
-    "?? tests/aiEstimateCore/",
-    "?? tests/architecture/aiEstimateCoreNoFakeGreen.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoFakeSources.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoMarkdownAsSourceOfTruth.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoPromptHardcodedPrices.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoPromptHardcodedTax.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoScreenLocalCalculation.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoSecondAiFramework.contract.test.ts",
-    "?? tests/architecture/aiEstimateCoreNoUseEffectRewrite.contract.test.ts",
     "?? tests/architecture/anyEstimateArchitectureTestHelpers.ts",
     "?? tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts",
     "?? tests/architecture/anyEstimateNoLlmPrices.contract.test.ts",
@@ -104,23 +92,18 @@
     "?? tests/builtInAi1000/",
     "?? tests/builtInAi10000/",
     "?? tests/builtInAi150/",
-    "?? tests/e2e/aiEstimateCoreCompletion.web.spec.ts",
     "?? tests/estimateIntent/",
     "?? tests/globalEstimateAnyWork/",
-    "?? tests/globalEstimateExternalSources/",
-    "?? tests/routeParity/"
+    "?? tests/globalEstimateExternalSources/"
   ],
-  "status_sb": "## main...origin/main\n M artifacts/S_50K_FIXTURE_RETENTION_inventory.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md\n M scripts/release/releaseGuard.shared.ts\n M src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts\n M src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts\n M src/lib/ai/estimatePdf/estimatePdfModelMapper.ts\n M src/lib/ai/globalEstimate/globalWorkTypeResolver.ts\n M src/lib/ai/globalEstimate/index.ts\n M src/lib/ai/universalRoleQa/universalAnswerComposer.ts\n M src/lib/ai/universalRoleQa/universalIntentClassifier.ts\n M tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts\n M tests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts\n M tests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts\n M tests/release/releaseGuard.shared.test.ts\n?? scripts/audit/greenClaimArtifactReconciliation.shared.ts\n?? scripts/audit/runAiEstimateCoreGapAudit.ts\n?? scripts/audit/runGreenClaimArtifactReconciliation.ts\n?? scripts/e2e/anyEstimateSourceBackedProofShared.ts\n?? scripts/e2e/builtInAiProofShared.ts\n?? scripts/e2e/runAiEstimateCoreCompletionProof.ts\n?? scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts\n?? scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts\n?? scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts\n?? scripts/e2e/runAnyConstructionEstimateRoutingProof.ts\n?? scripts/e2e/runAnyEstimateConsumerSmetaProof.ts\n?? scripts/e2e/runAnyEstimatePdfProof.ts\n?? scripts/e2e/runAnyEstimateRoleContextRegressionProof.ts\n?? scripts/e2e/runAsphalt10000SqMEstimateProof.ts\n?? scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAiEstimateRoutingProof.ts\n?? scripts/e2e/runBuiltInAiForemanContextProof.ts\n?? scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts\n?? scripts/e2e/runBuiltInAiPdfActionProof.ts\n?? scripts/e2e/runBuiltInAiProductSearchProof.ts\n?? scripts/e2e/runBuiltInAiRequestScreenProof.ts\n?? scripts/e2e/runBuiltInAiResponseBlockerAudit.ts\n?? scripts/e2e/runBuiltInAiSourceEvidenceProof.ts\n?? src/lib/ai/builtInAi10000/\n?? src/lib/ai/globalEstimate/externalSources/\n?? src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts\n?? src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts\n?? src/lib/ai/sourceIntelligence/\n?? supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql\n?? tests/aiEstimateCore/\n?? tests/architecture/aiEstimateCoreNoFakeGreen.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoFakeSources.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoMarkdownAsSourceOfTruth.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoPromptHardcodedPrices.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoPromptHardcodedTax.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoSecondAiFramework.contract.test.ts\n?? tests/architecture/aiEstimateCoreNoUseEffectRewrite.contract.test.ts\n?? tests/architecture/anyEstimateArchitectureTestHelpers.ts\n?? tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/anyEstimateNoLlmPrices.contract.test.ts\n?? tests/architecture/anyEstimateNoLlmTax.contract.test.ts\n?? tests/architecture/anyEstimateNoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/anyEstimateNoSecondAiFramework.contract.test.ts\n?? tests/architecture/anyEstimateProfessionalBoqRequired.contract.test.ts\n?? tests/architecture/anyEstimateRoleQaCannotOverride.contract.test.ts\n?? tests/architecture/anyEstimateSourceEvidenceRequired.contract.test.ts\n?? tests/architecture/builtInAi10000NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi10000NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi10000NoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAi10000NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi10000NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi10000NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAi1000NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi1000NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi1000NoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAi1000NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi1000NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi1000NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAi150NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi150NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi150NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi150NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi150NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAiNoFakeMarketplaceAvailability.contract.test.ts\n?? tests/architecture/builtInAiNoGenericFallbackForKnownEstimate.contract.test.ts\n?? tests/architecture/builtInAiNoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAiNoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAiNoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAiNoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAiRoleContextCannotOverrideEstimate.contract.test.ts\n?? tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts\n?? tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts\n?? tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts\n?? tests/audit/dataOpsUiTruthSplit.contract.test.ts\n?? tests/audit/greenClaimArtifactConsistency.contract.test.ts\n?? tests/audit/greenClaimSupersessionMap.contract.test.ts\n?? tests/audit/releaseGuardUsesReplayLedger.contract.test.ts\n?? tests/audit/replayVerifiedMatrices.contract.test.ts\n?? tests/builtInAi/\n?? tests/builtInAi1000/\n?? tests/builtInAi10000/\n?? tests/builtInAi150/\n?? tests/e2e/aiEstimateCoreCompletion.web.spec.ts\n?? tests/estimateIntent/\n?? tests/globalEstimateAnyWork/\n?? tests/globalEstimateExternalSources/\n?? tests/routeParity/",
-  "diff_stat": "artifacts/S_50K_FIXTURE_RETENTION_inventory.json   |   2 +-\n ..._01_GOD_COMPONENTS_DECOMPOSITION_inventory.json |  26 ++---\n ...RCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json |  26 ++---\n ...S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md |   6 +-\n scripts/release/releaseGuard.shared.ts             |  12 +++\n .../aiEnterpriseAllowedLayers.ts                   |  30 ++++++\n .../aiEnterpriseArchitecturePolicy.ts              |  10 ++\n src/lib/ai/estimatePdf/estimatePdfModelMapper.ts   |   5 +\n .../ai/globalEstimate/globalWorkTypeResolver.ts    | 109 ++++++++++++++++++-\n src/lib/ai/globalEstimate/index.ts                 |   3 +\n .../ai/universalRoleQa/universalAnswerComposer.ts  | 120 +++++++++++++++++----\n .../universalRoleQa/universalIntentClassifier.ts   |   6 ++\n ...aiEnterpriseArchitecturePolicy.contract.test.ts |   5 +\n .../aiAlwaysOnExternalArchitectureTestHelpers.ts   |   4 +\n ...OnExternalNoScreenLocalAnswers.contract.test.ts |   5 +-\n tests/release/releaseGuard.shared.test.ts          |  12 +++\n 16 files changed, 330 insertions(+), 51 deletions(-)",
-  "diff_name_status": "M\tartifacts/S_50K_FIXTURE_RETENTION_inventory.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md\nM\tscripts/release/releaseGuard.shared.ts\nM\tsrc/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts\nM\tsrc/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts\nM\tsrc/lib/ai/estimatePdf/estimatePdfModelMapper.ts\nM\tsrc/lib/ai/globalEstimate/globalWorkTypeResolver.ts\nM\tsrc/lib/ai/globalEstimate/index.ts\nM\tsrc/lib/ai/universalRoleQa/universalAnswerComposer.ts\nM\tsrc/lib/ai/universalRoleQa/universalIntentClassifier.ts\nM\ttests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts\nM\ttests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts\nM\ttests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts\nM\ttests/release/releaseGuard.shared.test.ts",
+  "status_sb": "## main...origin/main\n M artifacts/S_50K_FIXTURE_RETENTION_inventory.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_android_screenshots.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json\n M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json\n M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md\n M scripts/e2e/runAiEstimateCoreCompletionProof.ts\n M src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts\n M src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts\n M src/lib/ai/estimatePdf/estimatePdfModelMapper.ts\n M src/lib/ai/universalRoleQa/universalAnswerComposer.ts\n M src/lib/ai/universalRoleQa/universalIntentClassifier.ts\n M tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts\n M tests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts\n M tests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts\n M tests/release/releaseGuard.shared.test.ts\n?? scripts/audit/greenClaimArtifactReconciliation.shared.ts\n?? scripts/audit/runGreenClaimArtifactReconciliation.ts\n?? scripts/e2e/anyEstimateSourceBackedProofShared.ts\n?? scripts/e2e/builtInAiProofShared.ts\n?? scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts\n?? scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts\n?? scripts/e2e/runAnyConstructionEstimateRoutingProof.ts\n?? scripts/e2e/runAnyEstimateConsumerSmetaProof.ts\n?? scripts/e2e/runAnyEstimatePdfProof.ts\n?? scripts/e2e/runAnyEstimateRoleContextRegressionProof.ts\n?? scripts/e2e/runAsphalt10000SqMEstimateProof.ts\n?? scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts\n?? scripts/e2e/runBuiltInAiEstimateRoutingProof.ts\n?? scripts/e2e/runBuiltInAiForemanContextProof.ts\n?? scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts\n?? scripts/e2e/runBuiltInAiPdfActionProof.ts\n?? scripts/e2e/runBuiltInAiProductSearchProof.ts\n?? scripts/e2e/runBuiltInAiRequestScreenProof.ts\n?? scripts/e2e/runBuiltInAiResponseBlockerAudit.ts\n?? scripts/e2e/runBuiltInAiSourceEvidenceProof.ts\n?? src/lib/ai/builtInAi10000/\n?? src/lib/ai/globalEstimate/externalSources/\n?? src/lib/ai/sourceIntelligence/\n?? supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql\n?? tests/architecture/anyEstimateArchitectureTestHelpers.ts\n?? tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/anyEstimateNoLlmPrices.contract.test.ts\n?? tests/architecture/anyEstimateNoLlmTax.contract.test.ts\n?? tests/architecture/anyEstimateNoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/anyEstimateNoSecondAiFramework.contract.test.ts\n?? tests/architecture/anyEstimateProfessionalBoqRequired.contract.test.ts\n?? tests/architecture/anyEstimateRoleQaCannotOverride.contract.test.ts\n?? tests/architecture/anyEstimateSourceEvidenceRequired.contract.test.ts\n?? tests/architecture/builtInAi10000NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi10000NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi10000NoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAi10000NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi10000NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi10000NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAi1000NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi1000NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi1000NoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAi1000NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi1000NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi1000NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAi150NoFakeGreen.contract.test.ts\n?? tests/architecture/builtInAi150NoFakeSources.contract.test.ts\n?? tests/architecture/builtInAi150NoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAi150NoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAi150NoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAiNoFakeMarketplaceAvailability.contract.test.ts\n?? tests/architecture/builtInAiNoGenericFallbackForKnownEstimate.contract.test.ts\n?? tests/architecture/builtInAiNoLiveWebBlockingDefault.contract.test.ts\n?? tests/architecture/builtInAiNoLlmPrices.contract.test.ts\n?? tests/architecture/builtInAiNoScreenLocalCalculation.contract.test.ts\n?? tests/architecture/builtInAiNoSecondAiFramework.contract.test.ts\n?? tests/architecture/builtInAiRoleContextCannotOverrideEstimate.contract.test.ts\n?? tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts\n?? tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts\n?? tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts\n?? tests/audit/dataOpsUiTruthSplit.contract.test.ts\n?? tests/audit/greenClaimArtifactConsistency.contract.test.ts\n?? tests/audit/greenClaimSupersessionMap.contract.test.ts\n?? tests/audit/releaseGuardUsesReplayLedger.contract.test.ts\n?? tests/audit/replayVerifiedMatrices.contract.test.ts\n?? tests/builtInAi/\n?? tests/builtInAi1000/\n?? tests/builtInAi10000/\n?? tests/builtInAi150/\n?? tests/estimateIntent/\n?? tests/globalEstimateAnyWork/\n?? tests/globalEstimateExternalSources/",
+  "diff_stat": "artifacts/S_50K_FIXTURE_RETENTION_inventory.json   |   2 +-\n ...TIMATE_CORE_COMPLETION_android_screenshots.json |   4 +-\n .../S_AI_ESTIMATE_CORE_COMPLETION_failures.json    |   4 +\n ..._AI_ESTIMATE_CORE_COMPLETION_git_preflight.json | 208 ++-------------------\n .../S_AI_ESTIMATE_CORE_COMPLETION_matrix.json      |   2 +-\n ..._01_GOD_COMPONENTS_DECOMPOSITION_inventory.json |  26 +--\n ...RCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json |  26 +--\n ...S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md |   6 +-\n scripts/e2e/runAiEstimateCoreCompletionProof.ts    |  27 ++-\n .../aiEnterpriseAllowedLayers.ts                   |  30 +++\n .../aiEnterpriseArchitecturePolicy.ts              |  10 +\n src/lib/ai/estimatePdf/estimatePdfModelMapper.ts   |   5 +\n .../ai/universalRoleQa/universalAnswerComposer.ts  | 120 ++++++++++--\n .../universalRoleQa/universalIntentClassifier.ts   |   6 +\n ...aiEnterpriseArchitecturePolicy.contract.test.ts |   5 +\n .../aiAlwaysOnExternalArchitectureTestHelpers.ts   |   4 +\n ...OnExternalNoScreenLocalAnswers.contract.test.ts |   5 +-\n tests/release/releaseGuard.shared.test.ts          |  12 ++\n 18 files changed, 253 insertions(+), 249 deletions(-)",
+  "diff_name_status": "M\tartifacts/S_50K_FIXTURE_RETENTION_inventory.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_android_screenshots.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json\nM\tartifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json\nM\tartifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md\nM\tscripts/e2e/runAiEstimateCoreCompletionProof.ts\nM\tsrc/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts\nM\tsrc/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts\nM\tsrc/lib/ai/estimatePdf/estimatePdfModelMapper.ts\nM\tsrc/lib/ai/universalRoleQa/universalAnswerComposer.ts\nM\tsrc/lib/ai/universalRoleQa/universalIntentClassifier.ts\nM\ttests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts\nM\ttests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts\nM\ttests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts\nM\ttests/release/releaseGuard.shared.test.ts",
   "untracked": [
     "scripts/audit/greenClaimArtifactReconciliation.shared.ts",
-    "scripts/audit/runAiEstimateCoreGapAudit.ts",
     "scripts/audit/runGreenClaimArtifactReconciliation.ts",
     "scripts/e2e/anyEstimateSourceBackedProofShared.ts",
     "scripts/e2e/builtInAiProofShared.ts",
-    "scripts/e2e/runAiEstimateCoreCompletionProof.ts",
-    "scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts",
     "scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts",
     "scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts",
     "scripts/e2e/runAnyConstructionEstimateRoutingProof.ts",
@@ -153,8 +136,6 @@
     "src/lib/ai/globalEstimate/externalSources/globalSourceBackedEstimateGuard.ts",
     "src/lib/ai/globalEstimate/externalSources/globalSourceBackedRatePublisher.ts",
     "src/lib/ai/globalEstimate/externalSources/index.ts",
-    "src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts",
-    "src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts",
     "src/lib/ai/sourceIntelligence/index.ts",
     "src/lib/ai/sourceIntelligence/priceObservationExtractor.ts",
     "src/lib/ai/sourceIntelligence/sourceBackedRateMatcher.ts",
@@ -163,29 +144,6 @@
     "src/lib/ai/sourceIntelligence/sourceRefreshQueue.ts",
     "src/lib/ai/sourceIntelligence/sourceRegistry.ts",
     "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql",
-    "tests/aiEstimateCore/aiEstimateCoreTestHelpers.ts",
-    "tests/aiEstimateCore/allPricedRowsHaveSourceEvidence.contract.test.ts",
-    "tests/aiEstimateCore/answerFormatterUsesGlobalEstimateResult.contract.test.ts",
-    "tests/aiEstimateCore/dangerousWorkEstimateOnlyNoDiy.contract.test.ts",
-    "tests/aiEstimateCore/estimateActionsPresent.contract.test.ts",
-    "tests/aiEstimateCore/foremanEstimateIntentWins.contract.test.ts",
-    "tests/aiEstimateCore/languagePreserved.contract.test.ts",
-    "tests/aiEstimateCore/noPriceWithoutBackendResult.contract.test.ts",
-    "tests/aiEstimateCore/noTaxWithoutTaxRuleOrWarning.contract.test.ts",
-    "tests/aiEstimateCore/p0AllCasesHaveSpecificRows.contract.test.ts",
-    "tests/aiEstimateCore/p0AllCasesUseCalculateGlobalEstimate.contract.test.ts",
-    "tests/aiEstimateCore/p0NoGenericConstructionRows.contract.test.ts",
-    "tests/aiEstimateCore/requestDraftUsesEstimateItems.contract.test.ts",
-    "tests/aiEstimateCore/unfinishedAiEstimateCasesManifest.contract.test.ts",
-    "tests/aiEstimateCore/unknownCityStillReturnsApproximateEstimate.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoFakeGreen.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoFakeSources.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoMarkdownAsSourceOfTruth.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoPromptHardcodedPrices.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoPromptHardcodedTax.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoScreenLocalCalculation.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoSecondAiFramework.contract.test.ts",
-    "tests/architecture/aiEstimateCoreNoUseEffectRewrite.contract.test.ts",
     "tests/architecture/anyEstimateArchitectureTestHelpers.ts",
     "tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts",
     "tests/architecture/anyEstimateNoLlmPrices.contract.test.ts",
@@ -275,7 +233,6 @@
     "tests/builtInAi150/ai150TileDoesNotMapToParquet.contract.test.ts",
     "tests/builtInAi150/ai150WorkTypesCases.contract.test.ts",
     "tests/builtInAi150/ai150WorkTypesExpectedOutputs.contract.test.ts",
-    "tests/e2e/aiEstimateCoreCompletion.web.spec.ts",
     "tests/estimateIntent/anyEstimateIntentRoutesToGlobalEstimate.contract.test.ts",
     "tests/estimateIntent/anyEstimateTestHelpers.ts",
     "tests/estimateIntent/estimateIntentBeatsRoleContext.contract.test.ts",
@@ -295,12 +252,7 @@
     "tests/globalEstimateExternalSources/missingRateQueuesRefresh.contract.test.ts",
     "tests/globalEstimateExternalSources/noFakeSourceLabels.contract.test.ts",
     "tests/globalEstimateExternalSources/pdfContainsSourceEvidence.contract.test.ts",
-    "tests/globalEstimateExternalSources/staleSourceLowersConfidence.contract.test.ts",
-    "tests/routeParity/aiEstimateCoreChatRoute.contract.test.ts",
-    "tests/routeParity/aiEstimateCoreForemanRoute.contract.test.ts",
-    "tests/routeParity/aiEstimateCoreRequestRoute.contract.test.ts",
-    "tests/routeParity/aiEstimateCoreSameStructuredResultAcrossRoutes.contract.test.ts",
-    "tests/routeParity/aiEstimateCoreSameWorkKeyAcrossRoutes.contract.test.ts"
+    "tests/globalEstimateExternalSources/staleSourceLowersConfidence.contract.test.ts"
   ],
   "files": [
     {
@@ -309,6 +261,34 @@
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_android_screenshots.json",
+      "status": "M",
+      "classification": "current_wave_required",
+      "action": "stage",
+      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json",
+      "status": "M",
+      "classification": "current_wave_required",
+      "action": "stage",
+      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json",
+      "status": "M",
+      "classification": "current_wave_required",
+      "action": "stage",
+      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
+    },
+    {
+      "path": "artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json",
+      "status": "M",
+      "classification": "current_wave_required",
+      "action": "stage",
+      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     },
     {
       "path": "artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json",
@@ -332,11 +312,11 @@
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "scripts/release/releaseGuard.shared.ts",
+      "path": "scripts/e2e/runAiEstimateCoreCompletionProof.ts",
       "status": "M",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
+      "classification": "current_wave_required",
+      "action": "stage",
+      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     },
     {
       "path": "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts",
@@ -358,20 +338,6 @@
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts",
-      "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
-      "path": "src/lib/ai/globalEstimate/index.ts",
-      "status": "M",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     },
     {
       "path": "src/lib/ai/universalRoleQa/universalAnswerComposer.ts",
@@ -423,13 +389,6 @@
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "scripts/audit/runAiEstimateCoreGapAudit.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
       "path": "scripts/audit/runGreenClaimArtifactReconciliation.ts",
       "status": "??",
       "classification": "previous_wave_required",
@@ -449,20 +408,6 @@
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "scripts/e2e/runAiEstimateCoreCompletionProof.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
-      "path": "scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     },
     {
       "path": "scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts",
@@ -605,20 +550,6 @@
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
-      "path": "src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
       "path": "src/lib/ai/sourceIntelligence/",
       "status": "??",
       "classification": "previous_wave_required",
@@ -627,69 +558,6 @@
     },
     {
       "path": "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/aiEstimateCore/",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoFakeGreen.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoFakeSources.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoMarkdownAsSourceOfTruth.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoPromptHardcodedPrices.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoPromptHardcodedTax.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoScreenLocalCalculation.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoSecondAiFramework.contract.test.ts",
-      "status": "??",
-      "classification": "previous_wave_required",
-      "action": "ignore_by_policy",
-      "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/architecture/aiEstimateCoreNoUseEffectRewrite.contract.test.ts",
       "status": "??",
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
@@ -1011,13 +879,6 @@
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
     },
     {
-      "path": "tests/e2e/aiEstimateCoreCompletion.web.spec.ts",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
-    },
-    {
       "path": "tests/estimateIntent/",
       "status": "??",
       "classification": "previous_wave_required",
@@ -1037,13 +898,6 @@
       "classification": "previous_wave_required",
       "action": "ignore_by_policy",
       "reason": "Pre-existing dirty or generated file outside this wave; not staged by this wave."
-    },
-    {
-      "path": "tests/routeParity/",
-      "status": "??",
-      "classification": "current_wave_required",
-      "action": "stage",
-      "reason": "Required by S_AI_ESTIMATE_CORE_COMPLETION wave."
     }
   ],
   "fake_green_claimed": false

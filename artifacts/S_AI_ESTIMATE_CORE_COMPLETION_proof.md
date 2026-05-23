@@ -5,6 +5,6 @@ Cases: 80/80
 P0: 8/8
 Web Playwright passed: true
 Android emulator passed: true
-Commit created: false
+Commit created: true
 Final worktree clean: false
 Fake green claimed: false
