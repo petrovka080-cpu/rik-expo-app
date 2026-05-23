@@ -1,6 +1,6 @@
 {
   "wave": "S_50K_FIXTURE_RETENTION_CLEANUP_POLICY_CLOSEOUT",
-  "generated_at": "2026-05-23T19:15:54.655Z",
+  "generated_at": "2026-05-23T20:06:07.714Z",
   "source_artifacts": {
     "fixture": "artifacts/S_50K_SYNTHETIC_FIXTURE_matrix.json",
     "whole_app_50k": "artifacts/S_WHOLE_APP_50K_matrix.json",

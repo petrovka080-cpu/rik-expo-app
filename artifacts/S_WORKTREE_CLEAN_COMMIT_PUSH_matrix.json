@@ -9,14 +9,14 @@
   "lint_passed": true,
   "git_diff_check_passed": true,
   "targeted_tests_passed": true,
-  "release_verify_passed": false,
-  "commit_created": false,
-  "commit_sha": null,
+  "release_verify_passed": true,
+  "commit_created": true,
+  "commit_sha": "6231a7746925f92a9455444b056015354659c753",
   "branch_pushed": true,
   "remote_branch": "origin/main",
   "remote_contains_commit": true,
   "final_worktree_clean": false,
-  "dirty_files_count": 95,
+  "dirty_files_count": 6,
   "blocked_files": [],
   "fake_green_claimed": false
 }

@@ -1,197 +1,19 @@
 git status --short
  M artifacts/S_50K_FIXTURE_RETENTION_inventory.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json
  M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md
- M src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts
- M src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts
- M src/lib/ai/estimatePdf/estimatePdfModelMapper.ts
- M src/lib/ai/universalRoleQa/universalAnswerComposer.ts
- M src/lib/ai/universalRoleQa/universalIntentClassifier.ts
- M tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts
- M tests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts
- M tests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts
- M tests/release/releaseGuard.shared.test.ts
-?? scripts/audit/greenClaimArtifactReconciliation.shared.ts
-?? scripts/audit/runGreenClaimArtifactReconciliation.ts
-?? scripts/e2e/anyEstimateSourceBackedProofShared.ts
-?? scripts/e2e/builtInAiProofShared.ts
-?? scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts
-?? scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts
-?? scripts/e2e/runAnyConstructionEstimateRoutingProof.ts
-?? scripts/e2e/runAnyEstimateConsumerSmetaProof.ts
-?? scripts/e2e/runAnyEstimatePdfProof.ts
-?? scripts/e2e/runAnyEstimateRoleContextRegressionProof.ts
-?? scripts/e2e/runAsphalt10000SqMEstimateProof.ts
-?? scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAiEstimateRoutingProof.ts
-?? scripts/e2e/runBuiltInAiForemanContextProof.ts
-?? scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts
-?? scripts/e2e/runBuiltInAiPdfActionProof.ts
-?? scripts/e2e/runBuiltInAiProductSearchProof.ts
-?? scripts/e2e/runBuiltInAiRequestScreenProof.ts
-?? scripts/e2e/runBuiltInAiResponseBlockerAudit.ts
-?? scripts/e2e/runBuiltInAiSourceEvidenceProof.ts
-?? scripts/release/runWorktreeCleanCommitPushProof.ts
-?? src/lib/ai/builtInAi10000/
-?? src/lib/ai/globalEstimate/externalSources/
-?? src/lib/ai/sourceIntelligence/
-?? supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql
-?? tests/architecture/anyEstimateArchitectureTestHelpers.ts
-?? tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/anyEstimateNoLlmPrices.contract.test.ts
-?? tests/architecture/anyEstimateNoLlmTax.contract.test.ts
-?? tests/architecture/anyEstimateNoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/anyEstimateNoSecondAiFramework.contract.test.ts
-?? tests/architecture/anyEstimateProfessionalBoqRequired.contract.test.ts
-?? tests/architecture/anyEstimateRoleQaCannotOverride.contract.test.ts
-?? tests/architecture/anyEstimateSourceEvidenceRequired.contract.test.ts
-?? tests/architecture/builtInAi10000NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi10000NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi10000NoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAi10000NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi10000NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi10000NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAi1000NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi1000NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi1000NoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAi1000NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi1000NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi1000NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAi150NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi150NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi150NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi150NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi150NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAiNoFakeMarketplaceAvailability.contract.test.ts
-?? tests/architecture/builtInAiNoGenericFallbackForKnownEstimate.contract.test.ts
-?? tests/architecture/builtInAiNoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAiNoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAiNoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAiNoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAiRoleContextCannotOverrideEstimate.contract.test.ts
-?? tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts
-?? tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts
-?? tests/architecture/noGreenWithDirtyWorktree.contract.test.ts
-?? tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts
-?? tests/audit/dataOpsUiTruthSplit.contract.test.ts
-?? tests/audit/greenClaimArtifactConsistency.contract.test.ts
-?? tests/audit/greenClaimSupersessionMap.contract.test.ts
-?? tests/audit/releaseGuardUsesReplayLedger.contract.test.ts
-?? tests/audit/replayVerifiedMatrices.contract.test.ts
-?? tests/builtInAi/
-?? tests/builtInAi1000/
-?? tests/builtInAi10000/
-?? tests/builtInAi150/
-?? tests/estimateIntent/
-?? tests/globalEstimateAnyWork/
-?? tests/globalEstimateExternalSources/
-?? tests/release/commitShaRequiredForGreen.contract.test.ts
-?? tests/release/noUnknownDirtyFiles.contract.test.ts
-?? tests/release/noUntrackedProofArtifactsAfterGreen.contract.test.ts
-?? tests/release/pushedBranchRequiredForGreen.contract.test.ts
-?? tests/release/worktreeCleanBeforeGreen.contract.test.ts
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md
 
 git status -sb
 ## main...origin/main
  M artifacts/S_50K_FIXTURE_RETENTION_inventory.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_failures.json
  M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_inventory.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json
- M artifacts/S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md
- M src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts
- M src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts
- M src/lib/ai/estimatePdf/estimatePdfModelMapper.ts
- M src/lib/ai/universalRoleQa/universalAnswerComposer.ts
- M src/lib/ai/universalRoleQa/universalIntentClassifier.ts
- M tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts
- M tests/architecture/aiAlwaysOnExternalArchitectureTestHelpers.ts
- M tests/architecture/aiAlwaysOnExternalNoScreenLocalAnswers.contract.test.ts
- M tests/release/releaseGuard.shared.test.ts
-?? scripts/audit/greenClaimArtifactReconciliation.shared.ts
-?? scripts/audit/runGreenClaimArtifactReconciliation.ts
-?? scripts/e2e/anyEstimateSourceBackedProofShared.ts
-?? scripts/e2e/builtInAiProofShared.ts
-?? scripts/e2e/runAnyConstructionEstimateExternalSourcesProof.ts
-?? scripts/e2e/runAnyConstructionEstimateProfessionalBoqProof.ts
-?? scripts/e2e/runAnyConstructionEstimateRoutingProof.ts
-?? scripts/e2e/runAnyEstimateConsumerSmetaProof.ts
-?? scripts/e2e/runAnyEstimatePdfProof.ts
-?? scripts/e2e/runAnyEstimateRoleContextRegressionProof.ts
-?? scripts/e2e/runAsphalt10000SqMEstimateProof.ts
-?? scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts
-?? scripts/e2e/runBuiltInAiEstimateRoutingProof.ts
-?? scripts/e2e/runBuiltInAiForemanContextProof.ts
-?? scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts
-?? scripts/e2e/runBuiltInAiPdfActionProof.ts
-?? scripts/e2e/runBuiltInAiProductSearchProof.ts
-?? scripts/e2e/runBuiltInAiRequestScreenProof.ts
-?? scripts/e2e/runBuiltInAiResponseBlockerAudit.ts
-?? scripts/e2e/runBuiltInAiSourceEvidenceProof.ts
-?? scripts/release/runWorktreeCleanCommitPushProof.ts
-?? src/lib/ai/builtInAi10000/
-?? src/lib/ai/globalEstimate/externalSources/
-?? src/lib/ai/sourceIntelligence/
-?? supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql
-?? tests/architecture/anyEstimateArchitectureTestHelpers.ts
-?? tests/architecture/anyEstimateNoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/anyEstimateNoLlmPrices.contract.test.ts
-?? tests/architecture/anyEstimateNoLlmTax.contract.test.ts
-?? tests/architecture/anyEstimateNoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/anyEstimateNoSecondAiFramework.contract.test.ts
-?? tests/architecture/anyEstimateProfessionalBoqRequired.contract.test.ts
-?? tests/architecture/anyEstimateRoleQaCannotOverride.contract.test.ts
-?? tests/architecture/anyEstimateSourceEvidenceRequired.contract.test.ts
-?? tests/architecture/builtInAi10000NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi10000NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi10000NoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAi10000NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi10000NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi10000NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAi1000NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi1000NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi1000NoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAi1000NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi1000NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi1000NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAi150NoFakeGreen.contract.test.ts
-?? tests/architecture/builtInAi150NoFakeSources.contract.test.ts
-?? tests/architecture/builtInAi150NoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAi150NoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAi150NoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAiNoFakeMarketplaceAvailability.contract.test.ts
-?? tests/architecture/builtInAiNoGenericFallbackForKnownEstimate.contract.test.ts
-?? tests/architecture/builtInAiNoLiveWebBlockingDefault.contract.test.ts
-?? tests/architecture/builtInAiNoLlmPrices.contract.test.ts
-?? tests/architecture/builtInAiNoScreenLocalCalculation.contract.test.ts
-?? tests/architecture/builtInAiNoSecondAiFramework.contract.test.ts
-?? tests/architecture/builtInAiRoleContextCannotOverrideEstimate.contract.test.ts
-?? tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts
-?? tests/architecture/noGreenClaimWithoutReplayEvidence.contract.test.ts
-?? tests/architecture/noGreenWithDirtyWorktree.contract.test.ts
-?? tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts
-?? tests/audit/dataOpsUiTruthSplit.contract.test.ts
-?? tests/audit/greenClaimArtifactConsistency.contract.test.ts
-?? tests/audit/greenClaimSupersessionMap.contract.test.ts
-?? tests/audit/releaseGuardUsesReplayLedger.contract.test.ts
-?? tests/audit/replayVerifiedMatrices.contract.test.ts
-?? tests/builtInAi/
-?? tests/builtInAi1000/
-?? tests/builtInAi10000/
-?? tests/builtInAi150/
-?? tests/estimateIntent/
-?? tests/globalEstimateAnyWork/
-?? tests/globalEstimateExternalSources/
-?? tests/release/commitShaRequiredForGreen.contract.test.ts
-?? tests/release/noUnknownDirtyFiles.contract.test.ts
-?? tests/release/noUntrackedProofArtifactsAfterGreen.contract.test.ts
-?? tests/release/pushedBranchRequiredForGreen.contract.test.ts
-?? tests/release/worktreeCleanBeforeGreen.contract.test.ts
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_matrix.json
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md
 
 git branch --show-current
 main
@@ -200,15 +22,15 @@ git rev-parse --abbrev-ref HEAD
 main
 
 git rev-parse HEAD
-7ed4fe947d13fb00334c3f3b89ff95c9c755f1e2
+6231a7746925f92a9455444b056015354659c753
 
 git remote -v
 origin	https://github.com/petrovka080-cpu/rik-expo-app.git (fetch)
 origin	https://github.com/petrovka080-cpu/rik-expo-app.git (push)
 
 git log --oneline -5
+6231a774 chore: establish clean worktree commit push discipline
 7ed4fe94 chore(ai-estimate): record core completion live proof
 290a74b5 fix(ai-estimate): complete unfinished source-backed estimate core
 b318bfbc Fix live AI estimate PDF reality gate
 071b2ad4 Route PDF rollout logs through logger
-9b1e4c44 Route PDF API logs through logger

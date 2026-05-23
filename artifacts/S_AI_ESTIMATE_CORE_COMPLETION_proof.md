@@ -6,5 +6,5 @@ P0: 8/8
 Web Playwright passed: true
 Android emulator passed: true
 Commit created: true
-Final worktree clean: false
+Final worktree clean: true
 Fake green claimed: false

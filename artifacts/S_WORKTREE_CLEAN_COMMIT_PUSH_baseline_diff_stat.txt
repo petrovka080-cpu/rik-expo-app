@@ -1,15 +1,7 @@
  artifacts/S_50K_FIXTURE_RETENTION_inventory.json   |   2 +-
- ..._AI_ESTIMATE_CORE_COMPLETION_git_preflight.json |  48 +--------
- ..._01_GOD_COMPONENTS_DECOMPOSITION_inventory.json |  26 ++---
- ...RCH_01_GOD_COMPONENTS_DECOMPOSITION_matrix.json |  26 ++---
- ...S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_proof.md |   6 +-
- .../aiEnterpriseAllowedLayers.ts                   |  30 ++++++
- .../aiEnterpriseArchitecturePolicy.ts              |  10 ++
- src/lib/ai/estimatePdf/estimatePdfModelMapper.ts   |   5 +
- .../ai/universalRoleQa/universalAnswerComposer.ts  | 120 +++++++++++++++++----
- .../universalRoleQa/universalIntentClassifier.ts   |   6 ++
- ...aiEnterpriseArchitecturePolicy.contract.test.ts |   5 +
- .../aiAlwaysOnExternalArchitectureTestHelpers.ts   |   4 +
- ...OnExternalNoScreenLocalAnswers.contract.test.ts |   5 +-
- tests/release/releaseGuard.shared.test.ts          |  12 +++
- 14 files changed, 212 insertions(+), 93 deletions(-)
+ .../S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json |  53 +-
+ .../S_AI_ESTIMATE_CORE_COMPLETION_failures.json    |   7 +-
+ ..._AI_ESTIMATE_CORE_COMPLETION_git_preflight.json | 862 +--------------------
+ .../S_AI_ESTIMATE_CORE_COMPLETION_matrix.json      |   6 +-
+ artifacts/S_AI_ESTIMATE_CORE_COMPLETION_proof.md   |   2 +-
+ 6 files changed, 42 insertions(+), 890 deletions(-)
