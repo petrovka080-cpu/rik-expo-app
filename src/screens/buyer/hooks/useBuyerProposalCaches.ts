@@ -23,6 +23,8 @@ const warnBuyerProposalCaches = (scope: string, error: unknown) => {
   }
 };
 
+const BUYER_PROPOSAL_NO_TTL_MS = 10 * 60 * 1000;
+
 export function useBuyerProposalCaches() {
   const [titleByPid, setTitleByPid] = useState<Record<string, string>>({});
   const titleByPidRef = useRef<Record<string, string>>({});
@@ -40,7 +42,6 @@ export function useBuyerProposalCaches() {
 
   const prNoInflightRef = useRef<Record<string, Promise<void>>>({});
   const prNoTsRef = useRef<Record<string, number>>({});
-  const PRNO_TTL_MS = 10 * 60 * 1000;
 
   const preloadProposalNosByIds = useCallback(async (proposalIdsRaw: string[]) => {
     const now = Date.now();
@@ -50,7 +51,7 @@ export function useBuyerProposalCaches() {
       timestampById: prNoTsRef.current,
       inflightById: prNoInflightRef.current,
       now,
-      ttlMs: PRNO_TTL_MS,
+      ttlMs: BUYER_PROPOSAL_NO_TTL_MS,
     });
 
     if (!plan.need.length) return;
@@ -109,7 +110,6 @@ export function useBuyerProposalCaches() {
         // no-op
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, []);
 
   const preloadProposalTitles = useCallback(async (proposalIds: string[]) => {
