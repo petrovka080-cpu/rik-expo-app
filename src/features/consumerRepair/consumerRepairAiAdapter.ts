@@ -1,31 +1,25 @@
 import type { ConsumerRepairAiDraft } from "../../lib/consumerRequests";
 
 const DANGEROUS_PATTERNS = [
-  /РіР°Р·/i,
-  /РїСЂРѕРІРѕРґРє|С‰РёС‚|РїРѕРґ РЅР°РїСЂСЏР¶/i,
-  /РЅРµСЃСѓС‰/i,
-  /Р·Р°РїР°С… РіР°СЂРё|РіРѕСЂРёС‚|РїРѕР¶Р°СЂ/i,
-  /РєСЂРѕРІР»|РІС‹СЃРѕС‚/i,
-  /РїР»РµСЃРµРЅ|С…РёРјРё/i,
+  /газ|gas/i,
+  /проводк|электр|щит|под\s+напряж|напряж|розетк|socket|electrical|wiring/i,
+  /несущ|load[-\s]?bearing/i,
+  /запах\s+гари|горит|пожар|fire/i,
+  /кровл|крыша|высот|roof|height/i,
+  /плесен|хими|mold|chemical/i,
 ] as const;
 
 export const CONSUMER_REPAIR_DANGEROUS_COPY =
-  "Р­С‚Рѕ РјРѕР¶РµС‚ Р±С‹С‚СЊ РѕРїР°СЃРЅРѕ. РќРµ РІС‹РїРѕР»РЅСЏР№С‚Рµ СЂРµРјРѕРЅС‚ СЃР°РјРѕСЃС‚РѕСЏС‚РµР»СЊРЅРѕ. РЇ РїРѕРґРіРѕС‚РѕРІР»СЋ Р·Р°СЏРІРєСѓ РґР»СЏ СЃРїРµС†РёР°Р»РёСЃС‚Р°.";
-
-const CONSUMER_REPAIR_DANGEROUS_UI_COPY =
   "Это может быть опасно. Не выполняйте ремонт самостоятельно. Я подготовлю заявку для специалиста.";
 
+const CONSUMER_REPAIR_DANGEROUS_UI_COPY = CONSUMER_REPAIR_DANGEROUS_COPY;
+
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
-  return (
-    DANGEROUS_PATTERNS.some((pattern) => pattern.test(problemText)) ||
-    /газ|РіР°Р·|проводк|РїСЂРѕРІРѕРґРє|щит|С‰РёС‚|под напряж|РїРѕРґ РЅР°РїСЂСЏР¶|напряж|РЅР°РїСЂСЏР¶/i.test(
-      problemText,
-    )
-  );
+  return DANGEROUS_PATTERNS.some((pattern) => pattern.test(problemText));
 }
 
 function extractArea(text: string): number {
-  const match = text.match(/(\d+(?:[,.]\d+)?)\s*(?:кв|м2|м²|метр)/i);
+  const match = text.match(/(\d+(?:[,.]\d+)?)\s*(?:кв\.?\s*м|кв|квадрат|метр|м2|м²|sqm|sq\.?\s*m)/i);
   if (!match) return 20;
   return Math.max(1, Number(match[1].replace(",", ".")) || 20);
 }
@@ -39,9 +33,12 @@ function flooringDraft(problemText: string, covering: "ламинат" | "пар
   const coveringQty = round(area * 1.1);
   const underlay = round(area * 1.05);
   const plinth = round(area * 0.8);
+  const isParquet = covering === "паркет";
+  const isGenericFloor = covering === "пол";
+
   return {
-    titleRu: covering === "ламинат" ? "Укладка ламината" : covering === "паркет" ? "Укладка паркета" : "Ремонт пола",
-    summaryRu: `Я подготовил черновик заявки на ${covering === "пол" ? "ремонт пола" : `укладку ${covering}`} ${area} м².`,
+    titleRu: isParquet ? "Укладка паркета" : isGenericFloor ? "Ремонт пола" : "Укладка ламината",
+    summaryRu: `Я подготовил черновик заявки на ${isGenericFloor ? "ремонт пола" : `укладку ${covering}`} ${area} м².`,
     repairType: "flooring",
     dangerousDiyBlocked: false,
     missingData: [
@@ -52,11 +49,23 @@ function flooringDraft(problemText: string, covering: "ламинат" | "пар
       "когда удобно принять мастера",
     ],
     items: [
-      { itemType: "material", titleRu: covering === "паркет" ? "Паркет / инженерная доска" : "Ламинат", quantity: coveringQty, unit: "м²", source: "ai_suggested" },
+      {
+        itemType: "material",
+        titleRu: isParquet ? "Паркет / инженерная доска" : "Ламинат",
+        quantity: coveringQty,
+        unit: "м²",
+        source: "ai_suggested",
+      },
       { itemType: "material", titleRu: "Подложка", quantity: underlay, unit: "м²", source: "ai_suggested" },
       { itemType: "material", titleRu: "Плинтус", quantity: plinth, unit: "пог. м", source: "ai_suggested" },
       { itemType: "material", titleRu: "Пороги / стыки", quantity: 5, unit: "шт", source: "ai_suggested" },
-      { itemType: "work", titleRu: covering === "паркет" ? "Укладка паркета" : "Укладка ламината", quantity: area, unit: "м²", source: "ai_suggested" },
+      {
+        itemType: "work",
+        titleRu: isParquet ? "Укладка паркета" : "Укладка ламината",
+        quantity: area,
+        unit: "м²",
+        source: "ai_suggested",
+      },
       { itemType: "work", titleRu: "Монтаж плинтуса", quantity: plinth, unit: "пог. м", source: "ai_suggested" },
     ],
   };
@@ -70,8 +79,20 @@ function plumbingDraft(): ConsumerRepairAiDraft {
     dangerousDiyBlocked: false,
     missingData: ["город", "точный адрес", "фото проблемного места", "когда удобно принять мастера"],
     items: [
-      { itemType: "work", titleRu: "Диагностика сантехнической проблемы", quantity: 1, unit: "выезд", source: "ai_suggested" },
-      { itemType: "service", titleRu: "Ремонт / замена узла после осмотра", quantity: 1, unit: "комплект", source: "ai_suggested" },
+      {
+        itemType: "work",
+        titleRu: "Диагностика сантехнической проблемы",
+        quantity: 1,
+        unit: "выезд",
+        source: "ai_suggested",
+      },
+      {
+        itemType: "service",
+        titleRu: "Ремонт / замена узла после осмотра",
+        quantity: 1,
+        unit: "комплект",
+        source: "ai_suggested",
+      },
     ],
   };
 }
@@ -84,8 +105,20 @@ function genericDraft(): ConsumerRepairAiDraft {
     dangerousDiyBlocked: false,
     missingData: ["город", "адрес", "фото проблемы", "желаемая дата", "контактный телефон"],
     items: [
-      { itemType: "work", titleRu: "Осмотр и уточнение объёма работ", quantity: 1, unit: "выезд", source: "ai_suggested" },
-      { itemType: "service", titleRu: "Ремонтные работы после согласования", quantity: 1, unit: "комплект", source: "ai_suggested" },
+      {
+        itemType: "work",
+        titleRu: "Осмотр и уточнение объёма работ",
+        quantity: 1,
+        unit: "выезд",
+        source: "ai_suggested",
+      },
+      {
+        itemType: "service",
+        titleRu: "Ремонтные работы после согласования",
+        quantity: 1,
+        unit: "комплект",
+        source: "ai_suggested",
+      },
     ],
   };
 }
@@ -114,7 +147,7 @@ export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft)
     draft.summaryRu,
     "",
     "Позиции:",
-    ...draft.items.map((item, index) => `${index + 1}. ${item.titleRu} — ${item.quantity} ${item.unit}`),
+    ...draft.items.map((item, index) => `${index + 1}. ${item.titleRu} - ${item.quantity} ${item.unit}`),
     "",
     "Что уточнить:",
     ...draft.missingData.map((item) => `- ${item}`),
