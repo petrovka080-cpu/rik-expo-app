@@ -234,42 +234,6 @@ async function openAndroidPdfContentUri(localUri: string, fileName?: string): Pr
   return contentUri;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function openAndroidRemotePdfUrl(remoteUrl: string, fileName?: string): Promise<string> {
-  const normalizedUrl = normalizeRemoteUrl(remoteUrl);
-  if (!isHttpUri(normalizedUrl)) {
-    throw new Error("Android remote PDF handoff requires an http(s) URL");
-  }
-  logPdfRunnerStage("pdf_android_remote_url_open_start", {
-    uri: normalizedUrl,
-    sourceKind: "remote-url",
-    fileName,
-  });
-  try {
-    await Linking.openURL(normalizedUrl);
-    logPdfRunnerStage("pdf_android_remote_url_open_ready", {
-      uri: normalizedUrl,
-      sourceKind: "remote-url",
-      fileName,
-    });
-    return normalizedUrl;
-  } catch (error) {
-    recordPdfRunnerCatch({
-      kind: "critical_fail",
-      event: "pdf_android_remote_url_open_failed",
-      error,
-      category: "ui",
-      sourceKind: "remote-url",
-      errorStage: "open_view",
-      extra: {
-        uri: normalizedUrl,
-        fileName: fileName ?? null,
-      },
-    });
-    throw error instanceof Error ? error : new Error(String(error ?? "Android remote PDF open failed"));
-  }
-}
-
 async function openIosPdfShareSheet(localUri: string, fileName?: string, dialogTitle = "Открыть PDF") {
   const handoffUri = await ensureNativePdfHandoffUri(localUri, fileName);
   if (getUriScheme(handoffUri) !== "file") {
