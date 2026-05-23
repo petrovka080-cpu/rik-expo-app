@@ -12,6 +12,7 @@ const files = [
   ["request submit api", "src/lib/api/requests.ts"],
   ["director pdf data", "src/lib/api/pdf_director.data.ts"],
   ["director reports context", "src/lib/api/director_reports.context.ts"],
+  ["director pdf source service", "src/lib/api/directorPdfSource.service.ts"],
   ["submit job queue", "src/lib/infra/jobQueue.ts"],
   ["pdf runner", "src/lib/pdfRunner.ts"],
 ] as const;

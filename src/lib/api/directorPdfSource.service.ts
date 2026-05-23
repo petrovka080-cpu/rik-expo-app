@@ -12,11 +12,9 @@ import {
 import { recordCatchDiscipline } from "../observability/catchDiscipline";
 import { beginPdfLifecycleObservation } from "../pdf/pdfLifecycle";
 import type { DirectorReportFetchMeta } from "./director_reports";
-import { adaptCanonicalMaterialsPayload, adaptCanonicalWorksPayload } from "./director_reports.adapters";
 import { loadDirectorReportTransportScope } from "./directorReportsTransport.service";
 import {
   callDirectorFinancePdfSourceRpc,
-  callDirectorProductionPdfSourceRpc,
   callDirectorSubcontractPdfSourceRpc,
 } from "./directorPdfSource.transport";
 import type { DirectorDisciplinePayload, DirectorReportPayload } from "./director_reports.shared";
@@ -69,13 +67,6 @@ type DirectorFinanceSourceEnvelopeV1 = {
   version: "v1";
   finance_rows: unknown[];
   spend_rows: unknown[];
-};
-
-type DirectorProductionSourceEnvelopeV1 = {
-  document_type: "director_production_report";
-  version: "v1";
-  report_payload: unknown;
-  discipline_payload: unknown;
 };
 
 type DirectorSubcontractSourceEnvelopeV1 = {
@@ -316,38 +307,6 @@ function validateDirectorFinanceSourceV1(value: unknown): DirectorFinanceSourceE
   };
 }
 
-function validateDirectorProductionSourceV1(value: unknown): DirectorProductionSourceEnvelopeV1 {
-  const root = requireRecord(value, "root", "pdf_director_production_source_v1");
-  const documentType = requireNonEmptyString(
-    root.document_type,
-    "document_type",
-    "pdf_director_production_source_v1",
-  );
-  if (documentType !== "director_production_report") {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      `pdf_director_production_source_v1 invalid document_type: ${documentType}`,
-    );
-  }
-  const version = requireNonEmptyString(root.version, "version", "pdf_director_production_source_v1");
-  if (version !== "v1") {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      `pdf_director_production_source_v1 invalid version: ${version}`,
-    );
-  }
-  return {
-    document_type: "director_production_report",
-    version: "v1",
-    report_payload: requireRecord(root.report_payload, "report_payload", "pdf_director_production_source_v1"),
-    discipline_payload: requireRecord(
-      root.discipline_payload,
-      "discipline_payload",
-      "pdf_director_production_source_v1",
-    ),
-  };
-}
-
 function validateDirectorSubcontractSourceV1(value: unknown): DirectorSubcontractSourceEnvelopeV1 {
   const root = requireRecord(value, "root", "pdf_director_subcontract_source_v1");
   const documentType = requireNonEmptyString(
@@ -506,65 +465,6 @@ export async function getDirectorFinancePdfSource(args: {
       },
     });
   }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function fetchDirectorProductionPdfSourceViaRpc(args: {
-  periodFrom?: string | null;
-  periodTo?: string | null;
-  objectName?: string | null;
-  priceStage: DirectorPdfPriceStage;
-}): Promise<DirectorProductionPdfSource> {
-  const { data, error } = await callDirectorProductionPdfSourceRpc({
-    periodFrom: args.periodFrom,
-    periodTo: args.periodTo,
-    objectName: args.objectName,
-    includeCosts: args.priceStage !== "base",
-  });
-
-  if (error) {
-    throw new DirectorPdfSourceRpcError(
-      `pdf_director_production_source_v1 failed: ${error.message}`,
-      {
-        code: "code" in error ? String((error as { code?: unknown }).code ?? "") : undefined,
-        disableForSession: shouldDisableDirectorPdfRpcForSession(
-          "pdf_director_production_source_v1",
-          "code" in error ? (error as { code?: unknown }).code : undefined,
-          "message" in error ? (error as { message?: unknown }).message : undefined,
-        ),
-      },
-    );
-  }
-
-  const envelope = validateDirectorProductionSourceV1(data);
-  const repData = adaptCanonicalMaterialsPayload(envelope.report_payload);
-  if (!repData) {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      "pdf_director_production_source_v1 invalid report_payload",
-    );
-  }
-  const repDiscipline = adaptCanonicalWorksPayload(envelope.discipline_payload);
-  if (!repDiscipline) {
-    throw new DirectorPdfSourceValidationError(
-      "invalid_payload",
-      "pdf_director_production_source_v1 invalid discipline_payload",
-    );
-  }
-
-  return {
-    repData,
-    repDiscipline,
-    source: "rpc:pdf_director_production_source_v1",
-    branchMeta: {
-      sourceBranch: "rpc_v1",
-      rpcVersion: "v1",
-      payloadShapeVersion: "v1",
-    },
-    priceStage: args.priceStage,
-    reportMeta: null,
-    disciplineMeta: null,
-  };
 }
 
 export async function getDirectorProductionPdfSource(args: {
