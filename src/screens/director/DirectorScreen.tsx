@@ -52,9 +52,9 @@ export function DirectorScreen() {
       descriptor: template,
       router,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
     busy,
+    reportsPdfOpener,
     router,
     reportsCompanyName,
     vm.reports.repFrom,
@@ -93,8 +93,15 @@ export function DirectorScreen() {
       descriptor: template,
       router,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
+  }, [
+    busy,
+    reportsPdfOpener,
+    router,
+    reportsCompanyName,
+    vm.reports.repFrom,
+    vm.reports.repTo,
+    vm.reports.repObjectName,
+  ]);
 
   const onExportSubcontractPdf = React.useCallback(async () => {
     const template = await buildDirectorSubcontractReportPdfDescriptor({
@@ -112,8 +119,15 @@ export function DirectorScreen() {
       descriptor: template,
       router,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [busy, router, reportsCompanyName, vm.reports.repFrom, vm.reports.repTo, vm.reports.repObjectName]);
+  }, [
+    busy,
+    reportsPdfOpener,
+    router,
+    reportsCompanyName,
+    vm.reports.repFrom,
+    vm.reports.repTo,
+    vm.reports.repObjectName,
+  ]);
   void onExportSubcontractPdfLegacy;
 
   const financePeriodUi = React.useMemo(
