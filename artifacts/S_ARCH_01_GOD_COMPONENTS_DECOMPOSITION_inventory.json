@@ -1,6 +1,6 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-05-23T09:08:40.925Z",
+  "generatedAt": "2026-05-23T21:54:39.797Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
@@ -10,19 +10,14 @@
       "hookCount": 0
     },
     {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 497,
-      "hookCount": 0
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 499,
+      "hookCount": 15
     },
     {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
-    },
-    {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 492,
-      "hookCount": 14
     },
     {
       "file": "src/screens/profile/AddListingScreen.tsx",
@@ -43,6 +38,11 @@
       "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
       "lineCount": 486,
       "hookCount": 1
+    },
+    {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 485,
+      "hookCount": 0
     },
     {
       "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
@@ -92,14 +92,14 @@
       "hookCount": 20
     },
     {
-      "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
-      "lineCount": 287,
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 499,
       "hookCount": 15
     },
     {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 492,
-      "hookCount": 14
+      "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
+      "lineCount": 287,
+      "hookCount": 15
     },
     {
       "file": "src/screens/buyer/components/BuyerMobileItemEditorModal.tsx",

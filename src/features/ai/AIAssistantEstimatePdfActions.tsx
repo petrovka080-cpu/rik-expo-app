@@ -7,6 +7,7 @@ import {
   generateAiEstimatePdf,
 } from "../../lib/ai/estimatePdf";
 import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import { aiAssistantScreenStyles as styles } from "./AIAssistantScreen.styles";
@@ -17,25 +18,40 @@ type Props = {
   onFallback: (event: string, error: unknown, extra?: Record<string, unknown>) => void;
 };
 
+type EstimateTableProps = {
+  source: AiEstimatePdfSource;
+};
+
 const activeEstimatePdfCreations = new Set<string>();
 
 function getEstimatePdfCreationKey(source: AiEstimatePdfSource) {
   return `${source.sourceType}:${source.sourceId ?? source.createdAt}:${source.title}`;
 }
 
-function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimatePdf>) {
+function formatMoney(value: number | undefined, currency: string | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "цена недоступна";
+  return `${Math.round(value).toLocaleString("ru-RU")} ${currency ?? ""}`.trim();
+}
+
+function formatQuantity(value: number | string, unit: string): string {
+  const quantity = typeof value === "number" ? value.toLocaleString("ru-RU") : value;
+  return `${quantity} ${unit}`.trim();
+}
+
+async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimatePdf>) {
+  const params = await buildGeneratedPdfViewerRouteParams({
+    uri: result.access.uri,
+    title: result.title,
+    fileName: `${result.pdfId}.pdf`,
+    accessKind: result.access.kind,
+    documentType: "request",
+    originModule: "reports",
+    source: "generated",
+    entityId: result.pdfId,
+  });
   router.push({
     pathname: "/pdf-viewer",
-    params: {
-      uri: result.access.uri,
-      title: result.title,
-      fileName: `${result.pdfId}.pdf`,
-      sourceKind: result.access.kind === "signed-url" ? "remote-url" : result.access.kind,
-      documentType: "request",
-      originModule: "reports",
-      source: "generated",
-      entityId: result.pdfId,
-    },
+    params,
   });
 }
 
@@ -47,14 +63,14 @@ export function AIAssistantEstimatePdfActions({
   const makeEstimatePdf = useCallback(
     (source: AiEstimatePdfSource) => {
       const confirmation = buildAiEstimatePdfConfirmation(source);
-      const createPdf = () => {
+      const createPdf = async () => {
         const creationKey = getEstimatePdfCreationKey(source);
         if (activeEstimatePdfCreations.has(creationKey)) return;
         activeEstimatePdfCreations.add(creationKey);
         try {
           const result = generateAiEstimatePdf({ source, userConfirmed: true });
           onAppendMessage(createMessage("assistant", `PDF создан: ${result.title}`));
-          openEstimatePdfResult(result);
+          await openEstimatePdfResult(result);
         } catch (error) {
           onFallback("make_estimate_pdf_failed", error, {
             action: "make_estimate_pdf",
@@ -66,12 +82,12 @@ export function AIAssistantEstimatePdfActions({
         }
       };
       if (Platform.OS === "web") {
-        createPdf();
+        void createPdf();
         return;
       }
       Alert.alert(confirmation.copy.title, confirmation.copy.body, [
         { text: confirmation.copy.cancelLabel, style: "cancel" },
-        { text: confirmation.copy.createLabel, onPress: createPdf },
+        { text: confirmation.copy.createLabel, onPress: () => { void createPdf(); } },
       ]);
     },
     [onAppendMessage, onFallback],
@@ -99,6 +115,62 @@ export function AIAssistantEstimatePdfActions({
           </Text>
         </Pressable>
       ))}
+    </View>
+  );
+}
+
+export function AIAssistantEstimateTable({ source }: EstimateTableProps) {
+  const currency = source.currency ?? source.estimate.totals?.currency;
+  const rows = source.estimate.sections.flatMap((section) =>
+    section.rows.map((row) => ({
+      ...row,
+      sectionTitle: section.title,
+    })),
+  );
+
+  if (rows.length === 0) return null;
+
+  return (
+    <View style={styles.estimateTableCard} testID="ai-estimate-table">
+      <View style={styles.estimateTableHeader}>
+        <Text style={styles.estimateTableTitle}>{source.estimate.workTitle}</Text>
+        <Text style={styles.estimateTableMeta}>
+          {rows.length} строк · {formatMoney(source.estimate.totals?.grandTotal, currency)}
+        </Text>
+      </View>
+      <View style={styles.estimateTableScroller}>
+        <View style={styles.estimateTableGrid}>
+          <View style={[styles.estimateTableRow, styles.estimateTableHeadRow]}>
+            <Text style={[styles.estimateCell, styles.estimateCellNo]}>№</Text>
+            <Text style={[styles.estimateCell, styles.estimateCellName]}>Материалы и работы</Text>
+            <Text style={[styles.estimateCell, styles.estimateCellQty]}>Кол-во</Text>
+            <Text style={[styles.estimateCell, styles.estimateCellMoney]}>Цена</Text>
+            <Text style={[styles.estimateCell, styles.estimateCellMoney]}>Итого</Text>
+          </View>
+          {rows.map((row, index) => (
+            <View
+              key={`${row.sectionTitle}:${row.rowNumber ?? index}:${row.name}`}
+              style={styles.estimateTableRow}
+              testID={`ai-estimate-table-row-${index + 1}`}
+            >
+              <Text style={[styles.estimateCell, styles.estimateCellNo]}>{row.rowNumber ?? index + 1}</Text>
+              <View style={[styles.estimateNameCell, styles.estimateCellName]}>
+                <Text style={styles.estimateRowName}>{row.name}</Text>
+                <Text style={styles.estimateRowSource} numberOfLines={1}>
+                  {row.sourceEvidence?.[0]?.label ?? row.sourceId ?? row.sectionTitle}
+                </Text>
+              </View>
+              <Text style={[styles.estimateCell, styles.estimateCellQty]}>{formatQuantity(row.quantity, row.unit)}</Text>
+              <Text style={[styles.estimateCell, styles.estimateCellMoney]}>
+                {formatMoney(row.unitPrice, row.currency ?? currency)}
+              </Text>
+              <Text style={[styles.estimateCell, styles.estimateCellMoney]}>
+                {formatMoney(row.total, row.currency ?? currency)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </View>
     </View>
   );
 }

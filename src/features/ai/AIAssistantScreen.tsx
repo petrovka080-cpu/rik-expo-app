@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
 import { AppChatComposerBar } from "../../components/layout/AppChatComposerBar";
 import { AIAssistantLiveScreenCopilotPanel } from "./AIAssistantLiveScreenCopilotPanel";
 import {
@@ -30,7 +29,7 @@ import {
 import { clearAssistantMessages, loadAssistantMessages, saveAssistantMessages } from "./assistantStorage";
 import type { AssistantMessage, AssistantRole } from "./assistant.types";
 import { sanitizeAssistantUserFacingCopy } from "./assistantUx/aiAssistantUserFacingCopyPolicy";
-import { AIAssistantEstimatePdfActions } from "./AIAssistantEstimatePdfActions";
+import { AIAssistantEstimatePdfActions, AIAssistantEstimateTable } from "./AIAssistantEstimatePdfActions";
 import { answerResolvedLiveAiContext } from "../../lib/ai/liveUi";
 import {
   answerAiLiveScreenButton,
@@ -68,6 +67,7 @@ export default function AIAssistantScreen() {
   const [scopedFactsLoading, setScopedFactsLoading] = useState(false);
   const [scopedFactsError, setScopedFactsError] = useState<string | null>(null);
   const handledPromptRef = useRef<string>("");
+  const messagesScrollRef = useRef<ScrollView | null>(null);
   const {
     params,
     routeContext,
@@ -112,7 +112,6 @@ export default function AIAssistantScreen() {
         setBooting(false);
         return;
       }
-
       const greetingRole = assistantContext === "unknown" ? nextRole : assistantPresentationRole;
       setMessages([createMessage("assistant", getAssistantGreeting(greetingRole, nextFullName, assistantContext))]);
     } catch (error) {
@@ -125,13 +124,11 @@ export default function AIAssistantScreen() {
       setBooting(false);
     }
   }, [assistantContext, assistantPresentationRole]);
-
   useFocusEffect(
     useCallback(() => {
       void initialize();
     }, [initialize]),
   );
-
   useEffect(() => {
     if (assistantContext !== "unknown") return;
     if (!userId || messages.length === 0) return;
@@ -141,10 +138,8 @@ export default function AIAssistantScreen() {
   useEffect(() => {
     if (booting) return;
     let cancelled = false;
-
     setScopedFactsLoading(true);
     setScopedFactsError(null);
-
     void loadAssistantScopedFacts({
       role,
       context: assistantContext,
@@ -166,7 +161,6 @@ export default function AIAssistantScreen() {
       .finally(() => {
         if (!cancelled) setScopedFactsLoading(false);
       });
-
     return () => {
       cancelled = true;
     };
@@ -175,7 +169,6 @@ export default function AIAssistantScreen() {
     async (textParam?: string) => {
       const text = String(textParam ?? input).trim();
       if (!text || loading) return;
-
       const userMessage = createMessage("user", text);
       const nextHistory = [...messages, userMessage];
       setMessages(nextHistory);
@@ -193,7 +186,6 @@ export default function AIAssistantScreen() {
           setMessages((prev) => [...prev, builtInAiMessage]);
           return;
         }
-
         const externalKnowledgeMessage = createExternalKnowledgeAssistantMessage({
           text,
           assistantContext,
@@ -205,7 +197,6 @@ export default function AIAssistantScreen() {
           setMessages((prev) => [...prev, externalKnowledgeMessage]);
           return;
         }
-
         const liveScreenButton = resolveAiLiveScreenConcreteQuestion({
           screenId: resolveAiLiveScreenId(assistantContext),
           buttonIdOrPayloadOrLabel: text,
@@ -318,6 +309,14 @@ export default function AIAssistantScreen() {
     setInput(prompt);
   }, [booting, routeAutoSend, routePrompt, send]);
 
+  useEffect(() => {
+    if (messages.length === 0) return undefined;
+    const timeout = setTimeout(() => {
+      messagesScrollRef.current?.scrollToEnd({ animated: false });
+    }, 100);
+    return () => clearTimeout(timeout);
+  }, [messages.length, loading]);
+
   if (booting) {
     return (
       <SafeAreaView testID="ai.assistant.screen" style={styles.bootContainer} edges={["top", "bottom"]}>
@@ -345,7 +344,12 @@ export default function AIAssistantScreen() {
             onClear={() => void clearChat()}
           />
 
-          <ScrollView testID="ai.assistant.messages" style={styles.messages} contentContainerStyle={styles.messagesContent}>
+          <ScrollView
+            ref={messagesScrollRef}
+            testID="ai.assistant.messages"
+            style={styles.messages}
+            contentContainerStyle={styles.messagesContent}
+          >
           <AIAssistantLiveScreenCopilotPanel
             assistantContext={assistantContext}
             onReadyProposalPress={(text) => void send(text)}
@@ -404,6 +408,9 @@ export default function AIAssistantScreen() {
                     {message.content}
                   </Text>
                 </View>
+                {message.role === "assistant" && message.estimatePdfSource ? (
+                  <AIAssistantEstimateTable source={message.estimatePdfSource} />
+                ) : null}
                 <AIAssistantEstimatePdfActions
                   message={message}
                   onAppendMessage={(nextMessage) => setMessages((prev) => [...prev, nextMessage])}

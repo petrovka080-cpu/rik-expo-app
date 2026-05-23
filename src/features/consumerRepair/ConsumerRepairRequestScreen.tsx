@@ -1,6 +1,6 @@
 import React from "react";
 import { router } from "expo-router";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Pressable, Text } from "react-native";
 import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
@@ -21,23 +21,14 @@ import {
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
+import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
-import { ConsumerRepairMediaButtons } from "./ConsumerRepairMediaButtons";
+import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 const CONSUMER_USER_ID = "consumer-demo-user";
-
-const REPAIR_TYPES = [
-  "Ремонт",
-  "Сантехника",
-  "Электрика",
-  "Отделка",
-  "Пол",
-  "Двери/окна",
-  "Другое",
-] as const;
 type State = {
   problemText: string;
   repairType: string;
@@ -52,9 +43,17 @@ type State = {
   validationErrors: ConsumerRequestValidationErrorItem[];
 };
 
-export class ConsumerRepairRequestScreen extends React.Component<object, State> {
+export type ConsumerRepairRequestScreenProps = {
+  initialProblemText?: string;
+  autoPrepare?: boolean;
+  autoPdf?: boolean;
+};
+
+export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairRequestScreenProps, State> {
+  private initialDeepLinkApplied = false;
+
   state: State = {
-    problemText: "Хочу уложить ламинат на 100 кв м",
+    problemText: this.props.initialProblemText?.trim() || "Хочу уложить ламинат на 100 кв м",
     repairType: "Пол",
     city: "",
     addressText: "",
@@ -66,6 +65,49 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
     statusMessage: null,
     validationErrors: [],
   };
+
+  componentDidMount(): void {
+    this.applyInitialDeepLinkFlow();
+  }
+
+  componentDidUpdate(prevProps: ConsumerRepairRequestScreenProps): void {
+    if (
+      prevProps.initialProblemText !== this.props.initialProblemText ||
+      prevProps.autoPrepare !== this.props.autoPrepare ||
+      prevProps.autoPdf !== this.props.autoPdf
+    ) {
+      this.initialDeepLinkApplied = false;
+      const nextProblemText = this.props.initialProblemText?.trim();
+      if (nextProblemText && nextProblemText !== this.state.problemText) {
+        this.setState({ problemText: nextProblemText, validationErrors: [] }, () => this.applyInitialDeepLinkFlow());
+        return;
+      }
+      this.applyInitialDeepLinkFlow();
+    }
+  }
+
+  private applyInitialDeepLinkFlow() {
+    if (this.initialDeepLinkApplied) return;
+    if (!this.props.autoPrepare && !this.props.autoPdf) return;
+    if (!this.state.problemText.trim()) return;
+    this.initialDeepLinkApplied = true;
+
+    const bundle = this.buildDraftBundle();
+    if (!this.props.autoPdf) return;
+
+    try {
+      const pdfBundle = generateConsumerRepairRequestPdfForDraft({
+        requestDraftId: bundle.draft.id,
+        userId: CONSUMER_USER_ID,
+      });
+      this.updateCurrentBundle(pdfBundle, "PDF создан. PDF можно открыть без отправки в маркет.");
+      void this.openPdf(pdfBundle.draft.id).catch((error) => {
+        this.handleValidationError(error);
+      });
+    } catch (error) {
+      this.handleValidationError(error);
+    }
+  }
 
   private refreshHistory(nextBundle?: ConsumerRepairDraftBundle | null) {
     const history = listConsumerRepairRequestHistory(CONSUMER_USER_ID);
@@ -170,7 +212,7 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
     }
   };
 
-  private makePdf = () => {
+  private makePdf = async () => {
     try {
       const current = this.ensureDraftBundle();
       const synced = this.syncCurrentDraftFields(current);
@@ -179,7 +221,7 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
         userId: CONSUMER_USER_ID,
       });
       this.updateCurrentBundle(bundle, "PDF создан. PDF можно открыть без отправки в маркет.");
-      this.openPdf(bundle.draft.id);
+      await this.openPdf(bundle.draft.id);
     } catch (error) {
       this.handleValidationError(error);
     }
@@ -203,22 +245,23 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
     }
   };
 
-  private openPdf = (requestDraftId?: string) => {
+  private openPdf = async (requestDraftId?: string) => {
     const draftId = requestDraftId ?? this.state.bundle?.draft.id;
     if (!draftId) return;
     const pdf = getConsumerRepairRequestPdf({ requestDraftId: draftId });
+    const params = await buildGeneratedPdfViewerRouteParams({
+      uri: pdf.signedUrl,
+      title: pdf.titleRu,
+      fileName: `${pdf.pdfId}.pdf`,
+      accessKind: "signed-url",
+      documentType: "request",
+      originModule: "reports",
+      source: "generated",
+      entityId: pdf.requestId,
+    });
     router.push({
       pathname: "/pdf-viewer",
-      params: {
-        uri: pdf.signedUrl,
-        title: pdf.titleRu,
-        fileName: `${pdf.pdfId}.pdf`,
-        sourceKind: "remote-url",
-        documentType: "request",
-        originModule: "reports",
-        source: "generated",
-        entityId: pdf.requestId,
-      },
+      params,
     });
     this.setState({ statusMessage: `PDF открыт: ${pdf.titleRu}.` });
   };
@@ -364,75 +407,20 @@ export class ConsumerRepairRequestScreen extends React.Component<object, State> 
             onAddDocument={() => this.addMedia("document")}
           />
 
-          <View style={styles.card}>
-            <Text style={styles.label}>Описание проблемы</Text>
-            <TextInput
-              multiline
-              value={this.state.problemText}
-              onChangeText={(problemText) => this.setState({ problemText, validationErrors: [] })}
-              placeholder="Напишите, что нужно сделать..."
-              placeholderTextColor="#94A3B8"
-              style={[styles.input, styles.textArea]}
-              testID="consumer-repair-problem-input"
-            />
-
-            <Text style={styles.label}>Тип ремонта</Text>
-            <View style={styles.chips}>
-              {REPAIR_TYPES.map((type) => {
-                const selected = type === this.state.repairType;
-                return (
-                  <Pressable
-                    key={type}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Тип ремонта: ${type}`}
-                    onPress={() => this.setState({ repairType: type, validationErrors: [] })}
-                    style={[styles.chip, selected ? styles.chipSelected : null]}
-                    testID={`consumer-repair-type-${type}`}
-                  >
-                    <Text style={[styles.chipText, selected ? styles.chipTextSelected : null]}>{type}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <Text style={styles.label}>Город / адрес</Text>
-            <TextInput
-              value={this.state.city}
-              onChangeText={(city) => this.setState({ city, validationErrors: [] })}
-              placeholder="Город"
-              placeholderTextColor="#94A3B8"
-              style={styles.input}
-              testID="consumer-repair-city-input"
-            />
-            <TextInput
-              value={this.state.addressText}
-              onChangeText={(addressText) => this.setState({ addressText, validationErrors: [] })}
-              placeholder="Адрес"
-              placeholderTextColor="#94A3B8"
-              style={styles.input}
-              testID="consumer-repair-address-input"
-            />
-
-            <Text style={styles.label}>Когда удобно</Text>
-            <TextInput
-              value={this.state.preferredTimeText}
-              onChangeText={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
-              placeholder="Сегодня, завтра или дата"
-              placeholderTextColor="#94A3B8"
-              style={styles.input}
-              testID="consumer-repair-time-input"
-            />
-
-            <Text style={styles.label}>Контакт</Text>
-            <TextInput
-              value={this.state.contactPhone}
-              onChangeText={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
-              placeholder="Телефон"
-              placeholderTextColor="#94A3B8"
-              style={styles.input}
-              testID="consumer-repair-phone-input"
-            />
-          </View>
+          <ConsumerRepairRequestFormCard
+            problemText={this.state.problemText}
+            repairType={this.state.repairType}
+            city={this.state.city}
+            addressText={this.state.addressText}
+            preferredTimeText={this.state.preferredTimeText}
+            contactPhone={this.state.contactPhone}
+            onProblemTextChange={(problemText) => this.setState({ problemText, validationErrors: [] })}
+            onRepairTypeChange={(repairType) => this.setState({ repairType, validationErrors: [] })}
+            onCityChange={(city) => this.setState({ city, validationErrors: [] })}
+            onAddressTextChange={(addressText) => this.setState({ addressText, validationErrors: [] })}
+            onPreferredTimeTextChange={(preferredTimeText) => this.setState({ preferredTimeText, validationErrors: [] })}
+            onContactPhoneChange={(contactPhone) => this.setState({ contactPhone, validationErrors: [] })}
+          />
 
           {this.state.statusMessage ? (
             <Text style={styles.status} testID="consumer-repair-status">{this.state.statusMessage}</Text>

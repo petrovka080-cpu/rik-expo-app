@@ -40,6 +40,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/S_CONTRACTOR_EXPANDED_WORK_MEDIA_") ||
     normalized.startsWith("artifacts/S_MEDIA_PHOTO_VIDEO_INTELLIGENCE_CORE_") ||
     normalized.startsWith("artifacts/S_AI_") ||
+    normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
+    normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("scripts/audit/auditAiGenericAnswerRate") ||
     normalized.startsWith("scripts/audit/auditAiContextBudget") ||
     normalized.startsWith("scripts/audit/auditAiDomainDataGateway") ||
@@ -119,6 +121,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runGlobalEstimateDataOpsCoverageProof") ||
     normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
+    normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
     normalized.startsWith("scripts/e2e/runAnyEstimate") ||
@@ -185,6 +189,10 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/pdf/estimatePdf") ||
     normalized.startsWith("tests/liveAcceptance/") ||
     normalized.startsWith("tests/e2e/liveEstimatePdf") ||
+    normalized.startsWith("tests/e2e/liveEstimateReality") ||
+    normalized.startsWith("tests/e2e/liveRequestReality") ||
+    normalized.startsWith("tests/e2e/liveForemanReality") ||
+    normalized.startsWith("tests/e2e/livePdfButtonReality") ||
     normalized.startsWith("tests/allScreensRuntime/") ||
     normalized.startsWith("tests/audit/externalLiveProofCloseoutHarness") ||
     normalized.startsWith("tests/audit/final") ||

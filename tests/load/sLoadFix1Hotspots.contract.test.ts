@@ -610,6 +610,8 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
     normalized.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
+    normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
+    normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_CORE_COMPLETION_") ||
     normalized.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
@@ -629,6 +631,10 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/pdf/estimatePdf") ||
     normalized.startsWith("tests/liveAcceptance/") ||
     normalized.startsWith("tests/e2e/liveEstimatePdf") ||
+    normalized.startsWith("tests/e2e/liveEstimateReality") ||
+    normalized.startsWith("tests/e2e/liveRequestReality") ||
+    normalized.startsWith("tests/e2e/liveForemanReality") ||
+    normalized.startsWith("tests/e2e/livePdfButtonReality") ||
     normalized.startsWith("tests/architecture/aiEstimatePdf") ||
     normalized.startsWith("tests/architecture/pdfNo") ||
     normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
@@ -710,6 +716,8 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runAiEstimate") ||
     normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
+    normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
     normalized.startsWith("scripts/e2e/runAnyEstimate") ||
@@ -749,6 +757,8 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized === "src/features/market/market.repository.ts" ||
     normalized === "src/features/market/marketHome.data.ts" ||
     normalized === "src/features/ai/AIAssistantScreen.tsx" ||
+    normalized === "src/features/ai/AIAssistantScreen.styles.ts" ||
+    normalized === "app/(tabs)/request/index.tsx" ||
     normalized === "src/features/ai/assistantClient.ts" ||
     normalized === "src/features/ai/assistantAnswerPipeline.ts" ||
     normalized.startsWith("src/lib/ai/builtInAi/") ||
