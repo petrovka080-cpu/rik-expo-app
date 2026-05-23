@@ -19,6 +19,7 @@
  * - Automatic dedup (query layer)
  */
 
+import { useCallback, useMemo } from "react";
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -45,7 +46,7 @@ export function useBuyerInboxQuery(params: {
   const searchKey = String(searchQuery ?? "").trim();
 
   const queryClient = useQueryClient();
-  const queryKey = buyerInboxKeys.search(searchKey);
+  const queryKey = useMemo(() => buyerInboxKeys.search(searchKey), [searchKey]);
 
   const query = useInfiniteQuery<BuyerInboxPageData>({
     queryKey,
@@ -70,13 +71,23 @@ export function useBuyerInboxQuery(params: {
     refetchOnWindowFocus: false,
     retry: false,
   });
+  const {
+    data,
+    error,
+    fetchNextPage: fetchNextPageQuery,
+    isError,
+    isFetching,
+    isFetchingNextPage,
+    isLoading,
+    refetch: refetchQuery,
+  } = query;
 
   // ── Flatten pages into a single deduped array ──
-  const rows: BuyerInboxRow[] = (() => {
-    if (!query.data?.pages?.length) return [];
+  const rows: BuyerInboxRow[] = useMemo(() => {
+    if (!data?.pages?.length) return [];
     const seen = new Set<string>();
     const result: BuyerInboxRow[] = [];
-    for (const page of query.data.pages) {
+    for (const page of data.pages) {
       for (const row of page.rows) {
         const key = String(row.request_item_id ?? "").trim();
         if (key && !seen.has(key)) {
@@ -88,43 +99,67 @@ export function useBuyerInboxQuery(params: {
       }
     }
     return result;
-  })();
+  }, [data?.pages]);
 
   // ── Collect all requestIds across all pages ──
-  const requestIds: string[] = (() => {
-    if (!query.data?.pages?.length) return [];
+  const requestIds: string[] = useMemo(() => {
+    if (!data?.pages?.length) return [];
     const seen = new Set<string>();
-    for (const page of query.data.pages) {
+    for (const page of data.pages) {
       for (const id of page.requestIds) {
         seen.add(id);
       }
     }
     return Array.from(seen);
-  })();
+  }, [data?.pages]);
 
-  const lastPage = query.data?.pages?.[query.data.pages.length - 1];
+  const lastPage = data?.pages?.[data.pages.length - 1];
   const hasMore = lastPage?.meta.hasMore ?? false;
   const totalGroupCount = lastPage?.meta.totalGroupCount ?? 0;
   const lastPageMeta = lastPage?.meta ?? null;
   const lastPageSourceMeta = lastPage?.sourceMeta ?? null;
 
-  return {
-    rows,
-    requestIds,
-    hasMore,
-    totalGroupCount,
-    lastPageMeta,
-    lastPageSourceMeta,
+  const fetchNextPage = useCallback(() => fetchNextPageQuery({ cancelRefetch: false }), [fetchNextPageQuery]);
+  const refetch = useCallback(() => refetchQuery({ cancelRefetch: false }), [refetchQuery]);
+  const invalidate = useCallback(
+    () => queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false }),
+    [queryClient, queryKey],
+  );
 
-    isLoading: query.isLoading,
-    isFetching: query.isFetching,
-    isFetchingNextPage: query.isFetchingNextPage,
-    isError: query.isError,
-    error: query.error,
+  return useMemo(
+    () => ({
+      rows,
+      requestIds,
+      hasMore,
+      totalGroupCount,
+      lastPageMeta,
+      lastPageSourceMeta,
 
-    fetchNextPage: () => query.fetchNextPage({ cancelRefetch: false }),
-    refetch: () => query.refetch({ cancelRefetch: false }),
-    invalidate: () =>
-      queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false }),
-  };
+      isLoading,
+      isFetching,
+      isFetchingNextPage,
+      isError,
+      error,
+
+      fetchNextPage,
+      refetch,
+      invalidate,
+    }),
+    [
+      error,
+      fetchNextPage,
+      hasMore,
+      invalidate,
+      isError,
+      isFetching,
+      isFetchingNextPage,
+      isLoading,
+      lastPageMeta,
+      lastPageSourceMeta,
+      refetch,
+      requestIds,
+      rows,
+      totalGroupCount,
+    ],
+  );
 }

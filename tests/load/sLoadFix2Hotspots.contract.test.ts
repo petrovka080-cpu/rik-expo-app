@@ -211,10 +211,10 @@ describe("S-LOAD-FIX-2 targeted hotspot optimization contract", () => {
       "queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false })",
     );
     expect(buyerQuery).toContain(
-      "fetchNextPage: () => query.fetchNextPage({ cancelRefetch: false })",
+      "const fetchNextPage = useCallback(() => fetchNextPageQuery({ cancelRefetch: false })",
     );
     expect(buyerQuery).toContain(
-      "refetch: () => query.refetch({ cancelRefetch: false })",
+      "const refetch = useCallback(() => refetchQuery({ cancelRefetch: false })",
     );
     expect(buyerQuery).toContain(
       "queryClient.invalidateQueries({ queryKey }, { cancelRefetch: false })",

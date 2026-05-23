@@ -158,6 +158,9 @@ export function useBuyerLoadingController(params: {
     enabled: focusedRef.current,
     log,
   });
+  const invalidateInboxQuery = inboxQuery.invalidate;
+  const refetchInboxQuery = inboxQuery.refetch;
+  const fetchNextInboxPage = inboxQuery.fetchNextPage;
 
   // ── Sync query data → parent setters ──
   const prevInboxRowCountRef = useRef(-1);
@@ -405,9 +408,9 @@ export function useBuyerLoadingController(params: {
       // ── Inbox: delegate to React Query ──
       if (wantsInbox) {
         if (options.force) {
-          inboxQuery.invalidate();
+          invalidateInboxQuery();
         } else {
-          void inboxQuery.refetch();
+          void refetchInboxQuery();
         }
       }
 
@@ -467,20 +470,17 @@ export function useBuyerLoadingController(params: {
       if (showBucketsLoading) setLoadingBuckets(false);
       if (options.showRefreshing) setRefreshing(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
-    approved.length,
     applyBucketsResult,
-    inboxQuery,
+    invalidateInboxQuery,
     log,
     normalizeBuyerScopePublicationMessage,
-    pending.length,
     publishBuyerScopeState,
-    rejected.length,
     setRefreshReason,
     setLoadingBuckets,
     setRefreshing,
     setSubcontractCount,
+    refetchInboxQuery,
     summaryService,
     visibleBucketRowsCount,
   ]);
@@ -550,7 +550,7 @@ export function useBuyerLoadingController(params: {
       return;
     }
     try {
-      await inboxQuery.fetchNextPage();
+      await fetchNextInboxPage();
     } catch (error) {
       reportAndSwallow({
         screen: "buyer",
@@ -567,7 +567,7 @@ export function useBuyerLoadingController(params: {
       });
       log?.("[buyer.summary] inbox next page failed:", error instanceof Error ? error.message : String(error));
     }
-  }, [inboxQuery, log, searchKey]);
+  }, [fetchNextInboxPage, inboxQuery.hasMore, log, searchKey]);
 
   useFocusEffect(
     useCallback(() => {
@@ -610,9 +610,8 @@ export function useBuyerLoadingController(params: {
     if (!hasHydratedRef.current) return;
     // When search changes, the query key changes and React Query re-fetches automatically.
     // Just invalidate to force fresh data.
-    inboxQuery.invalidate();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- search key drives reload
-  }, [activeTab, searchKey]);
+    invalidateInboxQuery();
+  }, [activeTab, invalidateInboxQuery, searchKey]);
 
   const onRefresh = useCallback(async () => {
     await refreshSummary({
