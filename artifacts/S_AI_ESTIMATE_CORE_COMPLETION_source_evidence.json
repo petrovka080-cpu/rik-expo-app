@@ -1,0 +1,2052 @@
+[
+  {
+    "id": "001",
+    "sources": [
+      {
+        "id": "rate_geotextile_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_sand_base_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_crushed_stone_base_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_bitumen_emulsion_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_asphalt_lower_coarse_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_asphalt_top_fine_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_road_marking_optional_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_site_cleaning_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_grading_compaction_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_sand_base_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_crushed_stone_base_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_tack_coat_application_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_asphalt_lower_laying_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_asphalt_top_laying_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_equipment_mobilization_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_geodesy_quality_control_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_final_cleanup_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "sources": [
+      {
+        "id": "rate_carpet_laying_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_carpet_laying_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "003",
+    "sources": [
+      {
+        "id": "rate_drywall_partition_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_drywall_partition_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_drywall_partition_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "004",
+    "sources": [
+      {
+        "id": "rate_drywall_wall_cladding_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_drywall_wall_cladding_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "005",
+    "sources": [
+      {
+        "id": "rate_gable_roof_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_gable_roof_installation_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_gable_roof_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "006",
+    "sources": [
+      {
+        "id": "rate_brick_masonry_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_brick_masonry_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_brick_masonry_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "007",
+    "sources": [
+      {
+        "id": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "008",
+    "sources": [
+      {
+        "id": "rate_laminate_board_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_underlayment_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_baseboard_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_baseboard_fittings_XX_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_thresholds_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_floor_priming_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_underlayment_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_laminate_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_baseboard_install_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_threshold_install_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "009",
+    "sources": [
+      {
+        "id": "rate_wall_plastering_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_wall_plastering_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "010",
+    "sources": [
+      {
+        "id": "rate_wall_putty_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_wall_putty_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "011",
+    "sources": [
+      {
+        "id": "rate_wall_painting_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_wall_painting_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "012",
+    "sources": [
+      {
+        "id": "rate_wallpaper_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_wallpaper_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "013",
+    "sources": [
+      {
+        "id": "rate_floor_screed_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_floor_screed_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "014",
+    "sources": [
+      {
+        "id": "rate_self_leveling_floor_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_self_leveling_floor_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "015",
+    "sources": [
+      {
+        "id": "rate_bathroom_waterproofing_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_bathroom_waterproofing_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "016",
+    "sources": [
+      {
+        "id": "rate_foundation_waterproofing_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_foundation_waterproofing_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "017",
+    "sources": [
+      {
+        "id": "rate_roof_repair_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_roof_repair_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "018",
+    "sources": [
+      {
+        "id": "rate_metal_roofing_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_metal_roofing_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "019",
+    "sources": [
+      {
+        "id": "rate_soft_roofing_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_soft_roofing_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "020",
+    "sources": [
+      {
+        "id": "rate_facade_insulation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_facade_insulation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "021",
+    "sources": [
+      {
+        "id": "rate_facade_plaster_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_facade_plaster_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "022",
+    "sources": [
+      {
+        "id": "rate_block_masonry_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_block_masonry_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "023",
+    "sources": [
+      {
+        "id": "rate_aerated_block_masonry_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_aerated_block_masonry_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "024",
+    "sources": [
+      {
+        "id": "rate_concrete_slab_material_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_concrete_slab_labor_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "025",
+    "sources": [
+      {
+        "id": "rate_strip_foundation_material_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_labor_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "026",
+    "sources": [
+      {
+        "id": "rate_rebar_installation_material_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_rebar_installation_labor_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "027",
+    "sources": [
+      {
+        "id": "rate_concrete_columns_material_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_concrete_columns_labor_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "028",
+    "sources": [
+      {
+        "id": "rate_pipe_replacement_material_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_pipe_replacement_labor_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "029",
+    "sources": [
+      {
+        "id": "rate_plumbing_rough_in_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_plumbing_rough_in_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "030",
+    "sources": [
+      {
+        "id": "rate_toilet_installation_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_toilet_installation_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "031",
+    "sources": [
+      {
+        "id": "rate_electrical_wiring_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_electrical_wiring_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "032",
+    "sources": [
+      {
+        "id": "rate_socket_installation_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_socket_installation_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "033",
+    "sources": [
+      {
+        "id": "rate_distribution_panel_installation_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_distribution_panel_installation_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "034",
+    "sources": [
+      {
+        "id": "rate_ventilation_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_ventilation_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "035",
+    "sources": [
+      {
+        "id": "rate_air_conditioner_installation_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_air_conditioner_installation_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "036",
+    "sources": [
+      {
+        "id": "rate_window_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_window_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "037",
+    "sources": [
+      {
+        "id": "rate_interior_door_installation_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_interior_door_installation_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "038",
+    "sources": [
+      {
+        "id": "rate_demolition_tiles_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_demolition_tiles_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_demolition_tiles_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "039",
+    "sources": [
+      {
+        "id": "rate_flooring_demolition_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_flooring_demolition_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "040",
+    "sources": [
+      {
+        "id": "rate_debris_removal_material_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_debris_removal_labor_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "041",
+    "sources": [
+      {
+        "id": "rate_paving_slabs_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_paving_slabs_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "042",
+    "sources": [
+      {
+        "id": "rate_curb_installation_material_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_curb_installation_labor_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "043",
+    "sources": [
+      {
+        "id": "rate_drainage_lot_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_drainage_lot_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "044",
+    "sources": [
+      {
+        "id": "rate_landscaping_leveling_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_landscaping_leveling_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "045",
+    "sources": [
+      {
+        "id": "rate_lawn_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_lawn_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "046",
+    "sources": [
+      {
+        "id": "rate_fence_installation_material_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_fence_installation_labor_KG_linear_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "047",
+    "sources": [
+      {
+        "id": "rate_welded_frame_material_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_welded_frame_labor_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "048",
+    "sources": [
+      {
+        "id": "rate_metal_stairs_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_metal_stairs_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "049",
+    "sources": [
+      {
+        "id": "rate_canopy_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_canopy_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "050",
+    "sources": [
+      {
+        "id": "rate_timber_deck_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_timber_deck_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "051",
+    "sources": [
+      {
+        "id": "rate_terrace_board_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_terrace_board_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "052",
+    "sources": [
+      {
+        "id": "rate_construction_cleaning_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_construction_cleaning_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "053",
+    "sources": [
+      {
+        "id": "rate_delivery_lifting_material_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_delivery_lifting_labor_KG_ton_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "054",
+    "sources": [
+      {
+        "id": "rate_design_project_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_design_project_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "055",
+    "sources": [
+      {
+        "id": "rate_procurement_list_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_procurement_list_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "056",
+    "sources": [
+      {
+        "id": "rate_material_takeoff_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_material_takeoff_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "057",
+    "sources": [
+      {
+        "id": "rate_estimate_documentation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_estimate_documentation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "058",
+    "sources": [
+      {
+        "id": "rate_roof_project_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_roof_project_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "059",
+    "sources": [
+      {
+        "id": "rate_foundation_project_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_foundation_project_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "060",
+    "sources": [
+      {
+        "id": "rate_electrical_project_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_electrical_project_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "061",
+    "sources": [
+      {
+        "id": "rate_hvac_project_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_hvac_project_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "062",
+    "sources": [
+      {
+        "id": "rate_bathroom_turnkey_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_bathroom_turnkey_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "063",
+    "sources": [
+      {
+        "id": "rate_apartment_turnkey_renovation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_apartment_turnkey_renovation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "064",
+    "sources": [
+      {
+        "id": "rate_house_turnkey_renovation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_house_turnkey_renovation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "065",
+    "sources": [
+      {
+        "id": "rate_office_fitout_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_office_fitout_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "066",
+    "sources": [
+      {
+        "id": "rate_restaurant_fitout_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_restaurant_fitout_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "067",
+    "sources": [
+      {
+        "id": "rate_server_room_fitout_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_server_room_fitout_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "068",
+    "sources": [
+      {
+        "id": "rate_solar_panel_installation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_solar_panel_installation_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_solar_panel_installation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "069",
+    "sources": [
+      {
+        "id": "rate_battery_storage_installation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_battery_storage_installation_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_battery_storage_installation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "070",
+    "sources": [
+      {
+        "id": "rate_generator_connection_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_generator_connection_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "071",
+    "sources": [
+      {
+        "id": "rate_boiler_room_piping_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_boiler_room_piping_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "072",
+    "sources": [
+      {
+        "id": "rate_mini_chp_preparation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_mini_chp_preparation_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_mini_chp_preparation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "073",
+    "sources": [
+      {
+        "id": "rate_micro_hydro_preparation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_micro_hydro_preparation_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_micro_hydro_preparation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "074",
+    "sources": [
+      {
+        "id": "rate_greenhouse_installation_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_greenhouse_installation_auxiliary_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_greenhouse_installation_labor_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_us_tx_dallas_75201_sales_tax_configured",
+        "type": "configured_reference",
+        "label": "Configured US sales tax reference; validate with address-based tax provider before billing",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "075",
+    "sources": [
+      {
+        "id": "rate_garden_irrigation_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_garden_irrigation_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_garden_irrigation_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "076",
+    "sources": [
+      {
+        "id": "rate_furniture_assembly_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_furniture_assembly_auxiliary_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_furniture_assembly_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "077",
+    "sources": [
+      {
+        "id": "rate_built_in_wardrobe_material_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_built_in_wardrobe_labor_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "078",
+    "sources": [
+      {
+        "id": "rate_kitchen_cabinet_install_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_kitchen_cabinet_install_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "079",
+    "sources": [
+      {
+        "id": "rate_smart_home_basic_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_smart_home_basic_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  },
+  {
+    "id": "080",
+    "sources": [
+      {
+        "id": "rate_estimate_to_pdf_material_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_estimate_to_pdf_labor_KG_set_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "tax_kg_nds_configured",
+        "type": "configured_reference",
+        "label": "Configured Kyrgyzstan NDS reference",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      }
+    ]
+  }
+]

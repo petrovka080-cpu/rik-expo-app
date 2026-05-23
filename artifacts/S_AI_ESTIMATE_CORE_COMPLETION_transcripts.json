@@ -1,0 +1,3424 @@
+[
+  {
+    "id": "001",
+    "route": "chat",
+    "prompt": "сделай мне смету на асфальтирование на 1000 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "route": "chat",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "003",
+    "route": "chat",
+    "prompt": "смета на перегородку из ГКЛ 60 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "004",
+    "route": "chat",
+    "prompt": "смету на установку ГКЛ на стены 352 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "005",
+    "route": "chat",
+    "prompt": "дай смету на устройство двускатной крыши основание 100 кв метров",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "006",
+    "route": "chat",
+    "prompt": "дай смету на кладку кирпича 74 кв метров",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "007",
+    "route": "chat",
+    "prompt": "смета на укладку кафельной плитки на пол 174 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "008",
+    "route": "chat",
+    "prompt": "дай смету на укладку ламината 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "009",
+    "route": "chat",
+    "prompt": "смета на штукатурка стен 120 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "010",
+    "route": "chat",
+    "prompt": "смета на шпаклёвка стен 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "011",
+    "route": "chat",
+    "prompt": "смета на покраска стен 80 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "012",
+    "route": "chat",
+    "prompt": "смета на поклейка обоев 70 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "013",
+    "route": "chat",
+    "prompt": "смета на цементная стяжка пола 90 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "014",
+    "route": "chat",
+    "prompt": "смета на наливной пол 50 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "015",
+    "route": "chat",
+    "prompt": "смета на bathroom_waterproofing 30 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "016",
+    "route": "chat",
+    "prompt": "смета на foundation_waterproofing 70 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "017",
+    "route": "chat",
+    "prompt": "смета на ремонт крыши 70 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "018",
+    "route": "chat",
+    "prompt": "смета на кровля металлочерепицей 180 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "019",
+    "route": "chat",
+    "prompt": "смета на мягкая кровля 150 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "020",
+    "route": "chat",
+    "prompt": "смета на утепление фасада 200 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "021",
+    "route": "chat",
+    "prompt": "смета на штукатурка фасада 180 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "022",
+    "route": "chat",
+    "prompt": "смета на кладка блока 120 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "023",
+    "route": "chat",
+    "prompt": "смета на кладка газоблока 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "024",
+    "route": "chat",
+    "prompt": "смета на бетонная плита 200 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "025",
+    "route": "chat",
+    "prompt": "смета на ленточный фундамент 50 пог. м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "026",
+    "route": "chat",
+    "prompt": "смета на армирование каркаса дома высота 5 м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "027",
+    "route": "chat",
+    "prompt": "смета на бетонные колонны 16 шт высота 5 м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "028",
+    "route": "chat",
+    "prompt": "смета на замена труб 40 пог. м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "029",
+    "route": "chat",
+    "prompt": "смета на черновая сантехника квартиры 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "030",
+    "route": "chat",
+    "prompt": "смета на установка унитазов 2 шт",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "031",
+    "route": "chat",
+    "prompt": "смета на электропроводка квартиры 80 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "032",
+    "route": "chat",
+    "prompt": "смета на установка 20 розеток",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "033",
+    "route": "chat",
+    "prompt": "смета на электрощит 1 шт",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "034",
+    "route": "chat",
+    "prompt": "смета на вентиляция 120 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "035",
+    "route": "chat",
+    "prompt": "смета на кондиционеры 4 шт",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "036",
+    "route": "chat",
+    "prompt": "смета на установка пластикового окна 1.5 на 1.5 м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "037",
+    "route": "chat",
+    "prompt": "смета на установка 5 межкомнатных дверей",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "038",
+    "route": "chat",
+    "prompt": "смета на demolition_tiles 50 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "039",
+    "route": "chat",
+    "prompt": "смета на демонтаж пола 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "040",
+    "route": "chat",
+    "prompt": "смета на вывоз строительного мусора 10 т",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "041",
+    "route": "chat",
+    "prompt": "смета на тротуарная плитка 500 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "042",
+    "route": "chat",
+    "prompt": "смета на установка бордюра 200 пог. м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "043",
+    "route": "chat",
+    "prompt": "смета на ливнёвка парковки 1000 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "044",
+    "route": "chat",
+    "prompt": "смета на планировка участка 800 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "045",
+    "route": "chat",
+    "prompt": "смета на газон 500 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "046",
+    "route": "chat",
+    "prompt": "смета на забор 100 пог. м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "047",
+    "route": "chat",
+    "prompt": "смета на сварной каркас 500 кг",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "048",
+    "route": "chat",
+    "prompt": "смета на металлическая лестница 1 шт",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "049",
+    "route": "chat",
+    "prompt": "смета на навес 30 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "050",
+    "route": "chat",
+    "prompt": "смета на timber_deck 35 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "051",
+    "route": "chat",
+    "prompt": "смета на террасная доска 50 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "052",
+    "route": "chat",
+    "prompt": "смета на construction_cleaning 120 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "053",
+    "route": "chat",
+    "prompt": "смета на доставка и подъём материалов 5 т",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "054",
+    "route": "chat",
+    "prompt": "смета на дизайн-проект квартиры 80 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "055",
+    "route": "chat",
+    "prompt": "смета на закупочный список ремонта 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "056",
+    "route": "chat",
+    "prompt": "смета на расчёт материалов 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "057",
+    "route": "chat",
+    "prompt": "сметная документация 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "058",
+    "route": "chat",
+    "prompt": "смета на проект кровли 120 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "059",
+    "route": "chat",
+    "prompt": "смета на проект фундамента 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "060",
+    "route": "chat",
+    "prompt": "смета на проект электрики 80 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "061",
+    "route": "chat",
+    "prompt": "смета на проект HVAC 100 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "062",
+    "route": "chat",
+    "prompt": "смета на ванная под ключ 6 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "063",
+    "route": "chat",
+    "prompt": "смета на ремонт квартиры под ключ 80 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "064",
+    "route": "chat",
+    "prompt": "смета на ремонт дома под ключ 150 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "065",
+    "route": "chat",
+    "prompt": "смета на офисная отделка под ключ 300 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "066",
+    "route": "chat",
+    "prompt": "смета на отделка ресторана 200 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "067",
+    "route": "chat",
+    "prompt": "смета на серверная комната 30 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "068",
+    "route": "chat",
+    "prompt": "смета на solar_panel_installation 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "069",
+    "route": "chat",
+    "prompt": "смета на battery_storage_installation 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "070",
+    "route": "chat",
+    "prompt": "смета на подключение генератора 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "071",
+    "route": "chat",
+    "prompt": "смета на обвязка котельной 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "072",
+    "route": "chat",
+    "prompt": "смета на mini_chp_preparation 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "073",
+    "route": "chat",
+    "prompt": "смета на micro_hydro_preparation 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "074",
+    "route": "chat",
+    "prompt": "смета на greenhouse_installation 60 м²",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "075",
+    "route": "chat",
+    "prompt": "смета на garden_irrigation 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "076",
+    "route": "chat",
+    "prompt": "смета на furniture_assembly 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "077",
+    "route": "chat",
+    "prompt": "смета на встроенный шкаф 1 шт",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "078",
+    "route": "chat",
+    "prompt": "смета на кухонные шкафы 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "079",
+    "route": "chat",
+    "prompt": "смета на умный дом базовый 1 компл.",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "080",
+    "route": "chat",
+    "prompt": "смета на estimate_to_pdf 1 комплект",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "001",
+    "route": "chat",
+    "prompt": "сделай мне смету на асфальтирование на 1000 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "001",
+    "route": "ai_foreman",
+    "prompt": "сделай мне смету на асфальтирование на 1000 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "001",
+    "route": "request",
+    "prompt": "сделай мне смету на асфальтирование на 1000 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "route": "chat",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "route": "ai_foreman",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "002",
+    "route": "request",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "005",
+    "route": "chat",
+    "prompt": "дай смету на устройство двускатной крыши основание 100 кв метров",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  },
+  {
+    "id": "006",
+    "route": "chat",
+    "prompt": "дай смету на кладку кирпича 74 кв метров",
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ]
+  }
+]

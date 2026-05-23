@@ -1,0 +1,154 @@
+[
+  {
+    "id": "002",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "draft": {
+      "titleRu": "укладку ковролина",
+      "summaryRu": "Backend global estimate global_estimate_618078260. Grand total: 289 471 сом. Tax status: НДС Кыргызстан. Confidence: high. Human confirmation is required before marketplace send.",
+      "repairType": "flooring",
+      "dangerousDiyBlocked": false,
+      "missingData": [
+        "Какое текущее основание пола?",
+        "Нужен ли демонтаж старого покрытия или выравнивание?",
+        "Нужны ли плинтусы, порожки и доставка материала?"
+      ],
+      "items": [
+        {
+          "itemType": "material",
+          "titleRu": "1.1 Ковролин с запасом на подрезку",
+          "quantity": 108,
+          "unit": "sq_m",
+          "unitPrice": 1068,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.2 Подложка под ковролин",
+          "quantity": 18,
+          "unit": "sq_m",
+          "unitPrice": 178,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.3 Клей/лента для фиксации ковролина",
+          "quantity": 18,
+          "unit": "sq_m",
+          "unitPrice": 178,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.4 Плинтус или порожки для примыканий",
+          "quantity": 18,
+          "unit": "sq_m",
+          "unitPrice": 178,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.1 Подготовка основания",
+          "quantity": 100,
+          "unit": "sq_m",
+          "unitPrice": 445,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.2 Укладка ковролина",
+          "quantity": 100,
+          "unit": "sq_m",
+          "unitPrice": 445,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.3 Подрезка и подгонка ковролина",
+          "quantity": 100,
+          "unit": "sq_m",
+          "unitPrice": 445,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        }
+      ]
+    }
+  },
+  {
+    "id": "007",
+    "prompt": "смета на укладку кафельной плитки на пол 174 кв м",
+    "draft": {
+      "titleRu": "укладку кафельной плитки",
+      "summaryRu": "Backend global estimate global_estimate_682656730. Grand total: 1 035 109 сом. Tax status: НДС Кыргызстан. Confidence: high. Human confirmation is required before marketplace send.",
+      "repairType": "tile",
+      "dangerousDiyBlocked": false,
+      "missingData": [
+        "В каком городе находится объект?",
+        "Какое состояние основания или поверхности?",
+        "Нужен ли демонтаж старого покрытия или конструкций?",
+        "Есть ли ограничения по доступу, доставке или срокам?"
+      ],
+      "items": [
+        {
+          "itemType": "material",
+          "titleRu": "1.1 плитка с запасом",
+          "quantity": 187.92,
+          "unit": "sq_m",
+          "unitPrice": 1424,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.2 клей",
+          "quantity": 34.8,
+          "unit": "sq_m",
+          "unitPrice": 1424,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.3 затирка",
+          "quantity": 34.8,
+          "unit": "sq_m",
+          "unitPrice": 1424,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.1 грунтовка",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitPrice": 1068,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.2 укладка",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitPrice": 1068,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.3 затирка швов",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitPrice": 1068,
+          "currency": "KGS",
+          "source": "reference_price_book"
+        }
+      ]
+    }
+  }
+]

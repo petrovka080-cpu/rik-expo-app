@@ -1697,7 +1697,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
-    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(40);
+    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(42);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);

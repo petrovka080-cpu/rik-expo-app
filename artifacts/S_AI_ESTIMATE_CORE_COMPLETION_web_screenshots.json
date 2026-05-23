@@ -1,0 +1,67 @@
+{
+  "web_playwright_passed": true,
+  "web_live_app_tested": true,
+  "transcripts": [
+    {
+      "id": "asphalt_paving",
+      "route": "/ai?context=foreman",
+      "pdfValid": true
+    },
+    {
+      "id": "carpet_laying",
+      "route": "/request",
+      "pdfValid": null
+    },
+    {
+      "id": "drywall_gkl",
+      "route": "/chat",
+      "pdfValid": true
+    },
+    {
+      "id": "gable_roof",
+      "route": "/chat",
+      "pdfValid": true
+    },
+    {
+      "id": "brick_masonry",
+      "route": "/chat",
+      "pdfValid": true
+    },
+    {
+      "id": "tile_floor",
+      "route": "/chat",
+      "pdfValid": true
+    },
+    {
+      "id": "laminate",
+      "route": "/chat",
+      "pdfValid": null
+    },
+    {
+      "id": "bathroom_waterproofing",
+      "route": "/chat",
+      "pdfValid": null
+    },
+    {
+      "id": "electrical_wiring",
+      "route": "/chat",
+      "pdfValid": null
+    },
+    {
+      "id": "pipe_replacement",
+      "route": "/chat",
+      "pdfValid": null
+    },
+    {
+      "id": "facade_insulation",
+      "route": "/chat",
+      "pdfValid": null
+    },
+    {
+      "id": "concrete_slab",
+      "route": "/chat",
+      "pdfValid": null
+    }
+  ],
+  "fake_green_claimed": false
+}

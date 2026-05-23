@@ -1,0 +1,79 @@
+{
+  "wave": "S_AI_ESTIMATE_CORE_COMPLETION_UNFINISHED_SMETAS_WEB_ANDROID_COMMIT_PUSH_POINT_OF_NO_RETURN",
+  "gap_audit_completed": true,
+  "passed": true,
+  "checks": [
+    {
+      "id": "calculate_global_estimate_tool_exists",
+      "passed": true,
+      "evidence": "builtInAiToolRegistry.ts"
+    },
+    {
+      "id": "tool_reachable_from_built_in_ai",
+      "passed": true,
+      "evidence": "builtInAiIngress.ts"
+    },
+    {
+      "id": "global_estimate_validator_exists",
+      "passed": true,
+      "evidence": "validateAiEstimateCoreResult.ts"
+    },
+    {
+      "id": "unfinished_cases_manifest_exists",
+      "passed": true,
+      "evidence": "unfinishedAiEstimateCases.ts"
+    },
+    {
+      "id": "formatter_uses_structured_result",
+      "passed": true,
+      "evidence": "globalEstimateAnswerFormatter.ts"
+    },
+    {
+      "id": "request_uses_structured_estimate",
+      "passed": true,
+      "evidence": "consumer repair request integration"
+    },
+    {
+      "id": "pdf_action_receives_structured_payload",
+      "passed": true,
+      "evidence": "estimatePdfModelMapper.ts"
+    },
+    {
+      "id": "source_evidence_tied_to_rows",
+      "passed": true,
+      "evidence": "globalEstimateCalculator.ts"
+    },
+    {
+      "id": "tax_rule_or_warning_available",
+      "passed": true,
+      "evidence": "globalTaxEngine.ts"
+    },
+    {
+      "id": "no_screen_local_calculation_marker",
+      "passed": true,
+      "evidence": "static scan"
+    },
+    {
+      "id": "tests_exist",
+      "passed": true,
+      "evidence": "tests/aiEstimateCore"
+    },
+    {
+      "id": "web_tests_exist",
+      "passed": true,
+      "evidence": "tests/e2e/aiEstimateCoreCompletion.web.spec.ts"
+    },
+    {
+      "id": "android_emulator_tests_exist",
+      "passed": true,
+      "evidence": "scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts"
+    },
+    {
+      "id": "release_guard_includes_proof",
+      "passed": true,
+      "evidence": "scripts/release/releaseGuard.shared.ts"
+    }
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

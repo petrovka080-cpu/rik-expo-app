@@ -1,0 +1,5920 @@
+[
+  {
+    "id": "001",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "сделай мне смету на асфальтирование на 1000 кв м",
+    "expectedWorkKey": "asphalt_paving",
+    "actualWorkKey": "asphalt_paving",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_cd4ff6a8",
+      "input": "сделай мне смету на асфальтирование на 1000 кв м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "asphalt_paving",
+      "category": "roadworks",
+      "volume": 1000,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "002",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "хочу уложить ковролин на 100 кв м",
+    "expectedWorkKey": "carpet_laying",
+    "actualWorkKey": "carpet_laying",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_fac065a1",
+      "input": "хочу уложить ковролин на 100 кв м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "carpet_laying",
+      "category": "flooring",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "003",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "смета на перегородку из ГКЛ 60 м²",
+    "expectedWorkKey": "drywall_partition",
+    "actualWorkKey": "drywall_partition",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_516cfb7f",
+      "input": "смета на перегородку из ГКЛ 60 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "drywall_partition",
+      "category": "drywall",
+      "volume": 60,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "004",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "смету на установку ГКЛ на стены 352 кв м",
+    "expectedWorkKey": "drywall_wall_cladding",
+    "actualWorkKey": "drywall_wall_cladding",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_62efef65",
+      "input": "смету на установку ГКЛ на стены 352 кв м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "drywall_wall_cladding",
+      "category": "ceiling",
+      "volume": 352,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "005",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "дай смету на устройство двускатной крыши основание 100 кв метров",
+    "expectedWorkKey": "gable_roof_installation",
+    "actualWorkKey": "gable_roof_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_e00e220c",
+      "input": "дай смету на устройство двускатной крыши основание 100 кв метров",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "gable_roof_installation",
+      "category": "roofing",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "006",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "дай смету на кладку кирпича 74 кв метров",
+    "expectedWorkKey": "brick_masonry",
+    "actualWorkKey": "brick_masonry",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_1e976075",
+      "input": "дай смету на кладку кирпича 74 кв метров",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "brick_masonry",
+      "category": "masonry",
+      "volume": 74,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "007",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "смета на укладку кафельной плитки на пол 174 кв м",
+    "expectedWorkKey": "ceramic_tile_floor_laying",
+    "actualWorkKey": "ceramic_tile_floor_laying",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_85a22cc3",
+      "input": "смета на укладку кафельной плитки на пол 174 кв м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "ceramic_tile_floor_laying",
+      "category": "tile",
+      "volume": 174,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "008",
+    "priority": "P0",
+    "route": "chat",
+    "prompt": "дай смету на укладку ламината 100 м²",
+    "expectedWorkKey": "laminate_laying",
+    "actualWorkKey": "laminate_laying",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_3fabdd1b",
+      "input": "дай смету на укладку ламината 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "laminate_laying",
+      "category": "flooring",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "009",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на штукатурка стен 120 м²",
+    "expectedWorkKey": "wall_plastering",
+    "actualWorkKey": "wall_plastering",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_68ab892d",
+      "input": "смета на штукатурка стен 120 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "wall_plastering",
+      "category": "plastering",
+      "volume": 120,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "010",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на шпаклёвка стен 100 м²",
+    "expectedWorkKey": "wall_putty",
+    "actualWorkKey": "wall_putty",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a6a01274",
+      "input": "смета на шпаклёвка стен 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "wall_putty",
+      "category": "putty",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "011",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на покраска стен 80 м²",
+    "expectedWorkKey": "wall_painting",
+    "actualWorkKey": "wall_painting",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_26891542",
+      "input": "смета на покраска стен 80 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "wall_painting",
+      "category": "painting",
+      "volume": 80,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "012",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на поклейка обоев 70 м²",
+    "expectedWorkKey": "wallpaper_installation",
+    "actualWorkKey": "wallpaper_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d899f078",
+      "input": "смета на поклейка обоев 70 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "wallpaper_installation",
+      "category": "wall_finishing",
+      "volume": 70,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "013",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на цементная стяжка пола 90 м²",
+    "expectedWorkKey": "floor_screed",
+    "actualWorkKey": "floor_screed",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_4facc24b",
+      "input": "смета на цементная стяжка пола 90 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "floor_screed",
+      "category": "flooring",
+      "volume": 90,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "014",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на наливной пол 50 м²",
+    "expectedWorkKey": "self_leveling_floor",
+    "actualWorkKey": "self_leveling_floor",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_e7206ae6",
+      "input": "смета на наливной пол 50 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "self_leveling_floor",
+      "category": "flooring",
+      "volume": 50,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "015",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на bathroom_waterproofing 30 м²",
+    "expectedWorkKey": "bathroom_waterproofing",
+    "actualWorkKey": "bathroom_waterproofing",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_28ca8296",
+      "input": "смета на bathroom_waterproofing 30 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "bathroom_waterproofing",
+      "category": "waterproofing",
+      "volume": 30,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "016",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на foundation_waterproofing 70 м²",
+    "expectedWorkKey": "foundation_waterproofing",
+    "actualWorkKey": "foundation_waterproofing",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_caf2883f",
+      "input": "смета на foundation_waterproofing 70 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "foundation_waterproofing",
+      "category": "waterproofing",
+      "volume": 70,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "017",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на ремонт крыши 70 м²",
+    "expectedWorkKey": "roof_repair",
+    "actualWorkKey": "roof_repair",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_1bcf7487",
+      "input": "смета на ремонт крыши 70 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "roof_repair",
+      "category": "roofing",
+      "volume": 70,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "018",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на кровля металлочерепицей 180 м²",
+    "expectedWorkKey": "metal_roofing",
+    "actualWorkKey": "metal_roofing",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_2b8b5e9d",
+      "input": "смета на кровля металлочерепицей 180 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "metal_roofing",
+      "category": "roofing",
+      "volume": 180,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "019",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на мягкая кровля 150 м²",
+    "expectedWorkKey": "soft_roofing",
+    "actualWorkKey": "soft_roofing",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a0bed50e",
+      "input": "смета на мягкая кровля 150 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "soft_roofing",
+      "category": "roofing",
+      "volume": 150,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "020",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на утепление фасада 200 м²",
+    "expectedWorkKey": "facade_insulation",
+    "actualWorkKey": "facade_insulation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a62091cb",
+      "input": "смета на утепление фасада 200 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "facade_insulation",
+      "category": "facade",
+      "volume": 200,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "021",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на штукатурка фасада 180 м²",
+    "expectedWorkKey": "facade_plaster",
+    "actualWorkKey": "facade_plaster",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_ccdc5805",
+      "input": "смета на штукатурка фасада 180 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "facade_plaster",
+      "category": "facade",
+      "volume": 180,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "022",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на кладка блока 120 м²",
+    "expectedWorkKey": "block_masonry",
+    "actualWorkKey": "block_masonry",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a6577ca9",
+      "input": "смета на кладка блока 120 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "block_masonry",
+      "category": "masonry",
+      "volume": 120,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "023",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на кладка газоблока 100 м²",
+    "expectedWorkKey": "aerated_block_masonry",
+    "actualWorkKey": "aerated_block_masonry",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_1aad8bab",
+      "input": "смета на кладка газоблока 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "aerated_block_masonry",
+      "category": "masonry",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "024",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на бетонная плита 200 м²",
+    "expectedWorkKey": "concrete_slab",
+    "actualWorkKey": "concrete_slab",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d18dd762",
+      "input": "смета на бетонная плита 200 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "concrete_slab",
+      "category": "concrete",
+      "volume": 200,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "025",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на ленточный фундамент 50 пог. м",
+    "expectedWorkKey": "strip_foundation",
+    "actualWorkKey": "strip_foundation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_459e3ebd",
+      "input": "смета на ленточный фундамент 50 пог. м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "strip_foundation",
+      "category": "foundation",
+      "volume": 50,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "026",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на армирование каркаса дома высота 5 м",
+    "expectedWorkKey": "rebar_installation",
+    "actualWorkKey": "rebar_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_2ea6897f",
+      "input": "смета на армирование каркаса дома высота 5 м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "rebar_installation",
+      "category": "concrete",
+      "volume": 5,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "027",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на бетонные колонны 16 шт высота 5 м",
+    "expectedWorkKey": "concrete_columns",
+    "actualWorkKey": "concrete_columns",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d874e499",
+      "input": "смета на бетонные колонны 16 шт высота 5 м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "concrete_columns",
+      "category": "concrete",
+      "volume": 16,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "028",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на замена труб 40 пог. м",
+    "expectedWorkKey": "pipe_replacement",
+    "actualWorkKey": "pipe_replacement",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_73d52188",
+      "input": "смета на замена труб 40 пог. м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "pipe_replacement",
+      "category": "plumbing",
+      "volume": 40,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "029",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на черновая сантехника квартиры 1 компл.",
+    "expectedWorkKey": "plumbing_rough_in",
+    "actualWorkKey": "plumbing_rough_in",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_245c3bfe",
+      "input": "смета на черновая сантехника квартиры 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "plumbing_rough_in",
+      "category": "plumbing",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "030",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на установка унитазов 2 шт",
+    "expectedWorkKey": "toilet_installation",
+    "actualWorkKey": "toilet_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_cb0a044b",
+      "input": "смета на установка унитазов 2 шт",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "toilet_installation",
+      "category": "plumbing",
+      "volume": 2,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "031",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на электропроводка квартиры 80 м²",
+    "expectedWorkKey": "electrical_wiring",
+    "actualWorkKey": "electrical_wiring",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d0b4d112",
+      "input": "смета на электропроводка квартиры 80 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "electrical_wiring",
+      "category": "electrical",
+      "volume": 80,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "032",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на установка 20 розеток",
+    "expectedWorkKey": "socket_installation",
+    "actualWorkKey": "socket_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_95cde5fe",
+      "input": "смета на установка 20 розеток",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "socket_installation",
+      "category": "electrical",
+      "volume": 20,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "033",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на электрощит 1 шт",
+    "expectedWorkKey": "distribution_panel_installation",
+    "actualWorkKey": "distribution_panel_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_193413aa",
+      "input": "смета на электрощит 1 шт",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "distribution_panel_installation",
+      "category": "electrical",
+      "volume": 1,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "034",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на вентиляция 120 м²",
+    "expectedWorkKey": "ventilation_installation",
+    "actualWorkKey": "ventilation_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_83306c35",
+      "input": "смета на вентиляция 120 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "ventilation_installation",
+      "category": "heating_hvac",
+      "volume": 120,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "035",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на кондиционеры 4 шт",
+    "expectedWorkKey": "air_conditioner_installation",
+    "actualWorkKey": "air_conditioner_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_7b3a593b",
+      "input": "смета на кондиционеры 4 шт",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "air_conditioner_installation",
+      "category": "heating_hvac",
+      "volume": 4,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "036",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на установка пластикового окна 1.5 на 1.5 м",
+    "expectedWorkKey": "window_installation",
+    "actualWorkKey": "window_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_9b13e3dc",
+      "input": "смета на установка пластикового окна 1.5 на 1.5 м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "window_installation",
+      "category": "doors_windows",
+      "volume": 1.5,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "037",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на установка 5 межкомнатных дверей",
+    "expectedWorkKey": "interior_door_installation",
+    "actualWorkKey": "interior_door_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_c37ded41",
+      "input": "смета на установка 5 межкомнатных дверей",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "interior_door_installation",
+      "category": "doors_windows",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "038",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на demolition_tiles 50 м²",
+    "expectedWorkKey": "demolition_tiles",
+    "actualWorkKey": "demolition_tiles",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a3f68b0e",
+      "input": "смета на demolition_tiles 50 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "demolition_tiles",
+      "category": "demolition",
+      "volume": 50,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "039",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на демонтаж пола 100 м²",
+    "expectedWorkKey": "flooring_demolition",
+    "actualWorkKey": "flooring_demolition",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_22666e58",
+      "input": "смета на демонтаж пола 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "flooring_demolition",
+      "category": "demolition",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "040",
+    "priority": "P1",
+    "route": "chat",
+    "prompt": "смета на вывоз строительного мусора 10 т",
+    "expectedWorkKey": "debris_removal",
+    "actualWorkKey": "debris_removal",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d2d93caf",
+      "input": "смета на вывоз строительного мусора 10 т",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "debris_removal",
+      "category": "cleaning",
+      "volume": 10,
+      "unit": "ton",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "041",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на тротуарная плитка 500 м²",
+    "expectedWorkKey": "paving_slabs",
+    "actualWorkKey": "paving_slabs",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_befeb5e9",
+      "input": "смета на тротуарная плитка 500 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "paving_slabs",
+      "category": "roadworks",
+      "volume": 500,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "042",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на установка бордюра 200 пог. м",
+    "expectedWorkKey": "curb_installation",
+    "actualWorkKey": "curb_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_c1ed6d45",
+      "input": "смета на установка бордюра 200 пог. м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "curb_installation",
+      "category": "roadworks",
+      "volume": 200,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "043",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на ливнёвка парковки 1000 м²",
+    "expectedWorkKey": "drainage_lot",
+    "actualWorkKey": "drainage_lot",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_1cac245c",
+      "input": "смета на ливнёвка парковки 1000 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "drainage_lot",
+      "category": "roadworks",
+      "volume": 1000,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "044",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на планировка участка 800 м²",
+    "expectedWorkKey": "landscaping_leveling",
+    "actualWorkKey": "landscaping_leveling",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_ba7a6b67",
+      "input": "смета на планировка участка 800 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "landscaping_leveling",
+      "category": "landscaping",
+      "volume": 800,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "045",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на газон 500 м²",
+    "expectedWorkKey": "lawn_installation",
+    "actualWorkKey": "lawn_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_f663c361",
+      "input": "смета на газон 500 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "lawn_installation",
+      "category": "landscaping",
+      "volume": 500,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "046",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на забор 100 пог. м",
+    "expectedWorkKey": "fence_installation",
+    "actualWorkKey": "fence_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_88285b64",
+      "input": "смета на забор 100 пог. м",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "fence_installation",
+      "category": "landscaping",
+      "volume": 100,
+      "unit": "linear_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "047",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на сварной каркас 500 кг",
+    "expectedWorkKey": "welded_frame",
+    "actualWorkKey": "welded_frame",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_3417c161",
+      "input": "смета на сварной каркас 500 кг",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "welded_frame",
+      "category": "metalworks",
+      "volume": 500,
+      "unit": "kg",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "048",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на металлическая лестница 1 шт",
+    "expectedWorkKey": "metal_stairs",
+    "actualWorkKey": "metal_stairs",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_bb597ae7",
+      "input": "смета на металлическая лестница 1 шт",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "metal_stairs",
+      "category": "metalworks",
+      "volume": 1,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "049",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на навес 30 м²",
+    "expectedWorkKey": "canopy_installation",
+    "actualWorkKey": "canopy_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_9bfce5eb",
+      "input": "смета на навес 30 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "canopy_installation",
+      "category": "metalworks",
+      "volume": 30,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "050",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на timber_deck 35 м²",
+    "expectedWorkKey": "timber_deck",
+    "actualWorkKey": "timber_deck",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_5345cf0c",
+      "input": "смета на timber_deck 35 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "timber_deck",
+      "category": "carpentry",
+      "volume": 35,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "051",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на террасная доска 50 м²",
+    "expectedWorkKey": "terrace_board",
+    "actualWorkKey": "terrace_board",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_45640ce7",
+      "input": "смета на террасная доска 50 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "terrace_board",
+      "category": "carpentry",
+      "volume": 50,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "052",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на construction_cleaning 120 м²",
+    "expectedWorkKey": "construction_cleaning",
+    "actualWorkKey": "construction_cleaning",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_25de6439",
+      "input": "смета на construction_cleaning 120 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "construction_cleaning",
+      "category": "cleaning",
+      "volume": 120,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "053",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на доставка и подъём материалов 5 т",
+    "expectedWorkKey": "delivery_lifting",
+    "actualWorkKey": "delivery_lifting",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_b97dcbe9",
+      "input": "смета на доставка и подъём материалов 5 т",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "delivery_lifting",
+      "category": "delivery_equipment",
+      "volume": 5,
+      "unit": "ton",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "054",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на дизайн-проект квартиры 80 м²",
+    "expectedWorkKey": "design_project",
+    "actualWorkKey": "design_project",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_10fdb754",
+      "input": "смета на дизайн-проект квартиры 80 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "design_project",
+      "category": "documents_design",
+      "volume": 80,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "055",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на закупочный список ремонта 100 м²",
+    "expectedWorkKey": "procurement_list",
+    "actualWorkKey": "procurement_list",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_fc3e8acc",
+      "input": "смета на закупочный список ремонта 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "procurement_list",
+      "category": "wall_finishing",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "056",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на расчёт материалов 1 компл.",
+    "expectedWorkKey": "material_takeoff",
+    "actualWorkKey": "material_takeoff",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_3620740b",
+      "input": "смета на расчёт материалов 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "material_takeoff",
+      "category": "documents_design",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "057",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "сметная документация 1 компл.",
+    "expectedWorkKey": "estimate_documentation",
+    "actualWorkKey": "estimate_documentation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_60c1c1c3",
+      "input": "сметная документация 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "estimate_documentation",
+      "category": "documents_design",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "058",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на проект кровли 120 м²",
+    "expectedWorkKey": "roof_project",
+    "actualWorkKey": "roof_project",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_13c4f609",
+      "input": "смета на проект кровли 120 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "roof_project",
+      "category": "roofing",
+      "volume": 120,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "059",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на проект фундамента 100 м²",
+    "expectedWorkKey": "foundation_project",
+    "actualWorkKey": "foundation_project",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_81778106",
+      "input": "смета на проект фундамента 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "foundation_project",
+      "category": "concrete",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "060",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на проект электрики 80 м²",
+    "expectedWorkKey": "electrical_project",
+    "actualWorkKey": "electrical_project",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_e614e43c",
+      "input": "смета на проект электрики 80 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "electrical_project",
+      "category": "electrical",
+      "volume": 80,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "061",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на проект HVAC 100 м²",
+    "expectedWorkKey": "hvac_project",
+    "actualWorkKey": "hvac_project",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_533b33ce",
+      "input": "смета на проект HVAC 100 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "hvac_project",
+      "category": "documents_design",
+      "volume": 100,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "062",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на ванная под ключ 6 м²",
+    "expectedWorkKey": "bathroom_turnkey",
+    "actualWorkKey": "bathroom_turnkey",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_220117d1",
+      "input": "смета на ванная под ключ 6 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "bathroom_turnkey",
+      "category": "wall_finishing",
+      "volume": 6,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "063",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на ремонт квартиры под ключ 80 м²",
+    "expectedWorkKey": "apartment_turnkey_renovation",
+    "actualWorkKey": "apartment_turnkey_renovation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_5b5e7bcf",
+      "input": "смета на ремонт квартиры под ключ 80 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "apartment_turnkey_renovation",
+      "category": "wall_finishing",
+      "volume": 80,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "064",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на ремонт дома под ключ 150 м²",
+    "expectedWorkKey": "house_turnkey_renovation",
+    "actualWorkKey": "house_turnkey_renovation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_f9e35f6e",
+      "input": "смета на ремонт дома под ключ 150 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "house_turnkey_renovation",
+      "category": "wall_finishing",
+      "volume": 150,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "065",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на офисная отделка под ключ 300 м²",
+    "expectedWorkKey": "office_fitout",
+    "actualWorkKey": "office_fitout",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_3cc7b43e",
+      "input": "смета на офисная отделка под ключ 300 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "office_fitout",
+      "category": "wall_finishing",
+      "volume": 300,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "066",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на отделка ресторана 200 м²",
+    "expectedWorkKey": "restaurant_fitout",
+    "actualWorkKey": "restaurant_fitout",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d7fdb326",
+      "input": "смета на отделка ресторана 200 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "restaurant_fitout",
+      "category": "wall_finishing",
+      "volume": 200,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "067",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на серверная комната 30 м²",
+    "expectedWorkKey": "server_room_fitout",
+    "actualWorkKey": "server_room_fitout",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_17b11164",
+      "input": "смета на серверная комната 30 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "server_room_fitout",
+      "category": "wall_finishing",
+      "volume": 30,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "068",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на solar_panel_installation 1 комплект",
+    "expectedWorkKey": "solar_panel_installation",
+    "actualWorkKey": "solar_panel_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_ee1316ac",
+      "input": "смета на solar_panel_installation 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "solar_panel_installation",
+      "category": "electrical",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "069",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на battery_storage_installation 1 комплект",
+    "expectedWorkKey": "battery_storage_installation",
+    "actualWorkKey": "battery_storage_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_d7a7be6f",
+      "input": "смета на battery_storage_installation 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "battery_storage_installation",
+      "category": "electrical",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "070",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на подключение генератора 1 компл.",
+    "expectedWorkKey": "generator_connection",
+    "actualWorkKey": "generator_connection",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_a79656ae",
+      "input": "смета на подключение генератора 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "generator_connection",
+      "category": "electrical",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "071",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на обвязка котельной 1 компл.",
+    "expectedWorkKey": "boiler_room_piping",
+    "actualWorkKey": "boiler_room_piping",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_8b5d98b5",
+      "input": "смета на обвязка котельной 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "boiler_room_piping",
+      "category": "heating_hvac",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "072",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на mini_chp_preparation 1 комплект",
+    "expectedWorkKey": "mini_chp_preparation",
+    "actualWorkKey": "mini_chp_preparation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_c7d0efe4",
+      "input": "смета на mini_chp_preparation 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "mini_chp_preparation",
+      "category": "heating_hvac",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "073",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на micro_hydro_preparation 1 комплект",
+    "expectedWorkKey": "micro_hydro_preparation",
+    "actualWorkKey": "micro_hydro_preparation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_425a18c4",
+      "input": "смета на micro_hydro_preparation 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "micro_hydro_preparation",
+      "category": "concrete",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "074",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на greenhouse_installation 60 м²",
+    "expectedWorkKey": "greenhouse_installation",
+    "actualWorkKey": "greenhouse_installation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_6b0f7f3f",
+      "input": "смета на greenhouse_installation 60 м²",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "greenhouse_installation",
+      "category": "metalworks",
+      "volume": 60,
+      "unit": "sq_m",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "075",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на garden_irrigation 1 комплект",
+    "expectedWorkKey": "garden_irrigation",
+    "actualWorkKey": "garden_irrigation",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_78f82559",
+      "input": "смета на garden_irrigation 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "garden_irrigation",
+      "category": "landscaping",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "076",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на furniture_assembly 1 комплект",
+    "expectedWorkKey": "furniture_assembly",
+    "actualWorkKey": "furniture_assembly",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_95bdfc2c",
+      "input": "смета на furniture_assembly 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "furniture_assembly",
+      "category": "carpentry",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "077",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на встроенный шкаф 1 шт",
+    "expectedWorkKey": "built_in_wardrobe",
+    "actualWorkKey": "built_in_wardrobe",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_c158444e",
+      "input": "смета на встроенный шкаф 1 шт",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "built_in_wardrobe",
+      "category": "carpentry",
+      "volume": 1,
+      "unit": "pcs",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "078",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на кухонные шкафы 1 компл.",
+    "expectedWorkKey": "kitchen_cabinet_install",
+    "actualWorkKey": "kitchen_cabinet_install",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_75edc7bf",
+      "input": "смета на кухонные шкафы 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "kitchen_cabinet_install",
+      "category": "carpentry",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "079",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на умный дом базовый 1 компл.",
+    "expectedWorkKey": "smart_home_basic",
+    "actualWorkKey": "smart_home_basic",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_0bd0fe64",
+      "input": "смета на умный дом базовый 1 компл.",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "smart_home_basic",
+      "category": "electrical",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  },
+  {
+    "id": "080",
+    "priority": "P2",
+    "route": "chat",
+    "prompt": "смета на estimate_to_pdf 1 комплект",
+    "expectedWorkKey": "estimate_to_pdf",
+    "actualWorkKey": "estimate_to_pdf",
+    "selectedTool": "calculate_global_estimate",
+    "backendCalled": true,
+    "validation": {
+      "passed": true,
+      "failures": []
+    },
+    "runtimeTrace": {
+      "traceId": "built_in_ai_21219dac",
+      "input": "смета на estimate_to_pdf 1 комплект",
+      "screenContext": "foreman",
+      "detectedIntent": "estimate",
+      "selectedRoute": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "workKey": "estimate_to_pdf",
+      "category": "delivery_equipment",
+      "volume": 1,
+      "unit": "set",
+      "backendCalled": true,
+      "outputContract": {
+        "hasTable": true,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasSources": true,
+        "hasPdfAction": true
+      }
+    },
+    "actions": [
+      {
+        "id": "make_pdf",
+        "labelRu": "Сделать PDF",
+        "toolName": "generate_estimate_pdf",
+        "visible": true
+      },
+      {
+        "id": "save_estimate",
+        "labelRu": "Сохранить в сметы",
+        "visible": true
+      },
+      {
+        "id": "create_request",
+        "labelRu": "Создать заявку",
+        "toolName": "create_consumer_repair_draft",
+        "visible": true
+      },
+      {
+        "id": "clarify_city",
+        "labelRu": "Уточнить город",
+        "visible": true
+      },
+      {
+        "id": "refresh_prices",
+        "labelRu": "Обновить цены",
+        "visible": true
+      },
+      {
+        "id": "send_to_director",
+        "labelRu": "Передать директору",
+        "visible": true
+      }
+    ],
+    "pdfPayload": {
+      "mimeType": "application/pdf",
+      "uriPrefix": "data:application/pdf;base64,JVBE",
+      "valid": true,
+      "failures": []
+    }
+  }
+]

@@ -88,6 +88,59 @@ const BASE_GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   { workKey: "other_construction_work", category: "other", names: { ru: "Строительные работы", en: "Construction work" }, defaultMeasureUnit: "sq_m" },
 ];
 
+const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  {
+    workKey: "solar_panel_installation",
+    category: "electrical",
+    names: { ru: "Монтаж солнечных панелей", en: "Solar panel installation" },
+    defaultMeasureUnit: "set",
+    dangerous: true,
+    safetyReviewRequired: true,
+  },
+  {
+    workKey: "battery_storage_installation",
+    category: "electrical",
+    names: { ru: "Монтаж аккумуляторного накопителя", en: "Battery storage installation" },
+    defaultMeasureUnit: "set",
+    dangerous: true,
+    safetyReviewRequired: true,
+  },
+  {
+    workKey: "mini_chp_preparation",
+    category: "heating_hvac",
+    names: { ru: "Подготовка под мини-ТЭЦ", en: "Mini CHP preparation" },
+    defaultMeasureUnit: "set",
+    dangerous: true,
+    safetyReviewRequired: true,
+  },
+  {
+    workKey: "micro_hydro_preparation",
+    category: "concrete",
+    names: { ru: "Подготовка под микро-ГЭС", en: "Micro hydro preparation" },
+    defaultMeasureUnit: "set",
+    dangerous: true,
+    safetyReviewRequired: true,
+  },
+  {
+    workKey: "greenhouse_installation",
+    category: "metalworks",
+    names: { ru: "Монтаж теплицы", en: "Greenhouse installation" },
+    defaultMeasureUnit: "sq_m",
+  },
+  {
+    workKey: "garden_irrigation",
+    category: "landscaping",
+    names: { ru: "Садовый полив", en: "Garden irrigation" },
+    defaultMeasureUnit: "set",
+  },
+  {
+    workKey: "furniture_assembly",
+    category: "carpentry",
+    names: { ru: "Сборка мебели", en: "Furniture assembly" },
+    defaultMeasureUnit: "set",
+  },
+];
+
 const GLOBAL_1000_WORK_TYPE_KEYS = new Set(BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_150_WORK_TYPE_KEYS = new Set(GLOBAL_150_WORK_TYPE_DEFINITIONS.map((definition) => definition.workKey));
 const GLOBAL_1000_WORK_TYPE_SAFETY_BY_KEY = new Map(
@@ -111,6 +164,7 @@ function merge1000Safety(definition: GlobalWorkTypeDefinition): GlobalWorkTypeDe
 }
 
 export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
+  ...CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS,
   ...GLOBAL_150_WORK_TYPE_DEFINITIONS.map(merge1000Safety),
   ...BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS.filter((definition) => !GLOBAL_150_WORK_TYPE_KEYS.has(definition.workKey)),
   ...BASE_GLOBAL_WORK_TYPE_DEFINITIONS
@@ -119,6 +173,32 @@ export const GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] =
 ];
 
 const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
+  { workKey: "solar_panel_installation", language: "ru", alias: "солнечные панели" },
+  { workKey: "solar_panel_installation", language: "ru", alias: "solar_panel_installation" },
+  { workKey: "solar_panel_installation", language: "en", alias: "solar panel installation" },
+  { workKey: "battery_storage_installation", language: "ru", alias: "аккумуляторный накопитель" },
+  { workKey: "battery_storage_installation", language: "ru", alias: "battery_storage_installation" },
+  { workKey: "battery_storage_installation", language: "en", alias: "battery storage installation" },
+  { workKey: "mini_chp_preparation", language: "ru", alias: "мини-тэц" },
+  { workKey: "mini_chp_preparation", language: "ru", alias: "mini_chp_preparation" },
+  { workKey: "mini_chp_preparation", language: "en", alias: "mini chp preparation" },
+  { workKey: "micro_hydro_preparation", language: "ru", alias: "микро-гэс" },
+  { workKey: "micro_hydro_preparation", language: "ru", alias: "micro_hydro_preparation" },
+  { workKey: "micro_hydro_preparation", language: "en", alias: "micro hydro preparation" },
+  { workKey: "greenhouse_installation", language: "ru", alias: "теплица" },
+  { workKey: "greenhouse_installation", language: "ru", alias: "greenhouse_installation" },
+  { workKey: "greenhouse_installation", language: "en", alias: "greenhouse installation" },
+  { workKey: "garden_irrigation", language: "ru", alias: "садовый полив" },
+  { workKey: "garden_irrigation", language: "ru", alias: "garden_irrigation" },
+  { workKey: "garden_irrigation", language: "en", alias: "garden irrigation" },
+  { workKey: "furniture_assembly", language: "ru", alias: "сборка мебели" },
+  { workKey: "furniture_assembly", language: "ru", alias: "furniture_assembly" },
+  { workKey: "furniture_assembly", language: "en", alias: "furniture assembly" },
+  { workKey: "bathroom_waterproofing", language: "ru", alias: "bathroom_waterproofing" },
+  { workKey: "foundation_waterproofing", language: "ru", alias: "foundation_waterproofing" },
+  { workKey: "demolition_tiles", language: "ru", alias: "demolition_tiles" },
+  { workKey: "timber_deck", language: "ru", alias: "timber_deck" },
+  { workKey: "estimate_to_pdf", language: "ru", alias: "estimate_to_pdf" },
   { workKey: "laminate_laying", language: "ru", alias: "укладка ламината" },
   { workKey: "laminate_laying", language: "ru", alias: "ламинат" },
   { workKey: "laminate_laying", language: "en", alias: "laminate installation" },
@@ -138,6 +218,10 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "wall_painting", language: "en", alias: "paint walls" },
   { workKey: "wall_painting", language: "fr", alias: "peinture murs" },
   { workKey: "drywall_partition", language: "en", alias: "drywall installation" },
+  { workKey: "drywall_wall_cladding", language: "ru", alias: "гкл на стены" },
+  { workKey: "drywall_wall_cladding", language: "ru", alias: "установка гкл на стены" },
+  { workKey: "drywall_wall_cladding", language: "ru", alias: "обшивка стен гкл" },
+  { workKey: "drywall_wall_cladding", language: "en", alias: "drywall wall cladding" },
   { workKey: "drywall_partition", language: "ru", alias: "гипсокартон" },
   { workKey: "drywall_partition", language: "ru", alias: "гкл" },
   { workKey: "drywall_partition", language: "ru", alias: "установка гкл" },
@@ -198,6 +282,26 @@ export const GLOBAL_WORK_ALIASES: readonly GlobalWorkAlias[] = RAW_ALIASES.map((
   ...alias,
   normalizedAlias: normalizeGlobalWorkAlias(alias.alias),
 }));
+
+const SAFETY_REVIEW_CATEGORIES = new Set<GlobalWorkCategory>([
+  "electrical",
+  "heating_hvac",
+  "plumbing",
+  "roofing",
+  "foundation",
+  "concrete",
+  "demolition",
+]);
+
+const SAFETY_REVIEW_WORK_KEYS = new Set([
+  "server_room_fitout",
+  "generator_connection",
+  "boiler_room_piping",
+  "mini_chp_preparation",
+  "micro_hydro_preparation",
+  "battery_storage_installation",
+  "solar_panel_installation",
+]);
 
 export type GlobalResolvedWorkType = {
   workKey: string;
@@ -278,7 +382,8 @@ export function resolveGlobalWorkType(input: Pick<GlobalEstimateInput, "text" | 
     category: definition.category,
     title: titleFor(definition, input.language ?? "en"),
     confidence: fallback.confidence,
-    dangerous: definition.dangerous === true,
-    safetyReviewRequired: definition.safetyReviewRequired === true,
+    dangerous: definition.dangerous === true || SAFETY_REVIEW_CATEGORIES.has(definition.category) || SAFETY_REVIEW_WORK_KEYS.has(definition.workKey),
+    safetyReviewRequired:
+      definition.safetyReviewRequired === true || SAFETY_REVIEW_CATEGORIES.has(definition.category) || SAFETY_REVIEW_WORK_KEYS.has(definition.workKey),
   };
 }

@@ -1,0 +1,162 @@
+[
+  {
+    "traceId": "built_in_ai_cd4ff6a8",
+    "input": "сделай мне смету на асфальтирование на 1000 кв м",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "asphalt_paving",
+    "category": "roadworks",
+    "volume": 1000,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_cd4ff6a8",
+    "input": "сделай мне смету на асфальтирование на 1000 кв м",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "asphalt_paving",
+    "category": "roadworks",
+    "volume": 1000,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_f31d4757",
+    "input": "сделай мне смету на асфальтирование на 1000 кв м",
+    "screenContext": "request",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "asphalt_paving",
+    "category": "roadworks",
+    "volume": 1000,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_fac065a1",
+    "input": "хочу уложить ковролин на 100 кв м",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "carpet_laying",
+    "category": "flooring",
+    "volume": 100,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_fac065a1",
+    "input": "хочу уложить ковролин на 100 кв м",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "carpet_laying",
+    "category": "flooring",
+    "volume": 100,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_6f87acd2",
+    "input": "хочу уложить ковролин на 100 кв м",
+    "screenContext": "request",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "carpet_laying",
+    "category": "flooring",
+    "volume": 100,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_e00e220c",
+    "input": "дай смету на устройство двускатной крыши основание 100 кв метров",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "gable_roof_installation",
+    "category": "roofing",
+    "volume": 100,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  },
+  {
+    "traceId": "built_in_ai_1e976075",
+    "input": "дай смету на кладку кирпича 74 кв метров",
+    "screenContext": "foreman",
+    "detectedIntent": "estimate",
+    "selectedRoute": "estimate",
+    "selectedTool": "calculate_global_estimate",
+    "workKey": "brick_masonry",
+    "category": "masonry",
+    "volume": 74,
+    "unit": "sq_m",
+    "backendCalled": true,
+    "outputContract": {
+      "hasTable": true,
+      "hasMaterials": true,
+      "hasLabor": true,
+      "hasSources": true,
+      "hasPdfAction": true
+    }
+  }
+]

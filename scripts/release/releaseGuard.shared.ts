@@ -47,6 +47,7 @@ export type ReleaseGateName =
   | "global-estimate-data-ops-coverage-proof"
   | "ai-estimate-to-pdf-proof"
   | "live-ai-estimate-pdf-reality-proof"
+  | "ai-estimate-core-completion-proof"
   | "consumer-estimate-tab-pdf-proof"
   | "bottom-nav-estimate-marketplace-plus-proof"
   | "ai-estimate-pdf-open-runtime-proof"
@@ -69,6 +70,11 @@ export type ReleaseGateName =
   | "ios-eas-update-native-impact-classifier"
   | "jest-run-in-band"
   | "50k-fixture-retention-cleanup-policy-proof"
+  | "green-claim-artifact-reconciliation-proof"
+  | "built-in-ai-live-acceptance-baseline-proof"
+  | "built-in-ai-150-work-types-proof"
+  | "built-in-ai-1000-work-types-proof"
+  | "built-in-ai-10000-work-types-proof"
   | "final-50k-92-external-live-proof-closeout"
   | "jest"
   | "git-diff-check";
@@ -277,6 +283,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "global-estimate-data-ops-coverage-proof", command: "npx tsx scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" },
   { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
   { name: "live-ai-estimate-pdf-reality-proof", command: "npx tsx scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" },
+  { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
   { name: "consumer-estimate-tab-pdf-proof", command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts" },
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
@@ -300,6 +307,11 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "jest-run-in-band", command: "npm test -- --runInBand" },
   { name: "git-diff-check", command: "git diff --check" },
   { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts" },
+  { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts" },
+  { name: "built-in-ai-live-acceptance-baseline-proof", command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts" },
+  { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
+  { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
+  { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
   { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },
 ];
 

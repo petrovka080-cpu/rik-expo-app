@@ -610,6 +610,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
     normalized.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
+    normalized.startsWith("artifacts/S_AI_ESTIMATE_CORE_COMPLETION_") ||
     normalized.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_BLOCKER_AUDIT_") ||

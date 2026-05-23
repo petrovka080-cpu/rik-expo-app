@@ -1132,6 +1132,8 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
   if (
     normalized.startsWith("scripts/ai/runAi") ||
     normalized.startsWith("scripts/e2e/runAi") ||
+    normalized === "scripts/e2e/runAndroidAiEstimateCoreCompletionSmoke.ts" ||
+    normalized === "scripts/audit/runAiEstimateCoreGapAudit.ts" ||
     normalized.startsWith("scripts/e2e/runMedia")
   ) {
     const knownWave = REQUIRED_WAVES.find((wave) => normalized === wave.proofRunner);
@@ -1146,6 +1148,8 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
   }
   if (
     normalized.startsWith("tests/ai/") ||
+    normalized.startsWith("tests/aiEstimateCore/") ||
+    normalized.startsWith("tests/routeParity/aiEstimateCore") ||
     normalized === "tests/documents" ||
     normalized.startsWith("tests/documents/") ||
     normalized === "tests/media" ||

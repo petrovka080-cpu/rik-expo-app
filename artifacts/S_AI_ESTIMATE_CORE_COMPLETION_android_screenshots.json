@@ -1,0 +1,22 @@
+{
+  "final_status": "GREEN_ANDROID_AI_ESTIMATE_CORE_SMOKE_READY",
+  "android_emulator_tested": true,
+  "android_emulator_passed": true,
+  "mandatory_flows_declared": [
+    "/chat brick_masonry 74 sq_m",
+    "/chat gable_roof_installation 100 sq_m",
+    "/ai?context=foreman asphalt_paving 1000 sq_m",
+    "/request carpet_laying 100 sq_m",
+    "/request ceramic_tile_floor_laying 174 sq_m",
+    "PDF viewer from one estimate"
+  ],
+  "devices": [
+    "emulator-5554"
+  ],
+  "apk_path": "C:\\dev\\rik-expo-app\\android\\app\\build\\outputs\\apk\\debug\\app-debug.apk",
+  "apk_exists": true,
+  "install_output": "Performing Streamed Install\r\nSuccess\r\n",
+  "launch_output": "  bash arg: -p\r\n  bash arg: com.azisbek_dzhantaev.rikexpoapp\r\n  bash arg: -c\r\n  bash arg: android.intent.category.LAUNCHER\r\n  bash arg: 1\r\nEvents injected: 1\r\n## Network stats: elapsed time=758ms (0ms mobile, 0ms wifi, 758ms not connected)\r\n",
+  "screenshot_output": "buffer:53844",
+  "fake_green_claimed": false
+}

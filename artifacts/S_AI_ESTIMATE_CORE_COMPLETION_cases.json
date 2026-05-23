@@ -1,0 +1,2272 @@
+[
+  {
+    "id": "001",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "ai_foreman",
+      "request",
+      "web",
+      "android"
+    ],
+    "promptRu": "сделай мне смету на асфальтирование на 1000 кв м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "asphalt_paving",
+    "expectedCategory": "roadworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1000,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "пес",
+      "щеб",
+      "битум",
+      "асфальтобетон",
+      "техник",
+      "уклад",
+      "уплотнен"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "002",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "request",
+      "web",
+      "android"
+    ],
+    "promptRu": "хочу уложить ковролин на 100 кв м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "carpet_laying",
+    "expectedCategory": "flooring",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 100,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "ковролин",
+      "подлож",
+      "клей",
+      "подготовка основания",
+      "укладка ковролина",
+      "подрез"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "003",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "ai_foreman",
+      "web"
+    ],
+    "promptRu": "смета на перегородку из ГКЛ 60 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "drywall_partition",
+    "expectedCategory": "drywall",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 60,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "листы гкл",
+      "направляющий профиль",
+      "стоечный профиль",
+      "креп",
+      "лента",
+      "шпакл",
+      "монтаж каркаса",
+      "обшивка"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "004",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "ai_foreman",
+      "web"
+    ],
+    "promptRu": "смету на установку ГКЛ на стены 352 кв м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "drywall_wall_cladding",
+    "expectedCategory": "ceiling_drywall",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 352,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "каркас",
+      "лист",
+      "креп",
+      "монтаж"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "005",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "web",
+      "android"
+    ],
+    "promptRu": "дай смету на устройство двускатной крыши основание 100 кв метров",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "gable_roof_installation",
+    "expectedCategory": "roofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 100,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "стропил",
+      "мауэрлат",
+      "гидроизоляц",
+      "обреш",
+      "кровельное покрытие",
+      "добор",
+      "монтаж стропильной",
+      "монтаж кровли"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "006",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "web",
+      "android"
+    ],
+    "promptRu": "дай смету на кладку кирпича 74 кв метров",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "brick_masonry",
+    "expectedCategory": "masonry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 74,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "кирпич",
+      "раствор",
+      "кладочная",
+      "армирован",
+      "кладка",
+      "расшив"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "007",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "web",
+      "android"
+    ],
+    "promptRu": "смета на укладку кафельной плитки на пол 174 кв м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "ceramic_tile_floor_laying",
+    "expectedCategory": "tile",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 174,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "плит",
+      "клей",
+      "затир",
+      "грунтов",
+      "уклад"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "008",
+    "priority": "P0",
+    "routeCoverage": [
+      "chat",
+      "web"
+    ],
+    "promptRu": "дай смету на укладку ламината 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "laminate_laying",
+    "expectedCategory": "flooring",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 100,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "ламинат",
+      "подлож",
+      "плинтус",
+      "грунтование",
+      "настил",
+      "укладка ламината"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "009",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на штукатурка стен 120 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "wall_plastering",
+    "expectedCategory": "plastering",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "010",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на шпаклёвка стен 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "wall_putty",
+    "expectedCategory": "putty",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "011",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на покраска стен 80 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "wall_painting",
+    "expectedCategory": "painting",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "012",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на поклейка обоев 70 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "wallpaper_installation",
+    "expectedCategory": "wall_finishing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "013",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на цементная стяжка пола 90 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "floor_screed",
+    "expectedCategory": "concrete",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 90,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "014",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на наливной пол 50 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "self_leveling_floor",
+    "expectedCategory": "flooring",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 90,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "015",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на bathroom_waterproofing 30 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "bathroom_waterproofing",
+    "expectedCategory": "waterproofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 30,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "016",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на foundation_waterproofing 70 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "foundation_waterproofing",
+    "expectedCategory": "waterproofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 70,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "017",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ремонт крыши 70 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "roof_repair",
+    "expectedCategory": "roofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "018",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на кровля металлочерепицей 180 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "metal_roofing",
+    "expectedCategory": "roofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "019",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на мягкая кровля 150 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "soft_roofing",
+    "expectedCategory": "roofing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "020",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на утепление фасада 200 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "facade_insulation",
+    "expectedCategory": "facade",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 200,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "021",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на штукатурка фасада 180 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "facade_plaster",
+    "expectedCategory": "facade",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 200,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "022",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на кладка блока 120 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "block_masonry",
+    "expectedCategory": "masonry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "023",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на кладка газоблока 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "aerated_block_masonry",
+    "expectedCategory": "masonry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "024",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на бетонная плита 200 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "concrete_slab",
+    "expectedCategory": "concrete",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 20,
+    "unit": "m3",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "025",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ленточный фундамент 50 пог. м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "strip_foundation",
+    "expectedCategory": "foundation",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 30,
+    "unit": "m3",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "026",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на армирование каркаса дома высота 5 м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "rebar_installation",
+    "expectedCategory": "concrete",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1200,
+    "unit": "kg",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "027",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на бетонные колонны 16 шт высота 5 м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "concrete_columns",
+    "expectedCategory": "concrete",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 12,
+    "unit": "m3",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "028",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на замена труб 40 пог. м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "pipe_replacement",
+    "expectedCategory": "plumbing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 40,
+    "unit": "linear_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "029",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на черновая сантехника квартиры 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "plumbing_rough_in",
+    "expectedCategory": "plumbing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "030",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на установка унитазов 2 шт",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "toilet_installation",
+    "expectedCategory": "plumbing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 2,
+    "unit": "pcs",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "031",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на электропроводка квартиры 80 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "electrical_wiring",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "032",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на установка 20 розеток",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "socket_installation",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 20,
+    "unit": "pcs",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "033",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на электрощит 1 шт",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "distribution_panel_installation",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "034",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на вентиляция 120 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "ventilation_installation",
+    "expectedCategory": "heating_hvac",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "035",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на кондиционеры 4 шт",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "air_conditioner_installation",
+    "expectedCategory": "heating_hvac",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 3,
+    "unit": "pcs",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "036",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на установка пластикового окна 1.5 на 1.5 м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "window_installation",
+    "expectedCategory": "doors_windows",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 8,
+    "unit": "pcs",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "037",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на установка 5 межкомнатных дверей",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "interior_door_installation",
+    "expectedCategory": "doors_windows",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 6,
+    "unit": "pcs",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "038",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на demolition_tiles 50 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "demolition_tiles",
+    "expectedCategory": "demolition",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 50,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "039",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на демонтаж пола 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "flooring_demolition",
+    "expectedCategory": "demolition",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "040",
+    "priority": "P1",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на вывоз строительного мусора 10 т",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "debris_removal",
+    "expectedCategory": "delivery_equipment",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "041",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на тротуарная плитка 500 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "paving_slabs",
+    "expectedCategory": "landscaping",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 100,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "042",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на установка бордюра 200 пог. м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "curb_installation",
+    "expectedCategory": "roadworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "linear_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "043",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ливнёвка парковки 1000 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "drainage_lot",
+    "expectedCategory": "roadworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "044",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на планировка участка 800 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "landscaping_leveling",
+    "expectedCategory": "landscaping",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 200,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "045",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на газон 500 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "lawn_installation",
+    "expectedCategory": "landscaping",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 150,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "046",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на забор 100 пог. м",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "fence_installation",
+    "expectedCategory": "metalworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 60,
+    "unit": "linear_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "047",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на сварной каркас 500 кг",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "welded_frame",
+    "expectedCategory": "metalworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "048",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на металлическая лестница 1 шт",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "metal_stairs",
+    "expectedCategory": "metalworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "049",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на навес 30 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "canopy_installation",
+    "expectedCategory": "metalworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 20,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "050",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на timber_deck 35 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "timber_deck",
+    "expectedCategory": "carpentry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 35,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "051",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на террасная доска 50 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "terrace_board",
+    "expectedCategory": "carpentry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 35,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "052",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на construction_cleaning 120 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "construction_cleaning",
+    "expectedCategory": "cleaning",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "053",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на доставка и подъём материалов 5 т",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "delivery_lifting",
+    "expectedCategory": "delivery_equipment",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "054",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на дизайн-проект квартиры 80 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "design_project",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 100,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "055",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на закупочный список ремонта 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "procurement_list",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "056",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на расчёт материалов 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "material_takeoff",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "057",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "сметная документация 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "estimate_documentation",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "058",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на проект кровли 120 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "roof_project",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "059",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на проект фундамента 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "foundation_project",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "060",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на проект электрики 80 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "electrical_project",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "061",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на проект HVAC 100 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "hvac_project",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "062",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ванная под ключ 6 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "bathroom_turnkey",
+    "expectedCategory": "tile",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 30,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "063",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ремонт квартиры под ключ 80 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "apartment_turnkey_renovation",
+    "expectedCategory": "wall_finishing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 80,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "064",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на ремонт дома под ключ 150 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "house_turnkey_renovation",
+    "expectedCategory": "wall_finishing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 160,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "065",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на офисная отделка под ключ 300 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "office_fitout",
+    "expectedCategory": "wall_finishing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "066",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на отделка ресторана 200 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "restaurant_fitout",
+    "expectedCategory": "wall_finishing",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 120,
+    "unit": "sq_m",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "067",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на серверная комната 30 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "server_room_fitout",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "068",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на solar_panel_installation 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "solar_panel_installation",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "солнечных панелей"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "069",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на battery_storage_installation 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "battery_storage_installation",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "аккумуляторного накопителя"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "070",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на подключение генератора 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "generator_connection",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "071",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на обвязка котельной 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "boiler_room_piping",
+    "expectedCategory": "heating_hvac",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "072",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на mini_chp_preparation 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "mini_chp_preparation",
+    "expectedCategory": "heating_hvac",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "мини-тэц"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "073",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на micro_hydro_preparation 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "micro_hydro_preparation",
+    "expectedCategory": "concrete",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "микро-гэс"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "074",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на greenhouse_installation 60 м²",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "greenhouse_installation",
+    "expectedCategory": "metalworks",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 60,
+    "unit": "sq_m",
+    "expectedRowsContain": [
+      "теплицы"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "075",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на garden_irrigation 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "garden_irrigation",
+    "expectedCategory": "landscaping",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "садовый полив"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "076",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на furniture_assembly 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "furniture_assembly",
+    "expectedCategory": "carpentry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [
+      "сборка мебели"
+    ],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "077",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на встроенный шкаф 1 шт",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "built_in_wardrobe",
+    "expectedCategory": "carpentry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "078",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на кухонные шкафы 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "kitchen_cabinet_install",
+    "expectedCategory": "carpentry",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  },
+  {
+    "id": "079",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на умный дом базовый 1 компл.",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "smart_home_basic",
+    "expectedCategory": "electrical",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true,
+    "dangerousWorkSafetyRequired": true
+  },
+  {
+    "id": "080",
+    "priority": "P2",
+    "routeCoverage": [
+      "chat"
+    ],
+    "promptRu": "смета на estimate_to_pdf 1 комплект",
+    "expectedIntent": "estimate",
+    "expectedWorkKey": "estimate_to_pdf",
+    "expectedCategory": "documents_design",
+    "expectedTool": "calculate_global_estimate",
+    "volume": 1,
+    "unit": "set",
+    "expectedRowsContain": [],
+    "forbiddenRowsContain": [
+      "Строительные работы",
+      "Основной материал: Строительные работы",
+      "Подготовка: Строительные работы",
+      "Материалы: Строительные работы",
+      "Работы: Строительные работы",
+      "Ремонтные работы после согласования",
+      "Осмотр и уточнение объёма работ"
+    ],
+    "requiresPdfAction": true,
+    "requiresSourceEvidence": true,
+    "requiresTaxStatusOrWarning": true
+  }
+]

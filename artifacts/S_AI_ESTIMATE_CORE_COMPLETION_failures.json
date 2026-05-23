@@ -1,0 +1,10 @@
+[
+  {
+    "code": "COMMIT_PUSH_PROOF_MISSING",
+    "message": "Commit/push proof artifact is missing"
+  },
+  {
+    "code": "FINAL_WORKTREE_NOT_CLEAN",
+    "message": "Final clean worktree proof is missing"
+  }
+]
