@@ -38,8 +38,6 @@ const errText = (value: unknown): string => {
   return String(value ?? "");
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-let requestsHasRequestNoCache: boolean | null = null;
 type RequestsHasRequestNoCacheEntry = {
   value: boolean;
   ts: number;
@@ -60,7 +58,6 @@ const isCapabilityCacheFresh = (entry: RequestsHasRequestNoCacheEntry | null) =>
       : REQUEST_NO_CAPABILITY_NEGATIVE_TTL_MS);
 
 const setRequestNoCapabilityCache = (value: boolean, mode: "positive" | "negative") => {
-  requestsHasRequestNoCache = value;
   requestsHasRequestNoCacheEntry = {
     value,
     ts: Date.now(),
@@ -69,7 +66,6 @@ const setRequestNoCapabilityCache = (value: boolean, mode: "positive" | "negativ
 };
 
 export function invalidateForemanRequestNoCapabilityCache() {
-  requestsHasRequestNoCache = null;
   requestsHasRequestNoCacheEntry = null;
   recordPlatformObservability({
     screen: "foreman",

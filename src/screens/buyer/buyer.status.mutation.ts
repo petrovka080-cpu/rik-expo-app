@@ -13,8 +13,6 @@ import {
 import type {
   AlertFn,
   BuyerMutationResult,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  BuyerMutationWarning,
   FileLike,
   MaybeId,
 } from "./buyer.mutation.shared";

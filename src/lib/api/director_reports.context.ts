@@ -9,8 +9,6 @@ import type {
   DirectorItemKind,
   DirectorObjectIdentityResolved,
   DirectorReportOptions,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  DirectorDisciplineSourceRpcRow,
   RequestLookupRow,
 } from "./director_reports.types.ts";
 import { asRecord, firstNonEmpty, toNum } from "./director_reports.normalizers.ts";

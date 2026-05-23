@@ -43,7 +43,6 @@ export function useAccountantScreenComposition() {
   const histSearch = React.useDeferredValue(viewModel.histSearchUi);
   const invoice = useAccountantInvoiceForm({
     current: selected.current,
-    toRpcDateOrNull,
   });
   const metrics = buildAccountantCompositionMetrics({
     tab: viewModel.tab,

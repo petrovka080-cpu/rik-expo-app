@@ -66,10 +66,8 @@ type SubmitJobsClaimRpcRow =
   Database["public"]["Functions"]["submit_jobs_claim"]["Returns"][number];
 type SubmitJobsRecoverStuckRpcReturns =
   Database["public"]["Functions"]["submit_jobs_recover_stuck"]["Returns"];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SubmitJobsMarkCompletedRpcArgs =
   Database["public"]["Functions"]["submit_jobs_mark_completed"]["Args"];
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type SubmitJobsMarkFailedRpcArgs =
   Database["public"]["Functions"]["submit_jobs_mark_failed"]["Args"];
 type SubmitJobsMetricsRpcRow =
@@ -512,12 +510,11 @@ async function markSubmitJobCompletedWithClient(
   jobId: string,
 ): Promise<void> {
   const queueRpcCompat = toQueueRpcCompat(queueClient);
+  const primaryArgs = { p_id: jobId } satisfies SubmitJobsMarkCompletedRpcArgs;
   const first = await callRateLimitedSupabaseRpc<{
     data: null;
     error: QueueRpcError | null;
-  }>(queueClient, "submit_jobs_mark_completed", {
-    p_id: jobId,
-  });
+  }>(queueClient, "submit_jobs_mark_completed", primaryArgs);
   if (!first.error) {
     validateRpcResponse(first.data, isSubmitJobsMarkCompletedRpcResponse, {
       rpcName: "submit_jobs_mark_completed",
@@ -567,13 +564,11 @@ async function markSubmitJobFailedWithClient(
   message: string,
 ): Promise<{ retryCount: number; status: string }> {
   const queueRpcCompat = toQueueRpcCompat(queueClient);
+  const primaryArgs = { p_id: jobId, p_error: message } satisfies SubmitJobsMarkFailedRpcArgs;
   const first = await callRateLimitedSupabaseRpc<{
     data: SubmitJobsMarkFailedRpcRow[] | SubmitJobsMarkFailedRpcRow | null;
     error: QueueRpcError | null;
-  }>(queueClient, "submit_jobs_mark_failed", {
-    p_id: jobId,
-    p_error: message,
-  });
+  }>(queueClient, "submit_jobs_mark_failed", primaryArgs);
   if (!first.error) {
     const validated = validateRpcResponse(first.data, isSubmitJobsMarkFailedRpcResponse, {
       rpcName: "submit_jobs_mark_failed",

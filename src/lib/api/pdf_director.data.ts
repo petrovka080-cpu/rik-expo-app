@@ -451,16 +451,6 @@ const invoiceTitle = (value: unknown) => {
   return proposalId ? `Документ #${proposalId.slice(0, 8)}` : "Документ";
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const buildSupplierDatesText = (row: DirectorSupplierDateFields) =>
-  joinBulletParts([
-    row.approvedAt ? `утв. ${fmtDateOnly(row.approvedAt)}` : "",
-    formatPaidRangeText(row.paidFirstAt, row.paidLastAt),
-    row.invoiceDate ? `счёт ${fmtDateOnly(row.invoiceDate)}` : "",
-    row.dueDate ? `срок ${fmtDateOnly(row.dueDate)}` : "",
-  ]) || "—";
-
- 
 /* legacy untyped supplier pdf mapper
   row: unknown,
   overpayByProposal: Map<string, number>,

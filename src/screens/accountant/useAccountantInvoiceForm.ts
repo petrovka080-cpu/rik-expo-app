@@ -7,10 +7,8 @@ const ruText = (v: unknown, fallback = "") => normalizeRuText(String(v ?? fallba
 
 export function useAccountantInvoiceForm(params: {
     current: AccountantInboxUiRow | null;
-    toRpcDateOrNull: (v: string) => string | null;
 }) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { current, toRpcDateOrNull } = params;
+    const { current } = params;
 
     const [invoiceNo, setInvoiceNo] = useState("");
     const [invoiceDate, setInvoiceDate] = useState("");
