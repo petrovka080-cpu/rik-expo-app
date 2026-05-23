@@ -1,4 +1,5 @@
 import type { GlobalEstimateResult } from "./globalEstimateTypes";
+import { validateGlobalEstimateResult } from "./validateGlobalEstimateResult";
 
 export class UnsafeGlobalEstimateOutputError extends Error {
   constructor(message: string) {
@@ -41,6 +42,12 @@ export function assertGlobalEstimateResultSafe(result: GlobalEstimateResult): as
 
   if (result.tax.taxType === "unknown" && !result.tax.warning) {
     throw new UnsafeGlobalEstimateOutputError("GLOBAL_ESTIMATE_UNKNOWN_TAX_REQUIRES_WARNING");
+  }
+
+  const validation = validateGlobalEstimateResult(result);
+  if (!validation.passed) {
+    const firstIssue = validation.issues[0];
+    throw new UnsafeGlobalEstimateOutputError(`${firstIssue.code}:${firstIssue.path}`);
   }
 }
 

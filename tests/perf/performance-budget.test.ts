@@ -1497,6 +1497,9 @@ describe("performance budget вЂ” bundle module count", () => {
     // office document-control modules, no hooks or mutations.
     // S_AI_ENTERPRISE_CONTRACT_RUNTIME_INVARIANT_PROOF_CORE adds a pure
     // contract trace/invariant/root-cause proof layer, no hooks or mutations.
+    // S_GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_RECONCILIATION adds three small
+    // backend-only reconciliation modules: validator, protected template keys,
+    // and ratebook row-code collection helpers.
     expect(p3ATypeBoundaryFiles).toBeLessThanOrEqual(5);
     expect(v47BForemanNavigationFlowFiles).toBeLessThanOrEqual(1);
     expect(v47CForemanFioBootstrapFlowFiles).toBeLessThanOrEqual(1);
@@ -1697,7 +1700,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
-    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(42);
+    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(45);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);

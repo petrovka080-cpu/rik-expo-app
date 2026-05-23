@@ -701,6 +701,7 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_") ||
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
+    file.startsWith("artifacts/S_GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_RECONCILIATION_") ||
     file.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
     file.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
     file.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
@@ -742,6 +743,7 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "scripts/e2e/runGlobalEstimateDataOpsProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" ||
+    file === "scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" ||
     file === "scripts/e2e/runAiEstimateToPdfProof.ts" ||
     file === "scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" ||
     file === "scripts/e2e/runAndroidEstimatePdfSmoke.ts" ||
