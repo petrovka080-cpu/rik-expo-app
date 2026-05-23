@@ -330,7 +330,6 @@ export function useForemanBootstrapCoordinator(deps: ForemanBootstrapCoordinator
 
       await refreshBoundarySyncState(durableSnapshot ?? null);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps object is the single dep surface
     [
       applyLocalDraftSnapshotToBoundary,
       clearDraftCache,
@@ -339,6 +338,8 @@ export function useForemanBootstrapCoordinator(deps: ForemanBootstrapCoordinator
       getDraftQueueKey,
       getDraftQueueKeys,
       loadItems,
+      localDraftSnapshotRef,
+      networkOnlineRef,
       patchBoundaryState,
       refreshBoundarySyncState,
       requestId,

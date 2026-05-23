@@ -153,6 +153,26 @@ const getPaymentMethodLabel = (payKind: "bank" | "cash") =>
   payKind === "bank" ? "Банк" : "Нал";
 
 export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
+  const {
+    afterPaymentSync,
+    accountantFio,
+    allocOk,
+    allocRows,
+    amount,
+    canAct,
+    closeCard,
+    current,
+    errText,
+    invoiceCurrency,
+    invoiceDate,
+    invoiceNumber,
+    note,
+    payKind,
+    purposePrefix,
+    safeAlert,
+    setCurrentPaymentId,
+    setRows,
+  } = p;
   const pendingPaymentIntentRef = useRef<PaymentIntent | null>(null);
   const isSubmittingRef = useRef(false);
 
@@ -163,7 +183,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       error: unknown,
       extra?: Record<string, unknown>,
     ) => {
-      const proposalId = String(p.current?.proposal_id ?? "").trim();
+      const proposalId = String(current?.proposal_id ?? "").trim();
       recordCatchDiscipline({
         screen: "accountant",
         surface: "payment_form_apply",
@@ -180,36 +200,34 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         },
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-    [p.current?.proposal_id],
+    [current?.proposal_id],
   );
 
   const showPaymentFailure = useCallback(
     (title: string, e: unknown) => {
-      const msg = p.errText(e);
-      p.safeAlert(title, msg);
+      const msg = errText(e);
+      safeAlert(title, msg);
       if (__DEV__) console.error("[accountant.payment]", msg);
     },
-    [p],
+    [errText, safeAlert],
   );
 
   const showPaymentSyncWarning = useCallback(
     (e: unknown) => {
-      p.safeAlert(
+      safeAlert(
         "Оплата проведена, но обновление экрана не завершилось",
-        `Платёж сохранён, но экран не обновился автоматически: ${p.errText(e)}`,
+        `Платёж сохранён, но экран не обновился автоматически: ${errText(e)}`,
       );
       if (__DEV__) console.error("[accountant.payment.sync]", e);
     },
-    [p],
+    [errText, safeAlert],
   );
 
   const loadServerFinancialState = useCallback(async () => {
-    const proposalId = String(p.current?.proposal_id ?? "").trim();
+    const proposalId = String(current?.proposal_id ?? "").trim();
     if (!proposalId) throw new Error("Proposal id is required for payment.");
     return accountantLoadProposalFinancialState(proposalId);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [p.current?.proposal_id]);
+  }, [current?.proposal_id]);
 
   const commitPayment = useCallback(
     async (mode: "rest" | "partial_or_custom", requestedAmount: number) => {
@@ -218,21 +236,21 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         return;
       }
 
-      const proposalId = String(p.current?.proposal_id ?? "").trim();
+      const proposalId = String(current?.proposal_id ?? "").trim();
       if (!proposalId) throw new Error("Proposal id is required for payment.");
 
       const intentSignature = buildPaymentIntentSignature({
         proposalId,
         mode,
         requestedAmount,
-        accountantFio: p.accountantFio,
-        payKind: p.payKind,
-        purposePrefix: p.purposePrefix,
-        note: p.note,
-        allocRows: p.allocRows,
-        invoiceNumber: p.invoiceNumber ?? p.current?.invoice_number ?? null,
-        invoiceDate: p.invoiceDate ?? p.current?.invoice_date ?? null,
-        invoiceCurrency: p.invoiceCurrency ?? p.current?.invoice_currency ?? null,
+        accountantFio,
+        payKind,
+        purposePrefix,
+        note,
+        allocRows,
+        invoiceNumber: invoiceNumber ?? current?.invoice_number ?? null,
+        invoiceDate: invoiceDate ?? current?.invoice_date ?? null,
+        invoiceCurrency: invoiceCurrency ?? current?.invoice_currency ?? null,
       });
       let pendingIntent = pendingPaymentIntentRef.current;
       const serverState =
@@ -269,7 +287,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         extra: {
           proposalId,
           mode,
-          allocationCount: p.allocRows.length,
+          allocationCount: allocRows.length,
           requestedAmount,
           outstandingBefore: outstanding,
           serverPaymentEligible: serverState.eligibility.paymentEligible,
@@ -283,30 +301,30 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         const payment = await accountantPayInvoiceAtomic({
           proposalId,
           amount: requestedAmount,
-          accountantFio: p.accountantFio.trim(),
-          purpose: `${p.purposePrefix} ${p.note || ""}`.trim(),
-          method: getPaymentMethodLabel(p.payKind),
+          accountantFio: accountantFio.trim(),
+          purpose: `${purposePrefix} ${note || ""}`.trim(),
+          method: getPaymentMethodLabel(payKind),
           clientMutationId: pendingIntent.clientMutationId,
-          note: p.note?.trim() ? p.note.trim() : null,
-          allocations: Array.isArray(p.allocRows) ? p.allocRows : [],
+          note: note?.trim() ? note.trim() : null,
+          allocations: Array.isArray(allocRows) ? allocRows : [],
           invoiceNumber:
-            String(p.invoiceNumber ?? p.current?.invoice_number ?? "")
+            String(invoiceNumber ?? current?.invoice_number ?? "")
               .trim() || null,
           invoiceDate:
-            String(p.invoiceDate ?? p.current?.invoice_date ?? "")
+            String(invoiceDate ?? current?.invoice_date ?? "")
               .trim() || null,
           invoiceCurrency:
-            String(p.invoiceCurrency ?? p.current?.invoice_currency ?? "")
+            String(invoiceCurrency ?? current?.invoice_currency ?? "")
               .trim() || null,
           expectedTotalPaid: serverState.totals.totalPaid,
           expectedOutstanding: serverState.totals.outstandingAmount,
         });
         pendingPaymentIntentRef.current = null;
 
-        p.setCurrentPaymentId(Number(payment.paymentId));
+        setCurrentPaymentId(Number(payment.paymentId));
 
         try {
-          await p.afterPaymentSync(proposalId);
+          await afterPaymentSync(proposalId);
         } catch (error) {
           recordPaymentActionCatch("soft_failure", "payment_apply_sync_failed", error, {
             mode,
@@ -318,7 +336,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
           return;
         }
 
-        p.setRows((prev) => prev.filter((row) => String(row.proposal_id) !== proposalId));
+        setRows((prev) => prev.filter((row) => String(row.proposal_id) !== proposalId));
         observation.success({
           extra: {
             proposalId,
@@ -327,7 +345,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
             clientMutationId: payment.clientMutationId,
             mutationOutcome: payment.outcome,
             idempotentReplay: payment.idempotentReplay,
-            allocationCount: p.allocRows.length,
+            allocationCount: allocRows.length,
             requestedAmount,
             outstandingBefore: payment.totalsBefore.outstandingAmount,
             outstandingAfter: payment.totalsAfter.outstandingAmount,
@@ -335,8 +353,8 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
             paymentStatusAfter: payment.totalsAfter.paymentStatus,
           },
         });
-        p.safeAlert("Оплата проведена", "Оплата успешно сохранена.");
-        p.closeCard();
+        safeAlert("Оплата проведена", "Оплата успешно сохранена.");
+        closeCard();
       } catch (error) {
         if (error instanceof AccountantPayInvoiceAtomicError) {
           pendingPaymentIntentRef.current = null;
@@ -356,42 +374,41 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         isSubmittingRef.current = false;
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
     [
+      accountantFio,
+      afterPaymentSync,
+      allocRows,
+      closeCard,
+      current?.invoice_currency,
+      current?.invoice_date,
+      current?.invoice_number,
+      current?.proposal_id,
+      invoiceCurrency,
+      invoiceDate,
+      invoiceNumber,
       loadServerFinancialState,
-      p.accountantFio,
-      p.afterPaymentSync,
-      p.allocRows,
-      p.closeCard,
-      p.current?.invoice_currency,
-      p.current?.invoice_date,
-      p.current?.invoice_number,
-      p.current?.proposal_id,
-      p.invoiceCurrency,
-      p.invoiceDate,
-      p.invoiceNumber,
-      p.note,
-      p.payKind,
-      p.purposePrefix,
-      p.setCurrentPaymentId,
-      p.setRows,
-      p.safeAlert,
+      note,
+      payKind,
+      purposePrefix,
       recordPaymentActionCatch,
+      safeAlert,
+      setCurrentPaymentId,
+      setRows,
       showPaymentSyncWarning,
     ],
   );
 
   const payRest = useCallback(async () => {
-    if (!p.canAct) {
-      p.safeAlert("Нет доступа", "Нужна роль accountant.");
+    if (!canAct) {
+      safeAlert("Нет доступа", "Нужна роль accountant.");
       return;
     }
-    if (!p.current?.proposal_id) return;
+    if (!current?.proposal_id) return;
 
     try {
-      const fio = p.accountantFio.trim();
+      const fio = accountantFio.trim();
       if (!fio) {
-        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
+        safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
@@ -401,7 +418,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
         throw new Error(getFinancialFailureMessage(serverState.eligibility.failureCode));
       }
       if (!outstanding || outstanding <= 0) {
-        p.safeAlert("Оплата", "Серверный остаток уже закрыт.");
+        safeAlert("Оплата", "Серверный остаток уже закрыт.");
         return;
       }
 
@@ -412,35 +429,34 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       });
       showPaymentFailure("Ошибка оплаты", e);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
+    accountantFio,
+    canAct,
     commitPayment,
+    current?.proposal_id,
     loadServerFinancialState,
-    p.accountantFio,
-    p.canAct,
-    p.current?.proposal_id,
-    p.safeAlert,
     recordPaymentActionCatch,
+    safeAlert,
     showPaymentFailure,
   ]);
 
   const addPayment = useCallback(async () => {
-    if (!p.canAct) {
-      p.safeAlert("Нет доступа", "Нужна роль accountant.");
+    if (!canAct) {
+      safeAlert("Нет доступа", "Нужна роль accountant.");
       return;
     }
-    if (!p.current?.proposal_id) return;
+    if (!current?.proposal_id) return;
 
-    const val = Number(String(p.amount).replace(",", "."));
+    const val = Number(String(amount).replace(",", "."));
     if (!val || val <= 0) {
-      p.safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
+      safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
       return;
     }
 
     try {
-      const fio = p.accountantFio.trim();
+      const fio = accountantFio.trim();
       if (!fio) {
-        p.safeAlert("ФИО бухгалтера", "Поле обязательно");
+        safeAlert("ФИО бухгалтера", "Поле обязательно");
         return;
       }
 
@@ -479,27 +495,26 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
       });
       showPaymentFailure("Ошибка оплаты", e);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
   }, [
+    accountantFio,
+    amount,
+    canAct,
     commitPayment,
+    current?.proposal_id,
     loadServerFinancialState,
-    p.accountantFio,
-    p.amount,
-    p.canAct,
-    p.current?.proposal_id,
-    p.safeAlert,
     recordPaymentActionCatch,
+    safeAlert,
     showPaymentFailure,
   ]);
 
   const onPayConfirm = useCallback(async () => {
-    const v = Number(String(p.amount).replace(",", "."));
+    const v = Number(String(amount).replace(",", "."));
     if (!v || v <= 0) {
-      p.safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
+      safeAlert("Оплата", "Сумма оплаты должна быть больше 0.");
       return;
     }
-    if (!p.allocOk) {
-      p.safeAlert(
+    if (!allocOk) {
+      safeAlert(
         "Оплата",
         "Распределение невалидно: сумма должна быть больше нуля и не превышать остаток.",
       );
@@ -518,8 +533,7 @@ export function useAccountantPayActions<T extends RowBase>(p: Params<T>) {
 
     if (!ok) return;
     await addPayment();
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- TODO(P1): review deps
-  }, [p.allocOk, p.amount, p.safeAlert, addPayment]);
+  }, [addPayment, allocOk, amount, safeAlert]);
 
   return { payRest, addPayment, onPayConfirm };
 }
