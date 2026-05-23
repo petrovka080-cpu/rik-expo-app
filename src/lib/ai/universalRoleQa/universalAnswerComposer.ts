@@ -34,6 +34,16 @@ import {
   normalizeUniversalRoleQaQuestion,
   uniqueUniversalStrings,
 } from "./universalQuestionNormalizer";
+import {
+  buildGlobalEstimateInputFromRoute,
+  routeUniversalEstimateIntent,
+  type EstimateIntentRoute,
+} from "../estimateRouting";
+import {
+  calculateGlobalConstructionEstimateSync,
+  formatGlobalEstimateAnswer,
+  type GlobalEstimateResult,
+} from "../globalEstimate";
 
 export type UniversalRoleQaAnswerKind =
   | "count_answer"
@@ -110,6 +120,13 @@ export type UniversalRoleQaAnswer = {
     autoApproval: false;
     dangerousMutation: false;
   };
+  estimateRoute?: EstimateIntentRoute;
+  globalEstimateResult?: GlobalEstimateResult;
+  estimateActions?: {
+    id: "make_pdf" | "save_estimate" | "create_request" | "clarify_city" | "refresh_prices";
+    labelRu: string;
+    visible: boolean;
+  }[];
 };
 
 export type UniversalRoleQaOrchestratorInput = {
@@ -272,6 +289,54 @@ function composeConstructionSections(input: {
   return { sections, missingData: draft.missingDataRu };
 }
 
+const ESTIMATE_ACTIONS: NonNullable<UniversalRoleQaAnswer["estimateActions"]> = [
+  { id: "make_pdf", labelRu: "Сделать PDF", visible: true },
+  { id: "save_estimate", labelRu: "Сохранить в сметы", visible: true },
+  { id: "create_request", labelRu: "Создать заявку", visible: true },
+  { id: "clarify_city", labelRu: "Уточнить город", visible: true },
+  { id: "refresh_prices", labelRu: "Обновить цены", visible: true },
+];
+
+function composeGlobalEstimateSections(result: GlobalEstimateResult): UniversalRoleQaAnswer["sections"] {
+  const formatted = formatGlobalEstimateAnswer(result);
+  const sourceItems = result.sections
+    .flatMap((section) => section.rows)
+    .flatMap((row) => row.sourceEvidence.map((evidence) => ({
+      textRu: `${row.rowNumber}. ${row.name}: ${evidence.label}; freshness=${evidence.freshness}; confidence=${evidence.confidence}; checked=${evidence.checkedAt}.`,
+      sourceRefIds: [evidence.sourceId],
+      status: evidence.freshness === "stale" || evidence.freshness === "expired" ? "requires_review" as const : "external_reference" as const,
+    })));
+
+  return [
+    {
+      titleRu: "Профессиональная смета",
+      items: [{
+        textRu: formatted,
+        sourceRefIds: result.sources.map((source) => source.id),
+        status: result.requiresReview ? "requires_review" : "draft",
+      }],
+    },
+    {
+      titleRu: "Источники и точность",
+      items: sourceItems.length > 0
+        ? sourceItems
+        : [{
+          textRu: "Для рассчитанных строк не найдены подтвержденные источники цен.",
+          sourceRefIds: [],
+          status: "blocked",
+        }],
+    },
+    {
+      titleRu: "Действия",
+      items: ESTIMATE_ACTIONS.map((action) => ({
+        textRu: action.labelRu,
+        sourceRefIds: [],
+        status: "draft" as const,
+      })),
+    },
+  ];
+}
+
 function composeAccountingSections(countryCode: string): { sections: UniversalRoleQaAnswer["sections"]; missingData: string[] } {
   const draft = getUniversalAccountingKnowledgeDraft(countryCode);
   return {
@@ -316,6 +381,14 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
   const intent = classifyUniversalRoleQaIntent(input.questionRu, roleContext.role);
   const entity = extractUniversalRoleQaEntity(input.questionRu);
   const filters = extractUniversalRoleQaFilters(input.questionRu, input.referenceDate);
+  const estimateRoute = routeUniversalEstimateIntent(input.questionRu);
+  const shouldUseGlobalEstimate = estimateRoute.shouldCallEstimateTool;
+  const globalEstimateResult = shouldUseGlobalEstimate
+    ? calculateGlobalConstructionEstimateSync(buildGlobalEstimateInputFromRoute(estimateRoute, {
+      countryCode: input.countryCode ?? estimateRoute.location?.countryCode ?? "KG",
+      city: input.cityOrRegion ?? estimateRoute.location?.city,
+    }))
+    : undefined;
   const sourcePlan = planUniversalRoleQaSources({
     questionRu: input.questionRu,
     roleContext,
@@ -340,18 +413,20 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
 
   const useMarketplace = sourcePlan.marketplaceFirst || intent === "marketplace_supplier_search";
   const usePdf = sourcePlan.pdfRequired;
-  const useConstructionDraft = intent === "construction_estimate" || intent === "construction_material_calculation" || intent === "construction_technology" || intent === "construction_norm_reference";
+  const useConstructionDraft = !shouldUseGlobalEstimate && (intent === "construction_estimate" || intent === "construction_material_calculation" || intent === "construction_technology" || intent === "construction_norm_reference");
   const useAccountingDraft = intent === "accounting_entry_help";
 
-  let sections = composeInternalSections(app);
-  let missingData = uniqueUniversalStrings(app.items.flatMap((item) => item.status === "risk" || item.status === "blocked" ? [item.textRu] : []));
-  if (usePdf && pdf.items.length) {
+  let sections = globalEstimateResult ? composeGlobalEstimateSections(globalEstimateResult) : composeInternalSections(app);
+  let missingData = globalEstimateResult
+    ? uniqueUniversalStrings(globalEstimateResult.clarifyingQuestions)
+    : uniqueUniversalStrings(app.items.flatMap((item) => item.status === "risk" || item.status === "blocked" ? [item.textRu] : []));
+  if (!shouldUseGlobalEstimate && usePdf && pdf.items.length) {
     sections = [...sections, { titleRu: "PDF/документы", items: pdf.items }];
   }
-  if (useMarketplace && marketplace.items.length) {
+  if (!shouldUseGlobalEstimate && useMarketplace && marketplace.items.length) {
     sections = [...sections, { titleRu: "Marketplace", items: marketplace.items }];
   }
-  if (useMarketplace && supplierHistory.items.length) {
+  if (!shouldUseGlobalEstimate && useMarketplace && supplierHistory.items.length) {
     sections = [...sections, { titleRu: "История поставщиков", items: supplierHistory.items }];
   }
   if (useConstructionDraft) {
@@ -384,7 +459,9 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
       })),
   ]);
 
-  const shortAnswerRu = shortAnswerFor({ intent, entity, filters, app, web });
+  const shortAnswerRu = globalEstimateResult
+    ? `Ниже профессиональная смета на ${globalEstimateResult.work.title} — ${globalEstimateResult.input.volume} ${globalEstimateResult.input.unit}. Расчет выполнен backend-движком по source-backed ставкам.`
+    : shortAnswerFor({ intent, entity, filters, app, web });
   const sourceDisclosure = disclosureFor({
     sourcePlan,
     app,
@@ -395,9 +472,9 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     supplierUsed: supplierHistory.used,
     supplierCheckedEmpty: supplierHistory.checkedEmpty,
     web,
-    generalKnowledgeUsed: useConstructionDraft || useAccountingDraft,
+    generalKnowledgeUsed: shouldUseGlobalEstimate || useConstructionDraft || useAccountingDraft,
   });
-  const statusRu = useConstructionDraft ? "Черновик подготовлен" : useAccountingDraft ? "Требуется согласование" : "Данные не изменены";
+  const statusRu = globalEstimateResult || useConstructionDraft ? "Черновик подготовлен" : useAccountingDraft ? "Требуется согласование" : "Данные не изменены";
 
   return {
     id: makeUniversalRoleQaId("universal-role-qa-answer", `${input.role}:${input.screenId}:${input.questionRu}`),
@@ -409,7 +486,9 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     entity,
     filters,
     sourcePlan,
-    answerKind: app.items.length === 0 && !useConstructionDraft && !useAccountingDraft ? "checked_empty_answer" : answerKindFor(intent),
+    answerKind: globalEstimateResult
+      ? "estimate_draft"
+      : app.items.length === 0 && !useConstructionDraft && !useAccountingDraft ? "checked_empty_answer" : answerKindFor(intent),
     shortAnswerRu,
     sections,
     openLinks,
@@ -420,21 +499,26 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
     permissionLimits: openLinks
       .filter((link) => !link.enabled && link.disabledReasonRu)
       .map((link) => ({ hiddenSourceType: link.sourceRefId, reasonRu: link.disabledReasonRu ?? "Доступ ограничен." })),
-    nextStepRu: useConstructionDraft
-      ? "Уточнить недостающие параметры и затем собрать точную смету по проекту и актуальным ценам."
-      : useAccountingDraft
-        ? "Проверить рекомендацию бухгалтером и сверить первичные документы."
-        : app.items.length
-          ? "Открыть связанные объекты и проверить недостающие связи без изменения данных."
-          : "Уточнить период, объект или источник и повторить read-only проверку.",
+    nextStepRu: globalEstimateResult
+      ? "Проверить город, выбранный уровень качества и открыть действие «Сделать PDF» для структурированной сметы."
+      : useConstructionDraft
+        ? "Уточнить недостающие параметры и затем собрать точную смету по проекту и актуальным ценам."
+        : useAccountingDraft
+          ? "Проверить рекомендацию бухгалтером и сверить первичные документы."
+          : app.items.length
+            ? "Открыть связанные объекты и проверить недостающие связи без изменения данных."
+            : "Уточнить период, объект или источник и повторить read-only проверку.",
     statusRu,
     safetyStatus: {
       changedData: false,
-      draftOnly: useConstructionDraft || useAccountingDraft || intent === "marketplace_product_draft",
+      draftOnly: Boolean(globalEstimateResult) || useConstructionDraft || useAccountingDraft || intent === "marketplace_product_draft",
       approvalRequired: useAccountingDraft || intent === "draft_action",
       finalSubmit: false,
       autoApproval: false,
       dangerousMutation: false,
     },
+    estimateRoute: shouldUseGlobalEstimate ? estimateRoute : undefined,
+    globalEstimateResult,
+    estimateActions: globalEstimateResult ? ESTIMATE_ACTIONS : undefined,
   };
 }

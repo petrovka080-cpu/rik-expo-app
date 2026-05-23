@@ -18,3 +18,7 @@ export function readAiAlwaysOnExternalSources(): string {
 export function readAssistantScreenSource(): string {
   return read("src/features/ai/AIAssistantScreen.tsx");
 }
+
+export function readAssistantAnswerPipelineSource(): string {
+  return read("src/features/ai/assistantAnswerPipeline.ts");
+}

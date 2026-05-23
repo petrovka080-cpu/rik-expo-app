@@ -2,6 +2,7 @@ import {
   includesAnyNormalized,
   normalizeUniversalRoleQaQuestion,
 } from "./universalQuestionNormalizer";
+import { classifyEstimateIntent } from "../estimateRouting/estimateIntentClassifier";
 
 export type UniversalRoleQaIntent =
   | "app_data_count"
@@ -40,6 +41,11 @@ export function classifyUniversalRoleQaIntent(
   questionRu: string,
   role?: string,
 ): UniversalRoleQaIntent {
+  const estimateRoute = classifyEstimateIntent(questionRu);
+  if (estimateRoute.shouldCallEstimateTool) {
+    return "construction_estimate";
+  }
+
   const text = normalizeUniversalRoleQaQuestion(questionRu);
 
   if (includesAnyNormalized(text, ["что в этом pdf", "что в pdf", "что в документе", "что в этом пдф"])) {

@@ -738,6 +738,18 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-live-acceptance-baseline-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-150-work-types-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-10000-work-types-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "final-50k-92-external-live-proof-closeout",
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
       });

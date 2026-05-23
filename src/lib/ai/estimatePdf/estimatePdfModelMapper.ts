@@ -58,6 +58,11 @@ export function buildAiEstimatePdfSupplement(source: AiEstimatePdfSource): Exist
     ].filter(Boolean).join("; "),
     sourceConfidence: aggregateConfidence(source),
     sourceLabels: source.estimate.sources?.map((item) => item.label).filter(Boolean) ?? [],
+    sourceEvidenceLabels: source.estimate.sections
+      .flatMap((section) => section.rows)
+      .flatMap((row) => row.sourceEvidence ?? [])
+      .map((evidence) => `${evidence.label}${evidence.freshness ? ` (${evidence.freshness})` : ""}`)
+      .filter(Boolean),
     safetyMessage: source.estimate.costIncreaseFactors.some((item) => /опасн|specialist|специалист|electric|gas/i.test(item))
       ? "Работы требуют специалиста. Смета подготовлена для заявки/обсуждения с мастером."
       : undefined,

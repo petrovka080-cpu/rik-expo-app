@@ -1,0 +1,22 @@
+{
+  "wave": "S_WORKTREE_CLEAN_COMMIT_PUSH_DISCIPLINE_POINT_OF_NO_RETURN",
+  "final_status": "BLOCKED_WORKTREE_NOT_CLEAN",
+  "baseline_status_recorded": true,
+  "all_dirty_files_classified": true,
+  "unknown_dirty_files_found": false,
+  "irrelevant_files_committed": false,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "targeted_tests_passed": true,
+  "release_verify_passed": false,
+  "commit_created": false,
+  "commit_sha": null,
+  "branch_pushed": true,
+  "remote_branch": "origin/main",
+  "remote_contains_commit": true,
+  "final_worktree_clean": false,
+  "dirty_files_count": 95,
+  "blocked_files": [],
+  "fake_green_claimed": false
+}

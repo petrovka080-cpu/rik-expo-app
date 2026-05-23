@@ -1,7 +1,11 @@
 export type AiEnterpriseLayer =
+  | "builtInAi"
+  | "builtInAi1000"
+  | "builtInAi10000"
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
   | "estimateEngine"
+  | "estimateRouting"
   | "estimatePdf"
   | "globalEstimate"
   | "universalRoleQa"
@@ -9,6 +13,7 @@ export type AiEnterpriseLayer =
   | "domainDataGateway"
   | "contextBudget"
   | "sourceSanitizer"
+  | "sourceIntelligence"
   | "contractRuntime"
   | "externalKnowledge"
   | "roleBusinessCopilots"
@@ -67,9 +72,13 @@ export const AI_ENTERPRISE_GUARDRAILS_GREEN_STATUS =
 
 export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy = {
   allowedAiLayers: [
+    "builtInAi",
+    "builtInAi1000",
+    "builtInAi10000",
     "alwaysOnExternalKnowledge",
     "appContextGraph",
     "estimateEngine",
+    "estimateRouting",
     "estimatePdf",
     "globalEstimate",
     "universalRoleQa",
@@ -77,6 +86,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "domainDataGateway",
     "contextBudget",
     "sourceSanitizer",
+    "sourceIntelligence",
     "contractRuntime",
     "externalKnowledge",
     "roleBusinessCopilots",

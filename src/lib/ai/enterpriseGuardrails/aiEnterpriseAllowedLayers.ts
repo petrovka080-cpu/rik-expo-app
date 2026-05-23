@@ -15,6 +15,24 @@ export type AiEnterpriseLegacyLayerDefinition = {
 
 export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] = [
   {
+    layer: "builtInAi",
+    root: "src/lib/ai/builtInAi",
+    purpose: "Built-in AI ingress, intent routing, tool policy, domain tool orchestration, action building, and runtime trace.",
+    screenMayImportDirectly: true,
+  },
+  {
+    layer: "builtInAi1000",
+    root: "src/lib/ai/builtInAi1000",
+    purpose: "Machine-readable 1000-case construction estimate coverage catalog and source-backed proof metadata.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "builtInAi10000",
+    root: "src/lib/ai/builtInAi10000",
+    purpose: "Machine-readable 10000-case real-world estimate/product coverage catalog and source-backed proof metadata.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "alwaysOnExternalKnowledge",
     root: "src/lib/ai/alwaysOnExternalKnowledge",
     purpose: "Always-on public knowledge answer policy and source-aware external answer composition.",
@@ -30,6 +48,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "estimateEngine",
     root: "src/lib/ai/estimateEngine",
     purpose: "Construction estimate intent, quantity, and price composition with answer-first guards.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "estimateRouting",
+    root: "src/lib/ai/estimateRouting",
+    purpose: "Universal estimate intent routing, priority guard, prompt extraction, and backend estimate tool dispatch.",
     screenMayImportDirectly: false,
   },
   {
@@ -72,6 +96,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "sourceSanitizer",
     root: "src/lib/ai/sourceSanitizer",
     purpose: "Sanitizes provider/debug/source internals before AI-facing context.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "sourceIntelligence",
+    root: "src/lib/ai/sourceIntelligence",
+    purpose: "Source-backed price observation, refresh, matching, and evidence guard facade for built-in AI tools.",
     screenMayImportDirectly: false,
   },
   {

@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-05-22T19:44:39.142Z",
+  "generatedAt": "2026-05-23T09:08:40.925Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -29,11 +29,6 @@
       "hookCount": 0
     },
     {
-      "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 498,
-      "hookCount": 14
-    },
-    {
       "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
       "lineCount": 497,
       "hookCount": 0
@@ -44,14 +39,14 @@
       "hookCount": 20
     },
     {
+      "file": "src/features/ai/AIAssistantScreen.tsx",
+      "lineCount": 492,
+      "hookCount": 14
+    },
+    {
       "file": "src/screens/profile/AddListingScreen.tsx",
       "lineCount": 491,
       "hookCount": 8
-    },
-    {
-      "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
-      "lineCount": 490,
-      "hookCount": 1
     },
     {
       "file": "src/components/PeriodPickerSheet.tsx",
@@ -62,6 +57,11 @@
       "file": "src/screens/foreman/ForemanAiQuickModal.tsx",
       "lineCount": 487,
       "hookCount": 2
+    },
+    {
+      "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
+      "lineCount": 486,
+      "hookCount": 1
     },
     {
       "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",
@@ -112,12 +112,12 @@
     },
     {
       "file": "src/screens/accountant/useAccountantScreenComposition.tsx",
-      "lineCount": 288,
+      "lineCount": 287,
       "hookCount": 15
     },
     {
       "file": "src/features/ai/AIAssistantScreen.tsx",
-      "lineCount": 498,
+      "lineCount": 492,
       "hookCount": 14
     },
     {
