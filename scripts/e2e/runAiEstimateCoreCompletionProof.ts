@@ -19,6 +19,7 @@ import { validateEstimatePdf } from "../../src/lib/estimatePdf";
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const WAVE = "S_AI_ESTIMATE_CORE_COMPLETION_UNFINISHED_SMETAS_WEB_ANDROID_COMMIT_PUSH_POINT_OF_NO_RETURN";
 const REQUIRE_LIVE = process.argv.includes("--require-live");
+const GIT_PREFLIGHT_ARTIFACT = "S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json";
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
@@ -38,6 +39,20 @@ function readJson(name: string): Record<string, unknown> {
   } catch {
     return {};
   }
+}
+
+function readTextIfExists(name: string): string | null {
+  const filePath = path.join(ARTIFACT_DIR, name);
+  return fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+}
+
+function restoreTextArtifact(name: string, previousValue: string | null): void {
+  const filePath = path.join(ARTIFACT_DIR, name);
+  if (previousValue == null) {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    return;
+  }
+  fs.writeFileSync(filePath, previousValue, "utf8");
 }
 
 function runAudit(): void {
@@ -97,7 +112,14 @@ function runCase(testCase: UnfinishedAiEstimateCase, route: "chat" | "ai_foreman
 }
 
 function main(): void {
-  runAudit();
+  const previousGitPreflight = REQUIRE_LIVE ? readTextIfExists(GIT_PREFLIGHT_ARTIFACT) : null;
+  let gitPreflightAfterAudit: Record<string, unknown> = {};
+  try {
+    runAudit();
+    gitPreflightAfterAudit = readJson(GIT_PREFLIGHT_ARTIFACT);
+  } finally {
+    if (REQUIRE_LIVE) restoreTextArtifact(GIT_PREFLIGHT_ARTIFACT, previousGitPreflight);
+  }
 
   const backendResults = UNFINISHED_AI_ESTIMATE_CASES.map((testCase) => runCase(testCase, "chat"));
   const routeSubset = [
@@ -128,7 +150,7 @@ function main(): void {
 
   const webArtifact = readJson("S_AI_ESTIMATE_CORE_COMPLETION_web_screenshots.json");
   const androidArtifact = readJson("S_AI_ESTIMATE_CORE_COMPLETION_android_screenshots.json");
-  const gitPreflight = readJson("S_AI_ESTIMATE_CORE_COMPLETION_git_preflight.json");
+  const gitPreflight = gitPreflightAfterAudit;
   const commitPush = readJson("S_AI_ESTIMATE_CORE_COMPLETION_commit_push.json");
   const webPassed = webArtifact.web_playwright_passed === true;
   const androidPassed = androidArtifact.android_emulator_passed === true;
