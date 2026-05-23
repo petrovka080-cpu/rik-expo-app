@@ -88,6 +88,7 @@ describe("catalog transport BFF routing contract", () => {
     const fallbackSource = readProjectFile("src/lib/catalog/catalog.transport.supabase.ts");
 
     expect(modalSource).toContain("loadCatalogItemsSearchPreviewRows");
+    expect(modalSource).not.toContain("react-hooks/exhaustive-deps");
     expect(modalSource).not.toMatch(/supabase\.(from|rpc)\(/);
     expect(modalSource).not.toContain(".from(\"catalog_items\")");
     expect(transportSource).toContain('operation: "catalog.items.search.preview"');

@@ -49,33 +49,40 @@ export default function CatalogSearchModal({
     setQ(initialQuery);
   }, [visible, initialQuery]);
 
-  // debounce
   useEffect(() => {
     if (!visible) return;
-    const t = setTimeout(() => void runSearch(), 250);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    const query = q;
+    const selectedKind = kind;
+
+    const t = setTimeout(() => {
+      void (async () => {
+        setLoading(true);
+        try {
+          const { data, error } = await loadCatalogItemsSearchPreviewRows(
+            query,
+            selectedKind,
+            CATALOG_SEARCH_PAGE_DEFAULTS.pageSize,
+          );
+          if (cancelled) return;
+          if (error) {
+            if (__DEV__) console.warn("CatalogSearchModal:", error.message);
+            setRows([]);
+            return;
+          }
+
+          setRows((data || []) as CatalogItem[]);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
+      })();
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
   }, [q, kind, visible]);
-
-  async function runSearch() {
-    setLoading(true);
-    try {
-      const { data, error } = await loadCatalogItemsSearchPreviewRows(
-        q,
-        kind,
-        CATALOG_SEARCH_PAGE_DEFAULTS.pageSize,
-      );
-      if (error) {
-        if (__DEV__) console.warn("CatalogSearchModal:", error.message);
-        setRows([]);
-        return;
-      }
-
-      setRows((data || []) as CatalogItem[]);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   const chips = useMemo(
     () => [
