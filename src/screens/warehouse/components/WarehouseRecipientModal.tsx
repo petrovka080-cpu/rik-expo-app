@@ -30,8 +30,6 @@ const toSelectorToken = (value: string) =>
 export default function WarehouseRecipientModal({
   visible,
   onConfirm,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onClose,
   suggestions,
   initialValue = "",
 }: Props) {

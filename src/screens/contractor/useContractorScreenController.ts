@@ -65,8 +65,6 @@ export function useContractorScreenController({
     screenContract,
     setScreenContract,
     manualClaimedJobIds,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    subcontractCards,
     setSubcontractCards,
     loadingWorks,
     setLoadingWorks,
@@ -130,8 +128,6 @@ export function useContractorScreenController({
     setWorkStageOptions,
     workSearchVisible,
     setWorkSearchVisible,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    workModalRowRef,
     workModalBootSeqRef,
     issuedLoadSeqRef,
     activeWorkModalProgressRef,
