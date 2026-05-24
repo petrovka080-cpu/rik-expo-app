@@ -1,0 +1,10 @@
+{
+  "wave": "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_RU_LOCALIZATION_CATALOG_ITEMS_INTEGRATION_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_REQUEST_ESTIMATE_BOQ_CATALOG_READY",
+  "android_emulator_passed": true,
+  "request_estimate_boq_passed": true,
+  "catalog_picker_passed": true,
+  "pdf_viewer_android_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}

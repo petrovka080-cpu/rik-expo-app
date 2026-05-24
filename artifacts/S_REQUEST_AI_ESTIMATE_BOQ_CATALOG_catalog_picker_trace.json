@@ -1,0 +1,5 @@
+{
+  "selected_option": "OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMAN_FLOW",
+  "catalog_item_picker_reused": true,
+  "service": "src/lib/catalog/catalogItemsService.ts"
+}

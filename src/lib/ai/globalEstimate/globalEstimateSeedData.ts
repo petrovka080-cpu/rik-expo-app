@@ -358,6 +358,229 @@ const asphaltRows: GlobalEstimateTemplateRowDefinition[] = [
   }),
 ];
 
+const stripFoundationRows: GlobalEstimateTemplateRowDefinition[] = [
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.1",
+    code: "strip_foundation_sand_cushion",
+    names: { ru: "Песчаная подушка", en: "Sand cushion" },
+    quantityFormula: "strip_foundation_sand_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_sand_cushion",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.2",
+    code: "strip_foundation_crushed_stone_base",
+    names: { ru: "Щебёночная подготовка", en: "Crushed stone base" },
+    quantityFormula: "strip_foundation_gravel_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_crushed_stone_base",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.3",
+    code: "strip_foundation_geotextile",
+    names: { ru: "Геотекстиль под основание", en: "Geotextile under base" },
+    quantityFormula: "strip_foundation_base_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_geotextile",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.4",
+    code: "strip_foundation_formwork_material",
+    names: { ru: "Материалы опалубки", en: "Formwork materials" },
+    quantityFormula: "strip_foundation_formwork_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_formwork_material",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.5",
+    code: "strip_foundation_longitudinal_rebar",
+    names: { ru: "Продольная арматура", en: "Longitudinal rebar" },
+    quantityFormula: "strip_foundation_longitudinal_rebar_kg",
+    unitMetric: "kg",
+    unitImperial: "lbs",
+    rateKey: "strip_foundation_longitudinal_rebar",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.6",
+    code: "strip_foundation_stirrups_rebar",
+    names: { ru: "Хомуты / поперечная арматура", en: "Stirrups and transverse rebar" },
+    quantityFormula: "strip_foundation_stirrups_rebar_kg",
+    unitMetric: "kg",
+    unitImperial: "lbs",
+    rateKey: "strip_foundation_stirrups_rebar",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.7",
+    code: "strip_foundation_binding_wire",
+    names: { ru: "Вязальная проволока", en: "Binding wire" },
+    quantityFormula: "strip_foundation_wire_kg",
+    unitMetric: "kg",
+    unitImperial: "lbs",
+    rateKey: "strip_foundation_binding_wire",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.8",
+    code: "strip_foundation_rebar_spacers",
+    names: { ru: "Фиксаторы арматуры", en: "Rebar spacers" },
+    quantityFormula: "strip_foundation_spacers_pcs",
+    unitMetric: "pcs",
+    unitImperial: "pcs",
+    rateKey: "strip_foundation_rebar_spacers",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.9",
+    code: "strip_foundation_concrete_m300",
+    names: { ru: "Бетон для ленточного фундамента", en: "Concrete for strip foundation" },
+    quantityFormula: "strip_foundation_concrete_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_concrete_m300",
+  }),
+  row({
+    sectionType: "materials",
+    sectionNumber: "1",
+    rowNumber: "1.10",
+    code: "strip_foundation_waterproofing_material",
+    names: { ru: "Гидроизоляция фундамента: материал", en: "Foundation waterproofing material" },
+    quantityFormula: "strip_foundation_waterproofing_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_waterproofing_material",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.1",
+    code: "strip_foundation_excavation",
+    names: { ru: "Разработка траншеи / земляные работы", en: "Trench excavation" },
+    quantityFormula: "strip_foundation_trench_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_excavation",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.2",
+    code: "strip_foundation_formwork_install",
+    names: { ru: "Монтаж опалубки", en: "Formwork installation" },
+    quantityFormula: "strip_foundation_formwork_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_formwork_install",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.3",
+    code: "strip_foundation_rebar_tying",
+    names: { ru: "Вязка арматурного каркаса", en: "Rebar cage tying" },
+    quantityFormula: "strip_foundation_total_rebar_kg",
+    unitMetric: "kg",
+    unitImperial: "lbs",
+    rateKey: "strip_foundation_rebar_tying",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.4",
+    code: "strip_foundation_concrete_pour",
+    names: { ru: "Заливка бетона", en: "Concrete pouring" },
+    quantityFormula: "strip_foundation_concrete_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_concrete_pour",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.5",
+    code: "strip_foundation_concrete_vibration",
+    names: { ru: "Вибрирование бетона", en: "Concrete vibration" },
+    quantityFormula: "strip_foundation_concrete_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_concrete_vibration",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.6",
+    code: "strip_foundation_concrete_curing",
+    names: { ru: "Уход за бетоном", en: "Concrete curing" },
+    quantityFormula: "strip_foundation_top_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_concrete_curing",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.7",
+    code: "strip_foundation_waterproofing_install",
+    names: { ru: "Нанесение гидроизоляции фундамента", en: "Foundation waterproofing installation" },
+    quantityFormula: "strip_foundation_waterproofing_area_m2",
+    unitMetric: "sq_m",
+    unitImperial: "sq_ft",
+    rateKey: "strip_foundation_waterproofing_install",
+  }),
+  row({
+    sectionType: "labor",
+    sectionNumber: "2",
+    rowNumber: "2.8",
+    code: "strip_foundation_backfill",
+    names: { ru: "Обратная засыпка / вывоз лишнего грунта", en: "Backfill and excess soil handling" },
+    quantityFormula: "strip_foundation_backfill_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_backfill",
+  }),
+  row({
+    sectionType: "delivery",
+    sectionNumber: "3",
+    rowNumber: "3.1",
+    code: "strip_foundation_concrete_delivery",
+    names: { ru: "Доставка бетона / миксер", en: "Concrete delivery mixer" },
+    quantityFormula: "strip_foundation_concrete_volume_m3",
+    unitMetric: "m3",
+    unitImperial: "cu_ft",
+    rateKey: "strip_foundation_concrete_delivery",
+  }),
+  row({
+    sectionType: "equipment",
+    sectionNumber: "3",
+    rowNumber: "3.2",
+    code: "strip_foundation_concrete_pump",
+    names: { ru: "Бетононасос: требуется уточнить доступ техники", en: "Concrete pump: access to be confirmed" },
+    quantityFormula: "strip_foundation_pump_set",
+    unitMetric: "set",
+    unitImperial: "set",
+    rateKey: "strip_foundation_concrete_pump",
+  }),
+];
+
 function knownWorkTemplate(input: {
   workKey: string;
   materialRows: { code: string; nameRu: string; nameEn: string; formula?: string; rateKind?: "material" | "auxiliary" }[];
@@ -876,15 +1099,72 @@ export const ASPHALT_TEMPLATE: GlobalEstimateTemplate = {
   },
 };
 
+export const STRIP_FOUNDATION_TEMPLATE: GlobalEstimateTemplate = {
+  workKey: "strip_foundation",
+  inputMeasure: "length",
+  defaultUnitMetric: "linear_m",
+  defaultUnitImperial: "linear_ft",
+  sections: [
+    {
+      type: "materials",
+      sectionNumber: "1",
+      title: { ru: "Материалы", en: "Materials" },
+      rows: stripFoundationRows.filter((item) => item.sectionType === "materials"),
+    },
+    {
+      type: "labor",
+      sectionNumber: "2",
+      title: { ru: "Работы", en: "Labor" },
+      rows: stripFoundationRows.filter((item) => item.sectionType === "labor"),
+    },
+    {
+      type: "delivery",
+      sectionNumber: "3",
+      title: { ru: "Оборудование / доставка", en: "Equipment / delivery" },
+      rows: stripFoundationRows.filter((item) => item.sectionType === "delivery" || item.sectionType === "equipment"),
+    },
+  ],
+  assumptions: {
+    ru: [
+      "Расчёт сделан для ленточного фундамента по указанным длине, ширине и высоте.",
+      "Марка бетона, схема армирования, грунт и доступ техники должны быть подтверждены перед договором.",
+      "Бетононасос включён как отдельная позиция для уточнения доступа и необходимости.",
+      "Цены берутся из backend pricebook с источниками; смета требует проверки специалистом.",
+    ],
+    en: [
+      "The estimate uses length, width and height for a strip foundation.",
+      "Concrete grade, reinforcement layout, soil and machine access must be confirmed.",
+      "Concrete pump is separated for access confirmation.",
+      "Rates come from backend pricebook entries with source evidence.",
+    ],
+  },
+  regionalRiskKeys: ["site_access", "surface_condition", "delivery_and_lifting", "local_tax_precision"],
+  clarifyingQuestions: {
+    ru: [
+      "Какой грунт и глубина промерзания на участке?",
+      "Нужна ли дренажная система и утепление фундамента?",
+      "Какая марка бетона и схема армирования заложены проектом?",
+      "Есть ли подъезд миксера и бетононасоса к месту заливки?",
+    ],
+    en: [
+      "What soil conditions and frost depth apply?",
+      "Is drainage or foundation insulation required?",
+      "What concrete grade and reinforcement layout are specified?",
+      "Can a mixer and concrete pump access the pour area?",
+    ],
+  },
+};
+
 export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) =>
   definition.workKey === "laminate_laying" ? LAMINATE_TEMPLATE :
     definition.workKey === "asphalt_paving" ? ASPHALT_TEMPLATE :
-      definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
-        definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
-          definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
-            definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
-              definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
-                genericTemplate(definition),
+      definition.workKey === "strip_foundation" ? STRIP_FOUNDATION_TEMPLATE :
+        definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
+          definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
+            definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
+              definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
+                definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
+                  genericTemplate(definition),
 );
 
 export const GLOBAL_ESTIMATE_TEMPLATE_ROWS: readonly (GlobalEstimateTemplateRowDefinition & { workKey: string })[] =
@@ -994,6 +1274,32 @@ const ASPHALT_WORK_RATE_KEYS = [
   "final_cleanup",
 ];
 
+const STRIP_FOUNDATION_MATERIAL_RATES: { rateKey: string; unit: GlobalUnitInput["normalizedUnit"]; basePrice: number }[] = [
+  { rateKey: "strip_foundation_sand_cushion", unit: "m3", basePrice: 22 },
+  { rateKey: "strip_foundation_crushed_stone_base", unit: "m3", basePrice: 35 },
+  { rateKey: "strip_foundation_geotextile", unit: "sq_m", basePrice: 1.1 },
+  { rateKey: "strip_foundation_formwork_material", unit: "sq_m", basePrice: 8 },
+  { rateKey: "strip_foundation_longitudinal_rebar", unit: "kg", basePrice: 1.2 },
+  { rateKey: "strip_foundation_stirrups_rebar", unit: "kg", basePrice: 1.2 },
+  { rateKey: "strip_foundation_binding_wire", unit: "kg", basePrice: 1.5 },
+  { rateKey: "strip_foundation_rebar_spacers", unit: "pcs", basePrice: 0.12 },
+  { rateKey: "strip_foundation_concrete_m300", unit: "m3", basePrice: 95 },
+  { rateKey: "strip_foundation_waterproofing_material", unit: "sq_m", basePrice: 6 },
+];
+
+const STRIP_FOUNDATION_WORK_RATES: { rateKey: string; unit: GlobalUnitInput["normalizedUnit"]; basePrice: number }[] = [
+  { rateKey: "strip_foundation_excavation", unit: "m3", basePrice: 10 },
+  { rateKey: "strip_foundation_formwork_install", unit: "sq_m", basePrice: 5 },
+  { rateKey: "strip_foundation_rebar_tying", unit: "kg", basePrice: 0.35 },
+  { rateKey: "strip_foundation_concrete_pour", unit: "m3", basePrice: 12 },
+  { rateKey: "strip_foundation_concrete_vibration", unit: "m3", basePrice: 3 },
+  { rateKey: "strip_foundation_concrete_curing", unit: "sq_m", basePrice: 1 },
+  { rateKey: "strip_foundation_waterproofing_install", unit: "sq_m", basePrice: 4 },
+  { rateKey: "strip_foundation_backfill", unit: "m3", basePrice: 6 },
+  { rateKey: "strip_foundation_concrete_delivery", unit: "m3", basePrice: 14 },
+  { rateKey: "strip_foundation_concrete_pump", unit: "set", basePrice: 180 },
+];
+
 function localUnit(unit: GlobalUnitInput["normalizedUnit"], metric: boolean): GlobalUnitInput["normalizedUnit"] {
   if (metric) return unit;
   if (unit === "sq_m") return "sq_ft";
@@ -1070,13 +1376,43 @@ function buildRegionalRates(): GlobalRateRecord[] {
     );
   });
 
-  return [...laminateRates, ...genericRates];
+  const stripFoundationRates = COUNTRIES.flatMap((country) =>
+    [...STRIP_FOUNDATION_MATERIAL_RATES, ...STRIP_FOUNDATION_WORK_RATES].map((definition) => {
+      const unit = localUnit(definition.unit, country.metric);
+      const unitFactor = country.metric ? 1 : unitScaleForImperial(unit);
+      const priceDefault = Number((definition.basePrice * unitFactor * country.multiplier).toFixed(2));
+      return rate({
+        rateKey: definition.rateKey,
+        names: { en: definition.rateKey.replace(/_/g, " "), ru: definition.rateKey.replace(/_/g, " ") },
+        countryCode: country.countryCode,
+        stateOrRegion: country.stateOrRegion,
+        city: country.city,
+        postalCode: country.postalCode,
+        unit,
+        priceMin: Number((priceDefault * 0.8).toFixed(2)),
+        priceMax: Number((priceDefault * 1.25).toFixed(2)),
+        priceDefault,
+        currency: country.currency,
+        priceTier: "standard",
+      });
+    }),
+  );
+
+  return [...laminateRates, ...genericRates, ...stripFoundationRates];
 }
 
 export const GLOBAL_RATE_MATERIALS: readonly GlobalRateRecord[] = buildRegionalRates().filter((item) =>
   item.rateKey.endsWith("_material") ||
   item.rateKey.endsWith("_auxiliary") ||
-  ["laminate_board", "underlayment", "baseboard", "baseboard_fittings", "thresholds", ...ASPHALT_MATERIAL_RATE_KEYS].includes(item.rateKey),
+  [
+    "laminate_board",
+    "underlayment",
+    "baseboard",
+    "baseboard_fittings",
+    "thresholds",
+    ...ASPHALT_MATERIAL_RATE_KEYS,
+    ...STRIP_FOUNDATION_MATERIAL_RATES.map((rateDefinition) => rateDefinition.rateKey),
+  ].includes(item.rateKey),
 );
 
 export const GLOBAL_RATE_WORKS: readonly GlobalRateRecord[] = buildRegionalRates().filter((item) =>
@@ -1084,7 +1420,8 @@ export const GLOBAL_RATE_WORKS: readonly GlobalRateRecord[] = buildRegionalRates
   item.rateKey.includes("_labor") ||
   (item.rateKey.includes("_install") && !item.rateKey.endsWith("_material") && !item.rateKey.endsWith("_auxiliary")) ||
   item.rateKey.includes("priming") ||
-  ASPHALT_WORK_RATE_KEYS.includes(item.rateKey),
+  ASPHALT_WORK_RATE_KEYS.includes(item.rateKey) ||
+  STRIP_FOUNDATION_WORK_RATES.some((rateDefinition) => rateDefinition.rateKey === item.rateKey),
 );
 
 export const GLOBAL_TAX_RULES: readonly GlobalTaxRule[] = [

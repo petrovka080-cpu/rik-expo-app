@@ -3,6 +3,7 @@ import {
   type ConsumerRepairAiDraft,
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
+import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
 
 const DANGEROUS_PATTERNS = [
   /газ|gas/i,
@@ -165,10 +166,10 @@ export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairA
 export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft): string {
   return [
     "Коротко:",
-    draft.summaryRu,
+    formatEstimateUserTextRu(draft.summaryRu),
     "",
     "Позиции:",
-    ...draft.items.map((item, index) => `${index + 1}. ${item.titleRu} - ${item.quantity} ${item.unit}`),
+    ...draft.items.map((item, index) => `${index + 1}. ${item.titleRu} - ${item.quantity} ${formatEstimateUnitLabel(item.unit)}`),
     "",
     "Что уточнить:",
     ...draft.missingData.map((item) => `- ${item}`),

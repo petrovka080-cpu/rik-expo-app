@@ -1,0 +1,10 @@
+{
+  "selected_option": "OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMAN_FLOW",
+  "catalog_picker_component": true,
+  "catalog_service": true,
+  "uses_catalog_items_transport": true,
+  "preserves_catalog_item_id": true,
+  "preserves_source_and_unit": true,
+  "no_fake_stock_supplier_availability": true,
+  "fake_green_claimed": false
+}

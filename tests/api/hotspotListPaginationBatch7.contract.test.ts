@@ -680,6 +680,32 @@ const isApprovedBuiltInAi50000Phase1Patch = (file: string) => {
   );
 };
 
+const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/features/consumerRepair/") ||
+    normalized.startsWith("src/features/catalog/") ||
+    normalized.startsWith("src/lib/catalog/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized === "src/lib/catalog_api.ts" ||
+    normalized === "scripts/audit/runRequestAiEstimateBoqCatalogAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateBoqCatalogSmoke.ts" ||
+    normalized === "scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized.startsWith("tests/requestEstimate/") ||
+    normalized.startsWith("tests/catalogItems/") ||
+    normalized.startsWith("tests/architecture/requestEstimate") ||
+    normalized === "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-boq-catalog/")
+  );
+};
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -797,6 +823,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
+        !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

@@ -1,0 +1,10 @@
+{
+  "web_playwright_passed": true,
+  "pdf_viewer_web_passed": true,
+  "screenshots": {
+    "foundation_boq": "artifacts/screenshots/request-estimate-boq-catalog/foundation_boq.png",
+    "manual_catalog_item": "artifacts/screenshots/request-estimate-boq-catalog/manual_catalog_item.png",
+    "pdf_viewer": "artifacts/screenshots/request-estimate-boq-catalog/pdf_viewer.png"
+  },
+  "fake_green_claimed": false
+}

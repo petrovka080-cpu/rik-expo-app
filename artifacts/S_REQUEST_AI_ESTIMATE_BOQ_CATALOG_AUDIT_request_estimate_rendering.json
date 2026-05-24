@@ -1,0 +1,12 @@
+{
+  "summary_formatter": true,
+  "unit_formatter": true,
+  "money_formatter": true,
+  "user_text_filter": true,
+  "request_summary_card": true,
+  "request_items_editor": true,
+  "strip_foundation_parser": true,
+  "strip_foundation_template": true,
+  "boq_depth_policy": true,
+  "fake_green_claimed": false
+}

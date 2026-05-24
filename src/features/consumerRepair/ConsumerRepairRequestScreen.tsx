@@ -5,6 +5,7 @@ import { AppScreen } from "../../components/layout/AppScreen";
 import { AppScreenHeader } from "../../components/layout/AppScreenHeader";
 import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
+import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import {
   addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
@@ -21,11 +22,13 @@ import {
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
+import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
 import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
-import { ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
+import { buildConsumerRepairMarketplaceSendErrors, ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
 const CONSUMER_USER_ID = "consumer-demo-user";
@@ -41,6 +44,7 @@ type State = {
   aiAnswerRu: string | null;
   statusMessage: string | null;
   validationErrors: ConsumerRequestValidationErrorItem[];
+  catalogPickerVisible: boolean;
 };
 
 export type ConsumerRepairRequestScreenProps = {
@@ -64,6 +68,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     aiAnswerRu: null,
     statusMessage: null,
     validationErrors: [],
+    catalogPickerVisible: false,
   };
 
   componentDidMount(): void {
@@ -312,16 +317,31 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   };
 
   private addManualItem = () => {
-    const current = this.ensureDraftBundle();
-    const bundle = addConsumerRepairRequestItem({
-      requestDraftId: current.draft.id,
-      titleRu: "Материал / работа вручную",
-      quantity: 1,
-      unit: "шт",
-    });
-    this.updateCurrentBundle(bundle, "Позиция добавлена. Измените количество при необходимости.");
+    this.ensureDraftBundle();
+    this.setState({ catalogPickerVisible: true });
   };
 
+  private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
+    const current = this.ensureDraftBundle();
+    const unitLabel = formatEstimateUnitLabel(catalogItem.unit);
+    const bundle = addConsumerRepairRequestItem({
+      requestDraftId: current.draft.id,
+      titleRu: catalogItem.name,
+      itemType: "material",
+      quantity: 1,
+      unit: catalogItem.unit,
+      unitLabel,
+      source: "catalog_item",
+      catalogItemId: catalogItem.catalogItemId,
+      category: catalogItem.kind ?? null,
+      sourceId: catalogItem.sourceId,
+      sourceLabel: catalogItem.sourceLabel,
+      confidence: "high",
+      addedBy: "user",
+    });
+    this.setState({ catalogPickerVisible: false });
+    this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
+  };
   private createNew = () => {
     this.setState({
       problemText: "",
@@ -333,50 +353,10 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       bundle: null,
       aiAnswerRu: null,
       validationErrors: [],
+      catalogPickerVisible: false,
       statusMessage: "Новая заявка готова к заполнению.",
     });
   };
-
-  private getMarketplaceSendErrors(bundle: ConsumerRepairDraftBundle | null): ConsumerRequestValidationErrorItem[] {
-    if (!bundle || bundle.draft.status !== "consumer_approved") return [];
-    const errors: ConsumerRequestValidationErrorItem[] = [];
-    if (this.state.contactPhone.trim().replace(/\D/g, "").length < 7) {
-      errors.push({
-        code: "CONTACT_REQUIRED",
-        messageRu: "Укажите телефон, чтобы мастера могли связаться с вами.",
-        field: "contactPhone",
-      });
-    }
-    if (this.state.problemText.trim().length < 20) {
-      errors.push({
-        code: "DESCRIPTION_REQUIRED",
-        messageRu: "Добавьте описание проблемы.",
-        field: "problemText",
-      });
-    }
-    if (bundle.media.length < 1) {
-      errors.push({
-        code: "MEDIA_REQUIRED",
-        messageRu: "Добавьте хотя бы одно фото, видео или документ.",
-        field: "media",
-      });
-    }
-    if (bundle.items.length < 1) {
-      errors.push({
-        code: "ITEMS_REQUIRED",
-        messageRu: "Добавьте хотя бы одну позицию заявки.",
-        field: "items",
-      });
-    }
-    if (!bundle.pdfs.some((pdf) => pdf.pdfStatus === "generated")) {
-      errors.push({
-        code: "PDF_REQUIRED",
-        messageRu: "Сначала создайте PDF заявки.",
-        field: "pdf",
-      });
-    }
-    return errors;
-  }
 
   render(): React.ReactNode {
     const { bundle } = this.state;
@@ -387,7 +367,11 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const sent = bundle?.draft.status === "sent_to_marketplace";
     const marketplaceSendErrors = this.state.validationErrors.length > 0
       ? this.state.validationErrors
-      : this.getMarketplaceSendErrors(bundle);
+      : buildConsumerRepairMarketplaceSendErrors({
+          bundle,
+          contactPhone: this.state.contactPhone,
+          problemText: this.state.problemText,
+        });
     const canSendToMarketplace = approved && marketplaceSendErrors.length === 0;
 
     return (
@@ -447,6 +431,11 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             history={this.state.history}
             onOpenPdf={this.openPdf}
             onOpenDraft={this.openDraftFromHistory}
+          />
+          <CatalogItemPicker
+            visible={this.state.catalogPickerVisible}
+            onClose={() => this.setState({ catalogPickerVisible: false })}
+            onSelect={this.addCatalogItem}
           />
         </AppScreenScroll>
 

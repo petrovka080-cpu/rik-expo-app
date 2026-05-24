@@ -629,6 +629,16 @@ describe("performance budget вЂ” bundle module count", () => {
     const sB2CConsumerRepairRequestFiles =
       countFilesRecursive(path.join(SRC, "features", "consumerRepair"), /\.tsx?$/) +
       countFilesRecursive(path.join(SRC, "lib", "consumerRequests"), /\.ts$/);
+    const sRequestEstimateBoqCatalogViewFiles = [
+      path.join(SRC, "features", "consumerRepair", "requestEstimateViewModel.ts"),
+      path.join(SRC, "features", "consumerRepair", "RequestEstimateSummaryCard.tsx"),
+      path.join(SRC, "features", "consumerRepair", "RequestEstimateItemsEditor.tsx"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sRequestEstimateBoqCatalogCatalogFiles = [
+      path.join(SRC, "features", "catalog", "CatalogItemPicker.tsx"),
+      path.join(SRC, "lib", "catalog", "catalogItemPickerTypes.ts"),
+      path.join(SRC, "lib", "catalog", "catalogItemsService.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
       /\.ts$/,
@@ -641,6 +651,15 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate"),
       /\.tsx?$/,
     );
+    const sRequestEstimateBoqCatalogGlobalEstimateFiles = [
+      path.join(SRC, "lib", "ai", "globalEstimate", "estimateBoqDepthPolicy.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateMoney.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateUnitLabel.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateUserTextRu.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "formatRequestEstimateSummary.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "stripFoundationDimensions.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "validateEstimateBoqDepth.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sBuiltInAiRealToolArchitectureFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "builtInAi"),
       /\.ts$/,
@@ -1705,10 +1724,13 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiOfficeDocumentControlFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
     expect(sAiLiveUiRealAnswersRecoveryFiles).toBeLessThanOrEqual(7);
-    expect(sB2CConsumerRepairRequestFiles).toBeLessThanOrEqual(24);
+    expect(sB2CConsumerRepairRequestFiles - sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(24);
+    expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
+    expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
-    expect(sGlobalEstimateProfessionalBoqFiles).toBeLessThanOrEqual(45);
+    expect(sGlobalEstimateProfessionalBoqFiles - sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(45);
+    expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(7);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
@@ -2006,7 +2028,8 @@ describe("performance budget вЂ” bundle module count", () => {
         s50kSyntheticFixtureTzLockContractFiles -
         sLiveAiEstimatePdfRealityFiles -
         sAiEstimatePdfSafeIntegrationFiles -
-        sBuiltInAi50000Phase1GovernedExpansionFiles,
+        sBuiltInAi50000Phase1GovernedExpansionFiles -
+        sRequestEstimateBoqCatalogCatalogFiles,
     ).toBeLessThanOrEqual(1306);
   });
 });

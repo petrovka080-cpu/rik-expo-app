@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { formatEstimateMoney, formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 
 type Props = {
@@ -11,12 +12,25 @@ type Props = {
   onRemove: (itemId: string) => void;
 };
 
+function itemTypeLabel(item: ConsumerRepairRequestItem): string {
+  if (item.itemType === "work") return "Работа";
+  if (item.itemType === "material") return "Материал";
+  if (item.itemType === "service") return "Оборудование / доставка";
+  return "Позиция";
+}
+
 export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove }: Props): React.ReactElement {
+  const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
       <View style={styles.main}>
         <Text style={styles.title}>{item.titleRu}</Text>
-        <Text style={styles.meta}>{item.itemType === "work" ? "Работа" : item.itemType === "material" ? "Материал" : "Позиция"}</Text>
+        <Text style={styles.meta}>
+          {itemTypeLabel(item)}
+          {item.catalogItemId ? ` · catalogItemId: ${item.catalogItemId}` : ""}
+          {item.sourceLabel ? ` · ${item.sourceLabel}` : ""}
+        </Text>
+        {item.totalPrice != null ? <Text style={styles.price}>{formatEstimateMoney(item.totalPrice, item.currency)}</Text> : null}
       </View>
       <View style={styles.qty}>
         <Pressable
@@ -28,7 +42,7 @@ export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove }
         >
           <Ionicons name="remove" size={16} color="#0F172A" />
         </Pressable>
-        <Text style={styles.qtyText}>{item.quantity ?? 0} {item.unit ?? ""}</Text>
+        <Text style={styles.qtyText}>{item.quantity ?? 0} {unitLabel}</Text>
         <Pressable
           testID={`consumer-repair-item-plus-${item.id}`}
           accessibilityRole="button"
@@ -75,6 +89,12 @@ const styles = StyleSheet.create({
     color: "#64748B",
     fontSize: 12,
     fontWeight: "700",
+  },
+  price: {
+    marginTop: 2,
+    color: "#0F172A",
+    fontSize: 12,
+    fontWeight: "900",
   },
   qty: {
     flexDirection: "row",

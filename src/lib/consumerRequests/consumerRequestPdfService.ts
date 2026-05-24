@@ -10,6 +10,7 @@ import {
   createConsumerRepairPdfSignedUrl,
   uploadConsumerRepairPdfObject,
 } from "./consumerRequestPdfStorage";
+import { formatEstimateMoney, formatEstimateUnitLabel, formatEstimateUserTextRu } from "../ai/globalEstimate";
 import { renderTextPdfDocument } from "../estimatePdf";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -84,23 +85,25 @@ export function buildConsumerRepairPdfSummary(input: {
   const itemLines = input.items.map((item, index) =>
     [
       `${index + 1}. ${item.titleRu}`,
-      `${item.quantity ?? "уточнить"} ${item.unit ?? ""}`.trim(),
-      item.unitPrice != null ? `${item.unitPrice} ${item.currency} / ${item.unit ?? "unit"}` : null,
-      item.totalPrice != null ? `${item.totalPrice} ${item.currency}` : null,
+      `${item.quantity ?? "уточнить"} ${item.unitLabel || formatEstimateUnitLabel(item.unit)}`.trim(),
+      item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${item.unitLabel || formatEstimateUnitLabel(item.unit)}` : null,
+      item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
+      item.catalogItemId ? `catalogItemId: ${item.catalogItemId}` : null,
+      item.sourceLabel ? `источник: ${item.sourceLabel}` : null,
     ].filter(Boolean).join(" - "),
   );
   const supplement = input.supplement;
   const supplementLines = supplement
     ? [
         "",
-        "Estimate PDF supplement:",
-        `Tax status: ${supplement.taxStatus || "not calculated"}`,
-        `Source confidence: ${supplement.sourceConfidence || "medium"}`,
-        supplement.safetyMessage ? `Safety: ${supplement.safetyMessage}` : null,
-        supplement.estimateAssumptions?.length ? `Assumptions: ${supplement.estimateAssumptions.join("; ")}` : null,
-        supplement.costIncreaseFactors?.length ? `Cost increase factors: ${supplement.costIncreaseFactors.join("; ")}` : null,
-        supplement.clarifyingQuestions?.length ? `Clarifying questions: ${supplement.clarifyingQuestions.join("; ")}` : null,
-        supplement.sourceLabels?.length ? `Sources: ${supplement.sourceLabels.join("; ")}` : null,
+        "Дополнение к смете:",
+        `Налоговый статус: ${supplement.taxStatus || "не рассчитан"}`,
+        `Точность источников: ${supplement.sourceConfidence || "medium"}`,
+        supplement.safetyMessage ? `Безопасность: ${supplement.safetyMessage}` : null,
+        supplement.estimateAssumptions?.length ? `Допущения: ${supplement.estimateAssumptions.join("; ")}` : null,
+        supplement.costIncreaseFactors?.length ? `Факторы цены: ${supplement.costIncreaseFactors.join("; ")}` : null,
+        supplement.clarifyingQuestions?.length ? `Вопросы: ${supplement.clarifyingQuestions.join("; ")}` : null,
+        supplement.sourceLabels?.length ? `Источники: ${supplement.sourceLabels.join("; ")}` : null,
       ].filter((line): line is string => typeof line === "string")
     : [];
   return [
@@ -110,13 +113,13 @@ export function buildConsumerRepairPdfSummary(input: {
     `Город/адрес: ${[input.draft.city, input.draft.addressText].filter(Boolean).join(", ") || "не указан"}`,
     `Тип ремонта: ${input.draft.repairType}`,
     `Описание: ${input.draft.problemText || "не указано"}`,
-    `Estimate summary: ${input.draft.aiSummaryRu || "not provided"}`,
+    `Смета: ${formatEstimateUserTextRu(input.draft.aiSummaryRu || "не указана")}`,
     "",
     "Позиции:",
     ...itemLines,
     "",
-    `Estimate total from rows: ${estimatedTotal > 0 ? `${estimatedTotal} ${totalCurrency}` : "not available"}`,
-    "Tax status: see estimate summary; tax is never calculated in PDF rendering.",
+    `Итого по позициям: ${estimatedTotal > 0 ? formatEstimateMoney(estimatedTotal, totalCurrency) : "уточнить"}`,
+    "Налоговый статус: см. текст сметы; PDF слой не рассчитывает налог.",
     "",
     `Вложения: фото/видео/документы - ${input.media.length}`,
     "",

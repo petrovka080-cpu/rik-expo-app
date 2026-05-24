@@ -1,0 +1,11 @@
+{
+  "wave": "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_RU_LOCALIZATION_CATALOG_ITEMS_INTEGRATION_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMAN_FLOW",
+  "choice_justified": true,
+  "reasoning": [
+    "The request screen now uses a shared CatalogItemPicker component.",
+    "The picker is backed by catalogItemsService, which searches catalog_items before RIK fallback.",
+    "No stock, supplier or availability is invented by the request manual material flow."
+  ],
+  "fake_green_claimed": false
+}

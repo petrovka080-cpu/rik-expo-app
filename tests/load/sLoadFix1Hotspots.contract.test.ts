@@ -845,6 +845,32 @@ const isApprovedBuiltInAi50000Phase1Patch = (file: string) => {
   );
 };
 
+const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
+  const normalized = normalizePath(file);
+  return (
+    normalized.startsWith("src/features/consumerRepair/") ||
+    normalized.startsWith("src/features/catalog/") ||
+    normalized.startsWith("src/lib/catalog/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized === "src/lib/catalog_api.ts" ||
+    normalized === "scripts/audit/runRequestAiEstimateBoqCatalogAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateBoqCatalogSmoke.ts" ||
+    normalized === "scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized.startsWith("tests/requestEstimate/") ||
+    normalized.startsWith("tests/catalogItems/") ||
+    normalized.startsWith("tests/architecture/requestEstimate") ||
+    normalized === "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-boq-catalog/")
+  );
+};
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -960,6 +986,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
+        !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

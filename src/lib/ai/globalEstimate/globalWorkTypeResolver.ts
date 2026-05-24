@@ -330,6 +330,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (exact) return { workKey: exact.workKey, confidence: "high" };
 
   const patternMatch: [RegExp, string][] = [
+    [/strip\s+foundation|ленточн\w*\s+фундамент|фундамент\w*\s+ленточн/i, "strip_foundation"],
     [/flat\s+roof|roof\s+membrane|membrane\s+roofing/i, "flat_roof_membrane"],
     [/masonry|brick|block|stone/i, "brick_masonry"],
     [/metal\s+fence|metal\s+gate|steel|welding|metal\s+structure|warehouse\s+frame|greenhouse|industrial\s+steel|agricultural\s+building/i, "welded_frame"],

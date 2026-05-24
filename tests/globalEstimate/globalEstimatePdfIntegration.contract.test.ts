@@ -26,8 +26,9 @@ describe("global estimate PDF integration contract", () => {
     const summary = buildConsumerRepairPdfSummary({ draft: bundle.draft, items: bundle.items, media: bundle.media });
     expect(opened.signedUrl.length).toBeGreaterThan(0);
     expect(opened.signedUrl).not.toContain(bundle.pdfs[0].storageKey);
-    expect(summary).toContain("Estimate summary:");
-    expect(summary).toContain("Estimate total from rows:");
-    expect(summary).toContain("Tax status:");
+    expect(summary).toContain("Смета:");
+    expect(summary).toContain("Итого по позициям:");
+    expect(summary).toContain("Налоговый статус:");
+    expect(summary).not.toContain("Estimate summary:");
   });
 });

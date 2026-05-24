@@ -20,3 +20,10 @@ export {
   rikQuickSearch,
   searchCatalogItems,
 } from "./catalog.search.service";
+
+export type { CatalogItemPickerItem } from "./catalogItemPickerTypes";
+export {
+  mapCatalogPreviewRowToPickerItem,
+  mapRikQuickSearchItemToPickerItem,
+  searchCatalogItemsForPicker,
+} from "./catalogItemsService";

@@ -24,7 +24,9 @@ export type ConsumerRepairItemSource =
   | "ai_suggested"
   | "user_added"
   | "marketplace"
-  | "reference_price_book";
+  | "reference_price_book"
+  | "catalog_item"
+  | "custom";
 
 export type ConsumerRepairRequestDraft = {
   id: string;
@@ -59,6 +61,13 @@ export type ConsumerRepairRequestItem = {
   totalPrice?: number | null;
   currency: string;
   source: ConsumerRepairItemSource;
+  catalogItemId?: string | null;
+  category?: string | null;
+  unitLabel?: string | null;
+  sourceId?: string | null;
+  sourceLabel?: string | null;
+  confidence?: "high" | "medium" | "low";
+  addedBy?: "ai" | "user" | "system";
   editableByConsumer: boolean;
   createdAt: string;
 };
@@ -147,6 +156,13 @@ export type ConsumerRepairAiDraft = {
     unitPrice?: number;
     currency?: string;
     source: ConsumerRepairItemSource;
+    catalogItemId?: string | null;
+    category?: string | null;
+    unitLabel?: string | null;
+    sourceId?: string | null;
+    sourceLabel?: string | null;
+    confidence?: "high" | "medium" | "low";
+    addedBy?: "ai" | "user" | "system";
   }[];
   missingData: string[];
   safetyMessageRu?: string;

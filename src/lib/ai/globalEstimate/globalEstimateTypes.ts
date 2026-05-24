@@ -305,6 +305,14 @@ export type GlobalEstimateInput = {
   confidenceOverride?: GlobalEstimateConfidence;
 };
 
+export type GlobalEstimateParsedDimensions = {
+  length?: number;
+  width?: number;
+  height?: number;
+  concreteVolumeM3?: number;
+  unitSystem?: GlobalUnitSystem;
+};
+
 export type GlobalEstimateResult = {
   estimateId: string;
   outputContract: {
@@ -329,6 +337,7 @@ export type GlobalEstimateResult = {
     unit: string;
     originalText?: string;
     photoBased?: boolean;
+    dimensions?: GlobalEstimateParsedDimensions;
   };
   assumptions: string[];
   sections: {

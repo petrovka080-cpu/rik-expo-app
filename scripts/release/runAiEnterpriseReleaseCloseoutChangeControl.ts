@@ -70,6 +70,7 @@ export type CloseoutOwnershipEntry = {
     | "android_runtime_proof"
     | "ai_runtime_integration"
     | "b2c_consumer_repair"
+    | "request_estimate_boq_catalog"
     | "ui_layout_release"
     | "ios_release_proof"
     | "backend_media_release"
@@ -1426,6 +1427,35 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "dirty-worktree boundary allowlist for approved AI release waves",
+    };
+  }
+  if (
+    normalized === "src/features/catalog" ||
+    normalized === "tests/catalogItems" ||
+    normalized === "tests/requestEstimate" ||
+    normalized.startsWith("src/features/consumerRepair/") ||
+    normalized.startsWith("src/features/catalog/") ||
+    normalized.startsWith("src/lib/catalog/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized === "src/lib/catalog_api.ts" ||
+    normalized === "scripts/audit/runRequestAiEstimateBoqCatalogAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateBoqCatalogSmoke.ts" ||
+    normalized === "scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" ||
+    normalized.startsWith("tests/requestEstimate/") ||
+    normalized.startsWith("tests/catalogItems/") ||
+    normalized.startsWith("tests/architecture/requestEstimate") ||
+    normalized === "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-boq-catalog/")
+  ) {
+    return {
+      file: normalized,
+      category: "request_estimate_boq_catalog",
+      wave: "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_RU_LOCALIZATION_CATALOG_ITEMS_INTEGRATION_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: false,
+      reason: "request AI estimate BOQ depth, localization, catalog item integration wave",
     };
   }
   if (/S_AI_QA|S_ANDROID|S_ARCH|S_PERF|S_SCALE/.test(normalized)) {

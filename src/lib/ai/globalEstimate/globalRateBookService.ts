@@ -31,7 +31,9 @@ export function resolveGlobalRate(params: {
   locale: GlobalLocaleContext;
   priceTier?: GlobalEstimatePriceTier;
 }): GlobalRateResolution {
-  const pool = params.sectionType === "labor" ? GLOBAL_RATE_WORKS : GLOBAL_RATE_MATERIALS;
+  const pool = params.sectionType === "labor" || params.sectionType === "equipment" || params.sectionType === "delivery"
+    ? GLOBAL_RATE_WORKS
+    : GLOBAL_RATE_MATERIALS;
   const candidates = pool
     .filter((rate) => rate.active && rate.rateKey === params.rateKey && rate.unit === params.unit && rate.priceTier === (params.priceTier ?? "standard"))
     .map((rate) => {

@@ -1,0 +1,38 @@
+{
+  "wave": "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_RU_LOCALIZATION_CATALOG_ITEMS_INTEGRATION_POINT_OF_NO_RETURN",
+  "android_emulator_passed": true,
+  "transcripts": [
+    {
+      "route": "/request",
+      "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+      "russian_text_visible": true,
+      "english_debug_text_visible": false,
+      "expanded_boq_visible": true,
+      "material_manually_button_visible": true,
+      "catalog_item_added_to_draft": true,
+      "pdf_viewer_opened": true,
+      "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+      "ui_text_sample": [
+        "rik-expo-app",
+        "Development Build",
+        "DEVELOPMENT SERVERS",
+        "INFO",
+        "http://10.0.2.2:8084",
+        "http://10.0.2.2:8085",
+        "http://10.0.2.2:8081",
+        "http://10.0.2.2:8082",
+        "http://10.0.2.2:8083",
+        "New development server",
+        "RECENTLY OPENED",
+        "RESET",
+        "http://127.0.0.1:8098",
+        "Home",
+        "Updates",
+        "Settings"
+      ],
+      "fake_green_claimed": false
+    }
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

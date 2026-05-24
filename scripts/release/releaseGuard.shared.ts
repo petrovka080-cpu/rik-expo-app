@@ -55,6 +55,7 @@ export type ReleaseGateName =
   | "bottom-nav-estimate-marketplace-plus-proof"
   | "ai-estimate-pdf-open-runtime-proof"
   | "ai-estimate-pdf-safe-integration-proof"
+  | "request-ai-estimate-boq-catalog-proof"
   | "all-screens-enterprise-web-proof"
   | "all-screens-enterprise-android-emulator-proof"
   | "all-screens-pdf-open-proof"
@@ -299,6 +300,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },
   { name: "ai-estimate-pdf-safe-integration-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" },
+  { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
   { name: "all-screens-enterprise-web-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts" },
   { name: "all-screens-enterprise-android-emulator-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" },
   { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },

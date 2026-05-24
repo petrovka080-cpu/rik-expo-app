@@ -16,6 +16,10 @@ import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
 import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import {
+  buildStripFoundationQuantityContext,
+  parseStripFoundationDimensions,
+} from "./stripFoundationDimensions";
 
 function estimateIdFor(input: GlobalEstimateInput): string {
   const source = JSON.stringify(input);
@@ -72,8 +76,9 @@ function rowAreaValue(params: {
   return converted.value;
 }
 
-function evalQuantityFormula(formula: string, area: number): number {
+function evalQuantityFormula(formula: string, area: number, context: Record<string, number> = {}): number {
   const compact = formula.replace(/\s+/g, "");
+  if (Object.prototype.hasOwnProperty.call(context, compact)) return context[compact];
   if (compact === "area" || compact === "volume") return area;
   if (compact === "1") return 1;
 
@@ -186,7 +191,15 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   const locale = resolveGlobalLocalization(input);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);
-  const quantity = defaultInputQuantity(input, locale, workDefinition.defaultMeasureUnit);
+  const stripFoundationDimensions = work.workKey === "strip_foundation"
+    ? parseStripFoundationDimensions(input.text)
+    : null;
+  const quantity = stripFoundationDimensions?.length
+    ? { volume: stripFoundationDimensions.length, unit: "linear_m", photoBased: input.photoAnalysis !== undefined }
+    : defaultInputQuantity(input, locale, workDefinition.defaultMeasureUnit);
+  const quantityContext = work.workKey === "strip_foundation"
+    ? buildStripFoundationQuantityContext(stripFoundationDimensions)
+    : {};
   const template = getGlobalEstimateTemplate(work.workKey);
   const normalizedInput = normalizeGlobalUnitForLocale({
     value: quantity.volume,
@@ -207,7 +220,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
           inputUnit: normalizedInput.normalizedUnit,
           rowUnit: unit,
         });
-        const quantityValue = round2(evalQuantityFormula(templateRow.quantityFormula, area));
+        const quantityValue = round2(evalQuantityFormula(templateRow.quantityFormula, area, quantityContext));
         const rate = resolveGlobalRate({
           rateKey: templateRow.rateKey,
           sectionType: templateRow.sectionType,
@@ -301,6 +314,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
       unit: quantity.unit,
       originalText: input.text,
       photoBased: quantity.photoBased,
+      dimensions: stripFoundationDimensions ?? undefined,
     },
     assumptions,
     sections,

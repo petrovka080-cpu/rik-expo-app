@@ -2,7 +2,9 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import type { ConsumerRepairDraftBundle } from "../../lib/consumerRequests";
-import { ConsumerRepairItemRow } from "./ConsumerRepairItemRow";
+import { RequestEstimateItemsEditor } from "./RequestEstimateItemsEditor";
+import { RequestEstimateSummaryCard } from "./RequestEstimateSummaryCard";
+import { buildRequestEstimateViewModel } from "./requestEstimateViewModel";
 
 type Props = {
   bundle: ConsumerRepairDraftBundle | null;
@@ -15,12 +17,12 @@ type Props = {
 
 export function ConsumerRepairDraftPanel({
   bundle,
-  aiAnswerRu,
   onDecrease,
   onIncrease,
   onRemove,
   onAddManual,
 }: Props): React.ReactElement {
+  const viewModel = buildRequestEstimateViewModel(bundle);
   return (
     <View style={styles.card} testID="consumer-repair-draft">
       <View style={styles.header}>
@@ -28,21 +30,15 @@ export function ConsumerRepairDraftPanel({
         <Text style={styles.status}>{bundle ? statusLabel(bundle.draft.status) : "Позиции пока пустые"}</Text>
       </View>
 
-      {aiAnswerRu ? <Text style={styles.aiSummary}>{aiAnswerRu}</Text> : null}
+      {viewModel ? <RequestEstimateSummaryCard viewModel={viewModel} /> : null}
 
-      {bundle && bundle.items.length > 0 ? (
-        <View testID="consumer-repair-draft-items">
-          <Text style={styles.sectionTitle}>Позиции</Text>
-          {bundle.items.map((item) => (
-            <ConsumerRepairItemRow
-              key={item.id}
-              item={item}
-              onDecrease={onDecrease}
-              onIncrease={onIncrease}
-              onRemove={onRemove}
-            />
-          ))}
-        </View>
+      {viewModel ? (
+        <RequestEstimateItemsEditor
+          viewModel={viewModel}
+          onDecrease={onDecrease}
+          onIncrease={onIncrease}
+          onRemove={onRemove}
+        />
       ) : (
         <Text style={styles.empty}>Опишите задачу или добавьте фото, затем подготовьте черновик.</Text>
       )}
@@ -58,7 +54,7 @@ export function ConsumerRepairDraftPanel({
 
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Добавить позицию вручную"
+        accessibilityLabel="Материал вручную"
         onPress={onAddManual}
         style={styles.manualButton}
         testID="consumer-repair-add-manual-item"
@@ -106,12 +102,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "800",
   },
-  aiSummary: {
-    color: "#334155",
-    fontSize: 13,
-    lineHeight: 19,
-    fontWeight: "700",
-  },
   sectionTitle: {
     color: "#0F172A",
     fontSize: 14,
@@ -133,7 +123,7 @@ const styles = StyleSheet.create({
   manualButton: {
     minHeight: 38,
     alignSelf: "flex-start",
-    borderRadius: 9,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: "#CBD5E1",
     alignItems: "center",

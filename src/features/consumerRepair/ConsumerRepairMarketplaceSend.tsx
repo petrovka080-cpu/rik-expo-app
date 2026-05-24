@@ -8,6 +8,32 @@ type Props = {
   errors?: ConsumerRequestValidationErrorItem[];
 };
 
+export function buildConsumerRepairMarketplaceSendErrors(params: {
+  bundle: ConsumerRepairDraftBundle | null;
+  contactPhone: string;
+  problemText: string;
+}): ConsumerRequestValidationErrorItem[] {
+  const { bundle, contactPhone, problemText } = params;
+  if (!bundle || bundle.draft.status !== "consumer_approved") return [];
+  const errors: ConsumerRequestValidationErrorItem[] = [];
+  if (contactPhone.trim().replace(/\D/g, "").length < 7) {
+    errors.push({ code: "CONTACT_REQUIRED", messageRu: "Укажите телефон, чтобы мастера могли связаться с вами.", field: "contactPhone" });
+  }
+  if (problemText.trim().length < 20) {
+    errors.push({ code: "DESCRIPTION_REQUIRED", messageRu: "Добавьте описание проблемы.", field: "problemText" });
+  }
+  if (bundle.media.length < 1) {
+    errors.push({ code: "MEDIA_REQUIRED", messageRu: "Добавьте хотя бы одно фото, видео или документ.", field: "media" });
+  }
+  if (bundle.items.length < 1) {
+    errors.push({ code: "ITEMS_REQUIRED", messageRu: "Добавьте хотя бы одну позицию заявки.", field: "items" });
+  }
+  if (!bundle.pdfs.some((pdf) => pdf.pdfStatus === "generated")) {
+    errors.push({ code: "PDF_REQUIRED", messageRu: "Сначала создайте PDF заявки.", field: "pdf" });
+  }
+  return errors;
+}
+
 export function ConsumerRepairMarketplaceSend({ bundle, errors = [] }: Props): React.ReactElement | null {
   if (!bundle || bundle.draft.status === "draft") return null;
 

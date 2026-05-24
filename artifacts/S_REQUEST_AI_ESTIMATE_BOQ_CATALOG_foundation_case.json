@@ -1,0 +1,144 @@
+{
+  "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+  "work": {
+    "workKey": "strip_foundation",
+    "title": "ленточный фундамент",
+    "category": "foundation"
+  },
+  "input": {
+    "volume": 48,
+    "unit": "linear_m",
+    "originalText": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+    "photoBased": false,
+    "dimensions": {
+      "length": 48,
+      "width": 0.4,
+      "height": 1.7,
+      "concreteVolumeM3": 32.64,
+      "unitSystem": "metric"
+    }
+  },
+  "rowCount": 20,
+  "rows": [
+    {
+      "code": "strip_foundation_sand_cushion",
+      "name": "Песчаная подушка",
+      "quantity": 1.92,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_crushed_stone_base",
+      "name": "Щебёночная подготовка",
+      "quantity": 1.92,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_geotextile",
+      "name": "Геотекстиль под основание",
+      "quantity": 19.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_formwork_material",
+      "name": "Материалы опалубки",
+      "quantity": 163.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_longitudinal_rebar",
+      "name": "Продольная арматура",
+      "quantity": 170.5,
+      "unit": "kg"
+    },
+    {
+      "code": "strip_foundation_stirrups_rebar",
+      "name": "Хомуты / поперечная арматура",
+      "quantity": 199.08,
+      "unit": "kg"
+    },
+    {
+      "code": "strip_foundation_binding_wire",
+      "name": "Вязальная проволока",
+      "quantity": 5.54,
+      "unit": "kg"
+    },
+    {
+      "code": "strip_foundation_rebar_spacers",
+      "name": "Фиксаторы арматуры",
+      "quantity": 192,
+      "unit": "pcs"
+    },
+    {
+      "code": "strip_foundation_concrete_m300",
+      "name": "Бетон для ленточного фундамента",
+      "quantity": 32.64,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_waterproofing_material",
+      "name": "Гидроизоляция фундамента: материал",
+      "quantity": 163.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_excavation",
+      "name": "Разработка траншеи / земляные работы",
+      "quantity": 48.96,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_formwork_install",
+      "name": "Монтаж опалубки",
+      "quantity": 163.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_rebar_tying",
+      "name": "Вязка арматурного каркаса",
+      "quantity": 369.58,
+      "unit": "kg"
+    },
+    {
+      "code": "strip_foundation_concrete_pour",
+      "name": "Заливка бетона",
+      "quantity": 32.64,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_concrete_vibration",
+      "name": "Вибрирование бетона",
+      "quantity": 32.64,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_concrete_curing",
+      "name": "Уход за бетоном",
+      "quantity": 19.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_waterproofing_install",
+      "name": "Нанесение гидроизоляции фундамента",
+      "quantity": 163.2,
+      "unit": "sq_m"
+    },
+    {
+      "code": "strip_foundation_backfill",
+      "name": "Обратная засыпка / вывоз лишнего грунта",
+      "quantity": 16.32,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_concrete_delivery",
+      "name": "Доставка бетона / миксер",
+      "quantity": 32.64,
+      "unit": "m3"
+    },
+    {
+      "code": "strip_foundation_concrete_pump",
+      "name": "Бетононасос: требуется уточнить доступ техники",
+      "quantity": 1,
+      "unit": "set"
+    }
+  ]
+}

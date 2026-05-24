@@ -102,6 +102,16 @@ export function addConsumerRepairRequestItem(input: {
   itemType?: ConsumerRepairRequestItem["itemType"];
   quantity?: number;
   unit?: string;
+  unitPrice?: number | null;
+  currency?: string;
+  source?: ConsumerRepairRequestItem["source"];
+  catalogItemId?: string | null;
+  category?: string | null;
+  unitLabel?: string | null;
+  sourceId?: string | null;
+  sourceLabel?: string | null;
+  confidence?: "high" | "medium" | "low";
+  addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   const item = createConsumerRepairRequestItem({
@@ -110,7 +120,16 @@ export function addConsumerRepairRequestItem(input: {
     titleRu: input.titleRu,
     quantity: input.quantity ?? 1,
     unit: input.unit ?? "шт",
-    source: "user_added",
+    unitPrice: input.unitPrice ?? null,
+    currency: input.currency ?? "KGS",
+    source: input.source ?? "user_added",
+    catalogItemId: input.catalogItemId ?? null,
+    category: input.category ?? null,
+    unitLabel: input.unitLabel ?? null,
+    sourceId: input.sourceId ?? null,
+    sourceLabel: input.sourceLabel ?? null,
+    confidence: input.confidence,
+    addedBy: input.addedBy,
   });
   return saveConsumerRepairBundle(withEvent(
     { ...bundle, items: [...bundle.items, item] },

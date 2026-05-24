@@ -60,7 +60,9 @@ export {
   listIncomingItems,
   listSuppliers,
   rikQuickSearch,
+  searchCatalogItemsForPicker,
 } from "./catalog/catalog.facade";
+export type { CatalogItemPickerItem } from "./catalog/catalog.facade";
 
 export type {
   RequestHeader,

@@ -1,5 +1,9 @@
 import type { GlobalEstimateResult } from "../ai/globalEstimate";
-import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate";
+import {
+  createGlobalEstimateProductionTraceEvent,
+  formatEstimateUnitLabel,
+  formatRequestEstimateSummary,
+} from "../ai/globalEstimate";
 import { createConsumerRepairRequestDraft } from "./consumerRequestService";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairItemType } from "./consumerRequestTypes";
 
@@ -16,21 +20,22 @@ function isDangerousEstimate(result: GlobalEstimateResult): boolean {
   return result.requiresReview && DANGEROUS_CATEGORIES.has(result.work.category);
 }
 
+function sourceLabelRu(label?: string | null): string | undefined {
+  if (!label) return undefined;
+  if (/configured backend regional reference rate/i.test(label)) return "Встроенный справочник цен";
+  if (/backend|pricebook|reference rate/i.test(label)) return "Справочник цен";
+  return label;
+}
+
 export function buildConsumerRepairAiDraftFromGlobalEstimate(result: GlobalEstimateResult): ConsumerRepairAiDraft {
   const dangerous = isDangerousEstimate(result);
   return {
     titleRu: result.work.title,
-    summaryRu: [
-      `Backend global estimate ${result.estimateId}.`,
-      `Grand total: ${result.totals.displayGrandTotal}.`,
-      `Tax status: ${result.tax.taxLabel}${result.tax.warning ? `; ${result.tax.warning}` : ""}.`,
-      `Confidence: ${result.confidence}.`,
-      "Human confirmation is required before marketplace send.",
-    ].join(" "),
+    summaryRu: formatRequestEstimateSummary(result),
     repairType: result.work.category,
     dangerousDiyBlocked: dangerous,
     safetyMessageRu: dangerous
-      ? "Safety-sensitive work: no DIY instructions are provided. Use this as an estimate/request for a qualified specialist."
+      ? "Работа повышенной опасности: DIY-инструкции не выдаются. Используйте смету как основу заявки для профильного специалиста."
       : undefined,
     missingData: result.clarifyingQuestions,
     items: result.sections.flatMap((section) =>
@@ -39,9 +44,14 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(result: GlobalEstim
         titleRu: `${row.rowNumber} ${row.name}`,
         quantity: row.quantity,
         unit: row.unit,
+        unitLabel: formatEstimateUnitLabel(row.unit),
         unitPrice: row.unitPrice,
         currency: row.currency,
         source: "reference_price_book" as const,
+        sourceId: row.sourceId,
+        sourceLabel: sourceLabelRu(row.sourceEvidence[0]?.label),
+        confidence: row.confidence,
+        addedBy: "ai" as const,
       })),
     ),
   };

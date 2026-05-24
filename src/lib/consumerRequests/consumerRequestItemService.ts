@@ -11,6 +11,13 @@ export function createConsumerRepairRequestItem(input: {
   unitPrice?: number | null;
   currency?: string;
   source?: ConsumerRepairItemSource;
+  catalogItemId?: string | null;
+  category?: string | null;
+  unitLabel?: string | null;
+  sourceId?: string | null;
+  sourceLabel?: string | null;
+  confidence?: "high" | "medium" | "low";
+  addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairRequestItem {
   const quantity = input.quantity ?? null;
   const unitPrice = input.unitPrice ?? null;
@@ -25,6 +32,13 @@ export function createConsumerRepairRequestItem(input: {
     totalPrice: quantity != null && unitPrice != null ? Math.round(quantity * unitPrice) : null,
     currency: input.currency ?? "KGS",
     source: input.source ?? "ai_suggested",
+    catalogItemId: input.catalogItemId ?? null,
+    category: input.category ?? null,
+    unitLabel: input.unitLabel ?? null,
+    sourceId: input.sourceId ?? null,
+    sourceLabel: input.sourceLabel ?? null,
+    confidence: input.confidence,
+    addedBy: input.addedBy,
     editableByConsumer: true,
     createdAt: new Date().toISOString(),
   };

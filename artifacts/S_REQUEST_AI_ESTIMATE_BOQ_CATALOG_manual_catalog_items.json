@@ -1,0 +1,17 @@
+[
+  {
+    "id": "consumer_item_mpjzktda_bel3t6",
+    "source": "catalog_item",
+    "catalogItemId": "catalog_items_beton_m300",
+    "name": "Бетон М300 из catalog_items",
+    "quantity": 3,
+    "unit": "m3",
+    "unitLabel": "м³",
+    "unitPrice": 5000,
+    "currency": "KGS",
+    "sourceId": "catalog_items",
+    "sourceLabel": "catalog_items",
+    "confidence": "high",
+    "addedBy": "user"
+  }
+]

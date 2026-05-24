@@ -1,0 +1,11 @@
+{
+  "route": "/request",
+  "ai_entrypoint": "src/features/consumerRepair/consumerRepairAiAdapter.ts:buildConsumerRepairAiDraft",
+  "uses_built_in_ai_ingress": true,
+  "converts_global_estimate_to_draft_items": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts:buildConsumerRepairAiDraftFromGlobalEstimate",
+  "summary_generated_by": "src/lib/ai/globalEstimate/formatRequestEstimateSummary.ts",
+  "screen_view_model": "src/features/consumerRepair/requestEstimateViewModel.ts",
+  "manual_material_button_opens_catalog_picker": true,
+  "pdf_payload_source": "src/lib/consumerRequests/consumerRequestPdfService.ts:buildConsumerRepairPdfSummary",
+  "fake_green_claimed": false
+}
