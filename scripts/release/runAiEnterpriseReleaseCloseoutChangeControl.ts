@@ -40,6 +40,8 @@ const GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_WAVE =
   "S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_ENGINE_POINT_OF_NO_RETURN";
 const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
   "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE =
+  "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -878,8 +880,39 @@ function isEstimatePdfArchitectureAuditPath(file: string): boolean {
   );
 }
 
+function isAiEstimatePdfSafeIntegrationPath(file: string): boolean {
+  return (
+    file === "artifacts/.gitattributes" ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_") ||
+    file.startsWith("artifacts/pdf/ai-estimate-pdf-safe-integration/") ||
+    file === "scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" ||
+    file === "scripts/e2e/runAndroidAiEstimatePdfSafeIntegrationSmoke.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "src/lib/ai/estimatePdf/estimatePdfActionService.ts" ||
+    file === "src/lib/aiEstimatePdf" ||
+    file.startsWith("src/lib/aiEstimatePdf/") ||
+    file === "tests/pdfLegacy" ||
+    file.startsWith("tests/pdfLegacy/") ||
+    file === "tests/e2e/aiEstimatePdfSafeIntegration.web.spec.ts" ||
+    file.startsWith("tests/architecture/pdfIntegration") ||
+    file === "tests/architecture/pdfNoMarkdownAsTruth.contract.test.ts" ||
+    file === "tests/architecture/pdfArchAuditNoMarkdownAsTruth.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isAiEstimatePdfSafeIntegrationPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate PDF safe integration, legacy PDF protection, proof runners, and evidence artifacts",
+    };
+  }
   if (isEstimatePdfArchitectureAuditPath(normalized)) {
     return {
       file: normalized,

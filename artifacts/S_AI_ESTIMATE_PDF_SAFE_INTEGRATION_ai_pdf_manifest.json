@@ -1,0 +1,91 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_ADD_ISOLATED_AI_ESTIMATE_PDF_RENDERER_ADAPTER",
+  "files": [
+    {
+      "id": "laminate_laying_100sqm",
+      "workKey": "laminate_laying",
+      "route": "/chat",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/laminate_laying_100sqm.pdf",
+      "bytes": 20294,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-e_1500068329",
+      "estimateId": "global_estimate_1500068329",
+      "valid": true,
+      "tableRows": 10
+    },
+    {
+      "id": "brick_masonry_74sqm",
+      "workKey": "brick_masonry",
+      "route": "/chat",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm.pdf",
+      "bytes": 17243,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-e_1050870808",
+      "estimateId": "global_estimate_1050870808",
+      "valid": true,
+      "tableRows": 6
+    },
+    {
+      "id": "asphalt_paving_1000sqm",
+      "workKey": "asphalt_paving",
+      "route": "/ai",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/asphalt_paving_1000sqm.pdf",
+      "bytes": 27584,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-e_1834625478",
+      "estimateId": "global_estimate_1834625478",
+      "valid": true,
+      "tableRows": 17
+    },
+    {
+      "id": "drywall_wall_cladding_352sqm",
+      "workKey": "drywall_wall_cladding",
+      "route": "/chat",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf",
+      "bytes": 15575,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-te_407650773",
+      "estimateId": "global_estimate_407650773",
+      "valid": true,
+      "tableRows": 4
+    },
+    {
+      "id": "carpet_laying_100sqm",
+      "workKey": "carpet_laying",
+      "route": "/request",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/carpet_laying_100sqm.pdf",
+      "bytes": 18007,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-te_913535891",
+      "estimateId": "global_estimate_913535891",
+      "valid": true,
+      "tableRows": 7
+    },
+    {
+      "id": "ceramic_tile_floor_laying_174sqm",
+      "workKey": "ceramic_tile_floor_laying",
+      "route": "/chat",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/ceramic_tile_floor_laying_174sqm.pdf",
+      "bytes": 17079,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-ate_19038633",
+      "estimateId": "global_estimate_19038633",
+      "valid": true,
+      "tableRows": 6
+    },
+    {
+      "id": "gable_roof_installation_100sqm",
+      "workKey": "gable_roof_installation",
+      "route": "/chat",
+      "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf",
+      "bytes": 19774,
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "documentNumber": "AI-EST-e_1330920952",
+      "estimateId": "global_estimate_1330920952",
+      "valid": true,
+      "tableRows": 9
+    }
+  ],
+  "fake_green_claimed": false
+}

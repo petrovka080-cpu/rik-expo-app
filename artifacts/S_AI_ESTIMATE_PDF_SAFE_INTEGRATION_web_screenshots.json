@@ -1,0 +1,18 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN",
+  "status": "GREEN_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WEB_READY",
+  "ai_estimate_pdf_web_passed": true,
+  "legacy_pdf_viewer_web_passed": true,
+  "ai_pdf_viewer_route": "/pdf-viewer",
+  "legacy_pdf_viewer_route": "/pdf-viewer",
+  "ai_pdf_path": "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm_web.pdf",
+  "legacy_pdf_path": "artifacts/pdf/ai-estimate-pdf-safe-integration/legacy_brick_masonry_74sqm_web.pdf",
+  "ai_screenshot_path": "artifacts/screenshots/ai-estimate-pdf-safe-integration/web/ai_estimate_pdf_viewer.png",
+  "legacy_screenshot_path": "artifacts/screenshots/ai-estimate-pdf-safe-integration/web/legacy_pdf_viewer.png",
+  "direct_renderer_path": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+  "real_table_present": true,
+  "totals_present": true,
+  "tax_sources_footer_present": true,
+  "mojibake_found": false,
+  "fake_green_claimed": false
+}

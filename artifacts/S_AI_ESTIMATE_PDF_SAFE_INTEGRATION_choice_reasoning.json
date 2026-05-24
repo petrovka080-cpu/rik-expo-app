@@ -1,0 +1,15 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_ADD_ISOLATED_AI_ESTIMATE_PDF_RENDERER_ADAPTER",
+  "audit_decision": "CREATE_UNIFIED_DOCUMENT_ENGINE_V2",
+  "reasons": [
+    "Legacy PDF route/action/viewer remain production-stable and protected.",
+    "Audit showed current estimate PDF renderer is text-dump oriented and not safe for an enterprise table without risky changes.",
+    "Option B gives AI Estimate PDF its own downstream document adapter while still reusing the existing /pdf-viewer lifecycle.",
+    "DocumentEngineV2 is not implemented or enabled in this wave; no mass migration is performed."
+  ],
+  "not_an_ai_framework": true,
+  "source_of_truth": "GlobalEstimateResult",
+  "old_pdf_default": true,
+  "fake_green_claimed": false
+}

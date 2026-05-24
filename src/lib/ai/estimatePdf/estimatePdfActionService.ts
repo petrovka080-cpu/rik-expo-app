@@ -2,7 +2,7 @@ import {
   generateConsumerRepairRequestPdf,
   openConsumerRepairRequestPdf,
 } from "../../consumerRequests/consumerRequestPdfService";
-import { createEstimatePdf } from "../../estimatePdf";
+import { createAiEstimatePdf } from "../../aiEstimatePdf";
 import { assertAiEstimatePdfSource } from "./estimatePdfGuard";
 import { mapAiEstimatePdfSourceToExistingConsumerPdfModel } from "./estimatePdfModelMapper";
 import type { AiEstimatePdfConfirmation, AiEstimatePdfResult, AiEstimatePdfSource } from "./estimatePdfTypes";
@@ -44,17 +44,13 @@ export function generateAiEstimatePdf(input: {
   }
   assertAiEstimatePdfSource(input.source);
   if (input.source.structuredEstimate) {
-    const pdf = createEstimatePdf({
+    const runtimeTraceId = `ai_estimate_pdf:${input.source.sourceId ?? input.source.structuredEstimate.estimateId}`;
+    const pdf = createAiEstimatePdf({
       estimate: input.source.structuredEstimate,
-      runtimeTrace: {
-        traceId: `ai_estimate_pdf:${input.source.sourceId ?? input.source.structuredEstimate.estimateId}`,
-        selectedRoute: "estimate",
-        selectedTool: "calculate_global_estimate",
-        workKey: input.source.structuredEstimate.work.workKey,
-        sourceType: input.source.sourceType,
-      },
+      runtimeTraceId,
+      route: input.source.sourceType === "global_estimate_result" ? "/chat" : "/ai",
       generatedAt: new Date().toISOString(),
-      language: input.source.language,
+      documentMode: "estimate",
     });
     const result: AiEstimatePdfResult = {
       pdfId: pdf.pdfId,

@@ -1,0 +1,31 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN",
+  "legacy_pdf_paths": [
+    {
+      "name": "legacy_estimate_pdf_flow",
+      "route": "/pdf-viewer",
+      "renderer": "src/lib/estimatePdf/createEstimatePdf.ts -> renderEstimatePdfDocument",
+      "actionPayload": "EstimatePdfDocument data URI",
+      "currentlyWorking": true,
+      "mustNotChange": true
+    },
+    {
+      "name": "legacy_consumer_request_pdf_flow",
+      "route": "/pdf-viewer",
+      "renderer": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+      "actionPayload": "Consumer repair request signed URL/data URI",
+      "currentlyWorking": true,
+      "mustNotChange": true
+    },
+    {
+      "name": "legacy_pdf_viewer",
+      "route": "/pdf-viewer",
+      "renderer": "src/lib/pdf/PdfViewerScreenContent.tsx",
+      "actionPayload": "uri/title/fileName query params",
+      "currentlyWorking": true,
+      "mustNotChange": true
+    }
+  ],
+  "protected": true,
+  "fake_green_claimed": false
+}

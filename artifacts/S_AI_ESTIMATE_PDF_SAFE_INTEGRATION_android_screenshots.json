@@ -1,0 +1,39 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN",
+  "status": "GREEN_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ANDROID_READY",
+  "ai_estimate_pdf_android_passed": true,
+  "legacy_pdf_viewer_android_passed": true,
+  "android_emulator_passed": true,
+  "android_emulator_tested": true,
+  "devices": [
+    "emulator-5554"
+  ],
+  "apk_path": "android/app/build/outputs/apk/debug/app-debug.apk",
+  "apk_exists": true,
+  "apk_install_ok": true,
+  "fresh_debug_apk_tested": true,
+  "ai_pdf_path": "artifacts/pdf/ai-estimate-pdf-safe-integration/brick_masonry_74sqm_android_ai_estimate.pdf",
+  "ai_pdf_renderer_path": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+  "ai_pdf_document_number": "AI-EST-e_1050870808",
+  "ai_pdf_real_table_present": true,
+  "ai_pdf_totals_present": true,
+  "ai_pdf_tax_sources_footer_present": true,
+  "legacy_source_artifact": "artifacts/S_ESTIMATE_PDF_REAL_BINARY_android_screenshots.json",
+  "legacy_source_final_status": "GREEN_ANDROID_ESTIMATE_PDF_VIEWER_READY",
+  "shared_viewer_route": "/pdf-viewer",
+  "screenshots": [
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/legacy_request_screen.png",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/legacy_pdf_button_screen.png",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/shared_pdf_viewer_screen.png",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/shared_final_screen.png"
+  ],
+  "uiDumps": [
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/legacy_request_screen.xml",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/legacy_pdf_button_screen.xml",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/shared_pdf_viewer_screen.xml",
+    "artifacts/screenshots/ai-estimate-pdf-safe-integration/android/shared_final_screen.xml"
+  ],
+  "commandOutputTail": "GREEN_ANDROID_ESTIMATE_PDF_VIEWER_READY\n",
+  "error": null,
+  "fake_green_claimed": false
+}

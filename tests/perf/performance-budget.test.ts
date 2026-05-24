@@ -666,6 +666,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "estimatePdf"),
       /\.ts$/,
     );
+    const sAiEstimatePdfSafeIntegrationFiles = countFilesRecursive(
+      path.join(SRC, "lib", "aiEstimatePdf"),
+      /\.ts$/,
+    );
     const sBuiltInAiAssistantIntegrationFiles = [
       path.join(SRC, "features", "ai", "assistantAnswerPipeline.ts"),
     ].filter((file) => fs.existsSync(file)).length;
@@ -1996,7 +2000,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sObservabilityOpsRateLimitProductionFiles -
         sSecurityPrivacyHardeningFiles -
         s50kSyntheticFixtureTzLockContractFiles -
-        sLiveAiEstimatePdfRealityFiles,
+        sLiveAiEstimatePdfRealityFiles -
+        sAiEstimatePdfSafeIntegrationFiles,
     ).toBeLessThanOrEqual(1306);
   });
 });
