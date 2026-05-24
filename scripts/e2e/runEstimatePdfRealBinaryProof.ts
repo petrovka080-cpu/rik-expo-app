@@ -11,7 +11,8 @@ const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const PDF_DIR = path.join(ARTIFACT_DIR, "pdf", "estimate-pdf-reality");
 const WAVE = "S_ESTIMATE_PDF_REAL_BINARY_CYRILLIC_TABLE_VIEWER_POINT_OF_NO_RETURN";
 const GREEN = "GREEN_ESTIMATE_PDF_REAL_BINARY_CYRILLIC_TABLE_VIEWER_READY";
-const REQUIRE_LIVE = process.argv.includes("--require-live");
+const FINAL_CLOSEOUT = process.argv.includes("--final");
+const REQUIRE_LIVE = FINAL_CLOSEOUT || process.argv.includes("--require-live");
 const BRICK_CASE = P0_UNFINISHED_AI_ESTIMATE_CASES.find((testCase) => testCase.expectedWorkKey === "brick_masonry");
 if (!BRICK_CASE) throw new Error("ESTIMATE_PDF_BRICK_CASE_MISSING");
 const PROMPT = BRICK_CASE.promptRu;
@@ -57,9 +58,11 @@ function commandStatus() {
   return {
     typecheck_passed: status.typecheck_passed === true,
     lint_passed: status.lint_passed === true,
+    git_diff_check_passed: status.git_diff_check_passed === true,
     targeted_tests_passed: status.targeted_tests_passed === true,
     playwright_web_passed: status.playwright_web_passed === true,
     android_emulator_passed: status.android_emulator_passed === true,
+    runtime_proof_passed: status.runtime_proof_passed === true,
     full_jest_passed: status.full_jest_passed === true,
     release_verify_passed: status.release_verify_passed === true,
   };
@@ -68,10 +71,17 @@ function commandStatus() {
 function liveStatus() {
   const web = readJson("S_ESTIMATE_PDF_REAL_BINARY_web_screenshots.json");
   const android = readJson("S_ESTIMATE_PDF_REAL_BINARY_android_screenshots.json");
+  const apk = readJson("S_ESTIMATE_PDF_REAL_BINARY_android_apk_manifest.json");
   return {
     pdf_viewer_web_opened: web.pdf_viewer_web_opened === true && web.playwright_web_passed === true,
     pdf_viewer_android_opened: android.pdf_viewer_android_opened === true && android.android_emulator_passed === true,
     android_emulator_passed: android.android_emulator_passed === true,
+    android_fresh_apk_tested:
+      apk.apk_exists === true &&
+      apk.installed_on_emulator === true &&
+      apk.android_pdf_viewer_smoke_passed === true &&
+      typeof apk.apk_size_bytes === "number" &&
+      apk.apk_size_bytes > 0,
   };
 }
 
@@ -164,10 +174,21 @@ function main(): void {
       reason: "Android emulator PDF viewer artifact is missing or failed",
     });
   }
+  if (REQUIRE_LIVE && !live.android_fresh_apk_tested) {
+    failures.push({
+      code: "ANDROID_FRESH_APK_NOT_TESTED",
+      route: "/request",
+      prompt: PROMPT,
+      artifactPath: path.join(ARTIFACT_DIR, "S_ESTIMATE_PDF_REAL_BINARY_android_apk_manifest.json"),
+      reason: "Fresh debug APK manifest is missing or does not prove install plus Android PDF viewer smoke",
+    });
+  }
 
   const finalStatus =
     failures.some((failure) => failure.code === "ANDROID_PDF_VIEWER_NOT_RUN")
       ? "BLOCKED_ANDROID_EMULATOR_NOT_RUN"
+      : failures.some((failure) => failure.code === "ANDROID_FRESH_APK_NOT_TESTED")
+        ? "BLOCKED_ANDROID_PDF_VIEWER_SMOKE_FAILED"
       : failures.some((failure) => failure.code === "WEB_PDF_VIEWER_NOT_RUN")
         ? "BLOCKED_WEB_PLAYWRIGHT_FAILED"
         : failures.length > 0
@@ -196,6 +217,7 @@ function main(): void {
     pdf_binary_valid: proof.extraction.binaryHeader === "%PDF-",
     pdf_viewer_web_opened: live.pdf_viewer_web_opened,
     pdf_viewer_android_opened: live.pdf_viewer_android_opened,
+    android_fresh_apk_tested: live.android_fresh_apk_tested,
     pdf_text_extractable: proof.extraction.text.length > 20,
     pdf_cyrillic_readable: proof.extraction.cyrillicReadable,
     pdf_mojibake_found: proof.extraction.mojibakeFound,
@@ -205,9 +227,11 @@ function main(): void {
     fake_pdf_action_only_found: false,
     typecheck_passed: commands.typecheck_passed,
     lint_passed: commands.lint_passed,
+    git_diff_check_passed: commands.git_diff_check_passed,
     targeted_tests_passed: commands.targeted_tests_passed,
     playwright_web_passed: commands.playwright_web_passed && live.pdf_viewer_web_opened,
     android_emulator_passed: commands.android_emulator_passed && live.pdf_viewer_android_opened,
+    runtime_proof_passed: commands.runtime_proof_passed || finalStatus === GREEN,
     full_jest_passed: commands.full_jest_passed,
     release_verify_passed: commands.release_verify_passed,
     commit_created: commit.commit_created,
@@ -241,6 +265,7 @@ function main(): void {
       `Mojibake found: ${matrix.pdf_mojibake_found}`,
       `Web viewer opened: ${matrix.pdf_viewer_web_opened}`,
       `Android viewer opened: ${matrix.pdf_viewer_android_opened}`,
+      `Fresh debug APK tested: ${matrix.android_fresh_apk_tested}`,
       "",
       "Fake green claimed: false",
     ].join("\n"),

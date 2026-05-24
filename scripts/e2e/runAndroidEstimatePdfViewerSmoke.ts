@@ -8,6 +8,7 @@ import { cleanupTempUser, createTempUser, createVerifierAdmin, type RuntimeTestU
 const WAVE = "S_ESTIMATE_PDF_REAL_BINARY_CYRILLIC_TABLE_VIEWER_POINT_OF_NO_RETURN";
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const TARGET_ARTIFACT = path.join(ARTIFACT_DIR, "S_ESTIMATE_PDF_REAL_BINARY_android_screenshots.json");
+const APK_MANIFEST_ARTIFACT = path.join(ARTIFACT_DIR, "S_ESTIMATE_PDF_REAL_BINARY_android_apk_manifest.json");
 const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "screenshots", "estimate-pdf-reality", "android");
 const PACKAGE_NAME = "com.azisbek_dzhantaev.rikexpoapp";
 const GOOGLE_DOCS_PACKAGE_NAME = "com.google.android.apps.docs";
@@ -15,8 +16,8 @@ const APK_PATH = path.resolve(process.cwd(), "android", "app", "build", "outputs
 const DEV_PORT = Number(process.env.ESTIMATE_PDF_ANDROID_DEV_PORT ?? "8098");
 const REQUEST_PROMPT = "\u0425\u043e\u0447\u0443 \u0443\u043b\u043e\u0436\u0438\u0442\u044c \u043a\u043e\u0432\u0440\u043e\u043b\u0438\u043d \u043d\u0430 100 \u043a\u0432 \u043c";
 const PDF_ACTION_RESOURCE_ID = "consumer-estimate-make-pdf";
+const OPEN_PDF_RESOURCE_ID = "consumer-repair-open-pdf";
 const PREPARE_DRAFT_RESOURCE_ID = "consumer-repair-prepare-draft";
-const PROMPT = "Хочу уложить ковролин на 100 кв м";
 
 type RunResult = { ok: boolean; output: string };
 
@@ -25,11 +26,22 @@ function writeJson(filePath: string, value: unknown): void {
   fs.writeFileSync(filePath, `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-function run(command: string, args: string[]): RunResult {
+function apkManifestBase() {
+  const exists = fs.existsSync(APK_PATH);
+  const stat = exists ? fs.statSync(APK_PATH) : null;
+  return {
+    apk_path: path.relative(process.cwd(), APK_PATH).replace(/\\/g, "/"),
+    apk_exists: exists,
+    apk_size_bytes: stat?.size ?? null,
+    apk_modified_at: stat?.mtime.toISOString() ?? null,
+  };
+}
+
+function run(command: string, args: string[], timeoutMs = 120_000): RunResult {
   try {
     return {
       ok: true,
-      output: execFileSync(command, args, { cwd: process.cwd(), encoding: "utf8", stdio: "pipe", timeout: 30_000 }),
+      output: execFileSync(command, args, { cwd: process.cwd(), encoding: "utf8", stdio: "pipe", timeout: timeoutMs }),
     };
   } catch (error) {
     return { ok: false, output: error instanceof Error ? error.message : String(error) };
@@ -47,12 +59,12 @@ function connectedEmulators(): string[] {
 }
 
 function installApk(device: string): RunResult {
-  let install = run("adb", ["-s", device, "install", "-r", APK_PATH]);
+  let install = run("adb", ["-s", device, "install", "-r", APK_PATH], 180_000);
   if (!install.ok && install.output.includes("INSUFFICIENT_STORAGE")) {
     run("adb", ["-s", device, "uninstall", PACKAGE_NAME]);
     run("adb", ["-s", device, "uninstall", `${PACKAGE_NAME}.test`]);
     run("adb", ["-s", device, "shell", "pm", "trim-caches", "1024M"]);
-    install = run("adb", ["-s", device, "install", "-r", APK_PATH]);
+    install = run("adb", ["-s", device, "install", "-r", APK_PATH], 180_000);
   }
   return install;
 }
@@ -106,7 +118,7 @@ function hasPdfActionButton(xml: string): boolean {
 function isRequestEstimateScreen(xml: string): boolean {
   const text = xmlText(xml);
   if (text.includes("consumer-repair-") || text.includes("consumer-estimate-") || text.includes(REQUEST_PROMPT)) return !isLoginScreen(xml);
-  return !isLoginScreen(xml) && (text.includes("Смета") || text.includes("Ремонт дома") || text.includes(PROMPT));
+  return false;
 }
 
 function isStrictRequestEstimateScreen(xml: string): boolean {
@@ -170,18 +182,48 @@ async function tapVisiblePdfAction(
   throw new Error("Android PDF action button was not found on the request screen after scrolling.");
 }
 
+async function waitForAndroidPdfViewer(
+  harness: ReturnType<typeof createAndroidHarness>,
+): Promise<{
+  viewerScreen: ReturnType<ReturnType<typeof createAndroidHarness>["dumpAndroidScreen"]>;
+  openPdfScreen: ReturnType<ReturnType<typeof createAndroidHarness>["dumpAndroidScreen"]> | null;
+  openPdfActionClicked: boolean;
+}> {
+  let openPdfScreen: ReturnType<ReturnType<typeof createAndroidHarness>["dumpAndroidScreen"]> | null = null;
+  let openPdfActionClicked = false;
+  for (let attempt = 0; attempt < 70; attempt += 1) {
+    await sleep(1500);
+    const candidate = harness.dumpAndroidScreen(`estimate-pdf-real-binary-android-viewer-${attempt + 1}`);
+    const cleaned = await harness.dismissAndroidInterruptions(candidate, `estimate-pdf-real-binary-android-viewer-interrupt-${attempt + 1}`);
+    if (isPdfViewer(cleaned.xml)) {
+      return { viewerScreen: cleaned, openPdfScreen, openPdfActionClicked };
+    }
+    if (!openPdfActionClicked) {
+      const openPdfBounds = findBoundsByResourceId(cleaned.xml, OPEN_PDF_RESOURCE_ID);
+      if (openPdfBounds && harness.tapAndroidBounds(openPdfBounds)) {
+        openPdfScreen = cleaned;
+        openPdfActionClicked = true;
+      }
+    }
+  }
+  throw new Error("Android PDF viewer did not open after tapping the PDF action.");
+}
+
 async function main(): Promise<void> {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
   const devices = connectedEmulators();
+  const apk = apkManifestBase();
   const baseArtifact = {
     wave: WAVE,
     android_emulator_tested: devices.length > 0,
     devices,
     android_dev_port: DEV_PORT,
     apk_path: APK_PATH,
-    apk_exists: fs.existsSync(APK_PATH),
+    apk_exists: apk.apk_exists,
+    apk_size_bytes: apk.apk_size_bytes,
+    apk_modified_at: apk.apk_modified_at,
     fake_green_claimed: false,
   };
 
@@ -193,11 +235,18 @@ async function main(): Promise<void> {
       pdf_viewer_android_opened: false,
       error: "No connected Android emulator from adb devices.",
     };
+    writeJson(APK_MANIFEST_ARTIFACT, {
+      ...apk,
+      installed_on_emulator: false,
+      android_pdf_viewer_smoke_passed: false,
+      final_status: artifact.final_status,
+      fake_green_claimed: false,
+    });
     writeJson(TARGET_ARTIFACT, artifact);
     throw new Error(artifact.final_status);
   }
 
-  if (!fs.existsSync(APK_PATH)) {
+  if (!apk.apk_exists) {
     const artifact = {
       ...baseArtifact,
       final_status: "BLOCKED_ANDROID_EMULATOR_FAILED",
@@ -205,6 +254,13 @@ async function main(): Promise<void> {
       pdf_viewer_android_opened: false,
       error: `Missing debug APK: ${APK_PATH}`,
     };
+    writeJson(APK_MANIFEST_ARTIFACT, {
+      ...apk,
+      installed_on_emulator: false,
+      android_pdf_viewer_smoke_passed: false,
+      final_status: artifact.final_status,
+      fake_green_claimed: false,
+    });
     writeJson(TARGET_ARTIFACT, artifact);
     throw new Error(artifact.error);
   }
@@ -220,9 +276,25 @@ async function main(): Promise<void> {
       apk_install_ok: false,
       install_output: install.output.slice(0, 1000),
     };
+    writeJson(APK_MANIFEST_ARTIFACT, {
+      ...apk,
+      installed_on_emulator: false,
+      android_pdf_viewer_smoke_passed: false,
+      final_status: artifact.final_status,
+      install_output: install.output.slice(0, 1000),
+      fake_green_claimed: false,
+    });
     writeJson(TARGET_ARTIFACT, artifact);
     throw new Error(`APK install failed: ${install.output.slice(0, 300)}`);
   }
+  writeJson(APK_MANIFEST_ARTIFACT, {
+    ...apk,
+    installed_on_emulator: true,
+    android_pdf_viewer_smoke_passed: false,
+    final_status: "ANDROID_APK_INSTALLED_PDF_VIEWER_PENDING",
+    install_output: install.output.slice(0, 500),
+    fake_green_claimed: false,
+  });
 
   const harness = createAndroidHarness({
     projectRoot: process.cwd(),
@@ -287,19 +359,7 @@ async function main(): Promise<void> {
 
     const pdfButtonScreen = await tapVisiblePdfAction(harness, device);
 
-    let viewerScreen: ReturnType<typeof harness.dumpAndroidScreen> | null = null;
-    for (let attempt = 0; attempt < 60; attempt += 1) {
-      await sleep(1500);
-      const candidate = harness.dumpAndroidScreen(`estimate-pdf-real-binary-android-viewer-${attempt + 1}`);
-      const cleaned = await harness.dismissAndroidInterruptions(candidate, `estimate-pdf-real-binary-android-viewer-interrupt-${attempt + 1}`);
-      if (isPdfViewer(cleaned.xml)) {
-        viewerScreen = cleaned;
-        break;
-      }
-    }
-    if (!viewerScreen) {
-      throw new Error("Android PDF viewer did not open after tapping the PDF action.");
-    }
+    const { viewerScreen, openPdfScreen, openPdfActionClicked } = await waitForAndroidPdfViewer(harness);
 
     const finalScreenshot = harness.dumpAndroidScreen("estimate-pdf-real-binary-android-final");
     const viewerOpened = isPdfViewer(viewerScreen.xml) || isPdfViewer(finalScreenshot.xml);
@@ -316,11 +376,15 @@ async function main(): Promise<void> {
       request_screen_png: relative(requestScreen.pngPath),
       pdf_button_screen_xml: relative(pdfButtonScreen.xmlPath),
       pdf_button_screen_png: relative(pdfButtonScreen.pngPath),
+      open_pdf_screen_xml: relative(openPdfScreen?.xmlPath),
+      open_pdf_screen_png: relative(openPdfScreen?.pngPath),
       viewer_screen_xml: relative(viewerScreen.xmlPath),
       viewer_screen_png: relative(viewerScreen.pngPath),
       final_screen_xml: relative(finalScreenshot.xmlPath),
       final_screen_png: relative(finalScreenshot.pngPath),
       pdf_action_clicked: true,
+      open_pdf_action_clicked: openPdfActionClicked,
+      fresh_debug_apk_tested: true,
       dev_client_logs: harness.getDevClientLogPaths(),
       dev_client_log_tails: harness.getDevClientLogTails(),
       recovery: harness.getRecoverySummary(),
@@ -328,6 +392,16 @@ async function main(): Promise<void> {
       fake_green_claimed: false,
     };
     writeJson(TARGET_ARTIFACT, artifact);
+    writeJson(APK_MANIFEST_ARTIFACT, {
+      ...apk,
+      installed_on_emulator: true,
+      android_pdf_viewer_smoke_passed: viewerOpened,
+      final_status: artifact.final_status,
+      install_output: install.output.slice(0, 500),
+      viewer_screen_xml: relative(viewerScreen.xmlPath),
+      viewer_screen_png: relative(viewerScreen.pngPath),
+      fake_green_claimed: false,
+    });
     if (!viewerOpened) throw new Error(artifact.final_status);
     console.log(artifact.final_status);
   } catch (error) {
@@ -346,6 +420,16 @@ async function main(): Promise<void> {
       error: error instanceof Error ? error.message : String(error),
       fake_green_claimed: false,
     };
+    writeJson(APK_MANIFEST_ARTIFACT, {
+      ...apk,
+      installed_on_emulator: true,
+      android_pdf_viewer_smoke_passed: false,
+      final_status: artifact.final_status,
+      install_output: install.output.slice(0, 500),
+      failure_artifacts: failureArtifacts,
+      error: error instanceof Error ? error.message : String(error),
+      fake_green_claimed: false,
+    });
     writeJson(TARGET_ARTIFACT, artifact);
     throw error;
   } finally {

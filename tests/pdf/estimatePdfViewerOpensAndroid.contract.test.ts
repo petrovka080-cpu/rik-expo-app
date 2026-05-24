@@ -7,6 +7,8 @@ describe("estimate PDF Android viewer contract", () => {
     expect(source).toContain("createAndroidHarness");
     expect(source).toContain("createTempUser");
     expect(source).toContain("consumer-estimate-make-pdf");
+    expect(source).toContain("consumer-repair-open-pdf");
+    expect(source).toContain("S_ESTIMATE_PDF_REAL_BINARY_android_apk_manifest.json");
     expect(source).toContain("tapAndroidBounds");
     expect(source).toContain("com.google.android.apps.docs");
     expect(source).toContain("pdf_viewer_android_opened");
