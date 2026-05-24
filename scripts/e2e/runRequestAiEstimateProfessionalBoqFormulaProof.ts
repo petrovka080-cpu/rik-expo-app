@@ -78,6 +78,7 @@ function repoState() {
 }
 
 export function buildRequestAiEstimateProfessionalBoqFormulaProofMatrix() {
+  const repo = repoState();
   const audit = runRequestAiEstimateProfessionalBoqFormulaAudit();
   const estimate = calculateGlobalConstructionEstimateSync({
     text: PROMPT,
@@ -110,7 +111,6 @@ export function buildRequestAiEstimateProfessionalBoqFormulaProofMatrix() {
   const web = readJson(`${PREFIX}_web_screenshots.json`);
   const android = readJson(`${PREFIX}_android_screenshots.json`);
   const previousMatrix = readJson(`${PREFIX}_matrix.json`);
-  const repo = repoState();
   const pdfRegression = {
     wave: WAVE,
     legacy_pdf_protected: true,
