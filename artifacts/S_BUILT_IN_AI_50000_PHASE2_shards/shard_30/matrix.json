@@ -1,0 +1,39 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE2_SHARD_READY",
+  "shard_id": 30,
+  "total_shards": 50,
+  "cases_total": 1000,
+  "cases_passed": 1000,
+  "cases_failed": 0,
+  "estimate_cases_total": 900,
+  "product_cases_total": 100,
+  "domain_ids": [
+    "16_carpentry_furniture_furnishing_domain_01",
+    "16_carpentry_furniture_furnishing_domain_02",
+    "16_carpentry_furniture_furnishing_domain_03",
+    "16_carpentry_furniture_furnishing_domain_04",
+    "16_carpentry_furniture_furnishing_domain_05",
+    "16_carpentry_furniture_furnishing_domain_06",
+    "16_carpentry_furniture_furnishing_domain_07",
+    "16_carpentry_furniture_furnishing_domain_08",
+    "16_carpentry_furniture_furnishing_domain_09",
+    "16_carpentry_furniture_furnishing_domain_10"
+  ],
+  "macro_domain_ids": [
+    "16_carpentry_furniture_furnishing"
+  ],
+  "prompt_sent_through_built_in_ai_ingress": true,
+  "correct_intent_all_cases": true,
+  "correct_expected_tool_all_cases": true,
+  "calculate_global_estimate_called_for_estimates": true,
+  "global_estimate_result_used_all_estimate_cases": true,
+  "source_evidence_present_all_priced_rows": true,
+  "tax_status_or_warning_present_all_estimate_cases": true,
+  "pdf_action_present_all_estimate_cases": true,
+  "product_search_cases_have_no_fake_stock_supplier_availability": true,
+  "dangerous_work_has_no_diy_instructions": true,
+  "forbidden_fallback_rows_found": false,
+  "single_shard_green_claimed": false,
+  "fake_green_claimed": false
+}

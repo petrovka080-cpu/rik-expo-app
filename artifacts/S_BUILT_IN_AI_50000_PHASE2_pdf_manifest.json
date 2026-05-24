@@ -1,0 +1,16 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "pdfs": [
+    {
+      "kind": "ai_estimate_pdf",
+      "path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf",
+      "valid": true
+    },
+    {
+      "kind": "legacy_pdf",
+      "path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
+      "valid": true
+    }
+  ],
+  "fake_green_claimed": false
+}

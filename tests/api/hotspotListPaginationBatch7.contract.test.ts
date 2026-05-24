@@ -653,12 +653,20 @@ const isApprovedBuiltInAi50000Phase1Patch = (file: string) => {
     normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
     normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
     normalized === "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts" ||
+    normalized === "scripts/audit/runBuiltInAi50000Phase2NoHacksAudit.ts" ||
     normalized === "scripts/e2e/runBuiltInAi50000Phase1ShardProof.ts" ||
     normalized === "scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts" ||
+    normalized === "scripts/e2e/runBuiltInAi50000Phase2ShardProof.ts" ||
+    normalized === "scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts" ||
     normalized === "scripts/e2e/runAndroidAi50000Phase1LiveSampleSmoke.ts" ||
+    normalized === "scripts/e2e/runAndroidAi50000Phase2RuntimeSampleSmoke.ts" ||
+    normalized.startsWith("tests/builtInAi50000/") ||
     normalized.startsWith("tests/builtInAi50000Phase1/") ||
     normalized.startsWith("tests/architecture/ai50000Phase1") ||
+    normalized.startsWith("tests/architecture/ai50000Phase2") ||
     normalized === "tests/e2e/ai50000Phase1LiveSample.web.spec.ts" ||
+    normalized === "tests/e2e/ai50000Phase2RuntimeSample.web.spec.ts" ||
+    normalized === ".github/workflows/ai-50000-phase2-sharded-proof.yml" ||
     normalized === "scripts/release/releaseGuard.shared.ts" ||
     normalized === "tests/release/releaseGuard.shared.test.ts" ||
     normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
@@ -666,6 +674,8 @@ const isApprovedBuiltInAi50000Phase1Patch = (file: string) => {
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_50000_PHASE1_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_50000_PHASE2_") ||
+    normalized.startsWith("artifacts/pdf/built-in-ai-50000-phase2/") ||
     normalized.startsWith("artifacts/pdf/built-in-ai-50000-phase1/")
   );
 };

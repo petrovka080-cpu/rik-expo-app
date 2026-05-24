@@ -85,6 +85,8 @@ export type BuiltInAi50000Phase1Case = {
   sourcePolicy: BuiltInAi50000SourcePolicy;
 };
 
+export type BuiltInAi50000Case = BuiltInAi50000Phase1Case;
+
 export type BuiltInAi50000Shard = {
   shardId: number;
   totalShards: number;

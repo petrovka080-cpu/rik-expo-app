@@ -1,0 +1,15 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "legacy_pdf_protected": true,
+  "legacy_pdf_route_changed": false,
+  "legacy_pdf_payload_changed": false,
+  "legacy_pdf_renderer_globally_replaced": false,
+  "ai_estimate_pdf_regression_passed": true,
+  "pdf_viewer_web_passed": true,
+  "pdf_viewer_android_passed": true,
+  "pdf_mojibake_found": false,
+  "markdown_as_pdf_truth_found": false,
+  "ai_pdf_path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_ai_estimate.pdf",
+  "legacy_pdf_path": "artifacts/pdf/built-in-ai-50000-phase2/brick_masonry_74sqm_legacy.pdf",
+  "fake_green_claimed": false
+}

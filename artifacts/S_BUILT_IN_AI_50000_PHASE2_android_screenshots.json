@@ -1,0 +1,17 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE2_ANDROID_SAMPLE_READY",
+  "android_emulator_passed": true,
+  "android_live_sample_cases_total": 100,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_ENTERPRISE_RUNTIME_matrix.json",
+  "mandatory_flows": [
+    "/chat brick_masonry 74 m2",
+    "/chat gable_roof_installation 100 m2",
+    "/ai?context=foreman asphalt_paving 1000 m2",
+    "/request carpet_laying 100 m2",
+    "/request ceramic_tile_floor_laying 174 m2",
+    "/product/search rebar D14",
+    "/pdf-viewer from estimate"
+  ],
+  "fake_green_claimed": false
+}

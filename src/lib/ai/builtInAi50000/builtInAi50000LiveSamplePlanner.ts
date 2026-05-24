@@ -1,5 +1,6 @@
 import type { BuiltInAi50000Phase1Case } from "./builtInAi50000CaseTypes";
 import { BUILT_IN_AI_50000_PHASE1_MACRO_DOMAIN_IDS } from "./builtInAi50000Ontology";
+import { BUILT_IN_AI_50000_FULL_CASES } from "./builtInAi50000FullManifest";
 import { BUILT_IN_AI_50000_PHASE1_CASES } from "./builtInAi50000Phase1Manifest";
 
 const MANDATORY_IDS = [
@@ -40,4 +41,24 @@ export function planBuiltInAi50000Phase1AndroidLiveSample(): readonly BuiltInAi5
     BUILT_IN_AI_50000_PHASE1_CASES.filter((testCase) => testCase.macroDomainId === macroDomainId).slice(0, 2),
   );
   return Object.freeze(uniqueById([...mandatory, ...perDomain]).slice(0, 50));
+}
+
+export function planBuiltInAi50000Phase2WebRuntimeSample(): readonly BuiltInAi50000Phase1Case[] {
+  const mandatory = MANDATORY_IDS
+    .map((id) => BUILT_IN_AI_50000_FULL_CASES.find((testCase) => testCase.id === id))
+    .filter((testCase): testCase is BuiltInAi50000Phase1Case => Boolean(testCase));
+  const perDomain = BUILT_IN_AI_50000_PHASE1_MACRO_DOMAIN_IDS.flatMap((macroDomainId) =>
+    BUILT_IN_AI_50000_FULL_CASES.filter((testCase) => testCase.macroDomainId === macroDomainId).slice(0, 10),
+  );
+  return Object.freeze(uniqueById([...mandatory, ...perDomain]).slice(0, 250));
+}
+
+export function planBuiltInAi50000Phase2AndroidRuntimeSample(): readonly BuiltInAi50000Phase1Case[] {
+  const mandatory = MANDATORY_IDS
+    .map((id) => BUILT_IN_AI_50000_FULL_CASES.find((testCase) => testCase.id === id))
+    .filter((testCase): testCase is BuiltInAi50000Phase1Case => Boolean(testCase));
+  const perDomain = BUILT_IN_AI_50000_PHASE1_MACRO_DOMAIN_IDS.flatMap((macroDomainId) =>
+    BUILT_IN_AI_50000_FULL_CASES.filter((testCase) => testCase.macroDomainId === macroDomainId).slice(0, 4),
+  );
+  return Object.freeze(uniqueById([...mandatory, ...perDomain]).slice(0, 100));
 }

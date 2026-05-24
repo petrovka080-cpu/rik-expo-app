@@ -7,7 +7,7 @@ import type {
 } from "./builtInAi50000CaseTypes";
 import { BUILT_IN_AI_50000_PHASE1_CASES_PER_MACRO_DOMAIN } from "./builtInAi50000Ontology";
 
-type AnchorCase = {
+export type BuiltInAi50000AnchorCase = {
   id: string;
   macroDomainId: string;
   workKey: string;
@@ -58,7 +58,7 @@ const PACKAGES = [
   "upsilon",
 ] as const;
 
-const ANCHORS: readonly AnchorCase[] = Object.freeze([
+export const BUILT_IN_AI_50000_ANCHORS: readonly BuiltInAi50000AnchorCase[] = Object.freeze([
   {
     id: "phase1_anchor_brick_masonry_74sqm",
     macroDomainId: "03_masonry_blocks_stone",
@@ -371,7 +371,7 @@ function buildSyntheticCase(domain: BuiltInAi50000MacroDomain, macroIndex: numbe
   };
 }
 
-function buildAnchorCase(domain: BuiltInAi50000MacroDomain, anchor: AnchorCase, macroIndex: number, localIndex: number): BuiltInAi50000Phase1Case {
+function buildAnchorCase(domain: BuiltInAi50000MacroDomain, anchor: BuiltInAi50000AnchorCase, macroIndex: number, localIndex: number): BuiltInAi50000Phase1Case {
   const sequence = macroIndex * BUILT_IN_AI_50000_PHASE1_CASES_PER_MACRO_DOMAIN + localIndex + 1;
   const intent = anchor.intent ?? "estimate";
   const expectedTool = anchor.expectedTool ?? "calculate_global_estimate";
@@ -417,7 +417,7 @@ export function buildBuiltInAi50000Phase1Cases(
   domains: readonly BuiltInAi50000MacroDomain[],
 ): readonly BuiltInAi50000Phase1Case[] {
   return Object.freeze(domains.flatMap((domain, macroIndex) => {
-    const anchors = ANCHORS.filter((anchor) => anchor.macroDomainId === domain.id);
+  const anchors = BUILT_IN_AI_50000_ANCHORS.filter((anchor) => anchor.macroDomainId === domain.id);
     const cases: BuiltInAi50000Phase1Case[] = [];
     for (let localIndex = 0; localIndex < BUILT_IN_AI_50000_PHASE1_CASES_PER_MACRO_DOMAIN; localIndex += 1) {
       const anchor = anchors[localIndex];

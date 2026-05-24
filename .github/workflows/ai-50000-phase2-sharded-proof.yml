@@ -1,0 +1,97 @@
+name: AI 50000 Phase2 Sharded Proof
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "src/lib/ai/**"
+      - "scripts/e2e/runBuiltInAi50000Phase2*"
+      - "scripts/audit/runBuiltInAi50000Phase2*"
+      - "tests/builtInAi50000/**"
+
+jobs:
+  shard:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 7
+          - 8
+          - 9
+          - 10
+          - 11
+          - 12
+          - 13
+          - 14
+          - 15
+          - 16
+          - 17
+          - 18
+          - 19
+          - 20
+          - 21
+          - 22
+          - 23
+          - 24
+          - 25
+          - 26
+          - 27
+          - 28
+          - 29
+          - 30
+          - 31
+          - 32
+          - 33
+          - 34
+          - 35
+          - 36
+          - 37
+          - 38
+          - 39
+          - 40
+          - 41
+          - 42
+          - 43
+          - 44
+          - 45
+          - 46
+          - 47
+          - 48
+          - 49
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardProof.ts --shard=${{ matrix.shard }} --totalShards=50
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-50000-phase2-shard-${{ matrix.shard }}
+          path: artifacts/S_BUILT_IN_AI_50000_PHASE2_shards/shard_*
+
+  merge:
+    needs: shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts/S_BUILT_IN_AI_50000_PHASE2_shards
+          merge-multiple: true
+      - run: npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50
+      - run: npm run release:verify -- --json

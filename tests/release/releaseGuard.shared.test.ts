@@ -754,6 +754,10 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-50000-phase2-all-shards-runtime-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase2ShardMerge.ts --totalShards=50 --require-live-artifacts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "final-50k-92-external-live-proof-closeout",
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
       });

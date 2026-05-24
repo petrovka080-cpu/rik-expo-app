@@ -1,0 +1,28 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE2_WEB_SAMPLE_READY",
+  "web_playwright_passed": true,
+  "web_live_sample_cases_total": 250,
+  "mandatory_routes_opened": [
+    "/chat",
+    "/chat",
+    "/chat",
+    "/ai?context=foreman",
+    "/request",
+    "/request",
+    "/product/search",
+    "/product/search"
+  ],
+  "screenshots": [
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_brick_masonry_74sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_gable_roof_installation_100sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_drywall_wall_cladding_352sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_asphalt_paving_1000sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_carpet_laying_100sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_ceramic_tile_floor_laying_174sqm.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_rebar_product_search_d14.png",
+    "artifacts/screenshots/built-in-ai-50000-phase2/web/phase1_anchor_asphalt_supplier_search_10000sqm.png"
+  ],
+  "pdf_viewer_route_checked": "/pdf-viewer",
+  "fake_green_claimed": false
+}
