@@ -42,6 +42,7 @@ const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
   "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE =
   "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN";
+const PDF_DIRECTOR_FORMAT_TYPE_RATCHET_WAVE = "S_50K_PDF_DIRECTOR_FORMAT_TYPE_RATCHET";
 
 type DirtyFileStatus = {
   file: string;
@@ -64,6 +65,7 @@ export type CloseoutOwnershipEntry = {
     | "ui_layout_release"
     | "ios_release_proof"
     | "backend_media_release"
+    | "pdf_type_ratchet"
     | "suspicious_unknown";
   wave: string;
   include_in_commit: boolean;
@@ -1193,6 +1195,21 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "release closeout runner or contract test",
+    };
+  }
+  if (
+    normalized === "src/lib/api/pdf_director.format.ts" ||
+    normalized === "src/lib/pdf/director/finance.ts" ||
+    normalized === "tests/pdf/pdfDirectorFormatHelpers.contract.test.ts" ||
+    normalized === "tests/architecture/pdfDirectorFormatNoAny.contract.test.ts"
+  ) {
+    return {
+      file: normalized,
+      category: "pdf_type_ratchet",
+      wave: PDF_DIRECTOR_FORMAT_TYPE_RATCHET_WAVE,
+      include_in_commit: true,
+      force_add: false,
+      reason: "director PDF formatting type ratchet for 50k maintainability",
     };
   }
   if (normalized === "tests/perf/performance-budget.test.ts") {

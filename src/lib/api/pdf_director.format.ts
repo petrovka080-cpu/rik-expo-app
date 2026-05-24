@@ -1,11 +1,11 @@
-export const esc = (s: any) =>
+export const esc = (s: unknown) =>
   String(s ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
-export const nnum = (v: any) => {
+export const nnum = (v: unknown) => {
   if (v == null) return 0;
   if (typeof v === "number") return Number.isFinite(v) ? v : 0;
 
@@ -24,7 +24,7 @@ export const nnum = (v: any) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-export const money = (v: any) => {
+export const money = (v: unknown) => {
   const n = nnum(v);
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 };
@@ -37,9 +37,9 @@ export const fmtDateOnly = (iso?: string | null) => {
   return d;
 };
 
-export const iso10 = (v: any) => String(v ?? "").trim().slice(0, 10);
+export const iso10 = (v: unknown) => String(v ?? "").trim().slice(0, 10);
 
-export const clampIso = (s: any) => {
+export const clampIso = (s: unknown) => {
   const v = String(s ?? "").trim();
   return v ? v.slice(0, 10) : "";
 };
