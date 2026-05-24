@@ -1,0 +1,14 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE3_LIVE_APP_DOMAIN_SAMPLE_WEB_ANDROID_PDF_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE3_ANDROID_SAMPLE_READY",
+  "android_emulator_passed": true,
+  "android_cases_total": 250,
+  "android_cases_passed": 250,
+  "live_domain_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false,
+  "pdf_viewer_passed": true,
+  "product_search_passed": true,
+  "request_draft_passed": true,
+  "dangerous_safety_passed": true
+}

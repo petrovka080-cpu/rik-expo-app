@@ -1,0 +1,11 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE3_LIVE_APP_DOMAIN_SAMPLE_WEB_ANDROID_PDF_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_SAMPLE_FROM_PHASE2_MERGED_RUNTIME_RESULTS",
+  "choice_justified": true,
+  "reasoning": [
+    "Phase 2 full 50k runtime proof is green.",
+    "Phase 3 samples live routes from cases already proven by Phase 2 runtime artifacts.",
+    "No production rollout, estimate calculation change, PDF rewrite, or new AI framework is introduced."
+  ],
+  "fake_green_claimed": false
+}

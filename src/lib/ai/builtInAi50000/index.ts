@@ -7,6 +7,7 @@ export * from "./builtInAi50000Phase1Manifest";
 export * from "./builtInAi50000FullManifest";
 export * from "./builtInAi50000ShardPlanner";
 export * from "./builtInAi50000LiveSamplePlanner";
+export * from "./builtInAi50000Phase3LiveSamplePlanner";
 export * from "./builtInAi50000ShardRunnerTypes";
 export * from "./builtInAi50000MergeValidator";
 export * from "./validateBuiltInAi50000Case";

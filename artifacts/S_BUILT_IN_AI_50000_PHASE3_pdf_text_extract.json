@@ -1,0 +1,607 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE3_LIVE_APP_DOMAIN_SAMPLE_WEB_ANDROID_PDF_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "pdf_mojibake_found": false,
+  "extracts": [
+    {
+      "caseId": "phase1_anchor_estimate_to_pdf",
+      "text": "Сметное предложение / Смета работ\nСмета\nкирпичную кладку | 1 set\nНомер документа: AI-EST-te_614815356\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_614815356\nWork key: brick_masonry\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_estimate_to_pdf\nДопущения\n• Расчёт выполнен для кирпичной кладки по площади.\n• Толщина стены, тип кирпича, армирование, леса, доставка и подъём уточняются перед договором.\n• Цены берутся из backend pricebook с источниками.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nКирпич\nМатериалы и к…\n1,08 m²\nsq_m\n1 780 сом / m²\n1 922 сом\n2\nРаствор / кладочная смесь\nМатериалы и к…\n0,18 m²\nsq_m\n534 сом / m²\n96 сом\n3\nКладочная сетка / армирование\nМатериалы и к…\n0,18 m²\nsq_m\n534 сом / m²\n96 сом\n1\nКладка",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_asphalt_paving_1000sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_asphalt_paving_1000sqm\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_roof_repair_70sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nремонт кровли | 1 set\nНомер документа: AI-EST-e_1449430989\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1449430989\nWork key: roof_repair\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_roof_repair_70sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nдемонтаж повреждений\nМатериалы и к…\n1,08 m²\nsq_m\n1 602 сом / m²\n1 730 сом\n2\nматериал\nМатериалы и к…\n0,2 m²\nsq_m\n1 602 сом / m²\n320 сом\n1\nгерметизация\nРаботы / монт…\n1 m²\nsq_m\n1 335 со",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_solar_panel_installation",
+      "text": "Сметное предложение / Смета работ\nСмета\nМонтаж солнечных панелей | 1 set\nНомер документа: AI-EST-te_890940886\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_890940886\nWork key: solar_panel_installation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_solar_panel_installation\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Монтаж солнечных панелей\nМатериалы и к…\n1,08 set\nset\n3 115 сом / s…\n3 364 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 set\nset\n712 сом / set",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_brick_masonry_74sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nкирпичную кладку | 1 set\nНомер документа: AI-EST-te_614815356\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_614815356\nWork key: brick_masonry\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_brick_masonry_74sqm\nДопущения\n• Расчёт выполнен для кирпичной кладки по площади.\n• Толщина стены, тип кирпича, армирование, леса, доставка и подъём уточняются перед договором.\n• Цены берутся из backend pricebook с источниками.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nКирпич\nМатериалы и к…\n1,08 m²\nsq_m\n1 780 сом / m²\n1 922 сом\n2\nРаствор / кладочная смесь\nМатериалы и к…\n0,18 m²\nsq_m\n534 сом / m²\n96 сом\n3\nКладочная сетка / армирование\nМатериалы и к…\n0,18 m²\nsq_m\n534 сом / m²\n96 сом\n1\nКл",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00001",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00001\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_concrete_slab_200sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nбетонную плиту | 1 set\nНомер документа: AI-EST-te_934371863\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_934371863\nWork key: concrete_slab\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_concrete_slab_200sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nбетон\nМатериалы и к…\n1,08 ton\nton\n9 790 сом / t…\n10 573 сом\n2\nарматура\nМатериалы и к…\n0,2 ton\nton\n9 790 сом / t…\n1 958 сом\n1\nопалубка\nРаботы / монт…\n1 ton\nton\n4 272 сом / t…\n4 27",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_gable_roof_installation_100sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nустройство двускатной крыши | 1 set\nНомер документа: AI-EST-e_1625647044\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1625647044\nWork key: gable_roof_installation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_gable_roof_installation_100sqm\nДопущения\n• Расчёт выполнен для устройства двускатной крыши по основанию указанной площади.\n• Уклон, тип покрытия, утепление, водостоки и работы на высоте требуют проверки специалистом.\n• Доставка, подъём и сложная геометрия уточняются отдельно.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nСтропила\nМатериалы и к…\n1,08 m²\nsq_m\n1 602 сом / m²\n1 730 сом\n2\nМауэрлат / брус\nМатериалы и к…\n0,18 m²\nsq_m\n445 сом / m²\n80 сом\n3\nГидроизоляция / ме",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_facade_insulation_200sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nутепление фасада | 1 set\nНомер документа: AI-EST-e_1464196490\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1464196490\nWork key: facade_insulation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_facade_insulation_200sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nутеплитель\nМатериалы и к…\n1,08 m²\nsq_m\n801 сом / m²\n865 сом\n2\nклей\nМатериалы и к…\n0,2 m²\nsq_m\n801 сом / m²\n160 сом\n3\nдюбели\nМатериалы и к…\n0,2 m²\nsq_m\n801 сом / m²\n160",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_10001",
+      "text": "Сметное предложение / Смета работ\nСмета\nустановку ПВХ-окна | 1 set\nНомер документа: AI-EST-te_982010466\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_982010466\nWork key: window_installation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_10001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nоконный блок\nМатериалы и к…\n1,08 m²\nsq_m\n890 сом / m²\n961 сом\n2\nподоконник\nМатериалы и к…\n0,2 m²\nsq_m\n890 сом / m²\n178 сом\n3\nотлив\nМатериалы и к…\n0,2 m²\nsq_m\n890 сом / m²\n178 сом\n1\nоткосы\nРа",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_carpet_laying_100sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nукладку ковролина | 1 set\nНомер документа: AI-EST-e_1066342937\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1066342937\nWork key: carpet_laying\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_carpet_laying_100sqm\nДопущения\n• Расчёт выполнен для укладки ковролина по подготовленному основанию.\n• Демонтаж старого покрытия, выравнивание и доставка уточняются отдельно.\n• Материалы рассчитаны с запасом на подрезку.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nКовролин с запасом на подрезку\nМатериалы и к…\n1,08 m²\nsq_m\n1 068 сом / m²\n1 153 сом\n2\nПодложка под ковролин\nМатериалы и к…\n0,18 m²\nsq_m\n178 сом / m²\n32 сом\n3\nКлей/лента для фиксации ковролина\nМатериалы и к…\n0,18 m²\nsq_m\n178 ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_drywall_wall_cladding_352sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nобшивка стен ГКЛ | 1 set\nНомер документа: AI-EST-e_1439462538\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1439462538\nWork key: drywall_wall_cladding\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_drywall_wall_cladding_352sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nкаркас\nМатериалы и к…\n1,08 m²\nsq_m\n890 сом / m²\n961 сом\n2\nпанели или листы\nМатериалы и к…\n0,2 m²\nsq_m\n890 сом / m²\n178 сом\n1\nкрепёж\nРаботы / монт…\n1 m²\nsq_m\n71",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_pipe_replacement_40lm",
+      "text": "Сметное предложение / Смета работ\nСмета\nзамену труб | 1 set\nНомер документа: AI-EST-te_305120772\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_305120772\nWork key: pipe_replacement\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_pipe_replacement_40lm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nтрубы\nМатериалы и к…\n1,08 пог…\nline…\n4 005 сом / п…\n4 325 сом\n2\nфитинги\nМатериалы и к…\n0,2 пог.…\nline…\n4 005 сом / п…\n801 сом\n3\nкрепёж\nМатериалы и к…\n0,2 пог.…\nline…\n4 005 сом /",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_electrical_wiring_80sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nэлектропроводку | 1 set\nНомер документа: AI-EST-e_1989543886\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1989543886\nWork key: electrical_wiring\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_electrical_wiring_80sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nкабель\nМатериалы и к…\n1,08 m²\nsq_m\n3 115 сом / m²\n3 364 сом\n2\nгофра\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m²\n623 сом\n3\nавтоматы\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_20001",
+      "text": "Сметное предложение / Смета работ\nСмета\nобвязка котельной | 1 set\nНомер документа: AI-EST-te_932453296\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_932453296\nWork key: boiler_room_piping\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_20001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nоборудование\nМатериалы и к…\n1,08 set\nset\n890 сом / set\n961 сом\n2\nтрубы или воздуховоды\nМатериалы и к…\n0,2 set\nset\n890 сом / set\n178 сом\n1\nмонтаж\nРаботы / монт…\n1 set\nset\n712 сом / set\n712 сом\n",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_bathroom_waterproofing_30sqm",
+      "text": "Сметное предложение / Смета работ\nСмета\nгидроизоляцию ванной | 1 set\nНомер документа: AI-EST-e_1434954809\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1434954809\nWork key: bathroom_waterproofing\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_bathroom_waterproofing_30sqm\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nгидроизоляция\nМатериалы и к…\n1,08 m²\nsq_m\n712 сом / m²\n769 сом\n2\nпраймер\nМатериалы и к…\n0,2 m²\nsq_m\n712 сом / m²\n142 сом\n1\nлента\nРаботы / монт…\n1 m²\nsq_m\n",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_24001",
+      "text": "Сметное предложение / Смета работ\nСмета\nуборку после ремонта | 1 set\nНомер документа: AI-EST-te_958221788\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_958221788\nWork key: construction_cleaning\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_24001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nуборка\nМатериалы и к…\n1,08 m²\nsq_m\n890 сом / m²\n961 сом\n2\nрасходники\nМатериалы и к…\n0,2 m²\nsq_m\n890 сом / m²\n178 сом\n1\nвынос мусора\nРаботы / монт…\n1 m²\nsq_m\n712 сом / m²\n712 сом\nИтоги\nМа",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_28001",
+      "text": "Сметное предложение / Смета работ\nСмета\nсварной каркас | 1 set\nНомер документа: AI-EST-e_1991477994\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1991477994\nWork key: welded_frame\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_28001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nметалл\nМатериалы и к…\n1,08 kg\nkg\n890 сом / kg\n961 сом\n2\nрасходники\nМатериалы и к…\n0,2 kg\nkg\n890 сом / kg\n178 сом\n1\nсварка\nРаботы / монт…\n1 kg\nkg\n712 сом / kg\n712 сом\n2\nмонтаж\nРаботы / монт…\n1 kg\nkg\n71",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_furniture_room_furnishing",
+      "text": "Сметное предложение / Смета работ\nСмета\nСборка мебели | 1 set\nНомер документа: AI-EST-e_1756074282\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1756074282\nWork key: furniture_assembly\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_furniture_room_furnishing\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Сборка мебели\nМатериалы и к…\n1,08 set\nset\n890 сом / set\n961 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 set\nset\n178 сом / set\n36 сом\n1\nПодготовка: Сборка ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_30002",
+      "text": "Сметное предложение / Смета работ\nСмета\nСборка мебели | 1 set\nНомер документа: AI-EST-e_1756074282\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1756074282\nWork key: furniture_assembly\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_30002\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Сборка мебели\nМатериалы и к…\n1,08 set\nset\n890 сом / set\n961 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 set\nset\n178 сом / set\n36 сом\n1\nПодготовка: Сборка мебели\nСтроительные…\n1 set\n",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_boiler_room_piping",
+      "text": "Сметное предложение / Смета работ\nСмета\nобвязка котельной | 1 set\nНомер документа: AI-EST-te_932453296\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_932453296\nWork key: boiler_room_piping\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_boiler_room_piping\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nоборудование\nМатериалы и к…\n1,08 set\nset\n890 сом / set\n961 сом\n2\nтрубы или воздуховоды\nМатериалы и к…\n0,2 set\nset\n890 сом / set\n178 сом\n1\nмонтаж\nРаботы / монт…\n1 set\nset\n71",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_micro_hydro_intake",
+      "text": "Сметное предложение / Смета работ\nСмета\nПодготовка под микро-ГЭС | 1 set\nНомер документа: AI-EST-e_1303171582\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1303171582\nWork key: micro_hydro_preparation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_micro_hydro_intake\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Подготовка под микро-ГЭС\nМатериалы и к…\n1,08 set\nset\n9 790 сом / s…\n10 573 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 set\nset\n1 424 сом / s…\n285",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_36002",
+      "text": "Сметное предложение / Смета работ\nСмета\nПодготовка под микро-ГЭС | 1 set\nНомер документа: AI-EST-e_1303171582\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1303171582\nWork key: micro_hydro_preparation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_36002\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Подготовка под микро-ГЭС\nМатериалы и к…\n1,08 set\nset\n9 790 сом / s…\n10 573 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 set\nset\n1 424 сом / s…\n285 сом\n1\nПодготовка: П",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_substation_grounding",
+      "text": "Сметное предложение / Смета работ\nСмета\nэлектропроводку | 1 set\nНомер документа: AI-EST-e_1989543886\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1989543886\nWork key: electrical_wiring\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_substation_grounding\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nкабель\nМатериалы и к…\n1,08 m²\nsq_m\n3 115 сом / m²\n3 364 сом\n2\nгофра\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m²\n623 сом\n3\nавтоматы\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m²\n6",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_38002",
+      "text": "Сметное предложение / Смета работ\nСмета\nэлектропроводку | 1 set\nНомер документа: AI-EST-e_1989543886\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1989543886\nWork key: electrical_wiring\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_38002\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nкабель\nМатериалы и к…\n1,08 m²\nsq_m\n3 115 сом / m²\n3 364 сом\n2\nгофра\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m²\n623 сом\n3\nавтоматы\nМатериалы и к…\n0,2 m²\nsq_m\n3 115 сом / m²\n623 сом\n1\nштробление\nРа",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_smart_home_basic",
+      "text": "Сметное предложение / Смета работ\nСмета\nумный дом базовый | 1 set\nНомер документа: AI-EST-e_1038033927\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1038033927\nWork key: smart_home_basic\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_smart_home_basic\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nкабель\nМатериалы и к…\n1,08 set\nset\n3 115 сом / s…\n3 364 сом\n2\nустройства\nМатериалы и к…\n0,2 set\nset\n3 115 сом / s…\n623 сом\n3\nзащита\nМатериалы и к…\n0,2 set\nset\n3 115 сом / s…\n6",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_greenhouse_installation",
+      "text": "Сметное предложение / Смета работ\nСмета\nМонтаж теплицы | 1 set\nНомер документа: AI-EST-te_940185137\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_940185137\nWork key: greenhouse_installation\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_greenhouse_installation\nДопущения\n• Расчет сделан по типовой технологии для указанного объема.\n• Скрытые дефекты и демонтаж не включены, если пользователь не указал их явно.\n• Цены являются настроенным backend-справочником и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nОсновной материал: Монтаж теплицы\nМатериалы и к…\n1,08 m²\nsq_m\n890 сом / m²\n961 сом\n2\nРасходные материалы и крепеж\nМатериалы и к…\n0,2 m²\nsq_m\n178 сом / m²\n36 сом\n1\nПодготовка: Монта",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_44001",
+      "text": "Сметное предложение / Смета работ\nСмета\nметаллокаркас склада 10 т | 1 set\nНомер документа: AI-EST-e_1537422258\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1537422258\nWork key: warehouse_steel_frame\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_44001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nметалл\nМатериалы и к…\n1,08 set\nset\n890 сом / set\n961 сом\n2\nрасходники\nМатериалы и к…\n0,2 set\nset\n890 сом / set\n178 сом\n1\nсварка или сборка\nРаботы / монт…\n1 set\nset\n712 сом / set\n71",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_46001",
+      "text": "Сметное предложение / Смета работ\nСмета\nдизайн-проект | 1 set\nНомер документа: AI-EST-e_1179108773\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1179108773\nWork key: design_project\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_46001\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nобмер\nМатериалы и к…\n1,08 m²\nsq_m\n890 сом / m²\n961 сом\n2\nпланировка\nМатериалы и к…\n0,2 m²\nsq_m\n890 сом / m²\n178 сом\n1\nвизуализация\nРаботы / монт…\n1 m²\nsq_m\n712 сом / m²\n712 сом\n2\nрабочие чертежи\nРабо",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase1_anchor_emergency_roof_leak_repair",
+      "text": "Сметное предложение / Смета работ\nСмета\nремонт кровли | 1 set\nНомер документа: AI-EST-e_1449430989\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1449430989\nWork key: roof_repair\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase1_anchor_emergency_roof_leak_repair\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nдемонтаж повреждений\nМатериалы и к…\n1,08 m²\nsq_m\n1 602 сом / m²\n1 730 сом\n2\nматериал\nМатериалы и к…\n0,2 m²\nsq_m\n1 602 сом / m²\n320 сом\n1\nгерметизация\nРаботы / монт…\n1 m²\nsq_m",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_48002",
+      "text": "Сметное предложение / Смета работ\nСмета\nдоставку и подъём | 1 set\nНомер документа: AI-EST-te_595249839\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_595249839\nWork key: delivery_lifting\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_48002\nДопущения\n• Расчёт сделан по типовой технологии для указанного объёма.\n• Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nдоставка\nМатериалы и к…\n1,08 ton\nton\n890 сом / ton\n961 сом\n2\nгрузчики\nМатериалы и к…\n0,2 ton\nton\n890 сом / ton\n178 сом\n1\nподъём\nРаботы / монт…\n1 ton\nton\n712 сом / ton\n712 сом\n2\nразгрузка\nРаботы ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00002",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00002\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00003",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00003\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00004",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00004\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00005",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00005\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00006",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00006\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00007",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00007\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00008",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00008\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00009",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00009\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00011",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00011\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00012",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00012\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00013",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00013\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00014",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00014\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00015",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00015\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00016",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00016\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00017",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00017\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00018",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00018\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00019",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00019\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00021",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00021\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00022",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00022\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00023",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00023\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00024",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00024\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00025",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00025\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00026",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00026\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00027",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00027\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00028",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00028\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00029",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00029\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00031",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00031\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00032",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00032\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00033",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00033\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00034",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00034\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00035",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00035\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00036",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00036\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00037",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00037\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00038",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00038\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00039",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00039\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00041",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00041\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00042",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00042\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00043",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00043\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00044",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00044\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00045",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00045\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00046",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00046\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00047",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00047\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00048",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00048\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    },
+    {
+      "caseId": "phase2_00049",
+      "text": "Сметное предложение / Смета работ\nСмета\nасфальтирование территории | 1 set\nНомер документа: AI-EST-e_1733249952\nСтатус: Смета\nДата формирования: 2026-05-24T00:00:00.000Z\nEstimate ID: global_estimate_1733249952\nWork key: asphalt_paving\nОбъем: 1 set\nМаршрут: /chat\nRuntime trace ID: phase3-phase2_00049\nДопущения\n• Расчет сделан для типового асфальтирования территории по подготовленному основанию.\n• Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.\n• Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.\n• Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором.\nТаблица сметы\n#\nНаименование\nКатегория\nКол-во\nЕд.\nЦена\nСумма\n1\nГеотекстиль\nМатериалы и к…\n1,05 m²\nsq_m\n98 сом / m²\n103 сом\n2\nПесчаное основ",
+      "cyrillicReadable": true,
+      "realBorderedTablePresent": true,
+      "totalsPresent": true,
+      "taxSourcesFooterPresent": true
+    }
+  ],
+  "fake_green_claimed": false
+}
