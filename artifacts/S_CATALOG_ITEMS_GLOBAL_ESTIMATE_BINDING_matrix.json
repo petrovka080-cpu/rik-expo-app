@@ -20,7 +20,7 @@
   "web_playwright_passed": true,
   "android_emulator_passed": true,
   "full_jest_passed": true,
-  "release_verify_passed": false,
+  "release_verify_passed": true,
   "final_worktree_clean": true,
   "fake_green_claimed": false
 }
