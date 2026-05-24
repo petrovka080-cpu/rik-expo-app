@@ -37,10 +37,11 @@
   "runtime_proof_passed": true,
   "full_jest_passed": true,
   "release_verify_passed": true,
-  "commit_created": false,
-  "commit_sha": null,
-  "branch_pushed": false,
-  "remote_contains_commit": false,
-  "final_worktree_clean": false,
+  "commit_created": true,
+  "commit_sha": "12c6d42883bf5d8d8cb9effff773325cf80d9868",
+  "branch_pushed": true,
+  "remote": "origin/main",
+  "remote_contains_commit": true,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }
