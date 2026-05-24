@@ -717,13 +717,121 @@
     "id": "025",
     "sources": [
       {
-        "id": "rate_strip_foundation_material_KG_linear_m_standard",
+        "id": "rate_strip_foundation_sand_cushion_KG_m3_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_strip_foundation_labor_KG_linear_m_standard",
+        "id": "rate_strip_foundation_crushed_stone_base_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_geotextile_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_formwork_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_longitudinal_rebar_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_stirrups_rebar_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_binding_wire_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_rebar_spacers_KG_pcs_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_m300_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_waterproofing_material_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_excavation_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_formwork_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_rebar_tying_KG_kg_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_pour_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_vibration_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_curing_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_waterproofing_install_KG_sq_m_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_backfill_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_delivery_KG_m3_standard",
+        "type": "configured_reference",
+        "label": "Configured backend regional reference rate",
+        "checkedAt": "2026-05-22T00:00:00+06:00"
+      },
+      {
+        "id": "rate_strip_foundation_concrete_pump_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"

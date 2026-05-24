@@ -15,7 +15,10 @@ import {
 } from "../../src/lib/consumerRequests";
 import { buildConsumerRepairPdfSummary } from "../../src/lib/consumerRequests/consumerRequestPdfService";
 import { buildConsumerRepairAiDraft } from "../../src/features/consumerRepair/consumerRepairAiAdapter";
-import { buildRequestEstimateViewModel } from "../../src/features/consumerRepair/requestEstimateViewModel";
+import {
+  buildRequestEstimateViewModel,
+  type RequestEstimateManualCatalogItem,
+} from "../../src/features/consumerRepair/requestEstimateViewModel";
 import {
   calculateGlobalConstructionEstimateSync,
   findForbiddenRequestEstimateUserText,
@@ -58,6 +61,19 @@ function readJson(name: string): Record<string, unknown> | null {
 
 function addIssue(issues: string[], condition: boolean, code: string): void {
   if (!condition) issues.push(code);
+}
+
+function normalizeProofText(value: string): string {
+  return value
+    .replace(/Дата: .*\n/, "Дата: <generatedAt>\n")
+    .replace(/consumer_item_[a-z0-9_]+/g, "consumer_item_<stable>");
+}
+
+function normalizeManualCatalogItems(items: RequestEstimateManualCatalogItem[]): RequestEstimateManualCatalogItem[] {
+  return items.map((item) => ({
+    ...item,
+    id: "consumer_item_<stable>",
+  }));
 }
 
 export function buildRequestAiEstimateBoqCatalogProofMatrix() {
@@ -190,8 +206,8 @@ export function buildRequestAiEstimateBoqCatalogProofMatrix() {
   writeJson(`${PREFIX}_boq_depth_validation.json`, depth);
   writeJson(`${PREFIX}_localization_validation.json`, { english_debug_text_found: englishDebugTextFound, raw_unit_labels_found: rawUnitLabelsFound, forbidden: findForbiddenRequestEstimateUserText(localizationText) });
   writeJson(`${PREFIX}_catalog_picker_trace.json`, { selected_option: "OPTION_B_EXTRACT_SHARED_CATALOG_ITEM_PICKER_FROM_FOREMAN_FLOW", catalog_item_picker_reused: true, service: "src/lib/catalog/catalogItemsService.ts" });
-  writeJson(`${PREFIX}_manual_catalog_items.json`, viewModel?.manualCatalogItems ?? []);
-  writeJson(`${PREFIX}_pdf_payloads.json`, { manual_catalog_item_in_pdf_payload: manualInPdf, pdfSummary });
+  writeJson(`${PREFIX}_manual_catalog_items.json`, normalizeManualCatalogItems(viewModel?.manualCatalogItems ?? []));
+  writeJson(`${PREFIX}_pdf_payloads.json`, { manual_catalog_item_in_pdf_payload: manualInPdf, pdfSummary: normalizeProofText(pdfSummary) });
   writeJson(`${PREFIX}_save_send_payloads.json`, { manual_catalog_item_in_save_payload: manualInSave, manual_catalog_item_in_send_payload: manualInSend, marketplaceStatus: sendBundle.marketplaceLink.status });
   writeJson(`${PREFIX}_pdf_regression.json`, pdfRegression);
 

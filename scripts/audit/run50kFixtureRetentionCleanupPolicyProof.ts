@@ -30,6 +30,13 @@ function readJson(name: string): JsonRecord {
   return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed as JsonRecord : {};
 }
 
+function readExistingPrefixedJson(name: string): JsonRecord {
+  const filePath = path.join(ARTIFACT_DIR, `${PREFIX}_${name}.json`);
+  if (!fs.existsSync(filePath)) return {};
+  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
+  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed as JsonRecord : {};
+}
+
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
   fs.writeFileSync(path.join(ARTIFACT_DIR, `${PREFIX}_${name}.json`), `${JSON.stringify(value, null, 2)}\n`, "utf8");
@@ -113,9 +120,10 @@ export function build50kFixtureRetentionCleanupPolicyProof() {
     releaseVerifyPassed: bool(final50k.release_verify_passed) || bool(releaseCandidate.release_verify_passed),
   });
 
+  const existingInventory = readExistingPrefixedJson("inventory");
   const inventory = {
     wave: WHOLE_APP_50K_FIXTURE_RETENTION_WAVE,
-    generated_at: new Date().toISOString(),
+    generated_at: stringOrNull(existingInventory.generated_at) ?? new Date().toISOString(),
     source_artifacts: {
       fixture: "artifacts/S_50K_SYNTHETIC_FIXTURE_matrix.json",
       whole_app_50k: "artifacts/S_WHOLE_APP_50K_matrix.json",
