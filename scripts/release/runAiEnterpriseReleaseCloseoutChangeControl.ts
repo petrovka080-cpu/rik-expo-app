@@ -48,6 +48,8 @@ const BUILT_IN_AI_50000_PHASE2_WAVE =
   "S_BUILT_IN_AI_50000_PHASE2_ALL_SHARDS_RUNTIME_CI_MERGE_GATE_NO_HACKS_POINT_OF_NO_RETURN";
 const BUILT_IN_AI_50000_PHASE3_WAVE =
   "S_BUILT_IN_AI_50000_PHASE3_LIVE_APP_DOMAIN_SAMPLE_WEB_ANDROID_PDF_GATE_NO_HACKS_POINT_OF_NO_RETURN";
+const BUILT_IN_AI_50000_PHASE4_WAVE =
+  "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN";
 const PDF_DIRECTOR_FORMAT_TYPE_RATCHET_WAVE = "S_50K_PDF_DIRECTOR_FORMAT_TYPE_RATCHET";
 
 type DirtyFileStatus = {
@@ -982,8 +984,36 @@ function isBuiltInAi50000Phase3Path(file: string): boolean {
   );
 }
 
+function isBuiltInAi50000Phase4Path(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_ESTIMATE_50000_PHASE4_") ||
+    file === "src/lib/ai/builtInAi50000" ||
+    file.startsWith("src/lib/ai/builtInAi50000/") ||
+    file === "scripts/audit/runBuiltInAi50000Phase4NoHacksAudit.ts" ||
+    file === "scripts/e2e/runBuiltInAi50000Phase4CanarySafetyProof.ts" ||
+    file === "scripts/e2e/runAndroidAi50000Phase4CanarySmoke.ts" ||
+    file === "tests/e2e/ai50000Phase4CanarySafety.web.spec.ts" ||
+    file === "tests/builtInAi50000" ||
+    file.startsWith("tests/builtInAi50000/phase4") ||
+    file.startsWith("tests/architecture/ai50000Phase4") ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isBuiltInAi50000Phase4Path(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: BUILT_IN_AI_50000_PHASE4_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate 50000 Phase 4 disabled canary safety, observability, cost guard, rollback, web and Android proof artifacts",
+    };
+  }
   if (isBuiltInAi50000Phase3Path(normalized)) {
     return {
       file: normalized,

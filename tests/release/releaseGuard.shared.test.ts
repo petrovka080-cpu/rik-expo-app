@@ -762,6 +762,10 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/e2e/runBuiltInAi50000Phase3LiveSampleMatrix.ts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAi50000Phase4CanarySafetyProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "final-50k-92-external-live-proof-closeout",
         command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates",
       });

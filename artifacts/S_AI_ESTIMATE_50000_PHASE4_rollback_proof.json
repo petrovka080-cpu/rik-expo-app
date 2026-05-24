@@ -1,0 +1,12 @@
+{
+  "wave": "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN",
+  "rollback_proof_passed": true,
+  "rollback_action": "set flags false",
+  "rollback_time_target_minutes": 10,
+  "old_pdf_remains_default": true,
+  "old_routes_remain_default": true,
+  "no_data_destruction": true,
+  "estimate_snapshots_preserved": true,
+  "production_rollout_enabled": false,
+  "fake_green_claimed": false
+}

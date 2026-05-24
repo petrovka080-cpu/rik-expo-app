@@ -1,0 +1,39 @@
+{
+  "wave": "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN",
+  "events": [
+    "ai_50000_canary_request_received",
+    "ai_50000_canary_intent_resolved",
+    "ai_50000_canary_tool_selected",
+    "ai_50000_canary_global_estimate_validated",
+    "ai_50000_canary_product_search_validated",
+    "ai_50000_canary_pdf_action_created",
+    "ai_50000_canary_pdf_viewer_opened",
+    "ai_50000_canary_source_evidence_checked",
+    "ai_50000_canary_tax_status_checked",
+    "ai_50000_canary_dangerous_work_guard_applied",
+    "ai_50000_canary_budget_checked",
+    "ai_50000_canary_stop_condition_triggered",
+    "ai_50000_canary_rollback_started",
+    "ai_50000_canary_rollback_completed"
+  ],
+  "metrics": [
+    "canary_request_count",
+    "canary_estimate_success_rate",
+    "canary_product_search_success_rate",
+    "canary_pdf_success_rate",
+    "runtime_trace_capture_rate",
+    "source_evidence_coverage_rate",
+    "tax_status_or_warning_rate",
+    "dangerous_work_guard_rate",
+    "fake_availability_detection_count",
+    "pdf_mojibake_count",
+    "legacy_pdf_regression_count",
+    "android_regression_count",
+    "web_regression_count",
+    "canary_budget_usage"
+  ],
+  "observability_ready": true,
+  "redaction_required": true,
+  "raw_prompt_logging_allowed": false,
+  "fake_green_claimed": false
+}

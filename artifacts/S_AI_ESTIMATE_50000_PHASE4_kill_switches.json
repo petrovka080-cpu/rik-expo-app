@@ -1,0 +1,48 @@
+{
+  "wave": "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN",
+  "flags": [
+    {
+      "flag": "AI_50000_CANARY_ENABLED",
+      "defaultEnabled": false,
+      "canaryAllowed": true,
+      "productionRolloutAllowed": false,
+      "rollbackValue": false,
+      "owner": "ai-platform"
+    },
+    {
+      "flag": "AI_50000_LIVE_APP_CANARY_ENABLED",
+      "defaultEnabled": false,
+      "canaryAllowed": true,
+      "productionRolloutAllowed": false,
+      "rollbackValue": false,
+      "owner": "release-ops"
+    },
+    {
+      "flag": "AI_ESTIMATE_PDF_CANARY_ENABLED",
+      "defaultEnabled": false,
+      "canaryAllowed": true,
+      "productionRolloutAllowed": false,
+      "rollbackValue": false,
+      "owner": "pdf-platform"
+    },
+    {
+      "flag": "AI_50000_PRODUCT_SEARCH_CANARY_ENABLED",
+      "defaultEnabled": false,
+      "canaryAllowed": true,
+      "productionRolloutAllowed": false,
+      "rollbackValue": false,
+      "owner": "ai-platform"
+    },
+    {
+      "flag": "AI_50000_PRODUCTION_ROLLOUT_ENABLED",
+      "defaultEnabled": false,
+      "canaryAllowed": false,
+      "productionRolloutAllowed": false,
+      "rollbackValue": false,
+      "owner": "release-ops"
+    }
+  ],
+  "kill_switches_ready": true,
+  "production_rollout_enabled": false,
+  "fake_green_claimed": false
+}

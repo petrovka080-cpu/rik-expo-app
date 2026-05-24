@@ -1,0 +1,9 @@
+{
+  "wave": "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN",
+  "maxDailyCanaryEstimateRuns": 500,
+  "maxDailyCanaryPdfRuns": 75,
+  "maxDailyCanaryProductSearchRuns": 100,
+  "blockOnBudgetExceeded": true,
+  "cost_guard_ready": true,
+  "fake_green_claimed": false
+}

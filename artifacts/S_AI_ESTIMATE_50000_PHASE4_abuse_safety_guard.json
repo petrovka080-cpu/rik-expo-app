@@ -1,0 +1,9 @@
+{
+  "wave": "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN",
+  "dangerousWorkSpecialistWarningRequired": true,
+  "noDiyInstructionPolicyRequired": true,
+  "promptInjectionGuardRequired": true,
+  "fakeSupplierAvailabilityForbidden": true,
+  "abuse_safety_guard_ready": true,
+  "fake_green_claimed": false
+}
