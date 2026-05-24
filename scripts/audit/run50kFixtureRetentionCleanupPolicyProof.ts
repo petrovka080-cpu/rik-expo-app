@@ -23,18 +23,18 @@ function artifactPath(name: string): string {
   return path.join(ARTIFACT_DIR, name);
 }
 
-function readJson(name: string): JsonRecord {
-  const filePath = artifactPath(name);
+function readJsonFile(filePath: string): JsonRecord {
   if (!fs.existsSync(filePath)) return {};
   const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
   return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed as JsonRecord : {};
 }
 
+function readJson(name: string): JsonRecord {
+  return readJsonFile(artifactPath(name));
+}
+
 function readExistingPrefixedJson(name: string): JsonRecord {
-  const filePath = path.join(ARTIFACT_DIR, `${PREFIX}_${name}.json`);
-  if (!fs.existsSync(filePath)) return {};
-  const parsed = JSON.parse(fs.readFileSync(filePath, "utf8")) as unknown;
-  return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed as JsonRecord : {};
+  return readJsonFile(path.join(ARTIFACT_DIR, `${PREFIX}_${name}.json`));
 }
 
 function writeJson(name: string, value: unknown): void {
