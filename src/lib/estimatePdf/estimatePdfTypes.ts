@@ -88,5 +88,6 @@ export type EstimatePdfValidationResult = {
     mojibakeFound: boolean;
     blankText: boolean;
     genericConstructionRowsFound: boolean;
+    requiredTextMissing: string[];
   };
 };

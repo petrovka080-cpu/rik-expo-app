@@ -50,6 +50,7 @@ export type ReleaseGateName =
   | "ai-estimate-core-completion-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
   | "ai-route-parity-proof"
+  | "estimate-pdf-real-binary-proof"
   | "consumer-estimate-tab-pdf-proof"
   | "bottom-nav-estimate-marketplace-plus-proof"
   | "ai-estimate-pdf-open-runtime-proof"
@@ -288,6 +289,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },
+  { name: "estimate-pdf-real-binary-proof", command: "npx tsx scripts/e2e/runEstimatePdfRealBinaryProof.ts --require-live" },
   { name: "consumer-estimate-tab-pdf-proof", command: "npx tsx scripts/e2e/runConsumerEstimateTabPdfProof.ts" },
   { name: "bottom-nav-estimate-marketplace-plus-proof", command: "npx tsx scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof.ts" },
   { name: "ai-estimate-pdf-open-runtime-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts" },

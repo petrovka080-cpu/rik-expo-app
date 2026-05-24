@@ -612,10 +612,13 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
     normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
     normalized.startsWith("artifacts/S_AI_ROUTE_PARITY_") ||
+    normalized.startsWith("artifacts/S_ESTIMATE_PDF_REAL_BINARY_") ||
     normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
     normalized.startsWith("artifacts/screenshots/ai-route-parity/") ||
+    normalized.startsWith("artifacts/screenshots/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_CORE_COMPLETION_") ||
     normalized.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
+    normalized.startsWith("artifacts/pdf/estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_BLOCKER_AUDIT_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_REAL_ARCHITECTURE_") ||
@@ -638,6 +641,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/e2e/liveForemanReality") ||
     normalized.startsWith("tests/e2e/livePdfButtonReality") ||
     normalized === "tests/e2e/routeParity.web.spec.ts" ||
+    normalized === "tests/e2e/estimatePdf.web.spec.ts" ||
     normalized.startsWith("tests/architecture/aiEstimatePdf") ||
     normalized.startsWith("tests/architecture/pdfNo") ||
     normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
@@ -722,8 +726,10 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runGlobalEstimate") ||
     normalized.startsWith("scripts/e2e/runAiEstimate") ||
     normalized.startsWith("scripts/e2e/runAiRouteParityProof") ||
+    normalized.startsWith("scripts/e2e/runEstimatePdfRealBinaryProof") ||
     normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
+    normalized.startsWith("scripts/e2e/runAndroidEstimatePdfViewerSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidRouteParitySmoke") ||
     normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||

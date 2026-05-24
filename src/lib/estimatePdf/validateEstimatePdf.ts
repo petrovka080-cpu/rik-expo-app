@@ -2,6 +2,7 @@ import type { EstimatePdfValidationResult } from "./estimatePdfTypes";
 
 const MOJIBAKE_TOKENS = ["Ð", "Ñ", "�"];
 const BAD_TEXT_TOKENS = ["undefined", "[object Object]", "NaN", "null null"];
+const HARD_FAIL_MOJIBAKE_TOKENS = ["\u00D0", "\u00D1", "\uFFFD"];
 const KNOWN_WORK_KEYS = new Set([
   "asphalt_paving",
   "carpet_laying",
@@ -91,9 +92,14 @@ function hasGenericKnownWorkRow(text: string, knownWorkKey?: string): boolean {
     .some((line) => GENERIC_ROW_PATTERNS.some((pattern) => pattern.test(line.trim())));
 }
 
+function normalizeRequiredText(value: string): string {
+  return value.replace(/\u00A0/g, " ").replace(/\u00C2\s/g, " ");
+}
+
 export function validateEstimatePdf(input: {
   pdf: Uint8Array | string;
   knownWorkKey?: string;
+  requiredText?: string[];
 }): EstimatePdfValidationResult {
   const bytes = estimatePdfInputToBytes(input.pdf);
   const body = bytesToAscii(bytes);
@@ -103,9 +109,11 @@ export function validateEstimatePdf(input: {
   const eofPresent = body.includes("%%EOF");
   const textExtractable = text.length > 20;
   const cyrillicReadable = hasReadableCyrillic(text);
-  const mojibakeFound = MOJIBAKE_TOKENS.some((token) => text.includes(token));
+  const mojibakeFound = [...MOJIBAKE_TOKENS, ...HARD_FAIL_MOJIBAKE_TOKENS].some((token) => text.includes(token));
   const blankText = text.trim().length === 0;
   const genericConstructionRowsFound = hasGenericKnownWorkRow(text, input.knownWorkKey);
+  const normalizedText = normalizeRequiredText(text);
+  const requiredTextMissing = (input.requiredText ?? []).filter((token) => !normalizedText.includes(normalizeRequiredText(token)));
 
   if (!binaryValid) failures.push("PDF_BINARY_HEADER_MISSING");
   if (!eofPresent) failures.push("PDF_EOF_MISSING");
@@ -114,6 +122,9 @@ export function validateEstimatePdf(input: {
   if (mojibakeFound) failures.push("PDF_MOJIBAKE_FOUND");
   if (blankText) failures.push("PDF_BLANK_TEXT");
   if (genericConstructionRowsFound) failures.push("GENERIC_CONSTRUCTION_ROW_FOR_KNOWN_WORK");
+  for (const token of requiredTextMissing) {
+    failures.push(`PDF_REQUIRED_TEXT_MISSING:${token}`);
+  }
   for (const token of BAD_TEXT_TOKENS) {
     if (text.includes(token)) failures.push(`PDF_BAD_TEXT_TOKEN:${token}`);
   }
@@ -130,6 +141,7 @@ export function validateEstimatePdf(input: {
       mojibakeFound,
       blankText,
       genericConstructionRowsFound,
+      requiredTextMissing,
     },
   };
 }
