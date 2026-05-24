@@ -1,0 +1,36 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "summary": "Current estimate PDF is structurally sourced but visually rendered as plain text lines in a PDF stream.",
+  "gaps": [
+    {
+      "id": "estimate_pdf_text_renderer",
+      "severity": "high",
+      "current": "EstimatePdfViewModel is flattened into text lines with pipe separators.",
+      "target": "Structured document template with real table layout primitives."
+    },
+    {
+      "id": "no_visual_contract",
+      "severity": "high",
+      "current": "No estimate-specific document visual contract exists for header, metadata, table, tax/source, footer.",
+      "target": "EstimateDocumentViewModel contract rendered by shared document primitives."
+    },
+    {
+      "id": "duplicated_pdf_layouts",
+      "severity": "medium",
+      "current": "Proposal/request PDF HTML templates contain real table primitives while estimate/request consumer flow uses text PDF stream.",
+      "target": "Shared document layout primitives with separate document semantics."
+    },
+    {
+      "id": "viewer_not_layout",
+      "severity": "medium",
+      "current": "Web/Android viewers can open current binary but cannot compensate for weak document layout.",
+      "target": "Renderer produces layout quality before viewer handoff."
+    }
+  ],
+  "nonGoalsForThisWave": [
+    "No renderer rebuild performed.",
+    "No DocumentEngineV2 implementation created.",
+    "No feature flag enabled.",
+    "No AI logic duplicated."
+  ]
+}

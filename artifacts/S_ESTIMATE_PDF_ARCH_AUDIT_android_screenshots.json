@@ -1,0 +1,35 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "status": "GREEN_ANDROID_PDF_ARCH_AUDIT_READY",
+  "android_visual_audit_completed": true,
+  "android_emulator_tested": true,
+  "devices": [
+    "emulator-5554"
+  ],
+  "apk_path": "android/app/build/outputs/apk/debug/app-debug.apk",
+  "apk_exists": true,
+  "apk_install_ok": true,
+  "fresh_debug_apk_tested": true,
+  "flow": "request -> make PDF -> /pdf-viewer or native handoff",
+  "pdf_action_clicked": true,
+  "pdf_viewer_android_opened": true,
+  "screenshots": [
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/request_screen.png",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/pdf_button_screen.png",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/viewer_screen.png",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/final_screen.png"
+  ],
+  "uiDumps": [
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/request_screen.xml",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/pdf_button_screen.xml",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/viewer_screen.xml",
+    "artifacts/screenshots/estimate-pdf-arch-audit/android/final_screen.xml"
+  ],
+  "sourceArtifact": "artifacts/S_ESTIMATE_PDF_REAL_BINARY_android_screenshots.json",
+  "sourceFinalStatus": "GREEN_ANDROID_ESTIMATE_PDF_VIEWER_READY",
+  "classification": "PLAIN_TEXT_DUMP",
+  "enterprise_tabular_layout_claimed": false,
+  "commandOutputTail": "GREEN_ANDROID_ESTIMATE_PDF_VIEWER_READY\n",
+  "error": null,
+  "fake_green_claimed": false
+}

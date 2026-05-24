@@ -1,0 +1,36 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "procurement_pdf": {
+    "rendererModule": "src/lib/pdf/pdf.proposal.ts:renderProposalPdfHtml",
+    "hasHeader": true,
+    "hasMetadataBlocks": true,
+    "hasBorderedTable": true,
+    "hasTotalsRow": true,
+    "hasSignatureBlocks": true,
+    "hasServiceId": true
+  },
+  "estimate_pdf_current": {
+    "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts:renderEstimatePdfDocument",
+    "hasHeader": true,
+    "hasMetadataBlocks": true,
+    "hasBorderedTable": false,
+    "hasTotalsRow": true,
+    "hasSignatureBlocks": false,
+    "hasServiceId": true,
+    "usesTextPdfStream": true,
+    "usesProcurementSemantics": false
+  },
+  "forbiddenSemanticCopy": [
+    "Snabzhenets",
+    "Postavshchiki",
+    "Zakazka na zakupku",
+    "Utverzhdena",
+    "Supplier",
+    "Director Proposal"
+  ],
+  "decision": {
+    "copyProcurementSemantics": false,
+    "reuseDocumentLayoutPrimitives": true,
+    "unifiedDocumentStandardNeeded": true
+  }
+}

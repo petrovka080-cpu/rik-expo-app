@@ -1,0 +1,79 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "pdfDir": "artifacts/pdf/estimate-pdf-arch-audit",
+  "generatedAt": "2026-05-24T05:32:11.566Z",
+  "items": [
+    {
+      "id": "laminate_100sqm",
+      "route": "/chat",
+      "prompt": "audit laminate laying 100 sq m",
+      "workKey": "laminate_laying",
+      "expectedWorkKey": "laminate_laying",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/laminate_100sqm.pdf",
+      "byteLength": 23475,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    },
+    {
+      "id": "brick_masonry_74sqm",
+      "route": "/chat",
+      "prompt": "audit brick masonry 74 sq m",
+      "workKey": "brick_masonry",
+      "expectedWorkKey": "brick_masonry",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/brick_masonry_74sqm.pdf",
+      "byteLength": 16687,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    },
+    {
+      "id": "asphalt_1000sqm",
+      "route": "/ai?context=foreman",
+      "prompt": "audit asphalt paving 1000 sq m",
+      "workKey": "asphalt_paving",
+      "expectedWorkKey": "asphalt_paving",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/asphalt_1000sqm.pdf",
+      "byteLength": 34582,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    },
+    {
+      "id": "gkl_352sqm",
+      "route": "/chat",
+      "prompt": "audit drywall gkl installation 352 sq m",
+      "workKey": "drywall_partition",
+      "expectedWorkKey": "drywall_partition",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/gkl_352sqm.pdf",
+      "byteLength": 20393,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    },
+    {
+      "id": "carpet_100sqm",
+      "route": "/request",
+      "prompt": "audit carpet laying 100 sq m",
+      "workKey": "carpet_laying",
+      "expectedWorkKey": "carpet_laying",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/carpet_100sqm.pdf",
+      "byteLength": 17702,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    },
+    {
+      "id": "tile_174sqm",
+      "route": "/chat",
+      "prompt": "audit ceramic tile laying 174 sq m",
+      "workKey": "ceramic_tile_laying",
+      "expectedWorkKey": "ceramic_tile_laying",
+      "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/tile_174sqm.pdf",
+      "byteLength": 15665,
+      "sourceObject": "GlobalEstimateResult",
+      "rendererModule": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "classification": "PLAIN_TEXT_DUMP"
+    }
+  ]
+}

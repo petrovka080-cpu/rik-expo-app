@@ -1,0 +1,158 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "currentClassification": "PLAIN_TEXT_DUMP",
+  "enterprise_tabular_layout_currently_present": false,
+  "plain_text_dump_detected": true,
+  "cases": {
+    "laminate_100sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    },
+    "brick_masonry_74sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    },
+    "asphalt_1000sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    },
+    "gkl_352sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    },
+    "carpet_100sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    },
+    "tile_174sqm": {
+      "classification": "PLAIN_TEXT_DUMP",
+      "enterpriseRequirementsMet": false,
+      "missingEnterpriseRequirements": [
+        "realBorderedTable",
+        "rowGrid",
+        "footerSignatureBlock"
+      ],
+      "evidence": {
+        "documentHeader": true,
+        "documentNumberStatusDate": true,
+        "metadataBlock": true,
+        "realBorderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "taxSourceBlock": true,
+        "footerSignatureBlock": false,
+        "readableWebViewerScreenshot": true,
+        "readableAndroidViewerScreenshot": true,
+        "textExtractable": true,
+        "plainTextPipeRows": true,
+        "visualRendererKind": "text_pdf"
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "entrypoints": [
+    {
+      "route": "/chat",
+      "action": "make_pdf",
+      "sourceObject": "GlobalEstimateResult -> AiEstimatePdfSource.structuredEstimate -> EstimatePdfViewModel",
+      "actionPayloadType": "structured",
+      "rendererModule": "src/lib/estimatePdf/createEstimatePdf.ts:createEstimatePdf -> renderEstimatePdfDocument",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": true,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": true,
+      "status": "weak"
+    },
+    {
+      "route": "/ai?context=foreman",
+      "action": "make_pdf",
+      "sourceObject": "GlobalEstimateResult -> AiEstimatePdfSource.structuredEstimate -> EstimatePdfViewModel",
+      "actionPayloadType": "structured",
+      "rendererModule": "src/lib/estimatePdf/createEstimatePdf.ts:createEstimatePdf -> renderEstimatePdfDocument",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": true,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": true,
+      "status": "weak"
+    },
+    {
+      "route": "/request",
+      "action": "make_pdf",
+      "sourceObject": "ConsumerRepairRequestDraft + ConsumerRepairRequestItem[] + optional estimate supplement",
+      "actionPayloadType": "structured",
+      "rendererModule": "src/lib/consumerRequests/consumerRequestPdfService.ts:generateConsumerRepairRequestPdf -> renderTextPdfDocument",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": false,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": true,
+      "status": "weak"
+    },
+    {
+      "route": "/pdf-viewer",
+      "action": "view_pdf",
+      "sourceObject": "DocumentAsset | direct route uri/title/fileName params",
+      "actionPayloadType": "data_uri | local-file | remote-url",
+      "rendererModule": "app/pdf-viewer.tsx -> src/lib/pdf/PdfViewerScreenContent.tsx",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": false,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": false,
+      "status": "ok"
+    },
+    {
+      "route": "procurement/proposal PDF path",
+      "action": "proposal_pdf",
+      "sourceObject": "ProposalPdfModel",
+      "actionPayloadType": "structured",
+      "rendererModule": "src/lib/pdf/pdf.proposal.ts:renderProposalPdfHtml -> src/lib/pdf/pdf.runner.ts",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": false,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": false,
+      "status": "ok"
+    },
+    {
+      "route": "Android PDF handoff/native viewer",
+      "action": "open_pdf",
+      "sourceObject": "GeneratedPdfViewerRouteParams -> DocumentAsset",
+      "actionPayloadType": "local-file | remote-url",
+      "rendererModule": "src/lib/estimatePdf/generatedPdfViewerFile.ts -> app/pdf-viewer.tsx -> src/lib/pdf/pdfNativeHandoffPlan.ts",
+      "viewerRoute": "/pdf-viewer",
+      "usesStructuredEstimate": false,
+      "usesMarkdownAsTruth": false,
+      "usesPlainTextDump": false,
+      "status": "ok"
+    }
+  ]
+}

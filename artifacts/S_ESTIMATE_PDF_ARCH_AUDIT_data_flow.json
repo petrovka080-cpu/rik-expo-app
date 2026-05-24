@@ -1,0 +1,63 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "chain": [
+    {
+      "stage": "AI estimate response",
+      "module": "src/features/ai/assistantAnswerPipeline.ts",
+      "object": "GlobalEstimateResult",
+      "sourceKnown": true
+    },
+    {
+      "stage": "action builder",
+      "module": "src/lib/ai/estimatePdf/estimatePdfGuard.ts:buildAiEstimatePdfActions",
+      "object": "AiEstimatePdfAction payloadRef",
+      "sourceKnown": true
+    },
+    {
+      "stage": "PDF payload",
+      "module": "src/lib/ai/estimatePdf/estimatePdfActionService.ts:generateAiEstimatePdf",
+      "object": "AiEstimatePdfSource.structuredEstimate",
+      "sourceKnown": true
+    },
+    {
+      "stage": "PDF input",
+      "module": "src/lib/estimatePdf/createEstimatePdf.ts",
+      "object": "EstimatePdfInput",
+      "sourceKnown": true
+    },
+    {
+      "stage": "renderer",
+      "module": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "object": "EstimatePdfViewModel -> text lines -> PDF text stream",
+      "sourceKnown": true
+    },
+    {
+      "stage": "PDF binary/base64/data URI",
+      "module": "src/lib/estimatePdf/renderEstimatePdfDocument.ts:renderTextPdfDocument",
+      "object": "EstimatePdfDocument bytes/base64/dataUri",
+      "sourceKnown": true
+    },
+    {
+      "stage": "web viewer",
+      "module": "app/pdf-viewer.tsx + src/lib/pdf/PdfViewerWebShell.tsx",
+      "object": "iframe src=data:application/pdf or remote/local uri",
+      "sourceKnown": true
+    },
+    {
+      "stage": "Android viewer",
+      "module": "src/lib/estimatePdf/generatedPdfViewerFile.ts + src/lib/pdf/pdfNativeHandoffPlan.ts",
+      "object": "data URI materialized to cache file, then native handoff",
+      "sourceKnown": true
+    }
+  ],
+  "answers": {
+    "doesPdfUseGlobalEstimateResult": true,
+    "doesPdfUseEstimatePdfViewModel": true,
+    "doesPdfUseMarkdownAnswer": false,
+    "doesPdfUsePlainTextDump": true,
+    "doesPdfBuildRealTableCells": false,
+    "doesPdfReuseProcurementRenderer": false,
+    "doesPdfHaveSeparateVisualContract": false
+  },
+  "hardFailSourceObjectUnknown": false
+}

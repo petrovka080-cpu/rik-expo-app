@@ -1,0 +1,27 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "decision": "CREATE_UNIFIED_DOCUMENT_ENGINE_V2",
+  "reason": [
+    "Estimate PDF uses a structured view model but the renderer is a low-level text PDF stream.",
+    "Proposal and request PDF paths already contain separate HTML/table layout logic.",
+    "Enterprise estimate PDF needs reusable document primitives, not copied procurement semantics.",
+    "Migration can be contained behind adapter, feature flag, and parity tests."
+  ],
+  "rejectedOptions": [
+    {
+      "option": "REFRACTOR_EXISTING_ESTIMATE_PDF_RENDERER",
+      "rejectedBecause": "Adding bordered tables, row grid, footer/signature, and visual standards to the low-level text stream would be a renderer rewrite in place."
+    },
+    {
+      "option": "BLOCKED_INSUFFICIENT_AUDIT",
+      "rejectedBecause": "Entrypoints, data source, renderer, viewer, procurement comparison, and web/Android evidence artifacts are mapped."
+    }
+  ],
+  "migrationSafety": {
+    "adapterRequired": true,
+    "featureFlagRequired": true,
+    "parityTestsRequired": true,
+    "oldRendererRemains": true
+  },
+  "fake_green_claimed": false
+}

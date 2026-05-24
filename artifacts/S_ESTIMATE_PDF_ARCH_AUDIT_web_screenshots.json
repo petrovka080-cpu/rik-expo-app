@@ -1,0 +1,13 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "status": "GREEN_WEB_PDF_ARCH_AUDIT_READY",
+  "web_visual_audit_completed": true,
+  "route": "/chat",
+  "prompt": "дай смету на укладку ламината 100 м²",
+  "viewerRoute": "/pdf-viewer",
+  "screenshotPath": "artifacts/screenshots/estimate-pdf-arch-audit/web/laminate_100sqm_viewer.png",
+  "pdfPath": "artifacts/pdf/estimate-pdf-arch-audit/laminate_100sqm_web_viewer.pdf",
+  "classification": "PLAIN_TEXT_DUMP",
+  "enterprise_tabular_layout_claimed": false,
+  "fake_green_claimed": false
+}

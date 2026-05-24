@@ -1,0 +1,185 @@
+{
+  "wave": "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN",
+  "renderers": [
+    {
+      "module": "src/lib/estimatePdf/estimatePdfTypes.ts",
+      "role": "view_model",
+      "usedBy": [
+        "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+        "src/lib/estimatePdf/renderEstimatePdfDocument.ts"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": false,
+        "metadataBlock": false,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": false,
+        "rowGrid": false,
+        "totalsBlock": false,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "src/lib/estimatePdf/buildEstimatePdfViewModel.ts",
+      "role": "view_model",
+      "usedBy": [
+        "src/lib/estimatePdf/createEstimatePdf.ts"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": true,
+        "metadataBlock": true,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": false,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "src/lib/estimatePdf/renderEstimatePdfDocument.ts",
+      "role": "renderer",
+      "usedBy": [
+        "src/lib/estimatePdf/createEstimatePdf.ts",
+        "src/lib/consumerRequests/consumerRequestPdfService.ts"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": true,
+        "metadataBlock": true,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": true,
+        "rowGrid": false,
+        "totalsBlock": true,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": true
+      },
+      "canBeRefactored": false,
+      "mustBeReplaced": false,
+      "risk": "must_refactor",
+      "currentRendererKind": "low-level text PDF stream"
+    },
+    {
+      "module": "src/lib/estimatePdf/createEstimatePdf.ts",
+      "role": "validator",
+      "usedBy": [
+        "src/lib/ai/estimatePdf/estimatePdfActionService.ts"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": false,
+        "metadataBlock": false,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": false,
+        "rowGrid": false,
+        "totalsBlock": false,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "src/lib/estimatePdf/generatedPdfViewerFile.ts",
+      "role": "action_payload",
+      "usedBy": [
+        "src/features/ai/AIAssistantEstimatePdfActions.tsx",
+        "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": false,
+        "metadataBlock": false,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": false,
+        "rowGrid": false,
+        "totalsBlock": false,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "app/pdf-viewer.tsx",
+      "role": "viewer",
+      "usedBy": [
+        "all generated PDF flows"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": false,
+        "metadataBlock": false,
+        "twoColumnMetadata": false,
+        "borderedTable": false,
+        "tableHeader": false,
+        "rowGrid": false,
+        "totalsBlock": false,
+        "signatureBlock": false,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "src/lib/pdf/pdf.proposal.ts",
+      "role": "renderer",
+      "usedBy": [
+        "procurement/proposal PDF path"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": true,
+        "metadataBlock": true,
+        "twoColumnMetadata": true,
+        "borderedTable": true,
+        "tableHeader": true,
+        "rowGrid": true,
+        "totalsBlock": true,
+        "signatureBlock": true,
+        "footer": true,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    },
+    {
+      "module": "src/lib/pdf/pdf.template.ts:renderRequestPdfHtml",
+      "role": "renderer",
+      "usedBy": [
+        "foreman/request PDF path"
+      ],
+      "layoutCapabilities": {
+        "documentHeader": true,
+        "metadataBlock": true,
+        "twoColumnMetadata": true,
+        "borderedTable": true,
+        "tableHeader": true,
+        "rowGrid": true,
+        "totalsBlock": false,
+        "signatureBlock": true,
+        "footer": false,
+        "multiPage": false
+      },
+      "canBeRefactored": true,
+      "mustBeReplaced": false,
+      "risk": "ok"
+    }
+  ]
+}

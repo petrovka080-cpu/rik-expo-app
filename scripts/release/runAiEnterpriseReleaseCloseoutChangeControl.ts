@@ -38,6 +38,8 @@ const RELEASE_PIPELINE_NO_TIMEOUT_MOBILE_RUNTIME_WAVE =
 const FINAL_50K_92_SCORE_REAUDIT_WAVE = "S_FINAL_50K_92_SCORE_REAUDIT_CLOSEOUT";
 const GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_WAVE =
   "S_GLOBAL_ESTIMATE_LOCALIZATION_PROFESSIONAL_BOQ_ENGINE_POINT_OF_NO_RETURN";
+const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
+  "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -860,8 +862,34 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
   );
 }
 
+function isEstimatePdfArchitectureAuditPath(file: string): boolean {
+  return (
+    file === "artifacts/.gitattributes" ||
+    file.startsWith("artifacts/S_ESTIMATE_PDF_ARCH_AUDIT_") ||
+    file.startsWith("artifacts/pdf/estimate-pdf-arch-audit/") ||
+    file === "scripts/audit/runEstimatePdfArchitectureAudit.ts" ||
+    file === "scripts/e2e/runAndroidEstimatePdfArchitectureAuditSmoke.ts" ||
+    file === "src/lib/estimatePdf/audit" ||
+    file.startsWith("src/lib/estimatePdf/audit/") ||
+    file === "tests/pdfAudit" ||
+    file.startsWith("tests/pdfAudit/") ||
+    file === "tests/e2e/estimatePdfArchitectureAudit.web.spec.ts" ||
+    file.startsWith("tests/architecture/pdfArchAudit")
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isEstimatePdfArchitectureAuditPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "estimate PDF architecture audit, decision gate, renderer/viewer contracts, and evidence artifacts",
+    };
+  }
   if (isGlobalEstimateProfessionalBoqReleasePath(normalized)) {
     return {
       file: normalized,

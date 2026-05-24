@@ -1,0 +1,28 @@
+{
+  "route": "/pdf-viewer",
+  "modules": [
+    {
+      "module": "app/pdf-viewer.tsx",
+      "role": "route/controller",
+      "webBehavior": "resolves direct uri/session and passes iframe source to PdfViewerWebShell",
+      "androidBehavior": "materialized local files and remote PDFs use native handoff; unsupported sources are blocked"
+    },
+    {
+      "module": "src/lib/pdf/PdfViewerWebShell.tsx",
+      "role": "web iframe shell",
+      "evidence": "iframe src receives webEmbeddedUri"
+    },
+    {
+      "module": "src/lib/pdf/PdfViewerNativeShell.tsx",
+      "role": "native WebView or native handoff shell",
+      "evidence": "native-handoff mode shows external-viewer completion state; native-webview mode uses react-native-webview"
+    },
+    {
+      "module": "src/lib/pdf/pdfViewerContract.ts",
+      "role": "viewer source resolver",
+      "evidence": "web -> web-frame, ios -> native-webview, android -> native-handoff for PDF file/remote sources"
+    }
+  ],
+  "webViewerAudited": true,
+  "androidViewerAudited": true
+}

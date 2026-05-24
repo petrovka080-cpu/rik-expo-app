@@ -1,0 +1,32 @@
+{
+  "engineName": "DocumentEngineV2",
+  "purpose": "shared PDF/document layout primitives",
+  "notAnAiFramework": true,
+  "sourceOfTruth": "structured document view models only",
+  "migrationStrategy": "adapter + feature flag + parity tests",
+  "featureFlag": "PDF_DOCUMENT_ENGINE_V2_ENABLED",
+  "initialState": "disabled",
+  "rollback": "set PDF_DOCUMENT_ENGINE_V2_ENABLED=false",
+  "firstTemplate": "EstimateDocumentTemplate",
+  "laterTemplates": [
+    "ProcurementDocumentTemplate",
+    "RequestDraftDocumentTemplate",
+    "ProposalDocumentTemplate",
+    "BOQDocumentTemplate"
+  ],
+  "safeChain": [
+    "GlobalEstimateResult",
+    "EstimateDocumentViewModel",
+    "DocumentEngineV2",
+    "EstimateDocumentTemplate",
+    "PDF binary",
+    "web viewer / Android viewer"
+  ],
+  "mustNotDo": [
+    "do not parse markdown",
+    "do not duplicate AI logic",
+    "do not calculate estimates in document engine",
+    "do not replace all PDFs at once",
+    "do not copy procurement semantics into estimate document"
+  ]
+}
