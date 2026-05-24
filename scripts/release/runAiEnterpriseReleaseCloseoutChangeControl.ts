@@ -42,6 +42,8 @@ const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
   "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE =
   "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN";
+const BUILT_IN_AI_50000_PHASE1_WAVE =
+  "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN";
 const PDF_DIRECTOR_FORMAT_TYPE_RATCHET_WAVE = "S_50K_PDF_DIRECTOR_FORMAT_TYPE_RATCHET";
 
 type DirtyFileStatus = {
@@ -903,8 +905,40 @@ function isAiEstimatePdfSafeIntegrationPath(file: string): boolean {
   );
 }
 
+function isBuiltInAi50000Phase1Path(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_BUILT_IN_AI_50000_PHASE1_") ||
+    file.startsWith("artifacts/pdf/built-in-ai-50000-phase1/") ||
+    file === ".gitattributes" ||
+    file === "src/lib/ai/builtInAi50000" ||
+    file.startsWith("src/lib/ai/builtInAi50000/") ||
+    file === "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts" ||
+    file === "scripts/e2e/runBuiltInAi50000Phase1ShardProof.ts" ||
+    file === "scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts" ||
+    file === "scripts/e2e/runAndroidAi50000Phase1LiveSampleSmoke.ts" ||
+    file === "tests/builtInAi50000Phase1" ||
+    file.startsWith("tests/builtInAi50000Phase1/") ||
+    file === "tests/e2e/ai50000Phase1LiveSample.web.spec.ts" ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file.startsWith("tests/architecture/ai50000Phase1") ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isBuiltInAi50000Phase1Path(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: BUILT_IN_AI_50000_PHASE1_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "built-in AI 50000 Phase 1 governed manifest, shard live gate, no-hacks audit, web and Android proof artifacts",
+    };
+  }
   if (isAiEstimatePdfSafeIntegrationPath(normalized)) {
     return {
       file: normalized,

@@ -1,0 +1,19 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "old_pdf_route_still_opens": true,
+  "old_pdf_action_payload_unchanged": true,
+  "old_pdf_renderer_not_globally_replaced": true,
+  "legacy_pdf_route_changed": false,
+  "legacy_pdf_payload_changed": false,
+  "legacy_pdf_renderer_globally_replaced": false,
+  "ai_estimate_pdf_path_still_works": true,
+  "pdf_viewer_works_on_web": true,
+  "pdf_viewer_works_on_android": true,
+  "ai_estimate_pdf_plain_text_dump_found": false,
+  "pdf_mojibake_found": false,
+  "ai_pdf_path": "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_ai_estimate.pdf",
+  "legacy_pdf_path": "artifacts/pdf/built-in-ai-50000-phase1/brick_masonry_74sqm_legacy.pdf",
+  "legacy_pdf_text_valid": true,
+  "ai_estimate_pdf_regression_passed": true,
+  "fake_green_claimed": false
+}

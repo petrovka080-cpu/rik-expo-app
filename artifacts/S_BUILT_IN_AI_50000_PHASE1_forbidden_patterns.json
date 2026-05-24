@@ -1,0 +1,142 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "rules": [
+    {
+      "id": "use_effect_answer_rewrite",
+      "scope": "screen_only",
+      "tokenParts": [
+        "useEffect(() => setAnswer"
+      ]
+    },
+    {
+      "id": "message_rewrite_after_render",
+      "scope": "screen_only",
+      "tokenParts": [
+        "setMessages(prev => rewrite"
+      ]
+    },
+    {
+      "id": "markdown_table_parser",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "parseMarkdownTable"
+      ]
+    },
+    {
+      "id": "screen_calculation",
+      "scope": "screen_only",
+      "tokenParts": [
+        "calculateEstimateInScreen"
+      ]
+    },
+    {
+      "id": "fake_sources",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "const fakeSources"
+      ]
+    },
+    {
+      "id": "fake_availability",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "const fakeAvailability"
+      ]
+    },
+    {
+      "id": "fake_stock",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "const fakeStock"
+      ]
+    },
+    {
+      "id": "fake_supplier",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "const fakeSupplier"
+      ]
+    },
+    {
+      "id": "generic_known_work_row",
+      "scope": "screen_only",
+      "tokenParts": [
+        "inlineGenericConstructionRows"
+      ]
+    },
+    {
+      "id": "prompt_price_hardcode",
+      "scope": "all_non_guard",
+      "tokenParts": [
+        "promptHardcodedPrices"
+      ]
+    },
+    {
+      "id": "prompt_tax_hardcode",
+      "scope": "all_non_guard",
+      "tokenParts": [
+        "promptHardcodedTax"
+      ]
+    },
+    {
+      "id": "second_ai_framework",
+      "scope": "all_non_guard",
+      "tokenParts": [
+        "createSecondAiFramework"
+      ]
+    },
+    {
+      "id": "document_layer_calculation",
+      "scope": "runtime_only",
+      "tokenParts": [
+        "documentLayerCalculatesEstimate"
+      ]
+    }
+  ],
+  "forbiddenFindings": [],
+  "guardEvidenceFindings": [
+    {
+      "ruleId": "second_ai_framework",
+      "file": "tests/architecture/aiUniversalLearningNoSecondFramework.contract.test.ts",
+      "line": 7,
+      "excerpt": "expect(source).not.toMatch(/new\\s+AIFramework|createSecondAiFramework|second_ai_framework_created:\\s*true/);",
+      "allowedGuardEvidence": true
+    },
+    {
+      "ruleId": "markdown_table_parser",
+      "file": "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts",
+      "line": 27,
+      "excerpt": "{ id: \"markdown_table_parser\", parts: [\"parseMarkdownTable\"], scope: \"runtime_only\" },",
+      "allowedGuardEvidence": true
+    },
+    {
+      "ruleId": "prompt_price_hardcode",
+      "file": "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts",
+      "line": 34,
+      "excerpt": "{ id: \"prompt_price_hardcode\", parts: [\"promptHardcodedPrices\"], scope: \"all_non_guard\" },",
+      "allowedGuardEvidence": true
+    },
+    {
+      "ruleId": "prompt_tax_hardcode",
+      "file": "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts",
+      "line": 35,
+      "excerpt": "{ id: \"prompt_tax_hardcode\", parts: [\"promptHardcodedTax\"], scope: \"all_non_guard\" },",
+      "allowedGuardEvidence": true
+    },
+    {
+      "ruleId": "second_ai_framework",
+      "file": "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts",
+      "line": 36,
+      "excerpt": "{ id: \"second_ai_framework\", parts: [\"createSecondAiFramework\"], scope: \"all_non_guard\" },",
+      "allowedGuardEvidence": true
+    },
+    {
+      "ruleId": "document_layer_calculation",
+      "file": "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts",
+      "line": 37,
+      "excerpt": "{ id: \"document_layer_calculation\", parts: [\"documentLayerCalculatesEstimate\"], scope: \"runtime_only\" },",
+      "allowedGuardEvidence": true
+    }
+  ],
+  "fake_green_claimed": false
+}

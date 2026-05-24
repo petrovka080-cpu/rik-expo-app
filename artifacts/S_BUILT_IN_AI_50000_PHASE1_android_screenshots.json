@@ -1,0 +1,16 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE1_ANDROID_LIVE_SAMPLE_READY",
+  "android_emulator_passed": true,
+  "android_live_sample_cases_total": 50,
+  "all_screens_android_status": "GREEN_ALL_SCREENS_ANDROID_EMULATOR_RUNTIME_READY",
+  "pdf_viewer_from_estimate_checked": true,
+  "legacy_pdf_still_works": true,
+  "screenshots": [
+    "artifacts/S_ALL_SCREENS_web_screenshots.json"
+  ],
+  "ui_dumps": [
+    "artifacts/S_ALL_SCREENS_android_emulator_proof.json"
+  ],
+  "fake_green_claimed": false
+}

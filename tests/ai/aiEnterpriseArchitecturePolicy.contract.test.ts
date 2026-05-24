@@ -10,6 +10,7 @@ describe("AI enterprise architecture policy", () => {
       "builtInAi",
       "builtInAi1000",
       "builtInAi10000",
+      "builtInAi50000",
       "alwaysOnExternalKnowledge",
       "appContextGraph",
       "estimateEngine",

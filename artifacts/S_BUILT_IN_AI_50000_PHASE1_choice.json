@@ -1,0 +1,12 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_CREATE_ISOLATED_50K_PHASE1_CANDIDATE_MANIFEST",
+  "allowed_choices": [
+    "OPTION_A_EXTEND_EXISTING_10K_TO_50K_PHASE1",
+    "OPTION_B_CREATE_ISOLATED_50K_PHASE1_CANDIDATE_MANIFEST",
+    "OPTION_C_BLOCKED_CORE_NOT_READY_FOR_50K"
+  ],
+  "choice_gate_used": true,
+  "full_50k_green_claimed": false,
+  "fake_green_claimed": false
+}

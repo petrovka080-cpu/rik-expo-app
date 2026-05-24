@@ -2,6 +2,7 @@ export type AiEnterpriseLayer =
   | "builtInAi"
   | "builtInAi1000"
   | "builtInAi10000"
+  | "builtInAi50000"
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
   | "estimateEngine"
@@ -75,6 +76,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "builtInAi",
     "builtInAi1000",
     "builtInAi10000",
+    "builtInAi50000",
     "alwaysOnExternalKnowledge",
     "appContextGraph",
     "estimateEngine",

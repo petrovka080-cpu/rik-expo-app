@@ -653,6 +653,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "builtInAi10000"),
       /\.ts$/,
     );
+    const sBuiltInAi50000Phase1GovernedExpansionFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "builtInAi50000"),
+      /\.ts$/,
+    );
     const sAiSourceIntelligenceFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "sourceIntelligence"),
       /\.ts$/,
@@ -2001,7 +2005,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sSecurityPrivacyHardeningFiles -
         s50kSyntheticFixtureTzLockContractFiles -
         sLiveAiEstimatePdfRealityFiles -
-        sAiEstimatePdfSafeIntegrationFiles,
+        sAiEstimatePdfSafeIntegrationFiles -
+        sBuiltInAi50000Phase1GovernedExpansionFiles,
     ).toBeLessThanOrEqual(1306);
   });
 });

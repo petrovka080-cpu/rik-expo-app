@@ -33,6 +33,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "builtInAi50000",
+    root: "src/lib/ai/builtInAi50000",
+    purpose: "Governed 50000-ready Phase 1 ontology, shard planner, case manifest, and runtime proof validators.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "alwaysOnExternalKnowledge",
     root: "src/lib/ai/alwaysOnExternalKnowledge",
     purpose: "Always-on public knowledge answer policy and source-aware external answer composition.",

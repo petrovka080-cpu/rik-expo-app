@@ -646,6 +646,30 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
   );
 };
 
+const isApprovedBuiltInAi50000Phase1Patch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/builtInAi50000/") ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    normalized === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    normalized === "scripts/audit/runBuiltInAi50000Phase1NoHacksAudit.ts" ||
+    normalized === "scripts/e2e/runBuiltInAi50000Phase1ShardProof.ts" ||
+    normalized === "scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts" ||
+    normalized === "scripts/e2e/runAndroidAi50000Phase1LiveSampleSmoke.ts" ||
+    normalized.startsWith("tests/builtInAi50000Phase1/") ||
+    normalized.startsWith("tests/architecture/ai50000Phase1") ||
+    normalized === "tests/e2e/ai50000Phase1LiveSample.web.spec.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_50000_PHASE1_") ||
+    normalized.startsWith("artifacts/pdf/built-in-ai-50000-phase1/")
+  );
+};
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -762,6 +786,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedAiSafeActionDraftApprovalOrchestratorPatch(file) &&
         !isApprovedAiHumanApprovalLedgerExecutionBoundaryPatch(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
+        !isApprovedBuiltInAi50000Phase1Patch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
         ) ||

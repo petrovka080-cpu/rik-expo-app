@@ -1,0 +1,25 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_BUILT_IN_AI_50000_PHASE1_NO_HACKS_AUDIT_READY",
+  "scanned_roots": [
+    "app",
+    "src",
+    "tests",
+    "scripts"
+  ],
+  "forbidden_findings": [],
+  "guard_evidence_findings_count": 6,
+  "no_hacks_audit_passed": true,
+  "use_effect_rewrite_found": false,
+  "screen_local_calculation_found": false,
+  "inline_rows_in_screens_found": false,
+  "prompt_hardcoded_prices_found": false,
+  "prompt_hardcoded_tax_found": false,
+  "fake_sources_found": false,
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false,
+  "second_ai_framework_created": false,
+  "document_layer_calculates_estimate": false,
+  "fake_green_claimed": false
+}

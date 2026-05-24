@@ -79,6 +79,7 @@ export type ReleaseGateName =
   | "built-in-ai-150-work-types-proof"
   | "built-in-ai-1000-work-types-proof"
   | "built-in-ai-10000-work-types-proof"
+  | "built-in-ai-50000-phase1-governed-expansion-proof"
   | "final-50k-92-external-live-proof-closeout"
   | "jest"
   | "git-diff-check";
@@ -320,6 +321,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
+  { name: "built-in-ai-50000-phase1-governed-expansion-proof", command: "npx tsx scripts/e2e/runBuiltInAi50000Phase1ShardMerge.ts --totalShards=5 --require-live-artifacts" },
   { name: "final-50k-92-external-live-proof-closeout", command: "npx tsx scripts/audit/runExternalLiveProofCloseout.ts --after-gates" },
 ];
 

@@ -1,0 +1,12 @@
+{
+  "wave": "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_B_CREATE_ISOLATED_50K_PHASE1_CANDIDATE_MANIFEST",
+  "choice_justified": true,
+  "reasoning": [
+    "The existing 10k manifest remains stable.",
+    "Phase 1 creates an isolated 50k candidate manifest with shard metadata.",
+    "Runtime proof compares compatibility through BuiltInAiIngress and GlobalEstimateResult.",
+    "No mass migration and no full 50k green claim are made in this wave."
+  ],
+  "fake_green_claimed": false
+}
