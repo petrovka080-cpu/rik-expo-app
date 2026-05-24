@@ -71,6 +71,7 @@ export type CloseoutOwnershipEntry = {
     | "ai_runtime_integration"
     | "b2c_consumer_repair"
     | "request_estimate_boq_catalog"
+    | "request_estimate_boq_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
     | "backend_media_release"
@@ -1456,6 +1457,30 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "catalog_items binding for AI estimate material rows with shared picker/service and proof artifacts",
+    };
+  }
+  if (
+    normalized === "src/lib/ai/globalEstimate/estimateFormulaQualityEngine.ts" ||
+    normalized === "scripts/audit/runRequestAiEstimateProfessionalBoqFormulaAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateProfessionalBoqFormulaSmoke.ts" ||
+    normalized === "scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" ||
+    normalized === "tests/requestEstimate/requestEstimateFormulaQualityEngine.contract.test.ts" ||
+    normalized === "tests/requestEstimate/requestEstimateStripFoundationFormulaTrace.contract.test.ts" ||
+    normalized === "tests/requestEstimate/requestEstimateProfessionalBoqDepthPolicy.contract.test.ts" ||
+    normalized === "tests/architecture/requestEstimateFormulaQualityNoScreenLocalCalculation.contract.test.ts" ||
+    normalized === "tests/architecture/requestEstimateFormulaQualityNoInlineRows.contract.test.ts" ||
+    normalized === "tests/architecture/requestEstimateFormulaQualityNoSecondAiFramework.contract.test.ts" ||
+    normalized === "tests/e2e/requestEstimateProfessionalBoqFormula.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_FORMULA_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-boq-formula/")
+  ) {
+    return {
+      file: normalized,
+      category: "request_estimate_boq_formula_quality",
+      wave: "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_HACKS_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "request AI estimate professional BOQ depth and formula quality proof artifacts",
     };
   }
   if (

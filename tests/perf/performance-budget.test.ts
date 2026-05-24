@@ -661,6 +661,7 @@ describe("performance budget вЂ” bundle module count", () => {
     );
     const sRequestEstimateBoqCatalogGlobalEstimateFiles = [
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateBoqDepthPolicy.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "estimateFormulaQualityEngine.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateMoney.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateUnitLabel.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "formatEstimateUserTextRu.ts"),
@@ -1743,7 +1744,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateBoqCatalogGlobalEstimateFiles -
         sCatalogItemsGlobalEstimateBindingFiles,
     ).toBeLessThanOrEqual(45);
-    expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(7);
+    expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);

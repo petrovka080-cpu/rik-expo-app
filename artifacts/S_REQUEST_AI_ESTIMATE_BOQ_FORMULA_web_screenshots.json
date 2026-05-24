@@ -1,0 +1,9 @@
+{
+  "web_playwright_passed": true,
+  "pdf_viewer_web_passed": true,
+  "screenshots": {
+    "foundation_formula_boq": "artifacts/screenshots/request-estimate-boq-formula/foundation_formula_boq.png",
+    "pdf_viewer": "artifacts/screenshots/request-estimate-boq-formula/pdf_viewer.png"
+  },
+  "fake_green_claimed": false
+}

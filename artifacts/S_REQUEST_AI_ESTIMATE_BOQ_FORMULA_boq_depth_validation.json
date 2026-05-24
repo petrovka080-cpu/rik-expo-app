@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "minimumRows": 12,
+  "actualRows": 20,
+  "hasMaterials": true,
+  "hasLabor": true,
+  "hasEquipmentOrDeliveryOrWarning": true,
+  "blockers": []
+}

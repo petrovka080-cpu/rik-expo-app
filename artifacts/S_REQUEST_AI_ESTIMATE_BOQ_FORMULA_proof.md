@@ -1,0 +1,11 @@
+# S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_HACKS_POINT_OF_NO_RETURN
+
+Status: GREEN_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_FORMULA_READY
+Selected option: OPTION_A_EXTEND_EXISTING_GLOBAL_ESTIMATE_FORMULA_VALIDATORS
+Concrete formula: 48 * 0.4 * 1.7 = 32.64 m3
+BOQ rows: 20
+Formula quality passed: true
+Web passed: true
+Android passed: true
+
+Fake green claimed: false

@@ -1,0 +1,11 @@
+{
+  "wave": "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_HACKS_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_A_EXTEND_EXISTING_GLOBAL_ESTIMATE_FORMULA_VALIDATORS",
+  "choice_justified": true,
+  "reasoning": [
+    "The request draft already uses GlobalEstimateResult from the backend estimate layer.",
+    "BOQ depth policy and strip foundation quantity context already exist in src/lib/ai/globalEstimate.",
+    "The new formula quality engine validates the existing backend result instead of adding screen-local math."
+  ],
+  "fake_green_claimed": false
+}

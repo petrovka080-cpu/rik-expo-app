@@ -1,0 +1,34 @@
+{
+  "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+  "work": {
+    "workKey": "strip_foundation",
+    "title": "ленточный фундамент",
+    "category": "foundation"
+  },
+  "input": {
+    "volume": 48,
+    "unit": "linear_m",
+    "originalText": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+    "photoBased": false,
+    "dimensions": {
+      "length": 48,
+      "width": 0.4,
+      "height": 1.7,
+      "concreteVolumeM3": 32.64,
+      "unitSystem": "metric"
+    }
+  },
+  "rowCount": 20,
+  "concrete": {
+    "code": "strip_foundation_concrete_m300",
+    "quantity": 32.64,
+    "unit": "m3",
+    "displayQuantity": "32,64 m³"
+  },
+  "sectionTypes": [
+    "materials",
+    "labor",
+    "delivery"
+  ],
+  "fake_green_claimed": false
+}

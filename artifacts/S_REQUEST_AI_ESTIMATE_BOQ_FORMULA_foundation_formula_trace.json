@@ -1,0 +1,48 @@
+{
+  "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+  "formula": "48 * 0.4 * 1.7",
+  "expectedConcreteVolumeM3": 32.64,
+  "actualConcreteVolumeM3": 32.64,
+  "concreteUnit": "m3",
+  "validation": {
+    "passed": true,
+    "blockers": [],
+    "warnings": [],
+    "trace": {
+      "estimateId": "global_estimate_525830041",
+      "workKey": "strip_foundation",
+      "category": "foundation",
+      "rowCount": 20,
+      "sectionTypes": [
+        "materials",
+        "labor",
+        "delivery"
+      ],
+      "allRowsLinearM": false,
+      "depth": {
+        "passed": true,
+        "minimumRows": 12,
+        "actualRows": 20,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasEquipmentOrDeliveryOrWarning": true,
+        "blockers": []
+      },
+      "stripFoundation": {
+        "dimensionsParsed": true,
+        "lengthM": 48,
+        "widthM": 0.4,
+        "heightM": 1.7,
+        "formula": "length * width * height",
+        "expectedConcreteVolumeM3": 32.64,
+        "actualConcreteVolumeM3": 32.64,
+        "concreteRowUnit": "m3",
+        "concreteVolumeMatches": true,
+        "requiredRowsPresent": true,
+        "missingRequiredRows": [],
+        "unitMismatches": []
+      }
+    }
+  },
+  "fake_green_claimed": false
+}

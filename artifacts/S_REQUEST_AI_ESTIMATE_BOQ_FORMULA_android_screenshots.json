@@ -1,0 +1,11 @@
+{
+  "wave": "S_REQUEST_AI_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_REQUEST_ESTIMATE_BOQ_FORMULA_READY",
+  "android_emulator_passed": true,
+  "formula_quality_passed": true,
+  "concrete_volume_m3": 32.64,
+  "request_estimate_boq_passed": true,
+  "pdf_viewer_android_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}
