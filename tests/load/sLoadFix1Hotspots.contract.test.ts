@@ -860,12 +860,17 @@ const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
     normalized === "scripts/release/releaseGuard.shared.ts" ||
     normalized.startsWith("tests/requestEstimate/") ||
     normalized.startsWith("tests/catalogItems/") ||
+    normalized.startsWith("tests/catalogBinding/") ||
     normalized.startsWith("tests/architecture/requestEstimate") ||
+    normalized.startsWith("tests/architecture/catalogBinding") ||
     normalized === "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts" ||
+    normalized === "tests/e2e/catalogItemsEstimateBinding.web.spec.ts" ||
     normalized === "tests/release/releaseGuard.shared.test.ts" ||
     normalized === "tests/perf/performance-budget.test.ts" ||
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_") ||
+    normalized.startsWith("artifacts/screenshots/catalog-items-estimate-binding/") ||
     normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_") ||
     normalized.startsWith("artifacts/screenshots/request-estimate-boq-catalog/")
   );

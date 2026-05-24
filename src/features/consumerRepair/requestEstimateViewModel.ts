@@ -1,6 +1,8 @@
 import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import type { ConsumerRepairDraftBundle, ConsumerRepairRequestItem } from "../../lib/consumerRequests";
-import { formatEstimateMoney, formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
+import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
+import { formatEstimateUserTextRu } from "../../lib/ai/globalEstimate/formatEstimateUserTextRu";
 
 export type RequestEstimateManualCatalogItem = {
   id: string;

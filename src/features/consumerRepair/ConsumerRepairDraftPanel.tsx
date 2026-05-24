@@ -13,6 +13,7 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
+  onOpenCatalog?: (itemId: string) => void;
 };
 
 export function ConsumerRepairDraftPanel({
@@ -21,6 +22,7 @@ export function ConsumerRepairDraftPanel({
   onIncrease,
   onRemove,
   onAddManual,
+  onOpenCatalog,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
   return (
@@ -38,6 +40,7 @@ export function ConsumerRepairDraftPanel({
           onDecrease={onDecrease}
           onIncrease={onIncrease}
           onRemove={onRemove}
+          onOpenCatalog={onOpenCatalog}
         />
       ) : (
         <Text style={styles.empty}>Опишите задачу или добавьте фото, затем подготовьте черновик.</Text>

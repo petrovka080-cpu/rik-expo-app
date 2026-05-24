@@ -9,6 +9,7 @@ type Props = {
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
+  onOpenCatalog?: (itemId: string) => void;
 };
 
 export function RequestEstimateItemsEditor({
@@ -16,6 +17,7 @@ export function RequestEstimateItemsEditor({
   onDecrease,
   onIncrease,
   onRemove,
+  onOpenCatalog,
 }: Props): React.ReactElement {
   return (
     <View style={styles.wrap} testID="request-estimate-items-editor">
@@ -30,6 +32,7 @@ export function RequestEstimateItemsEditor({
               onDecrease={onDecrease}
               onIncrease={onIncrease}
               onRemove={onRemove}
+              onOpenCatalog={onOpenCatalog}
             />
           ))}
         </View>

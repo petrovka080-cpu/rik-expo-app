@@ -1,0 +1,12 @@
+{
+  "web_playwright_passed": true,
+  "catalog_binding_status_visible": true,
+  "catalog_candidate_selected": true,
+  "pdf_viewer_web_passed": true,
+  "screenshots": {
+    "binding_status": "artifacts/screenshots/catalog-items-estimate-binding/binding_status.png",
+    "catalog_candidate_selected": "artifacts/screenshots/catalog-items-estimate-binding/catalog_candidate_selected.png",
+    "pdf_viewer": "artifacts/screenshots/catalog-items-estimate-binding/pdf_viewer.png"
+  },
+  "fake_green_claimed": false
+}

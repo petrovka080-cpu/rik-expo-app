@@ -1,4 +1,6 @@
-export type CatalogItemPickerItem = {
+import type { CatalogItemForEstimate } from "./catalogItemTypes";
+
+export type CatalogItemPickerItem = Partial<CatalogItemForEstimate> & {
   catalogItemId: string;
   rikCode: string;
   name: string;

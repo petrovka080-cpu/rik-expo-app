@@ -1,0 +1,7 @@
+{
+  "catalog_items_found": true,
+  "existing_catalog_service": "src/lib/catalog/catalogItemsService.ts",
+  "existing_picker_component": "src/features/catalog/CatalogItemPicker.tsx",
+  "picker_reused_by_request": true,
+  "material_binding_search_reuses_service": true
+}

@@ -1,0 +1,16 @@
+{
+  "wave": "S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_AUTO_MATERIAL_SELECTION_NO_HACKS_POINT_OF_NO_RETURN",
+  "catalog_path_found": true,
+  "catalog_items_service": "src/lib/catalog/catalogItemsService.ts",
+  "catalog_item_picker": "src/features/catalog/CatalogItemPicker.tsx",
+  "request_manual_material_flow": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+  "global_estimate_row_keys": {
+    "rateKey": true,
+    "materialKey": true,
+    "calculatorFillsKeys": true
+  },
+  "estimate_binding_layer": "src/lib/ai/globalEstimate/catalogBinding/bindEstimateRowsToCatalogItems.ts",
+  "request_payload_path": "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
+  "pdf_payload_path": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+  "duplicate_catalog_service_found": false
+}

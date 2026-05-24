@@ -1431,6 +1431,35 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
   }
   if (
     normalized === "src/features/catalog" ||
+    normalized.startsWith("src/features/catalog/") ||
+    normalized.startsWith("src/features/consumerRepair/") ||
+    normalized.startsWith("src/lib/catalog/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized === "scripts/audit/runCatalogItemsGlobalEstimateBindingAudit.ts" ||
+    normalized === "scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" ||
+    normalized === "scripts/e2e/runAndroidCatalogItemsEstimateBindingSmoke.ts" ||
+    normalized === "tests/catalogBinding" ||
+    normalized.startsWith("tests/catalogBinding/") ||
+    normalized.startsWith("tests/architecture/catalogBinding") ||
+    normalized === "tests/e2e/catalogItemsEstimateBinding.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_") ||
+    normalized.startsWith("artifacts/screenshots/catalog-items-estimate-binding/") ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts"
+  ) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: "S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_AUTO_MATERIAL_SELECTION_NO_HACKS_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: false,
+      reason: "catalog_items binding for AI estimate material rows with shared picker/service and proof artifacts",
+    };
+  }
+  if (
+    normalized === "src/features/catalog" ||
     normalized === "tests/catalogItems" ||
     normalized === "tests/requestEstimate" ||
     normalized.startsWith("src/features/consumerRepair/") ||

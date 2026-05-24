@@ -23,6 +23,7 @@ export {
 } from "./consumerRequestGlobalEstimateIntegration";
 export {
   __resetConsumerRepairRequestStoreForTests,
+  addConsumerRepairRequestCatalogItem,
   addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
@@ -32,11 +33,15 @@ export {
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
+  selectConsumerRepairRequestItemCatalogCandidate,
+  selectConsumerRepairRequestItemCatalogItem,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
 } from "./consumerRequestService";
 export type {
   ConsumerMarketplaceLink,
+  ConsumerRepairCatalogBindingStatus,
+  ConsumerRepairCatalogCandidate,
   ConsumerRepairAiDraft,
   ConsumerRepairContext,
   ConsumerRepairContextKind,

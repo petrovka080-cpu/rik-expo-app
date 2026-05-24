@@ -1,0 +1,5 @@
+{
+  "picker": "src/features/catalog/CatalogItemPicker.tsx",
+  "service": "src/lib/catalog/catalogItemsService.ts",
+  "selectedCatalogItemId": "catalog_strip_foundation_sand_cushion"
+}

@@ -1,0 +1,9 @@
+{
+  "catalogItemTypes": true,
+  "catalogItemsService": true,
+  "catalogItemSearch": true,
+  "catalogItemPicker": true,
+  "bindingTypes": true,
+  "bindingService": true,
+  "bindingValidator": true
+}

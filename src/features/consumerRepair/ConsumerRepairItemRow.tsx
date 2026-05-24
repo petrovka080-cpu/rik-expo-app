@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { formatEstimateMoney, formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
+import { formatEstimateMoney } from "../../lib/ai/globalEstimate/formatEstimateMoney";
+import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate/formatEstimateUnitLabel";
 import type { ConsumerRepairRequestItem } from "../../lib/consumerRequests";
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
   onDecrease: (itemId: string) => void;
   onIncrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
+  onOpenCatalog?: (itemId: string) => void;
 };
 
 function itemTypeLabel(item: ConsumerRepairRequestItem): string {
@@ -19,8 +21,18 @@ function itemTypeLabel(item: ConsumerRepairRequestItem): string {
   return "Позиция";
 }
 
-export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove }: Props): React.ReactElement {
+function bindingLabel(item: ConsumerRepairRequestItem): string | null {
+  if (item.itemType !== "material") return null;
+  if (item.selectedCatalogItemId || item.catalogItemId) return "catalog_items: выбран";
+  if (item.catalogBindingStatus === "multiple_candidates") return "catalog_items: есть варианты";
+  if (item.catalogBindingStatus === "matched") return "catalog_items: найден вариант";
+  if (item.catalogBindingStatus === "no_catalog_match") return "catalog_items: нужно подобрать";
+  return "catalog_items: не проверено";
+}
+
+export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, onOpenCatalog }: Props): React.ReactElement {
   const unitLabel = item.unitLabel || formatEstimateUnitLabel(item.unit);
+  const catalogBindingLabel = bindingLabel(item);
   return (
     <View style={styles.row} testID={`consumer-repair-item-${item.id}`}>
       <View style={styles.main}>
@@ -31,6 +43,17 @@ export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove }
           {item.sourceLabel ? ` · ${item.sourceLabel}` : ""}
         </Text>
         {item.totalPrice != null ? <Text style={styles.price}>{formatEstimateMoney(item.totalPrice, item.currency)}</Text> : null}
+        {catalogBindingLabel ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Подобрать material catalog item для ${item.titleRu}`}
+            onPress={() => onOpenCatalog?.(item.id)}
+            style={styles.catalogBadge}
+            testID={`consumer-repair-item-catalog-${item.id}`}
+          >
+            <Text style={styles.catalogBadgeText}>{catalogBindingLabel}</Text>
+          </Pressable>
+        ) : null}
       </View>
       <View style={styles.qty}>
         <Pressable
@@ -94,6 +117,21 @@ const styles = StyleSheet.create({
     marginTop: 2,
     color: "#0F172A",
     fontSize: 12,
+    fontWeight: "900",
+  },
+  catalogBadge: {
+    marginTop: 6,
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    backgroundColor: "#EFF6FF",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  catalogBadgeText: {
+    color: "#1D4ED8",
+    fontSize: 11,
     fontWeight: "900",
   },
   qty: {

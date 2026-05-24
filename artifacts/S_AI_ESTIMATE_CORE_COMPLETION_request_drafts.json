@@ -25,7 +25,12 @@
           "sourceId": "rate_carpet_laying_material_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "carpet_laying",
+          "rateKey": "carpet_laying_material",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "material",
@@ -39,7 +44,12 @@
           "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "carpet_laying",
+          "rateKey": "carpet_laying_auxiliary",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "material",
@@ -53,7 +63,12 @@
           "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "carpet_laying",
+          "rateKey": "carpet_laying_auxiliary",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "material",
@@ -67,7 +82,12 @@
           "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "carpet_laying",
+          "rateKey": "carpet_laying_auxiliary",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -81,7 +101,12 @@
           "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "carpet_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -95,7 +120,12 @@
           "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "carpet_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -109,7 +139,12 @@
           "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "carpet_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         }
       ]
     }
@@ -141,7 +176,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "ceramic_tile_floor_laying",
+          "rateKey": "ceramic_tile_floor_laying_material",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "material",
@@ -155,7 +195,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "ceramic_tile_floor_laying",
+          "rateKey": "ceramic_tile_floor_laying_material",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "material",
@@ -169,7 +214,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": "ceramic_tile_floor_laying",
+          "rateKey": "ceramic_tile_floor_laying_material",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -183,7 +233,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "ceramic_tile_floor_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -197,7 +252,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "ceramic_tile_floor_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         },
         {
           "itemType": "work",
@@ -211,7 +271,12 @@
           "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
           "sourceLabel": "Встроенный справочник цен",
           "confidence": "high",
-          "addedBy": "ai"
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "ceramic_tile_floor_laying_labor",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
         }
       ]
     }

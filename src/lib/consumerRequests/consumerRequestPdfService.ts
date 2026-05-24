@@ -10,7 +10,9 @@ import {
   createConsumerRepairPdfSignedUrl,
   uploadConsumerRepairPdfObject,
 } from "./consumerRequestPdfStorage";
-import { formatEstimateMoney, formatEstimateUnitLabel, formatEstimateUserTextRu } from "../ai/globalEstimate";
+import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
+import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
+import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
 import { renderTextPdfDocument } from "../estimatePdf";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
@@ -89,6 +91,9 @@ export function buildConsumerRepairPdfSummary(input: {
       item.unitPrice != null ? `${formatEstimateMoney(item.unitPrice, item.currency)} / ${item.unitLabel || formatEstimateUnitLabel(item.unit)}` : null,
       item.totalPrice != null ? formatEstimateMoney(item.totalPrice, item.currency) : null,
       item.catalogItemId ? `catalogItemId: ${item.catalogItemId}` : null,
+      item.selectedCatalogItemId ? `selectedCatalogItemId: ${item.selectedCatalogItemId}` : null,
+      item.materialKey ? `materialKey: ${item.materialKey}` : null,
+      item.rateKey ? `rateKey: ${item.rateKey}` : null,
       item.sourceLabel ? `источник: ${item.sourceLabel}` : null,
     ].filter(Boolean).join(" - "),
   );

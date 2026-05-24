@@ -639,6 +639,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalogItemPickerTypes.ts"),
       path.join(SRC, "lib", "catalog", "catalogItemsService.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sCatalogItemsGlobalEstimateBindingCatalogFiles = [
+      path.join(SRC, "lib", "catalog", "catalogItemSearch.ts"),
+      path.join(SRC, "lib", "catalog", "catalogItemTypes.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
       /\.ts$/,
@@ -650,6 +654,10 @@ describe("performance budget вЂ” bundle module count", () => {
     const sGlobalEstimateProfessionalBoqFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate"),
       /\.tsx?$/,
+    );
+    const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
+      /\.ts$/,
     );
     const sRequestEstimateBoqCatalogGlobalEstimateFiles = [
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateBoqDepthPolicy.ts"),
@@ -1727,10 +1735,16 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sB2CConsumerRepairRequestFiles - sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
+    expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
-    expect(sGlobalEstimateProfessionalBoqFiles - sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(45);
+    expect(
+      sGlobalEstimateProfessionalBoqFiles -
+        sRequestEstimateBoqCatalogGlobalEstimateFiles -
+        sCatalogItemsGlobalEstimateBindingFiles,
+    ).toBeLessThanOrEqual(45);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(7);
+    expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
@@ -2029,7 +2043,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sLiveAiEstimatePdfRealityFiles -
         sAiEstimatePdfSafeIntegrationFiles -
         sBuiltInAi50000Phase1GovernedExpansionFiles -
-        sRequestEstimateBoqCatalogCatalogFiles,
+        sRequestEstimateBoqCatalogCatalogFiles -
+        sCatalogItemsGlobalEstimateBindingCatalogFiles,
     ).toBeLessThanOrEqual(1306);
   });
 });

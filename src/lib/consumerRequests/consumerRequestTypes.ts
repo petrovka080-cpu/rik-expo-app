@@ -28,6 +28,27 @@ export type ConsumerRepairItemSource =
   | "catalog_item"
   | "custom";
 
+export type ConsumerRepairCatalogBindingStatus =
+  | "matched"
+  | "multiple_candidates"
+  | "no_catalog_match"
+  | "not_material_row";
+
+export type ConsumerRepairCatalogCandidate = {
+  catalogItemId: string;
+  name: string;
+  unit: string;
+  unitLabel: string;
+  unitPrice?: number | null;
+  currency?: string;
+  sourceId?: string;
+  sourceLabel?: string;
+  confidence: "high" | "medium" | "low";
+  availabilityStatus: "available" | "unavailable" | "unknown";
+  stockStatus: "in_stock" | "out_of_stock" | "unknown";
+  matchReason: string;
+};
+
 export type ConsumerRepairRequestDraft = {
   id: string;
   consumerUserId: string;
@@ -62,6 +83,11 @@ export type ConsumerRepairRequestItem = {
   currency: string;
   source: ConsumerRepairItemSource;
   catalogItemId?: string | null;
+  selectedCatalogItemId?: string | null;
+  materialKey?: string | null;
+  rateKey?: string | null;
+  catalogBindingStatus?: ConsumerRepairCatalogBindingStatus | null;
+  catalogCandidates?: ConsumerRepairCatalogCandidate[];
   category?: string | null;
   unitLabel?: string | null;
   sourceId?: string | null;
@@ -157,6 +183,11 @@ export type ConsumerRepairAiDraft = {
     currency?: string;
     source: ConsumerRepairItemSource;
     catalogItemId?: string | null;
+    selectedCatalogItemId?: string | null;
+    materialKey?: string | null;
+    rateKey?: string | null;
+    catalogBindingStatus?: ConsumerRepairCatalogBindingStatus | null;
+    catalogCandidates?: ConsumerRepairCatalogCandidate[];
     category?: string | null;
     unitLabel?: string | null;
     sourceId?: string | null;

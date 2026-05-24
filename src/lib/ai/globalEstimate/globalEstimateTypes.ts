@@ -129,6 +129,8 @@ export type EstimateRowSourceEvidence = {
 export type SourceBackedEstimateRow = {
   rowNumber: string;
   code: string;
+  rateKey?: string;
+  materialKey?: string;
   name: string;
   quantity: number;
   unit: string;

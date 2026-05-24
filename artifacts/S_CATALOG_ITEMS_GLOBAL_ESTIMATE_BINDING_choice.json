@@ -1,0 +1,6 @@
+{
+  "wave": "S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_AUTO_MATERIAL_SELECTION_NO_HACKS_POINT_OF_NO_RETURN",
+  "selected_option": "OPTION_A_REUSE_EXISTING_CATALOG_ITEMS_SERVICE",
+  "choice_justified": true,
+  "reason": "Existing request/foreman-compatible CatalogItemPicker and catalogItemsService are reusable; binding adds adapter metadata only."
+}

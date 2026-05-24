@@ -7,6 +7,7 @@ import {
 } from "./consumerRequestDraftService";
 import {
   createConsumerRepairRequestItem,
+  selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
   updateConsumerRepairRequestItemQuantity as updateItemQuantityRecord,
 } from "./consumerRequestItemService";
 import { createConsumerMarketplaceLink, ConsumerRepairValidationError } from "./consumerRequestMarketplaceService";
@@ -21,10 +22,12 @@ import {
 } from "./consumerRequestRepository";
 import { __resetConsumerRepairPdfStorageForTests, consumerRepairPdfStorageObjectExists } from "./consumerRequestPdfStorage";
 import { validateConsumerRepairRequestForApprove } from "./consumerRequestValidationService";
+import type { CatalogItemForEstimate } from "../catalog/catalogItemTypes";
 import type {
   ConsumerRepairAiDraft,
   ConsumerRepairDraftBundle,
   ConsumerRepairPdfSupplement,
+  ConsumerRepairCatalogCandidate,
   ConsumerRepairRequestEvent,
   ConsumerRepairRequestItem,
   ConsumerRepairRequestMedia,
@@ -32,6 +35,23 @@ import type {
 } from "./consumerRequestTypes";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+function catalogItemToConsumerRepairCandidate(catalogItem: CatalogItemForEstimate): ConsumerRepairCatalogCandidate {
+  return {
+    catalogItemId: catalogItem.catalogItemId,
+    name: catalogItem.name,
+    unit: catalogItem.unit,
+    unitLabel: catalogItem.unitLabel,
+    unitPrice: catalogItem.unitPrice ?? null,
+    currency: catalogItem.currency,
+    sourceId: catalogItem.sourceId,
+    sourceLabel: catalogItem.sourceLabel,
+    confidence: catalogItem.confidence,
+    availabilityStatus: catalogItem.availabilityStatus,
+    stockStatus: catalogItem.stockStatus,
+    matchReason: "user_selected_catalog_item",
+  };
+}
 
 function withEvent(bundle: ConsumerRepairDraftBundle, event: ConsumerRepairRequestEvent): ConsumerRepairDraftBundle {
   return {
@@ -106,6 +126,11 @@ export function addConsumerRepairRequestItem(input: {
   currency?: string;
   source?: ConsumerRepairRequestItem["source"];
   catalogItemId?: string | null;
+  selectedCatalogItemId?: string | null;
+  materialKey?: string | null;
+  rateKey?: string | null;
+  catalogBindingStatus?: ConsumerRepairRequestItem["catalogBindingStatus"];
+  catalogCandidates?: ConsumerRepairCatalogCandidate[];
   category?: string | null;
   unitLabel?: string | null;
   sourceId?: string | null;
@@ -124,6 +149,11 @@ export function addConsumerRepairRequestItem(input: {
     currency: input.currency ?? "KGS",
     source: input.source ?? "user_added",
     catalogItemId: input.catalogItemId ?? null,
+    selectedCatalogItemId: input.selectedCatalogItemId ?? input.catalogItemId ?? null,
+    materialKey: input.materialKey ?? null,
+    rateKey: input.rateKey ?? null,
+    catalogBindingStatus: input.catalogBindingStatus ?? null,
+    catalogCandidates: input.catalogCandidates ?? [],
     category: input.category ?? null,
     unitLabel: input.unitLabel ?? null,
     sourceId: input.sourceId ?? null,
@@ -135,6 +165,66 @@ export function addConsumerRepairRequestItem(input: {
     { ...bundle, items: [...bundle.items, item] },
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_added", actorType: "consumer" }),
   ));
+}
+
+export function addConsumerRepairRequestCatalogItem(input: {
+  requestDraftId: string;
+  catalogItem: CatalogItemForEstimate;
+}): ConsumerRepairDraftBundle {
+  return addConsumerRepairRequestItem({
+    requestDraftId: input.requestDraftId,
+    titleRu: input.catalogItem.name,
+    itemType: "material",
+    quantity: 1,
+    unit: input.catalogItem.unit,
+    unitLabel: input.catalogItem.unitLabel,
+    unitPrice: input.catalogItem.unitPrice ?? null,
+    currency: input.catalogItem.currency,
+    source: "catalog_item",
+    catalogItemId: input.catalogItem.catalogItemId,
+    category: input.catalogItem.category ?? null,
+    sourceId: input.catalogItem.sourceId,
+    sourceLabel: input.catalogItem.sourceLabel,
+    confidence: input.catalogItem.confidence,
+    addedBy: "user",
+  });
+}
+
+export function selectConsumerRepairRequestItemCatalogCandidate(input: {
+  requestDraftId: string;
+  itemId: string;
+  candidate: ConsumerRepairCatalogCandidate;
+}): ConsumerRepairDraftBundle {
+  const bundle = getConsumerRepairBundle(input.requestDraftId);
+  const items = bundle.items.map((item) =>
+    item.id === input.itemId
+      ? selectCatalogCandidateRecord({ item, candidate: input.candidate })
+      : item,
+  );
+  return saveConsumerRepairBundle(withEvent(
+    { ...bundle, items },
+    createConsumerRepairEvent({
+      requestDraftId: input.requestDraftId,
+      eventType: "catalog_item_selected",
+      actorType: "consumer",
+      payload: {
+        itemId: input.itemId,
+        catalogItemId: input.candidate.catalogItemId,
+      },
+    }),
+  ));
+}
+
+export function selectConsumerRepairRequestItemCatalogItem(input: {
+  requestDraftId: string;
+  itemId: string;
+  catalogItem: CatalogItemForEstimate;
+}): ConsumerRepairDraftBundle {
+  return selectConsumerRepairRequestItemCatalogCandidate({
+    requestDraftId: input.requestDraftId,
+    itemId: input.itemId,
+    candidate: catalogItemToConsumerRepairCandidate(input.catalogItem),
+  });
 }
 
 export function updateConsumerRepairRequestItemQuantity(input: {

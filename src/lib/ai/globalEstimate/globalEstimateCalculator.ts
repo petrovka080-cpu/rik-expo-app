@@ -116,6 +116,14 @@ function rowPriceStatus(input: {
   return "priced";
 }
 
+function materialKeyForEstimateRow(sectionType: GlobalEstimateSectionType, rateKey: string): string | undefined {
+  if (sectionType !== "materials") return undefined;
+  return rateKey
+    .replace(/^strip_foundation_/, "")
+    .replace(/_material$/, "")
+    .replace(/_auxiliary$/, "");
+}
+
 function risksFor(keys: string[], locale: GlobalLocaleContext, dangerous: boolean): GlobalEstimateResult["regionalRisks"] {
   const ru = locale.language === "ru";
   const dictionary: Record<string, GlobalEstimateResult["regionalRisks"][number]> = {
@@ -245,6 +253,8 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
         return {
           rowNumber: templateRow.rowNumber,
           code: templateRow.code,
+          rateKey: templateRow.rateKey,
+          materialKey: materialKeyForEstimateRow(section.type, templateRow.rateKey),
           name: localizedText(templateRow.names, locale),
           quantity: quantityValue,
           unit,

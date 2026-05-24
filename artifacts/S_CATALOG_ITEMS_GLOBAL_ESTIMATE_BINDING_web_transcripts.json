@@ -1,0 +1,10 @@
+{
+  "route": "/request",
+  "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+  "foundation_boq_rows_visible": 90,
+  "concrete_volume_visible": true,
+  "catalog_binding_status_visible": true,
+  "catalog_item_id_visible": true,
+  "pdf_viewer_opened": true,
+  "fake_green_claimed": false
+}

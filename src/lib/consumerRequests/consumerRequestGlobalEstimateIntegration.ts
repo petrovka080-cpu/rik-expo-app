@@ -1,9 +1,8 @@
-import type { GlobalEstimateResult } from "../ai/globalEstimate";
-import {
-  createGlobalEstimateProductionTraceEvent,
-  formatEstimateUnitLabel,
-  formatRequestEstimateSummary,
-} from "../ai/globalEstimate";
+import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
+import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
+import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate/globalEstimateProductionSafety";
+import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
+import { formatRequestEstimateSummary } from "../ai/globalEstimate/formatRequestEstimateSummary";
 import { createConsumerRepairRequestDraft } from "./consumerRequestService";
 import type { ConsumerRepairAiDraft, ConsumerRepairDraftBundle, ConsumerRepairItemType } from "./consumerRequestTypes";
 
@@ -27,8 +26,12 @@ function sourceLabelRu(label?: string | null): string | undefined {
   return label;
 }
 
-export function buildConsumerRepairAiDraftFromGlobalEstimate(result: GlobalEstimateResult): ConsumerRepairAiDraft {
+export function buildConsumerRepairAiDraftFromGlobalEstimate(
+  result: GlobalEstimateResult,
+  catalogBinding?: EstimateCatalogBindingResult,
+): ConsumerRepairAiDraft {
   const dangerous = isDangerousEstimate(result);
+  const bindingByRowId = new Map((catalogBinding?.rows ?? []).map((row) => [row.rowId, row]));
   return {
     titleRu: result.work.title,
     summaryRu: formatRequestEstimateSummary(result),
@@ -39,20 +42,28 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(result: GlobalEstim
       : undefined,
     missingData: result.clarifyingQuestions,
     items: result.sections.flatMap((section) =>
-      section.rows.map((row) => ({
-        itemType: itemTypeFor(section.type),
-        titleRu: `${row.rowNumber} ${row.name}`,
-        quantity: row.quantity,
-        unit: row.unit,
-        unitLabel: formatEstimateUnitLabel(row.unit),
-        unitPrice: row.unitPrice,
-        currency: row.currency,
-        source: "reference_price_book" as const,
-        sourceId: row.sourceId,
-        sourceLabel: sourceLabelRu(row.sourceEvidence[0]?.label),
-        confidence: row.confidence,
-        addedBy: "ai" as const,
-      })),
+      section.rows.map((row) => {
+        const binding = bindingByRowId.get(row.code || row.rowNumber);
+        return {
+          itemType: itemTypeFor(section.type),
+          titleRu: `${row.rowNumber} ${row.name}`,
+          quantity: row.quantity,
+          unit: row.unit,
+          unitLabel: formatEstimateUnitLabel(row.unit),
+          unitPrice: row.unitPrice,
+          currency: row.currency,
+          source: "reference_price_book" as const,
+          sourceId: row.sourceId,
+          sourceLabel: sourceLabelRu(row.sourceEvidence[0]?.label),
+          confidence: row.confidence,
+          addedBy: "ai" as const,
+          materialKey: row.materialKey ?? null,
+          rateKey: row.rateKey ?? null,
+          catalogBindingStatus: binding?.bindingStatus ?? (section.type === "materials" ? "no_catalog_match" : "not_material_row"),
+          catalogCandidates: binding?.catalogCandidates ?? [],
+          selectedCatalogItemId: binding?.selectedCatalogItemId ?? null,
+        };
+      }),
     ),
   };
 }

@@ -30,6 +30,16 @@ const isCurrentTryCatchGapsBatchA = (changed: string[]) =>
 const isApprovedTryCatchGapsBatchAPatch = (file: string) =>
   normalizePath(file) === "src/screens/warehouse/warehouse.reports.ts";
 
+const isApprovedCatalogEstimateBindingArtifact = (file: string) => {
+  const normalized = normalizePath(file);
+  return (
+    normalized.startsWith("artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_") ||
+    normalized.startsWith("artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_") ||
+    normalized.startsWith("artifacts/screenshots/catalog-items-estimate-binding/") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-boq-catalog/")
+  );
+};
+
 const sLoadFix6WarehouseIssueExplainPatch =
   "supabase/migrations/20260430143000_s_load_fix_6_warehouse_issue_queue_explain_index_patch.sql";
 const aiActionLedgerReadinessMigration =
@@ -440,6 +450,7 @@ describe("S-PAG-8 remaining safe list pagination", () => {
       !isApprovedAiAccountantRealFinancePatch(file) &&
       !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
       !isApprovedGreenCloseoutCurrentWavePatch(file) &&
+      !isApprovedCatalogEstimateBindingArtifact(file) &&
       (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(file) ||
         /(?:pdf|report|export|integrity\.guards|storage)/i.test(file)),
     );

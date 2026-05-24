@@ -24,6 +24,7 @@ export function runRequestAiEstimateBoqCatalogAudit() {
   const viewModel = read("src/features/consumerRepair/requestEstimateViewModel.ts");
   const catalogPicker = read("src/features/catalog/CatalogItemPicker.tsx");
   const catalogService = read("src/lib/catalog/catalogItemsService.ts");
+  const consumerRequestService = read("src/lib/consumerRequests/consumerRequestService.ts");
   const calculator = read("src/lib/ai/globalEstimate/globalEstimateCalculator.ts");
   const seed = read("src/lib/ai/globalEstimate/globalEstimateSeedData.ts");
 
@@ -46,8 +47,13 @@ export function runRequestAiEstimateBoqCatalogAudit() {
     catalog_picker_component: exists("src/features/catalog/CatalogItemPicker.tsx"),
     catalog_service: exists("src/lib/catalog/catalogItemsService.ts"),
     uses_catalog_items_transport: catalogService.includes("loadCatalogItemsSearchPreviewRows"),
-    preserves_catalog_item_id: requestScreen.includes("catalogItemId: catalogItem.catalogItemId"),
-    preserves_source_and_unit: requestScreen.includes("sourceId: catalogItem.sourceId") && requestScreen.includes("formatEstimateUnitLabel"),
+    preserves_catalog_item_id:
+      requestScreen.includes("addConsumerRepairRequestCatalogItem") &&
+      requestScreen.includes("selectConsumerRepairRequestItemCatalogItem") &&
+      consumerRequestService.includes("catalogItemId: input.catalogItem.catalogItemId"),
+    preserves_source_and_unit:
+      consumerRequestService.includes("sourceId: input.catalogItem.sourceId") &&
+      consumerRequestService.includes("unitLabel: input.catalogItem.unitLabel"),
     no_fake_stock_supplier_availability:
       !/fakeStock|fakeAvailability|fakeSupplier|stock\s*:|availability\s*:/.test(`${catalogPicker}\n${catalogService}`),
     fake_green_claimed: false,

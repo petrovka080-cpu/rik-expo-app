@@ -22,8 +22,18 @@ export {
 } from "./catalog.search.service";
 
 export type { CatalogItemPickerItem } from "./catalogItemPickerTypes";
+export type { CatalogItemForEstimate } from "./catalogItemTypes";
 export {
+  mapPickerItemToCatalogItemForEstimate,
   mapCatalogPreviewRowToPickerItem,
   mapRikQuickSearchItemToPickerItem,
+  searchCatalogItemsForEstimateBinding,
   searchCatalogItemsForPicker,
 } from "./catalogItemsService";
+export {
+  buildCatalogSearchQueriesForEstimateRow,
+  deriveMaterialKeyFromRateKey,
+  isCatalogUnitCompatible,
+  normalizeCatalogItemSearchText,
+  rankCatalogCandidatesForEstimateRow,
+} from "./catalogItemSearch";

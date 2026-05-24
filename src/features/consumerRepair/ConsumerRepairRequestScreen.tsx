@@ -7,7 +7,7 @@ import { AppScreenScroll } from "../../components/layout/AppScreenScroll";
 import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import {
-  addConsumerRepairRequestItem,
+  addConsumerRepairRequestCatalogItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
@@ -16,14 +16,14 @@ import {
   getConsumerRepairRequestPdf,
   listConsumerRepairRequestHistory,
   removeConsumerRepairRequestItem,
+  selectConsumerRepairRequestItemCatalogItem,
   sendConsumerRepairRequestToMarketplace,
   updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
 } from "../../lib/consumerRequests";
-import type { CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
-import { formatEstimateUnitLabel } from "../../lib/ai/globalEstimate";
+import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import { buildConsumerRepairAiDraft, composeConsumerRepairDraftAnswerRu } from "./consumerRepairAiAdapter";
 import { ConsumerRepairDraftPanel } from "./ConsumerRepairDraftPanel";
@@ -45,6 +45,8 @@ type State = {
   statusMessage: string | null;
   validationErrors: ConsumerRequestValidationErrorItem[];
   catalogPickerVisible: boolean;
+  catalogPickerTargetItemId: string | null;
+  catalogPickerInitialQuery: string | undefined;
 };
 
 export type ConsumerRepairRequestScreenProps = {
@@ -69,6 +71,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     statusMessage: null,
     validationErrors: [],
     catalogPickerVisible: false,
+    catalogPickerTargetItemId: null,
+    catalogPickerInitialQuery: undefined,
   };
 
   componentDidMount(): void {
@@ -318,28 +322,37 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
 
   private addManualItem = () => {
     this.ensureDraftBundle();
-    this.setState({ catalogPickerVisible: true });
+    this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  };
+
+  private openCatalogForEstimateItem = (itemId: string) => {
+    const current = this.ensureDraftBundle();
+    const item = current.items.find((candidate) => candidate.id === itemId);
+    this.setState({
+      catalogPickerVisible: true,
+      catalogPickerTargetItemId: itemId,
+      catalogPickerInitialQuery: item?.materialKey || item?.rateKey?.replace(/_/g, " ") || item?.titleRu,
+    });
   };
 
   private addCatalogItem = (catalogItem: CatalogItemPickerItem) => {
     const current = this.ensureDraftBundle();
-    const unitLabel = formatEstimateUnitLabel(catalogItem.unit);
-    const bundle = addConsumerRepairRequestItem({
+    const catalogForEstimate = mapPickerItemToCatalogItemForEstimate(catalogItem);
+    if (this.state.catalogPickerTargetItemId) {
+      const bundle = selectConsumerRepairRequestItemCatalogItem({
+        requestDraftId: current.draft.id,
+        itemId: this.state.catalogPickerTargetItemId,
+        catalogItem: catalogForEstimate,
+      });
+      this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+      this.updateCurrentBundle(bundle, `Материал из catalog_items выбран: ${catalogItem.name}.`);
+      return;
+    }
+    const bundle = addConsumerRepairRequestCatalogItem({
       requestDraftId: current.draft.id,
-      titleRu: catalogItem.name,
-      itemType: "material",
-      quantity: 1,
-      unit: catalogItem.unit,
-      unitLabel,
-      source: "catalog_item",
-      catalogItemId: catalogItem.catalogItemId,
-      category: catalogItem.kind ?? null,
-      sourceId: catalogItem.sourceId,
-      sourceLabel: catalogItem.sourceLabel,
-      confidence: "high",
-      addedBy: "user",
+      catalogItem: catalogForEstimate,
     });
-    this.setState({ catalogPickerVisible: false });
+    this.setState({ catalogPickerVisible: false, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
     this.updateCurrentBundle(bundle, `Материал из каталога добавлен: ${catalogItem.name}.`);
   };
   private createNew = () => {
@@ -354,6 +367,8 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       aiAnswerRu: null,
       validationErrors: [],
       catalogPickerVisible: false,
+      catalogPickerTargetItemId: null,
+      catalogPickerInitialQuery: undefined,
       statusMessage: "Новая заявка готова к заполнению.",
     });
   };
@@ -417,6 +432,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             onIncrease={this.increaseItem}
             onRemove={this.removeItem}
             onAddManual={this.addManualItem}
+            onOpenCatalog={this.openCatalogForEstimateItem}
           />
 
           {bundle && !approved && !sent ? (
@@ -434,8 +450,13 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
           />
           <CatalogItemPicker
             visible={this.state.catalogPickerVisible}
-            onClose={() => this.setState({ catalogPickerVisible: false })}
+            onClose={() => this.setState({
+              catalogPickerVisible: false,
+              catalogPickerTargetItemId: null,
+              catalogPickerInitialQuery: undefined,
+            })}
             onSelect={this.addCatalogItem}
+            initialQuery={this.state.catalogPickerInitialQuery}
           />
         </AppScreenScroll>
 

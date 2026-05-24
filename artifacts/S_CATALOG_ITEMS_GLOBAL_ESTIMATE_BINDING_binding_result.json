@@ -1,0 +1,287 @@
+{
+  "estimateId": "global_estimate_525830041",
+  "rows": [
+    {
+      "rowId": "strip_foundation_sand_cushion",
+      "materialKey": "sand_cushion",
+      "rateKey": "strip_foundation_sand_cushion",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_sand_cushion",
+          "name": "Песчаная подушка catalog_items",
+          "unit": "m3",
+          "unitLabel": "1,92 m³",
+          "unitPrice": 1958,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_crushed_stone_base",
+      "materialKey": "crushed_stone_base",
+      "rateKey": "strip_foundation_crushed_stone_base",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_crushed_stone_base",
+          "name": "Щебёночная подготовка catalog_items",
+          "unit": "m3",
+          "unitLabel": "1,92 m³",
+          "unitPrice": 3115,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_geotextile",
+      "materialKey": "geotextile",
+      "rateKey": "strip_foundation_geotextile",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_geotextile",
+          "name": "Геотекстиль под основание catalog_items",
+          "unit": "sq_m",
+          "unitLabel": "19,2 m²",
+          "unitPrice": 97.9,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_formwork_material",
+      "materialKey": "formwork",
+      "rateKey": "strip_foundation_formwork_material",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_formwork_material",
+          "name": "Материалы опалубки catalog_items",
+          "unit": "sq_m",
+          "unitLabel": "163,2 m²",
+          "unitPrice": 712,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_longitudinal_rebar",
+      "materialKey": "longitudinal_rebar",
+      "rateKey": "strip_foundation_longitudinal_rebar",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_longitudinal_rebar",
+          "name": "Продольная арматура catalog_items",
+          "unit": "kg",
+          "unitLabel": "170,5 kg",
+          "unitPrice": 106.8,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_stirrups_rebar",
+      "materialKey": "stirrups_rebar",
+      "rateKey": "strip_foundation_stirrups_rebar",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_stirrups_rebar",
+          "name": "Хомуты / поперечная арматура catalog_items",
+          "unit": "kg",
+          "unitLabel": "199,08 kg",
+          "unitPrice": 106.8,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_binding_wire",
+      "materialKey": "binding_wire",
+      "rateKey": "strip_foundation_binding_wire",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_binding_wire",
+          "name": "Вязальная проволока catalog_items",
+          "unit": "kg",
+          "unitLabel": "5,54 kg",
+          "unitPrice": 133.5,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_rebar_spacers",
+      "materialKey": "rebar_spacers",
+      "rateKey": "strip_foundation_rebar_spacers",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_rebar_spacers",
+          "name": "Фиксаторы арматуры catalog_items",
+          "unit": "pcs",
+          "unitLabel": "pcs",
+          "unitPrice": 10.68,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_concrete_m300",
+      "materialKey": "concrete_m300",
+      "rateKey": "strip_foundation_concrete_m300",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_concrete_m300",
+          "name": "Бетон для ленточного фундамента catalog_items",
+          "unit": "m3",
+          "unitLabel": "32,64 m³",
+          "unitPrice": 8455,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_waterproofing_material",
+      "materialKey": "waterproofing",
+      "rateKey": "strip_foundation_waterproofing_material",
+      "catalogCandidates": [
+        {
+          "catalogItemId": "catalog_strip_foundation_waterproofing_material",
+          "name": "Гидроизоляция фундамента: материал catalog_items",
+          "unit": "sq_m",
+          "unitLabel": "163,2 m²",
+          "unitPrice": 534,
+          "currency": "KGS",
+          "sourceId": "catalog_items",
+          "sourceLabel": "catalog_items",
+          "confidence": "high",
+          "availabilityStatus": "unknown",
+          "stockStatus": "unknown",
+          "matchReason": "rateKey"
+        }
+      ],
+      "bindingStatus": "matched"
+    },
+    {
+      "rowId": "strip_foundation_excavation",
+      "rateKey": "strip_foundation_excavation",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_formwork_install",
+      "rateKey": "strip_foundation_formwork_install",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_rebar_tying",
+      "materialKey": "rebar_tying",
+      "rateKey": "strip_foundation_rebar_tying",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_concrete_pour",
+      "rateKey": "strip_foundation_concrete_pour",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_concrete_vibration",
+      "rateKey": "strip_foundation_concrete_vibration",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_concrete_curing",
+      "rateKey": "strip_foundation_concrete_curing",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_waterproofing_install",
+      "rateKey": "strip_foundation_waterproofing_install",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_backfill",
+      "rateKey": "strip_foundation_backfill",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_concrete_delivery",
+      "rateKey": "strip_foundation_concrete_delivery",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    },
+    {
+      "rowId": "strip_foundation_concrete_pump",
+      "rateKey": "strip_foundation_concrete_pump",
+      "catalogCandidates": [],
+      "bindingStatus": "not_material_row"
+    }
+  ],
+  "warnings": []
+}

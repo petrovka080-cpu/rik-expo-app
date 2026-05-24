@@ -1,0 +1,10 @@
+{
+  "wave": "S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_AUTO_MATERIAL_SELECTION_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_CATALOG_ITEMS_BINDING_READY",
+  "android_emulator_passed": true,
+  "catalog_binding_status_visible": true,
+  "catalog_candidate_selected": true,
+  "pdf_viewer_android_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}

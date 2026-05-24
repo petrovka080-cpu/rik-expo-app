@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-05-23T21:54:39.797Z",
+  "generatedAt": "2026-05-24T19:06:06.210Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -34,6 +34,11 @@
       "hookCount": 15
     },
     {
+      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "lineCount": 496,
+      "hookCount": 0
+    },
+    {
       "file": "src/screens/director/DirectorReportsModal.tsx",
       "lineCount": 496,
       "hookCount": 20
@@ -57,11 +62,6 @@
       "file": "src/screens/accountant/components/ActivePaymentForm.tsx",
       "lineCount": 486,
       "hookCount": 1
-    },
-    {
-      "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 485,
-      "hookCount": 0
     },
     {
       "file": "src/screens/accountant/components/ReadOnlyReceipt.tsx",

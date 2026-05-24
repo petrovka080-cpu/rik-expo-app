@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "materialRowsTotal": 10,
+  "materialRowsWithRateKeys": 10,
+  "materialRowsWithMaterialKeys": 10,
+  "bindingAttemptedForMaterialRows": true,
+  "fakeStockFound": false,
+  "fakeSupplierFound": false,
+  "fakeAvailabilityFound": false,
+  "failures": []
+}
