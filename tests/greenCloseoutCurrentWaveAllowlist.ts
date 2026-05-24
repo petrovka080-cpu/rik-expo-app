@@ -122,6 +122,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized.startsWith("scripts/e2e/runAndroidRouteParitySmoke") ||
     normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||
@@ -193,6 +194,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/e2e/liveRequestReality") ||
     normalized.startsWith("tests/e2e/liveForemanReality") ||
     normalized.startsWith("tests/e2e/livePdfButtonReality") ||
+    normalized === "tests/e2e/routeParity.web.spec.ts" ||
     normalized.startsWith("tests/allScreensRuntime/") ||
     normalized.startsWith("tests/audit/externalLiveProofCloseoutHarness") ||
     normalized.startsWith("tests/audit/final") ||
@@ -204,6 +206,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/architecture/pdfNo") ||
     normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
     normalized === "tests/architecture/knownWorkNoGenericRows.contract.test.ts" ||
+    normalized === "tests/architecture/noRouteLocalEstimateLogic.contract.test.ts" ||
+    normalized === "tests/architecture/noUseEffectRewriteAfterRender.contract.test.ts" ||
     normalized.startsWith("tests/architecture/anyEstimate") ||
     normalized.startsWith("tests/architecture/builtInAi") ||
     normalized === "tests/builtInAi1000" ||
@@ -255,6 +259,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/e2e/ai") ||
     normalized.startsWith("tests/e2e/coreProductGoldenPaths") ||
     normalized.startsWith("tests/globalEstimate/") ||
+    normalized === "tests/routeParity" ||
+    normalized.startsWith("tests/routeParity/") ||
     normalized === "tests/estimateIntent" ||
     normalized.startsWith("tests/estimateIntent/") ||
     normalized === "tests/builtInAi" ||

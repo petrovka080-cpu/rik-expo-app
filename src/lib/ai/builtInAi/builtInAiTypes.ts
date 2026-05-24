@@ -143,3 +143,15 @@ export type BuiltInAiAnswer = {
   toolResult: BuiltInAiToolResult;
   runtimeTrace: BuiltInAiRuntimeTrace;
 };
+
+export type AiRouteParityTrace = {
+  route: "/chat" | "/ai" | "/request";
+  prompt: string;
+  detectedIntent: "estimate";
+  workKey: string;
+  selectedTool: "calculate_global_estimate";
+  backendCalled: true;
+  structuredResultUsed: true;
+  uiRenderedTable: true;
+  actions: string[];
+};

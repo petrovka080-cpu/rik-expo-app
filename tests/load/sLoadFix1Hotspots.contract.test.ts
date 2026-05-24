@@ -611,7 +611,9 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
     normalized.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
     normalized.startsWith("artifacts/S_LIVE_WEB_ANDROID_AI_ESTIMATE_REALITY_") ||
+    normalized.startsWith("artifacts/S_AI_ROUTE_PARITY_") ||
     normalized.startsWith("artifacts/screenshots/live-web-android-ai-estimate-reality/") ||
+    normalized.startsWith("artifacts/screenshots/ai-route-parity/") ||
     normalized.startsWith("artifacts/S_AI_ESTIMATE_CORE_COMPLETION_") ||
     normalized.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
     normalized.startsWith("artifacts/S_ANY_ESTIMATE_SOURCE_BACKED_") ||
@@ -635,16 +637,21 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/e2e/liveRequestReality") ||
     normalized.startsWith("tests/e2e/liveForemanReality") ||
     normalized.startsWith("tests/e2e/livePdfButtonReality") ||
+    normalized === "tests/e2e/routeParity.web.spec.ts" ||
     normalized.startsWith("tests/architecture/aiEstimatePdf") ||
     normalized.startsWith("tests/architecture/pdfNo") ||
     normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
     normalized === "tests/architecture/knownWorkNoGenericRows.contract.test.ts" ||
+    normalized === "tests/architecture/noRouteLocalEstimateLogic.contract.test.ts" ||
+    normalized === "tests/architecture/noUseEffectRewriteAfterRender.contract.test.ts" ||
     normalized.startsWith("tests/architecture/consumerEstimate") ||
     normalized.startsWith("tests/architecture/allScreens") ||
     normalized.startsWith("tests/architecture/releaseCandidate") ||
     normalized.startsWith("tests/allScreensRuntime/") ||
     normalized.startsWith("tests/releaseCandidate/") ||
     normalized.startsWith("tests/globalEstimate/") ||
+    normalized === "tests/routeParity" ||
+    normalized.startsWith("tests/routeParity/") ||
     normalized.startsWith("tests/estimateIntent/") ||
     normalized.startsWith("tests/globalEstimateAnyWork/") ||
     normalized.startsWith("tests/globalEstimateExternalSources/") ||
@@ -714,9 +721,11 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runCoreWorkflowIdempotencyProof") ||
     normalized.startsWith("scripts/e2e/runGlobalEstimate") ||
     normalized.startsWith("scripts/e2e/runAiEstimate") ||
+    normalized.startsWith("scripts/e2e/runAiRouteParityProof") ||
     normalized.startsWith("scripts/e2e/runLiveAiEstimatePdfRealityProof") ||
     normalized.startsWith("scripts/e2e/runAndroidEstimatePdfSmoke") ||
     normalized.startsWith("scripts/e2e/runAndroidLiveEstimateRealitySmoke") ||
+    normalized.startsWith("scripts/e2e/runAndroidRouteParitySmoke") ||
     normalized.startsWith("scripts/e2e/runLiveWebAndroidAiEstimateRealityProof") ||
     normalized.startsWith("scripts/e2e/anyEstimateSourceBackedProofShared") ||
     normalized.startsWith("scripts/e2e/runAnyConstructionEstimate") ||

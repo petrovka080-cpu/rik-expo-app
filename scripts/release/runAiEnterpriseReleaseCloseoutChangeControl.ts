@@ -702,6 +702,7 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_PRODUCTION_SAFE_") ||
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_DATA_OPS_") ||
     file.startsWith("artifacts/S_GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_RECONCILIATION_") ||
+    file.startsWith("artifacts/S_AI_ROUTE_PARITY_") ||
     file.startsWith("artifacts/S_AI_ESTIMATE_TO_PDF_") ||
     file.startsWith("artifacts/S_LIVE_AI_ESTIMATE_PDF_REALITY_") ||
     file.startsWith("artifacts/pdf/live-ai-estimate-pdf-reality/") ||
@@ -744,6 +745,8 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "scripts/e2e/runGlobalEstimateDataOpsImportProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateDataOpsCoverageProof.ts" ||
     file === "scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" ||
+    file === "scripts/e2e/runAiRouteParityProof.ts" ||
+    file === "scripts/e2e/runAndroidRouteParitySmoke.ts" ||
     file === "scripts/e2e/runAiEstimateToPdfProof.ts" ||
     file === "scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" ||
     file === "scripts/e2e/runAndroidEstimatePdfSmoke.ts" ||
@@ -778,6 +781,9 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "supabase/migrations/20260523130000_any_estimate_external_source_backed_professional_boq.sql" ||
     file === "tests/globalEstimate" ||
     file.startsWith("tests/globalEstimate/") ||
+    file === "tests/routeParity" ||
+    file.startsWith("tests/routeParity/") ||
+    file === "tests/e2e/routeParity.web.spec.ts" ||
     file === "tests/estimateIntent" ||
     file.startsWith("tests/estimateIntent/") ||
     file === "tests/globalEstimateAnyWork" ||
@@ -811,6 +817,8 @@ function isGlobalEstimateProfessionalBoqReleasePath(file: string): boolean {
     file === "tests/architecture/dataOpsOperatorUiCannotBeClaimedByShell.contract.test.ts" ||
     file.startsWith("tests/architecture/consumerEstimate") ||
     file.startsWith("tests/architecture/globalEstimate") ||
+    file === "tests/architecture/noRouteLocalEstimateLogic.contract.test.ts" ||
+    file === "tests/architecture/noUseEffectRewriteAfterRender.contract.test.ts" ||
     file.startsWith("tests/architecture/allScreens") ||
     file.startsWith("tests/architecture/releaseCandidate") ||
     file === "tests/allScreensRuntime" ||
