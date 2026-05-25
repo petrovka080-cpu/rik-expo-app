@@ -31331,7 +31331,7 @@
     "detectedIntent": "estimate",
     "backendCalled": true,
     "runtimeTraceCaptured": true,
-    "workKeyResolved": "roof_repair",
+    "workKeyResolved": "gable_roof_installation",
     "categoryResolved": "roofing",
     "workKeyOrCategoryMatched": true,
     "globalEstimateResultUsed": true,
@@ -31361,7 +31361,7 @@
       "detectedIntent": "estimate",
       "selectedRoute": "estimate",
       "selectedTool": "calculate_global_estimate",
-      "workKey": "roof_repair",
+      "workKey": "gable_roof_installation",
       "category": "roofing",
       "backendCalled": true,
       "outputContract": {

@@ -2334,7 +2334,7 @@
       "detectedIntent": "estimate",
       "selectedRoute": "estimate",
       "selectedTool": "calculate_global_estimate",
-      "workKey": "heated_floor_under_tile",
+      "workKey": "ceramic_tile_floor_laying",
       "category": "tile",
       "volume": 20,
       "unit": "sq_m",

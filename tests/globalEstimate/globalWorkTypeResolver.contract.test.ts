@@ -8,4 +8,13 @@ describe("global work type resolver", () => {
     expect(resolveGlobalWorkType({ text: "дай смету на укладку ламината 100 м²", language: "ru" }).workKey).toBe("laminate_laying");
     expect(resolveGlobalWorkType({ text: "Drywall installation 500 sq ft", language: "en" }).workKey).toBe("drywall_partition");
   });
+
+  it("keeps bathroom turnkey tile requests out of standalone waterproofing", () => {
+    expect(
+      resolveGlobalWorkType({
+        text: "estimate cost for bathroom turnkey tile waterproofing plumbing residential scenario alpha 107 sq_m",
+        language: "en",
+      }).workKey,
+    ).toBe("bathroom_tile_full");
+  });
 });

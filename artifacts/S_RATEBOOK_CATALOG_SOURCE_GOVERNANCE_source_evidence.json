@@ -14,8 +14,8 @@
     },
     {
       "prompt": "смета на двускатную кровлю 100 м2",
-      "workKey": "roof_repair",
-      "rowCount": 10,
+      "workKey": "gable_roof_installation",
+      "rowCount": 11,
       "failures": []
     }
   ]

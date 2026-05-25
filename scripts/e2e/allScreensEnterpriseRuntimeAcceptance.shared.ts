@@ -477,10 +477,16 @@ function probeAndroidRuntime(): AndroidProbe {
     tryShell("adb", ["shell", "am", "start", "-n", APP_ACTIVITY], 20_000);
     tryShell("adb", ["shell", "input", "keyevent", "KEYCODE_WAKEUP"], 10_000);
     tryShell("powershell", ["-NoProfile", "-Command", "Start-Sleep -Seconds 3"], 10_000);
-    tryShell("adb", ["shell", "uiautomator", "dump", "/sdcard/all_screens_enterprise_window.xml"], 20_000);
-    const dump = tryShell("adb", ["shell", "cat", "/sdcard/all_screens_enterprise_window.xml"], 20_000);
-    uiDump = dump.output;
-    uiDumpCollected = dump.ok && dump.output.includes("hierarchy");
+    tryShell("adb", ["shell", "rm", "-f", "/sdcard/all_screens_enterprise_window.xml"], 10_000);
+    for (let attempt = 0; attempt < 5 && !uiDumpCollected; attempt += 1) {
+      tryShell("adb", ["shell", "uiautomator", "dump", "/sdcard/all_screens_enterprise_window.xml"], 20_000);
+      const dump = tryShell("adb", ["shell", "cat", "/sdcard/all_screens_enterprise_window.xml"], 20_000);
+      uiDump = dump.output;
+      uiDumpCollected = dump.ok && dump.output.includes("hierarchy");
+      if (!uiDumpCollected) {
+        tryShell("powershell", ["-NoProfile", "-Command", "Start-Sleep -Seconds 2"], 10_000);
+      }
+    }
     const logs = tryShell("adb", ["logcat", "-d", "-t", "400"], 30_000);
     logcat = logs.output;
   }

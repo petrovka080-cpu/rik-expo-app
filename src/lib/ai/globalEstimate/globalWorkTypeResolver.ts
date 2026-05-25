@@ -341,6 +341,9 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготовку|основан|выравнив|маяк/i.test(normalized)) {
     return { workKey: "tile_floor_leveling", confidence: "high" };
   }
+  if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
+    return { workKey: "bathroom_tile_full", confidence: "high" };
+  }
   if (/waterproof|гидроизоля/i.test(normalized)) {
     if (normalized.includes("bathroom_waterproofing")) return { workKey: "bathroom_waterproofing", confidence: "high" };
     if (/green|зел[её]н/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) return { workKey: "green_roof_waterproofing", confidence: "high" };
