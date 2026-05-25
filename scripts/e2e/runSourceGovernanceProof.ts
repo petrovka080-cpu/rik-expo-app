@@ -24,6 +24,7 @@ const WAVE = "S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_CONFIDENCE_NO_FAKE_AVAILABILI
 const GREEN = "GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY";
 
 type Failure = { code: string; details?: unknown };
+type SourceGovernancePayloadParity = ReturnType<typeof buildPayloadParity>["parity"];
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
@@ -106,6 +107,22 @@ function buildPayloadParity() {
   return { foundation, bundle, payloads: { draftSave, pdfGeneration, marketplaceSend }, parity, governance };
 }
 
+function formatParityForStableArtifact(parity: SourceGovernancePayloadParity) {
+  const fingerprintValues = Object.values(parity.fingerprints);
+  const fingerprintsEqual = new Set(fingerprintValues).size === 1;
+  return {
+    ...parity,
+    fingerprintsEqual,
+    fingerprints: fingerprintsEqual
+      ? {
+        draft_save: "same-canonical-request-estimate-payload",
+        pdf_generation: "same-canonical-request-estimate-payload",
+        marketplace_send: "same-canonical-request-estimate-payload",
+      }
+      : parity.fingerprints,
+  };
+}
+
 export function runSourceGovernanceProof() {
   const failures: Failure[] = [];
   const estimateCases = [
@@ -149,7 +166,7 @@ export function runSourceGovernanceProof() {
     })),
   });
   writeJson("pdf_save_send_source_parity", {
-    parity: payloadParity.parity,
+    parity: formatParityForStableArtifact(payloadParity.parity),
     governance: payloadParity.governance,
   });
   writeJson("failures", failures);

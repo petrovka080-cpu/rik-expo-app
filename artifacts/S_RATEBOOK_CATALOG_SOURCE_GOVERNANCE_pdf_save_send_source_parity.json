@@ -6,11 +6,12 @@
     "totalsEqual": true,
     "draftIdentityEqual": true,
     "fingerprints": {
-      "draft_save": "681d2f00",
-      "pdf_generation": "681d2f00",
-      "marketplace_send": "681d2f00"
+      "draft_save": "same-canonical-request-estimate-payload",
+      "pdf_generation": "same-canonical-request-estimate-payload",
+      "marketplace_send": "same-canonical-request-estimate-payload"
     },
-    "failures": []
+    "failures": [],
+    "fingerprintsEqual": true
   },
   "governance": [
     {
