@@ -1,0 +1,10 @@
+{
+  "wave": "S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_CONFIDENCE_NO_FAKE_AVAILABILITY_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_SOURCE_GOVERNANCE_READY",
+  "android_emulator_passed": true,
+  "catalog_item_selected": true,
+  "no_fake_availability_displayed": true,
+  "pdf_viewer_android_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}

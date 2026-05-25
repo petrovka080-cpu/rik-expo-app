@@ -1,0 +1,19 @@
+{
+  "wave": "S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_CONFIDENCE_NO_FAKE_AVAILABILITY_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY",
+  "source_evidence_policy_ready": true,
+  "catalog_availability_policy_ready": true,
+  "catalog_confidence_policy_ready": true,
+  "price_without_source_found": false,
+  "high_confidence_stale_source_found": false,
+  "fake_availability_found": false,
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "pdf_save_send_source_parity_passed": true,
+  "web_playwright_passed": true,
+  "android_emulator_passed": true,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "final_worktree_clean": false,
+  "fake_green_claimed": false
+}

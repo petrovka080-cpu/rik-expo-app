@@ -1,0 +1,10 @@
+{
+  "web_playwright_passed": true,
+  "screenshots": {
+    "request_foundation_catalog_selection": "artifacts/screenshots/source-governance/request_foundation_catalog_selection.png",
+    "chat_brick": "artifacts/screenshots/source-governance/chat_brick.png",
+    "chat_roof": "artifacts/screenshots/source-governance/chat_roof.png",
+    "product_rebar_d14": "artifacts/screenshots/source-governance/product_rebar_d14.png"
+  },
+  "fake_green_claimed": false
+}

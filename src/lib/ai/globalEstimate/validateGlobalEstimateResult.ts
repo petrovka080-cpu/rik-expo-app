@@ -3,6 +3,10 @@ import {
   GLOBAL_ESTIMATE_FORBIDDEN_GENERIC_ROW_NAMES,
   GLOBAL_ESTIMATE_TEMPLATE_RATEBOOK_REQUIRED_WORK_KEYS,
 } from "./templates/coreTemplateReconciliation";
+import {
+  mapEstimateRowEvidenceToRateSourceEvidence,
+  validatePricedRateSourceEvidence,
+} from "./sourceGovernance/validateRateSourceEvidence";
 
 export type GlobalEstimateValidationIssue = {
   code: string;
@@ -139,6 +143,23 @@ export function validateGlobalEstimateResult(
     }
     if (row.confidence === "high" && row.sourceEvidence.length === 0) {
       issues.push(issue("GLOBAL_ESTIMATE_HIGH_CONFIDENCE_WITHOUT_SOURCE_EVIDENCE", `${rowPath}.confidence`, "High confidence requires source evidence."));
+    }
+    const governance = validatePricedRateSourceEvidence({
+      path: rowPath,
+      unitPrice: row.unitPrice,
+      sourceId: row.sourceId,
+      sourceLabel: row.sourceEvidence[0]?.label,
+      confidence: row.confidence,
+      evidence: row.sourceEvidence.map(mapEstimateRowEvidenceToRateSourceEvidence),
+      availabilityStatus: "unknown",
+      stockStatus: "unknown",
+    });
+    for (const governanceFailure of governance.failures) {
+      issues.push(issue(
+        `GLOBAL_ESTIMATE_SOURCE_GOVERNANCE_${governanceFailure.code}`,
+        governanceFailure.path,
+        governanceFailure.message,
+      ));
     }
   }
 

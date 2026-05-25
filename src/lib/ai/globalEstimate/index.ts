@@ -34,5 +34,6 @@ export * from "./externalSources";
 export * from "./unfinishedAiEstimateCases";
 export * from "./validateAiEstimateCoreResult";
 export * from "./validateGlobalEstimateResult";
+export * from "./sourceGovernance";
 export * from "./templates/coreTemplateReconciliation";
 export * from "./ratebook/coreRatebookReconciliation";

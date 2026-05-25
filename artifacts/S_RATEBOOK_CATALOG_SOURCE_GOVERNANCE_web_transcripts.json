@@ -1,0 +1,42 @@
+{
+  "foundation": {
+    "workKey": "strip_foundation",
+    "rowCount": 20,
+    "sourceEvidencePresent": true,
+    "priceWithoutSourceFound": false,
+    "fakeAvailabilityFound": false,
+    "fakeStockFound": false,
+    "fakeSupplierFound": false,
+    "failures": []
+  },
+  "brick": {
+    "workKey": "other_construction_work",
+    "rowCount": 10,
+    "sourceEvidencePresent": true,
+    "priceWithoutSourceFound": false,
+    "fakeAvailabilityFound": false,
+    "fakeStockFound": false,
+    "fakeSupplierFound": false,
+    "failures": []
+  },
+  "roof": {
+    "workKey": "roof_repair",
+    "rowCount": 10,
+    "sourceEvidencePresent": true,
+    "priceWithoutSourceFound": false,
+    "fakeAvailabilityFound": false,
+    "fakeStockFound": false,
+    "fakeSupplierFound": false,
+    "failures": []
+  },
+  "product_search_rebar_opened": true,
+  "catalog_item_selection_visible": true,
+  "stale_source_warning_fixture": [
+    "Высокая точность недоступна: источник устарел или не проверен."
+  ],
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false,
+  "failures": [],
+  "fake_green_claimed": false
+}

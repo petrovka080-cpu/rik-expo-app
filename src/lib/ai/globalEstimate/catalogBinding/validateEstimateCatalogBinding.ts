@@ -1,4 +1,5 @@
 import type { GlobalEstimateResult } from "../globalEstimateTypes";
+import { validateCatalogAvailabilityPolicy } from "../sourceGovernance/catalogAvailabilityPolicy";
 import type { EstimateCatalogBindingResult } from "./globalEstimateCatalogBindingTypes";
 
 export type EstimateCatalogBindingValidation = {
@@ -41,6 +42,24 @@ export function validateEstimateCatalogBinding(input: {
       if (candidate.stockStatus !== "unknown" && FAKE_TEXT.test(candidate.stockStatus)) fakeStockFound = true;
       if (candidate.sourceLabel && FAKE_TEXT.test(candidate.sourceLabel)) fakeSupplierFound = true;
       if (candidate.availabilityStatus !== "unknown" && FAKE_TEXT.test(candidate.availabilityStatus)) fakeAvailabilityFound = true;
+      const governanceFailures = validateCatalogAvailabilityPolicy({
+        path: `binding.${row.rowId}.${candidate.catalogItemId}`,
+        catalogItemId: candidate.catalogItemId,
+        sourceId: candidate.sourceId,
+        sourceLabel: candidate.sourceLabel,
+        availabilityStatus: candidate.availabilityStatus,
+        stockStatus: candidate.stockStatus,
+      });
+      if (governanceFailures.some((failure) => failure.code === "AVAILABLE_WITHOUT_REAL_CATALOG_SOURCE" || failure.code === "FAKE_AVAILABILITY")) {
+        fakeAvailabilityFound = true;
+      }
+      if (governanceFailures.some((failure) => failure.code === "IN_STOCK_WITHOUT_REAL_CATALOG_SOURCE" || failure.code === "FAKE_STOCK")) {
+        fakeStockFound = true;
+      }
+      if (governanceFailures.some((failure) => failure.code === "SUPPLIER_WITHOUT_EVIDENCE" || failure.code === "FAKE_SUPPLIER")) {
+        fakeSupplierFound = true;
+      }
+      failures.push(...governanceFailures.map((failure) => `${failure.code}:${failure.path}`));
     }
   }
 

@@ -74,6 +74,7 @@ export type CloseoutOwnershipEntry = {
     | "request_estimate_boq_formula_quality"
     | "request_estimate_draft_state_payload_parity"
     | "request_estimate_draft_state_machine_payload_parity"
+    | "ratebook_catalog_source_governance"
     | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
@@ -1431,6 +1432,36 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "dirty-worktree boundary allowlist for approved AI release waves",
+    };
+  }
+  if (
+    normalized === "src/lib/ai/globalEstimate/sourceGovernance" ||
+    normalized.startsWith("src/lib/ai/globalEstimate/sourceGovernance/") ||
+    normalized === "src/lib/ai/globalEstimate/index.ts" ||
+    normalized === "src/lib/ai/globalEstimate/validateGlobalEstimateResult.ts" ||
+    normalized === "src/lib/ai/globalEstimate/catalogBinding/validateEstimateCatalogBinding.ts" ||
+    normalized === "src/lib/consumerRequests/consumerRequestPayloadParity.ts" ||
+    normalized === "src/lib/consumerRequests/index.ts" ||
+    normalized === "scripts/e2e/runAndroidSourceGovernanceSmoke.ts" ||
+    normalized === "scripts/e2e/runSourceGovernanceProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/architecture/requestEstimateNoFakeCatalogItems.contract.test.ts" ||
+    normalized === "tests/sourceGovernance" ||
+    normalized.startsWith("tests/sourceGovernance/") ||
+    normalized.startsWith("tests/architecture/sourceGovernance") ||
+    normalized === "tests/e2e/sourceGovernanceEstimateCatalog.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_") ||
+    normalized.startsWith("artifacts/screenshots/source-governance/")
+  ) {
+    return {
+      file: normalized,
+      category: "ratebook_catalog_source_governance",
+      wave: "S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_CONFIDENCE_NO_FAKE_AVAILABILITY_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "ratebook/catalog source evidence, confidence, availability, and payload parity governance",
     };
   }
   if (

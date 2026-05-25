@@ -721,6 +721,10 @@ describe("releaseGuard.shared", () => {
             command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts",
           },
           {
+            name: "ratebook-catalog-source-governance-proof",
+            command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts",
+          },
+          {
             name: "all-screens-enterprise-web-proof",
             command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts",
           },

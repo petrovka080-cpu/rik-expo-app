@@ -13,9 +13,11 @@ export {
 export {
   buildConsumerRepairCanonicalDraftPayload,
   compareConsumerRepairPayloadParity,
+  validateConsumerRepairPayloadSourceGovernance,
   type ConsumerRepairCanonicalDraftPayload,
   type ConsumerRepairPayloadKind,
   type ConsumerRepairPayloadParityResult,
+  type ConsumerRepairPayloadSourceGovernanceResult,
 } from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {

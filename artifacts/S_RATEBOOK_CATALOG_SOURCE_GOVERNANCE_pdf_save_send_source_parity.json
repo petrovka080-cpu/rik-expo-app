@@ -1,0 +1,41 @@
+{
+  "parity": {
+    "passed": true,
+    "itemCountEqual": true,
+    "catalogSelectionsEqual": true,
+    "totalsEqual": true,
+    "draftIdentityEqual": true,
+    "fingerprints": {
+      "draft_save": "681d2f00",
+      "pdf_generation": "681d2f00",
+      "marketplace_send": "681d2f00"
+    },
+    "failures": []
+  },
+  "governance": [
+    {
+      "passed": true,
+      "priceWithoutSourceFound": false,
+      "fakeAvailabilityFound": false,
+      "fakeStockFound": false,
+      "fakeSupplierFound": false,
+      "failures": []
+    },
+    {
+      "passed": true,
+      "priceWithoutSourceFound": false,
+      "fakeAvailabilityFound": false,
+      "fakeStockFound": false,
+      "fakeSupplierFound": false,
+      "failures": []
+    },
+    {
+      "passed": true,
+      "priceWithoutSourceFound": false,
+      "fakeAvailabilityFound": false,
+      "fakeStockFound": false,
+      "fakeSupplierFound": false,
+      "failures": []
+    }
+  ]
+}

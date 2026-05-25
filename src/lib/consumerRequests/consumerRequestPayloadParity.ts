@@ -1,4 +1,5 @@
 import { safeJsonStringify } from "../format";
+import { validatePricedRateSourceEvidence } from "../ai/globalEstimate/sourceGovernance/validateRateSourceEvidence";
 import type {
   ConsumerMarketplaceLink,
   ConsumerRepairDraftBundle,
@@ -71,6 +72,15 @@ export type ConsumerRepairPayloadParityResult = {
   totalsEqual: boolean;
   draftIdentityEqual: boolean;
   fingerprints: Record<ConsumerRepairPayloadKind, string>;
+  failures: string[];
+};
+
+export type ConsumerRepairPayloadSourceGovernanceResult = {
+  passed: boolean;
+  priceWithoutSourceFound: boolean;
+  fakeAvailabilityFound: boolean;
+  fakeStockFound: boolean;
+  fakeSupplierFound: boolean;
   failures: string[];
 };
 
@@ -218,6 +228,63 @@ export function compareConsumerRepairPayloadParity(input: {
       pdf_generation: input.pdfGeneration.parityFingerprint,
       marketplace_send: input.marketplaceSend.parityFingerprint,
     },
+    failures,
+  };
+}
+
+export function validateConsumerRepairPayloadSourceGovernance(
+  payload: ConsumerRepairCanonicalDraftPayload,
+): ConsumerRepairPayloadSourceGovernanceResult {
+  const failures: string[] = [];
+  let priceWithoutSourceFound = false;
+  let fakeAvailabilityFound = false;
+  let fakeStockFound = false;
+  let fakeSupplierFound = false;
+
+  for (const item of payload.items) {
+    const itemValidation = validatePricedRateSourceEvidence({
+      path: `${payload.payloadKind}.items.${item.id}`,
+      unitPrice: item.unitPrice,
+      sourceId: item.sourceId,
+      sourceLabel: item.sourceLabel,
+      sourceType: item.source === "catalog_item" ? "catalog_item" : "configured_reference",
+      confidence: item.confidence ?? "low",
+      availabilityStatus: "unknown",
+      stockStatus: "unknown",
+      catalogItemId: item.catalogItemId ?? item.selectedCatalogItemId,
+    });
+    priceWithoutSourceFound ||= itemValidation.priceWithoutSourceFound;
+    fakeAvailabilityFound ||= itemValidation.fakeAvailabilityFound;
+    fakeStockFound ||= itemValidation.fakeStockFound;
+    fakeSupplierFound ||= itemValidation.fakeSupplierFound;
+    failures.push(...itemValidation.failures.map((failure) => `${failure.code}:${failure.path}`));
+
+    for (const candidate of item.catalogCandidates ?? []) {
+      const candidateValidation = validatePricedRateSourceEvidence({
+        path: `${payload.payloadKind}.items.${item.id}.catalogCandidates.${candidate.catalogItemId}`,
+        unitPrice: candidate.unitPrice,
+        sourceId: candidate.sourceId,
+        sourceLabel: candidate.sourceLabel,
+        sourceType: "catalog_item",
+        confidence: candidate.confidence,
+        availabilityStatus: candidate.availabilityStatus,
+        stockStatus: candidate.stockStatus,
+        catalogItemId: candidate.catalogItemId,
+      });
+      priceWithoutSourceFound ||= candidateValidation.priceWithoutSourceFound;
+      fakeAvailabilityFound ||= candidateValidation.fakeAvailabilityFound;
+      fakeStockFound ||= candidateValidation.fakeStockFound;
+      fakeSupplierFound ||= candidateValidation.fakeSupplierFound;
+      failures.push(...candidateValidation.failures.map((failure) => `${failure.code}:${failure.path}`));
+    }
+  }
+
+  return {
+    passed: failures.length === 0,
+    priceWithoutSourceFound,
+    fakeAvailabilityFound,
+    fakeStockFound,
+    fakeSupplierFound,
     failures,
   };
 }

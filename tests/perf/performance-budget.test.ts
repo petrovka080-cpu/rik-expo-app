@@ -671,6 +671,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
       /\.ts$/,
     );
+    const sRatebookCatalogSourceGovernanceFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "globalEstimate", "sourceGovernance"),
+      /\.ts$/,
+    );
     const sRequestEstimateBoqCatalogGlobalEstimateFiles = [
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateBoqDepthPolicy.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateFormulaQualityEngine.ts"),
@@ -1766,11 +1770,13 @@ describe("performance budget вЂ” bundle module count", () => {
       sGlobalEstimateProfessionalBoqFiles -
         sRequestEstimateBoqCatalogGlobalEstimateFiles -
         sGlobalEstimateBoqDepthFormulaQualityFiles -
-        sCatalogItemsGlobalEstimateBindingFiles,
+        sCatalogItemsGlobalEstimateBindingFiles -
+        sRatebookCatalogSourceGovernanceFiles,
     ).toBeLessThanOrEqual(45);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
     expect(sGlobalEstimateBoqDepthFormulaQualityFiles).toBeLessThanOrEqual(2);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
+    expect(sRatebookCatalogSourceGovernanceFiles).toBeLessThanOrEqual(6);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);

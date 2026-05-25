@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+      "workKey": "strip_foundation",
+      "rowCount": 20,
+      "failures": []
+    },
+    {
+      "prompt": "смета на кладку кирпича 74 м2",
+      "workKey": "other_construction_work",
+      "rowCount": 10,
+      "failures": []
+    },
+    {
+      "prompt": "смета на двускатную кровлю 100 м2",
+      "workKey": "roof_repair",
+      "rowCount": 10,
+      "failures": []
+    }
+  ]
+}

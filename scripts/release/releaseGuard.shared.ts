@@ -61,6 +61,7 @@ export type ReleaseGateName =
   | "catalog-items-global-estimate-binding-proof"
   | "request-estimate-draft-state-payload-parity-proof"
   | "request-estimate-draft-state-machine-save-send-pdf-parity-proof"
+  | "ratebook-catalog-source-governance-proof"
   | "all-screens-enterprise-web-proof"
   | "all-screens-enterprise-android-emulator-proof"
   | "all-screens-pdf-open-proof"
@@ -311,6 +312,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "catalog-items-global-estimate-binding-proof", command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" },
   { name: "request-estimate-draft-state-payload-parity-proof", command: "npx tsx scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" },
   { name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof", command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts" },
+  { name: "ratebook-catalog-source-governance-proof", command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts" },
   { name: "all-screens-enterprise-web-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts" },
   { name: "all-screens-enterprise-android-emulator-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" },
   { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },

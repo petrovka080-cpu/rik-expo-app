@@ -876,6 +876,31 @@ const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
   );
 };
 
+const isApprovedRatebookCatalogSourceGovernancePatch = (file: string) => {
+  const normalized = normalizePath(file);
+  return (
+    normalized === "src/lib/ai/globalEstimate/sourceGovernance" ||
+    normalized.startsWith("src/lib/ai/globalEstimate/sourceGovernance/") ||
+    normalized === "src/lib/ai/globalEstimate/index.ts" ||
+    normalized === "src/lib/ai/globalEstimate/validateGlobalEstimateResult.ts" ||
+    normalized === "src/lib/ai/globalEstimate/catalogBinding/validateEstimateCatalogBinding.ts" ||
+    normalized === "src/lib/consumerRequests/consumerRequestPayloadParity.ts" ||
+    normalized === "src/lib/consumerRequests/index.ts" ||
+    normalized === "scripts/e2e/runAndroidSourceGovernanceSmoke.ts" ||
+    normalized === "scripts/e2e/runSourceGovernanceProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/architecture/requestEstimateNoFakeCatalogItems.contract.test.ts" ||
+    normalized === "tests/sourceGovernance" ||
+    normalized.startsWith("tests/sourceGovernance/") ||
+    normalized.startsWith("tests/architecture/sourceGovernance") ||
+    normalized === "tests/e2e/sourceGovernanceEstimateCatalog.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_") ||
+    normalized.startsWith("artifacts/screenshots/source-governance/")
+  );
+};
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -992,6 +1017,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
+        !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||
