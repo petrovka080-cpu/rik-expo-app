@@ -17,15 +17,7 @@
     "http://10.0.2.2:8081",
     "http://10.0.2.2:8085",
     "http://10.0.2.2:8083",
-    "http://10.0.2.2:8082",
-    "http://10.0.2.2:8084",
-    "New development server",
-    "RECENTLY OPENED",
-    "RESET",
-    "http://127.0.0.1:8098",
-    "Home",
-    "Updates",
-    "Settings"
+    "http://10.0.2.2:8082"
   ],
   "failures": [],
   "fake_green_claimed": false
