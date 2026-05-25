@@ -1,0 +1,74 @@
+{
+  "cases": [
+    {
+      "id": "roof_waterproofing",
+      "prompt": "гидроизоляция крыши 100 м²",
+      "expectedWorkKey": "roof_waterproofing",
+      "actualWorkKey": "roof_waterproofing",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
+      "documentNumber": "AI-EST-te_214206846",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "bathroom_waterproofing",
+      "prompt": "гидроизоляция ванной 30 м²",
+      "expectedWorkKey": "bathroom_waterproofing",
+      "actualWorkKey": "bathroom_waterproofing",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf",
+      "documentNumber": "AI-EST-e_2115816636",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "foundation_waterproofing",
+      "prompt": "гидроизоляция фундамента 80 м²",
+      "expectedWorkKey": "foundation_waterproofing",
+      "actualWorkKey": "foundation_waterproofing",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf",
+      "documentNumber": "AI-EST-te_867134504",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "gable_roof_installation",
+      "prompt": "двускатная крыша 100 м²",
+      "expectedWorkKey": "gable_roof_installation",
+      "actualWorkKey": "gable_roof_installation",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf",
+      "documentNumber": "AI-EST-e_1408661527",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "brick_masonry",
+      "prompt": "кладка кирпича 74 м²",
+      "expectedWorkKey": "brick_masonry",
+      "actualWorkKey": "brick_masonry",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/brick_masonry.pdf",
+      "documentNumber": "AI-EST-te_583854977",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "asphalt_paving",
+      "prompt": "асфальтирование 1000 м²",
+      "expectedWorkKey": "asphalt_paving",
+      "actualWorkKey": "asphalt_paving",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/asphalt_paving.pdf",
+      "documentNumber": "AI-EST-e_1435827666",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    },
+    {
+      "id": "ceramic_tile_floor_laying",
+      "prompt": "плитка на пол 174 м²",
+      "expectedWorkKey": "ceramic_tile_floor_laying",
+      "actualWorkKey": "ceramic_tile_floor_laying",
+      "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/ceramic_tile_floor_laying.pdf",
+      "documentNumber": "AI-EST-te_423520290",
+      "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+      "passed": true
+    }
+  ]
+}

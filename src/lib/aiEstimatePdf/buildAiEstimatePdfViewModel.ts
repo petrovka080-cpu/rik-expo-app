@@ -1,4 +1,11 @@
-import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
+import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
+import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
+import type {
+  EstimateRowSourceEvidence,
+  GlobalEstimateConfidence,
+  GlobalEstimateResult,
+  GlobalEstimateSourceFreshness,
+} from "../ai/globalEstimate/globalEstimateTypes";
 import type { AiEstimatePdfInput, AiEstimatePdfViewModel } from "./aiEstimatePdfTypes";
 
 function compact(value: string): string {
@@ -27,10 +34,47 @@ function documentNumber(estimate: GlobalEstimateResult): string {
   return `AI-EST-${suffix}`;
 }
 
+function confidenceLabel(confidence: GlobalEstimateConfidence): string {
+  if (confidence === "high") return "высокая";
+  if (confidence === "medium") return "средняя";
+  return "низкая";
+}
+
+function freshnessLabel(freshness: GlobalEstimateSourceFreshness): string {
+  if (freshness === "fresh") return "актуальный";
+  if (freshness === "aging") return "требует проверки";
+  if (freshness === "stale") return "устаревший";
+  if (freshness === "expired") return "требует обновления";
+  return "неизвестно";
+}
+
+function displayQuantity(value: number, unit: string): string {
+  const formatted = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 3 }).format(value);
+  return `${formatted} ${formatEstimateUnitLabel(unit)}`;
+}
+
+function humanizeText(value: string): string {
+  return compact(value)
+    .replace(/\bGlobalEstimateResult\b/g, "структурированной сметы")
+    .replace(/\bPDF layer\b/gi, "PDF")
+    .replace(/\bConfigured backend regional reference rate\b/gi, "Региональный справочник цен")
+    .replace(/\bbackend pricebook\b/gi, "справочник цен")
+    .replace(/\breference price book\b/gi, "справочник цен")
+    .replace(/\bAI estimate backend\b/gi, "сервис сметы");
+}
+
+function evidenceLine(evidence: EstimateRowSourceEvidence): string {
+  return [
+    humanizeText(evidence.label),
+    evidence.checkedAt ? `проверено ${evidence.checkedAt.slice(0, 10)}` : null,
+    `актуальность: ${freshnessLabel(evidence.freshness)}`,
+    `точность: ${confidenceLabel(evidence.confidence)}`,
+  ].filter(Boolean).join(", ");
+}
+
 function sourceLine(source: GlobalEstimateResult["sources"][number]): string {
   return [
-    source.id,
-    source.label,
+    humanizeText(source.label),
     source.checkedAt ? `проверено ${source.checkedAt.slice(0, 10)}` : null,
     source.url,
   ].filter(Boolean).join(" | ");
@@ -47,32 +91,25 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
       index: String(index + 1),
       rowNumber: row.rowNumber,
       code: row.code,
-      name: compact(row.name),
+      name: humanizeText(row.name),
       category: compact(section.title || section.type),
-      quantity: compact(row.displayQuantity || String(row.quantity)),
-      unit: compact(row.unit),
+      quantity: displayQuantity(row.quantity, row.unit),
+      unit: compact(formatEstimateUnitLabel(row.unit)),
       unitPrice: compact(row.displayUnitPrice),
       total: compact(row.displayTotal),
       confidence: row.confidence,
-      sourceLabels: row.sourceEvidence.map((evidence) =>
-        [
-          evidence.label,
-          evidence.checkedAt ? `проверено ${evidence.checkedAt.slice(0, 10)}` : null,
-          `freshness ${evidence.freshness}`,
-          `confidence ${evidence.confidence}`,
-        ].filter(Boolean).join(", "),
-      ),
+      sourceLabels: row.sourceEvidence.map(evidenceLine),
     })),
   );
 
   const number = documentNumber(estimate);
   const generatedAt = displayDate(input.generatedAt);
-  const inputVolume = `${estimate.input.volume} ${estimate.input.unit}`;
+  const inputVolume = displayQuantity(estimate.input.volume, estimate.input.unit);
   const taxWarning =
     estimate.tax.warning ||
     (estimate.tax.requiresLocationPrecision
       ? "Для точного налога требуется уточнить адрес объекта."
-      : "Налоговый статус рассчитан по текущему структурированному результату.");
+      : "Налоговый статус рассчитан по текущей структурированной смете.");
 
   return {
     estimateId: estimate.estimateId,
@@ -85,45 +122,48 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
     runtimeTraceId: input.runtimeTraceId,
     work: {
       workKey: estimate.work.workKey,
-      title: estimate.work.title,
+      title: humanizeText(estimate.work.title),
       category: estimate.work.category,
       inputVolume,
       locale: estimate.locale.locale,
       currency: estimate.totals.currency,
     },
     metadata: [
-      { label: "Номер документа", value: number },
+      { label: "Документ №", value: number },
+      { label: "Дата", value: generatedAt },
       { label: "Статус", value: documentStatus(input.documentMode) },
-      { label: "Дата формирования", value: generatedAt },
-      { label: "Estimate ID", value: estimate.estimateId },
-      { label: "Work key", value: estimate.work.workKey },
-      { label: "Объем", value: inputVolume },
-      { label: "Маршрут", value: input.route },
-      { label: "Runtime trace ID", value: input.runtimeTraceId },
+      { label: "Объект / вид работ", value: humanizeText(estimate.work.title) },
+      { label: "Объём", value: inputVolume },
+      { label: "Налоговый статус", value: estimate.tax.taxLabel },
+      { label: "Точность расчёта", value: confidenceLabel(estimate.confidence) },
+      { label: "Служебный ID", value: input.runtimeTraceId },
     ],
-    assumptions: estimate.assumptions.length ? estimate.assumptions : ["Допущения не указаны."],
+    assumptions: estimate.assumptions.length ? estimate.assumptions.map(humanizeText) : ["Допущения не указаны."],
     rows,
     totals: [
       { label: "Материалы", value: estimate.totals.displayMaterialsTotal },
       { label: "Работы", value: estimate.totals.displayLaborTotal },
-      { label: "Доставка / техника", value: `${estimate.totals.deliveryTotal + estimate.totals.equipmentTotal} ${estimate.totals.currency}` },
+      {
+        label: "Доставка / техника",
+        value: formatEstimateMoney(estimate.totals.deliveryTotal + estimate.totals.equipmentTotal, estimate.totals.currency),
+      },
       { label: "Налог", value: estimate.totals.displayTaxTotal },
       { label: "Итого", value: estimate.totals.displayGrandTotal },
     ],
     tax: {
       label: estimate.tax.taxLabel,
       rate: percent(estimate.tax.taxRate),
-      included: estimate.tax.included ? "включен в цену" : "добавлен к итогу",
+      included: estimate.tax.included ? "включён в цену" : "добавлен к итогу",
       amount: estimate.totals.displayTaxTotal,
       warning: taxWarning,
     },
     sources: estimate.sources.length ? estimate.sources.map(sourceLine) : ["Источники не указаны."],
-    confidence: estimate.confidence,
+    confidence: confidenceLabel(estimate.confidence),
     clarifyingQuestions: estimate.clarifyingQuestions.length
-      ? estimate.clarifyingQuestions
+      ? estimate.clarifyingQuestions.map(humanizeText)
       : ["Вопросы для уточнения не указаны."],
     footer: [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________",
     ],
   };

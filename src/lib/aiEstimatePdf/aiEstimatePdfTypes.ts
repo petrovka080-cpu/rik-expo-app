@@ -86,6 +86,11 @@ export type AiEstimatePdfValidationResult = {
     markdownTableFound: boolean;
     procurementCloneFound: boolean;
     genericConstructionRowFound: boolean;
+    rawMaterialKeyVisible: boolean;
+    rawRateKeyVisible: boolean;
+    rawSourceIdVisible: boolean;
+    backendDebugTextVisible: boolean;
+    rawUnitLabelsFound: boolean;
   };
 };
 

@@ -1,5 +1,6 @@
 import type { ConsumerRepairDraftBundle } from "../../consumerRequests";
 import type { ConstructionEstimateAnswer } from "../estimateEngine";
+import { calculateGlobalConstructionEstimateSync } from "../globalEstimate/globalEstimateCalculator";
 import type { GlobalEstimateResult } from "../globalEstimate/globalEstimateTypes";
 import type { AiEstimatePdfSource, AiEstimatePdfSectionType } from "./estimatePdfTypes";
 
@@ -80,6 +81,16 @@ export function buildAiEstimatePdfSourceFromConstructionEstimate(
   answer: ConstructionEstimateAnswer,
   input: { sourceId?: string; userId?: string; createdAt?: string } = {},
 ): AiEstimatePdfSource {
+  const structuredEstimate = calculateGlobalConstructionEstimateSync({
+    text: answer.questionRu,
+    volume: answer.area?.value,
+    unit: answer.area?.unit === "m2" ? "sq_m" : undefined,
+    countryCode: "KG",
+    city: "Bishkek",
+    language: "ru",
+    locale: "ru-KG",
+    currency: answer.currency,
+  });
   const materialsRows = answer.materials.map((row, index) => ({
     rowNumber: `1.${index + 1}`,
     name: row.nameRu,
@@ -106,6 +117,7 @@ export function buildAiEstimatePdfSourceFromConstructionEstimate(
     sourceType: "ai_chat_estimate",
     sourceId: input.sourceId ?? stableId("ai_estimate", answer.questionRu),
     userId: input.userId,
+    structuredEstimate,
     title: "Смета",
     language: "ru",
     locale: "ru-KG",

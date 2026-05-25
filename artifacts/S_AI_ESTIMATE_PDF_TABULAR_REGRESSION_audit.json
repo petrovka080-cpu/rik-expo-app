@@ -1,0 +1,15 @@
+{
+  "wave": "S_AI_ESTIMATE_PDF_TABULAR_REALITY_REGRESSION_REPAIR_NO_TEXT_DUMP_POINT_OF_NO_RETURN",
+  "status": "GREEN_AI_ESTIMATE_PDF_TABULAR_REGRESSION_AUDIT_READY",
+  "source_path_known": true,
+  "route_generating_ai_estimate_pdf": "src/features/ai/AIAssistantEstimatePdfActions.tsx -> generateAiEstimatePdf -> createAiEstimatePdf",
+  "payload_type_used": "AiEstimatePdfSource.structuredEstimate: GlobalEstimateResult",
+  "ai_estimate_pdf_adapter_bypassed": false,
+  "request_uses_legacy_text_pdf_path": false,
+  "viewer_receives_structured_pdf_data_uri": true,
+  "raw_internal_fields_leak_from_view_model": false,
+  "source_labels_human_formatted": true,
+  "fallback_limited_to_legacy_consumer_draft": true,
+  "blockers": [],
+  "fake_green_claimed": false
+}

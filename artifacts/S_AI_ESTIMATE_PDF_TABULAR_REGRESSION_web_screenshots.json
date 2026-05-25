@@ -1,0 +1,13 @@
+{
+  "web_playwright_passed": true,
+  "pdf_viewer_web_opened": true,
+  "request_roof_waterproofing_passed": true,
+  "table_visible_or_text_extraction_confirms_table": true,
+  "raw_internal_fields_absent": true,
+  "screenshots": {
+    "request": "artifacts/screenshots/ai-estimate-pdf-tabular-regression/web/request_roof_waterproofing.png",
+    "pdf_viewer": "artifacts/screenshots/ai-estimate-pdf-tabular-regression/web/pdf_viewer_roof_waterproofing.png"
+  },
+  "pdf_path": "artifacts/pdf/ai-estimate-pdf-tabular-regression/web_roof_waterproofing.pdf",
+  "fake_green_claimed": false
+}

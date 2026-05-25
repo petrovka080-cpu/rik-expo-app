@@ -701,6 +701,10 @@ describe("releaseGuard.shared", () => {
             command: "npx tsx scripts/e2e/runAiEstimatePdfOpenRuntimeProof.ts",
           },
           {
+            name: "ai-estimate-pdf-tabular-regression-proof",
+            command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts",
+          },
+          {
             name: "request-ai-estimate-boq-catalog-proof",
             command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts",
           },

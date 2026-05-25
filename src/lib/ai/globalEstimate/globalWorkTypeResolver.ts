@@ -195,6 +195,7 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "furniture_assembly", language: "ru", alias: "furniture_assembly" },
   { workKey: "furniture_assembly", language: "en", alias: "furniture assembly" },
   { workKey: "bathroom_waterproofing", language: "ru", alias: "bathroom_waterproofing" },
+  { workKey: "roof_waterproofing", language: "ru", alias: "roof_waterproofing" },
   { workKey: "foundation_waterproofing", language: "ru", alias: "foundation_waterproofing" },
   { workKey: "demolition_tiles", language: "ru", alias: "demolition_tiles" },
   { workKey: "timber_deck", language: "ru", alias: "timber_deck" },
@@ -229,6 +230,13 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "foundation_concrete", language: "en", alias: "foundation concrete" },
   { workKey: "waterproofing_bathroom", language: "en", alias: "bathroom waterproofing" },
   { workKey: "waterproofing_bathroom", language: "ru", alias: "гидроизоляция ванной" },
+  { workKey: "roof_waterproofing", language: "en", alias: "roof waterproofing" },
+  { workKey: "roof_waterproofing", language: "ru", alias: "гидроизоляция крыши" },
+  { workKey: "roof_waterproofing", language: "ru", alias: "гидроизоляция кровли" },
+  { workKey: "roof_waterproofing", language: "ru", alias: "кровельная гидроизоляция" },
+  { workKey: "foundation_waterproofing", language: "en", alias: "foundation waterproofing" },
+  { workKey: "foundation_waterproofing", language: "ru", alias: "гидроизоляция фундамента" },
+  { workKey: "bathroom_waterproofing", language: "ru", alias: "гидроизоляция санузла" },
   { workKey: "socket_installation", language: "en", alias: "socket installation" },
   { workKey: "electrical_basic", language: "en", alias: "electrical" },
   { workKey: "plumbing_basic", language: "en", alias: "plumbing repair" },
@@ -323,6 +331,24 @@ function titleFor(definition: GlobalWorkTypeDefinition, language: string): strin
 function resolveByText(text: string | undefined): { workKey: string; confidence: GlobalResolvedWorkType["confidence"] } | null {
   const normalized = normalizeGlobalWorkAlias(text ?? "");
   if (!normalized) return null;
+
+  if (/shower|душ/i.test(normalized) && /tile|плитк/i.test(normalized) && /waterproof|гидроизоля/i.test(normalized)) {
+    return { workKey: "shower_tile_waterproofing", confidence: "high" };
+  }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготов|основан|выравнив|маяк/i.test(normalized)) {
+    return { workKey: "tile_floor_leveling", confidence: "high" };
+  }
+  if (/waterproof|гидроизоля/i.test(normalized)) {
+    if (normalized.includes("roof_waterproofing") || /\broof\b|кровл|крыш/i.test(normalized)) return { workKey: "roof_waterproofing", confidence: "high" };
+    if (/foundation|фундамент/i.test(normalized)) return { workKey: "foundation_waterproofing", confidence: "high" };
+    if (/bath|ванн|санузел|душ/i.test(normalized)) return { workKey: "bathroom_waterproofing", confidence: "high" };
+  }
+  if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
+    return { workKey: "gable_roof_installation", confidence: "high" };
+  }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
+    return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
+  }
 
   const exact = [...GLOBAL_WORK_ALIASES]
     .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)

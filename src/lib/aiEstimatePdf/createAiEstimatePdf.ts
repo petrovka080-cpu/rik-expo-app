@@ -10,10 +10,10 @@ export function createAiEstimatePdf(input: AiEstimatePdfInput): AiEstimatePdfDoc
     pdf: rendered.bytes,
     knownWorkKey: input.estimate.work.workKey,
     requiredText: [
-      input.estimate.estimateId,
       input.estimate.work.title,
       input.estimate.totals.displayGrandTotal,
       input.estimate.tax.taxLabel,
+      viewModel.documentNumber,
       viewModel.runtimeTraceId,
     ],
   });

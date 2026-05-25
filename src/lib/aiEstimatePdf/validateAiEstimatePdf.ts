@@ -20,6 +20,22 @@ const FORBIDDEN_PROCUREMENT_TERMS = [
   "Director Proposal",
 ];
 
+const BACKEND_DEBUG_PATTERNS = [
+  /Backend global estimate/i,
+  /GlobalEstimateResult/i,
+  /PDF layer/i,
+  /Work key/i,
+  /Estimate ID/i,
+  /Runtime trace ID/i,
+  /Grand total/i,
+  /Tax status/i,
+  /Confidence/i,
+  /Human confirmation/i,
+  /\bbackend\b/i,
+  /\bdebug\b/i,
+  /LEGACY PDF path protected/i,
+];
+
 export function validateAiEstimatePdf(input: {
   pdf: Uint8Array | string;
   knownWorkKey?: string;
@@ -33,10 +49,10 @@ export function validateAiEstimatePdf(input: {
     knownWorkKey: input.knownWorkKey,
     requiredText: [
       "Сметное предложение / Смета работ",
-      "Номер документа",
+      "Документ №",
       "Статус",
       "Итоги",
-      "Налог / источники / уверенность",
+      "Налог / источники / точность",
       "Подписание",
       ...(input.requiredText ?? []),
     ],
@@ -46,14 +62,22 @@ export function validateAiEstimatePdf(input: {
   const requiredColumnsPresent = REQUIRED_COLUMNS.every((column) => text.includes(column));
   const totalsPresent = text.includes("Итого") && /Материалы|Работы/.test(text);
   const taxSourcesFooterPresent =
-    text.includes("Налог / источники / уверенность") &&
-    text.includes("Confidence:") &&
-    text.includes("Подпись заказчика") &&
-    text.includes("GlobalEstimateResult");
-  const plainTextDumpFound = textLines.some((line) => line.split("|").length >= 4);
+    text.includes("Налог / источники / точность") &&
+    text.includes("Точность расчёта:") &&
+    text.includes("Источники") &&
+    text.includes("Подпись заказчика");
+  const plainTextDumpFound =
+    !realBorderedTablePresent ||
+    textLines.some((line) => line.split("|").length >= 4 && !line.includes("Смета |")) ||
+    (text.includes("Позиции:") && !requiredColumnsPresent);
   const markdownTableFound = textLines.some((line) => /^\s*\|.+\|\s*$/.test(line) || /^\s*\|?\s*-{3,}/.test(line));
   const procurementCloneFound = FORBIDDEN_PROCUREMENT_TERMS.some((term) => text.includes(term));
   const genericConstructionRowFound = textLines.some((line) => /^Строительные работы$/i.test(line.trim()));
+  const rawMaterialKeyVisible = /\bmaterialKey\b/i.test(text);
+  const rawRateKeyVisible = /\brateKey\b/i.test(text);
+  const rawSourceIdVisible = /\bsourceId\b/i.test(text) || /\brate_[a-z0-9_]+\b/i.test(text) || /\bcatalog_items\b/i.test(text);
+  const backendDebugTextVisible = BACKEND_DEBUG_PATTERNS.some((pattern) => pattern.test(text));
+  const rawUnitLabelsFound = /\b(linear_m|sq_m|cubic_m|pcs)\b/.test(text);
 
   const failures = [...baseValidation.failures];
   if (!realBorderedTablePresent) failures.push("AI_ESTIMATE_PDF_REAL_BORDERED_TABLE_MISSING");
@@ -64,6 +88,11 @@ export function validateAiEstimatePdf(input: {
   if (markdownTableFound) failures.push("AI_ESTIMATE_PDF_MARKDOWN_TABLE_FOUND");
   if (procurementCloneFound) failures.push("AI_ESTIMATE_PDF_PROCUREMENT_CLONE_FOUND");
   if (genericConstructionRowFound) failures.push("AI_ESTIMATE_PDF_GENERIC_CONSTRUCTION_ROW_FOUND");
+  if (rawMaterialKeyVisible) failures.push("AI_ESTIMATE_PDF_RAW_MATERIAL_KEY_VISIBLE");
+  if (rawRateKeyVisible) failures.push("AI_ESTIMATE_PDF_RAW_RATE_KEY_VISIBLE");
+  if (rawSourceIdVisible) failures.push("AI_ESTIMATE_PDF_RAW_SOURCE_ID_VISIBLE");
+  if (backendDebugTextVisible) failures.push("AI_ESTIMATE_PDF_BACKEND_DEBUG_TEXT_VISIBLE");
+  if (rawUnitLabelsFound) failures.push("AI_ESTIMATE_PDF_RAW_UNIT_LABELS_VISIBLE");
 
   const uniqueFailures = [...new Set(failures)];
   return {
@@ -82,6 +111,11 @@ export function validateAiEstimatePdf(input: {
       markdownTableFound,
       procurementCloneFound,
       genericConstructionRowFound,
+      rawMaterialKeyVisible,
+      rawRateKeyVisible,
+      rawSourceIdVisible,
+      backendDebugTextVisible,
+      rawUnitLabelsFound,
     },
   };
 }

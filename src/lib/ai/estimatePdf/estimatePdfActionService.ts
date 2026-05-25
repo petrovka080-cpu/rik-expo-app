@@ -9,6 +9,12 @@ import type { AiEstimatePdfConfirmation, AiEstimatePdfResult, AiEstimatePdfSourc
 
 const history: AiEstimatePdfResult[] = [];
 
+function routeForAiEstimatePdfSource(source: AiEstimatePdfSource): "/chat" | "/ai" | "/request" {
+  if (source.sourceType === "consumer_repair_draft") return "/request";
+  if (source.sourceType === "global_estimate_result" || source.sourceType === "ai_chat_estimate") return "/chat";
+  return "/ai";
+}
+
 export function buildAiEstimatePdfConfirmation(source: AiEstimatePdfSource): AiEstimatePdfConfirmation {
   assertAiEstimatePdfSource(source);
   return {
@@ -48,7 +54,7 @@ export function generateAiEstimatePdf(input: {
     const pdf = createAiEstimatePdf({
       estimate: input.source.structuredEstimate,
       runtimeTraceId,
-      route: input.source.sourceType === "global_estimate_result" ? "/chat" : "/ai",
+      route: routeForAiEstimatePdfSource(input.source),
       generatedAt: new Date().toISOString(),
       documentMode: "estimate",
     });
@@ -70,6 +76,9 @@ export function generateAiEstimatePdf(input: {
     };
     history.unshift(result);
     return { ...result, access: { ...result.access }, openAction: { ...result.openAction } };
+  }
+  if (input.source.sourceType !== "consumer_repair_draft") {
+    throw new Error("AI Estimate PDF requires structured GlobalEstimateResult payload; markdown/text fallback is blocked.");
   }
   const model = mapAiEstimatePdfSourceToExistingConsumerPdfModel(input.source);
   const pdf = generateConsumerRepairRequestPdf(model);

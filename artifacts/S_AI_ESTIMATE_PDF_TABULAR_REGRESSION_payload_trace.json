@@ -1,0 +1,8 @@
+{
+  "source": "GlobalEstimateResult",
+  "viewModel": "AiEstimatePdfViewModel",
+  "renderer": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
+  "viewer": "/pdf-viewer",
+  "structured_payload_required": true,
+  "fallback_limited_to_legacy_consumer_draft": true
+}

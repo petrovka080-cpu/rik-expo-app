@@ -33,7 +33,7 @@ export function fitAiEstimatePdfCellText(value: string, width: number): string {
   const clean = String(value ?? "").replace(/\s+/g, " ").trim();
   const max = Math.max(4, Math.floor((width - 8) / APPROX_CHAR_WIDTH));
   if (clean.length <= max) return clean;
-  return `${clean.slice(0, Math.max(1, max - 1)).trimEnd()}…`;
+  return `${clean.slice(0, Math.max(1, max - 3)).trimEnd()}...`;
 }
 
 export function aiEstimatePdfTableWidth(): number {

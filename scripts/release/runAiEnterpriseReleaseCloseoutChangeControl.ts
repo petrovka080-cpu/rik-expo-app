@@ -42,6 +42,8 @@ const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
   "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE =
   "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_PDF_TABULAR_REGRESSION_WAVE =
+  "S_AI_ESTIMATE_PDF_TABULAR_REALITY_REGRESSION_REPAIR_NO_TEXT_DUMP_POINT_OF_NO_RETURN";
 const BUILT_IN_AI_1000_POST_BOQ_CATALOG_WAVE =
   "S_BUILT_IN_AI_1000_REAL_OUTPUT_AFTER_BOQ_CATALOG_CORE_POINT_OF_NO_RETURN";
 const BUILT_IN_AI_10000_POST_BOQ_CATALOG_WAVE =
@@ -922,6 +924,32 @@ function isAiEstimatePdfSafeIntegrationPath(file: string): boolean {
   );
 }
 
+function isAiEstimatePdfTabularRegressionPath(file: string): boolean {
+  return (
+    file === "artifacts/.gitattributes" ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_") ||
+    file.startsWith("artifacts/pdf/ai-estimate-pdf-tabular-regression/") ||
+    file === "scripts/audit/runAiEstimatePdfTabularRegressionAudit.ts" ||
+    file === "scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts" ||
+    file === "scripts/e2e/runAndroidAiEstimatePdfTabularRegressionSmoke.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "src/lib/ai/estimatePdf/estimatePdfActionService.ts" ||
+    file === "src/lib/ai/estimatePdf/estimatePdfSourceResolver.ts" ||
+    file === "src/lib/ai/globalEstimate/formatEstimateUnitLabel.ts" ||
+    file === "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts" ||
+    file === "src/lib/aiEstimatePdf" ||
+    file.startsWith("src/lib/aiEstimatePdf/") ||
+    file === "tests/aiEstimatePdf" ||
+    file.startsWith("tests/aiEstimatePdf/") ||
+    file === "tests/pdf/estimatePdfContainsTotalsTaxSources.contract.test.ts" ||
+    file === "tests/pdf/estimatePdfUsesStructuredGlobalEstimateResult.contract.test.ts" ||
+    file === "tests/e2e/aiEstimatePdfTabularRegression.web.spec.ts" ||
+    file.startsWith("tests/architecture/pdfTabularRegression") ||
+    file === "tests/release/releaseGuard.shared.test.ts"
+  );
+}
+
 function isBuiltInAi1000PostBoqCatalogPath(file: string): boolean {
   return (
     file === "src/lib/ai/builtInAi1000" ||
@@ -1109,6 +1137,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "built-in AI 50000 Phase 1 governed manifest, shard live gate, no-hacks audit, web and Android proof artifacts",
+    };
+  }
+  if (isAiEstimatePdfTabularRegressionPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_ESTIMATE_PDF_TABULAR_REGRESSION_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate PDF tabular regression repair, structured renderer guard, web Android proof, and evidence artifacts",
     };
   }
   if (isAiEstimatePdfSafeIntegrationPath(normalized)) {

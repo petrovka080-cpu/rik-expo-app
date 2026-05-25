@@ -1,0 +1,8 @@
+{
+  "renderer_file": "src/lib/aiEstimatePdf/renderAiEstimatePdfDocument.ts",
+  "table_file": "src/lib/aiEstimatePdf/renderAiEstimatePdfTable.ts",
+  "bordered_table_detected": true,
+  "required_columns_present": true,
+  "raw_internal_fields_leak_from_view_model": false,
+  "adapter_bypassed": false
+}

@@ -1,0 +1,6 @@
+{
+  "legacy_pdf_regression_passed": true,
+  "binary_valid": true,
+  "cyrillic_readable": true,
+  "failures": []
+}

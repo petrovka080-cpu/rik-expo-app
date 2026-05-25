@@ -152,7 +152,7 @@ function addSectionTitle(page: Page, y: number, title: string): number {
 
 function addParagraphList(page: Page, y: number, lines: string[], maxLines: number): number {
   for (const line of lines.slice(0, maxLines)) {
-    showText(page, LEFT + 8, y, `• ${line}`, SMALL_FONT);
+    showText(page, LEFT + 8, y, `- ${line}`, SMALL_FONT);
     y -= 11;
   }
   return y;
@@ -207,13 +207,15 @@ function buildPages(viewModel: AiEstimatePdfViewModel): Page[] {
 
   y = addSectionTitle(page, y, "Допущения");
   y = addParagraphList(page, y, viewModel.assumptions, 4) - 8;
+  y = addSectionTitle(page, y, "Разделы");
+  y = addParagraphList(page, y, ["Материалы", "Работы", "Оборудование / доставка / предупреждения"], 3) - 8;
   y = addSectionTitle(page, y, "Таблица сметы");
   y = drawTableHeader(page, y);
   for (const row of viewModel.rows) {
     if (y - ROW_HEIGHT < BOTTOM + 112) {
       page = startPage(pages);
       y = TOP;
-      showText(page, LEFT, y, `${viewModel.title} — продолжение`, SECTION_FONT);
+      showText(page, LEFT, y, `${viewModel.title} - продолжение`, SECTION_FONT);
       y -= 22;
       y = drawTableHeader(page, y);
     }
@@ -238,20 +240,20 @@ function buildPages(viewModel: AiEstimatePdfViewModel): Page[] {
   });
   y -= viewModel.totals.length * 18 + 12;
 
-  y = addSectionTitle(page, y, "Налог / источники / уверенность");
+  y = addSectionTitle(page, y, "Налог / источники / точность");
   showText(page, LEFT + 8, y, "Налоговый статус", BODY_FONT);
   y -= 12;
   showText(page, LEFT + 8, y, `${viewModel.tax.label}: ${viewModel.tax.rate}; ${viewModel.tax.included}; сумма ${viewModel.tax.amount}`, BODY_FONT);
   y -= 12;
   showText(page, LEFT + 8, y, viewModel.tax.warning, BODY_FONT);
   y -= 14;
-  showText(page, LEFT + 8, y, `Confidence: ${viewModel.confidence}`, BODY_FONT);
+  showText(page, LEFT + 8, y, `Точность расчёта: ${viewModel.confidence}`, BODY_FONT);
   y -= 12;
-  showText(page, LEFT + 8, y, "Источники и точность", BODY_FONT);
+  showText(page, LEFT + 8, y, "Источники", BODY_FONT);
   y -= 12;
   y = addParagraphList(page, y, viewModel.sources, 4) - 4;
 
-  y = addSectionTitle(page, y, "Вопросы для уточнения");
+  y = addSectionTitle(page, y, "Что уточнить");
   y = addParagraphList(page, y, viewModel.clarifyingQuestions, 4) - 8;
 
   y = addSectionTitle(page, y, "Подписание");
@@ -261,8 +263,8 @@ function buildPages(viewModel: AiEstimatePdfViewModel): Page[] {
   }
 
   pages.forEach((pdfPage, index) => {
-    showText(pdfPage, LEFT, 24, `AI Estimate PDF | ${viewModel.documentNumber} | page ${index + 1}/${pages.length}`, SMALL_FONT);
-    showText(pdfPage, LEFT + 390, 24, "LEGACY PDF path protected", SMALL_FONT);
+    showText(pdfPage, LEFT, 24, `Смета | ${viewModel.documentNumber} | стр. ${index + 1}/${pages.length}`, SMALL_FONT);
+    showText(pdfPage, LEFT + 332, 24, `Служебный ID: ${viewModel.runtimeTraceId}`, SMALL_FONT);
   });
   finishPages(pages);
   return pages;
@@ -289,8 +291,8 @@ function renderPdfBody(pages: Page[]): { body: string; bytes: Uint8Array; text: 
   });
 
   const pageRefs: number[] = [];
-  for (const page of pages) {
-    const content = page.ops.join("\n");
+  for (const pageItem of pages) {
+    const content = pageItem.ops.join("\n");
     const contentId = objects.length + 1;
     objects.push({ id: contentId, body: `<< /Length ${content.length} >>\nstream\n${content}\nendstream` });
     const pageId = objects.length + 1;
@@ -318,7 +320,7 @@ function renderPdfBody(pages: Page[]): { body: string; bytes: Uint8Array; text: 
   return {
     body,
     bytes: asciiToBytes(body),
-    text: pages.flatMap((page) => page.texts).join("\n"),
+    text: pages.flatMap((pageItem) => pageItem.texts).join("\n"),
   };
 }
 

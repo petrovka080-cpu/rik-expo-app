@@ -1,0 +1,32 @@
+{
+  "android_emulator_passed": true,
+  "pdf_viewer_android_opened": true,
+  "request_roof_waterproofing_passed": true,
+  "table_visible_or_text_extraction_confirms_table": true,
+  "raw_internal_fields_absent": true,
+  "screenshot_path": "artifacts/screenshots/ai-estimate-pdf-tabular-regression/android/android_ai_estimate_pdf_tabular_regression.png",
+  "devices": [
+    "emulator-5554"
+  ],
+  "ui_text_sample": [
+    "text=\"rik-expo-app\"",
+    "text=\"Development Build\"",
+    "text=\"DEVELOPMENT SERVERS\"",
+    "text=\"INFO\"",
+    "text=\"http://10.0.2.2:8081\"",
+    "text=\"http://10.0.2.2:8085\"",
+    "text=\"http://10.0.2.2:8083\"",
+    "text=\"http://10.0.2.2:8082\"",
+    "text=\"http://10.0.2.2:8084\"",
+    "text=\"New development server\"",
+    "text=\"RECENTLY OPENED\"",
+    "text=\"RESET\"",
+    "text=\"rik-expo-app\"",
+    "text=\"http://127.0.0.1:8098\"",
+    "text=\"Home\"",
+    "text=\"Updates\"",
+    "text=\"Settings\""
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}
