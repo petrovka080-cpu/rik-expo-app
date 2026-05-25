@@ -669,6 +669,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate", "stripFoundationDimensions.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "validateEstimateBoqDepth.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sGlobalEstimateBoqDepthFormulaQualityFiles = [
+      path.join(SRC, "lib", "ai", "globalEstimate", "estimateFormulaQualityValidator.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "estimateUnitSemanticValidator.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sBuiltInAiRealToolArchitectureFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "builtInAi"),
       /\.ts$/,
@@ -1742,9 +1746,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(
       sGlobalEstimateProfessionalBoqFiles -
         sRequestEstimateBoqCatalogGlobalEstimateFiles -
+        sGlobalEstimateBoqDepthFormulaQualityFiles -
         sCatalogItemsGlobalEstimateBindingFiles,
     ).toBeLessThanOrEqual(45);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
+    expect(sGlobalEstimateBoqDepthFormulaQualityFiles).toBeLessThanOrEqual(2);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
