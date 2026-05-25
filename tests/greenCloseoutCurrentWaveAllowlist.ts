@@ -19,6 +19,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("artifacts/S_BUILT_IN_AI_LIVE_ACCEPTANCE_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_150_WORK_TYPES_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_POST_BOQ_CATALOG_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_10000_WORK_TYPES_") ||
     normalized.startsWith("artifacts/S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_") ||
     normalized.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
@@ -135,6 +136,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
     normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
     normalized.startsWith("scripts/e2e/runBuiltInAi") ||
+    normalized.startsWith("scripts/e2e/runAndroidBuiltInAi1000PostBoqCatalogSmoke") ||
     normalized.startsWith("scripts/e2e/allScreensEnterpriseRuntimeAcceptance.shared") ||
     normalized.startsWith("scripts/e2e/runAllScreens") ||
     normalized.startsWith("scripts/e2e/enterpriseReleaseCandidate.shared") ||
@@ -218,6 +220,8 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/architecture/builtInAi") ||
     normalized === "tests/builtInAi1000" ||
     normalized.startsWith("tests/builtInAi1000/") ||
+    normalized === "tests/builtInAi1000PostBoq" ||
+    normalized.startsWith("tests/builtInAi1000PostBoq/") ||
     normalized === "tests/builtInAi10000" ||
     normalized.startsWith("tests/builtInAi10000/") ||
     normalized === "tests/architecture/noSilentHistoricalMatrixMutation.contract.test.ts" ||
@@ -263,6 +267,7 @@ export const isApprovedGreenCloseoutCurrentWavePatch = (file: string): boolean =
     normalized.startsWith("tests/core/") ||
     normalized.startsWith("tests/documents/") ||
     normalized.startsWith("tests/e2e/ai") ||
+    normalized === "tests/e2e/builtInAi1000PostBoqCatalog.web.spec.ts" ||
     normalized.startsWith("tests/e2e/coreProductGoldenPaths") ||
     normalized.startsWith("tests/globalEstimate/") ||
     normalized === "tests/routeParity" ||

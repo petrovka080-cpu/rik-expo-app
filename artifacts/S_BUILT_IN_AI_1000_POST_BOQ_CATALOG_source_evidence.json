@@ -1,0 +1,6000 @@
+{
+  "estimateCases": [
+    {
+      "id": "0001",
+      "anchor": "laminate_laying",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0002",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0003",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0004",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0005",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0006",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0007",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0008",
+      "anchor": "carpet_laying",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0009",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0010",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0011",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0012",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0013",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0014",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0015",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0016",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0017",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0018",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0019",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0020",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0021",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0022",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0023",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0024",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0025",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0026",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0027",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0028",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0029",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0030",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0031",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0032",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0033",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0034",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0035",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0036",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0037",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0038",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0039",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0040",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0041",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0042",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0043",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0044",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0045",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0046",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0047",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0048",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0049",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0050",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0051",
+      "anchor": "ceramic_tile_floor_laying",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0052",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0053",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0054",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0055",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0056",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0057",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0058",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0059",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0060",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0061",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0062",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0063",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0064",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0065",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0066",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0067",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0068",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0069",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0070",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0071",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0072",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0073",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0074",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0075",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0076",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0077",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0078",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0079",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0080",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0081",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0082",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0083",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0084",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0085",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0086",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0087",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0088",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0089",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0090",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0091",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0092",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0093",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0094",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0095",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0096",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0097",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0098",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0099",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0100",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0101",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0102",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0103",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0104",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0105",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0106",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0107",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0108",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0109",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0110",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0111",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0112",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0113",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0114",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0115",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0116",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0117",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0118",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0119",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0120",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0121",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0122",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0123",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0124",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0125",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0126",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0127",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0128",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0129",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0130",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0131",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0132",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0133",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0134",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0135",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0136",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0137",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0138",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0139",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0140",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0141",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0142",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0143",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0144",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0145",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0146",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0147",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0148",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0149",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0150",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0151",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0152",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0153",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0154",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0155",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0156",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0157",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0158",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0159",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0160",
+      "anchor": "drywall_wall_cladding",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0161",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0162",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0163",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0164",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0165",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0166",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0167",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0168",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0169",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0170",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0171",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0172",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0173",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0174",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0175",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0176",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0177",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0178",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0179",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0180",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0181",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0182",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0183",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0184",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0185",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0186",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0187",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0188",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0189",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0190",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0191",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0192",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0193",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0194",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0195",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0196",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0197",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0198",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0199",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0200",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0201",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0202",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0203",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0204",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0205",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0206",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0207",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0208",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0209",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0210",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0211",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0212",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0213",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0214",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0215",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0216",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0217",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0218",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0219",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0220",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0221",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0222",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0223",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0224",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0225",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0226",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0227",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0228",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0229",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0230",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0231",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0232",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0233",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0234",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0235",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0236",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0237",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0238",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0239",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0240",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0241",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0242",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0243",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0244",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0245",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0246",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0247",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0248",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0249",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0250",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0251",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0252",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0253",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0254",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0255",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0256",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0257",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0258",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0259",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0260",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0261",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0262",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0263",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0264",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0265",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0266",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0267",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0268",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0269",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0270",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0271",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0272",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0273",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0274",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0275",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0276",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0277",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0278",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0279",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0280",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0281",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0282",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0283",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0284",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0285",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0286",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0287",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0288",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0289",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0290",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0291",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0292",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0293",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0294",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0295",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0296",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0297",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0298",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0299",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0300",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0301",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0302",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0303",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0304",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0305",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0306",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0307",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0308",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0309",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0310",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0311",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0312",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0313",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0314",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0315",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0316",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0317",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0318",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0319",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0320",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0321",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0322",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0323",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0324",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0325",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0326",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0327",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0328",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0329",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0330",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0331",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0332",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0333",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0334",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0335",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0336",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0337",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0338",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0339",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0340",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0341",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0342",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0343",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0344",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0345",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0346",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0347",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0348",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0349",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0350",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0351",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0352",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0353",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0354",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0355",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0356",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0357",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0358",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0359",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0360",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0361",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0362",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0363",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0364",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0365",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0366",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0367",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0368",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0369",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0370",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0371",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0372",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0373",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0374",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0375",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0376",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0377",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0378",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0379",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0380",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0381",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0382",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0383",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0384",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0385",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0386",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0387",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0388",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0389",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0390",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0391",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0392",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0393",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0394",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0395",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0396",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0397",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0398",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0399",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0400",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0401",
+      "anchor": "gable_roof_installation",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0402",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0403",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0404",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0405",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0406",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0407",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0408",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0409",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0410",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0411",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0412",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0413",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0414",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0415",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0416",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0417",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0418",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0419",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0420",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0421",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0422",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0423",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0424",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0425",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0426",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0427",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0428",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0429",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0430",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0431",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0432",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0433",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0434",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0435",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0436",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0437",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0438",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0439",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0440",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0441",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0442",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0443",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0444",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0445",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0446",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0447",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0448",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0449",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0450",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0451",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0452",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0453",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0454",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0455",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0456",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0457",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0458",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0459",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0460",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0461",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0462",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0463",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0464",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0465",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0466",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0467",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0468",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0469",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0470",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0471",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0472",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0473",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0474",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0475",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0476",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0477",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0478",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0479",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0480",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0481",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0482",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0483",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0484",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0485",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0486",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0487",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0488",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0489",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0490",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0491",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0492",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0493",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0494",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0495",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0496",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0497",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0498",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0499",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0500",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0501",
+      "anchor": "strip_foundation",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0502",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0503",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0504",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0505",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0506",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0507",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0508",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0509",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0510",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0511",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0512",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0513",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0514",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0515",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0516",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0517",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0518",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0519",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0520",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0521",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0522",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0523",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0524",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0525",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0526",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0527",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0528",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0529",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0530",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0531",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0532",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0533",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0534",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0535",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0536",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0537",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0538",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0539",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0540",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0541",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0542",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0543",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0544",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0545",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0546",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0547",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0548",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0549",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0550",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0551",
+      "anchor": "brick_masonry",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0552",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0553",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0554",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0555",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0556",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0557",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0558",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0559",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0560",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0561",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0562",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0563",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0564",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0565",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0566",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0567",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0568",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0569",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0570",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0571",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0572",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0573",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0574",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0575",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0576",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0577",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0578",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0579",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0580",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0581",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0582",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0583",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0584",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0585",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0586",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0587",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0588",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0589",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0590",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0591",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0592",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0593",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0594",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0595",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0596",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0597",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0598",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0599",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0600",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0601",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0602",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0603",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0604",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0605",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0606",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0607",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0608",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0609",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0610",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0611",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0612",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0613",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0614",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0615",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0616",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0617",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0618",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0619",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0620",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0621",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0622",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0623",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0624",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0625",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0626",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0627",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0628",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0629",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0630",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0631",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0632",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0633",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0634",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0635",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0636",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0637",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0638",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0639",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0640",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0641",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0642",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0643",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0644",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0645",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0646",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0647",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0648",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0649",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0650",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0651",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0652",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0653",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0654",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0655",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0656",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0657",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0658",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0659",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0660",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0661",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0662",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0663",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0664",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0665",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0666",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0667",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0668",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0669",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0670",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0671",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0672",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0673",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0674",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0675",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0676",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0677",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0678",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0679",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0680",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0681",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0682",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0683",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0684",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0685",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0686",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0687",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0688",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0689",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0690",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0691",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0692",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0693",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0694",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0695",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0696",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0697",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0698",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0699",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0700",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0701",
+      "anchor": "asphalt_paving",
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0702",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0703",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0704",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0705",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0706",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0707",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0708",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0709",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0710",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0711",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0712",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0713",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0714",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0715",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0716",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0717",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0718",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0719",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0720",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0721",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0722",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0723",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0724",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0725",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0726",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0727",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0728",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0729",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0730",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0731",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0732",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0733",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0734",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0735",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0736",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0737",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0738",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0739",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0740",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0741",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0742",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0743",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0744",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0745",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0746",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0747",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0748",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0749",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0750",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0751",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0752",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0753",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0754",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0755",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0756",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0757",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0758",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0759",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0760",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0761",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0762",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0763",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0764",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0765",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0766",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0767",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0768",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0769",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0770",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0771",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0772",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0773",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0774",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0775",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0776",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0777",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0778",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0779",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0780",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0781",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0782",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0783",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0784",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0785",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0786",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0787",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0788",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0789",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0790",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0791",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0792",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0793",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0794",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0795",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0796",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0797",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0798",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0799",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0800",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0801",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0802",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0803",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0804",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0805",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0806",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0807",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0808",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0809",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0810",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0811",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0812",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0813",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0814",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0815",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0816",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0817",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0818",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0819",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0820",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0821",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0822",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0823",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0824",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0825",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0826",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0827",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0828",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0829",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0830",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0831",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0832",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0833",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0834",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0835",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0836",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0837",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0838",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0839",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0840",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0841",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0842",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0843",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0844",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0845",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0846",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0847",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0848",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0849",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0850",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0851",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0852",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0853",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0854",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0855",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0856",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0857",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0858",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0859",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0860",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0861",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0862",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0863",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0864",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0865",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0866",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0867",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0868",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0869",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0870",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0871",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0872",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0873",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0874",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0875",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0876",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0877",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0878",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0879",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0880",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0881",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0882",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0883",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0884",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0885",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0886",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0887",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0888",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0889",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0890",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0891",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0892",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0893",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0894",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0895",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0896",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0897",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0898",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0899",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0900",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0901",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0902",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0903",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0904",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0905",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0906",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0907",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0908",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0909",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0910",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0911",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0912",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0913",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0914",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0915",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0916",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0917",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0918",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0919",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0920",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0921",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0922",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0923",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0924",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0925",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0926",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0927",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0928",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0929",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0930",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0931",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0932",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0933",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0934",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0935",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0936",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0937",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0938",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0939",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0940",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0941",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0942",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0943",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0944",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0945",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0946",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0947",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0948",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0949",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0950",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0951",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0952",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0953",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0954",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0955",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0956",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0957",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0958",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0959",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0960",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0961",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0962",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0963",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0964",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0965",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0966",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0967",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0968",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0969",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0970",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    },
+    {
+      "id": "0971",
+      "anchor": null,
+      "source_evidence_present_for_priced_rows": true,
+      "priced_rows_without_source_evidence": 0
+    }
+  ],
+  "productCases": [
+    {
+      "id": "0972",
+      "anchor": "rebar_product_search",
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0973",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0974",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0975",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0976",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0977",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0978",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0979",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0980",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0981",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0982",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0983",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0984",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0985",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0986",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0987",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0988",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0989",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0990",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0991",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0992",
+      "anchor": "asphalt_supplier_search",
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0993",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0994",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0995",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0996",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0997",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "0998",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    },
+    {
+      "id": "1000",
+      "anchor": null,
+      "product_source_status_explicit": true,
+      "product_candidates": 3
+    }
+  ]
+}

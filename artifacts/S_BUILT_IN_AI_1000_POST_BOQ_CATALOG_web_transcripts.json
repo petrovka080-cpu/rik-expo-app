@@ -1,0 +1,714 @@
+{
+  "web_playwright_passed": true,
+  "cases_total": 100,
+  "route_counts": {
+    "chat": 50,
+    "request": 20,
+    "foreman": 15,
+    "product_search": 10,
+    "pdf_viewer": 5
+  },
+  "transcripts": [
+    {
+      "id": "0001",
+      "route": "/chat",
+      "anchor": "laminate_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0002",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0003",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0004",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0005",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0006",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0007",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0009",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0010",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0011",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0012",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0013",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0014",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0015",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0016",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0017",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0018",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0019",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0020",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0021",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0022",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0023",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0024",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0025",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0026",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0027",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0028",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0029",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0030",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0031",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0032",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0033",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0034",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0035",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0036",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0037",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0038",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0039",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0040",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0041",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0042",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0043",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0044",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0045",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0046",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0047",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0048",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0049",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0050",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0052",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0501",
+      "route": "/request",
+      "anchor": "strip_foundation",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0008",
+      "route": "/request",
+      "anchor": "carpet_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0051",
+      "route": "/request",
+      "anchor": "ceramic_tile_floor_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0001",
+      "route": "/chat",
+      "anchor": "laminate_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0002",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0003",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0004",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0005",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0006",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0007",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0009",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0010",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0011",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0012",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0013",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0014",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0015",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0016",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0017",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0018",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0051",
+      "route": "/request",
+      "anchor": "ceramic_tile_floor_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0052",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0053",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0054",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0055",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0056",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0057",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0058",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0059",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0060",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0061",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0062",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0063",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0064",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0065",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0972",
+      "route": "/product/search",
+      "anchor": "rebar_product_search",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0973",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0974",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0975",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0976",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0977",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0978",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0979",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0980",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0981",
+      "route": "/product/search",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0001",
+      "route": "/chat",
+      "anchor": "laminate_laying",
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0002",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0003",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0004",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    },
+    {
+      "id": "0005",
+      "route": "/chat",
+      "anchor": null,
+      "passed": true,
+      "blockers": []
+    }
+  ],
+  "fake_green_claimed": false
+}

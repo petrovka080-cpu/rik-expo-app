@@ -774,6 +774,10 @@ describe("releaseGuard.shared", () => {
         command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts",
       });
       expect(REQUIRED_RELEASE_GATES).toContainEqual({
+        name: "built-in-ai-1000-post-boq-catalog-proof",
+        command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts",
+      });
+      expect(REQUIRED_RELEASE_GATES).toContainEqual({
         name: "built-in-ai-10000-work-types-proof",
         command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts",
       });

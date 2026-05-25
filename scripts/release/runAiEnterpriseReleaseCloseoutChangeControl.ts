@@ -42,6 +42,8 @@ const ESTIMATE_PDF_ARCHITECTURE_AUDIT_WAVE =
   "S_ESTIMATE_PDF_ARCHITECTURE_AUDIT_AND_DOCUMENT_ENGINE_DECISION_GATE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_PDF_SAFE_INTEGRATION_WAVE =
   "S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_WITH_LEGACY_PDF_PROTECTION_DECISION_GATE_POINT_OF_NO_RETURN";
+const BUILT_IN_AI_1000_POST_BOQ_CATALOG_WAVE =
+  "S_BUILT_IN_AI_1000_REAL_OUTPUT_AFTER_BOQ_CATALOG_CORE_POINT_OF_NO_RETURN";
 const BUILT_IN_AI_50000_PHASE1_WAVE =
   "S_BUILT_IN_AI_50000_PHASE1_GOVERNED_EXPANSION_SHARD_LIVE_GATE_NO_HACKS_POINT_OF_NO_RETURN";
 const BUILT_IN_AI_50000_PHASE2_WAVE =
@@ -918,6 +920,24 @@ function isAiEstimatePdfSafeIntegrationPath(file: string): boolean {
   );
 }
 
+function isBuiltInAi1000PostBoqCatalogPath(file: string): boolean {
+  return (
+    file === "src/lib/ai/builtInAi1000" ||
+    file.startsWith("src/lib/ai/builtInAi1000/") ||
+    file === "scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts" ||
+    file === "scripts/e2e/runAndroidBuiltInAi1000PostBoqCatalogSmoke.ts" ||
+    file === "tests/builtInAi1000PostBoq" ||
+    file.startsWith("tests/builtInAi1000PostBoq/") ||
+    file.startsWith("tests/architecture/ai1000PostBoq") ||
+    file === "tests/e2e/builtInAi1000PostBoqCatalog.web.spec.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "tests/release/releaseGuard.shared.test.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/greenCloseoutCurrentWaveAllowlist.ts" ||
+    file.startsWith("artifacts/S_BUILT_IN_AI_1000_POST_BOQ_CATALOG_")
+  );
+}
+
 function isBuiltInAi50000Phase1Path(file: string): boolean {
   return (
     file.startsWith("artifacts/S_BUILT_IN_AI_50000_PHASE1_") ||
@@ -1011,6 +1031,16 @@ function isBuiltInAi50000Phase4Path(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isBuiltInAi1000PostBoqCatalogPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: BUILT_IN_AI_1000_POST_BOQ_CATALOG_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "built-in AI 1000 post-BOQ catalog source-governed proof with web and Android evidence artifacts",
+    };
+  }
   if (isBuiltInAi50000Phase4Path(normalized)) {
     return {
       file: normalized,

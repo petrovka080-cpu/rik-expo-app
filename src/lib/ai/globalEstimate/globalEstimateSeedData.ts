@@ -921,6 +921,32 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
       rateKey: laborRate,
     }));
   }
+  if (definition.category === "foundation") {
+    const materialIndex = paddedMaterialRows.length;
+    paddedMaterialRows.push(row({
+      sectionType: "materials",
+      sectionNumber: "1",
+      rowNumber: `1.${materialIndex + 1}`,
+      code: `${definition.workKey}_foundation_detail_materials`,
+      names: { ru: `Р”РµС‚Р°Р»Рё РїРѕРґРіРѕС‚РѕРІРєРё С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation preparation details: ${workEn}` },
+      quantityFormula: "area * 0.12",
+      unitMetric,
+      unitImperial,
+      rateKey: auxiliaryRate,
+    }));
+    const laborIndex = paddedLaborRows.length;
+    paddedLaborRows.push(row({
+      sectionType: "labor",
+      sectionNumber: "2",
+      rowNumber: `2.${laborIndex + 1}`,
+      code: `${definition.workKey}_foundation_detail_labor`,
+      names: { ru: `Р”РµС‚Р°Р»РёР·Р°С†РёСЏ Рё РєРѕРЅС‚СЂРѕР»СЊ С„СѓРЅРґР°РјРµРЅС‚Р°: ${workRu}`, en: `Foundation detailing and control: ${workEn}` },
+      quantityFormula: "area",
+      unitMetric,
+      unitImperial,
+      rateKey: laborRate,
+    }));
+  }
   const genericEquipmentRows = [
     row({
       sectionType: "equipment",

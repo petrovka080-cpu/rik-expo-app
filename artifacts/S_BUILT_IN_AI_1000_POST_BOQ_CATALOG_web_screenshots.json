@@ -1,0 +1,23 @@
+{
+  "web_playwright_passed": true,
+  "cases_total": 100,
+  "route_counts": {
+    "chat": 50,
+    "request": 20,
+    "foreman": 15,
+    "product_search": 10,
+    "pdf_viewer": 5
+  },
+  "foundation_acceptance_passed": true,
+  "manual_catalog_material_add_passed": true,
+  "pdf_from_request_draft_passed": true,
+  "product_search_no_fake_availability": true,
+  "screenshots": {
+    "foundation_request": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/foundation_request.png",
+    "chat_laminate": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/chat_laminate.png",
+    "foreman_asphalt": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/foreman_asphalt.png",
+    "product_rebar": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/product_rebar.png",
+    "pdf_viewer": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/pdf_viewer.png"
+  },
+  "fake_green_claimed": false
+}

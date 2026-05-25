@@ -1,0 +1,16 @@
+{
+  "android_emulator_passed": true,
+  "cases_total": 30,
+  "cases_passed": 30,
+  "foundation_request_passed": true,
+  "request_carpet_passed": true,
+  "request_tile_passed": true,
+  "chat_brick_passed": true,
+  "chat_roof_passed": true,
+  "foreman_asphalt_passed": true,
+  "product_rebar_passed": true,
+  "pdf_viewer_from_request_draft_passed": true,
+  "screenshot_path": "artifacts/screenshots/built-in-ai-1000-post-boq-catalog/android_ai1000_post_boq_catalog.png",
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}

@@ -1,0 +1,82 @@
+{
+  "pdf_payload_includes_final_items": true,
+  "pdfRegression": {
+    "legacy_pdf_regression_passed": true,
+    "ai_estimate_pdf_regression_passed": true,
+    "structured_payload_used": true,
+    "markdown_parsed_as_pdf_truth": false,
+    "pdf_opened": true,
+    "materials_rows": 7,
+    "labor_rows": 10,
+    "source_evidence_labels": [
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)",
+      "Configured backend regional reference rate (fresh)"
+    ],
+    "blocker": null
+  },
+  "requestPayloads": [
+    {
+      "id": "0008",
+      "anchor": "carpet_laying",
+      "requestDraftId": "consumer_draft_mpl8q51r_0fxu8k",
+      "itemCounts": {
+        "draft_save": 9,
+        "pdf_generation": 9,
+        "marketplace_send": 9
+      },
+      "parity_passed": true,
+      "pdf_opened": true,
+      "marketplace_status": "sent",
+      "manual_catalog_item_id": null,
+      "source_governance_passed": true,
+      "edited_quantity_preserved": true
+    },
+    {
+      "id": "0051",
+      "anchor": "ceramic_tile_floor_laying",
+      "requestDraftId": "consumer_draft_mpl8q527_dggkhy",
+      "itemCounts": {
+        "draft_save": 9,
+        "pdf_generation": 9,
+        "marketplace_send": 9
+      },
+      "parity_passed": true,
+      "pdf_opened": true,
+      "marketplace_status": "sent",
+      "manual_catalog_item_id": null,
+      "source_governance_passed": true,
+      "edited_quantity_preserved": true
+    },
+    {
+      "id": "0501",
+      "anchor": "strip_foundation",
+      "requestDraftId": "consumer_draft_mpl8q52g_7l986l",
+      "itemCounts": {
+        "draft_save": 21,
+        "pdf_generation": 21,
+        "marketplace_send": 21
+      },
+      "parity_passed": true,
+      "pdf_opened": true,
+      "marketplace_status": "sent",
+      "manual_catalog_item_id": "post_boq_manual_catalog_rebar_d14",
+      "source_governance_passed": true,
+      "edited_quantity_preserved": true
+    }
+  ]
+}
