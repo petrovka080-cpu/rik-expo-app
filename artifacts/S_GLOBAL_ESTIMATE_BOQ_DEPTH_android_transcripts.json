@@ -1,0 +1,278 @@
+{
+  "wave": "S_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_SHORT_ESTIMATES_POINT_OF_NO_RETURN",
+  "android_emulator_passed": true,
+  "cases": [
+    {
+      "id": "request_foundation",
+      "route": "/request",
+      "passed": true,
+      "rowCount": 20,
+      "concreteVolumeM3": 32.64
+    },
+    {
+      "id": "chat_brick",
+      "route": "/chat",
+      "passed": true,
+      "trace": {
+        "traceId": "built_in_ai_1e976075",
+        "input": "дай смету на кладку кирпича 74 кв метров",
+        "screenContext": "foreman",
+        "detectedIntent": "estimate",
+        "selectedRoute": "estimate",
+        "selectedTool": "calculate_global_estimate",
+        "workKey": "brick_masonry",
+        "category": "masonry",
+        "volume": 74,
+        "unit": "sq_m",
+        "backendCalled": true,
+        "outputContract": {
+          "hasTable": true,
+          "hasMaterials": true,
+          "hasLabor": true,
+          "hasSources": true,
+          "hasPdfAction": true
+        }
+      }
+    },
+    {
+      "id": "foreman_asphalt",
+      "route": "/ai?context=foreman",
+      "passed": true,
+      "trace": {
+        "traceId": "built_in_ai_d57be3f4",
+        "input": "сделай смету на асфальтирование на 1000 кв м",
+        "screenContext": "foreman",
+        "detectedIntent": "estimate",
+        "selectedRoute": "estimate",
+        "selectedTool": "calculate_global_estimate",
+        "workKey": "asphalt_paving",
+        "category": "roadworks",
+        "volume": 1000,
+        "unit": "sq_m",
+        "backendCalled": true,
+        "outputContract": {
+          "hasTable": true,
+          "hasMaterials": true,
+          "hasLabor": true,
+          "hasSources": true,
+          "hasPdfAction": true
+        }
+      }
+    },
+    {
+      "id": "pdf_action",
+      "route": "/pdf-viewer",
+      "passed": true,
+      "signedUrlPrefix": "data:application/pdf;base64,JVBE"
+    },
+    {
+      "id": "gable_roof_installation",
+      "workKey": "gable_roof_installation",
+      "resolvedWorkKey": "gable_roof_installation",
+      "rowCount": 11,
+      "depth": {
+        "passed": true,
+        "minimumRows": 10,
+        "actualRows": 11,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasEquipmentOrDeliveryOrWarning": true,
+        "hasAssumptions": true,
+        "hasCostFactors": true,
+        "hasClarifyingQuestions": true,
+        "hasSourceEvidence": true,
+        "hasTaxStatusOrWarning": true,
+        "blockers": []
+      },
+      "formula": {
+        "passed": true,
+        "blockers": [],
+        "warnings": [],
+        "trace": {
+          "estimateId": "global_estimate_1776449232",
+          "workKey": "gable_roof_installation",
+          "category": "roofing",
+          "rowCount": 11,
+          "sectionTypes": [
+            "materials",
+            "labor",
+            "delivery"
+          ],
+          "allRowsLinearM": false,
+          "depth": {
+            "passed": true,
+            "minimumRows": 10,
+            "actualRows": 11,
+            "hasMaterials": true,
+            "hasLabor": true,
+            "hasEquipmentOrDeliveryOrWarning": true,
+            "hasAssumptions": true,
+            "hasCostFactors": true,
+            "hasClarifyingQuestions": true,
+            "hasSourceEvidence": true,
+            "hasTaxStatusOrWarning": true,
+            "blockers": []
+          }
+        },
+        "unitSemantics": {
+          "passed": true,
+          "allRowsLinearM": false,
+          "blockers": [],
+          "warnings": [],
+          "rowUnitMismatches": []
+        },
+        "categoryFormulaChecks": {
+          "passed": true,
+          "blockers": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "ceramic_tile_floor_laying",
+      "workKey": "ceramic_tile_floor_laying",
+      "resolvedWorkKey": "ceramic_tile_floor_laying",
+      "rowCount": 9,
+      "depth": {
+        "passed": true,
+        "minimumRows": 8,
+        "actualRows": 9,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasEquipmentOrDeliveryOrWarning": true,
+        "hasAssumptions": true,
+        "hasCostFactors": true,
+        "hasClarifyingQuestions": true,
+        "hasSourceEvidence": true,
+        "hasTaxStatusOrWarning": true,
+        "blockers": []
+      },
+      "formula": {
+        "passed": true,
+        "blockers": [],
+        "warnings": [],
+        "trace": {
+          "estimateId": "global_estimate_1727990049",
+          "workKey": "ceramic_tile_floor_laying",
+          "category": "tile",
+          "rowCount": 9,
+          "sectionTypes": [
+            "materials",
+            "labor",
+            "delivery"
+          ],
+          "allRowsLinearM": false,
+          "depth": {
+            "passed": true,
+            "minimumRows": 8,
+            "actualRows": 9,
+            "hasMaterials": true,
+            "hasLabor": true,
+            "hasEquipmentOrDeliveryOrWarning": true,
+            "hasAssumptions": true,
+            "hasCostFactors": true,
+            "hasClarifyingQuestions": true,
+            "hasSourceEvidence": true,
+            "hasTaxStatusOrWarning": true,
+            "blockers": []
+          }
+        },
+        "unitSemantics": {
+          "passed": true,
+          "allRowsLinearM": false,
+          "blockers": [],
+          "warnings": [],
+          "rowUnitMismatches": []
+        },
+        "categoryFormulaChecks": {
+          "passed": true,
+          "blockers": []
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "drywall_partition",
+      "workKey": "drywall_partition",
+      "resolvedWorkKey": "drywall_partition",
+      "rowCount": 12,
+      "depth": {
+        "passed": true,
+        "minimumRows": 6,
+        "actualRows": 12,
+        "hasMaterials": true,
+        "hasLabor": true,
+        "hasEquipmentOrDeliveryOrWarning": true,
+        "hasAssumptions": true,
+        "hasCostFactors": true,
+        "hasClarifyingQuestions": true,
+        "hasSourceEvidence": true,
+        "hasTaxStatusOrWarning": true,
+        "blockers": []
+      },
+      "formula": {
+        "passed": true,
+        "blockers": [],
+        "warnings": [],
+        "trace": {
+          "estimateId": "global_estimate_1768709944",
+          "workKey": "drywall_partition",
+          "category": "drywall",
+          "rowCount": 12,
+          "sectionTypes": [
+            "materials",
+            "labor",
+            "delivery"
+          ],
+          "allRowsLinearM": false,
+          "depth": {
+            "passed": true,
+            "minimumRows": 6,
+            "actualRows": 12,
+            "hasMaterials": true,
+            "hasLabor": true,
+            "hasEquipmentOrDeliveryOrWarning": true,
+            "hasAssumptions": true,
+            "hasCostFactors": true,
+            "hasClarifyingQuestions": true,
+            "hasSourceEvidence": true,
+            "hasTaxStatusOrWarning": true,
+            "blockers": []
+          }
+        },
+        "unitSemantics": {
+          "passed": true,
+          "allRowsLinearM": false,
+          "blockers": [],
+          "warnings": [],
+          "rowUnitMismatches": []
+        },
+        "categoryFormulaChecks": {
+          "passed": true,
+          "blockers": []
+        }
+      },
+      "passed": true
+    }
+  ],
+  "ui_text_sample": [
+    "rik-expo-app",
+    "Development Build",
+    "DEVELOPMENT SERVERS",
+    "INFO",
+    "http://10.0.2.2:8081",
+    "http://10.0.2.2:8085",
+    "http://10.0.2.2:8083",
+    "http://10.0.2.2:8082",
+    "http://10.0.2.2:8084",
+    "New development server",
+    "RECENTLY OPENED",
+    "RESET",
+    "http://127.0.0.1:8098",
+    "Home",
+    "Updates",
+    "Settings"
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

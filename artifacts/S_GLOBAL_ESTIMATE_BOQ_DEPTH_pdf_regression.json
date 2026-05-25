@@ -1,0 +1,9 @@
+{
+  "legacy_pdf_protected": true,
+  "legacy_pdf_route_changed": false,
+  "legacy_pdf_payload_changed": false,
+  "legacy_pdf_renderer_globally_replaced": false,
+  "ai_estimate_pdf_regression_passed": true,
+  "markdown_as_pdf_truth_found": false,
+  "fake_green_claimed": false
+}

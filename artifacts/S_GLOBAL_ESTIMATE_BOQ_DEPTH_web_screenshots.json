@@ -1,0 +1,14 @@
+{
+  "web_playwright_passed": true,
+  "screenshots": {
+    "request_foundation": "artifacts/screenshots/professional-boq-depth/request_foundation.png",
+    "request_tile": "artifacts/screenshots/professional-boq-depth/request_tile.png",
+    "request_gkl": "artifacts/screenshots/professional-boq-depth/request_gkl.png",
+    "live_routes": [
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\brick_masonry.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\gable_roof_installation.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\asphalt_paving.png"
+    ]
+  },
+  "fake_green_claimed": false
+}

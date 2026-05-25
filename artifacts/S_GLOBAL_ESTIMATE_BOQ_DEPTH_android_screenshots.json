@@ -1,0 +1,8 @@
+{
+  "wave": "S_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_SHORT_ESTIMATES_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_ANDROID_PROFESSIONAL_BOQ_DEPTH_READY",
+  "android_emulator_passed": true,
+  "pdf_action_works": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}
