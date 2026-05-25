@@ -335,13 +335,19 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/shower|душ/i.test(normalized) && /tile|плитк/i.test(normalized) && /waterproof|гидроизоля/i.test(normalized)) {
     return { workKey: "shower_tile_waterproofing", confidence: "high" };
   }
-  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготов|основан|выравнив|маяк/i.test(normalized)) {
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
+    return { workKey: "floor_leveling_under_tile", confidence: "high" };
+  }
+  if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /подготовку|основан|выравнив|маяк/i.test(normalized)) {
     return { workKey: "tile_floor_leveling", confidence: "high" };
   }
   if (/waterproof|гидроизоля/i.test(normalized)) {
+    if (normalized.includes("bathroom_waterproofing")) return { workKey: "bathroom_waterproofing", confidence: "high" };
+    if (/green|зел[её]н/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) return { workKey: "green_roof_waterproofing", confidence: "high" };
     if (normalized.includes("roof_waterproofing") || /\broof\b|кровл|крыш/i.test(normalized)) return { workKey: "roof_waterproofing", confidence: "high" };
     if (/foundation|фундамент/i.test(normalized)) return { workKey: "foundation_waterproofing", confidence: "high" };
-    if (/bath|ванн|санузел|душ/i.test(normalized)) return { workKey: "bathroom_waterproofing", confidence: "high" };
+    if (/shower|душ/i.test(normalized)) return { workKey: "shower_waterproofing", confidence: "high" };
+    if (/bath|ванн|санузел/i.test(normalized)) return { workKey: "bathroom_waterproofing", confidence: "high" };
   }
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };

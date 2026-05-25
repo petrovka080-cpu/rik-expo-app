@@ -53,12 +53,18 @@ function displayQuantity(value: number, unit: string): string {
   return `${formatted} ${formatEstimateUnitLabel(unit)}`;
 }
 
+function displayUnitPrice(value: number, unit: string, currency: string): string {
+  return `${formatEstimateMoney(value, currency)} / ${formatEstimateUnitLabel(unit)}`;
+}
+
 function humanizeText(value: string): string {
   return compact(value)
     .replace(/\bGlobalEstimateResult\b/g, "структурированной сметы")
     .replace(/\bPDF layer\b/gi, "PDF")
     .replace(/\bConfigured backend regional reference rate\b/gi, "Региональный справочник цен")
+    .replace(/\bbackend-справочником\b/gi, "справочником цен")
     .replace(/\bbackend pricebook\b/gi, "справочник цен")
+    .replace(/\bbackend\b/gi, "серверным контуром")
     .replace(/\breference price book\b/gi, "справочник цен")
     .replace(/\bAI estimate backend\b/gi, "сервис сметы");
 }
@@ -95,7 +101,7 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
       category: compact(section.title || section.type),
       quantity: displayQuantity(row.quantity, row.unit),
       unit: compact(formatEstimateUnitLabel(row.unit)),
-      unitPrice: compact(row.displayUnitPrice),
+      unitPrice: compact(displayUnitPrice(row.unitPrice, row.unit, estimate.totals.currency)),
       total: compact(row.displayTotal),
       confidence: row.confidence,
       sourceLabels: row.sourceEvidence.map(evidenceLine),

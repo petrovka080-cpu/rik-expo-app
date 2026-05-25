@@ -114,7 +114,7 @@ function makeCases(): ProofCase[] {
     { id: "mixed_alias_03", prompt: "drywall wall cladding 80 sq m", expectedWorkKey: "drywall_wall_cladding" },
     { id: "mixed_alias_04", prompt: "brick masonry 74 sq m", expectedWorkKey: "brick_masonry" },
     { id: "mixed_alias_05", prompt: "laminate flooring 100 sq m", expectedWorkKey: "laminate_laying" },
-    { id: "mixed_alias_06", prompt: "bathroom waterproofing 30 sq m", expectedWorkKey: "waterproofing_bathroom", volume: 30 },
+    { id: "mixed_alias_06", prompt: "bathroom waterproofing 30 sq m", expectedWorkKey: "bathroom_waterproofing", volume: 30 },
     { id: "mixed_alias_07", prompt: "tile installation 174 sq m", expectedWorkKey: "ceramic_tile_laying", volume: 174 },
     { id: "mixed_alias_08", prompt: "roof repair 90 sq m", expectedWorkKey: "roof_repair", volume: 90 },
     { id: "mixed_alias_09", prompt: "asphalt parking lot paving 140 sq m", expectedWorkKey: "asphalt_paving", volume: 140 },

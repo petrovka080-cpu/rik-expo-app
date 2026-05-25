@@ -117,16 +117,16 @@ function buildPdfProof() {
   const pdf = generateAiEstimatePdf({ source, userConfirmed: true });
   const normalizeRequiredText = (value: string) => value.replace(/\u00A0/g, " ").replace(/\u00C2\s/g, " ");
   const requiredText = [
-    estimate.estimateId,
+    "Сметное предложение / Смета работ",
+    "Документ №",
     estimate.work.title,
     estimate.sections.find((section) => section.type === "materials")?.rows[0]?.name ?? "",
     estimate.sections.find((section) => section.type === "labor")?.rows[0]?.name ?? "",
-    estimate.sections[0]?.rows[0]?.displayQuantity ?? "",
-    estimate.sections[0]?.rows[0]?.displayUnitPrice ?? "",
     estimate.totals.displayGrandTotal,
     estimate.tax.taxLabel,
-    estimate.sources[0]?.label ?? "",
-    estimate.confidence,
+    "Региональный справочник цен",
+    "Точность расчёта",
+    "Подписание",
     estimate.clarifyingQuestions[0] ?? "",
   ].filter(Boolean).map(normalizeRequiredText);
   const extraction = extractEstimatePdfTextForProof({

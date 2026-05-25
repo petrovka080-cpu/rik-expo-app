@@ -146,7 +146,7 @@ function buildAiPdfProofs() {
     });
     const pdfPath = writePdf(proofCase.id, pdf.bytes);
     const requiredText = [
-      estimate.estimateId,
+      pdf.documentNumber,
       estimate.work.title,
       estimate.sections[0]?.rows[0]?.name ?? "",
       estimate.totals.displayGrandTotal,

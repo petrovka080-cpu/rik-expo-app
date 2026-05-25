@@ -12,41 +12,41 @@
       "workKey": "laminate_laying",
       "title": "укладку ламината",
       "category": "flooring",
-      "inputVolume": "100 sq_m",
+      "inputVolume": "100 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-e_1500068329"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "укладку ламината"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_1500068329"
+        "label": "Объём",
+        "value": "100 м²"
       },
       {
-        "label": "Work key",
-        "value": "laminate_laying"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "100 sq_m"
+        "label": "Точность расчёта",
+        "value": "низкая"
       },
       {
-        "label": "Маршрут",
-        "value": "/chat"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:laminate_laying_100sqm"
       }
     ],
@@ -63,13 +63,13 @@
         "code": "laminate_board",
         "name": "Ламинат 33 класс с запасом 10%",
         "category": "Материалы и комплектующие",
-        "quantity": "110 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "110 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "176 220 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -78,13 +78,13 @@
         "code": "underlayment",
         "name": "Подложка под ламинат",
         "category": "Материалы и комплектующие",
-        "quantity": "105 m²",
-        "unit": "sq_m",
-        "unitPrice": "196 сом / m²",
+        "quantity": "105 м²",
+        "unit": "м²",
+        "unitPrice": "196 сом / м²",
         "total": "20 559 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -94,12 +94,12 @@
         "name": "Плинтус напольный",
         "category": "Материалы и комплектующие",
         "quantity": "80 пог. м",
-        "unit": "linear_m",
+        "unit": "пог. м",
         "unitPrice": "312 сом / пог. м",
         "total": "24 920 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -108,13 +108,13 @@
         "code": "baseboard_fittings",
         "name": "Фурнитура для плинтуса",
         "category": "Материалы и комплектующие",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "45,00 $ / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "45 сом / компл.",
         "total": "45,00 $",
         "confidence": "low",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence low"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: низкая"
         ]
       },
       {
@@ -123,13 +123,13 @@
         "code": "thresholds",
         "name": "Пороги стыковочные межкомнатные",
         "category": "Материалы и комплектующие",
-        "quantity": "5 pcs",
-        "unit": "pcs",
-        "unitPrice": "1 602 сом / pcs",
+        "quantity": "5 шт",
+        "unit": "шт",
+        "unitPrice": "1 602 сом / шт",
         "total": "8 010 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -138,13 +138,13 @@
         "code": "floor_priming",
         "name": "Грунтование основания",
         "category": "Строительные работы",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "107 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "107 сом / м²",
         "total": "10 680 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -153,13 +153,13 @@
         "code": "underlayment_install",
         "name": "Настил подложки",
         "category": "Строительные работы",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "71 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "71 сом / м²",
         "total": "7 120 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -168,13 +168,13 @@
         "code": "laminate_install",
         "name": "Укладка ламината",
         "category": "Строительные работы",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "338 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "338 сом / м²",
         "total": "33 820 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -184,12 +184,12 @@
         "name": "Монтаж напольного плинтуса",
         "category": "Строительные работы",
         "quantity": "80 пог. м",
-        "unit": "linear_m",
+        "unit": "пог. м",
         "unitPrice": "223 сом / пог. м",
         "total": "17 800 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -198,13 +198,13 @@
         "code": "threshold_install",
         "name": "Установка межкомнатных порогов",
         "category": "Строительные работы",
-        "quantity": "5 pcs",
-        "unit": "pcs",
-        "unitPrice": "1 068 сом / pcs",
+        "quantity": "5 шт",
+        "unit": "шт",
+        "unitPrice": "1 068 сом / шт",
         "total": "5 340 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -219,7 +219,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "0 сом"
       },
       {
         "label": "Налог",
@@ -235,22 +235,22 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "36 542 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_laminate_board_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_underlayment_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_baseboard_KG_linear_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_baseboard_fittings_XX_linear_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_thresholds_KG_pcs_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_floor_priming_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_underlayment_install_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_laminate_install_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_baseboard_install_KG_linear_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_threshold_install_KG_pcs_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "low",
+    "confidence": "низкая",
     "clarifyingQuestions": [
       "В каком городе находится объект?",
       "Какое сейчас основание пола?",
@@ -259,7 +259,7 @@
       "Планируется прямая или диагональная укладка?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -276,48 +276,48 @@
       "workKey": "brick_masonry",
       "title": "кирпичную кладку",
       "category": "masonry",
-      "inputVolume": "74 sq_m",
+      "inputVolume": "74 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-e_1050870808"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "кирпичную кладку"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_1050870808"
+        "label": "Объём",
+        "value": "74 м²"
       },
       {
-        "label": "Work key",
-        "value": "brick_masonry"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "74 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/chat"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:brick_masonry_74sqm"
       }
     ],
     "assumptions": [
       "Расчёт выполнен для кирпичной кладки по площади.",
       "Толщина стены, тип кирпича, армирование, леса, доставка и подъём уточняются перед договором.",
-      "Цены берутся из backend pricebook с источниками."
+      "Цены берутся из справочник цен с источниками."
     ],
     "rows": [
       {
@@ -326,13 +326,13 @@
         "code": "brick_masonry_brick",
         "name": "Кирпич",
         "category": "Материалы и комплектующие",
-        "quantity": "79,92 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 780 сом / m²",
+        "quantity": "79,92 м²",
+        "unit": "м²",
+        "unitPrice": "1 780 сом / м²",
         "total": "142 258 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -341,13 +341,13 @@
         "code": "brick_masonry_mortar",
         "name": "Раствор / кладочная смесь",
         "category": "Материалы и комплектующие",
-        "quantity": "13,32 m²",
-        "unit": "sq_m",
-        "unitPrice": "534 сом / m²",
+        "quantity": "13,32 м²",
+        "unit": "м²",
+        "unitPrice": "534 сом / м²",
         "total": "7 113 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -356,13 +356,13 @@
         "code": "brick_masonry_mesh",
         "name": "Кладочная сетка / армирование",
         "category": "Материалы и комплектующие",
-        "quantity": "13,32 m²",
-        "unit": "sq_m",
-        "unitPrice": "534 сом / m²",
+        "quantity": "13,32 м²",
+        "unit": "м²",
+        "unitPrice": "534 сом / м²",
         "total": "7 113 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -371,13 +371,13 @@
         "code": "brick_masonry_laying",
         "name": "Кладка кирпича",
         "category": "Работы / монтаж / техника",
-        "quantity": "74 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "74 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "118 548 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -386,13 +386,13 @@
         "code": "brick_masonry_jointing",
         "name": "Расшивка / перевязка швов",
         "category": "Работы / монтаж / техника",
-        "quantity": "74 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "74 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "118 548 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -401,13 +401,13 @@
         "code": "brick_masonry_lift_warning",
         "name": "Доставка/подъём: требуется уточнение перед сметой",
         "category": "Работы / монтаж / техника",
-        "quantity": "74 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "74 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "118 548 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -416,13 +416,13 @@
         "code": "brick_masonry_delivery_access_warning",
         "name": "Доставка / подъем / доступ: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "1 602 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "1 602 сом / компл.",
         "total": "1 602 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -431,13 +431,13 @@
         "code": "brick_masonry_equipment_mobilization_warning",
         "name": "Техника / инвентарь: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "1 068 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "1 068 сом / компл.",
         "total": "1 068 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -452,7 +452,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "2670 KGS"
+        "value": "2 670 сом"
       },
       {
         "label": "Налог",
@@ -468,24 +468,24 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "61 776 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_brick_masonry_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_brick_masonry_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_brick_masonry_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_brick_masonry_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_brick_masonry_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "Какая толщина стены и тип кирпича?",
       "Нужны ли леса, доставка и подъём материала?",
       "Нужно ли армирование кладки и расшивка лицевых швов?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -502,41 +502,41 @@
       "workKey": "asphalt_paving",
       "title": "асфальтирование территории",
       "category": "roadworks",
-      "inputVolume": "1000 sq_m",
+      "inputVolume": "1 000 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-e_1834625478"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "асфальтирование территории"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_1834625478"
+        "label": "Объём",
+        "value": "1 000 м²"
       },
       {
-        "label": "Work key",
-        "value": "asphalt_paving"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "1000 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/ai"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:asphalt_paving_1000sqm"
       }
     ],
@@ -544,7 +544,7 @@
       "Расчет сделан для типового асфальтирования территории по подготовленному основанию.",
       "Толщина слоев, марка смеси и логистика должны быть подтверждены проектом.",
       "Дренаж, ливневка, бордюры и сложная геодезия считаются отдельно, если не указаны явно.",
-      "Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором."
+      "Цены берутся из справочник цен с привязанными источниками и требуют проверки перед договором."
     ],
     "rows": [
       {
@@ -553,13 +553,13 @@
         "code": "geotextile",
         "name": "Геотекстиль",
         "category": "Материалы и комплектующие",
-        "quantity": "1 050 m²",
-        "unit": "sq_m",
-        "unitPrice": "98 сом / m²",
+        "quantity": "1 050 м²",
+        "unit": "м²",
+        "unitPrice": "98 сом / м²",
         "total": "102 795 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -568,13 +568,13 @@
         "code": "sand_base",
         "name": "Песчаное основание",
         "category": "Материалы и комплектующие",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "356 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "356 сом / м²",
         "total": "356 000 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -583,13 +583,13 @@
         "code": "crushed_stone_base",
         "name": "Щебеночное основание",
         "category": "Материалы и комплектующие",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "623 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "623 сом / м²",
         "total": "623 000 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -598,13 +598,13 @@
         "code": "bitumen_emulsion",
         "name": "Битумная эмульсия",
         "category": "Материалы и комплектующие",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "71 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "71 сом / м²",
         "total": "71 200 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -613,13 +613,13 @@
         "code": "asphalt_lower_coarse",
         "name": "Нижний слой крупнозернистого асфальтобетона",
         "category": "Материалы и комплектующие",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "890 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "890 сом / м²",
         "total": "890 000 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -628,13 +628,13 @@
         "code": "asphalt_top_fine",
         "name": "Верхний слой мелкозернистого асфальтобетона",
         "category": "Материалы и комплектующие",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 068 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "1 068 сом / м²",
         "total": "1 068 000 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -643,13 +643,13 @@
         "code": "road_marking_optional",
         "name": "Дорожная разметка",
         "category": "Материалы и комплектующие",
-        "quantity": "150 m²",
-        "unit": "sq_m",
-        "unitPrice": "134 сом / m²",
+        "quantity": "150 м²",
+        "unit": "м²",
+        "unitPrice": "134 сом / м²",
         "total": "20 025 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -658,13 +658,13 @@
         "code": "site_cleaning",
         "name": "Очистка и подготовка площадки",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "62 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "62 сом / м²",
         "total": "62 300 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -673,13 +673,13 @@
         "code": "grading_compaction",
         "name": "Планировка и уплотнение основания",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "178 000 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -688,13 +688,13 @@
         "code": "sand_base_install",
         "name": "Устройство песчаного основания",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "125 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "125 сом / м²",
         "total": "124 600 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -703,13 +703,13 @@
         "code": "crushed_stone_base_install",
         "name": "Устройство щебеночного основания",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "160 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "160 сом / м²",
         "total": "160 200 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -718,13 +718,13 @@
         "code": "tack_coat_application",
         "name": "Нанесение битумной эмульсии",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "53 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "53 сом / м²",
         "total": "53 400 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -733,13 +733,13 @@
         "code": "asphalt_lower_laying",
         "name": "Укладка нижнего слоя асфальта",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "285 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "285 сом / м²",
         "total": "284 800 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -748,13 +748,13 @@
         "code": "asphalt_top_laying",
         "name": "Укладка верхнего слоя асфальта",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "303 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "303 сом / м²",
         "total": "302 600 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -763,13 +763,13 @@
         "code": "equipment_mobilization",
         "name": "Мобилизация техники",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "80 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "80 сом / м²",
         "total": "80 100 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -778,13 +778,13 @@
         "code": "geodesy_quality_control",
         "name": "Геодезия и контроль качества",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "45 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "45 сом / м²",
         "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -793,13 +793,13 @@
         "code": "final_cleanup",
         "name": "Финальная уборка территории",
         "category": "Работы / монтаж / техника",
-        "quantity": "1 000 m²",
-        "unit": "sq_m",
-        "unitPrice": "36 сом / m²",
+        "quantity": "1 000 м²",
+        "unit": "м²",
+        "unitPrice": "36 сом / м²",
         "total": "35 600 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -814,7 +814,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "0 сом"
       },
       {
         "label": "Налог",
@@ -830,29 +830,29 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "534 854 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_geotextile_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_sand_base_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_crushed_stone_base_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_bitumen_emulsion_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_asphalt_lower_coarse_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_asphalt_top_fine_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_road_marking_optional_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_site_cleaning_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_grading_compaction_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_sand_base_install_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_crushed_stone_base_install_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_tack_coat_application_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_asphalt_lower_laying_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_asphalt_top_laying_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_equipment_mobilization_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_geodesy_quality_control_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_final_cleanup_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "В каком городе находится объект?",
       "Какое текущее основание: грунт, щебень, старый асфальт или бетон?",
@@ -861,7 +861,7 @@
       "Есть ли ограничения по заезду техники и срокам работ?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -878,48 +878,48 @@
       "workKey": "drywall_wall_cladding",
       "title": "обшивка стен ГКЛ",
       "category": "ceiling",
-      "inputVolume": "352 sq_m",
+      "inputVolume": "352 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-te_407650773"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "обшивка стен ГКЛ"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_407650773"
+        "label": "Объём",
+        "value": "352 м²"
       },
       {
-        "label": "Work key",
-        "value": "drywall_wall_cladding"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "352 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/chat"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:drywall_wall_cladding_352sqm"
       }
     ],
     "assumptions": [
       "Расчёт сделан по типовой технологии для указанного объёма.",
       "Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.",
-      "Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором."
+      "Цены берутся из справочник цен с привязанными источниками и требуют проверки перед договором."
     ],
     "rows": [
       {
@@ -928,13 +928,13 @@
         "code": "drywall_wall_cladding_material_1",
         "name": "каркас",
         "category": "Материалы и комплектующие",
-        "quantity": "380,16 m²",
-        "unit": "sq_m",
-        "unitPrice": "890 сом / m²",
+        "quantity": "380,16 м²",
+        "unit": "м²",
+        "unitPrice": "890 сом / м²",
         "total": "338 342 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -943,13 +943,13 @@
         "code": "drywall_wall_cladding_material_2",
         "name": "панели или листы",
         "category": "Материалы и комплектующие",
-        "quantity": "70,4 m²",
-        "unit": "sq_m",
-        "unitPrice": "890 сом / m²",
+        "quantity": "70,4 м²",
+        "unit": "м²",
+        "unitPrice": "890 сом / м²",
         "total": "62 656 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -958,13 +958,13 @@
         "code": "drywall_wall_cladding_material_extra_3",
         "name": "Дополнительные материалы: обшивка стен ГКЛ",
         "category": "Материалы и комплектующие",
-        "quantity": "35,2 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "35,2 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "6 266 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -973,13 +973,13 @@
         "code": "drywall_wall_cladding_material_extra_4",
         "name": "Дополнительные материалы: обшивка стен ГКЛ",
         "category": "Материалы и комплектующие",
-        "quantity": "35,2 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "35,2 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "6 266 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -988,13 +988,13 @@
         "code": "drywall_wall_cladding_labor_1",
         "name": "крепёж",
         "category": "Работы / монтаж / техника",
-        "quantity": "352 m²",
-        "unit": "sq_m",
-        "unitPrice": "712 сом / m²",
+        "quantity": "352 м²",
+        "unit": "м²",
+        "unitPrice": "712 сом / м²",
         "total": "250 624 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1003,13 +1003,13 @@
         "code": "drywall_wall_cladding_labor_2",
         "name": "монтаж",
         "category": "Работы / монтаж / техника",
-        "quantity": "352 m²",
-        "unit": "sq_m",
-        "unitPrice": "712 сом / m²",
+        "quantity": "352 м²",
+        "unit": "м²",
+        "unitPrice": "712 сом / м²",
         "total": "250 624 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1018,13 +1018,13 @@
         "code": "drywall_wall_cladding_labor_extra_3",
         "name": "Дополнительные работы: обшивка стен ГКЛ",
         "category": "Работы / монтаж / техника",
-        "quantity": "352 m²",
-        "unit": "sq_m",
-        "unitPrice": "712 сом / m²",
+        "quantity": "352 м²",
+        "unit": "м²",
+        "unitPrice": "712 сом / м²",
         "total": "250 624 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1033,13 +1033,13 @@
         "code": "drywall_wall_cladding_labor_extra_4",
         "name": "Дополнительные работы: обшивка стен ГКЛ",
         "category": "Работы / монтаж / техника",
-        "quantity": "352 m²",
-        "unit": "sq_m",
-        "unitPrice": "712 сом / m²",
+        "quantity": "352 м²",
+        "unit": "м²",
+        "unitPrice": "712 сом / м²",
         "total": "250 624 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1048,13 +1048,13 @@
         "code": "drywall_wall_cladding_equipment",
         "name": "Оборудование и инструмент: обшивка стен ГКЛ",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "356 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "356 сом / компл.",
         "total": "356 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1063,13 +1063,13 @@
         "code": "drywall_wall_cladding_delivery",
         "name": "Доставка / логистика: обшивка стен ГКЛ",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "534 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "534 сом / компл.",
         "total": "534 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -1084,7 +1084,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "890 KGS"
+        "value": "890 сом"
       },
       {
         "label": "Налог",
@@ -1100,17 +1100,17 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "170 030 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_drywall_wall_cladding_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_drywall_wall_cladding_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_drywall_wall_cladding_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_drywall_wall_cladding_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_drywall_wall_cladding_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "В каком городе находится объект?",
       "Какое состояние основания или поверхности?",
@@ -1118,7 +1118,7 @@
       "Есть ли ограничения по доступу, доставке или срокам?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -1135,41 +1135,41 @@
       "workKey": "carpet_laying",
       "title": "укладку ковролина",
       "category": "flooring",
-      "inputVolume": "100 sq_m",
+      "inputVolume": "100 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-te_913535891"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "укладку ковролина"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_913535891"
+        "label": "Объём",
+        "value": "100 м²"
       },
       {
-        "label": "Work key",
-        "value": "carpet_laying"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "100 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/request"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:carpet_laying_100sqm"
       }
     ],
@@ -1185,13 +1185,13 @@
         "code": "carpet_covering",
         "name": "Ковролин с запасом на подрезку",
         "category": "Материалы и комплектующие",
-        "quantity": "108 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 068 сом / m²",
+        "quantity": "108 м²",
+        "unit": "м²",
+        "unitPrice": "1 068 сом / м²",
         "total": "115 344 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1200,13 +1200,13 @@
         "code": "carpet_underlay",
         "name": "Подложка под ковролин",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "18 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "3 204 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1215,13 +1215,13 @@
         "code": "carpet_glue_tape",
         "name": "Клей/лента для фиксации ковролина",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "18 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "3 204 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1230,13 +1230,13 @@
         "code": "carpet_baseboard_thresholds",
         "name": "Плинтус или порожки для примыканий",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
-        "unit": "sq_m",
-        "unitPrice": "178 сом / m²",
+        "quantity": "18 м²",
+        "unit": "м²",
+        "unitPrice": "178 сом / м²",
         "total": "3 204 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1245,13 +1245,13 @@
         "code": "carpet_base_preparation",
         "name": "Подготовка основания",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1260,13 +1260,13 @@
         "code": "carpet_laying_work",
         "name": "Укладка ковролина",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1275,13 +1275,13 @@
         "code": "carpet_cutting",
         "name": "Подрезка и подгонка ковролина",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1290,13 +1290,13 @@
         "code": "carpet_laying_delivery_access_warning",
         "name": "Доставка / подъем / доступ: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "534 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "534 сом / компл.",
         "total": "534 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1305,13 +1305,13 @@
         "code": "carpet_laying_equipment_mobilization_warning",
         "name": "Техника / инвентарь: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "356 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "356 сом / компл.",
         "total": "356 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -1326,7 +1326,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "890 KGS"
+        "value": "890 сом"
       },
       {
         "label": "Налог",
@@ -1342,24 +1342,24 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "31 122 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_carpet_laying_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_carpet_laying_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_carpet_laying_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_carpet_laying_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_carpet_laying_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "Какое текущее основание пола?",
       "Нужен ли демонтаж старого покрытия или выравнивание?",
       "Нужны ли плинтусы, порожки и доставка материала?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -1376,41 +1376,41 @@
       "workKey": "ceramic_tile_floor_laying",
       "title": "укладку кафельной плитки",
       "category": "tile",
-      "inputVolume": "174 sq_m",
+      "inputVolume": "174 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-ate_19038633"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "укладку кафельной плитки"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_19038633"
+        "label": "Объём",
+        "value": "174 м²"
       },
       {
-        "label": "Work key",
-        "value": "ceramic_tile_floor_laying"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "174 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/chat"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:ceramic_tile_floor_laying_174sqm"
       }
     ],
@@ -1426,13 +1426,13 @@
         "code": "ceramic_tile_floor_laying_tile_with_waste",
         "name": "Керамическая плитка с запасом на подрезку",
         "category": "Материалы и комплектующие",
-        "quantity": "191,4 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 424 сом / m²",
+        "quantity": "191,4 м²",
+        "unit": "м²",
+        "unitPrice": "1 424 сом / м²",
         "total": "272 554 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1441,13 +1441,13 @@
         "code": "ceramic_tile_floor_laying_adhesive",
         "name": "Плиточный клей",
         "category": "Материалы и комплектующие",
-        "quantity": "31,32 m²",
-        "unit": "sq_m",
-        "unitPrice": "356 сом / m²",
+        "quantity": "31,32 м²",
+        "unit": "м²",
+        "unitPrice": "356 сом / м²",
         "total": "11 150 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1456,13 +1456,13 @@
         "code": "ceramic_tile_floor_laying_grout",
         "name": "Затирка для швов",
         "category": "Материалы и комплектующие",
-        "quantity": "31,32 m²",
-        "unit": "sq_m",
-        "unitPrice": "356 сом / m²",
+        "quantity": "31,32 м²",
+        "unit": "м²",
+        "unitPrice": "356 сом / м²",
         "total": "11 150 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1471,13 +1471,13 @@
         "code": "ceramic_tile_floor_laying_primer",
         "name": "Грунтовка основания",
         "category": "Материалы и комплектующие",
-        "quantity": "31,32 m²",
-        "unit": "sq_m",
-        "unitPrice": "356 сом / m²",
+        "quantity": "31,32 м²",
+        "unit": "м²",
+        "unitPrice": "356 сом / м²",
         "total": "11 150 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1486,13 +1486,13 @@
         "code": "ceramic_tile_floor_laying_base_preparation",
         "name": "Подготовка основания под плитку",
         "category": "Работы / монтаж / техника",
-        "quantity": "174 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 068 сом / m²",
+        "quantity": "174 м²",
+        "unit": "м²",
+        "unitPrice": "1 068 сом / м²",
         "total": "185 832 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1501,13 +1501,13 @@
         "code": "ceramic_tile_floor_laying_tile_laying",
         "name": "Укладка плитки",
         "category": "Работы / монтаж / техника",
-        "quantity": "174 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 068 сом / m²",
+        "quantity": "174 м²",
+        "unit": "м²",
+        "unitPrice": "1 068 сом / м²",
         "total": "185 832 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1516,13 +1516,13 @@
         "code": "ceramic_tile_floor_laying_grout_work",
         "name": "Затирка и очистка швов",
         "category": "Работы / монтаж / техника",
-        "quantity": "174 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 068 сом / m²",
+        "quantity": "174 м²",
+        "unit": "м²",
+        "unitPrice": "1 068 сом / м²",
         "total": "185 832 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1531,13 +1531,13 @@
         "code": "ceramic_tile_floor_laying_delivery_access_warning",
         "name": "Доставка / подъем / доступ: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "1 068 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "1 068 сом / компл.",
         "total": "1 068 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1546,13 +1546,13 @@
         "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
         "name": "Техника / инвентарь: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "712 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "712 сом / компл.",
         "total": "712 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -1567,7 +1567,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "1780 KGS"
+        "value": "1 780 сом"
       },
       {
         "label": "Налог",
@@ -1583,24 +1583,24 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "103 834 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_ceramic_tile_floor_laying_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_ceramic_tile_floor_laying_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "Какой формат плитки и схема раскладки?",
       "Нужно ли выравнивание основания или гидроизоляция?",
       "Есть ли пороги, примыкания, теплый пол или сложная геометрия?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   },
@@ -1617,41 +1617,41 @@
       "workKey": "gable_roof_installation",
       "title": "устройство двускатной крыши",
       "category": "roofing",
-      "inputVolume": "100 sq_m",
+      "inputVolume": "100 м²",
       "locale": "ru-KG",
       "currency": "KGS"
     },
     "metadata": [
       {
-        "label": "Номер документа",
+        "label": "Документ №",
         "value": "AI-EST-e_1330920952"
+      },
+      {
+        "label": "Дата",
+        "value": "2026-05-24T00:00:00.000Z"
       },
       {
         "label": "Статус",
         "value": "Смета"
       },
       {
-        "label": "Дата формирования",
-        "value": "2026-05-24T00:00:00.000Z"
+        "label": "Объект / вид работ",
+        "value": "устройство двускатной крыши"
       },
       {
-        "label": "Estimate ID",
-        "value": "global_estimate_1330920952"
+        "label": "Объём",
+        "value": "100 м²"
       },
       {
-        "label": "Work key",
-        "value": "gable_roof_installation"
+        "label": "Налоговый статус",
+        "value": "НДС Кыргызстан"
       },
       {
-        "label": "Объем",
-        "value": "100 sq_m"
+        "label": "Точность расчёта",
+        "value": "высокая"
       },
       {
-        "label": "Маршрут",
-        "value": "/chat"
-      },
-      {
-        "label": "Runtime trace ID",
+        "label": "Служебный ID",
         "value": "safe-integration:gable_roof_installation_100sqm"
       }
     ],
@@ -1667,13 +1667,13 @@
         "code": "gable_roof_rafters",
         "name": "Стропила",
         "category": "Материалы и комплектующие",
-        "quantity": "108 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "108 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "173 016 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1682,13 +1682,13 @@
         "code": "gable_roof_wall_plate",
         "name": "Мауэрлат / брус",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "18 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "8 010 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1697,13 +1697,13 @@
         "code": "gable_roof_membrane",
         "name": "Гидроизоляция / мембрана",
         "category": "Материалы и комплектующие",
-        "quantity": "115 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "115 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "51 175 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1712,13 +1712,13 @@
         "code": "gable_roof_batten",
         "name": "Обрешётка",
         "category": "Материалы и комплектующие",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1727,13 +1727,13 @@
         "code": "gable_roof_covering",
         "name": "Кровельное покрытие",
         "category": "Материалы и комплектующие",
-        "quantity": "115 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 602 сом / m²",
+        "quantity": "115 м²",
+        "unit": "м²",
+        "unitPrice": "1 602 сом / м²",
         "total": "184 230 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1742,13 +1742,13 @@
         "code": "gable_roof_flashings",
         "name": "Доборные элементы",
         "category": "Материалы и комплектующие",
-        "quantity": "20 m²",
-        "unit": "sq_m",
-        "unitPrice": "445 сом / m²",
+        "quantity": "20 м²",
+        "unit": "м²",
+        "unitPrice": "445 сом / м²",
         "total": "8 900 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1757,13 +1757,13 @@
         "code": "gable_roof_rafter_install",
         "name": "Монтаж стропильной системы",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 335 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "1 335 сом / м²",
         "total": "133 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1772,13 +1772,13 @@
         "code": "gable_roof_batten_install",
         "name": "Монтаж обрешётки",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 335 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "1 335 сом / м²",
         "total": "133 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1787,13 +1787,13 @@
         "code": "gable_roof_covering_install",
         "name": "Монтаж кровли",
         "category": "Работы / монтаж / техника",
-        "quantity": "100 m²",
-        "unit": "sq_m",
-        "unitPrice": "1 335 сом / m²",
+        "quantity": "100 м²",
+        "unit": "м²",
+        "unitPrice": "1 335 сом / м²",
         "total": "133 500 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1802,13 +1802,13 @@
         "code": "gable_roof_installation_delivery_access_warning",
         "name": "Доставка / подъем / доступ: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "1 335 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "1 335 сом / компл.",
         "total": "1 335 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       },
       {
@@ -1817,13 +1817,13 @@
         "code": "gable_roof_installation_equipment_mobilization_warning",
         "name": "Техника / инвентарь: требуется уточнение",
         "category": "Оборудование / доставка",
-        "quantity": "1 set",
-        "unit": "set",
-        "unitPrice": "890 сом / set",
+        "quantity": "1 компл.",
+        "unit": "компл.",
+        "unitPrice": "890 сом / компл.",
         "total": "890 сом",
         "confidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+          "Региональный справочник цен, проверено 2026-05-22, актуальность: актуальный, точность: высокая"
         ]
       }
     ],
@@ -1838,7 +1838,7 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "2225 KGS"
+        "value": "2 225 сом"
       },
       {
         "label": "Налог",
@@ -1854,24 +1854,24 @@
       "rate": "12%",
       "included": "добавлен к итогу",
       "amount": "104 707 сом",
-      "warning": "Налоговый статус рассчитан по текущему структурированному результату."
+      "warning": "Налоговый статус рассчитан по текущей структурированной смете."
     },
     "sources": [
-      "rate_gable_roof_installation_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_gable_roof_installation_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_gable_roof_installation_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_gable_roof_installation_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "rate_gable_roof_installation_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
-      "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Региональный справочник цен | проверено 2026-05-22",
+      "Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
-    "confidence": "high",
+    "confidence": "высокая",
     "clarifyingQuestions": [
       "Какой тип кровельного покрытия нужен?",
       "Есть ли проект стропильной системы и какой уклон крыши?",
       "Нужно ли утепление, водостоки, снегозадержатели и доборные элементы?"
     ],
     "footer": [
-      "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
+      "Документ сформирован по структурированной смете. PDF не рассчитывает объёмы, цены или налоги.",
       "Подпись заказчика: ____________________    Подпись исполнителя: ____________________"
     ]
   }
