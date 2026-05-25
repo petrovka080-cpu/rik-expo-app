@@ -409,6 +409,36 @@
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
         ]
+      },
+      {
+        "index": "1",
+        "rowNumber": "3.1",
+        "code": "brick_masonry_delivery_access_warning",
+        "name": "Доставка / подъем / доступ: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "1 602 сом / set",
+        "total": "1 602 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "2",
+        "rowNumber": "3.2",
+        "code": "brick_masonry_equipment_mobilization_warning",
+        "name": "Техника / инвентарь: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "1 068 сом / set",
+        "total": "1 068 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
       }
     ],
     "totals": [
@@ -422,28 +452,30 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "2670 KGS"
       },
       {
         "label": "Налог",
-        "value": "61 455 сом"
+        "value": "61 776 сом"
       },
       {
         "label": "Итого",
-        "value": "573 583 сом"
+        "value": "576 573 сом"
       }
     ],
     "tax": {
       "label": "НДС Кыргызстан",
       "rate": "12%",
       "included": "добавлен к итогу",
-      "amount": "61 455 сом",
+      "amount": "61 776 сом",
       "warning": "Налоговый статус рассчитан по текущему структурированному результату."
     },
     "sources": [
       "rate_brick_masonry_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_brick_masonry_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_brick_masonry_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_brick_masonry_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_brick_masonry_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
     "confidence": "high",
@@ -921,6 +953,36 @@
         ]
       },
       {
+        "index": "3",
+        "rowNumber": "1.3",
+        "code": "drywall_wall_cladding_material_extra_3",
+        "name": "Дополнительные материалы: обшивка стен ГКЛ",
+        "category": "Материалы и комплектующие",
+        "quantity": "35,2 m²",
+        "unit": "sq_m",
+        "unitPrice": "178 сом / m²",
+        "total": "6 266 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "4",
+        "rowNumber": "1.4",
+        "code": "drywall_wall_cladding_material_extra_4",
+        "name": "Дополнительные материалы: обшивка стен ГКЛ",
+        "category": "Материалы и комплектующие",
+        "quantity": "35,2 m²",
+        "unit": "sq_m",
+        "unitPrice": "178 сом / m²",
+        "total": "6 266 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
         "index": "1",
         "rowNumber": "2.1",
         "code": "drywall_wall_cladding_labor_1",
@@ -949,40 +1011,103 @@
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
         ]
+      },
+      {
+        "index": "3",
+        "rowNumber": "2.3",
+        "code": "drywall_wall_cladding_labor_extra_3",
+        "name": "Дополнительные работы: обшивка стен ГКЛ",
+        "category": "Работы / монтаж / техника",
+        "quantity": "352 m²",
+        "unit": "sq_m",
+        "unitPrice": "712 сом / m²",
+        "total": "250 624 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "4",
+        "rowNumber": "2.4",
+        "code": "drywall_wall_cladding_labor_extra_4",
+        "name": "Дополнительные работы: обшивка стен ГКЛ",
+        "category": "Работы / монтаж / техника",
+        "quantity": "352 m²",
+        "unit": "sq_m",
+        "unitPrice": "712 сом / m²",
+        "total": "250 624 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "1",
+        "rowNumber": "3.1",
+        "code": "drywall_wall_cladding_equipment",
+        "name": "Оборудование и инструмент: обшивка стен ГКЛ",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "356 сом / set",
+        "total": "356 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "2",
+        "rowNumber": "3.2",
+        "code": "drywall_wall_cladding_delivery",
+        "name": "Доставка / логистика: обшивка стен ГКЛ",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "534 сом / set",
+        "total": "534 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
       }
     ],
     "totals": [
       {
         "label": "Материалы",
-        "value": "400 998 сом"
+        "value": "413 530 сом"
       },
       {
         "label": "Работы",
-        "value": "501 248 сом"
+        "value": "1 002 496 сом"
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "890 KGS"
       },
       {
         "label": "Налог",
-        "value": "108 270 сом"
+        "value": "170 030 сом"
       },
       {
         "label": "Итого",
-        "value": "1 010 516 сом"
+        "value": "1 586 945 сом"
       }
     ],
     "tax": {
       "label": "НДС Кыргызстан",
       "rate": "12%",
       "included": "добавлен к итогу",
-      "amount": "108 270 сом",
+      "amount": "170 030 сом",
       "warning": "Налоговый статус рассчитан по текущему структурированному результату."
     },
     "sources": [
       "rate_drywall_wall_cladding_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_drywall_wall_cladding_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_drywall_wall_cladding_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_drywall_wall_cladding_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_drywall_wall_cladding_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
     "confidence": "high",
@@ -1158,6 +1283,36 @@
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
         ]
+      },
+      {
+        "index": "1",
+        "rowNumber": "3.1",
+        "code": "carpet_laying_delivery_access_warning",
+        "name": "Доставка / подъем / доступ: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "534 сом / set",
+        "total": "534 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "2",
+        "rowNumber": "3.2",
+        "code": "carpet_laying_equipment_mobilization_warning",
+        "name": "Техника / инвентарь: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "356 сом / set",
+        "total": "356 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
       }
     ],
     "totals": [
@@ -1171,28 +1326,30 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "890 KGS"
       },
       {
         "label": "Налог",
-        "value": "31 015 сом"
+        "value": "31 122 сом"
       },
       {
         "label": "Итого",
-        "value": "289 471 сом"
+        "value": "290 468 сом"
       }
     ],
     "tax": {
       "label": "НДС Кыргызстан",
       "rate": "12%",
       "included": "добавлен к итогу",
-      "amount": "31 015 сом",
+      "amount": "31 122 сом",
       "warning": "Налоговый статус рассчитан по текущему структурированному результату."
     },
     "sources": [
       "rate_carpet_laying_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_carpet_laying_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_carpet_laying_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_carpet_laying_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_carpet_laying_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
     "confidence": "high",
@@ -1258,21 +1415,21 @@
       }
     ],
     "assumptions": [
-      "Расчёт сделан по типовой технологии для указанного объёма.",
-      "Скрытые дефекты и демонтаж включаются только если они явно указаны в запросе.",
-      "Цены берутся из backend pricebook с привязанными источниками и требуют проверки перед договором."
+      "Расчет выполнен для укладки плитки по подготовленному основанию.",
+      "Плитка рассчитана с запасом на подрезку; клей, затирка и грунтовка включены отдельными строками.",
+      "Выравнивание основания, гидроизоляция и сложная раскладка уточняются перед договором."
     ],
     "rows": [
       {
         "index": "1",
         "rowNumber": "1.1",
-        "code": "ceramic_tile_floor_laying_material_1",
-        "name": "плитка с запасом",
+        "code": "ceramic_tile_floor_laying_tile_with_waste",
+        "name": "Керамическая плитка с запасом на подрезку",
         "category": "Материалы и комплектующие",
-        "quantity": "187,92 m²",
+        "quantity": "191,4 m²",
         "unit": "sq_m",
         "unitPrice": "1 424 сом / m²",
-        "total": "267 598 сом",
+        "total": "272 554 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1281,13 +1438,13 @@
       {
         "index": "2",
         "rowNumber": "1.2",
-        "code": "ceramic_tile_floor_laying_material_2",
-        "name": "клей",
+        "code": "ceramic_tile_floor_laying_adhesive",
+        "name": "Плиточный клей",
         "category": "Материалы и комплектующие",
-        "quantity": "34,8 m²",
+        "quantity": "31,32 m²",
         "unit": "sq_m",
-        "unitPrice": "1 424 сом / m²",
-        "total": "49 555 сом",
+        "unitPrice": "356 сом / m²",
+        "total": "11 150 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1296,13 +1453,28 @@
       {
         "index": "3",
         "rowNumber": "1.3",
-        "code": "ceramic_tile_floor_laying_material_3",
-        "name": "затирка",
+        "code": "ceramic_tile_floor_laying_grout",
+        "name": "Затирка для швов",
         "category": "Материалы и комплектующие",
-        "quantity": "34,8 m²",
+        "quantity": "31,32 m²",
         "unit": "sq_m",
-        "unitPrice": "1 424 сом / m²",
-        "total": "49 555 сом",
+        "unitPrice": "356 сом / m²",
+        "total": "11 150 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "4",
+        "rowNumber": "1.4",
+        "code": "ceramic_tile_floor_laying_primer",
+        "name": "Грунтовка основания",
+        "category": "Материалы и комплектующие",
+        "quantity": "31,32 m²",
+        "unit": "sq_m",
+        "unitPrice": "356 сом / m²",
+        "total": "11 150 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1311,8 +1483,8 @@
       {
         "index": "1",
         "rowNumber": "2.1",
-        "code": "ceramic_tile_floor_laying_labor_1",
-        "name": "грунтовка",
+        "code": "ceramic_tile_floor_laying_base_preparation",
+        "name": "Подготовка основания под плитку",
         "category": "Работы / монтаж / техника",
         "quantity": "174 m²",
         "unit": "sq_m",
@@ -1326,8 +1498,8 @@
       {
         "index": "2",
         "rowNumber": "2.2",
-        "code": "ceramic_tile_floor_laying_labor_2",
-        "name": "укладка",
+        "code": "ceramic_tile_floor_laying_tile_laying",
+        "name": "Укладка плитки",
         "category": "Работы / монтаж / техника",
         "quantity": "174 m²",
         "unit": "sq_m",
@@ -1341,8 +1513,8 @@
       {
         "index": "3",
         "rowNumber": "2.3",
-        "code": "ceramic_tile_floor_laying_labor_3",
-        "name": "затирка швов",
+        "code": "ceramic_tile_floor_laying_grout_work",
+        "name": "Затирка и очистка швов",
         "category": "Работы / монтаж / техника",
         "quantity": "174 m²",
         "unit": "sq_m",
@@ -1352,12 +1524,42 @@
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
         ]
+      },
+      {
+        "index": "1",
+        "rowNumber": "3.1",
+        "code": "ceramic_tile_floor_laying_delivery_access_warning",
+        "name": "Доставка / подъем / доступ: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "1 068 сом / set",
+        "total": "1 068 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "2",
+        "rowNumber": "3.2",
+        "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
+        "name": "Техника / инвентарь: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "712 сом / set",
+        "total": "712 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
       }
     ],
     "totals": [
       {
         "label": "Материалы",
-        "value": "366 708 сом"
+        "value": "306 003 сом"
       },
       {
         "label": "Работы",
@@ -1365,35 +1567,37 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "1780 KGS"
       },
       {
         "label": "Налог",
-        "value": "110 905 сом"
+        "value": "103 834 сом"
       },
       {
         "label": "Итого",
-        "value": "1 035 109 сом"
+        "value": "969 113 сом"
       }
     ],
     "tax": {
       "label": "НДС Кыргызстан",
       "rate": "12%",
       "included": "добавлен к итогу",
-      "amount": "110 905 сом",
+      "amount": "103 834 сом",
       "warning": "Налоговый статус рассчитан по текущему структурированному результату."
     },
     "sources": [
       "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_ceramic_tile_floor_laying_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_ceramic_tile_floor_laying_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
     "confidence": "high",
     "clarifyingQuestions": [
-      "В каком городе находится объект?",
-      "Какое состояние основания или поверхности?",
-      "Нужен ли демонтаж старого покрытия или конструкций?",
-      "Есть ли ограничения по доступу, доставке или срокам?"
+      "Какой формат плитки и схема раскладки?",
+      "Нужно ли выравнивание основания или гидроизоляция?",
+      "Есть ли пороги, примыкания, теплый пол или сложная геометрия?"
     ],
     "footer": [
       "Документ сформирован из GlobalEstimateResult. PDF layer не рассчитывает объемы, цены или налоги.",
@@ -1493,10 +1697,10 @@
         "code": "gable_roof_membrane",
         "name": "Гидроизоляция / мембрана",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
+        "quantity": "115 m²",
         "unit": "sq_m",
         "unitPrice": "445 сом / m²",
-        "total": "8 010 сом",
+        "total": "51 175 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1508,10 +1712,10 @@
         "code": "gable_roof_batten",
         "name": "Обрешётка",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
+        "quantity": "100 m²",
         "unit": "sq_m",
         "unitPrice": "445 сом / m²",
-        "total": "8 010 сом",
+        "total": "44 500 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1523,10 +1727,10 @@
         "code": "gable_roof_covering",
         "name": "Кровельное покрытие",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
+        "quantity": "115 m²",
         "unit": "sq_m",
         "unitPrice": "1 602 сом / m²",
-        "total": "28 836 сом",
+        "total": "184 230 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1538,10 +1742,10 @@
         "code": "gable_roof_flashings",
         "name": "Доборные элементы",
         "category": "Материалы и комплектующие",
-        "quantity": "18 m²",
+        "quantity": "20 m²",
         "unit": "sq_m",
         "unitPrice": "445 сом / m²",
-        "total": "8 010 сом",
+        "total": "8 900 сом",
         "confidence": "high",
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
@@ -1591,12 +1795,42 @@
         "sourceLabels": [
           "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
         ]
+      },
+      {
+        "index": "1",
+        "rowNumber": "3.1",
+        "code": "gable_roof_installation_delivery_access_warning",
+        "name": "Доставка / подъем / доступ: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "1 335 сом / set",
+        "total": "1 335 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
+      },
+      {
+        "index": "2",
+        "rowNumber": "3.2",
+        "code": "gable_roof_installation_equipment_mobilization_warning",
+        "name": "Техника / инвентарь: требуется уточнение",
+        "category": "Оборудование / доставка",
+        "quantity": "1 set",
+        "unit": "set",
+        "unitPrice": "890 сом / set",
+        "total": "890 сом",
+        "confidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate, проверено 2026-05-22, freshness fresh, confidence high"
+        ]
       }
     ],
     "totals": [
       {
         "label": "Материалы",
-        "value": "233 892 сом"
+        "value": "469 831 сом"
       },
       {
         "label": "Работы",
@@ -1604,28 +1838,30 @@
       },
       {
         "label": "Доставка / техника",
-        "value": "0 KGS"
+        "value": "2225 KGS"
       },
       {
         "label": "Налог",
-        "value": "76 127 сом"
+        "value": "104 707 сом"
       },
       {
         "label": "Итого",
-        "value": "710 519 сом"
+        "value": "977 263 сом"
       }
     ],
     "tax": {
       "label": "НДС Кыргызстан",
       "rate": "12%",
       "included": "добавлен к итогу",
-      "amount": "76 127 сом",
+      "amount": "104 707 сом",
       "warning": "Налоговый статус рассчитан по текущему структурированному результату."
     },
     "sources": [
       "rate_gable_roof_installation_material_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_gable_roof_installation_auxiliary_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "rate_gable_roof_installation_labor_KG_sq_m_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_gable_roof_installation_delivery_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
+      "rate_gable_roof_installation_equipment_KG_set_standard | Configured backend regional reference rate | проверено 2026-05-22",
       "tax_kg_nds_configured | Configured Kyrgyzstan NDS reference | проверено 2026-05-22"
     ],
     "confidence": "high",
