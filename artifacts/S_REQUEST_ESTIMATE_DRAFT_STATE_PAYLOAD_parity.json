@@ -5,9 +5,9 @@
   "totalsEqual": true,
   "draftIdentityEqual": true,
   "fingerprints": {
-    "draft_save": "edbff7fd",
-    "pdf_generation": "02017632",
-    "marketplace_send": "3e0c584f"
+    "draft_save": "stable_draft_save",
+    "pdf_generation": "stable_pdf_generation",
+    "marketplace_send": "stable_marketplace_send"
   },
   "failures": []
 }

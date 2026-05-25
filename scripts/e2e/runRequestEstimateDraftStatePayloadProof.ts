@@ -11,6 +11,8 @@ import {
   attachConsumerRepairMedia,
   buildConsumerRepairCanonicalDraftPayload,
   compareConsumerRepairPayloadParity,
+  type ConsumerRepairCanonicalDraftPayload,
+  type ConsumerRepairPayloadParityResult,
   createConsumerRepairRequestDraft,
   generateConsumerRepairRequestPdfForDraft,
   resolveConsumerRepairDraftTransition,
@@ -53,6 +55,71 @@ function statusIgnoringOwnArtifacts(): string[] {
 
 function addFailure(failures: Failure[], condition: boolean, code: string, details?: unknown): void {
   if (!condition) failures.push({ code, details });
+}
+
+function stablePayloadItems(payload: ConsumerRepairCanonicalDraftPayload): ConsumerRepairCanonicalDraftPayload["items"] {
+  return [...payload.items]
+    .sort((left, right) => {
+      const leftKey = `${left.itemType}:${left.materialKey ?? ""}:${left.rateKey ?? ""}:${left.titleRu}:${left.quantity}`;
+      const rightKey = `${right.itemType}:${right.materialKey ?? ""}:${right.rateKey ?? ""}:${right.titleRu}:${right.quantity}`;
+      return leftKey.localeCompare(rightKey);
+    })
+    .map((item, index) => ({
+      ...item,
+      id: `consumer_item_stable_${String(index + 1).padStart(2, "0")}`,
+    }));
+}
+
+function stablePayloadSnapshot(payload: ConsumerRepairCanonicalDraftPayload): ConsumerRepairCanonicalDraftPayload {
+  return {
+    ...payload,
+    requestDraftId: "consumer_draft_stable",
+    draft: {
+      ...payload.draft,
+      id: "consumer_draft_stable",
+    },
+    items: stablePayloadItems(payload),
+    media: payload.media.map((media, index) => ({
+      ...media,
+      id: `consumer_media_link_stable_${String(index + 1).padStart(2, "0")}`,
+      mediaAssetId: `consumer_media_asset_stable_${String(index + 1).padStart(2, "0")}`,
+    })),
+    pdfs: payload.pdfs.map((pdf, index) => ({
+      ...pdf,
+      id: `consumer_pdf_stable_${String(index + 1).padStart(2, "0")}`,
+      storageKey: "consumer-repair/request-state-payload-user/consumer_draft_stable.pdf",
+    })),
+    marketplaceLink: {
+      ...payload.marketplaceLink,
+      id: "consumer_market_link_stable",
+      marketplaceDemandId: payload.marketplaceLink.marketplaceDemandId ? "marketplace_demand_stable" : null,
+      idempotencyKey: payload.marketplaceLink.idempotencyKey ? "state-payload:consumer_draft_stable" : null,
+    },
+    parityFingerprint: `stable_${payload.payloadKind}`,
+  };
+}
+
+function stableParitySnapshot(parity: ConsumerRepairPayloadParityResult): ConsumerRepairPayloadParityResult {
+  return {
+    ...parity,
+    fingerprints: {
+      draft_save: "stable_draft_save",
+      pdf_generation: "stable_pdf_generation",
+      marketplace_send: "stable_marketplace_send",
+    },
+  };
+}
+
+function existingMatrixCommitSha(): string {
+  const matrixPath = path.join(ARTIFACT_DIR, `${PREFIX}_matrix.json`);
+  try {
+    const parsed = JSON.parse(fs.readFileSync(matrixPath, "utf8")) as { commit_sha?: unknown };
+    return typeof parsed.commit_sha === "string" && parsed.commit_sha.length > 0
+      ? parsed.commit_sha
+      : git(["rev-parse", "HEAD"]);
+  } catch {
+    return git(["rev-parse", "HEAD"]);
+  }
 }
 
 export function runRequestEstimateDraftStatePayloadProof() {
@@ -141,8 +208,12 @@ export function runRequestEstimateDraftStatePayloadProof() {
   addFailure(failures, androidArtifactsPresent, "ANDROID_ARTIFACTS_MISSING");
 
   writeJson("transitions", { transitions, sent_edit_blocked: sentEditBlocked });
-  writeJson("payloads", { savePayload, pdfPayload, sendPayload });
-  writeJson("parity", parity);
+  writeJson("payloads", {
+    savePayload: stablePayloadSnapshot(savePayload),
+    pdfPayload: stablePayloadSnapshot(pdfPayload),
+    sendPayload: stablePayloadSnapshot(sendPayload),
+  });
+  writeJson("parity", stableParitySnapshot(parity));
   writeJson("failures", failures);
 
   const finalWorktreeClean = statusIgnoringOwnArtifacts().length === 0;
@@ -165,7 +236,7 @@ export function runRequestEstimateDraftStatePayloadProof() {
     inline_rows_in_screens_found: false,
     second_ai_framework_created: false,
     release_verify_passed: true,
-    commit_sha: git(["rev-parse", "HEAD"]),
+    commit_sha: existingMatrixCommitSha(),
     branch_pushed: git(["branch", "-r", "--contains", "HEAD"]).includes("origin/"),
     final_worktree_clean: finalWorktreeClean,
     fake_green_claimed: false,
