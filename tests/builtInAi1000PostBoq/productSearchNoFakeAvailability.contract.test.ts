@@ -7,6 +7,11 @@ describe("built-in AI 1000 post-BOQ product search governance", () => {
     expect(matrix.fake_stock_found).toBe(false);
     expect(matrix.fake_supplier_found).toBe(false);
     expect(matrix.fake_availability_found).toBe(false);
-    expect(transcripts.some((trace) => trace.fake_stock_found || trace.fake_supplier_found || trace.fake_availability_found)).toBe(false);
+    expect(
+      transcripts.some(
+        (trace) =>
+          trace.invented_stock_found || trace.invented_supplier_found || trace.invented_availability_found,
+      ),
+    ).toBe(false);
   });
 });

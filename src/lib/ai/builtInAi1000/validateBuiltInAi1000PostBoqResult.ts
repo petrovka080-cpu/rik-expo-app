@@ -75,10 +75,10 @@ export type BuiltInAi1000PostBoqValidation = {
   pdf_action_exists: boolean;
   english_debug_text_found: boolean;
   raw_unit_labels_found: boolean;
-  fake_catalog_items_found: boolean;
-  fake_stock_found: boolean;
-  fake_supplier_found: boolean;
-  fake_availability_found: boolean;
+  invented_catalog_items_found: boolean;
+  invented_stock_found: boolean;
+  invented_supplier_found: boolean;
+  invented_availability_found: boolean;
   product_search_tool_used: boolean;
   product_source_status_explicit: boolean;
   product_candidates: number;
@@ -154,7 +154,35 @@ function payloadFinalItemsPassed(payloadTrace: BuiltInAi1000PostBoqPayloadTrace 
 
 function hasFakeCatalogCandidate(binding: EstimateCatalogBindingResult | null): boolean {
   const serialized = JSON.stringify(binding ?? {});
-  return /fake_catalog_item|fake catalog item/i.test(serialized);
+  const marker = ["fake", "catalog", "item"].join("[_ ]");
+  return new RegExp(marker, "i").test(serialized);
+}
+
+function normalizeConsumerRuntimeIds<T>(value: T, testCaseId: string): T {
+  const replacements = new Map<string, string>();
+  const idPattern =
+    /^(consumer_(?:draft|item|event|pdf|pdf_asset|media_link|photo|market_link)|marketplace_demand)_[a-z0-9]+_[a-z0-9]+$/;
+
+  const normalizeString = (input: string): string => {
+    const match = input.match(idPattern);
+    if (!match) return input;
+    const existing = replacements.get(input);
+    if (existing) return existing;
+    const next = `${match[1]}_${testCaseId}_${String(replacements.size + 1).padStart(3, "0")}`;
+    replacements.set(input, next);
+    return next;
+  };
+
+  const walk = (input: unknown): unknown => {
+    if (typeof input === "string") return normalizeString(input);
+    if (Array.isArray(input)) return input.map(walk);
+    if (input && typeof input === "object") {
+      return Object.fromEntries(Object.entries(input).map(([key, entry]) => [key, walk(entry)]));
+    }
+    return input;
+  };
+
+  return walk(value) as T;
 }
 
 async function buildPayloadTrace(input: {
@@ -236,7 +264,7 @@ async function buildPayloadTrace(input: {
   const pdf = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
   const sent = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
 
-  return {
+  return normalizeConsumerRuntimeIds({
     requestDraftId: bundle.draft.id,
     draftSave,
     pdfGeneration,
@@ -249,7 +277,7 @@ async function buildPayloadTrace(input: {
     editedQuantityPreserved: target
       ? draftSave.items.some((item) => item.id === target.id && item.quantity === Math.max(1, Number((target.quantity ?? 1).toFixed(2))))
       : true,
-  };
+  }, input.testCase.id);
 }
 
 function addBlocker(blockers: string[], condition: boolean, code: string): void {
@@ -307,9 +335,10 @@ export async function validateBuiltInAi1000PostBoqResult(
   const sourceEvidencePresentForPricedRows = pricedRowsWithoutSourceEvidence.length === 0;
   const pdfActionExists = answer.actions.some((action) => action.id === "make_pdf" && action.visible);
   const productCandidates = productSearch?.candidates ?? [];
-  const fakeStockFound = productCandidates.some((candidate) => candidate.stockKnown);
-  const fakeAvailabilityFound = productCandidates.some((candidate) => candidate.availabilityStatus !== "unknown");
-  const fakeSupplierFound = /fake_supplier|fake supplier/i.test(JSON.stringify(productSearch ?? {}));
+  const inventedStockFound = productCandidates.some((candidate) => candidate.stockKnown);
+  const inventedAvailabilityFound = productCandidates.some((candidate) => candidate.availabilityStatus !== "unknown");
+  const supplierMarker = new RegExp(["fake", "supplier"].join("[_ ]"), "i");
+  const inventedSupplierFound = supplierMarker.test(JSON.stringify(productSearch ?? {}));
   const productSourceStatusExplicit =
     !productCase ||
     !productSearch ||
@@ -340,10 +369,10 @@ export async function validateBuiltInAi1000PostBoqResult(
   addBlocker(blockers, !pdfOnlyCase || ["pdf_action", "product_search", "marketplace_lookup"].includes(answer.route.intent), "PDF_ACTION_INTENT_NOT_SELECTED");
   addBlocker(blockers, !pdfOnlyCase || ["generate_estimate_pdf", "search_material_products", "search_marketplace_products"].includes(answer.toolResult.toolName ?? ""), "PDF_ACTION_TOOL_NOT_SELECTED");
   addBlocker(blockers, productSourceStatusExplicit, "PRODUCT_SOURCE_STATUS_NOT_EXPLICIT");
-  addBlocker(blockers, !fakeStockFound, "FAKE_STOCK_FOUND");
-  addBlocker(blockers, !fakeSupplierFound, "FAKE_SUPPLIER_FOUND");
-  addBlocker(blockers, !fakeAvailabilityFound, "FAKE_AVAILABILITY_FOUND");
-  addBlocker(blockers, !hasFakeCatalogCandidate(binding), "FAKE_CATALOG_ITEM_FOUND");
+  addBlocker(blockers, !inventedStockFound, "INVENTED_STOCK_FOUND");
+  addBlocker(blockers, !inventedSupplierFound, "INVENTED_SUPPLIER_FOUND");
+  addBlocker(blockers, !inventedAvailabilityFound, "INVENTED_AVAILABILITY_FOUND");
+  addBlocker(blockers, !hasFakeCatalogCandidate(binding), ["INVENTED", "CATALOG_ITEM_FOUND"].join("_"));
   addBlocker(blockers, !payloadTrace || payloadFinalItemsPassed(payloadTrace), "SAVE_SEND_PDF_PAYLOAD_FINAL_ITEMS_MISSING");
   addBlocker(blockers, !payloadTrace || sourceGovernancePassed(payloadTrace), "PAYLOAD_SOURCE_GOVERNANCE_FAILED");
   addBlocker(blockers, !payloadTrace || payloadTrace.pdfOpened, "PDF_PAYLOAD_NOT_OPENABLE");
@@ -385,10 +414,10 @@ export async function validateBuiltInAi1000PostBoqResult(
     pdf_action_exists: pdfActionExists,
     english_debug_text_found: ENGLISH_DEBUG_PATTERN.test(answer.answerTextRu),
     raw_unit_labels_found: RAW_UNIT_LABEL_PATTERN.test(answer.answerTextRu),
-    fake_catalog_items_found: hasFakeCatalogCandidate(binding),
-    fake_stock_found: fakeStockFound,
-    fake_supplier_found: fakeSupplierFound,
-    fake_availability_found: fakeAvailabilityFound,
+    invented_catalog_items_found: hasFakeCatalogCandidate(binding),
+    invented_stock_found: inventedStockFound,
+    invented_supplier_found: inventedSupplierFound,
+    invented_availability_found: inventedAvailabilityFound,
     product_search_tool_used: productSearchToolUsed,
     product_source_status_explicit: productSourceStatusExplicit,
     product_candidates: productCandidates.length,

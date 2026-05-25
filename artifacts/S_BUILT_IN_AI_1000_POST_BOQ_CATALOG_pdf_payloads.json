@@ -33,7 +33,7 @@
     {
       "id": "0008",
       "anchor": "carpet_laying",
-      "requestDraftId": "consumer_draft_mpl8q51r_0fxu8k",
+      "requestDraftId": "consumer_draft_0008_001",
       "itemCounts": {
         "draft_save": 9,
         "pdf_generation": 9,
@@ -49,7 +49,7 @@
     {
       "id": "0051",
       "anchor": "ceramic_tile_floor_laying",
-      "requestDraftId": "consumer_draft_mpl8q527_dggkhy",
+      "requestDraftId": "consumer_draft_0051_001",
       "itemCounts": {
         "draft_save": 9,
         "pdf_generation": 9,
@@ -65,7 +65,7 @@
     {
       "id": "0501",
       "anchor": "strip_foundation",
-      "requestDraftId": "consumer_draft_mpl8q52g_7l986l",
+      "requestDraftId": "consumer_draft_0501_001",
       "itemCounts": {
         "draft_save": 21,
         "pdf_generation": 21,

@@ -94,7 +94,9 @@ test.describe("built-in AI 1000 post-BOQ catalog web proof", () => {
         foundationTrace.strip_foundation_boq_rows_gte_12,
       manual_catalog_material_add_passed: foundationTrace?.payloadTrace?.manualCatalogItemId === "post_boq_manual_catalog_rebar_d14",
       pdf_from_request_draft_passed: foundationTrace?.payloadTrace?.pdfOpened === true,
-      product_search_no_fake_availability: productTraces.every((item) => !item.fake_availability_found && !item.fake_stock_found),
+      product_search_no_fake_availability: productTraces.every(
+        (item) => !item.invented_availability_found && !item.invented_stock_found,
+      ),
       screenshots,
       fake_green_claimed: false,
     });
