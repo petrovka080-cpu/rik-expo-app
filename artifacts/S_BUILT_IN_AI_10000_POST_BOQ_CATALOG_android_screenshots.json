@@ -1,0 +1,9 @@
+{
+  "android_emulator_passed": true,
+  "cases_total": 50,
+  "macro_groups_total": 25,
+  "cases_passed": 50,
+  "screenshot_path": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/android_ai10000_post_boq_catalog.png",
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}

@@ -1,0 +1,2005 @@
+{
+  "wave": "S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_DOMAIN_COVERAGE_POINT_OF_NO_RETURN",
+  "domains_total": 100,
+  "cases_per_domain": 100,
+  "required_domain_ids": [
+    "earthworks",
+    "foundations",
+    "concrete",
+    "rebar_formwork",
+    "masonry",
+    "roofing_pitched",
+    "roofing_flat",
+    "facade",
+    "windows_doors",
+    "drywall",
+    "walls",
+    "ceilings",
+    "flooring",
+    "tile",
+    "waterproofing",
+    "insulation",
+    "plumbing",
+    "electrical",
+    "lighting",
+    "hvac",
+    "demolition",
+    "waste_cleaning",
+    "roadworks",
+    "landscape",
+    "drainage",
+    "fencing",
+    "metalworks",
+    "carpentry",
+    "furniture",
+    "smart_home",
+    "security",
+    "solar_power",
+    "battery_storage",
+    "microgrid",
+    "boiler_chp",
+    "hydro_power",
+    "substations",
+    "power_lines",
+    "telecom",
+    "elevators",
+    "accessibility",
+    "greenhouse",
+    "gardening",
+    "irrigation",
+    "pools",
+    "sauna_bath",
+    "playgrounds",
+    "commercial_fitout",
+    "office_fitout",
+    "restaurant_fitout",
+    "clinic_fitout",
+    "warehouse",
+    "industrial_flooring",
+    "fire_safety",
+    "hazardous_material_no_diy",
+    "mold_water_fire_damage",
+    "documentation",
+    "design_project",
+    "surveys",
+    "inspections",
+    "procurement",
+    "logistics",
+    "equipment_rental",
+    "maintenance",
+    "emergency_repairs",
+    "apartment_turnkey",
+    "house_turnkey",
+    "bathroom_turnkey",
+    "kitchen_turnkey",
+    "garage",
+    "basement",
+    "attic",
+    "balcony",
+    "outdoor_structures",
+    "farm_buildings",
+    "agricultural_systems",
+    "cold_rooms",
+    "server_rooms",
+    "acoustic_rooms",
+    "sports_facilities",
+    "schools",
+    "hotels",
+    "retail",
+    "medical",
+    "tenant_improvement",
+    "public_works",
+    "parking",
+    "roads_private",
+    "utilities",
+    "water_supply",
+    "sewage",
+    "stormwater",
+    "heating_networks",
+    "gas_estimate_only_no_diy",
+    "structural_repair",
+    "restoration",
+    "temporary_site",
+    "event_infrastructure",
+    "household_small_tasks",
+    "full_project_boq"
+  ],
+  "domains": [
+    {
+      "domainId": "earthworks",
+      "title": "earthworks and site preparation",
+      "category": "roadworks",
+      "workFamily": "earthworks_site_base",
+      "workKey": "gravel_road_base",
+      "promptAnchor": "earthworks site grading road base compaction",
+      "productFamily": "geotextile and road base materials",
+      "macroGroupId": "macro_01",
+      "expectedRowsContain": [
+        "base",
+        "geotextile or sand",
+        "compaction",
+        "equipment"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "foundations",
+      "title": "foundations",
+      "category": "foundation",
+      "workFamily": "foundation_concrete_rebar",
+      "workKey": "strip_foundation",
+      "promptAnchor": "strip foundation concrete formwork rebar",
+      "productFamily": "concrete and rebar",
+      "macroGroupId": "macro_01",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "pouring"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "concrete",
+      "title": "concrete works",
+      "category": "concrete",
+      "workFamily": "concrete_slabs_frames",
+      "workKey": "concrete_slab",
+      "promptAnchor": "concrete slab formwork rebar pouring curing",
+      "dangerousWork": true,
+      "productFamily": "ready mix concrete",
+      "macroGroupId": "macro_01",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "rebar_formwork",
+      "title": "rebar and formwork",
+      "category": "concrete",
+      "workFamily": "rebar_formwork",
+      "workKey": "rebar_installation",
+      "promptAnchor": "rebar installation concrete formwork tying",
+      "dangerousWork": true,
+      "productFamily": "rebar and formwork materials",
+      "macroGroupId": "macro_01",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "masonry",
+      "title": "masonry",
+      "category": "masonry",
+      "workFamily": "masonry_blocks_stone",
+      "workKey": "brick_masonry",
+      "promptAnchor": "brick masonry block mortar laying",
+      "productFamily": "brick and masonry mixes",
+      "macroGroupId": "macro_02",
+      "expectedRowsContain": [
+        "brick or block",
+        "mortar",
+        "reinforcement",
+        "laying"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "roofing_pitched",
+      "title": "pitched roofing",
+      "category": "roofing",
+      "workFamily": "pitched_roofing",
+      "workKey": "gable_roof_installation",
+      "promptAnchor": "gable roof installation pitched roofing membrane covering",
+      "dangerousWork": true,
+      "productFamily": "pitched roofing materials",
+      "macroGroupId": "macro_02",
+      "expectedRowsContain": [
+        "roof covering",
+        "membrane",
+        "fasteners",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "roofing_flat",
+      "title": "flat roofing",
+      "category": "roofing",
+      "workFamily": "flat_roofing",
+      "workKey": "flat_roof_membrane",
+      "promptAnchor": "flat roof membrane roofing installation",
+      "dangerousWork": true,
+      "productFamily": "flat roof membranes",
+      "macroGroupId": "macro_02",
+      "expectedRowsContain": [
+        "roof covering",
+        "membrane",
+        "fasteners",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "facade",
+      "title": "facade",
+      "category": "facade",
+      "workFamily": "facade_exterior_systems",
+      "workKey": "facade_insulation",
+      "promptAnchor": "facade insulation cladding exterior installation",
+      "dangerousWork": true,
+      "productFamily": "facade insulation",
+      "macroGroupId": "macro_02",
+      "expectedRowsContain": [
+        "facade material",
+        "primer or subsystem",
+        "installation",
+        "protection"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "windows_doors",
+      "title": "windows and doors",
+      "category": "doors_windows",
+      "workFamily": "openings_glazing",
+      "workKey": "window_installation",
+      "promptAnchor": "window door glazing installation sealing hardware",
+      "productFamily": "windows doors and hardware",
+      "macroGroupId": "macro_03",
+      "expectedRowsContain": [
+        "unit block",
+        "hardware",
+        "sealing",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "drywall",
+      "title": "drywall",
+      "category": "drywall",
+      "workFamily": "drywall_partitions_fitout",
+      "workKey": "drywall_wall_cladding",
+      "promptAnchor": "drywall wall cladding gkl profile gypsum board",
+      "productFamily": "drywall profiles and boards",
+      "macroGroupId": "macro_03",
+      "expectedRowsContain": [
+        "profile frame",
+        "gypsum board",
+        "fasteners",
+        "joint finishing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "walls",
+      "title": "walls",
+      "category": "wall_finishing",
+      "workFamily": "interior_wall_finishes",
+      "workKey": "wall_painting",
+      "promptAnchor": "wall finishing paint primer preparation",
+      "productFamily": "wall finish materials",
+      "macroGroupId": "macro_03",
+      "expectedRowsContain": [
+        "finish material",
+        "primer",
+        "preparation",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "ceilings",
+      "title": "ceilings",
+      "category": "ceiling",
+      "workFamily": "interior_ceilings",
+      "workKey": "ceiling_painting",
+      "promptAnchor": "ceiling finish painting panels frame",
+      "productFamily": "ceiling finish materials",
+      "macroGroupId": "macro_03",
+      "expectedRowsContain": [
+        "frame",
+        "panels or boards",
+        "fasteners",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "flooring",
+      "title": "flooring",
+      "category": "flooring",
+      "workFamily": "interior_floor_finishes",
+      "workKey": "laminate_laying",
+      "promptAnchor": "laminate flooring installation underlayment baseboard",
+      "productFamily": "flooring materials",
+      "macroGroupId": "macro_04",
+      "expectedRowsContain": [
+        "covering material",
+        "base preparation",
+        "installation",
+        "consumables"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "tile",
+      "title": "tile",
+      "category": "tile",
+      "workFamily": "tile_wet_zones",
+      "workKey": "ceramic_tile_floor_laying",
+      "promptAnchor": "ceramic tile floor laying adhesive grout primer",
+      "productFamily": "tile and adhesive",
+      "macroGroupId": "macro_04",
+      "expectedRowsContain": [
+        "tile",
+        "adhesive",
+        "grout",
+        "laying"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "waterproofing",
+      "title": "waterproofing",
+      "category": "waterproofing",
+      "workFamily": "waterproofing_membranes",
+      "workKey": "bathroom_waterproofing",
+      "promptAnchor": "bathroom waterproofing membrane mastic primer",
+      "productFamily": "waterproofing membranes",
+      "macroGroupId": "macro_04",
+      "expectedRowsContain": [
+        "primer",
+        "membrane or mastic",
+        "tape",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "insulation",
+      "title": "insulation",
+      "category": "insulation",
+      "workFamily": "thermal_acoustic_insulation",
+      "workKey": "facade_insulation",
+      "promptAnchor": "insulation membrane fasteners installation",
+      "productFamily": "insulation materials",
+      "macroGroupId": "macro_04",
+      "expectedRowsContain": [
+        "insulation",
+        "membrane",
+        "fasteners",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "plumbing",
+      "title": "plumbing",
+      "category": "plumbing",
+      "workFamily": "plumbing_water_supply",
+      "workKey": "pipe_replacement",
+      "promptAnchor": "plumbing pipe replacement water pressure test",
+      "dangerousWork": true,
+      "productFamily": "pipes and fittings",
+      "macroGroupId": "macro_05",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "electrical",
+      "title": "electrical",
+      "category": "electrical",
+      "workFamily": "electrical_low_voltage",
+      "workKey": "electrical_wiring",
+      "promptAnchor": "electrical wiring cable protection testing",
+      "dangerousWork": true,
+      "productFamily": "electrical cable and protection",
+      "macroGroupId": "macro_05",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "lighting",
+      "title": "lighting",
+      "category": "electrical",
+      "workFamily": "lighting_systems",
+      "workKey": "lighting_installation",
+      "promptAnchor": "lighting installation electrical cable devices testing",
+      "dangerousWork": true,
+      "productFamily": "lighting devices and cable",
+      "macroGroupId": "macro_05",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "hvac",
+      "title": "hvac",
+      "category": "heating_hvac",
+      "workFamily": "hvac_heating_ventilation",
+      "workKey": "ventilation_installation",
+      "promptAnchor": "hvac ventilation ducts equipment commissioning",
+      "dangerousWork": true,
+      "productFamily": "hvac equipment",
+      "macroGroupId": "macro_05",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "demolition",
+      "title": "demolition",
+      "category": "demolition",
+      "workFamily": "demolition_waste",
+      "workKey": "demolition_walls",
+      "promptAnchor": "demolition protection loading disposal",
+      "dangerousWork": true,
+      "productFamily": "demolition consumables",
+      "macroGroupId": "macro_06",
+      "expectedRowsContain": [
+        "protection",
+        "demolition",
+        "loading",
+        "disposal"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "waste_cleaning",
+      "title": "waste cleaning",
+      "category": "documents_design",
+      "workFamily": "waste_cleaning",
+      "workKey": "design_project",
+      "promptAnchor": "construction cleaning waste loading disposal handover",
+      "productFamily": "cleaning supplies",
+      "macroGroupId": "macro_06",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "roadworks",
+      "title": "roadworks",
+      "category": "roadworks",
+      "workFamily": "roadworks_asphalt",
+      "workKey": "asphalt_paving",
+      "promptAnchor": "asphalt paving road base compaction",
+      "dangerousWork": true,
+      "productFamily": "asphalt and road base",
+      "macroGroupId": "macro_06",
+      "expectedRowsContain": [
+        "base",
+        "geotextile or sand",
+        "compaction",
+        "equipment"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "landscape",
+      "title": "landscape",
+      "category": "landscaping",
+      "workFamily": "landscape_hardscape",
+      "workKey": "lawn_installation",
+      "promptAnchor": "landscaping lawn soil planting cleanup",
+      "productFamily": "landscape materials",
+      "macroGroupId": "macro_06",
+      "expectedRowsContain": [
+        "base material",
+        "soil or planting",
+        "installation",
+        "cleanup"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "drainage",
+      "title": "drainage",
+      "category": "plumbing",
+      "workFamily": "drainage_stormwater",
+      "workKey": "sewer_pipe_installation",
+      "promptAnchor": "drainage sewer pipe installation pressure test",
+      "dangerousWork": true,
+      "productFamily": "drainage pipes",
+      "macroGroupId": "macro_07",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "fencing",
+      "title": "fencing",
+      "category": "metalworks",
+      "workFamily": "fences_gates",
+      "workKey": "fence_installation",
+      "promptAnchor": "metal fence gate installation coating",
+      "productFamily": "fence steel and hardware",
+      "macroGroupId": "macro_07",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "metalworks",
+      "title": "metalworks",
+      "category": "metalworks",
+      "workFamily": "metalworks_steel_welding",
+      "workKey": "welded_frame",
+      "promptAnchor": "metal steel welding fabrication coating",
+      "dangerousWork": true,
+      "productFamily": "steel profiles and consumables",
+      "macroGroupId": "macro_07",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "carpentry",
+      "title": "carpentry",
+      "category": "carpentry",
+      "workFamily": "carpentry_timber",
+      "workKey": "pergola_wood",
+      "promptAnchor": "carpentry timber fasteners protective coating",
+      "productFamily": "timber and fasteners",
+      "macroGroupId": "macro_07",
+      "expectedRowsContain": [
+        "timber",
+        "fasteners",
+        "protective coating",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "furniture",
+      "title": "furniture",
+      "category": "carpentry",
+      "workFamily": "furniture_cabinets",
+      "workKey": "furniture_assembly",
+      "promptAnchor": "furniture cabinet carpentry product material",
+      "productFamily": "furniture and cabinet hardware",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_08",
+      "expectedRowsContain": [
+        "timber",
+        "fasteners",
+        "protective coating",
+        "installation"
+      ]
+    },
+    {
+      "domainId": "smart_home",
+      "title": "smart home",
+      "category": "electrical",
+      "workFamily": "telecom_security_smart_home",
+      "workKey": "smart_home_basic",
+      "promptAnchor": "smart home low voltage automation product material",
+      "dangerousWork": true,
+      "productFamily": "smart home devices",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_08",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ]
+    },
+    {
+      "domainId": "security",
+      "title": "security",
+      "category": "electrical",
+      "workFamily": "security_access",
+      "workKey": "access_control_install",
+      "promptAnchor": "security access control low voltage product material",
+      "dangerousWork": true,
+      "productFamily": "security devices",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_08",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ]
+    },
+    {
+      "domainId": "solar_power",
+      "title": "solar power",
+      "category": "electrical",
+      "workFamily": "solar_storage_microgrids",
+      "workKey": "solar_panel_installation",
+      "promptAnchor": "solar panel inverter product material",
+      "dangerousWork": true,
+      "productFamily": "solar panels and inverters",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_08",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ]
+    },
+    {
+      "domainId": "battery_storage",
+      "title": "battery storage",
+      "category": "electrical",
+      "workFamily": "solar_storage_microgrids",
+      "workKey": "battery_storage_installation",
+      "promptAnchor": "battery storage inverter product material",
+      "dangerousWork": true,
+      "productFamily": "battery storage equipment",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_09",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ]
+    },
+    {
+      "domainId": "microgrid",
+      "title": "microgrid",
+      "category": "electrical",
+      "workFamily": "solar_storage_microgrids",
+      "workKey": "electrical_wiring",
+      "promptAnchor": "microgrid electrical cable protection commissioning",
+      "dangerousWork": true,
+      "productFamily": "microgrid electrical materials",
+      "macroGroupId": "macro_09",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "boiler_chp",
+      "title": "boiler chp",
+      "category": "heating_hvac",
+      "workFamily": "thermal_energy_boiler_chp",
+      "workKey": "boiler_room_piping",
+      "promptAnchor": "boiler room chp heating piping commissioning",
+      "dangerousWork": true,
+      "productFamily": "boiler room materials",
+      "macroGroupId": "macro_09",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "hydro_power",
+      "title": "hydro power",
+      "category": "concrete",
+      "workFamily": "hydro_power_water_infrastructure",
+      "workKey": "micro_hydro_preparation",
+      "promptAnchor": "micro hydro concrete water intake infrastructure",
+      "dangerousWork": true,
+      "productFamily": "hydro civil materials",
+      "macroGroupId": "macro_09",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "substations",
+      "title": "substations",
+      "category": "electrical",
+      "workFamily": "power_grid_substations_lines",
+      "workKey": "electrical_wiring",
+      "promptAnchor": "substation grounding electrical cable protection",
+      "dangerousWork": true,
+      "productFamily": "substation grounding materials",
+      "macroGroupId": "macro_10",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "power_lines",
+      "title": "power lines",
+      "category": "electrical",
+      "workFamily": "power_grid_substations_lines",
+      "workKey": "electrical_wiring",
+      "promptAnchor": "power line electrical cable protection testing",
+      "dangerousWork": true,
+      "productFamily": "power line materials",
+      "macroGroupId": "macro_10",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "telecom",
+      "title": "telecom",
+      "category": "electrical",
+      "workFamily": "telecom_low_voltage",
+      "workKey": "electrical_basic",
+      "promptAnchor": "electrical telecom network low voltage cable testing",
+      "dangerousWork": true,
+      "productFamily": "telecom cables and devices",
+      "macroGroupId": "macro_10",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "elevators",
+      "title": "elevators",
+      "category": "delivery_equipment",
+      "workFamily": "elevators_lifts",
+      "workKey": "crane_service",
+      "promptAnchor": "elevator lift equipment hoist service",
+      "dangerousWork": true,
+      "productFamily": "lifting equipment",
+      "macroGroupId": "macro_10",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "accessibility",
+      "title": "accessibility",
+      "category": "metalworks",
+      "workFamily": "accessibility_ramps",
+      "workKey": "metal_railing",
+      "promptAnchor": "accessibility ramp railing metal installation",
+      "dangerousWork": true,
+      "productFamily": "accessibility hardware",
+      "macroGroupId": "macro_11",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "greenhouse",
+      "title": "greenhouse",
+      "category": "metalworks",
+      "workFamily": "agriculture_greenhouse",
+      "workKey": "greenhouse_installation",
+      "promptAnchor": "greenhouse metal frame installation film panels",
+      "productFamily": "greenhouse frame materials",
+      "macroGroupId": "macro_11",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "gardening",
+      "title": "gardening",
+      "category": "landscaping",
+      "workFamily": "gardening_soil_planting",
+      "workKey": "lawn_installation",
+      "promptAnchor": "garden soil planting product material",
+      "productFamily": "garden soil and planting materials",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_11",
+      "expectedRowsContain": [
+        "base material",
+        "soil or planting",
+        "installation",
+        "cleanup"
+      ]
+    },
+    {
+      "domainId": "irrigation",
+      "title": "irrigation",
+      "category": "plumbing",
+      "workFamily": "agro_irrigation",
+      "workKey": "garden_irrigation",
+      "promptAnchor": "irrigation pipe pump plumbing installation",
+      "productFamily": "irrigation pipes and pumps",
+      "macroGroupId": "macro_11",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "pools",
+      "title": "pools",
+      "category": "waterproofing",
+      "workFamily": "pools_wet_recreation",
+      "workKey": "pool_waterproofing",
+      "promptAnchor": "pool waterproofing plumbing membrane installation",
+      "dangerousWork": true,
+      "productFamily": "pool waterproofing materials",
+      "macroGroupId": "macro_12",
+      "expectedRowsContain": [
+        "primer",
+        "membrane or mastic",
+        "tape",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "sauna_bath",
+      "title": "sauna bath",
+      "category": "carpentry",
+      "workFamily": "sauna_bath_fitout",
+      "workKey": "sauna_fitout",
+      "promptAnchor": "sauna bath carpentry insulation fitout",
+      "dangerousWork": true,
+      "productFamily": "sauna timber and insulation",
+      "macroGroupId": "macro_12",
+      "expectedRowsContain": [
+        "timber",
+        "fasteners",
+        "protective coating",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "playgrounds",
+      "title": "playgrounds",
+      "category": "landscaping",
+      "workFamily": "playgrounds_sports",
+      "workKey": "sports_court_surface",
+      "promptAnchor": "playground sports surface landscaping installation",
+      "productFamily": "playground surfacing materials",
+      "macroGroupId": "macro_12",
+      "expectedRowsContain": [
+        "base material",
+        "soil or planting",
+        "installation",
+        "cleanup"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "commercial_fitout",
+      "title": "commercial fitout",
+      "category": "electrical",
+      "workFamily": "commercial_fitout",
+      "workKey": "electrical_basic",
+      "promptAnchor": "commercial fitout drywall partitions flooring electrical",
+      "productFamily": "commercial fitout materials",
+      "macroGroupId": "macro_12",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "office_fitout",
+      "title": "office fitout",
+      "category": "ceiling",
+      "workFamily": "office_fitout",
+      "workKey": "ceiling_painting",
+      "promptAnchor": "office fitout drywall partition ceiling flooring",
+      "productFamily": "office fitout materials",
+      "macroGroupId": "macro_13",
+      "expectedRowsContain": [
+        "frame",
+        "panels or boards",
+        "fasteners",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "restaurant_fitout",
+      "title": "restaurant fitout",
+      "category": "heating_hvac",
+      "workFamily": "restaurant_fitout",
+      "workKey": "ventilation_installation",
+      "promptAnchor": "restaurant fitout tile plumbing ventilation",
+      "dangerousWork": true,
+      "productFamily": "restaurant fitout materials",
+      "macroGroupId": "macro_13",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "clinic_fitout",
+      "title": "clinic fitout",
+      "category": "electrical",
+      "workFamily": "clinic_fitout",
+      "workKey": "electrical_basic",
+      "promptAnchor": "clinic fitout wall finishing flooring electrical",
+      "dangerousWork": true,
+      "productFamily": "clinic finish materials",
+      "macroGroupId": "macro_13",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "warehouse",
+      "title": "warehouse",
+      "category": "metalworks",
+      "workFamily": "warehouse_industrial",
+      "workKey": "warehouse_steel_frame",
+      "promptAnchor": "warehouse metal steel frame industrial floor",
+      "dangerousWork": true,
+      "productFamily": "warehouse steel materials",
+      "macroGroupId": "macro_13",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "industrial_flooring",
+      "title": "industrial flooring",
+      "category": "concrete",
+      "workFamily": "industrial_flooring",
+      "workKey": "concrete_slab",
+      "promptAnchor": "industrial flooring self leveling concrete coating",
+      "dangerousWork": true,
+      "productFamily": "industrial flooring materials",
+      "macroGroupId": "macro_14",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "fire_safety",
+      "title": "fire safety",
+      "category": "electrical",
+      "workFamily": "fire_safety_systems",
+      "workKey": "fire_alarm_installation",
+      "promptAnchor": "fire alarm electrical cable devices testing",
+      "dangerousWork": true,
+      "productFamily": "fire safety devices",
+      "macroGroupId": "macro_14",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "hazardous_material_no_diy",
+      "title": "hazardous material no diy",
+      "category": "demolition",
+      "workFamily": "hazardous_material",
+      "workKey": "hazardous_material_assessment",
+      "promptAnchor": "hazardous material assessment demolition containment specialist review",
+      "dangerousWork": true,
+      "productFamily": "hazardous material containment",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_14",
+      "expectedRowsContain": [
+        "protection",
+        "demolition",
+        "loading",
+        "disposal"
+      ]
+    },
+    {
+      "domainId": "mold_water_fire_damage",
+      "title": "mold water fire damage",
+      "category": "cleaning",
+      "workFamily": "damage_restoration",
+      "workKey": "mold_remediation",
+      "promptAnchor": "mold water fire damage cleaning restoration",
+      "dangerousWork": true,
+      "productFamily": "restoration supplies",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_14",
+      "expectedRowsContain": [
+        "cleaning supplies",
+        "labor",
+        "waste handling",
+        "handover"
+      ]
+    },
+    {
+      "domainId": "documentation",
+      "title": "documentation",
+      "category": "documents_design",
+      "workFamily": "documentation",
+      "workKey": "as_built_docs",
+      "promptAnchor": "project documentation drawings estimate package",
+      "productFamily": "documentation service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_15",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    },
+    {
+      "domainId": "design_project",
+      "title": "design project",
+      "category": "documents_design",
+      "workFamily": "design_project",
+      "workKey": "design_project",
+      "promptAnchor": "design project drawings estimate package",
+      "productFamily": "design service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_15",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    },
+    {
+      "domainId": "surveys",
+      "title": "surveys",
+      "category": "documents_design",
+      "workFamily": "surveys",
+      "workKey": "geodetic_survey",
+      "promptAnchor": "survey geodetic documentation estimate package",
+      "productFamily": "survey service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_15",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    },
+    {
+      "domainId": "inspections",
+      "title": "inspections",
+      "category": "documents_design",
+      "workFamily": "inspections",
+      "workKey": "inspection_report",
+      "promptAnchor": "inspection report documentation estimate package",
+      "productFamily": "inspection service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_15",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    },
+    {
+      "domainId": "procurement",
+      "title": "procurement",
+      "category": "delivery_equipment",
+      "workFamily": "procurement",
+      "workKey": "procurement_plan",
+      "promptAnchor": "procurement material supplier product list",
+      "productFamily": "procurement materials",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_16",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ]
+    },
+    {
+      "domainId": "logistics",
+      "title": "logistics",
+      "category": "delivery_equipment",
+      "workFamily": "logistics_delivery",
+      "workKey": "delivery_lifting",
+      "promptAnchor": "delivery lifting logistics equipment service",
+      "productFamily": "delivery equipment",
+      "macroGroupId": "macro_16",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "equipment_rental",
+      "title": "equipment rental",
+      "category": "delivery_equipment",
+      "workFamily": "equipment_rental",
+      "workKey": "tool_rental",
+      "promptAnchor": "equipment rental product tool supplier",
+      "productFamily": "rental equipment",
+      "intent": "product_search",
+      "sourcePolicy": "fresh_required",
+      "macroGroupId": "macro_16",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ]
+    },
+    {
+      "domainId": "maintenance",
+      "title": "maintenance",
+      "category": "other",
+      "workFamily": "maintenance_repairs",
+      "workKey": "other_construction_work",
+      "promptAnchor": "building maintenance repair construction work",
+      "productFamily": "maintenance materials",
+      "macroGroupId": "macro_16",
+      "expectedRowsContain": [
+        "materials",
+        "labor",
+        "equipment",
+        "handover"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "emergency_repairs",
+      "title": "emergency repairs",
+      "category": "other",
+      "workFamily": "emergency_repairs",
+      "workKey": "roof_repair",
+      "promptAnchor": "emergency roof leak repair construction work",
+      "dangerousWork": true,
+      "productFamily": "emergency repair materials",
+      "macroGroupId": "macro_17",
+      "expectedRowsContain": [
+        "materials",
+        "labor",
+        "equipment",
+        "handover"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "apartment_turnkey",
+      "title": "apartment turnkey",
+      "category": "painting",
+      "workFamily": "turnkey_residential",
+      "workKey": "wall_painting",
+      "promptAnchor": "apartment turnkey flooring drywall painting plumbing",
+      "productFamily": "apartment turnkey materials",
+      "macroGroupId": "macro_17",
+      "expectedRowsContain": [
+        "paint",
+        "primer",
+        "surface preparation",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "house_turnkey",
+      "title": "house turnkey",
+      "category": "electrical",
+      "workFamily": "turnkey_house",
+      "workKey": "electrical_basic",
+      "promptAnchor": "house turnkey foundation masonry roof plumbing electrical",
+      "dangerousWork": true,
+      "productFamily": "house turnkey materials",
+      "macroGroupId": "macro_17",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "bathroom_turnkey",
+      "title": "bathroom turnkey",
+      "category": "tile",
+      "workFamily": "bathroom_turnkey",
+      "workKey": "bathroom_tile_full",
+      "promptAnchor": "bathroom turnkey tile waterproofing plumbing",
+      "dangerousWork": true,
+      "productFamily": "bathroom materials",
+      "macroGroupId": "macro_17",
+      "expectedRowsContain": [
+        "tile",
+        "adhesive",
+        "grout",
+        "laying"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "kitchen_turnkey",
+      "title": "kitchen turnkey",
+      "category": "electrical",
+      "workFamily": "kitchen_turnkey",
+      "workKey": "electrical_basic",
+      "promptAnchor": "kitchen turnkey plumbing tile furniture electrical",
+      "dangerousWork": true,
+      "productFamily": "kitchen materials",
+      "macroGroupId": "macro_18",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "garage",
+      "title": "garage",
+      "category": "masonry",
+      "workFamily": "garage_building",
+      "workKey": "brick_masonry",
+      "promptAnchor": "garage concrete slab masonry roof door",
+      "dangerousWork": true,
+      "productFamily": "garage materials",
+      "macroGroupId": "macro_18",
+      "expectedRowsContain": [
+        "brick or block",
+        "mortar",
+        "reinforcement",
+        "laying"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "basement",
+      "title": "basement",
+      "category": "waterproofing",
+      "workFamily": "basement",
+      "workKey": "foundation_waterproofing",
+      "promptAnchor": "basement waterproofing concrete drainage",
+      "dangerousWork": true,
+      "productFamily": "basement waterproofing materials",
+      "macroGroupId": "macro_18",
+      "expectedRowsContain": [
+        "primer",
+        "membrane or mastic",
+        "tape",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "attic",
+      "title": "attic",
+      "category": "heating_hvac",
+      "workFamily": "attic_conversion",
+      "workKey": "ventilation_installation",
+      "promptAnchor": "attic insulation drywall flooring ventilation",
+      "dangerousWork": true,
+      "productFamily": "attic insulation materials",
+      "macroGroupId": "macro_18",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "balcony",
+      "title": "balcony",
+      "category": "metalworks",
+      "workFamily": "balcony_repair",
+      "workKey": "metal_railing",
+      "promptAnchor": "balcony waterproofing tile railing repair",
+      "dangerousWork": true,
+      "productFamily": "balcony repair materials",
+      "macroGroupId": "macro_19",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "outdoor_structures",
+      "title": "outdoor structures",
+      "category": "carpentry",
+      "workFamily": "outdoor_structures",
+      "workKey": "pergola_wood",
+      "promptAnchor": "outdoor pergola deck timber carpentry",
+      "productFamily": "outdoor timber materials",
+      "macroGroupId": "macro_19",
+      "expectedRowsContain": [
+        "timber",
+        "fasteners",
+        "protective coating",
+        "installation"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "farm_buildings",
+      "title": "farm buildings",
+      "category": "concrete",
+      "workFamily": "farm_buildings",
+      "workKey": "concrete_slab",
+      "promptAnchor": "farm building metal frame concrete slab",
+      "dangerousWork": true,
+      "productFamily": "farm building steel",
+      "macroGroupId": "macro_19",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "agricultural_systems",
+      "title": "agricultural systems",
+      "category": "metalworks",
+      "workFamily": "agricultural_systems",
+      "workKey": "welded_frame",
+      "promptAnchor": "agricultural irrigation greenhouse plumbing system",
+      "productFamily": "agricultural system materials",
+      "macroGroupId": "macro_19",
+      "expectedRowsContain": [
+        "steel",
+        "consumables",
+        "fabrication",
+        "coating"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "cold_rooms",
+      "title": "cold rooms",
+      "category": "delivery_equipment",
+      "workFamily": "cold_rooms",
+      "workKey": "crane_service",
+      "promptAnchor": "cold room insulation panels doors equipment",
+      "dangerousWork": true,
+      "productFamily": "cold room panels",
+      "macroGroupId": "macro_20",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "server_rooms",
+      "title": "server rooms",
+      "category": "electrical",
+      "workFamily": "server_rooms",
+      "workKey": "server_rack_installation",
+      "promptAnchor": "server room electrical cooling rack installation",
+      "dangerousWork": true,
+      "productFamily": "server room equipment",
+      "macroGroupId": "macro_20",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "acoustic_rooms",
+      "title": "acoustic rooms",
+      "category": "wall_finishing",
+      "workFamily": "acoustic_rooms",
+      "workKey": "wall_panel_installation",
+      "promptAnchor": "acoustic room drywall insulation wall finishing",
+      "productFamily": "acoustic room materials",
+      "macroGroupId": "macro_20",
+      "expectedRowsContain": [
+        "finish material",
+        "primer",
+        "preparation",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "sports_facilities",
+      "title": "sports facilities",
+      "category": "landscaping",
+      "workFamily": "sports_facilities",
+      "workKey": "sports_court_surface",
+      "promptAnchor": "sports court surface landscaping installation",
+      "productFamily": "sports surfacing materials",
+      "macroGroupId": "macro_20",
+      "expectedRowsContain": [
+        "base material",
+        "soil or planting",
+        "installation",
+        "cleanup"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "schools",
+      "title": "schools",
+      "category": "electrical",
+      "workFamily": "schools",
+      "workKey": "electrical_basic",
+      "promptAnchor": "school renovation wall finishing flooring electrical",
+      "dangerousWork": true,
+      "productFamily": "school renovation materials",
+      "macroGroupId": "macro_21",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "hotels",
+      "title": "hotels",
+      "category": "flooring",
+      "workFamily": "hotels",
+      "workKey": "carpet_laying",
+      "promptAnchor": "hotel renovation carpet flooring wall finishing",
+      "productFamily": "hotel finish materials",
+      "macroGroupId": "macro_21",
+      "expectedRowsContain": [
+        "covering material",
+        "base preparation",
+        "installation",
+        "consumables"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "retail",
+      "title": "retail",
+      "category": "electrical",
+      "workFamily": "retail",
+      "workKey": "electrical_basic",
+      "promptAnchor": "retail fitout drywall flooring electrical",
+      "productFamily": "retail fitout materials",
+      "macroGroupId": "macro_21",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "medical",
+      "title": "medical",
+      "category": "electrical",
+      "workFamily": "medical",
+      "workKey": "electrical_basic",
+      "promptAnchor": "medical clinic renovation wall finishing flooring electrical",
+      "dangerousWork": true,
+      "productFamily": "medical finish materials",
+      "macroGroupId": "macro_21",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "tenant_improvement",
+      "title": "tenant improvement",
+      "category": "wall_finishing",
+      "workFamily": "tenant_improvement",
+      "workKey": "tenant_improvement",
+      "promptAnchor": "tenant improvement drywall ceiling flooring electrical",
+      "productFamily": "tenant improvement materials",
+      "macroGroupId": "macro_22",
+      "expectedRowsContain": [
+        "finish material",
+        "primer",
+        "preparation",
+        "application"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "public_works",
+      "title": "public works",
+      "category": "roadworks",
+      "workFamily": "public_works",
+      "workKey": "asphalt_paving",
+      "promptAnchor": "public works road asphalt drainage landscaping",
+      "dangerousWork": true,
+      "productFamily": "public works materials",
+      "macroGroupId": "macro_22",
+      "expectedRowsContain": [
+        "base",
+        "geotextile or sand",
+        "compaction",
+        "equipment"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "parking",
+      "title": "parking",
+      "category": "roadworks",
+      "workFamily": "parking",
+      "workKey": "asphalt_paving",
+      "promptAnchor": "parking asphalt paving base compaction",
+      "dangerousWork": true,
+      "productFamily": "parking materials",
+      "macroGroupId": "macro_22",
+      "expectedRowsContain": [
+        "base",
+        "geotextile or sand",
+        "compaction",
+        "equipment"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "roads_private",
+      "title": "private roads",
+      "category": "roadworks",
+      "workFamily": "private_roads",
+      "workKey": "asphalt_paving",
+      "promptAnchor": "private road asphalt paving gravel base",
+      "dangerousWork": true,
+      "productFamily": "private road materials",
+      "macroGroupId": "macro_22",
+      "expectedRowsContain": [
+        "base",
+        "geotextile or sand",
+        "compaction",
+        "equipment"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "utilities",
+      "title": "utilities",
+      "category": "electrical",
+      "workFamily": "utilities",
+      "workKey": "electrical_basic",
+      "promptAnchor": "utilities trench pipe electrical conduit installation",
+      "dangerousWork": true,
+      "productFamily": "utility materials",
+      "macroGroupId": "macro_23",
+      "expectedRowsContain": [
+        "cable",
+        "devices",
+        "protection",
+        "testing"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "water_supply",
+      "title": "water supply",
+      "category": "plumbing",
+      "workFamily": "water_supply",
+      "workKey": "pipe_replacement",
+      "promptAnchor": "water supply pipe plumbing installation pressure test",
+      "dangerousWork": true,
+      "productFamily": "water supply pipes",
+      "macroGroupId": "macro_23",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "sewage",
+      "title": "sewage",
+      "category": "plumbing",
+      "workFamily": "sewage",
+      "workKey": "sewer_pipe_installation",
+      "promptAnchor": "sewage sewer pipe plumbing installation",
+      "dangerousWork": true,
+      "productFamily": "sewer pipes",
+      "macroGroupId": "macro_23",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "stormwater",
+      "title": "stormwater",
+      "category": "plumbing",
+      "workFamily": "stormwater",
+      "workKey": "sewer_pipe_installation",
+      "promptAnchor": "stormwater drainage pipe catch basin installation",
+      "dangerousWork": true,
+      "productFamily": "stormwater materials",
+      "macroGroupId": "macro_23",
+      "expectedRowsContain": [
+        "pipes or fixtures",
+        "fittings",
+        "installation",
+        "pressure test"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "heating_networks",
+      "title": "heating networks",
+      "category": "heating_hvac",
+      "workFamily": "heating_networks",
+      "workKey": "boiler_room_piping",
+      "promptAnchor": "heating network pipe trench insulation commissioning",
+      "dangerousWork": true,
+      "productFamily": "heating network pipes",
+      "macroGroupId": "macro_24",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "gas_estimate_only_no_diy",
+      "title": "gas estimate only no diy",
+      "category": "heating_hvac",
+      "workFamily": "gas_estimate_only",
+      "workKey": "boiler_room_piping",
+      "promptAnchor": "gas boiler heating estimate specialist review no diy",
+      "dangerousWork": true,
+      "productFamily": "gas certified service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_24",
+      "expectedRowsContain": [
+        "equipment",
+        "pipes or ducts",
+        "installation",
+        "commissioning"
+      ]
+    },
+    {
+      "domainId": "structural_repair",
+      "title": "structural repair",
+      "category": "concrete",
+      "workFamily": "structural_repair",
+      "workKey": "retaining_wall_concrete",
+      "promptAnchor": "structural repair concrete rebar specialist review",
+      "dangerousWork": true,
+      "productFamily": "structural repair materials",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_24",
+      "expectedRowsContain": [
+        "concrete",
+        "rebar",
+        "formwork",
+        "curing"
+      ]
+    },
+    {
+      "domainId": "restoration",
+      "title": "restoration",
+      "category": "documents_design",
+      "workFamily": "restoration",
+      "workKey": "design_project",
+      "promptAnchor": "restoration cleaning repair damage handover",
+      "dangerousWork": true,
+      "productFamily": "restoration materials",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_24",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    },
+    {
+      "domainId": "temporary_site",
+      "title": "temporary site",
+      "category": "delivery_equipment",
+      "workFamily": "temporary_site",
+      "workKey": "temporary_site_office",
+      "promptAnchor": "temporary site office fencing utility setup",
+      "productFamily": "temporary site equipment",
+      "macroGroupId": "macro_25",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "event_infrastructure",
+      "title": "event infrastructure",
+      "category": "delivery_equipment",
+      "workFamily": "event_infrastructure",
+      "workKey": "tool_rental",
+      "promptAnchor": "event temporary infrastructure equipment rental",
+      "productFamily": "event rental equipment",
+      "macroGroupId": "macro_25",
+      "expectedRowsContain": [
+        "item list",
+        "quantity",
+        "source",
+        "price status"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "household_small_tasks",
+      "title": "household small tasks",
+      "category": "cleaning",
+      "workFamily": "household_small_tasks",
+      "workKey": "construction_cleaning",
+      "promptAnchor": "household small repair construction work",
+      "productFamily": "household repair materials",
+      "macroGroupId": "macro_25",
+      "expectedRowsContain": [
+        "cleaning supplies",
+        "labor",
+        "waste handling",
+        "handover"
+      ],
+      "sourcePolicy": "fresh_required"
+    },
+    {
+      "domainId": "full_project_boq",
+      "title": "full project boq",
+      "category": "documents_design",
+      "workFamily": "full_project_boq",
+      "workKey": "quantity_takeoff",
+      "promptAnchor": "full project boq quantity takeoff documentation",
+      "productFamily": "full project boq service",
+      "sourcePolicy": "manual_review_allowed",
+      "macroGroupId": "macro_25",
+      "expectedRowsContain": [
+        "survey",
+        "drawings",
+        "estimate package",
+        "delivery"
+      ]
+    }
+  ],
+  "domain_summary": {
+    "earthworks": 100,
+    "foundations": 100,
+    "concrete": 100,
+    "rebar_formwork": 100,
+    "masonry": 100,
+    "roofing_pitched": 100,
+    "roofing_flat": 100,
+    "facade": 100,
+    "windows_doors": 100,
+    "drywall": 100,
+    "walls": 100,
+    "ceilings": 100,
+    "flooring": 100,
+    "tile": 100,
+    "waterproofing": 100,
+    "insulation": 100,
+    "plumbing": 100,
+    "electrical": 100,
+    "lighting": 100,
+    "hvac": 100,
+    "demolition": 100,
+    "waste_cleaning": 100,
+    "roadworks": 100,
+    "landscape": 100,
+    "drainage": 100,
+    "fencing": 100,
+    "metalworks": 100,
+    "carpentry": 100,
+    "furniture": 100,
+    "smart_home": 100,
+    "security": 100,
+    "solar_power": 100,
+    "battery_storage": 100,
+    "microgrid": 100,
+    "boiler_chp": 100,
+    "hydro_power": 100,
+    "substations": 100,
+    "power_lines": 100,
+    "telecom": 100,
+    "elevators": 100,
+    "accessibility": 100,
+    "greenhouse": 100,
+    "gardening": 100,
+    "irrigation": 100,
+    "pools": 100,
+    "sauna_bath": 100,
+    "playgrounds": 100,
+    "commercial_fitout": 100,
+    "office_fitout": 100,
+    "restaurant_fitout": 100,
+    "clinic_fitout": 100,
+    "warehouse": 100,
+    "industrial_flooring": 100,
+    "fire_safety": 100,
+    "hazardous_material_no_diy": 100,
+    "mold_water_fire_damage": 100,
+    "documentation": 100,
+    "design_project": 100,
+    "surveys": 100,
+    "inspections": 100,
+    "procurement": 100,
+    "logistics": 100,
+    "equipment_rental": 100,
+    "maintenance": 100,
+    "emergency_repairs": 100,
+    "apartment_turnkey": 100,
+    "house_turnkey": 100,
+    "bathroom_turnkey": 100,
+    "kitchen_turnkey": 100,
+    "garage": 100,
+    "basement": 100,
+    "attic": 100,
+    "balcony": 100,
+    "outdoor_structures": 100,
+    "farm_buildings": 100,
+    "agricultural_systems": 100,
+    "cold_rooms": 100,
+    "server_rooms": 100,
+    "acoustic_rooms": 100,
+    "sports_facilities": 100,
+    "schools": 100,
+    "hotels": 100,
+    "retail": 100,
+    "medical": 100,
+    "tenant_improvement": 100,
+    "public_works": 100,
+    "parking": 100,
+    "roads_private": 100,
+    "utilities": 100,
+    "water_supply": 100,
+    "sewage": 100,
+    "stormwater": 100,
+    "heating_networks": 100,
+    "gas_estimate_only_no_diy": 100,
+    "structural_repair": 100,
+    "restoration": 100,
+    "temporary_site": 100,
+    "event_infrastructure": 100,
+    "household_small_tasks": 100,
+    "full_project_boq": 100
+  },
+  "macro_group_summary": {
+    "macro_01": 400,
+    "macro_02": 400,
+    "macro_03": 400,
+    "macro_04": 400,
+    "macro_05": 400,
+    "macro_06": 400,
+    "macro_07": 400,
+    "macro_08": 400,
+    "macro_09": 400,
+    "macro_10": 400,
+    "macro_11": 400,
+    "macro_12": 400,
+    "macro_13": 400,
+    "macro_14": 400,
+    "macro_15": 400,
+    "macro_16": 400,
+    "macro_17": 400,
+    "macro_18": 400,
+    "macro_19": 400,
+    "macro_20": 400,
+    "macro_21": 400,
+    "macro_22": 400,
+    "macro_23": 400,
+    "macro_24": 400,
+    "macro_25": 400
+  },
+  "fake_green_claimed": false
+}

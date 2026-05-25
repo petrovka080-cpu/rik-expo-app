@@ -1,0 +1,1608 @@
+{
+  "web_playwright_passed": true,
+  "cases_total": 200,
+  "domains_total": 100,
+  "transcripts": [
+    {
+      "id": "00001",
+      "domainId": "earthworks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00002",
+      "domainId": "earthworks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00101",
+      "domainId": "foundations",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00102",
+      "domainId": "foundations",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00201",
+      "domainId": "concrete",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00202",
+      "domainId": "concrete",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00301",
+      "domainId": "rebar_formwork",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00302",
+      "domainId": "rebar_formwork",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00401",
+      "domainId": "masonry",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00402",
+      "domainId": "masonry",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00501",
+      "domainId": "roofing_pitched",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00502",
+      "domainId": "roofing_pitched",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00601",
+      "domainId": "roofing_flat",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00602",
+      "domainId": "roofing_flat",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00701",
+      "domainId": "facade",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00702",
+      "domainId": "facade",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00801",
+      "domainId": "windows_doors",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00802",
+      "domainId": "windows_doors",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00901",
+      "domainId": "drywall",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "00902",
+      "domainId": "drywall",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01001",
+      "domainId": "walls",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01002",
+      "domainId": "walls",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01101",
+      "domainId": "ceilings",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01102",
+      "domainId": "ceilings",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01201",
+      "domainId": "flooring",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01202",
+      "domainId": "flooring",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01301",
+      "domainId": "tile",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01302",
+      "domainId": "tile",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01401",
+      "domainId": "waterproofing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01402",
+      "domainId": "waterproofing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01501",
+      "domainId": "insulation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01502",
+      "domainId": "insulation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01601",
+      "domainId": "plumbing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01602",
+      "domainId": "plumbing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01701",
+      "domainId": "electrical",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01702",
+      "domainId": "electrical",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01801",
+      "domainId": "lighting",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01802",
+      "domainId": "lighting",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01901",
+      "domainId": "hvac",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "01902",
+      "domainId": "hvac",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02001",
+      "domainId": "demolition",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02002",
+      "domainId": "demolition",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02101",
+      "domainId": "waste_cleaning",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02102",
+      "domainId": "waste_cleaning",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02201",
+      "domainId": "roadworks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02202",
+      "domainId": "roadworks",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02301",
+      "domainId": "landscape",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02302",
+      "domainId": "landscape",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02401",
+      "domainId": "drainage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02402",
+      "domainId": "drainage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02501",
+      "domainId": "fencing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02502",
+      "domainId": "fencing",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02601",
+      "domainId": "metalworks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02602",
+      "domainId": "metalworks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02701",
+      "domainId": "carpentry",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02702",
+      "domainId": "carpentry",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02801",
+      "domainId": "furniture",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02802",
+      "domainId": "furniture",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02901",
+      "domainId": "smart_home",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "02902",
+      "domainId": "smart_home",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03001",
+      "domainId": "security",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03002",
+      "domainId": "security",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03101",
+      "domainId": "solar_power",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03102",
+      "domainId": "solar_power",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03201",
+      "domainId": "battery_storage",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03202",
+      "domainId": "battery_storage",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03301",
+      "domainId": "microgrid",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03302",
+      "domainId": "microgrid",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03401",
+      "domainId": "boiler_chp",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03402",
+      "domainId": "boiler_chp",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03501",
+      "domainId": "hydro_power",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03502",
+      "domainId": "hydro_power",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03601",
+      "domainId": "substations",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03602",
+      "domainId": "substations",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03701",
+      "domainId": "power_lines",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03702",
+      "domainId": "power_lines",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03801",
+      "domainId": "telecom",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03802",
+      "domainId": "telecom",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03901",
+      "domainId": "elevators",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "03902",
+      "domainId": "elevators",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04001",
+      "domainId": "accessibility",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04002",
+      "domainId": "accessibility",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04101",
+      "domainId": "greenhouse",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04102",
+      "domainId": "greenhouse",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04201",
+      "domainId": "gardening",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04202",
+      "domainId": "gardening",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04301",
+      "domainId": "irrigation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04302",
+      "domainId": "irrigation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04401",
+      "domainId": "pools",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04402",
+      "domainId": "pools",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04501",
+      "domainId": "sauna_bath",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04502",
+      "domainId": "sauna_bath",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04601",
+      "domainId": "playgrounds",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04602",
+      "domainId": "playgrounds",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04701",
+      "domainId": "commercial_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04702",
+      "domainId": "commercial_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04801",
+      "domainId": "office_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04802",
+      "domainId": "office_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04901",
+      "domainId": "restaurant_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "04902",
+      "domainId": "restaurant_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05001",
+      "domainId": "clinic_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05002",
+      "domainId": "clinic_fitout",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05101",
+      "domainId": "warehouse",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05102",
+      "domainId": "warehouse",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05201",
+      "domainId": "industrial_flooring",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05202",
+      "domainId": "industrial_flooring",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05301",
+      "domainId": "fire_safety",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05302",
+      "domainId": "fire_safety",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05401",
+      "domainId": "hazardous_material_no_diy",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05402",
+      "domainId": "hazardous_material_no_diy",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05501",
+      "domainId": "mold_water_fire_damage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05502",
+      "domainId": "mold_water_fire_damage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05601",
+      "domainId": "documentation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05602",
+      "domainId": "documentation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05701",
+      "domainId": "design_project",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05702",
+      "domainId": "design_project",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05801",
+      "domainId": "surveys",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05802",
+      "domainId": "surveys",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05901",
+      "domainId": "inspections",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "05902",
+      "domainId": "inspections",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06001",
+      "domainId": "procurement",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06002",
+      "domainId": "procurement",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06101",
+      "domainId": "logistics",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06102",
+      "domainId": "logistics",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06201",
+      "domainId": "equipment_rental",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06202",
+      "domainId": "equipment_rental",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06301",
+      "domainId": "maintenance",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06302",
+      "domainId": "maintenance",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06401",
+      "domainId": "emergency_repairs",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06402",
+      "domainId": "emergency_repairs",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06501",
+      "domainId": "apartment_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06502",
+      "domainId": "apartment_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06601",
+      "domainId": "house_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06602",
+      "domainId": "house_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06701",
+      "domainId": "bathroom_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06702",
+      "domainId": "bathroom_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06801",
+      "domainId": "kitchen_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06802",
+      "domainId": "kitchen_turnkey",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06901",
+      "domainId": "garage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "06902",
+      "domainId": "garage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07001",
+      "domainId": "basement",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07002",
+      "domainId": "basement",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07101",
+      "domainId": "attic",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07102",
+      "domainId": "attic",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07201",
+      "domainId": "balcony",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07202",
+      "domainId": "balcony",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07301",
+      "domainId": "outdoor_structures",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07302",
+      "domainId": "outdoor_structures",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07401",
+      "domainId": "farm_buildings",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07402",
+      "domainId": "farm_buildings",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07501",
+      "domainId": "agricultural_systems",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07502",
+      "domainId": "agricultural_systems",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07601",
+      "domainId": "cold_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07602",
+      "domainId": "cold_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07701",
+      "domainId": "server_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07702",
+      "domainId": "server_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07801",
+      "domainId": "acoustic_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07802",
+      "domainId": "acoustic_rooms",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07901",
+      "domainId": "sports_facilities",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "07902",
+      "domainId": "sports_facilities",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08001",
+      "domainId": "schools",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08002",
+      "domainId": "schools",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08101",
+      "domainId": "hotels",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08102",
+      "domainId": "hotels",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08201",
+      "domainId": "retail",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08202",
+      "domainId": "retail",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08301",
+      "domainId": "medical",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08302",
+      "domainId": "medical",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08401",
+      "domainId": "tenant_improvement",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08402",
+      "domainId": "tenant_improvement",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08501",
+      "domainId": "public_works",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08502",
+      "domainId": "public_works",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08601",
+      "domainId": "parking",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08602",
+      "domainId": "parking",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08701",
+      "domainId": "roads_private",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08702",
+      "domainId": "roads_private",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08801",
+      "domainId": "utilities",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08802",
+      "domainId": "utilities",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08901",
+      "domainId": "water_supply",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "08902",
+      "domainId": "water_supply",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09001",
+      "domainId": "sewage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09002",
+      "domainId": "sewage",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09101",
+      "domainId": "stormwater",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09102",
+      "domainId": "stormwater",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09201",
+      "domainId": "heating_networks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09202",
+      "domainId": "heating_networks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09301",
+      "domainId": "gas_estimate_only_no_diy",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09302",
+      "domainId": "gas_estimate_only_no_diy",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09401",
+      "domainId": "structural_repair",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09402",
+      "domainId": "structural_repair",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09501",
+      "domainId": "restoration",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09502",
+      "domainId": "restoration",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09601",
+      "domainId": "temporary_site",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09602",
+      "domainId": "temporary_site",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09701",
+      "domainId": "event_infrastructure",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09702",
+      "domainId": "event_infrastructure",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09801",
+      "domainId": "household_small_tasks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09802",
+      "domainId": "household_small_tasks",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09901",
+      "domainId": "full_project_boq",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    },
+    {
+      "id": "09902",
+      "domainId": "full_project_boq",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "passed": true,
+      "failureCodes": []
+    }
+  ],
+  "fake_green_claimed": false
+}

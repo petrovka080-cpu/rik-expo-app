@@ -1,0 +1,17 @@
+{
+  "web_playwright_passed": true,
+  "cases_total": 200,
+  "domains_total": 100,
+  "route_counts": {
+    "/request": 183,
+    "/product/search": 17
+  },
+  "screenshots": {
+    "foundations_00101": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/foundations_00101.png",
+    "roadworks_02201": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/roadworks_02201.png",
+    "procurement_06001": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/procurement_06001.png",
+    "documentation_05601": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/documentation_05601.png",
+    "gas_estimate_only_no_diy_09301": "artifacts/screenshots/built-in-ai-10000-post-boq-catalog/gas_estimate_only_no_diy_09301.png"
+  },
+  "fake_green_claimed": false
+}

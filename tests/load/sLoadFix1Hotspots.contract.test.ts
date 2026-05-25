@@ -625,7 +625,9 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("artifacts/S_BUILT_IN_AI_LIVE_ACCEPTANCE_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_150_WORK_TYPES_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_1000_POST_BOQ_CATALOG_") ||
     normalized.startsWith("artifacts/S_BUILT_IN_AI_10000_WORK_TYPES_") ||
+    normalized.startsWith("artifacts/S_BUILT_IN_AI_10000_POST_BOQ_CATALOG_") ||
     normalized.startsWith("artifacts/S_GREEN_CLAIM_ARTIFACT_RECONCILIATION_") ||
     normalized.startsWith("artifacts/S_ALL_SCREENS_") ||
     normalized.startsWith("artifacts/S_ENTERPRISE_RELEASE_CANDIDATE_") ||
@@ -642,6 +644,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/e2e/livePdfButtonReality") ||
     normalized === "tests/e2e/routeParity.web.spec.ts" ||
     normalized === "tests/e2e/estimatePdf.web.spec.ts" ||
+    normalized === "tests/e2e/builtInAi10000PostBoqLiveSample.web.spec.ts" ||
     normalized.startsWith("tests/architecture/aiEstimatePdf") ||
     normalized.startsWith("tests/architecture/pdfNo") ||
     normalized === "tests/architecture/liveAcceptanceRequiredForGreen.contract.test.ts" ||
@@ -666,6 +669,8 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("tests/builtInAi1000/") ||
     normalized === "tests/builtInAi10000" ||
     normalized.startsWith("tests/builtInAi10000/") ||
+    normalized === "tests/builtInAi10000PostBoq" ||
+    normalized.startsWith("tests/builtInAi10000PostBoq/") ||
     normalized.startsWith("tests/audit/greenClaim") ||
     normalized === "tests/audit/replayVerifiedMatrices.contract.test.ts" ||
     normalized === "tests/audit/releaseGuardUsesReplayLedger.contract.test.ts" ||
@@ -739,6 +744,7 @@ const isApprovedGreenCloseoutCurrentWavePatch = (file: string) => {
     normalized.startsWith("scripts/e2e/runAsphalt10000SqMEstimateProof") ||
     normalized.startsWith("scripts/e2e/builtInAiProofShared") ||
     normalized.startsWith("scripts/e2e/runBuiltInAi") ||
+    normalized.startsWith("scripts/e2e/runAndroidBuiltInAi10000PostBoqLiveSampleSmoke") ||
     normalized.startsWith("scripts/e2e/runConsumerEstimateTabPdfProof") ||
     normalized.startsWith("scripts/e2e/runBottomNavEstimateAndMarketplacePlusProof") ||
     normalized.startsWith("scripts/e2e/runAllScreens") ||
