@@ -588,13 +588,20 @@ function knownWorkTemplate(input: {
   assumptionsRu: string[];
   questionsRu: string[];
 }): GlobalEstimateTemplate {
+  function materialFormula(item: { code: string; formula?: string }, index: number): string {
+    if (item.formula) return item.formula;
+    if (/gable_roof_(membrane|covering)/.test(item.code)) return "area * 1.15";
+    if (/gable_roof_batten/.test(item.code)) return "area";
+    if (/gable_roof_flashings/.test(item.code)) return "area * 0.20";
+    return index === 0 ? "area * 1.08" : "area * 0.18";
+  }
   const materialRows = input.materialRows.map((item, index) => row({
     sectionType: "materials",
     sectionNumber: "1",
     rowNumber: `1.${index + 1}`,
     code: item.code,
     names: { ru: item.nameRu, en: item.nameEn },
-    quantityFormula: item.formula ?? (index === 0 ? "area * 1.08" : "area * 0.18"),
+    quantityFormula: materialFormula(item, index),
     unitMetric: "sq_m",
     unitImperial: "sq_ft",
     rateKey: `${input.workKey}_${item.rateKind === "auxiliary" ? "auxiliary" : "material"}`,
@@ -610,6 +617,30 @@ function knownWorkTemplate(input: {
     unitImperial: "sq_ft",
     rateKey: `${input.workKey}_labor`,
   }));
+  const deliveryRows = [
+    row({
+      sectionType: "delivery",
+      sectionNumber: "3",
+      rowNumber: "3.1",
+      code: `${input.workKey}_delivery_access_warning`,
+      names: { ru: "Доставка / подъем / доступ: требуется уточнение", en: "Delivery, lifting and access: to be confirmed" },
+      quantityFormula: "1",
+      unitMetric: "set",
+      unitImperial: "set",
+      rateKey: `${input.workKey}_delivery`,
+    }),
+    row({
+      sectionType: "equipment",
+      sectionNumber: "3",
+      rowNumber: "3.2",
+      code: `${input.workKey}_equipment_mobilization_warning`,
+      names: { ru: "Техника / инвентарь: требуется уточнение", en: "Equipment and tools: to be confirmed" },
+      quantityFormula: "1",
+      unitMetric: "set",
+      unitImperial: "set",
+      rateKey: `${input.workKey}_equipment`,
+    }),
+  ];
   return {
     workKey: input.workKey,
     inputMeasure: "area",
@@ -627,6 +658,12 @@ function knownWorkTemplate(input: {
         sectionNumber: "2",
         title: { ru: "Работы / монтаж / техника", en: "Labor / installation / equipment" },
         rows: laborRows,
+      },
+      {
+        type: "delivery",
+        sectionNumber: "3",
+        title: { ru: "Оборудование / доставка", en: "Equipment / delivery" },
+        rows: deliveryRows,
       },
     ],
     assumptions: {
@@ -730,6 +767,36 @@ export const DRYWALL_CEILING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplat
   ],
 });
 
+function ceramicTileTemplate(workKey: string): GlobalEstimateTemplate {
+  return knownWorkTemplate({
+    workKey,
+    materialRows: [
+      { code: `${workKey}_tile_with_waste`, nameRu: "Керамическая плитка с запасом на подрезку", nameEn: "Ceramic tile with waste allowance", formula: "area * 1.10" },
+      { code: `${workKey}_adhesive`, nameRu: "Плиточный клей", nameEn: "Tile adhesive", rateKind: "auxiliary" },
+      { code: `${workKey}_grout`, nameRu: "Затирка для швов", nameEn: "Tile grout", rateKind: "auxiliary" },
+      { code: `${workKey}_primer`, nameRu: "Грунтовка основания", nameEn: "Substrate primer", rateKind: "auxiliary" },
+    ],
+    laborRows: [
+      { code: `${workKey}_base_preparation`, nameRu: "Подготовка основания под плитку", nameEn: "Tile substrate preparation" },
+      { code: `${workKey}_tile_laying`, nameRu: "Укладка плитки", nameEn: "Tile laying" },
+      { code: `${workKey}_grout_work`, nameRu: "Затирка и очистка швов", nameEn: "Grouting and cleaning joints" },
+    ],
+    assumptionsRu: [
+      "Расчет выполнен для укладки плитки по подготовленному основанию.",
+      "Плитка рассчитана с запасом на подрезку; клей, затирка и грунтовка включены отдельными строками.",
+      "Выравнивание основания, гидроизоляция и сложная раскладка уточняются перед договором.",
+    ],
+    questionsRu: [
+      "Какой формат плитки и схема раскладки?",
+      "Нужно ли выравнивание основания или гидроизоляция?",
+      "Есть ли пороги, примыкания, теплый пол или сложная геометрия?",
+    ],
+  });
+}
+
+export const CERAMIC_TILE_TEMPLATE: GlobalEstimateTemplate = ceramicTileTemplate("ceramic_tile_laying");
+export const CERAMIC_TILE_FLOOR_TEMPLATE: GlobalEstimateTemplate = ceramicTileTemplate("ceramic_tile_floor_laying");
+
 export const GABLE_ROOF_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "gable_roof_installation",
   materialRows: [
@@ -824,6 +891,60 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
     unitImperial,
     rateKey: laborRate,
   }));
+  const paddedMaterialRows = [...materialRows];
+  while (paddedMaterialRows.length < 4) {
+    const index = paddedMaterialRows.length;
+    paddedMaterialRows.push(row({
+      sectionType: "materials",
+      sectionNumber: "1",
+      rowNumber: `1.${index + 1}`,
+      code: `${definition.workKey}_material_extra_${index + 1}`,
+      names: { ru: `Дополнительные материалы: ${workRu}`, en: `Additional materials: ${workEn}` },
+      quantityFormula: "area * 0.10",
+      unitMetric,
+      unitImperial,
+      rateKey: auxiliaryRate,
+    }));
+  }
+  const paddedLaborRows = [...laborRows];
+  while (paddedLaborRows.length < 4) {
+    const index = paddedLaborRows.length;
+    paddedLaborRows.push(row({
+      sectionType: "labor",
+      sectionNumber: "2",
+      rowNumber: `2.${index + 1}`,
+      code: `${definition.workKey}_labor_extra_${index + 1}`,
+      names: { ru: `Дополнительные работы: ${workRu}`, en: `Additional labor: ${workEn}` },
+      quantityFormula: "area",
+      unitMetric,
+      unitImperial,
+      rateKey: laborRate,
+    }));
+  }
+  const genericEquipmentRows = [
+    row({
+      sectionType: "equipment",
+      sectionNumber: "3",
+      rowNumber: "3.1",
+      code: `${definition.workKey}_equipment`,
+      names: { ru: `Оборудование и инструмент: ${workRu}`, en: `Equipment and tools: ${workEn}` },
+      quantityFormula: "1",
+      unitMetric: "set",
+      unitImperial: "set",
+      rateKey: `${definition.workKey}_equipment`,
+    }),
+    row({
+      sectionType: "delivery",
+      sectionNumber: "3",
+      rowNumber: "3.2",
+      code: `${definition.workKey}_delivery`,
+      names: { ru: `Доставка / логистика: ${workRu}`, en: `Delivery and logistics: ${workEn}` },
+      quantityFormula: "1",
+      unitMetric: "set",
+      unitImperial: "set",
+      rateKey: `${definition.workKey}_delivery`,
+    }),
+  ];
 
   if (boqHints.length > 0) {
     return {
@@ -836,13 +957,19 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
           type: "materials",
           sectionNumber: "1",
           title: { ru: "Материалы и комплектующие", en: "Materials and supplies" },
-          rows: materialRows,
+          rows: paddedMaterialRows,
         },
         {
           type: "labor",
           sectionNumber: "2",
           title: { ru: "Работы / монтаж / техника", en: "Labor / installation / equipment" },
-          rows: laborRows,
+          rows: paddedLaborRows,
+        },
+        {
+          type: "equipment",
+          sectionNumber: "3",
+          title: { ru: "Оборудование / доставка", en: "Equipment / delivery" },
+          rows: genericEquipmentRows,
         },
       ],
       assumptions: {
@@ -908,6 +1035,28 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
             unitImperial,
             rateKey: auxiliaryRate,
           }),
+          row({
+            sectionType: "materials",
+            sectionNumber: "1",
+            rowNumber: "1.3",
+            code: `${definition.workKey}_preparation_materials`,
+            names: { ru: `Материалы подготовки: ${workRu}`, en: `Preparation materials: ${workEn}` },
+            quantityFormula: "area * 0.15",
+            unitMetric,
+            unitImperial,
+            rateKey: auxiliaryRate,
+          }),
+          row({
+            sectionType: "materials",
+            sectionNumber: "1",
+            rowNumber: "1.4",
+            code: `${definition.workKey}_waste_allowance`,
+            names: { ru: `Запас / расходники: ${workRu}`, en: `Waste allowance and supplies: ${workEn}` },
+            quantityFormula: "area * 0.08",
+            unitMetric,
+            unitImperial,
+            rateKey: auxiliaryRate,
+          }),
         ],
       },
       {
@@ -936,6 +1085,57 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
             unitMetric,
             unitImperial,
             rateKey: laborRate,
+          }),
+          row({
+            sectionType: "labor",
+            sectionNumber: "2",
+            rowNumber: "2.3",
+            code: `${definition.workKey}_quality_control`,
+            names: { ru: `Контроль качества: ${workRu}`, en: `Quality control: ${workEn}` },
+            quantityFormula: "area",
+            unitMetric,
+            unitImperial,
+            rateKey: laborRate,
+          }),
+          row({
+            sectionType: "labor",
+            sectionNumber: "2",
+            rowNumber: "2.4",
+            code: `${definition.workKey}_cleanup`,
+            names: { ru: `Уборка и сдача участка: ${workRu}`, en: `Cleanup and handover: ${workEn}` },
+            quantityFormula: "area",
+            unitMetric,
+            unitImperial,
+            rateKey: laborRate,
+          }),
+        ],
+      },
+      {
+        type: "equipment",
+        sectionNumber: "3",
+        title: { ru: "Оборудование / доставка", en: "Equipment / delivery" },
+        rows: [
+          row({
+            sectionType: "equipment",
+            sectionNumber: "3",
+            rowNumber: "3.1",
+            code: `${definition.workKey}_equipment`,
+            names: { ru: `Оборудование и инструмент: ${workRu}`, en: `Equipment and tools: ${workEn}` },
+            quantityFormula: "1",
+            unitMetric: "set",
+            unitImperial: "set",
+            rateKey: `${definition.workKey}_equipment`,
+          }),
+          row({
+            sectionType: "delivery",
+            sectionNumber: "3",
+            rowNumber: "3.2",
+            code: `${definition.workKey}_delivery`,
+            names: { ru: `Доставка / логистика: ${workRu}`, en: `Delivery and logistics: ${workEn}` },
+            quantityFormula: "1",
+            unitMetric: "set",
+            unitImperial: "set",
+            rateKey: `${definition.workKey}_delivery`,
           }),
         ],
       },
@@ -1159,12 +1359,14 @@ export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOB
   definition.workKey === "laminate_laying" ? LAMINATE_TEMPLATE :
     definition.workKey === "asphalt_paving" ? ASPHALT_TEMPLATE :
       definition.workKey === "strip_foundation" ? STRIP_FOUNDATION_TEMPLATE :
-        definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
-          definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
-            definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
-              definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
-                definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
-                  genericTemplate(definition),
+        definition.workKey === "ceramic_tile_laying" ? CERAMIC_TILE_TEMPLATE :
+          definition.workKey === "ceramic_tile_floor_laying" ? CERAMIC_TILE_FLOOR_TEMPLATE :
+            definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
+              definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
+                definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
+                  definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
+                    definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
+                      genericTemplate(definition),
 );
 
 export const GLOBAL_ESTIMATE_TEMPLATE_ROWS: readonly (GlobalEstimateTemplateRowDefinition & { workKey: string })[] =
@@ -1349,18 +1551,20 @@ function buildRegionalRates(): GlobalRateRecord[] {
     if (definition.workKey === "laminate_laying") return [];
     const prices = GENERIC_PRICE_BY_CATEGORY[definition.category] ?? GENERIC_PRICE_BY_CATEGORY.other;
     const rows = [
-      [`${definition.workKey}_material`, prices.material],
-      [`${definition.workKey}_auxiliary`, prices.auxiliary],
-      [`${definition.workKey}_labor`, prices.labor],
+      { rateKey: `${definition.workKey}_material`, basePrice: prices.material, unit: definition.defaultMeasureUnit },
+      { rateKey: `${definition.workKey}_auxiliary`, basePrice: prices.auxiliary, unit: definition.defaultMeasureUnit },
+      { rateKey: `${definition.workKey}_labor`, basePrice: prices.labor, unit: definition.defaultMeasureUnit },
+      { rateKey: `${definition.workKey}_equipment`, basePrice: Math.max(prices.auxiliary * 2, prices.labor * 0.2), unit: "set" as const },
+      { rateKey: `${definition.workKey}_delivery`, basePrice: Math.max(prices.auxiliary * 3, prices.labor * 0.25), unit: "set" as const },
     ] as const;
     return COUNTRIES.flatMap((country) =>
-      rows.map(([rateKey, basePrice]) => {
-        const unit = localUnit(definition.defaultMeasureUnit, country.metric);
+      rows.map((rowDefinition) => {
+        const unit = localUnit(rowDefinition.unit, country.metric);
         const unitFactor = country.metric ? 1 : unitScaleForImperial(unit);
-        const priceDefault = Number((basePrice * unitFactor * country.multiplier).toFixed(2));
+        const priceDefault = Number((rowDefinition.basePrice * unitFactor * country.multiplier).toFixed(2));
         return rate({
-          rateKey,
-          names: { en: rateKey.replace(/_/g, " "), ru: rateKey.replace(/_/g, " ") },
+          rateKey: rowDefinition.rateKey,
+          names: { en: rowDefinition.rateKey.replace(/_/g, " "), ru: rowDefinition.rateKey.replace(/_/g, " ") },
           countryCode: country.countryCode,
           stateOrRegion: country.stateOrRegion,
           city: country.city,
@@ -1417,6 +1621,8 @@ export const GLOBAL_RATE_MATERIALS: readonly GlobalRateRecord[] = buildRegionalR
 
 export const GLOBAL_RATE_WORKS: readonly GlobalRateRecord[] = buildRegionalRates().filter((item) =>
   item.rateKey.endsWith("_labor") ||
+  item.rateKey.endsWith("_equipment") ||
+  item.rateKey.endsWith("_delivery") ||
   item.rateKey.includes("_labor") ||
   (item.rateKey.includes("_install") && !item.rateKey.endsWith("_material") && !item.rateKey.endsWith("_auxiliary")) ||
   item.rateKey.includes("priming") ||

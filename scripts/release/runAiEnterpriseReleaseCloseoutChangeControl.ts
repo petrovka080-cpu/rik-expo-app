@@ -72,6 +72,7 @@ export type CloseoutOwnershipEntry = {
     | "b2c_consumer_repair"
     | "request_estimate_boq_catalog"
     | "request_estimate_boq_formula_quality"
+    | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
     | "backend_media_release"
@@ -1481,6 +1482,34 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "request AI estimate professional BOQ depth and formula quality proof artifacts",
+    };
+  }
+  if (
+    normalized === "src/lib/ai/globalEstimate/estimateBoqDepthPolicy.ts" ||
+    normalized === "src/lib/ai/globalEstimate/validateEstimateBoqDepth.ts" ||
+    normalized === "src/lib/ai/globalEstimate/estimateFormulaQualityEngine.ts" ||
+    normalized === "src/lib/ai/globalEstimate/estimateFormulaQualityValidator.ts" ||
+    normalized === "src/lib/ai/globalEstimate/estimateUnitSemanticValidator.ts" ||
+    normalized === "src/lib/ai/globalEstimate/globalEstimateSeedData.ts" ||
+    normalized === "src/lib/ai/globalEstimate/index.ts" ||
+    normalized === "scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" ||
+    normalized === "scripts/e2e/runAndroidProfessionalBoqDepthSmoke.ts" ||
+    normalized === "tests/boqDepth" ||
+    normalized.startsWith("tests/boqDepth/") ||
+    normalized.startsWith("tests/architecture/boqDepth") ||
+    normalized === "tests/e2e/professionalBoqDepth.web.spec.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized.startsWith("artifacts/S_GLOBAL_ESTIMATE_BOQ_DEPTH_") ||
+    normalized.startsWith("artifacts/screenshots/professional-boq-depth/")
+  ) {
+    return {
+      file: normalized,
+      category: "global_estimate_boq_depth_formula_quality",
+      wave: "S_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_FORMULA_QUALITY_ENGINE_NO_SHORT_ESTIMATES_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "global estimate professional BOQ depth and formula quality gate",
     };
   }
   if (

@@ -1,5 +1,6 @@
 import type { GlobalEstimateResult, SourceBackedEstimateRow } from "./globalEstimateTypes";
 import { validateEstimateBoqDepth, type EstimateBoqDepthValidation } from "./validateEstimateBoqDepth";
+import { validateEstimateUnitSemantics } from "./estimateUnitSemanticValidator";
 
 export type EstimateFormulaQualityTrace = {
   estimateId: string;
@@ -153,8 +154,11 @@ export function validateEstimateFormulaQuality(result: GlobalEstimateResult): Es
   const blockers = [...trace.depth.blockers];
   const warnings: string[] = [];
   const rows = allRows(result);
+  const unitSemantics = validateEstimateUnitSemantics(result);
 
   if (trace.allRowsLinearM) blockers.push("FORMULA_QUALITY_ALL_ROWS_LINEAR_M");
+  blockers.push(...unitSemantics.blockers);
+  warnings.push(...unitSemantics.warnings);
   for (const row of rows) {
     if (!Number.isFinite(row.quantity) || row.quantity < 0) {
       blockers.push(`FORMULA_QUALITY_INVALID_QUANTITY:${row.code}`);

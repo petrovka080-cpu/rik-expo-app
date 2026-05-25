@@ -709,6 +709,10 @@ describe("releaseGuard.shared", () => {
             command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts",
           },
           {
+            name: "global-estimate-professional-boq-depth-formula-quality-proof",
+            command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts",
+          },
+          {
             name: "catalog-items-global-estimate-binding-proof",
             command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts",
           },

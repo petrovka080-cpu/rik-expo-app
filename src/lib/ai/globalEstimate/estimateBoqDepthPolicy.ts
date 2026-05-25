@@ -12,6 +12,7 @@ export type EstimateBoqDepthClass =
   | "electrical"
   | "plumbing"
   | "hvac"
+  | "energy_infrastructure"
   | "dangerous";
 
 export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = {
@@ -26,10 +27,12 @@ export const ESTIMATE_BOQ_MINIMUM_ROWS: Record<EstimateBoqDepthClass, number> = 
   electrical: 8,
   plumbing: 8,
   hvac: 8,
+  energy_infrastructure: 10,
   dangerous: 6,
 };
 
 export function classifyEstimateBoqDepth(result: Pick<GlobalEstimateResult, "work" | "requiresReview">): EstimateBoqDepthClass {
+  if (/(solar|battery|micro_hydro|mini_chp|substation|power_line|grid)/i.test(result.work.workKey)) return "energy_infrastructure";
   if (result.work.category === "foundation") return "foundation";
   if (result.work.category === "concrete") return "concrete";
   if (result.work.category === "roofing") return "roofing";
