@@ -1,0 +1,35 @@
+{
+  "transitions": [
+    {
+      "from": "none",
+      "action": "create_draft",
+      "to": "draft"
+    },
+    {
+      "from": "draft",
+      "action": "update_draft_fields",
+      "to": "draft"
+    },
+    {
+      "from": "draft",
+      "action": "generate_pdf",
+      "to": "draft"
+    },
+    {
+      "from": "draft",
+      "action": "approve",
+      "to": "consumer_approved"
+    },
+    {
+      "from": "consumer_approved",
+      "action": "send_to_marketplace",
+      "to": "sent_to_marketplace"
+    },
+    {
+      "from": "sent_to_marketplace",
+      "action": "idempotent_marketplace_replay",
+      "to": "sent_to_marketplace"
+    }
+  ],
+  "sent_edit_blocked": true
+}

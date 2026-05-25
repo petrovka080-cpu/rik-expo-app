@@ -5,6 +5,7 @@ import {
   createConsumerRepairRequestDraft as createDraftRecord,
   updateConsumerRepairRequestDraft as updateDraftRecord,
 } from "./consumerRequestDraftService";
+import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftStateMachine";
 import {
   createConsumerRepairRequestItem,
   selectConsumerRepairRequestItemCatalogCandidate as selectCatalogCandidateRecord,
@@ -71,6 +72,7 @@ export function createConsumerRepairRequestDraft(input: {
   aiDraft?: ConsumerRepairAiDraft | null;
 }): ConsumerRepairDraftBundle {
   assertConsumerRepairScope(CONSUMER_REPAIR_CONTEXT);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: "none", action: "create_draft" });
   const draft = createDraftRecord(input);
   const items = (input.aiDraft?.items ?? []).map((item) =>
     createConsumerRepairRequestItem({
@@ -102,6 +104,7 @@ export function updateConsumerRepairRequestDraft(input: {
   patch: Parameters<typeof updateDraftRecord>[1];
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_draft_fields" });
   const next = withEvent(
     {
       ...bundle,
@@ -139,6 +142,7 @@ export function addConsumerRepairRequestItem(input: {
   addedBy?: "ai" | "user" | "system";
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "add_item" });
   const item = createConsumerRepairRequestItem({
     requestDraftId: input.requestDraftId,
     itemType: input.itemType ?? "other",
@@ -196,6 +200,7 @@ export function selectConsumerRepairRequestItemCatalogCandidate(input: {
   candidate: ConsumerRepairCatalogCandidate;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "select_catalog_item" });
   const items = bundle.items.map((item) =>
     item.id === input.itemId
       ? selectCatalogCandidateRecord({ item, candidate: input.candidate })
@@ -233,6 +238,7 @@ export function updateConsumerRepairRequestItemQuantity(input: {
   quantity: number;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "update_item_quantity" });
   const items = bundle.items.map((item) =>
     item.id === input.itemId ? updateItemQuantityRecord(item, input.quantity) : item,
   );
@@ -247,6 +253,7 @@ export function removeConsumerRepairRequestItem(input: {
   itemId: string;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "remove_item" });
   return saveConsumerRepairBundle(withEvent(
     { ...bundle, items: bundle.items.filter((item) => item.id !== input.itemId) },
     createConsumerRepairEvent({ requestDraftId: input.requestDraftId, eventType: "item_removed", actorType: "consumer" }),
@@ -258,6 +265,7 @@ export function attachConsumerRepairMedia(input: {
   mediaKind: ConsumerRepairRequestMedia["mediaKind"];
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "attach_media" });
   const media: ConsumerRepairRequestMedia = {
     id: id("consumer_media_link"),
     requestDraftId: input.requestDraftId,
@@ -309,6 +317,7 @@ export function approveConsumerRepairRequestDraft(input: {
     return cloneConsumerRepairValue(bundle);
   }
 
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
   const draft = approveDraftRecord(bundle.draft);
   const pdf = generateConsumerRepairRequestPdf({ draft, items: bundle.items, media: bundle.media });
   return saveConsumerRepairBundle(withEvent(
@@ -342,6 +351,7 @@ export function getConsumerRepairRequestPdf(input: {
   pdfId?: string;
 }): ConsumerRepairPdfOpenResult {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "open_pdf" });
   const pdf = input.pdfId
     ? bundle.pdfs.find((candidate) => candidate.id === input.pdfId && candidate.pdfStatus === "generated")
     : bundle.pdfs.find((candidate) => candidate.pdfStatus === "generated");
@@ -355,6 +365,7 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
   supplement?: ConsumerRepairPdfSupplement;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "generate_pdf" });
   const userId = input.userId ?? bundle.draft.consumerUserId;
   if (userId !== bundle.draft.consumerUserId) {
     throw new ConsumerRepairValidationError([

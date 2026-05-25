@@ -1,0 +1,8 @@
+{
+  "web_playwright_passed": true,
+  "screenshots": {
+    "draft_catalog_payload": "artifacts/screenshots/request-estimate-state-payload/draft_catalog_payload.png",
+    "pdf_viewer_payload": "artifacts/screenshots/request-estimate-state-payload/pdf_viewer_payload.png"
+  },
+  "fake_green_claimed": false
+}

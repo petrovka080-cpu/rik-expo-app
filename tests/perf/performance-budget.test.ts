@@ -643,6 +643,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalogItemSearch.ts"),
       path.join(SRC, "lib", "catalog", "catalogItemTypes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sRequestEstimateStatePayloadFiles = [
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
+      path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
       /\.ts$/,
@@ -1737,10 +1741,11 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiOfficeDocumentControlFunnelFiles).toBeLessThanOrEqual(10);
     expect(sAiSupplierContractorMarketplaceIntakeFiles).toBeLessThanOrEqual(10);
     expect(sAiLiveUiRealAnswersRecoveryFiles).toBeLessThanOrEqual(7);
-    expect(sB2CConsumerRepairRequestFiles - sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(24);
+    expect(sB2CConsumerRepairRequestFiles - sRequestEstimateBoqCatalogViewFiles - sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(24);
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
+    expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(

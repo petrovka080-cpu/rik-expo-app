@@ -72,6 +72,7 @@ export type CloseoutOwnershipEntry = {
     | "b2c_consumer_repair"
     | "request_estimate_boq_catalog"
     | "request_estimate_boq_formula_quality"
+    | "request_estimate_draft_state_payload_parity"
     | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
@@ -1510,6 +1511,35 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "global estimate professional BOQ depth and formula quality gate",
+    };
+  }
+  if (
+    normalized === "src/lib/consumerRequests/consumerRequestDraftStateMachine.ts" ||
+    normalized === "src/lib/consumerRequests/consumerRequestPayloadParity.ts" ||
+    normalized === "src/lib/consumerRequests/consumerRequestService.ts" ||
+    normalized === "src/lib/consumerRequests/consumerRequestMarketplaceService.ts" ||
+    normalized === "src/lib/consumerRequests/index.ts" ||
+    normalized === "scripts/audit/runRequestEstimateDraftStatePayloadAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateDraftStatePayloadSmoke.ts" ||
+    normalized === "scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "tests/architecture/requestEstimateArchitectureTestHelpers.ts" ||
+    normalized === "tests/architecture/requestEstimatePayloadParityNoScreenLocalCalculation.contract.test.ts" ||
+    normalized === "tests/architecture/requestEstimateStateMachineNoInlineRows.contract.test.ts" ||
+    normalized === "tests/e2e/requestEstimateDraftStatePayloadParity.web.spec.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/requestEstimate/requestEstimateDraftStateMachine.contract.test.ts" ||
+    normalized === "tests/requestEstimate/requestEstimatePayloadParity.contract.test.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_PAYLOAD_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-state-payload/")
+  ) {
+    return {
+      file: normalized,
+      category: "request_estimate_draft_state_payload_parity",
+      wave: "S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_PAYLOAD_PARITY_NO_HACKS_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "request estimate draft state machine and save/PDF/send payload parity gate",
     };
   }
   if (

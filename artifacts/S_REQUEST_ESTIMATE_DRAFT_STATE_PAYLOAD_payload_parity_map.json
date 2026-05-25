@@ -1,0 +1,9 @@
+{
+  "canonical_builder": true,
+  "parity_validator": true,
+  "preserves_catalog_item_id": true,
+  "preserves_selected_catalog_item_id": true,
+  "preserves_totals": true,
+  "pdf_summary_uses_current_items": true,
+  "screen_local_payload_builder_found": false
+}

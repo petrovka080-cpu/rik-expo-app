@@ -1,4 +1,5 @@
 import { auditConsumerRepairRequestEvent } from "./consumerRequestAuditTrail";
+import { assertConsumerRepairDraftActionAllowed } from "./consumerRequestDraftStateMachine";
 import { getConsumerRepairBundle, saveConsumerRepairBundle } from "./consumerRequestRepository";
 import { validateConsumerRepairRequestForMarketplace } from "./consumerRequestValidationService";
 import type {
@@ -65,6 +66,7 @@ export function sendConsumerRepairRequestToMarketplace(input: {
 
   const alreadySent = bundle.marketplaceLink.status === "sent" && Boolean(bundle.marketplaceLink.marketplaceDemandId);
   if (alreadySent) {
+    assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "idempotent_marketplace_replay" });
     return saveConsumerRepairBundle({
       ...bundle,
       events: [
@@ -82,6 +84,7 @@ export function sendConsumerRepairRequestToMarketplace(input: {
     });
   }
 
+  assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "send_to_marketplace" });
   const marketplaceLink: ConsumerMarketplaceLink = {
     ...bundle.marketplaceLink,
     marketplaceDemandId: id("marketplace_demand"),

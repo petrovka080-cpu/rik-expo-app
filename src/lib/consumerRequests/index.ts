@@ -4,6 +4,19 @@ export {
   assertConsumerRepairScope,
 } from "./consumerRequestAccessPolicy";
 export { auditConsumerRepairRequestEvent, createConsumerRepairEvent } from "./consumerRequestAuditTrail";
+export {
+  assertConsumerRepairDraftActionAllowed,
+  resolveConsumerRepairDraftTransition,
+  type ConsumerRepairDraftAction,
+  type ConsumerRepairDraftTransition,
+} from "./consumerRequestDraftStateMachine";
+export {
+  buildConsumerRepairCanonicalDraftPayload,
+  compareConsumerRepairPayloadParity,
+  type ConsumerRepairCanonicalDraftPayload,
+  type ConsumerRepairPayloadKind,
+  type ConsumerRepairPayloadParityResult,
+} from "./consumerRequestPayloadParity";
 export { ConsumerRepairValidationError, sendConsumerRepairRequestToMarketplace } from "./consumerRequestMarketplaceService";
 export {
   __deleteConsumerRepairPdfStorageObjectForTests,

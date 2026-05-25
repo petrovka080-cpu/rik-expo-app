@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "itemCountEqual": true,
+  "catalogSelectionsEqual": true,
+  "totalsEqual": true,
+  "draftIdentityEqual": true,
+  "fingerprints": {
+    "draft_save": "f25cf134",
+    "pdf_generation": "5e9c5691",
+    "marketplace_send": "a9cfb520"
+  },
+  "failures": []
+}

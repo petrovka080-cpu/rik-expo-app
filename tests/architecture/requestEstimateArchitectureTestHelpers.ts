@@ -9,6 +9,8 @@ export const REQUEST_ESTIMATE_RUNTIME_FILES = [
   "src/features/catalog/CatalogItemPicker.tsx",
   "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
   "src/lib/consumerRequests/consumerRequestPdfService.ts",
+  "src/lib/consumerRequests/consumerRequestDraftStateMachine.ts",
+  "src/lib/consumerRequests/consumerRequestPayloadParity.ts",
   "src/lib/ai/globalEstimate/globalEstimateCalculator.ts",
   "src/lib/ai/globalEstimate/globalEstimateSeedData.ts",
   "src/lib/ai/globalEstimate/stripFoundationDimensions.ts",

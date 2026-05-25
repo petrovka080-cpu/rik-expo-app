@@ -59,6 +59,7 @@ export type ReleaseGateName =
   | "request-ai-estimate-professional-boq-formula-proof"
   | "global-estimate-professional-boq-depth-formula-quality-proof"
   | "catalog-items-global-estimate-binding-proof"
+  | "request-estimate-draft-state-payload-parity-proof"
   | "all-screens-enterprise-web-proof"
   | "all-screens-enterprise-android-emulator-proof"
   | "all-screens-pdf-open-proof"
@@ -307,6 +308,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
   { name: "catalog-items-global-estimate-binding-proof", command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" },
+  { name: "request-estimate-draft-state-payload-parity-proof", command: "npx tsx scripts/e2e/runRequestEstimateDraftStatePayloadProof.ts" },
   { name: "all-screens-enterprise-web-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts" },
   { name: "all-screens-enterprise-android-emulator-proof", command: "npx tsx scripts/e2e/runAllScreensEnterpriseAndroidEmulatorProof.ts" },
   { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },

@@ -1,0 +1,11 @@
+{
+  "request_route": "app/request -> ConsumerRepairRequestScreen",
+  "draft_service": "src/lib/consumerRequests/consumerRequestService.ts",
+  "marketplace_service": "src/lib/consumerRequests/consumerRequestMarketplaceService.ts",
+  "pdf_service": "src/lib/consumerRequests/consumerRequestPdfService.ts",
+  "state_machine_present": true,
+  "canonical_payload_present": true,
+  "save_path": true,
+  "pdf_path": true,
+  "send_path": true
+}

@@ -1,0 +1,23 @@
+{
+  "statuses": [
+    "draft",
+    "consumer_approved",
+    "sent_to_marketplace",
+    "cancelled",
+    "archived"
+  ],
+  "guarded_actions": [
+    "create_draft",
+    "update_draft_fields",
+    "add_item",
+    "remove_item",
+    "update_item_quantity",
+    "select_catalog_item",
+    "attach_media",
+    "generate_pdf",
+    "approve",
+    "send_to_marketplace"
+  ],
+  "service_uses_state_machine": true,
+  "marketplace_uses_state_machine": true
+}
