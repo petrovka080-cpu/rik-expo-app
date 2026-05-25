@@ -13,6 +13,9 @@ type Props = {
   onIncrease: (itemId: string) => void;
   onRemove: (itemId: string) => void;
   onAddManual: () => void;
+  onAddCustom: () => void;
+  onRestoreLastRemoved?: () => void;
+  canRestoreLastRemoved?: boolean;
   onOpenCatalog?: (itemId: string) => void;
 };
 
@@ -22,6 +25,9 @@ export function ConsumerRepairDraftPanel({
   onIncrease,
   onRemove,
   onAddManual,
+  onAddCustom,
+  onRestoreLastRemoved,
+  canRestoreLastRemoved,
   onOpenCatalog,
 }: Props): React.ReactElement {
   const viewModel = buildRequestEstimateViewModel(bundle);
@@ -64,6 +70,26 @@ export function ConsumerRepairDraftPanel({
       >
         <Text style={styles.manualText}>Материал вручную</Text>
       </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Добавить примечание к смете"
+        onPress={onAddCustom}
+        style={styles.manualButton}
+        testID="consumer-repair-add-custom-item"
+      >
+        <Text style={styles.manualText}>Примечание</Text>
+      </Pressable>
+      {canRestoreLastRemoved && onRestoreLastRemoved ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Восстановить удалённую позицию сметы"
+          onPress={onRestoreLastRemoved}
+          style={styles.manualButton}
+          testID="consumer-repair-restore-item"
+        >
+          <Text style={styles.manualText}>Вернуть позицию</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

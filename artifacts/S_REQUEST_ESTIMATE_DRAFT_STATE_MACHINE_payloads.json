@@ -1,0 +1,806 @@
+{
+  "visible_ui": {
+    "payloadKind": "visible_ui",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "visible_ui",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  },
+  "pdf_payload": {
+    "payloadKind": "pdf_payload",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "pdf_payload",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  },
+  "save_draft_payload": {
+    "payloadKind": "save_draft_payload",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "save_draft_payload",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  },
+  "send_request_payload": {
+    "payloadKind": "send_request_payload",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "send_request_payload",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  },
+  "runtime_trace": {
+    "payloadKind": "runtime_trace",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "runtime_trace",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  },
+  "proof_artifact": {
+    "payloadKind": "proof_artifact",
+    "draft": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "title": "Strip foundation request estimate",
+      "description": "Foundation estimate 48 x 0.4 x 1.7",
+      "language": "ru",
+      "currency": "KGS",
+      "items": [
+        {
+          "rowId": "row_concrete",
+          "source": "estimate",
+          "name": "Concrete M300",
+          "quantity": 35,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "materialKey": "concrete_m300",
+          "rateKey": "strip_foundation_concrete_m300",
+          "unitPrice": 8455,
+          "total": 295925,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item",
+          "catalogItemId": "catalog_concrete_m300"
+        },
+        {
+          "rowId": "row_delivery",
+          "source": "estimate",
+          "name": "Concrete delivery",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "rateKey": "strip_foundation_concrete_delivery",
+          "unitPrice": 12000,
+          "total": 12000,
+          "sourceId": "rate_strip_foundation_concrete_delivery",
+          "confidence": "medium",
+          "bindingStatus": "not_material_row"
+        },
+        {
+          "rowId": "manual_catalog_concrete_001",
+          "source": "catalog_item",
+          "name": "Manual catalog concrete M300",
+          "quantity": 2,
+          "unit": "m3",
+          "unitLabel": "m3",
+          "catalogItemId": "catalog_manual_concrete_m300",
+          "unitPrice": 5000,
+          "total": 10000,
+          "sourceId": "catalog_items",
+          "confidence": "high",
+          "bindingStatus": "selected_catalog_item"
+        },
+        {
+          "rowId": "custom_note_001",
+          "source": "custom",
+          "name": "Custom scope note",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "set",
+          "unitPrice": null,
+          "total": null,
+          "confidence": "low",
+          "bindingStatus": "custom_low_confidence"
+        },
+        {
+          "rowId": "row_rebar",
+          "source": "estimate",
+          "name": "Rebar",
+          "quantity": 170.5,
+          "unit": "kg",
+          "unitLabel": "kg",
+          "materialKey": "longitudinal_rebar",
+          "rateKey": "strip_foundation_longitudinal_rebar",
+          "unitPrice": 106.8,
+          "total": 18209.4,
+          "sourceId": "rate_strip_foundation_longitudinal_rebar",
+          "confidence": "high",
+          "bindingStatus": "multiple_candidates"
+        }
+      ],
+      "totals": {
+        "materialsTotal": 324134.4,
+        "laborTotal": 0,
+        "equipmentTotal": 12000,
+        "deliveryTotal": 0,
+        "taxTotal": 0,
+        "grandTotal": 336134.4
+      },
+      "validation": {
+        "canSave": true,
+        "canSend": true,
+        "blockers": [],
+        "warnings": [
+          "UNPRICED_ITEM:custom_note_001",
+          "CATALOG_SELECTION_RECOMMENDED:row_rebar"
+        ]
+      }
+    },
+    "rowCount": 5,
+    "catalogItemIds": [
+      "catalog_concrete_m300",
+      "catalog_manual_concrete_m300"
+    ],
+    "editedQuantityRows": [
+      {
+        "rowId": "manual_catalog_concrete_001",
+        "quantity": 2
+      },
+      {
+        "rowId": "row_concrete",
+        "quantity": 35
+      },
+      {
+        "rowId": "row_rebar",
+        "quantity": 170.5
+      }
+    ],
+    "runtimeTrace": {
+      "draftId": "request_state_machine_draft",
+      "estimateId": "request_state_machine_estimate",
+      "workKey": "strip_foundation",
+      "payloadKind": "proof_artifact",
+      "itemRowIds": [
+        "custom_note_001",
+        "manual_catalog_concrete_001",
+        "row_concrete",
+        "row_delivery",
+        "row_rebar"
+      ]
+    }
+  }
+}

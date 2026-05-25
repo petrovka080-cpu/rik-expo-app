@@ -8,6 +8,7 @@ import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import {
   addConsumerRepairRequestCatalogItem,
+  addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
@@ -22,6 +23,7 @@ import {
   updateConsumerRepairRequestItemQuantity,
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
+  type ConsumerRepairRequestItem,
 } from "../../lib/consumerRequests";
 import { mapPickerItemToCatalogItemForEstimate, type CatalogItemPickerItem } from "../../lib/catalog/catalog.facade";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
@@ -47,6 +49,7 @@ type State = {
   catalogPickerVisible: boolean;
   catalogPickerTargetItemId: string | null;
   catalogPickerInitialQuery: string | undefined;
+  lastRemovedItem: ConsumerRepairRequestItem | null;
 };
 
 export type ConsumerRepairRequestScreenProps = {
@@ -73,6 +76,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     catalogPickerVisible: false,
     catalogPickerTargetItemId: null,
     catalogPickerInitialQuery: undefined,
+    lastRemovedItem: null,
   };
 
   componentDidMount(): void {
@@ -316,13 +320,63 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   private removeItem = (itemId: string) => {
     const current = this.state.bundle;
     if (!current) return;
+    const removedItem = current.items.find((candidate) => candidate.id === itemId) ?? null;
     const bundle = removeConsumerRepairRequestItem({ requestDraftId: current.draft.id, itemId });
+    this.setState({ lastRemovedItem: removedItem });
     this.updateCurrentBundle(bundle, "Позиция удалена из черновика.");
+  };
+
+  private restoreLastRemovedItem = () => {
+    const current = this.state.bundle;
+    const item = this.state.lastRemovedItem;
+    if (!current || !item) return;
+    const bundle = addConsumerRepairRequestItem({
+      requestDraftId: current.draft.id,
+      titleRu: item.titleRu,
+      itemType: item.itemType,
+      quantity: item.quantity ?? 1,
+      unit: item.unit ?? undefined,
+      unitLabel: item.unitLabel,
+      unitPrice: item.unitPrice,
+      currency: item.currency,
+      source: item.source,
+      catalogItemId: item.catalogItemId,
+      selectedCatalogItemId: item.selectedCatalogItemId,
+      materialKey: item.materialKey,
+      rateKey: item.rateKey,
+      catalogBindingStatus: item.catalogBindingStatus ?? undefined,
+      catalogCandidates: item.catalogCandidates,
+      category: item.category,
+      sourceId: item.sourceId,
+      sourceLabel: item.sourceLabel,
+      confidence: item.confidence,
+      addedBy: item.addedBy,
+    });
+    this.setState({ lastRemovedItem: null });
+    this.updateCurrentBundle(bundle, "Позиция возвращена в черновик.");
   };
 
   private addManualItem = () => {
     this.ensureDraftBundle();
     this.setState({ catalogPickerVisible: true, catalogPickerTargetItemId: null, catalogPickerInitialQuery: undefined });
+  };
+
+  private addCustomItem = () => {
+    const current = this.ensureDraftBundle();
+    const bundle = addConsumerRepairRequestItem({
+      requestDraftId: current.draft.id,
+      titleRu: "Пользовательское примечание",
+      itemType: "other",
+      quantity: 1,
+      unit: "set",
+      unitLabel: "компл.",
+      unitPrice: null,
+      currency: "KGS",
+      source: "custom",
+      confidence: "low",
+      addedBy: "user",
+    });
+    this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено в черновик.");
   };
 
   private openCatalogForEstimateItem = (itemId: string) => {
@@ -369,6 +423,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
       catalogPickerVisible: false,
       catalogPickerTargetItemId: null,
       catalogPickerInitialQuery: undefined,
+      lastRemovedItem: null,
       statusMessage: "Новая заявка готова к заполнению.",
     });
   };
@@ -432,6 +487,9 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
             onIncrease={this.increaseItem}
             onRemove={this.removeItem}
             onAddManual={this.addManualItem}
+            onAddCustom={this.addCustomItem}
+            onRestoreLastRemoved={this.restoreLastRemovedItem}
+            canRestoreLastRemoved={Boolean(this.state.lastRemovedItem)}
             onOpenCatalog={this.openCatalogForEstimateItem}
           />
 

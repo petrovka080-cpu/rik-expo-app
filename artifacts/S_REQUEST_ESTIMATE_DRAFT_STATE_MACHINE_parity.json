@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "visibleUiMatchesPdf": true,
+  "visibleUiMatchesSave": true,
+  "visibleUiMatchesSend": true,
+  "visibleUiMatchesRuntimeTrace": true,
+  "manualCatalogItemNotLost": true,
+  "editedQuantitiesNotLost": true,
+  "removedItemsNotSent": true,
+  "customItemsLowConfidence": true,
+  "failures": []
+}

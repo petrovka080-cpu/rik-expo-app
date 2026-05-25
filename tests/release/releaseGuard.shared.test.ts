@@ -717,6 +717,10 @@ describe("releaseGuard.shared", () => {
             command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts",
           },
           {
+            name: "request-estimate-draft-state-machine-save-send-pdf-parity-proof",
+            command: "npx tsx scripts/e2e/runRequestEstimateStateMachineProof.ts",
+          },
+          {
             name: "all-screens-enterprise-web-proof",
             command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts",
           },

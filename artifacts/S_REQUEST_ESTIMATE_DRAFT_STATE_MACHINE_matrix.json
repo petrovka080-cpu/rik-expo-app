@@ -1,0 +1,22 @@
+{
+  "wave": "S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_SAVE_SEND_PDF_PARITY_NO_DATA_LOSS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY",
+  "state_machine_ready": true,
+  "draft_reducer_ready": true,
+  "save_payload_parity_passed": true,
+  "send_payload_parity_passed": true,
+  "pdf_payload_parity_passed": true,
+  "manual_catalog_item_not_lost": true,
+  "edited_quantities_not_lost": true,
+  "removed_items_not_sent": true,
+  "custom_items_low_confidence": true,
+  "use_effect_rewrite_found": false,
+  "screen_local_calculation_found": false,
+  "inline_payload_mutation_found": false,
+  "web_playwright_passed": true,
+  "android_emulator_passed": true,
+  "full_jest_passed": true,
+  "release_verify_passed": true,
+  "final_worktree_clean": true,
+  "fake_green_claimed": false
+}

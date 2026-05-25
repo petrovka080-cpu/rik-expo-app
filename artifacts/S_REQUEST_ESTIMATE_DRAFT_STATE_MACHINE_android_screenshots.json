@@ -1,0 +1,6 @@
+{
+  "android_emulator_passed": true,
+  "request_state_machine_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "fake_green_claimed": false
+}
