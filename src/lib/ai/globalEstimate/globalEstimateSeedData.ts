@@ -1381,6 +1381,179 @@ export const STRIP_FOUNDATION_TEMPLATE: GlobalEstimateTemplate = {
   },
 };
 
+export const ROOF_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "roof_waterproofing",
+  materialRows: [
+    { code: "roof_waterproofing_primer", nameRu: "Праймер / грунтовка основания кровли", nameEn: "Roof base primer" },
+    { code: "roof_waterproofing_membrane_mastic", nameRu: "Мембрана / битумная мастика / гидроизоляционный материал", nameEn: "Membrane, bitumen mastic or waterproofing material" },
+    { code: "roof_waterproofing_detail_tape", nameRu: "Лента и герметик для примыканий, парапетов, ендов и проходок", nameEn: "Detail tape and sealant for flashings, parapets, valleys and penetrations", rateKind: "auxiliary" },
+    { code: "roof_waterproofing_quality_supplies", nameRu: "Расходники для контроля качества и проверки протечек", nameEn: "Quality control and leak test supplies", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "roof_waterproofing_base_cleaning", nameRu: "Очистка / подготовка основания кровли", nameEn: "Roof base cleaning and preparation" },
+    { code: "roof_waterproofing_detail_sealing", nameRu: "Герметизация примыканий, парапетов, ендов и проходок", nameEn: "Sealing flashings, parapets, valleys and penetrations" },
+    { code: "roof_waterproofing_application", nameRu: "Нанесение / монтаж гидроизоляции кровли", nameEn: "Roof waterproofing application or installation" },
+    { code: "roof_waterproofing_leak_control", nameRu: "Контроль качества / проверка протечек", nameEn: "Quality control and leak check" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции кровли по указанной площади.",
+    "Состояние основания, примыкания, парапеты, ендовы и проходки требуют осмотра перед договором.",
+    "Работы на высоте требуют допуска и проверки специалистом.",
+  ],
+  questionsRu: [
+    "Кровля плоская или скатная?",
+    "Есть ли протечки, парапеты, ендовы, проходки или сложные примыкания?",
+    "Какой материал нужен: мембрана, рубероид или битумная мастика?",
+  ],
+});
+
+export const ROOF_MEMBRANE_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "roof_membrane_waterproofing",
+  materialRows: [
+    { code: "roof_membrane_waterproofing_primer", nameRu: "Праймер / грунтовка основания кровли", nameEn: "Roof base primer" },
+    { code: "roof_membrane_waterproofing_membrane", nameRu: "Кровельная мембрана / рубероид / гидроизоляционный материал", nameEn: "Roofing membrane or roll waterproofing material" },
+    { code: "roof_membrane_waterproofing_fasteners", nameRu: "Крепеж, лента и герметик для примыканий", nameEn: "Fasteners, tape and sealant for flashings", rateKind: "auxiliary" },
+    { code: "roof_membrane_waterproofing_detail_materials", nameRu: "Материалы для парапетов, ендов и проходок", nameEn: "Materials for parapets, valleys and penetrations", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "roof_membrane_waterproofing_base_cleaning", nameRu: "Очистка / подготовка основания кровли", nameEn: "Roof base cleaning and preparation" },
+    { code: "roof_membrane_waterproofing_detail_sealing", nameRu: "Герметизация примыканий и обработка парапетов / ендов / проходок", nameEn: "Sealing flashings and treating parapets, valleys and penetrations" },
+    { code: "roof_membrane_waterproofing_install", nameRu: "Монтаж мембранной гидроизоляции / сварка швов", nameEn: "Membrane waterproofing installation and seam welding" },
+    { code: "roof_membrane_waterproofing_quality_control", nameRu: "Контроль качества / проверка протечек", nameEn: "Quality control and leak check" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для мембранной гидроизоляции кровли по указанной площади.",
+    "Тип мембраны, крепление, сварка швов и узлы примыканий уточняются перед договором.",
+    "Работы на высоте требуют допуска и проверки специалистом.",
+  ],
+  questionsRu: [
+    "Какая кровля: плоская, скатная или с парапетами?",
+    "Нужна ПВХ/ТПО/битумная мембрана или рубероид?",
+    "Есть ли проходки, ендовы, внутренние водостоки или протечки?",
+  ],
+});
+
+export const BATHROOM_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "bathroom_waterproofing",
+  materialRows: [
+    { code: "bathroom_waterproofing_primer", nameRu: "Праймер / грунтовка основания", nameEn: "Base primer" },
+    { code: "bathroom_waterproofing_mastic", nameRu: "Гидроизоляционная мастика", nameEn: "Waterproofing mastic" },
+    { code: "bathroom_waterproofing_tape", nameRu: "Гидроизоляционная лента", nameEn: "Waterproofing tape", rateKind: "auxiliary" },
+    { code: "bathroom_waterproofing_tile_prep_supplies", nameRu: "Материалы для подготовки под плитку", nameEn: "Tile preparation supplies", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "bathroom_waterproofing_base_prep", nameRu: "Подготовка основания под гидроизоляцию", nameEn: "Base preparation for waterproofing" },
+    { code: "bathroom_waterproofing_corners", nameRu: "Обработка углов и примыканий", nameEn: "Corners and junctions treatment" },
+    { code: "bathroom_waterproofing_application", nameRu: "Нанесение гидроизоляции", nameEn: "Waterproofing application" },
+    { code: "bathroom_waterproofing_tile_ready", nameRu: "Подготовка под плитку", nameEn: "Preparation for tile installation" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции ванной / санузла по указанной площади.",
+    "Стены, пол, углы, трапы и примыкания уточняются перед договором.",
+    "Плиточные работы считаются отдельно, если не указаны в составе работ.",
+  ],
+  questionsRu: [
+    "Гидроизоляция нужна на полу, стенах или в душевой зоне?",
+    "Есть ли трап, поддон, ниша или мокрая зона?",
+    "Плитка входит в эту смету или нужна отдельная смета на укладку?",
+  ],
+});
+
+export const FOUNDATION_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "foundation_waterproofing",
+  materialRows: [
+    { code: "foundation_waterproofing_primer", nameRu: "Праймер для поверхности фундамента", nameEn: "Foundation surface primer" },
+    { code: "foundation_waterproofing_mastic_membrane", nameRu: "Битумная мастика / мембрана", nameEn: "Bitumen mastic or membrane" },
+    { code: "foundation_waterproofing_protection_membrane", nameRu: "Защитная мембрана", nameEn: "Protection membrane", rateKind: "auxiliary" },
+    { code: "foundation_waterproofing_insulation_optional", nameRu: "Утеплитель при необходимости", nameEn: "Optional insulation", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "foundation_waterproofing_surface_prep", nameRu: "Подготовка поверхности фундамента", nameEn: "Foundation surface preparation" },
+    { code: "foundation_waterproofing_application", nameRu: "Нанесение мастики / монтаж мембраны", nameEn: "Mastic application or membrane installation" },
+    { code: "foundation_waterproofing_backfill_warning", nameRu: "Обратная засыпка / warning: уточнить грунт и дренаж", nameEn: "Backfill warning: soil and drainage to be confirmed" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции фундамента по указанной площади.",
+    "Дренаж, утепление, обратная засыпка и доступ к наружной поверхности уточняются перед договором.",
+    "Грунтовые воды и состояние основания требуют проверки специалистом.",
+  ],
+  questionsRu: [
+    "Это наружная или внутренняя гидроизоляция?",
+    "Нужны ли дренаж, утепление и защитная мембрана?",
+    "Есть ли доступ для земляных работ и обратной засыпки?",
+  ],
+});
+
+export const BASEMENT_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "basement_waterproofing",
+  materialRows: [
+    { code: "basement_waterproofing_primer", nameRu: "Праймер основания подвала", nameEn: "Basement base primer" },
+    { code: "basement_waterproofing_membrane_injection", nameRu: "Мембрана / инъекционная гидроизоляция", nameEn: "Membrane or injection waterproofing" },
+    { code: "basement_waterproofing_tape_sealant", nameRu: "Лента и герметик для швов и примыканий", nameEn: "Tape and sealant for joints", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "basement_waterproofing_surface_prep", nameRu: "Подготовка поверхности подвала", nameEn: "Basement surface preparation" },
+    { code: "basement_waterproofing_application", nameRu: "Работы по нанесению / монтажу гидроизоляции подвала", nameEn: "Basement waterproofing application or installation works" },
+    { code: "basement_waterproofing_moisture_control", nameRu: "Контроль влажности и проверка протечек", nameEn: "Moisture control and leak check" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции подвала по указанной площади.",
+    "Причина влаги, дренаж, вентиляция и доступ к стенам требуют проверки специалистом.",
+  ],
+  questionsRu: [
+    "Гидроизоляция нужна изнутри или снаружи?",
+    "Есть ли активная протечка, капиллярная влага или конденсат?",
+    "Нужен ли дренаж или вентиляция?",
+  ],
+});
+
+export const POOL_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "pool_waterproofing",
+  materialRows: [
+    { code: "pool_waterproofing_primer", nameRu: "Праймер чаши бассейна", nameEn: "Pool shell primer" },
+    { code: "pool_waterproofing_mastic_membrane", nameRu: "Гидроизоляционная мастика / мембрана для бассейна", nameEn: "Pool waterproofing mastic or membrane" },
+    { code: "pool_waterproofing_tape", nameRu: "Гидроизоляционная лента для углов и вводов", nameEn: "Waterproofing tape for corners and penetrations", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "pool_waterproofing_shell_prep", nameRu: "Подготовка чаши бассейна", nameEn: "Pool shell preparation" },
+    { code: "pool_waterproofing_details", nameRu: "Обработка углов, вводов и примыканий", nameEn: "Corners, penetrations and junctions treatment" },
+    { code: "pool_waterproofing_application", nameRu: "Нанесение гидроизоляции бассейна", nameEn: "Pool waterproofing application" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции чаши бассейна по указанной площади.",
+    "Технология должна быть совместима с отделкой, химией воды и вводами оборудования.",
+  ],
+  questionsRu: [
+    "Бассейн бетонный, композитный или другой конструкции?",
+    "Какая финишная отделка планируется?",
+    "Есть ли вводы, форсунки, скиммеры и переливы?",
+  ],
+});
+
+export const WATERPROOFING_UNDER_TILE_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "waterproofing_under_tile",
+  materialRows: [
+    { code: "waterproofing_under_tile_primer", nameRu: "Грунтовка основания пола", nameEn: "Floor base primer" },
+    { code: "waterproofing_under_tile_mastic", nameRu: "Гидроизоляционная мастика под плитку", nameEn: "Waterproofing mastic under tile" },
+    { code: "waterproofing_under_tile_tape", nameRu: "Гидроизоляционная лента для углов и примыканий", nameEn: "Waterproofing tape for corners and junctions", rateKind: "auxiliary" },
+    { code: "waterproofing_under_tile_tile_prep", nameRu: "Подготовка поверхности перед укладкой плитки", nameEn: "Surface preparation before tile installation", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "waterproofing_under_tile_base_prep", nameRu: "Подготовка пола перед плиткой", nameEn: "Floor preparation before tile" },
+    { code: "waterproofing_under_tile_application", nameRu: "Нанесение гидроизоляции под плитку", nameEn: "Waterproofing application under tile" },
+    { code: "waterproofing_under_tile_ready_check", nameRu: "Проверка готовности основания под плитку", nameEn: "Tile-ready base check" },
+  ],
+  assumptionsRu: [
+    "Расчет выполнен для гидроизоляции пола перед укладкой плитки.",
+    "Выравнивание основания и плиточные работы считаются отдельно, если не указаны в составе работ.",
+  ],
+  questionsRu: [
+    "Это санузел, кухня, балкон или другое помещение?",
+    "Нужно ли выравнивание пола перед гидроизоляцией?",
+    "Плитка входит в эту смету или нужна отдельная смета?",
+  ],
+});
+
 export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOBAL_WORK_TYPE_DEFINITIONS.map((definition) =>
   definition.workKey === "laminate_laying" ? LAMINATE_TEMPLATE :
     definition.workKey === "asphalt_paving" ? ASPHALT_TEMPLATE :
@@ -1388,11 +1561,18 @@ export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOB
         definition.workKey === "ceramic_tile_laying" ? CERAMIC_TILE_TEMPLATE :
           definition.workKey === "ceramic_tile_floor_laying" ? CERAMIC_TILE_FLOOR_TEMPLATE :
             definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
-              definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
-                definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
-                  definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
-                    definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
-                      genericTemplate(definition),
+                definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
+                  definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
+                    definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
+                      definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
+                        definition.workKey === "roof_waterproofing" ? ROOF_WATERPROOFING_TEMPLATE :
+                          definition.workKey === "roof_membrane_waterproofing" ? ROOF_MEMBRANE_WATERPROOFING_TEMPLATE :
+                            definition.workKey === "bathroom_waterproofing" ? BATHROOM_WATERPROOFING_TEMPLATE :
+                              definition.workKey === "foundation_waterproofing" ? FOUNDATION_WATERPROOFING_TEMPLATE :
+                                definition.workKey === "basement_waterproofing" ? BASEMENT_WATERPROOFING_TEMPLATE :
+                                  definition.workKey === "pool_waterproofing" ? POOL_WATERPROOFING_TEMPLATE :
+                                    definition.workKey === "waterproofing_under_tile" ? WATERPROOFING_UNDER_TILE_TEMPLATE :
+                                      genericTemplate(definition),
 );
 
 export const GLOBAL_ESTIMATE_TEMPLATE_ROWS: readonly (GlobalEstimateTemplateRowDefinition & { workKey: string })[] =

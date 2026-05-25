@@ -7,6 +7,7 @@ import {
   BUILT_IN_AI_1000_WORK_ALIASES,
   BUILT_IN_AI_1000_WORK_TYPE_DEFINITIONS,
 } from "../builtInAi1000/builtInAi1000ConstructionCases";
+import { resolveWorkTypeDisambiguation } from "./workTypeDisambiguation";
 
 export const GLOBAL_WORK_CATEGORIES: readonly GlobalWorkCategory[] = [
   "flooring",
@@ -67,6 +68,7 @@ const BASE_GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   { workKey: "pipe_replacement", category: "plumbing", names: { ru: "Замена труб", en: "Pipe replacement" }, defaultMeasureUnit: "linear_m", safetyReviewRequired: true },
   { workKey: "waterproofing_bathroom", category: "waterproofing", names: { ru: "Гидроизоляция ванной", en: "Bathroom waterproofing" }, defaultMeasureUnit: "sq_m" },
   { workKey: "waterproofing_foundation", category: "waterproofing", names: { ru: "Гидроизоляция фундамента", en: "Foundation waterproofing" }, defaultMeasureUnit: "sq_m" },
+  { workKey: "waterproofing_under_tile", category: "waterproofing", names: { ru: "Гидроизоляция пола под плитку", en: "Floor waterproofing under tile" }, defaultMeasureUnit: "sq_m" },
   { workKey: "roof_repair", category: "roofing", names: { ru: "Ремонт кровли", en: "Roof repair" }, defaultMeasureUnit: "sq_m", safetyReviewRequired: true },
   { workKey: "metal_roofing", category: "roofing", names: { ru: "Металлочерепица", en: "Metal roofing" }, defaultMeasureUnit: "sq_m", safetyReviewRequired: true },
   { workKey: "soft_roofing", category: "roofing", names: { ru: "Мягкая кровля", en: "Soft roofing" }, defaultMeasureUnit: "sq_m", safetyReviewRequired: true },
@@ -237,6 +239,9 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "foundation_waterproofing", language: "en", alias: "foundation waterproofing" },
   { workKey: "foundation_waterproofing", language: "ru", alias: "гидроизоляция фундамента" },
   { workKey: "bathroom_waterproofing", language: "ru", alias: "гидроизоляция санузла" },
+  { workKey: "waterproofing_under_tile", language: "ru", alias: "гидроизоляция пола под плитку" },
+  { workKey: "waterproofing_under_tile", language: "ru", alias: "гидроизоляция пола перед плиткой" },
+  { workKey: "waterproofing_under_tile", language: "en", alias: "floor waterproofing under tile" },
   { workKey: "socket_installation", language: "en", alias: "socket installation" },
   { workKey: "electrical_basic", language: "en", alias: "electrical" },
   { workKey: "plumbing_basic", language: "en", alias: "plumbing repair" },
@@ -332,9 +337,6 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   const normalized = normalizeGlobalWorkAlias(text ?? "");
   if (!normalized) return null;
 
-  if (/shower|душ/i.test(normalized) && /tile|плитк/i.test(normalized) && /waterproof|гидроизоля/i.test(normalized)) {
-    return { workKey: "shower_tile_waterproofing", confidence: "high" };
-  }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized) && /(^|\s)подготовка(\s|$)/i.test(normalized)) {
     return { workKey: "floor_leveling_under_tile", confidence: "high" };
   }
@@ -344,14 +346,9 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/bathroom/i.test(normalized) && /turnkey/i.test(normalized) && /tile|plumbing|waterproof/i.test(normalized)) {
     return { workKey: "bathroom_tile_full", confidence: "high" };
   }
-  if (/waterproof|гидроизоля/i.test(normalized)) {
-    if (normalized.includes("bathroom_waterproofing")) return { workKey: "bathroom_waterproofing", confidence: "high" };
-    if (/green|зел[её]н/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) return { workKey: "green_roof_waterproofing", confidence: "high" };
-    if (normalized.includes("roof_waterproofing") || /\broof\b|кровл|крыш/i.test(normalized)) return { workKey: "roof_waterproofing", confidence: "high" };
-    if (/foundation|фундамент/i.test(normalized)) return { workKey: "foundation_waterproofing", confidence: "high" };
-    if (/shower|душ/i.test(normalized)) return { workKey: "shower_waterproofing", confidence: "high" };
-    if (/bath|ванн|санузел/i.test(normalized)) return { workKey: "bathroom_waterproofing", confidence: "high" };
-  }
+  const disambiguated = resolveWorkTypeDisambiguation(normalized);
+  if (disambiguated) return { workKey: disambiguated.workKey, confidence: disambiguated.confidence };
+
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
   }
@@ -387,7 +384,6 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/paint|покрас|краск|peinture/i, "wall_painting"],
     [/plaster|штукатур/i, "wall_plastering"],
     [/drywall|гипсокартон|гкл|gkl/i, "drywall_partition"],
-    [/waterproof|гидроизоля/i, "waterproofing_bathroom"],
     [/foundation|фундамент/i, "foundation_concrete"],
     [/rebar|арматур/i, "rebar_installation"],
     [/concrete|бетон/i, "concrete_slab"],
