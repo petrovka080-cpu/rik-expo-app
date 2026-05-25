@@ -75,6 +75,7 @@ export type CloseoutOwnershipEntry = {
     | "request_estimate_draft_state_payload_parity"
     | "request_estimate_draft_state_machine_payload_parity"
     | "ratebook_catalog_source_governance"
+    | "request_estimate_catalog_boq_live_release_gate"
     | "global_estimate_boq_depth_formula_quality"
     | "ui_layout_release"
     | "ios_release_proof"
@@ -1432,6 +1433,27 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "dirty-worktree boundary allowlist for approved AI release waves",
+    };
+  }
+  if (
+    normalized === "scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate.ts" ||
+    normalized === "scripts/audit/runRequestEstimateCatalogBoqNoHacksAudit.ts" ||
+    normalized === "scripts/e2e/runAndroidRequestEstimateCatalogBoqReleaseSmoke.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized === "tests/release/releaseGuard.shared.test.ts" ||
+    normalized.startsWith("tests/release/requestEstimateRelease") ||
+    normalized === "tests/e2e/requestEstimateCatalogBoqRelease.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE_") ||
+    normalized.startsWith("artifacts/screenshots/request-estimate-catalog-boq-release/")
+  ) {
+    return {
+      file: normalized,
+      category: "request_estimate_catalog_boq_live_release_gate",
+      wave: "S_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_GATE_WEB_ANDROID_NO_HACKS_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "request estimate catalog BOQ live web/android no-hacks release gate and proof artifacts",
     };
   }
   if (

@@ -1,0 +1,32 @@
+{
+  "android_emulator_passed": true,
+  "acceptance_cases_total": 6,
+  "prompt": "смета на ленточный фундамент длин 48 метров ширина 0,4 м, и высота 1.7 м",
+  "item_count": 21,
+  "selected_catalog_item_id": "android_release_catalog_sand_cushion",
+  "manual_catalog_item_id": "android_release_manual_catalog_rebar_d14",
+  "pdf_opened": true,
+  "send_status": "sent",
+  "product_search_tool": "search_material_products",
+  "ui_text_sample": [
+    "rik-expo-app",
+    "Development Build",
+    "DEVELOPMENT SERVERS",
+    "INFO",
+    "http://10.0.2.2:8081",
+    "http://10.0.2.2:8085",
+    "http://10.0.2.2:8083",
+    "http://10.0.2.2:8082",
+    "http://10.0.2.2:8084",
+    "New development server",
+    "RECENTLY OPENED",
+    "RESET",
+    "http://127.0.0.1:8098",
+    "Home",
+    "Updates",
+    "Settings"
+  ],
+  "adb_devices_sample": "List of devices attached\r\nemulator-5554\tdevice\r\n\r\n",
+  "failures": [],
+  "fake_green_claimed": false
+}

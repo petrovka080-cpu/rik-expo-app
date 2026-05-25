@@ -725,6 +725,10 @@ describe("releaseGuard.shared", () => {
             command: "npx tsx scripts/e2e/runSourceGovernanceProof.ts",
           },
           {
+            name: "request-estimate-catalog-boq-live-release-gate",
+            command: "npx tsx scripts/release/runRequestEstimateCatalogBoqLiveReleaseGate.ts",
+          },
+          {
             name: "all-screens-enterprise-web-proof",
             command: "npx tsx scripts/e2e/runAllScreensEnterpriseWebProof.ts",
           },

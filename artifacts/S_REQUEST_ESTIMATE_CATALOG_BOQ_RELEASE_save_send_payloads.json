@@ -1,0 +1,12 @@
+{
+  "parity_passed": true,
+  "source_governance_passed": true,
+  "draft_save_item_count": 21,
+  "pdf_generation_item_count": 21,
+  "marketplace_send_item_count": 21,
+  "marketplace_status": "sent",
+  "selected_catalog_item_ids": [
+    "release_catalog_sand_cushion",
+    "release_manual_catalog_rebar_d14"
+  ]
+}

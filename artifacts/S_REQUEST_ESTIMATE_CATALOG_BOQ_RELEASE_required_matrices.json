@@ -1,0 +1,52 @@
+{
+  "required_matrices_present": true,
+  "all_required_matrices_green": true,
+  "matrices": [
+    {
+      "key": "boq_catalog",
+      "path": "artifacts/S_REQUEST_AI_ESTIMATE_BOQ_CATALOG_matrix.json",
+      "expectedStatus": "GREEN_REQUEST_AI_ESTIMATE_BOQ_CATALOG_READY",
+      "present": true,
+      "green": true,
+      "finalStatus": "GREEN_REQUEST_AI_ESTIMATE_BOQ_CATALOG_READY",
+      "fakeGreenClaimed": false
+    },
+    {
+      "key": "catalog_binding",
+      "path": "artifacts/S_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_matrix.json",
+      "expectedStatus": "GREEN_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_READY",
+      "present": true,
+      "green": true,
+      "finalStatus": "GREEN_CATALOG_ITEMS_GLOBAL_ESTIMATE_BINDING_READY",
+      "fakeGreenClaimed": false
+    },
+    {
+      "key": "professional_boq_depth",
+      "path": "artifacts/S_GLOBAL_ESTIMATE_BOQ_DEPTH_matrix.json",
+      "expectedStatus": "GREEN_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_READY",
+      "present": true,
+      "green": true,
+      "finalStatus": "GREEN_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_READY",
+      "fakeGreenClaimed": false
+    },
+    {
+      "key": "draft_state_machine",
+      "path": "artifacts/S_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_matrix.json",
+      "expectedStatus": "GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY",
+      "present": true,
+      "green": true,
+      "finalStatus": "GREEN_REQUEST_ESTIMATE_DRAFT_STATE_MACHINE_READY",
+      "fakeGreenClaimed": false
+    },
+    {
+      "key": "source_governance",
+      "path": "artifacts/S_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_matrix.json",
+      "expectedStatus": "GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY",
+      "present": true,
+      "green": true,
+      "finalStatus": "GREEN_RATEBOOK_CATALOG_SOURCE_GOVERNANCE_READY",
+      "fakeGreenClaimed": false
+    }
+  ],
+  "fake_green_claimed": false
+}

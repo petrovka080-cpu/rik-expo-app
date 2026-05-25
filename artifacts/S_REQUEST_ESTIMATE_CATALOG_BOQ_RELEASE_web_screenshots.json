@@ -1,0 +1,17 @@
+{
+  "web_playwright_passed": true,
+  "screenshots": {
+    "foundation_manual_catalog": "artifacts/screenshots/request-estimate-catalog-boq-release/foundation_manual_catalog.png",
+    "request_pdf_viewer": "artifacts/screenshots/request-estimate-catalog-boq-release/request_pdf_viewer.png",
+    "request_tile": "artifacts/screenshots/request-estimate-catalog-boq-release/request_tile.png",
+    "product_rebar_d14": "artifacts/screenshots/request-estimate-catalog-boq-release/product_rebar_d14.png",
+    "live_routes": [
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\brick_masonry.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\gable_roof_installation.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\asphalt_paving.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\carpet_laying.png",
+      "C:\\dev\\rik-expo-app\\artifacts\\screenshots\\live-web-android-ai-estimate-reality\\drywall_gkl.png"
+    ]
+  },
+  "fake_green_claimed": false
+}

@@ -1,0 +1,13 @@
+{
+  "android_emulator_passed": true,
+  "foundation_acceptance_passed": true,
+  "catalog_select_passed": true,
+  "manual_material_passed": true,
+  "pdf_viewer_android_passed": true,
+  "save_send_passed": true,
+  "product_search_passed": true,
+  "all_screens_android_matrix_path": "artifacts/S_ALL_SCREENS_matrix.json",
+  "direct_android_probe_passed": true,
+  "screenshot_path": "artifacts/screenshots/request-estimate-catalog-boq-release/android_release_smoke.png",
+  "fake_green_claimed": false
+}

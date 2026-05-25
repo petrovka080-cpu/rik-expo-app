@@ -1,0 +1,26 @@
+{
+  "wave": "S_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_GATE_WEB_ANDROID_NO_HACKS_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_REQUEST_ESTIMATE_CATALOG_BOQ_NO_HACKS_AUDIT_READY",
+  "scanned_roots": [
+    "app",
+    "src",
+    "tests",
+    "scripts"
+  ],
+  "forbidden_findings": [],
+  "guard_evidence_findings_count": 9,
+  "use_effect_rewrite_found": false,
+  "screen_local_calculation_found": false,
+  "inline_rows_in_screens_found": false,
+  "hardcoded_foundation_patch_found": false,
+  "fake_catalog_items_found": false,
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false,
+  "duplicate_catalog_service_found": false,
+  "second_ai_framework_created": false,
+  "pdf_renderer_replaced_globally": false,
+  "fifty_k_expansion_enabled": false,
+  "no_hacks_audit_passed": true,
+  "fake_green_claimed": false
+}
