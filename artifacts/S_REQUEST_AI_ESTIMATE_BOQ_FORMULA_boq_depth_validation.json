@@ -5,5 +5,10 @@
   "hasMaterials": true,
   "hasLabor": true,
   "hasEquipmentOrDeliveryOrWarning": true,
+  "hasAssumptions": true,
+  "hasCostFactors": true,
+  "hasClarifyingQuestions": true,
+  "hasSourceEvidence": true,
+  "hasTaxStatusOrWarning": true,
   "blockers": []
 }
