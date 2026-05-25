@@ -653,6 +653,7 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "features", "consumerRepair", "requestEstimateDraftReducer.ts"),
       path.join(SRC, "features", "consumerRepair", "buildRequestEstimatePayload.ts"),
       path.join(SRC, "features", "consumerRepair", "validateRequestEstimateDraft.ts"),
+      path.join(SRC, "features", "consumerRepair", "requestEstimateScreenActions.ts"),
     ].filter((file) => fs.existsSync(file)).length;
     const sAiAlwaysOnExternalKnowledgeFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "alwaysOnExternalKnowledge"),
@@ -1758,7 +1759,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
-    expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(5);
+    expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
     expect(sAiEstimateEngineFiles).toBeLessThanOrEqual(9);
     expect(

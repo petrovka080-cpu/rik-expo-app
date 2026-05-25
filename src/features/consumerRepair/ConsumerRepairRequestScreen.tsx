@@ -8,7 +8,6 @@ import { AppStickyActionBar } from "../../components/layout/AppStickyActionBar";
 import { CatalogItemPicker } from "../catalog/CatalogItemPicker";
 import {
   addConsumerRepairRequestCatalogItem,
-  addConsumerRepairRequestItem,
   approveConsumerRepairRequestDraft,
   attachConsumerRepairMedia,
   ConsumerRepairValidationError,
@@ -19,7 +18,6 @@ import {
   removeConsumerRepairRequestItem,
   selectConsumerRepairRequestItemCatalogItem,
   sendConsumerRepairRequestToMarketplace,
-  updateConsumerRepairRequestDraft,
   updateConsumerRepairRequestItemQuantity,
   type ConsumerRequestValidationErrorItem,
   type ConsumerRepairDraftBundle,
@@ -33,6 +31,7 @@ import { ConsumerRepairHistory } from "./ConsumerRepairHistory";
 import { buildConsumerRepairMarketplaceSendErrors, ConsumerRepairMarketplaceSend } from "./ConsumerRepairMarketplaceSend";
 import { ConsumerRepairMediaButtons, ConsumerRepairRequestFormCard } from "./ConsumerRepairMediaButtons";
 import { consumerRepairRequestScreenStyles as styles } from "./ConsumerRepairRequestScreen.styles";
+import { addConsumerRepairCustomNoteItem, restoreConsumerRepairRequestItem, syncConsumerRepairDraftFields } from "./requestEstimateScreenActions";
 const CONSUMER_USER_ID = "consumer-demo-user";
 type State = {
   problemText: string;
@@ -168,18 +167,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private syncCurrentDraftFields(current: ConsumerRepairDraftBundle): ConsumerRepairDraftBundle {
-    if (current.draft.status === "sent_to_marketplace") return current;
-    return updateConsumerRepairRequestDraft({
-      requestDraftId: current.draft.id,
-      patch: {
-        problemText: this.state.problemText,
-        repairType: this.state.repairType,
-        city: this.state.city || null,
-        addressText: this.state.addressText || null,
-        preferredTimeText: this.state.preferredTimeText || null,
-        contactPhone: this.state.contactPhone || null,
-      },
-    });
+    return syncConsumerRepairDraftFields(current, this.state);
   }
 
   private handleValidationError(error: unknown) {
@@ -200,17 +188,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
 
   private saveDraft = () => {
     const current = this.ensureDraftBundle();
-    const bundle = updateConsumerRepairRequestDraft({
-      requestDraftId: current.draft.id,
-      patch: {
-        problemText: this.state.problemText,
-        repairType: this.state.repairType,
-        city: this.state.city || null,
-        addressText: this.state.addressText || null,
-        preferredTimeText: this.state.preferredTimeText || null,
-        contactPhone: this.state.contactPhone || null,
-      },
-    });
+    const bundle = syncConsumerRepairDraftFields(current, this.state);
     this.updateCurrentBundle(bundle, "Черновик сохранён. Не отправлен.");
   };
 
@@ -330,28 +308,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
     const current = this.state.bundle;
     const item = this.state.lastRemovedItem;
     if (!current || !item) return;
-    const bundle = addConsumerRepairRequestItem({
-      requestDraftId: current.draft.id,
-      titleRu: item.titleRu,
-      itemType: item.itemType,
-      quantity: item.quantity ?? 1,
-      unit: item.unit ?? undefined,
-      unitLabel: item.unitLabel,
-      unitPrice: item.unitPrice,
-      currency: item.currency,
-      source: item.source,
-      catalogItemId: item.catalogItemId,
-      selectedCatalogItemId: item.selectedCatalogItemId,
-      materialKey: item.materialKey,
-      rateKey: item.rateKey,
-      catalogBindingStatus: item.catalogBindingStatus ?? undefined,
-      catalogCandidates: item.catalogCandidates,
-      category: item.category,
-      sourceId: item.sourceId,
-      sourceLabel: item.sourceLabel,
-      confidence: item.confidence,
-      addedBy: item.addedBy,
-    });
+    const bundle = restoreConsumerRepairRequestItem({ current, item });
     this.setState({ lastRemovedItem: null });
     this.updateCurrentBundle(bundle, "Позиция возвращена в черновик.");
   };
@@ -363,19 +320,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
 
   private addCustomItem = () => {
     const current = this.ensureDraftBundle();
-    const bundle = addConsumerRepairRequestItem({
-      requestDraftId: current.draft.id,
-      titleRu: "Пользовательское примечание",
-      itemType: "other",
-      quantity: 1,
-      unit: "set",
-      unitLabel: "компл.",
-      unitPrice: null,
-      currency: "KGS",
-      source: "custom",
-      confidence: "low",
-      addedBy: "user",
-    });
+    const bundle = addConsumerRepairCustomNoteItem(current);
     this.updateCurrentBundle(bundle, "Пользовательское примечание добавлено в черновик.");
   };
 

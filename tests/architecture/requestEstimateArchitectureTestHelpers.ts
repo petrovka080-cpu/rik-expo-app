@@ -11,6 +11,7 @@ export const REQUEST_ESTIMATE_RUNTIME_FILES = [
   "src/features/consumerRepair/requestEstimateDraftReducer.ts",
   "src/features/consumerRepair/buildRequestEstimatePayload.ts",
   "src/features/consumerRepair/validateRequestEstimateDraft.ts",
+  "src/features/consumerRepair/requestEstimateScreenActions.ts",
   "src/features/catalog/CatalogItemPicker.tsx",
   "src/lib/consumerRequests/consumerRequestGlobalEstimateIntegration.ts",
   "src/lib/consumerRequests/consumerRequestPdfService.ts",

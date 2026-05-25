@@ -1,7 +1,7 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
   "final_status": "GREEN_ARCH_GOD_COMPONENTS_DECOMPOSITION_READY",
-  "generatedAt": "2026-05-24T19:06:06.210Z",
+  "generatedAt": "2026-05-25T05:09:55.639Z",
   "remaining_god_components": 0,
   "new_god_components_added": 0,
   "hook_pressure_components_remaining": 0,
@@ -35,7 +35,7 @@
     },
     {
       "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 496,
+      "lineCount": 498,
       "hookCount": 0
     },
     {

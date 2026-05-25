@@ -1,6 +1,6 @@
 {
   "wave": "S_ARCH_01_GOD_COMPONENTS_DECOMPOSITION_CLOSEOUT",
-  "generatedAt": "2026-05-24T19:06:06.210Z",
+  "generatedAt": "2026-05-25T05:09:55.639Z",
   "component_line_threshold": 500,
   "hook_pressure_threshold": 25,
   "top_by_lines": [
@@ -16,7 +16,7 @@
     },
     {
       "file": "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
-      "lineCount": 496,
+      "lineCount": 498,
       "hookCount": 0
     },
     {

@@ -8,11 +8,14 @@ describe("request state no duplicate draft logic", () => {
       "src/features/consumerRepair/buildRequestEstimatePayload.ts",
       "src/features/consumerRepair/validateRequestEstimateDraft.ts",
     ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
-    const screen = fs.readFileSync("src/features/consumerRepair/ConsumerRepairRequestScreen.tsx", "utf8");
+    const screenAdapterSources = [
+      "src/features/consumerRepair/ConsumerRepairRequestScreen.tsx",
+      "src/features/consumerRepair/requestEstimateScreenActions.ts",
+    ].map((file) => fs.readFileSync(file, "utf8")).join("\n");
 
     expect(featureSources).not.toMatch(/createConsumerRepairRequestDraft\s*\(/);
     expect(featureSources).not.toMatch(/sendConsumerRepairRequestToMarketplace\s*\(/);
-    expect(screen).toContain("addConsumerRepairRequestItem");
-    expect(screen).toContain("generateConsumerRepairRequestPdfForDraft");
+    expect(screenAdapterSources).toContain("addConsumerRepairRequestItem");
+    expect(screenAdapterSources).toContain("generateConsumerRepairRequestPdfForDraft");
   });
 });
