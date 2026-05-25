@@ -675,6 +675,12 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate", "sourceGovernance"),
       /\.ts$/,
     );
+    const sWorkTypeResolverDisambiguationFiles = [
+      path.join(SRC, "lib", "ai", "globalEstimate", "workTypeDisambiguation.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "waterproofingWorkTypeResolver.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "roofingWorkTypeResolver.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "workTypeResolverNegativeRules.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sRequestEstimateBoqCatalogGlobalEstimateFiles = [
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateBoqDepthPolicy.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "estimateFormulaQualityEngine.ts"),
@@ -1771,12 +1777,14 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateBoqCatalogGlobalEstimateFiles -
         sGlobalEstimateBoqDepthFormulaQualityFiles -
         sCatalogItemsGlobalEstimateBindingFiles -
-        sRatebookCatalogSourceGovernanceFiles,
+        sRatebookCatalogSourceGovernanceFiles -
+        sWorkTypeResolverDisambiguationFiles,
     ).toBeLessThanOrEqual(45);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
     expect(sGlobalEstimateBoqDepthFormulaQualityFiles).toBeLessThanOrEqual(2);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
     expect(sRatebookCatalogSourceGovernanceFiles).toBeLessThanOrEqual(6);
+    expect(sWorkTypeResolverDisambiguationFiles).toBeLessThanOrEqual(4);
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
