@@ -33,7 +33,7 @@ const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "screenshots", "request-estimate-
 const PREFIX = "S_REQUEST_ESTIMATE_CATALOG_BOQ_RELEASE";
 const FOUNDATION_PROMPT =
   "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u043b\u0435\u043d\u0442\u043e\u0447\u043d\u044b\u0439 \u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442 \u0434\u043b\u0438\u043d 48 \u043c\u0435\u0442\u0440\u043e\u0432 \u0448\u0438\u0440\u0438\u043d\u0430 0,4 \u043c, \u0438 \u0432\u044b\u0441\u043e\u0442\u0430 1.7 \u043c";
-const PRODUCT_SEARCH_PROMPT = "material rebar D14";
+const PRODUCT_SEARCH_PROMPT = "\u0430\u0440\u043c\u0430\u0442\u0443\u0440\u0430 \u00d814";
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });

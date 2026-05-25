@@ -3,7 +3,7 @@
   "forbidden_patterns": [
     {
       "id": "use_effect_rewrite",
-      "pattern": "/useEffect\\s*\\(\\s*\\(\\s*\\)\\s*=>\\s*set(?:Answer|Messages|Estimate|Draft)/",
+      "pattern": "/useEffect\\s*\\(\\s*\\(\\s*\\)\\s*=>\\s*set(?:Answer|Messages|Estimate|Draft)|setMessages\\s*\\(\\s*prev\\s*=>\\s*rewrite/",
       "roots": [
         "app",
         "src"
@@ -20,6 +20,14 @@
     {
       "id": "inline_rows",
       "pattern": "/\\binline(?:Estimate|Foundation|Boq|BOQ)?Rows\\b|\\binlineGenericConstructionRows\\b/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "inline_payload_mutation",
+      "pattern": "/\\bpayload\\.items\\.push\\(|\\bpayload\\.items\\s*=\\s*\\[/",
       "roots": [
         "app",
         "src"

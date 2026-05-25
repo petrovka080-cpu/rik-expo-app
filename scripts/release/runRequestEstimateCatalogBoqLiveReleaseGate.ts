@@ -52,7 +52,6 @@ export const REQUIRED_MATRICES = Object.freeze([
     key: "professional_boq_depth",
     path: "artifacts/S_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_matrix.json",
     expectedStatus: "GREEN_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_READY",
-    fallbackPath: "artifacts/S_GLOBAL_ESTIMATE_BOQ_DEPTH_matrix.json",
   },
   {
     key: "draft_state_machine",
@@ -77,7 +76,11 @@ const ACCEPTANCE_CASES = Object.freeze([
 ] as const);
 const STRIP_FOUNDATION_PROMPT =
   "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u043b\u0435\u043d\u0442\u043e\u0447\u043d\u044b\u0439 \u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442 \u0434\u043b\u0438\u043d 48 \u043c\u0435\u0442\u0440\u043e\u0432 \u0448\u0438\u0440\u0438\u043d\u0430 0,4 \u043c, \u0438 \u0432\u044b\u0441\u043e\u0442\u0430 1.7 \u043c";
-const REBAR_PRODUCT_SEARCH_PROMPT = "material rebar D14";
+const PRODUCT_SEARCH_PROMPTS = Object.freeze([
+  "\u0430\u0440\u043c\u0430\u0442\u0443\u0440\u0430 \u00d814",
+  "\u0431\u0435\u0442\u043e\u043d \u041c300 30 \u043c\u00b3",
+  "\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u043e\u0431\u0435\u0442\u043e\u043d \u0434\u043b\u044f 10000 \u043c\u00b2",
+] as const);
 
 function artifactPath(name: string): string {
   return path.join(ARTIFACT_DIR, `${PREFIX}_${name}`);
@@ -126,15 +129,12 @@ export function isPushedCommitEvidenceValid(input: { headSha: string; remoteSha:
 export function loadRequiredMatrixEvidence() {
   return REQUIRED_MATRICES.map((entry) => {
     const primaryPath = path.resolve(process.cwd(), entry.path);
-    const fallbackPathValue = (entry as { fallbackPath?: string }).fallbackPath;
-    const fallbackPath = fallbackPathValue ? path.resolve(process.cwd(), fallbackPathValue) : null;
-    const matrix = readJson(primaryPath) ?? (fallbackPath ? readJson(fallbackPath) : null);
-    const usedPath = fs.existsSync(primaryPath) ? entry.path : fallbackPathValue ?? entry.path;
+    const matrix = readJson(primaryPath);
     const present = matrix !== null;
     const green = present && matrix.final_status === entry.expectedStatus && matrix.fake_green_claimed === false;
     return {
       key: entry.key,
-      path: usedPath,
+      path: entry.path,
       expectedStatus: entry.expectedStatus,
       present,
       green,
@@ -294,21 +294,46 @@ function androidArtifactPassed(): boolean {
   return screenshots?.android_emulator_passed === true && transcripts?.android_emulator_passed === true;
 }
 
-function productSearchAcceptance(): boolean {
-  const answer = answerBuiltInAi({
-    text: REBAR_PRODUCT_SEARCH_PROMPT,
-    screenContext: "marketplace",
-    route: "/product/search",
-    role: "buyer",
-    countryCode: "KG",
-    cityOrRegion: "Bishkek",
-    userId: "request-estimate-catalog-boq-release-user",
+function productSearchAcceptance() {
+  return PRODUCT_SEARCH_PROMPTS.map((prompt) => {
+    const answer = answerBuiltInAi({
+      text: prompt,
+      screenContext: "marketplace",
+      route: "/product/search",
+      role: "buyer",
+      countryCode: "KG",
+      cityOrRegion: "Bishkek",
+      userId: "request-estimate-catalog-boq-release-user",
+    });
+    const productSearch = answer.toolResult?.productSearch;
+    const serialized = JSON.stringify(productSearch ?? {});
+    const candidates = productSearch?.candidates ?? [];
+    const fakeStockFound = /fake_stock|fake stock/i.test(serialized) || candidates.some((candidate) => candidate.stockKnown);
+    const fakeSupplierFound = /fake_supplier|fake supplier/i.test(serialized);
+    const fakeAvailabilityFound =
+      /fake_availability|fake availability/i.test(serialized) ||
+      candidates.some((candidate) => candidate.availabilityStatus !== "unknown");
+    return {
+      prompt,
+      intent: answer.route.intent,
+      selectedTool: answer.runtimeTrace.selectedTool ?? null,
+      candidates: candidates.length,
+      sourceBacked: productSearch?.sourceBacked === true,
+      availability_unknown_unless_confirmed: !fakeAvailabilityFound,
+      supplier_unknown_unless_confirmed: !fakeSupplierFound,
+      fake_stock_found: fakeStockFound,
+      fake_supplier_found: fakeSupplierFound,
+      fake_availability_found: fakeAvailabilityFound,
+      passed:
+        ["product_search", "marketplace_lookup"].includes(answer.route.intent) &&
+        ["search_material_products", "search_marketplace_products"].includes(String(answer.runtimeTrace.selectedTool)) &&
+        productSearch?.sourceBacked === true &&
+        candidates.length > 0 &&
+        !fakeStockFound &&
+        !fakeSupplierFound &&
+        !fakeAvailabilityFound,
+    };
   });
-  return (
-    ["product_search", "marketplace_lookup"].includes(answer.route.intent) &&
-    ["search_material_products", "search_marketplace_products"].includes(String(answer.runtimeTrace.selectedTool)) &&
-    !/fake_stock|fake_availability|fake_supplier/i.test(JSON.stringify(answer.toolResult?.productSearch ?? {}))
-  );
 }
 
 function routeConsistencyAcceptance() {
@@ -379,7 +404,8 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
     };
   });
   const payloadEvidence = await buildRequestPayloadEvidence();
-  const productSearchPassed = productSearchAcceptance();
+  const productSearch = productSearchAcceptance();
+  const productSearchPassed = productSearch.every((item) => item.passed);
   const routeConsistency = routeConsistencyAcceptance();
   const foundationAcceptance = acceptance.find((item) => item.key === "foundation");
   const catalogManualMaterial = {
@@ -425,7 +451,7 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
   addFailure(failures, requiredMatrices.every((item) => item.green), "REQUIRED_MATRIX_NOT_GREEN", requiredMatrices);
   addFailure(failures, audit.no_hacks_audit_passed, "NO_HACKS_AUDIT_FAILED", audit.forbidden_findings);
   addFailure(failures, acceptance.every((item) => item.passed), "LIVE_ACCEPTANCE_CASE_FAILED", acceptance);
-  addFailure(failures, productSearchPassed, "PRODUCT_SEARCH_ACCEPTANCE_FAILED");
+  addFailure(failures, productSearchPassed, "PRODUCT_SEARCH_ACCEPTANCE_FAILED", productSearch);
   addFailure(failures, routeConsistency.every((item) => item.passed), "ROUTE_CONSISTENCY_FAILED", routeConsistency);
   addFailure(failures, payloadEvidence.manualCatalogMaterialReady, "MANUAL_CATALOG_MATERIAL_NOT_READY", payloadEvidence.selectedCatalogItemIds);
   addFailure(failures, payloadEvidence.pdfPayload.pdf_data_uri, "PDF_ACCEPTANCE_FAILED", payloadEvidence.pdfPayload);
@@ -480,10 +506,11 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
   writeJson("payload_parity.json", payloadParity);
   writeJson("product_search.json", {
     product_search_acceptance_passed: productSearchPassed,
-    prompts: ["арматура Ø14", "бетон М300 30 м³", "асфальтобетон для 10000 м²"],
-    fake_stock_found: false,
-    fake_supplier_found: false,
-    fake_availability_found: false,
+    prompts: PRODUCT_SEARCH_PROMPTS,
+    results: productSearch,
+    fake_stock_found: productSearch.some((item) => item.fake_stock_found),
+    fake_supplier_found: productSearch.some((item) => item.fake_supplier_found),
+    fake_availability_found: productSearch.some((item) => item.fake_availability_found),
     fake_green_claimed: false,
   });
   writeJson("route_consistency.json", {
@@ -528,7 +555,7 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
     use_effect_rewrite_found: audit.use_effect_rewrite_found,
     screen_local_calculation_found: audit.screen_local_calculation_found,
     inline_rows_in_screens_found: audit.inline_rows_in_screens_found,
-    inline_payload_mutation_found: false,
+    inline_payload_mutation_found: audit.inline_payload_mutation_found,
     hardcoded_foundation_patch_found: audit.hardcoded_foundation_patch_found,
     fake_catalog_items_found: audit.fake_catalog_items_found,
     fake_stock_found: audit.fake_stock_found,

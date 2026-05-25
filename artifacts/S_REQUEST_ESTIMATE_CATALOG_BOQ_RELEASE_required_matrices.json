@@ -22,7 +22,7 @@
     },
     {
       "key": "professional_boq_depth",
-      "path": "artifacts/S_GLOBAL_ESTIMATE_BOQ_DEPTH_matrix.json",
+      "path": "artifacts/S_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_matrix.json",
       "expectedStatus": "GREEN_GLOBAL_ESTIMATE_PROFESSIONAL_BOQ_DEPTH_READY",
       "present": true,
       "green": true,

@@ -12,6 +12,7 @@
   "use_effect_rewrite_found": false,
   "screen_local_calculation_found": false,
   "inline_rows_in_screens_found": false,
+  "inline_payload_mutation_found": false,
   "hardcoded_foundation_patch_found": false,
   "fake_catalog_items_found": false,
   "fake_stock_found": false,

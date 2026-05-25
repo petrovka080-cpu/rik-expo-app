@@ -5,6 +5,47 @@
     "бетон М300 30 м³",
     "асфальтобетон для 10000 м²"
   ],
+  "results": [
+    {
+      "prompt": "арматура Ø14",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "candidates": 3,
+      "sourceBacked": true,
+      "availability_unknown_unless_confirmed": true,
+      "supplier_unknown_unless_confirmed": true,
+      "fake_stock_found": false,
+      "fake_supplier_found": false,
+      "fake_availability_found": false,
+      "passed": true
+    },
+    {
+      "prompt": "бетон М300 30 м³",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "candidates": 3,
+      "sourceBacked": true,
+      "availability_unknown_unless_confirmed": true,
+      "supplier_unknown_unless_confirmed": true,
+      "fake_stock_found": false,
+      "fake_supplier_found": false,
+      "fake_availability_found": false,
+      "passed": true
+    },
+    {
+      "prompt": "асфальтобетон для 10000 м²",
+      "intent": "product_search",
+      "selectedTool": "search_material_products",
+      "candidates": 3,
+      "sourceBacked": true,
+      "availability_unknown_unless_confirmed": true,
+      "supplier_unknown_unless_confirmed": true,
+      "fake_stock_found": false,
+      "fake_supplier_found": false,
+      "fake_availability_found": false,
+      "passed": true
+    }
+  ],
   "fake_stock_found": false,
   "fake_supplier_found": false,
   "fake_availability_found": false,

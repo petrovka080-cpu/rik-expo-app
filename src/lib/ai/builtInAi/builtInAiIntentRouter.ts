@@ -79,9 +79,11 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
   unit?: string;
 } {
   const text = input.text.trim();
+  const route = input.route?.toLowerCase() ?? "";
   const estimateRoute = routeUniversalEstimateIntent(text);
   const strongEstimate = hasAny(text, STRONG_ESTIMATE_PATTERNS);
   const productSearch = hasAny(text, PRODUCT_SEARCH_PATTERNS);
+  const productSearchSurface = screenContext === "marketplace" && route.includes("/product/search");
   const estimateProcurementList = /смета\s+на\s+закупочн/i.test(text) || /СЃРјРµС‚Р°\s+РЅР°\s+Р·Р°РєСѓРїРѕС‡РЅ/i.test(text);
   const procurementOverride = productSearch && strongEstimate && !estimateProcurementList && hasAny(text, [
     /смета\s+в\s+закуп/i,
@@ -91,6 +93,17 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
     /СЃРјРµС‚Р°\s+Рё\s+Р·Р°РєСѓРї/i,
     /pdf\s+РїРѕ\s+СЃРјРµС‚/i,
   ]);
+
+  if (productSearchSurface && text.length > 0) {
+    return {
+      intent: "product_search",
+      confidence: estimateRoute.resolvedWorkKey && estimateRoute.resolvedWorkKey !== "other_construction_work" ? "high" : "medium",
+      workKey: estimateRoute.resolvedWorkKey,
+      category: estimateRoute.resolvedCategory,
+      volume: estimateRoute.volume,
+      unit: estimateRoute.unit,
+    };
+  }
 
   if (procurementOverride) {
     return {

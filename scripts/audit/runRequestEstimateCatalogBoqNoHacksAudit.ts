@@ -9,6 +9,7 @@ type RuleId =
   | "use_effect_rewrite"
   | "screen_local_calculation"
   | "inline_rows"
+  | "inline_payload_mutation"
   | "hardcoded_foundation_patch"
   | "fake_catalog_item"
   | "fake_stock"
@@ -37,9 +38,10 @@ const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", "
 const SCAN_ROOTS = ["app", "src", "tests", "scripts"] as const;
 
 const RULES: readonly Rule[] = Object.freeze([
-  { id: "use_effect_rewrite", pattern: /useEffect\s*\(\s*\(\s*\)\s*=>\s*set(?:Answer|Messages|Estimate|Draft)/, roots: ["app", "src"] },
+  { id: "use_effect_rewrite", pattern: /useEffect\s*\(\s*\(\s*\)\s*=>\s*set(?:Answer|Messages|Estimate|Draft)|setMessages\s*\(\s*prev\s*=>\s*rewrite/, roots: ["app", "src"] },
   { id: "screen_local_calculation", pattern: /\bcalculateEstimateInScreen\b|\bscreenLocal(?:Estimate|Calculation)\b/, roots: ["app", "src"] },
   { id: "inline_rows", pattern: /\binline(?:Estimate|Foundation|Boq|BOQ)?Rows\b|\binlineGenericConstructionRows\b/, roots: ["app", "src"] },
+  { id: "inline_payload_mutation", pattern: /\bpayload\.items\.push\(|\bpayload\.items\s*=\s*\[/, roots: ["app", "src"] },
   { id: "hardcoded_foundation_patch", pattern: /\bhardcodedFoundation(?:Only)?Patch\b|\bfoundationOnlyPatch\b/, roots: ["app", "src", "tests", "scripts"] },
   { id: "fake_catalog_item", pattern: /\bconst\s+fakeCatalogItem\s*=|\bfakeCatalogItem\s*:/, roots: ["app", "src"] },
   { id: "fake_stock", pattern: /\bconst\s+fakeStock\s*=|\bfakeStock\s*:/, roots: ["app", "src"] },
@@ -148,6 +150,7 @@ export function runRequestEstimateCatalogBoqNoHacksAudit() {
     use_effect_rewrite_found: result.findings.some((finding) => finding.ruleId === "use_effect_rewrite"),
     screen_local_calculation_found: result.findings.some((finding) => finding.ruleId === "screen_local_calculation"),
     inline_rows_in_screens_found: result.findings.some((finding) => finding.ruleId === "inline_rows"),
+    inline_payload_mutation_found: result.findings.some((finding) => finding.ruleId === "inline_payload_mutation"),
     hardcoded_foundation_patch_found: result.findings.some((finding) => finding.ruleId === "hardcoded_foundation_patch"),
     fake_catalog_items_found: result.findings.some((finding) => finding.ruleId === "fake_catalog_item"),
     fake_stock_found: result.findings.some((finding) => finding.ruleId === "fake_stock"),
