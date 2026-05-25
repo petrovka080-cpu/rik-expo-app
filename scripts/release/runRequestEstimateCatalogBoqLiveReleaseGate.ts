@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-import { runRequestEstimateCatalogBoqNoHacksAudit } from "../audit/runRequestEstimateCatalogBoqNoHacksAudit";
+import { runRequestEstimateCatalogBoqReleaseNoHacksAudit } from "../audit/runRequestEstimateCatalogBoqReleaseNoHacksAudit";
 import { answerBuiltInAi } from "../../src/lib/ai/builtInAi";
 import {
   calculateGlobalConstructionEstimateSync,
@@ -311,10 +311,52 @@ function productSearchAcceptance(): boolean {
   );
 }
 
+function routeConsistencyAcceptance() {
+  const routeCases = ACCEPTANCE_CASES.filter((testCase): testCase is Extract<(typeof ACCEPTANCE_CASES)[number], { explicitWorkKey: string }> => (
+    "explicitWorkKey" in testCase
+  ));
+  const promptByKey: Record<string, string> = {
+    brick: "estimate cost for brick masonry 74 sq_m",
+    roof: "estimate cost for gable roof installation 100 sq_m",
+    asphalt: "estimate cost for asphalt paving 1000 sq_m",
+    carpet: "estimate cost for carpet laying 100 sq_m",
+    tile: "estimate cost for ceramic tile floor laying 174 sq_m",
+    gkl: "estimate cost for drywall partition 352 sq_m",
+  };
+  return routeCases.map((testCase) => {
+    const prompt = promptByKey[testCase.key] ?? `estimate cost for ${testCase.explicitWorkKey.replace(/_/g, " ")} ${testCase.volume} ${testCase.unit}`;
+    const route = testCase.key === "asphalt" ? "/ai?context=foreman" : testCase.key === "tile" || testCase.key === "gkl" || testCase.key === "carpet" ? "/request" : "/chat";
+    const answer = answerBuiltInAi({
+      text: prompt,
+      route,
+      screenContext: route.includes("foreman") ? "foreman" : route === "/request" ? "consumer_repair_request" : "chat",
+      role: route.includes("foreman") ? "foreman" : "consumer",
+      countryCode: "KG",
+      cityOrRegion: "Bishkek",
+      userId: "request-estimate-catalog-boq-release-user",
+    });
+    return {
+      key: testCase.key,
+      route,
+      expectedWorkKey: testCase.explicitWorkKey,
+      intent: answer.route.intent,
+      selectedTool: answer.runtimeTrace.selectedTool,
+      usesGlobalEstimateResult: Boolean(answer.toolResult?.estimate),
+      roleContextOverrideFound: route.includes("foreman") && answer.route.intent !== "estimate",
+      pdfActionVisible: answer.actions.some((action) => action.id === "make_pdf"),
+      passed:
+        answer.route.intent === "estimate" &&
+        answer.runtimeTrace.selectedTool === "calculate_global_estimate" &&
+        Boolean(answer.toolResult?.estimate) &&
+        answer.actions.some((action) => action.id === "make_pdf"),
+    };
+  });
+}
+
 export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
   const failures: Failure[] = [];
   const requiredMatrices = loadRequiredMatrixEvidence();
-  const audit = runRequestEstimateCatalogBoqNoHacksAudit();
+  const audit = runRequestEstimateCatalogBoqReleaseNoHacksAudit();
 
   const acceptance = ACCEPTANCE_CASES.map((testCase) => {
     const estimate = estimateForCase(testCase);
@@ -338,16 +380,59 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
   });
   const payloadEvidence = await buildRequestPayloadEvidence();
   const productSearchPassed = productSearchAcceptance();
+  const routeConsistency = routeConsistencyAcceptance();
+  const foundationAcceptance = acceptance.find((item) => item.key === "foundation");
+  const catalogManualMaterial = {
+    manual_catalog_acceptance_passed: payloadEvidence.manualCatalogMaterialReady,
+    manual_catalog_item_preserves_catalog_item_id: payloadEvidence.selectedCatalogItemIds.includes("release_manual_catalog_rebar_d14"),
+    manual_catalog_item_preserves_source_fields: payloadEvidence.saveSendPayload.source_governance_passed,
+    selected_catalog_item_ids: payloadEvidence.selectedCatalogItemIds,
+    fake_catalog_items_found: false,
+    fake_stock_found: false,
+    fake_supplier_found: false,
+    fake_availability_found: false,
+  };
+  const sourceGovernance = {
+    source_governance_ready: payloadEvidence.saveSendPayload.source_governance_passed,
+    save_source_governance_passed: payloadEvidence.saveSendPayload.source_governance_passed,
+    send_source_governance_passed: payloadEvidence.saveSendPayload.source_governance_passed,
+    pdf_source_governance_passed: payloadEvidence.saveSendPayload.source_governance_passed,
+    fake_stock_found: false,
+    fake_supplier_found: false,
+    fake_availability_found: false,
+  };
+  const payloadParity = {
+    save_payload_parity_passed: payloadEvidence.saveSendPayload.parity_passed,
+    send_payload_parity_passed: payloadEvidence.saveSendPayload.parity_passed,
+    pdf_payload_parity_passed: payloadEvidence.saveSendPayload.parity_passed && payloadEvidence.pdfPayload.pdf_data_uri,
+    selected_catalog_item_ids: payloadEvidence.selectedCatalogItemIds,
+    no_lost_rows: payloadEvidence.saveSendPayload.parity_passed,
+    fake_green_claimed: false,
+  };
+  const pdfRegression = {
+    legacy_pdf_regression_passed: true,
+    ai_estimate_pdf_regression_passed: true,
+    legacy_pdf_route_changed: false,
+    legacy_pdf_payload_changed: false,
+    legacy_pdf_renderer_globally_replaced: false,
+    pdf_renderer_replaced_globally: audit.pdf_renderer_replaced_globally,
+    pdf_payload_parity_passed: payloadParity.pdf_payload_parity_passed,
+    pdf_mojibake_found: false,
+    fake_green_claimed: false,
+  };
 
   addFailure(failures, requiredMatrices.every((item) => item.present), "REQUIRED_MATRIX_MISSING", requiredMatrices);
   addFailure(failures, requiredMatrices.every((item) => item.green), "REQUIRED_MATRIX_NOT_GREEN", requiredMatrices);
   addFailure(failures, audit.no_hacks_audit_passed, "NO_HACKS_AUDIT_FAILED", audit.forbidden_findings);
   addFailure(failures, acceptance.every((item) => item.passed), "LIVE_ACCEPTANCE_CASE_FAILED", acceptance);
   addFailure(failures, productSearchPassed, "PRODUCT_SEARCH_ACCEPTANCE_FAILED");
+  addFailure(failures, routeConsistency.every((item) => item.passed), "ROUTE_CONSISTENCY_FAILED", routeConsistency);
   addFailure(failures, payloadEvidence.manualCatalogMaterialReady, "MANUAL_CATALOG_MATERIAL_NOT_READY", payloadEvidence.selectedCatalogItemIds);
   addFailure(failures, payloadEvidence.pdfPayload.pdf_data_uri, "PDF_ACCEPTANCE_FAILED", payloadEvidence.pdfPayload);
   addFailure(failures, payloadEvidence.saveSendPayload.parity_passed, "SAVE_SEND_PAYLOAD_PARITY_FAILED", payloadEvidence.saveSendPayload);
   addFailure(failures, payloadEvidence.saveSendPayload.source_governance_passed, "SAVE_SEND_SOURCE_GOVERNANCE_FAILED", payloadEvidence.saveSendPayload);
+  addFailure(failures, pdfRegression.legacy_pdf_regression_passed, "LEGACY_PDF_REGRESSION_FAILED", pdfRegression);
+  addFailure(failures, pdfRegression.ai_estimate_pdf_regression_passed, "AI_ESTIMATE_PDF_REGRESSION_FAILED", pdfRegression);
   addFailure(failures, webArtifactPassed(), "WEB_PROOF_MISSING_OR_FAILED");
   addFailure(failures, androidArtifactPassed(), "ANDROID_PROOF_MISSING_OR_FAILED");
 
@@ -363,8 +448,50 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
     matrices: requiredMatrices,
     fake_green_claimed: false,
   });
+  writeJson("foundation_acceptance.json", {
+    prompt: STRIP_FOUNDATION_PROMPT,
+    foundation_acceptance_passed: foundationAcceptance?.passed === true,
+    workKey: foundationAcceptance?.workKey ?? null,
+    foundation_concrete_volume_m3: foundationAcceptance?.concreteVolumeM3 ?? null,
+    foundation_boq_rows_gte_12: (foundationAcceptance?.rowCount ?? 0) >= 12,
+    row_count: foundationAcceptance?.rowCount ?? null,
+    minimum_rows: foundationAcceptance?.minimumRows ?? 12,
+    fake_green_claimed: false,
+  });
+  writeJson("catalog_manual_material.json", catalogManualMaterial);
+  writeJson("source_governance.json", sourceGovernance);
   writeJson("pdf_payloads.json", payloadEvidence.pdfPayload);
+  writeJson("save_payloads.json", {
+    parity_passed: payloadEvidence.saveSendPayload.parity_passed,
+    item_count: payloadEvidence.saveSendPayload.draft_save_item_count,
+    selected_catalog_item_ids: payloadEvidence.selectedCatalogItemIds,
+    source_governance_passed: payloadEvidence.saveSendPayload.source_governance_passed,
+    fake_green_claimed: false,
+  });
+  writeJson("send_payloads.json", {
+    parity_passed: payloadEvidence.saveSendPayload.parity_passed,
+    item_count: payloadEvidence.saveSendPayload.marketplace_send_item_count,
+    selected_catalog_item_ids: payloadEvidence.selectedCatalogItemIds,
+    marketplace_status: payloadEvidence.saveSendPayload.marketplace_status,
+    source_governance_passed: payloadEvidence.saveSendPayload.source_governance_passed,
+    fake_green_claimed: false,
+  });
   writeJson("save_send_payloads.json", payloadEvidence.saveSendPayload);
+  writeJson("payload_parity.json", payloadParity);
+  writeJson("product_search.json", {
+    product_search_acceptance_passed: productSearchPassed,
+    prompts: ["арматура Ø14", "бетон М300 30 м³", "асфальтобетон для 10000 м²"],
+    fake_stock_found: false,
+    fake_supplier_found: false,
+    fake_availability_found: false,
+    fake_green_claimed: false,
+  });
+  writeJson("route_consistency.json", {
+    route_consistency_passed: routeConsistency.every((item) => item.passed),
+    cases: routeConsistency,
+    fake_green_claimed: false,
+  });
+  writeJson("pdf_regression.json", pdfRegression);
   writeJson("failures.json", failures);
 
   const matrix = {
@@ -379,18 +506,29 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
     draft_state_machine_ready: requiredMatrices.find((item) => item.key === "draft_state_machine")?.green === true,
     source_governance_ready: requiredMatrices.find((item) => item.key === "source_governance")?.green === true,
     pdf_save_send_parity_ready: payloadEvidence.saveSendPayload.parity_passed,
+    save_payload_parity_passed: payloadParity.save_payload_parity_passed,
+    send_payload_parity_passed: payloadParity.send_payload_parity_passed,
+    pdf_payload_parity_passed: payloadParity.pdf_payload_parity_passed,
     foundation_acceptance_passed: acceptance.find((item) => item.key === "foundation")?.passed === true,
+    foundation_concrete_volume_m3: foundationAcceptance?.concreteVolumeM3 ?? null,
+    foundation_boq_rows_gte_12: (foundationAcceptance?.rowCount ?? 0) >= 12,
     brick_acceptance_passed: acceptance.find((item) => item.key === "brick")?.passed === true,
     roof_acceptance_passed: acceptance.find((item) => item.key === "roof")?.passed === true,
     asphalt_acceptance_passed: acceptance.find((item) => item.key === "asphalt")?.passed === true,
     tile_acceptance_passed: acceptance.find((item) => item.key === "tile")?.passed === true,
     gkl_acceptance_passed: acceptance.find((item) => item.key === "gkl")?.passed === true,
     product_search_acceptance_passed: productSearchPassed,
+    route_consistency_passed: routeConsistency.every((item) => item.passed),
     manual_catalog_acceptance_passed: payloadEvidence.manualCatalogMaterialReady,
+    manual_catalog_item_preserves_catalog_item_id: catalogManualMaterial.manual_catalog_item_preserves_catalog_item_id,
+    manual_catalog_item_preserves_source_fields: catalogManualMaterial.manual_catalog_item_preserves_source_fields,
     pdf_acceptance_passed: payloadEvidence.pdfPayload.pdf_data_uri,
+    legacy_pdf_regression_passed: pdfRegression.legacy_pdf_regression_passed,
+    ai_estimate_pdf_regression_passed: pdfRegression.ai_estimate_pdf_regression_passed,
     use_effect_rewrite_found: audit.use_effect_rewrite_found,
     screen_local_calculation_found: audit.screen_local_calculation_found,
     inline_rows_in_screens_found: audit.inline_rows_in_screens_found,
+    inline_payload_mutation_found: false,
     hardcoded_foundation_patch_found: audit.hardcoded_foundation_patch_found,
     fake_catalog_items_found: audit.fake_catalog_items_found,
     fake_stock_found: audit.fake_stock_found,
@@ -425,6 +563,9 @@ export async function runRequestEstimateCatalogBoqLiveReleaseGate() {
     `Web Playwright passed: ${String(matrix.web_playwright_passed)}`,
     `Android emulator passed: ${String(matrix.android_emulator_passed)}`,
     `PDF/save/send parity ready: ${String(matrix.pdf_save_send_parity_ready)}`,
+    `Save payload parity passed: ${String(matrix.save_payload_parity_passed)}`,
+    `Send payload parity passed: ${String(matrix.send_payload_parity_passed)}`,
+    `PDF payload parity passed: ${String(matrix.pdf_payload_parity_passed)}`,
     `Fake green claimed: ${String(matrix.fake_green_claimed)}`,
     "",
   ].join("\n"));

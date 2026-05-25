@@ -1,0 +1,12 @@
+{
+  "product_search_acceptance_passed": true,
+  "prompts": [
+    "арматура Ø14",
+    "бетон М300 30 м³",
+    "асфальтобетон для 10000 м²"
+  ],
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false,
+  "fake_green_claimed": false
+}

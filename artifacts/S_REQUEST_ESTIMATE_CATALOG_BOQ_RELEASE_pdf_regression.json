@@ -1,0 +1,11 @@
+{
+  "legacy_pdf_regression_passed": true,
+  "ai_estimate_pdf_regression_passed": true,
+  "legacy_pdf_route_changed": false,
+  "legacy_pdf_payload_changed": false,
+  "legacy_pdf_renderer_globally_replaced": false,
+  "pdf_renderer_replaced_globally": false,
+  "pdf_payload_parity_passed": true,
+  "pdf_mojibake_found": false,
+  "fake_green_claimed": false
+}

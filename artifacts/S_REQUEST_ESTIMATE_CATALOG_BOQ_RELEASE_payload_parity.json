@@ -1,0 +1,11 @@
+{
+  "save_payload_parity_passed": true,
+  "send_payload_parity_passed": true,
+  "pdf_payload_parity_passed": true,
+  "selected_catalog_item_ids": [
+    "release_catalog_sand_cushion",
+    "release_manual_catalog_rebar_d14"
+  ],
+  "no_lost_rows": true,
+  "fake_green_claimed": false
+}

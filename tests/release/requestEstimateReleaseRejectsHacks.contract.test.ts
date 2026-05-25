@@ -1,8 +1,8 @@
-import { runRequestEstimateCatalogBoqNoHacksAudit } from "../../scripts/audit/runRequestEstimateCatalogBoqNoHacksAudit";
+import { runRequestEstimateCatalogBoqReleaseNoHacksAudit } from "../../scripts/audit/runRequestEstimateCatalogBoqReleaseNoHacksAudit";
 
 describe("request estimate release gate rejects hacks", () => {
   it("keeps the no-hacks audit green for request estimate release", () => {
-    const audit = runRequestEstimateCatalogBoqNoHacksAudit();
+    const audit = runRequestEstimateCatalogBoqReleaseNoHacksAudit();
     expect(audit.no_hacks_audit_passed).toBe(true);
     expect(audit.use_effect_rewrite_found).toBe(false);
     expect(audit.screen_local_calculation_found).toBe(false);

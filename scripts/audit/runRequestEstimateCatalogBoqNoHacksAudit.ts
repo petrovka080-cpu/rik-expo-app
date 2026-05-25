@@ -132,6 +132,11 @@ function writeJson(name: string, value: unknown): void {
 
 export function runRequestEstimateCatalogBoqNoHacksAudit() {
   const result = scan();
+  const forbiddenPatterns = RULES.map((rule) => ({
+    id: rule.id,
+    pattern: String(rule.pattern),
+    roots: rule.roots,
+  }));
   const audit = {
     wave: WAVE,
     final_status: result.findings.length === 0
@@ -156,6 +161,13 @@ export function runRequestEstimateCatalogBoqNoHacksAudit() {
     fake_green_claimed: false,
   };
   writeJson("no_hacks_audit", audit);
+  writeJson("forbidden_patterns", {
+    wave: WAVE,
+    forbidden_patterns: forbiddenPatterns,
+    forbidden_findings: result.findings,
+    forbidden_patterns_found: result.findings.length > 0,
+    fake_green_claimed: false,
+  });
   return audit;
 }
 

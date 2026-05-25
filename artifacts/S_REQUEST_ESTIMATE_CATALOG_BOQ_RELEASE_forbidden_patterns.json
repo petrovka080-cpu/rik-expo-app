@@ -1,0 +1,112 @@
+{
+  "wave": "S_REQUEST_ESTIMATE_CATALOG_BOQ_LIVE_RELEASE_GATE_WEB_ANDROID_NO_HACKS_POINT_OF_NO_RETURN",
+  "forbidden_patterns": [
+    {
+      "id": "use_effect_rewrite",
+      "pattern": "/useEffect\\s*\\(\\s*\\(\\s*\\)\\s*=>\\s*set(?:Answer|Messages|Estimate|Draft)/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "screen_local_calculation",
+      "pattern": "/\\bcalculateEstimateInScreen\\b|\\bscreenLocal(?:Estimate|Calculation)\\b/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "inline_rows",
+      "pattern": "/\\binline(?:Estimate|Foundation|Boq|BOQ)?Rows\\b|\\binlineGenericConstructionRows\\b/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "hardcoded_foundation_patch",
+      "pattern": "/\\bhardcodedFoundation(?:Only)?Patch\\b|\\bfoundationOnlyPatch\\b/",
+      "roots": [
+        "app",
+        "src",
+        "tests",
+        "scripts"
+      ]
+    },
+    {
+      "id": "fake_catalog_item",
+      "pattern": "/\\bconst\\s+fakeCatalogItem\\s*=|\\bfakeCatalogItem\\s*:/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "fake_stock",
+      "pattern": "/\\bconst\\s+fakeStock\\s*=|\\bfakeStock\\s*:/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "fake_supplier",
+      "pattern": "/\\bconst\\s+fakeSupplier\\s*=|\\bfakeSupplier\\s*:/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "fake_availability",
+      "pattern": "/\\bconst\\s+fakeAvailability\\s*=|\\bfakeAvailability\\s*:/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "duplicate_catalog_service",
+      "pattern": "/\\bclass\\s+CatalogItemsService\\b|\\bcreateCatalogItemsService\\b/",
+      "roots": [
+        "app",
+        "src"
+      ]
+    },
+    {
+      "id": "second_ai_framework",
+      "pattern": "/\\bcreateSecondAiFramework\\b|\\bSecondAiFramework\\b/",
+      "roots": [
+        "app",
+        "src",
+        "tests",
+        "scripts"
+      ]
+    },
+    {
+      "id": "pdf_renderer_global_replacement",
+      "pattern": "/\\breplaceLegacyPdfRendererGlobally\\b|\\bpdfRendererReplacedGlobally\\b/",
+      "roots": [
+        "app",
+        "src",
+        "tests",
+        "scripts"
+      ]
+    },
+    {
+      "id": "fifty_k_enabled",
+      "pattern": "/\\bFULL_50K_GREEN_CLAIMED\\s*=\\s*true\\b|\\bfiftyKExpansionEnabled\\s*[:=]\\s*true\\b/",
+      "roots": [
+        "app",
+        "src",
+        "tests",
+        "scripts"
+      ]
+    }
+  ],
+  "forbidden_findings": [],
+  "forbidden_patterns_found": false,
+  "fake_green_claimed": false
+}

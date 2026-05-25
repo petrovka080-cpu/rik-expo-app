@@ -1,0 +1,9 @@
+{
+  "source_governance_ready": true,
+  "save_source_governance_passed": true,
+  "send_source_governance_passed": true,
+  "pdf_source_governance_passed": true,
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false
+}

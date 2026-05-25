@@ -1,0 +1,72 @@
+{
+  "route_consistency_passed": true,
+  "cases": [
+    {
+      "key": "brick",
+      "route": "/chat",
+      "expectedWorkKey": "brick_masonry",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    },
+    {
+      "key": "roof",
+      "route": "/chat",
+      "expectedWorkKey": "gable_roof_installation",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    },
+    {
+      "key": "asphalt",
+      "route": "/ai?context=foreman",
+      "expectedWorkKey": "asphalt_paving",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    },
+    {
+      "key": "carpet",
+      "route": "/request",
+      "expectedWorkKey": "carpet_laying",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    },
+    {
+      "key": "tile",
+      "route": "/request",
+      "expectedWorkKey": "ceramic_tile_floor_laying",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    },
+    {
+      "key": "gkl",
+      "route": "/request",
+      "expectedWorkKey": "drywall_partition",
+      "intent": "estimate",
+      "selectedTool": "calculate_global_estimate",
+      "usesGlobalEstimateResult": true,
+      "roleContextOverrideFound": false,
+      "pdfActionVisible": true,
+      "passed": true
+    }
+  ],
+  "fake_green_claimed": false
+}

@@ -6,4 +6,7 @@ No-hacks audit passed: true
 Web Playwright passed: true
 Android emulator passed: true
 PDF/save/send parity ready: true
+Save payload parity passed: true
+Send payload parity passed: true
+PDF payload parity passed: true
 Fake green claimed: false

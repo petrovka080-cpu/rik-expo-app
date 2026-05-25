@@ -225,6 +225,14 @@ export async function runAndroidRequestEstimateCatalogBoqReleaseSmoke() {
     failures: passed ? [] : [{ code: androidEmulatorPassed ? "ANDROID_REQUEST_ESTIMATE_RELEASE_FAILED" : "ANDROID_EMULATOR_NOT_RUN" }],
     fake_green_claimed: false,
   });
+  writeJson(`${PREFIX}_android_ui_dumps.json`, {
+    android_emulator_passed: androidEmulatorPassed,
+    direct_android_probe_passed: directAndroidProbe.passed,
+    ui_text_sample: androidProbe.android.ui_text_sample.length > 0 ? androidProbe.android.ui_text_sample : directAndroidProbe.uiTextSample,
+    adb_devices_sample: directAndroidProbe.devicesText.slice(0, 500),
+    screenshot_path: directAndroidProbe.screenshotPath,
+    fake_green_claimed: false,
+  });
 
   return { passed };
 }

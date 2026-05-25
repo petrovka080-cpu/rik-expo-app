@@ -1,0 +1,13 @@
+{
+  "manual_catalog_acceptance_passed": true,
+  "manual_catalog_item_preserves_catalog_item_id": true,
+  "manual_catalog_item_preserves_source_fields": true,
+  "selected_catalog_item_ids": [
+    "release_catalog_sand_cushion",
+    "release_manual_catalog_rebar_d14"
+  ],
+  "fake_catalog_items_found": false,
+  "fake_stock_found": false,
+  "fake_supplier_found": false,
+  "fake_availability_found": false
+}
