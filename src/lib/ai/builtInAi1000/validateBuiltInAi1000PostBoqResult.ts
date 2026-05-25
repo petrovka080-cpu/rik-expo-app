@@ -161,21 +161,45 @@ function hasFakeCatalogCandidate(binding: EstimateCatalogBindingResult | null): 
 function normalizeConsumerRuntimeIds<T>(value: T, testCaseId: string): T {
   const replacements = new Map<string, string>();
   const idPattern =
-    /^(consumer_(?:draft|item|event|pdf|pdf_asset|media_link|photo|market_link)|marketplace_demand)_[a-z0-9]+_[a-z0-9]+$/;
+    /(consumer_(?:draft|item|event|pdf|pdf_asset|media_link|photo|market_link)|marketplace_demand)_[a-z0-9]+_[a-z0-9]+/g;
 
   const normalizeString = (input: string): string => {
-    const match = input.match(idPattern);
-    if (!match) return input;
-    const existing = replacements.get(input);
-    if (existing) return existing;
-    const next = `${match[1]}_${testCaseId}_${String(replacements.size + 1).padStart(3, "0")}`;
-    replacements.set(input, next);
-    return next;
+    return input.replace(idPattern, (token, prefix: string) => {
+      const existing = replacements.get(token);
+      if (existing) return existing;
+      const next = `${prefix}_${testCaseId}_${String(replacements.size + 1).padStart(3, "0")}`;
+      replacements.set(token, next);
+      return next;
+    });
+  };
+
+  const stableArrayKey = (input: unknown): string => {
+    if (!input || typeof input !== "object") return JSON.stringify(input);
+    const item = input as Record<string, unknown>;
+    return [
+      item.titleRu,
+      item.name,
+      item.itemType,
+      item.rateKey,
+      item.materialKey,
+      item.catalogItemId,
+      item.selectedCatalogItemId,
+      item.mediaKind,
+      item.pdfStatus,
+      item.status,
+      item.id,
+    ]
+      .map((part) => String(part ?? ""))
+      .join("|");
   };
 
   const walk = (input: unknown): unknown => {
     if (typeof input === "string") return normalizeString(input);
-    if (Array.isArray(input)) return input.map(walk);
+    if (Array.isArray(input)) {
+      const sortable = input.every((entry) => entry && typeof entry === "object" && !Array.isArray(entry));
+      const entries = sortable ? [...input].sort((left, right) => stableArrayKey(left).localeCompare(stableArrayKey(right))) : input;
+      return entries.map(walk);
+    }
     if (input && typeof input === "object") {
       return Object.fromEntries(Object.entries(input).map(([key, entry]) => [key, walk(entry)]));
     }
@@ -183,6 +207,39 @@ function normalizeConsumerRuntimeIds<T>(value: T, testCaseId: string): T {
   };
 
   return walk(value) as T;
+}
+
+function stablePayloadHash(value: unknown): string {
+  let hash = 2166136261;
+  const text = JSON.stringify(value);
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).padStart(8, "0");
+}
+
+function normalizePayloadTrace(trace: BuiltInAi1000PostBoqPayloadTrace, testCaseId: string): BuiltInAi1000PostBoqPayloadTrace {
+  const normalized = normalizeConsumerRuntimeIds(trace, testCaseId);
+  const fingerprintFor = (payload: ConsumerRepairCanonicalDraftPayload) =>
+    stablePayloadHash({
+      draft: payload.draft,
+      items: payload.items,
+      media: payload.media,
+      totals: payload.totals,
+    });
+  const draftSave = fingerprintFor(normalized.draftSave);
+  const pdfGeneration = fingerprintFor(normalized.pdfGeneration);
+  const marketplaceSend = fingerprintFor(normalized.marketplaceSend);
+  normalized.draftSave.parityFingerprint = draftSave;
+  normalized.pdfGeneration.parityFingerprint = pdfGeneration;
+  normalized.marketplaceSend.parityFingerprint = marketplaceSend;
+  normalized.parity.fingerprints = {
+    draft_save: draftSave,
+    pdf_generation: pdfGeneration,
+    marketplace_send: marketplaceSend,
+  };
+  return normalized;
 }
 
 async function buildPayloadTrace(input: {
@@ -264,7 +321,7 @@ async function buildPayloadTrace(input: {
   const pdf = getConsumerRepairRequestPdf({ requestDraftId: bundle.draft.id });
   const sent = sendConsumerRepairRequestToMarketplace({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
 
-  return normalizeConsumerRuntimeIds({
+  return normalizePayloadTrace({
     requestDraftId: bundle.draft.id,
     draftSave,
     pdfGeneration,
