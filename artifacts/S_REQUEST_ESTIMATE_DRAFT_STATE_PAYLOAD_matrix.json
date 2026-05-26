@@ -19,6 +19,6 @@
   "release_verify_passed": true,
   "commit_sha": "366c404f8b3f756642891255f2313114ea9baf64",
   "branch_pushed": true,
-  "final_worktree_clean": false,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }
