@@ -1,0 +1,52 @@
+[
+  {
+    "id": "roof_plain",
+    "workKey": "roof_waterproofing",
+    "selectedTemplate": "roof_waterproofing"
+  },
+  {
+    "id": "roof_krovlya",
+    "workKey": "roof_waterproofing",
+    "selectedTemplate": "roof_waterproofing"
+  },
+  {
+    "id": "flat_roof_membrane",
+    "workKey": "roof_membrane_waterproofing",
+    "selectedTemplate": "roof_membrane_waterproofing"
+  },
+  {
+    "id": "roof_leak",
+    "workKey": "roof_waterproofing",
+    "selectedTemplate": "roof_waterproofing"
+  },
+  {
+    "id": "bathroom",
+    "workKey": "bathroom_waterproofing",
+    "selectedTemplate": "bathroom_waterproofing"
+  },
+  {
+    "id": "shower",
+    "workKey": "shower_tile_waterproofing",
+    "selectedTemplate": "shower_tile_waterproofing"
+  },
+  {
+    "id": "foundation",
+    "workKey": "foundation_waterproofing",
+    "selectedTemplate": "foundation_waterproofing"
+  },
+  {
+    "id": "basement",
+    "workKey": "basement_waterproofing",
+    "selectedTemplate": "basement_waterproofing"
+  },
+  {
+    "id": "pool",
+    "workKey": "pool_waterproofing",
+    "selectedTemplate": "pool_waterproofing"
+  },
+  {
+    "id": "floor_under_tile",
+    "workKey": "waterproofing_under_tile",
+    "selectedTemplate": "waterproofing_under_tile"
+  }
+]

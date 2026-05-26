@@ -34,11 +34,15 @@ export const SHOWER_WATERPROOFING_TERMS = [
 export const FOUNDATION_WATERPROOFING_TERMS = [
   "фундамент",
   "фундамента",
-  "цоколь",
-  "цоколя",
   "отмостка",
   "наружная гидроизоляция фундамента",
   "foundation",
+  "plinth",
+];
+
+export const PLINTH_WATERPROOFING_TERMS = [
+  "цоколь",
+  "цоколя",
   "plinth",
 ];
 
@@ -105,12 +109,19 @@ export function resolveWaterproofingWorkType(normalized: string): WorkTypeDisamb
     return { workKey: "basement_waterproofing", confidence: "high", reason: "basement_waterproofing_surface" };
   }
 
+  if (hasAnyWorkTypeTerm(normalized, PLINTH_WATERPROOFING_TERMS)) {
+    return { workKey: "plinth_waterproofing", confidence: "high", reason: "plinth_waterproofing_surface" };
+  }
+
   if (hasAnyWorkTypeTerm(normalized, FOUNDATION_WATERPROOFING_TERMS)) {
     return { workKey: "foundation_waterproofing", confidence: "high", reason: "foundation_waterproofing_surface" };
   }
 
   if (hasAnyWorkTypeTerm(normalized, SHOWER_WATERPROOFING_TERMS)) {
-    return { workKey: "shower_tile_waterproofing", confidence: "high", reason: "shower_waterproofing_surface" };
+    if (hasAnyWorkTypeTerm(normalized, ["зон", "под плит", "плитк", "zone", "tile"])) {
+      return { workKey: "shower_tile_waterproofing", confidence: "high", reason: "shower_tile_waterproofing_surface" };
+    }
+    return { workKey: "shower_waterproofing", confidence: "high", reason: "shower_waterproofing_surface" };
   }
 
   if (hasAnyWorkTypeTerm(normalized, BATHROOM_WATERPROOFING_TERMS)) {

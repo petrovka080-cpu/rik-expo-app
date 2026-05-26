@@ -1,0 +1,116 @@
+[
+  {
+    "id": "roof_plain",
+    "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+    "expectedWorkKeys": [
+      "roof_waterproofing"
+    ],
+    "actualWorkKey": "roof_waterproofing",
+    "category": "roofing",
+    "workTitle": "гидроизоляцию кровли",
+    "passed": true
+  },
+  {
+    "id": "roof_krovlya",
+    "prompt": "смета на гидроизоляцию кровли 100 м²",
+    "expectedWorkKeys": [
+      "roof_waterproofing"
+    ],
+    "actualWorkKey": "roof_waterproofing",
+    "category": "roofing",
+    "workTitle": "гидроизоляцию кровли",
+    "passed": true
+  },
+  {
+    "id": "flat_roof_membrane",
+    "prompt": "гидроизоляция плоской кровли мембраной 150 м²",
+    "expectedWorkKeys": [
+      "roof_membrane_waterproofing",
+      "flat_roof_membrane"
+    ],
+    "actualWorkKey": "roof_membrane_waterproofing",
+    "category": "waterproofing",
+    "workTitle": "мембранную гидроизоляцию",
+    "passed": true
+  },
+  {
+    "id": "roof_leak",
+    "prompt": "ремонт протечки крыши и гидроизоляция 70 м²",
+    "expectedWorkKeys": [
+      "roof_waterproofing",
+      "roof_leak_repair"
+    ],
+    "actualWorkKey": "roof_waterproofing",
+    "category": "roofing",
+    "workTitle": "гидроизоляцию кровли",
+    "passed": true
+  },
+  {
+    "id": "bathroom",
+    "prompt": "смета на гидроизоляцию ванной 30 м²",
+    "expectedWorkKeys": [
+      "bathroom_waterproofing"
+    ],
+    "actualWorkKey": "bathroom_waterproofing",
+    "category": "waterproofing",
+    "workTitle": "гидроизоляцию ванной",
+    "passed": true
+  },
+  {
+    "id": "shower",
+    "prompt": "гидроизоляция душевой зоны 12 м²",
+    "expectedWorkKeys": [
+      "shower_tile_waterproofing",
+      "bathroom_waterproofing"
+    ],
+    "actualWorkKey": "shower_tile_waterproofing",
+    "category": "tile",
+    "workTitle": "плитку и гидроизоляцию душевой",
+    "passed": true
+  },
+  {
+    "id": "foundation",
+    "prompt": "гидроизоляция фундамента 80 м²",
+    "expectedWorkKeys": [
+      "foundation_waterproofing"
+    ],
+    "actualWorkKey": "foundation_waterproofing",
+    "category": "waterproofing",
+    "workTitle": "гидроизоляцию фундамента",
+    "passed": true
+  },
+  {
+    "id": "basement",
+    "prompt": "гидроизоляция подвала 100 м²",
+    "expectedWorkKeys": [
+      "basement_waterproofing"
+    ],
+    "actualWorkKey": "basement_waterproofing",
+    "category": "waterproofing",
+    "workTitle": "гидроизоляцию подвала",
+    "passed": true
+  },
+  {
+    "id": "pool",
+    "prompt": "гидроизоляция бассейна 60 м²",
+    "expectedWorkKeys": [
+      "pool_waterproofing"
+    ],
+    "actualWorkKey": "pool_waterproofing",
+    "category": "waterproofing",
+    "workTitle": "гидроизоляцию бассейна",
+    "passed": true
+  },
+  {
+    "id": "floor_under_tile",
+    "prompt": "гидроизоляция пола перед плиткой 40 м²",
+    "expectedWorkKeys": [
+      "waterproofing_under_tile",
+      "floor_waterproofing"
+    ],
+    "actualWorkKey": "waterproofing_under_tile",
+    "category": "tile",
+    "workTitle": "гидроизоляция под плитку",
+    "passed": true
+  }
+]

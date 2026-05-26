@@ -1,0 +1,62 @@
+[
+  {
+    "id": "roof_plain",
+    "workKey": "roof_waterproofing",
+    "workTitle": "гидроизоляцию кровли",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "roof_krovlya",
+    "workKey": "roof_waterproofing",
+    "workTitle": "гидроизоляцию кровли",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "flat_roof_membrane",
+    "workKey": "roof_membrane_waterproofing",
+    "workTitle": "мембранную гидроизоляцию",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "roof_leak",
+    "workKey": "roof_waterproofing",
+    "workTitle": "гидроизоляцию кровли",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "bathroom",
+    "workKey": "bathroom_waterproofing",
+    "workTitle": "гидроизоляцию ванной",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "shower",
+    "workKey": "shower_tile_waterproofing",
+    "workTitle": "плитку и гидроизоляцию душевой",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "foundation",
+    "workKey": "foundation_waterproofing",
+    "workTitle": "гидроизоляцию фундамента",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "basement",
+    "workKey": "basement_waterproofing",
+    "workTitle": "гидроизоляцию подвала",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "pool",
+    "workKey": "pool_waterproofing",
+    "workTitle": "гидроизоляцию бассейна",
+    "pdf_payload_work_title_correct": true
+  },
+  {
+    "id": "floor_under_tile",
+    "workKey": "waterproofing_under_tile",
+    "workTitle": "гидроизоляция под плитку",
+    "pdf_payload_work_title_correct": true
+  }
+]

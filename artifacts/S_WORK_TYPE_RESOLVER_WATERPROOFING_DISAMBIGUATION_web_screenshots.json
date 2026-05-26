@@ -1,0 +1,73 @@
+{
+  "web_playwright_passed": true,
+  "cases_total": 5,
+  "cases_passed": 5,
+  "request_roof_waterproofing_passed": true,
+  "chat_roof_waterproofing_passed": true,
+  "ai_foreman_roof_waterproofing_passed": true,
+  "bathroom_waterproofing_passed": true,
+  "foundation_waterproofing_passed": true,
+  "screenshots": [
+    {
+      "id": "request_roof_waterproofing",
+      "route": "/request",
+      "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+      "workKey": "roof_waterproofing",
+      "workTitle": "гидроизоляцию кровли",
+      "expectedRowsPresent": true,
+      "wrongWorkTitleAbsent": true,
+      "pdfActionVisible": true,
+      "noGenericRows": true,
+      "screenshot": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/web/request_roof_waterproofing.png"
+    },
+    {
+      "id": "chat_roof_waterproofing",
+      "route": "/chat",
+      "prompt": "смета на гидроизоляцию кровли 100 м²",
+      "workKey": "roof_waterproofing",
+      "workTitle": "гидроизоляцию кровли",
+      "expectedRowsPresent": true,
+      "wrongWorkTitleAbsent": true,
+      "pdfActionVisible": true,
+      "noGenericRows": true,
+      "screenshot": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/web/chat_roof_waterproofing.png"
+    },
+    {
+      "id": "ai_foreman_roof_waterproofing",
+      "route": "/ai?context=foreman",
+      "prompt": "гидроизоляция плоской кровли мембраной 150 м²",
+      "workKey": "roof_membrane_waterproofing",
+      "workTitle": "мембранную гидроизоляцию",
+      "expectedRowsPresent": true,
+      "wrongWorkTitleAbsent": true,
+      "pdfActionVisible": true,
+      "noGenericRows": true,
+      "screenshot": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/web/ai_foreman_roof_waterproofing.png"
+    },
+    {
+      "id": "request_bathroom_waterproofing",
+      "route": "/request",
+      "prompt": "смета на гидроизоляцию ванной 30 м²",
+      "workKey": "bathroom_waterproofing",
+      "workTitle": "гидроизоляцию ванной",
+      "expectedRowsPresent": true,
+      "wrongWorkTitleAbsent": true,
+      "pdfActionVisible": true,
+      "noGenericRows": true,
+      "screenshot": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/web/request_bathroom_waterproofing.png"
+    },
+    {
+      "id": "request_foundation_waterproofing",
+      "route": "/request",
+      "prompt": "гидроизоляция фундамента 80 м²",
+      "workKey": "foundation_waterproofing",
+      "workTitle": "гидроизоляцию фундамента",
+      "expectedRowsPresent": true,
+      "wrongWorkTitleAbsent": true,
+      "pdfActionVisible": true,
+      "noGenericRows": true,
+      "screenshot": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/web/request_foundation_waterproofing.png"
+    }
+  ],
+  "fake_green_claimed": false
+}

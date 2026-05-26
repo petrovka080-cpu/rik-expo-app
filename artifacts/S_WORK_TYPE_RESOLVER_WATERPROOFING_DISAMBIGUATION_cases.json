@@ -1,0 +1,193 @@
+{
+  "cases": [
+    {
+      "id": "roof_plain",
+      "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+      "expectedWorkKeys": [
+        "roof_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "waterproofing_bathroom"
+      ],
+      "expectedCategory": "roofing",
+      "expectedRows": [
+        "основания кровли",
+        "праймер",
+        "мембрана",
+        "примыкан",
+        "парапет",
+        "нанесение",
+        "протеч"
+      ]
+    },
+    {
+      "id": "roof_krovlya",
+      "prompt": "смета на гидроизоляцию кровли 100 м²",
+      "expectedWorkKeys": [
+        "roof_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "waterproofing_bathroom"
+      ],
+      "expectedCategory": "roofing",
+      "expectedRows": [
+        "основания кровли",
+        "праймер",
+        "мембрана",
+        "примыкан",
+        "парапет",
+        "нанесение",
+        "протеч"
+      ]
+    },
+    {
+      "id": "flat_roof_membrane",
+      "prompt": "гидроизоляция плоской кровли мембраной 150 м²",
+      "expectedWorkKeys": [
+        "roof_membrane_waterproofing",
+        "flat_roof_membrane"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "waterproofing_bathroom"
+      ],
+      "expectedRows": [
+        "основания кровли",
+        "мембрана",
+        "примыкан",
+        "парапет",
+        "монтаж",
+        "протеч"
+      ]
+    },
+    {
+      "id": "roof_leak",
+      "prompt": "ремонт протечки крыши и гидроизоляция 70 м²",
+      "expectedWorkKeys": [
+        "roof_waterproofing",
+        "roof_leak_repair"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "waterproofing_bathroom"
+      ],
+      "expectedRows": [
+        "основания кровли",
+        "примыкан",
+        "протеч",
+        "контроль"
+      ]
+    },
+    {
+      "id": "bathroom",
+      "prompt": "смета на гидроизоляцию ванной 30 м²",
+      "expectedWorkKeys": [
+        "bathroom_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "roof_waterproofing",
+        "roof_membrane_waterproofing",
+        "flat_roof_membrane"
+      ],
+      "expectedCategory": "waterproofing",
+      "expectedRows": [
+        "грунтовка",
+        "мастика",
+        "лента",
+        "углов",
+        "нанесение",
+        "под плитку"
+      ]
+    },
+    {
+      "id": "shower",
+      "prompt": "гидроизоляция душевой зоны 12 м²",
+      "expectedWorkKeys": [
+        "shower_tile_waterproofing",
+        "bathroom_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "roof_waterproofing",
+        "roof_membrane_waterproofing",
+        "flat_roof_membrane"
+      ],
+      "expectedRows": [
+        "гидроизоляц",
+        "герметизац"
+      ]
+    },
+    {
+      "id": "foundation",
+      "prompt": "гидроизоляция фундамента 80 м²",
+      "expectedWorkKeys": [
+        "foundation_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "waterproofing_bathroom"
+      ],
+      "expectedCategory": "waterproofing",
+      "expectedRows": [
+        "поверхности фундамента",
+        "праймер",
+        "мастика",
+        "мембрана",
+        "утеплитель",
+        "обратная засыпка"
+      ]
+    },
+    {
+      "id": "basement",
+      "prompt": "гидроизоляция подвала 100 м²",
+      "expectedWorkKeys": [
+        "basement_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "roof_waterproofing"
+      ],
+      "expectedCategory": "waterproofing",
+      "expectedRows": [
+        "подвала",
+        "мембрана",
+        "протеч"
+      ]
+    },
+    {
+      "id": "pool",
+      "prompt": "гидроизоляция бассейна 60 м²",
+      "expectedWorkKeys": [
+        "pool_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "roof_waterproofing"
+      ],
+      "expectedCategory": "waterproofing",
+      "expectedRows": [
+        "бассейна",
+        "мастика",
+        "лента"
+      ]
+    },
+    {
+      "id": "floor_under_tile",
+      "prompt": "гидроизоляция пола перед плиткой 40 м²",
+      "expectedWorkKeys": [
+        "waterproofing_under_tile",
+        "floor_waterproofing"
+      ],
+      "forbiddenWorkKeys": [
+        "bathroom_waterproofing",
+        "roof_waterproofing"
+      ],
+      "expectedRows": [
+        "пола",
+        "мастика",
+        "под плитку"
+      ]
+    }
+  ]
+}

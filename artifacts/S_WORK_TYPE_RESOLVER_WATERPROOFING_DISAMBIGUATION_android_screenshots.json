@@ -1,0 +1,77 @@
+{
+  "android_emulator_passed": true,
+  "pdf_viewer_android_opened": true,
+  "cases_total": 4,
+  "cases_passed": 4,
+  "cases": [
+    {
+      "id": "request_roof_waterproofing",
+      "route": "/request",
+      "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+      "expectedWorkKey": "roof_waterproofing",
+      "actualWorkKey": "roof_waterproofing",
+      "workTitle": "гидроизоляцию кровли",
+      "expectedRowsPresent": true,
+      "pdf_payload_work_title_correct": true,
+      "passed": true
+    },
+    {
+      "id": "chat_roof_waterproofing",
+      "route": "/chat",
+      "prompt": "смета на гидроизоляцию кровли 100 м²",
+      "expectedWorkKey": "roof_waterproofing",
+      "actualWorkKey": "roof_waterproofing",
+      "workTitle": "гидроизоляцию кровли",
+      "expectedRowsPresent": true,
+      "pdf_payload_work_title_correct": true,
+      "passed": true
+    },
+    {
+      "id": "request_bathroom_waterproofing",
+      "route": "/request",
+      "prompt": "смета на гидроизоляцию ванной 30 м²",
+      "expectedWorkKey": "bathroom_waterproofing",
+      "actualWorkKey": "bathroom_waterproofing",
+      "workTitle": "гидроизоляцию ванной",
+      "expectedRowsPresent": true,
+      "pdf_payload_work_title_correct": true,
+      "passed": true
+    },
+    {
+      "id": "pdf_viewer_roof_waterproofing",
+      "route": "/pdf-viewer",
+      "prompt": "хочу выполнить гидроизоляцию крыши на 100 кв м",
+      "expectedWorkKey": "roof_waterproofing",
+      "actualWorkKey": "roof_waterproofing",
+      "workTitle": "гидроизоляцию кровли",
+      "expectedRowsPresent": true,
+      "pdf_payload_work_title_correct": true,
+      "passed": true
+    }
+  ],
+  "screenshot_path": "artifacts/screenshots/work-type-resolver-waterproofing-disambiguation/android/android_waterproofing_disambiguation.png",
+  "devices": [
+    "emulator-5554"
+  ],
+  "ui_text_sample": [
+    "text=\"rik-expo-app\"",
+    "text=\"Development Build\"",
+    "text=\"DEVELOPMENT SERVERS\"",
+    "text=\"INFO\"",
+    "text=\"http://10.0.2.2:8081\"",
+    "text=\"http://10.0.2.2:8085\"",
+    "text=\"http://10.0.2.2:8083\"",
+    "text=\"http://10.0.2.2:8082\"",
+    "text=\"http://10.0.2.2:8084\"",
+    "text=\"New development server\"",
+    "text=\"RECENTLY OPENED\"",
+    "text=\"RESET\"",
+    "text=\"rik-expo-app\"",
+    "text=\"http://127.0.0.1:8098\"",
+    "text=\"Home\"",
+    "text=\"Updates\"",
+    "text=\"Settings\""
+  ],
+  "failures": [],
+  "fake_green_claimed": false
+}

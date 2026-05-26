@@ -697,13 +697,13 @@
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_bathroom_waterproofing_equipment_KG_set_standard",
+        "id": "rate_bathroom_waterproofing_delivery_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_bathroom_waterproofing_delivery_KG_set_standard",
+        "id": "rate_bathroom_waterproofing_equipment_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
@@ -738,13 +738,13 @@
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_foundation_waterproofing_equipment_KG_set_standard",
+        "id": "rate_foundation_waterproofing_delivery_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_foundation_waterproofing_delivery_KG_set_standard",
+        "id": "rate_foundation_waterproofing_equipment_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"

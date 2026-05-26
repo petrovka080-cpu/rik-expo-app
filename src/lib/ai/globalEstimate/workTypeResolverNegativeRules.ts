@@ -1,5 +1,5 @@
 import { normalizeWorkTypeDisambiguationText } from "./workTypeDisambiguation";
-import { BATHROOM_WATERPROOFING_TERMS, FOUNDATION_WATERPROOFING_TERMS, WATERPROOFING_TERMS } from "./waterproofingWorkTypeResolver";
+import { BATHROOM_WATERPROOFING_TERMS, FOUNDATION_WATERPROOFING_TERMS, PLINTH_WATERPROOFING_TERMS, WATERPROOFING_TERMS } from "./waterproofingWorkTypeResolver";
 import { ROOF_SURFACE_TERMS } from "./roofingWorkTypeResolver";
 
 export type WorkTypeResolverNegativeRule = {
@@ -21,7 +21,7 @@ export const WORK_TYPE_RESOLVER_NEGATIVE_RULES: readonly WorkTypeResolverNegativ
   },
   {
     id: "foundation_waterproofing_must_not_map_to_bathroom",
-    requiredTerms: [...WATERPROOFING_TERMS, ...FOUNDATION_WATERPROOFING_TERMS],
+    requiredTerms: [...WATERPROOFING_TERMS, ...FOUNDATION_WATERPROOFING_TERMS, ...PLINTH_WATERPROOFING_TERMS],
     forbiddenWorkKeys: ["bathroom_waterproofing", "waterproofing_bathroom"],
   },
 ];
