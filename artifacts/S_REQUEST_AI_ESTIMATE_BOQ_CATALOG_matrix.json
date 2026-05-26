@@ -48,6 +48,6 @@
   "commit_sha": null,
   "branch_pushed": false,
   "remote_contains_commit": false,
-  "final_worktree_clean": false,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }

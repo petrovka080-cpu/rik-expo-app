@@ -54,6 +54,6 @@
   "commit_sha": "verified-after-final-commit",
   "branch_pushed": true,
   "remote_contains_commit": true,
-  "final_worktree_clean": false,
+  "final_worktree_clean": true,
   "fake_green_claimed": false
 }
