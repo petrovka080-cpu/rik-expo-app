@@ -31,6 +31,6 @@
   "release_verify_passed": false,
   "commit_created": false,
   "branch_pushed": false,
-  "final_worktree_clean": true,
+  "final_worktree_clean": false,
   "fake_green_claimed": false
 }
