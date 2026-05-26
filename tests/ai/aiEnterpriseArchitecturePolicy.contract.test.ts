@@ -15,6 +15,7 @@ describe("AI enterprise architecture policy", () => {
       "appContextGraph",
       "estimateEngine",
       "estimateRouting",
+      "estimatePresentation",
       "estimatePdf",
       "globalEstimate",
       "universalRoleQa",

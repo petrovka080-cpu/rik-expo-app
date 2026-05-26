@@ -23,6 +23,7 @@ const fileExists = (filePath: string) => fs.existsSync(filePath);
 const ACTIVE_ROOT_ROUTES = [
   "_layout.tsx",
   "index.tsx",
+  "+native-intent.ts",
   "pdf-viewer.tsx",
   "+not-found.tsx",
   "seller.tsx",

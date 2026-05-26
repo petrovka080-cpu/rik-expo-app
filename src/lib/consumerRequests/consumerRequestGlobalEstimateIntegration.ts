@@ -1,5 +1,6 @@
 import type { GlobalEstimateResult } from "../ai/globalEstimate/globalEstimateTypes";
 import type { EstimateCatalogBindingResult } from "../ai/globalEstimate/catalogBinding/globalEstimateCatalogBindingTypes";
+import { buildEstimatePresentationViewModel } from "../ai/estimatePresentation";
 import { createGlobalEstimateProductionTraceEvent } from "../ai/globalEstimate/globalEstimateProductionSafety";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatRequestEstimateSummary } from "../ai/globalEstimate/formatRequestEstimateSummary";
@@ -32,16 +33,18 @@ export function buildConsumerRepairAiDraftFromGlobalEstimate(
 ): ConsumerRepairAiDraft {
   const dangerous = isDangerousEstimate(result);
   const bindingByRowId = new Map((catalogBinding?.rows ?? []).map((row) => [row.rowId, row]));
+  const presentation = buildEstimatePresentationViewModel(result);
   return {
     titleRu: result.work.title,
     summaryRu: formatRequestEstimateSummary(result),
     repairType: result.work.category,
+    estimatePresentation: presentation,
     dangerousDiyBlocked: dangerous,
     safetyMessageRu: dangerous
       ? "Работа повышенной опасности: DIY-инструкции не выдаются. Используйте смету как основу заявки для профильного специалиста."
       : undefined,
     missingData: result.clarifyingQuestions,
-    items: result.sections.flatMap((section) =>
+    items: presentation.sections.flatMap((section) =>
       section.rows.map((row) => {
         const binding = bindingByRowId.get(row.code || row.rowNumber);
         return {

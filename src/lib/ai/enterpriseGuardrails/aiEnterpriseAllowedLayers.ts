@@ -63,6 +63,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimatePresentation",
+    root: "src/lib/ai/estimatePresentation",
+    purpose: "Shared estimate presentation view model, row formatting, actions, and generic-row validation for live entrypoints.",
+    screenMayImportDirectly: true,
+  },
+  {
     layer: "estimatePdf",
     root: "src/lib/ai/estimatePdf",
     purpose: "Structured AI estimate to existing PDF lifecycle bridge. No markdown-as-truth and no second PDF framework.",

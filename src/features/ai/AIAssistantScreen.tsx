@@ -409,7 +409,7 @@ export default function AIAssistantScreen() {
                   </Text>
                 </View>
                 {message.role === "assistant" && message.estimatePdfSource ? (
-                  <AIAssistantEstimateTable source={message.estimatePdfSource} />
+                  <AIAssistantEstimateTable source={message.estimatePdfSource} presentation={message.estimatePresentation} />
                 ) : null}
                 <AIAssistantEstimatePdfActions
                   message={message}

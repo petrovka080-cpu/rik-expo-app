@@ -696,6 +696,9 @@ const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
     normalized.startsWith("tests/requestEstimate/") ||
     normalized.startsWith("tests/catalogItems/") ||
     normalized.startsWith("tests/catalogBinding/") ||
+    normalized.startsWith("tests/architecture/androidAcceptance") ||
+    normalized.startsWith("tests/architecture/androidEmulatorReplay") ||
+    normalized.startsWith("tests/architecture/entrypointFix") ||
     normalized.startsWith("tests/architecture/requestEstimate") ||
     normalized.startsWith("tests/architecture/catalogBinding") ||
     normalized === "tests/e2e/requestEstimateProfessionalBoqCatalog.web.spec.ts" ||

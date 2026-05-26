@@ -130,9 +130,6 @@ function genericDraft(): ConsumerRepairAiDraft {
 
 export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairAiDraft {
   const text = problemText.trim();
-  const legacyFlooringText = text.toLocaleLowerCase("ru-RU");
-  if (legacyFlooringText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442");
-  if (legacyFlooringText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || legacyFlooringText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442");
   const builtInAiEstimate = answerBuiltInAi({
     text,
     screenContext: "request",

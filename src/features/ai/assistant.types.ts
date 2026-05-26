@@ -1,4 +1,5 @@
 import type { AiEstimatePdfAction, AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+import type { EstimatePresentationViewModel } from "../../lib/ai/estimatePresentation";
 
 export type AssistantRole =
   | "foreman"
@@ -40,6 +41,7 @@ export interface AssistantMessage {
   content: string;
   createdAt: string;
   estimatePdfSource?: AiEstimatePdfSource;
+  estimatePresentation?: EstimatePresentationViewModel;
   actions?: AiEstimatePdfAction[];
 }
 

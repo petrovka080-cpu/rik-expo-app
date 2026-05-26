@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -16,6 +15,7 @@ import {
   getConsumerRepairRequestPdf,
 } from "../../src/lib/consumerRequests";
 import { estimatePdfInputToBytes, extractEstimatePdfText, validateEstimatePdf } from "../../src/lib/estimatePdf";
+import { parseAdbDevices, runCommandProbe } from "./androidAdbDeviceHealth";
 
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const PDF_DIR = path.join(ARTIFACT_DIR, "pdf", "live-ai-estimate-pdf-reality");
@@ -197,14 +197,11 @@ function runCarpetRequestCase() {
 }
 
 function adbDevices(): string[] {
-  try {
-    return execFileSync("adb", ["devices"], { encoding: "utf8" })
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter((line) => /^emulator-\d+\s+device$/.test(line));
-  } catch {
-    return [];
-  }
+  const result = runCommandProbe("adb", ["devices", "-l"], 8000);
+  if (result.exit_code !== 0 || result.timed_out) return [];
+  return parseAdbDevices(result.stdout)
+    .filter((device) => device.is_emulator && device.state === "device")
+    .map((device) => `${device.id}\t${device.state}`);
 }
 
 function readJsonIfExists(filePath: string): Record<string, unknown> {

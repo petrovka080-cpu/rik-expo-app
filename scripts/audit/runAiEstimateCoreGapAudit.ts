@@ -81,7 +81,15 @@ function main(): void {
     check("global_estimate_validator_exists", exists("src/lib/ai/globalEstimate/validateAiEstimateCoreResult.ts"), "validateAiEstimateCoreResult.ts"),
     check("unfinished_cases_manifest_exists", exists("src/lib/ai/globalEstimate/unfinishedAiEstimateCases.ts"), "unfinishedAiEstimateCases.ts"),
     check("formatter_uses_structured_result", formatter.includes("GlobalEstimateResult") && formatter.includes("result.sections"), "globalEstimateAnswerFormatter.ts"),
-    check("request_uses_structured_estimate", requestAdapter.includes("answerBuiltInAi") && requestIntegration.includes("result.sections.flatMap"), "consumer repair request integration"),
+    check(
+      "request_uses_structured_estimate",
+      requestAdapter.includes("answerBuiltInAi") &&
+        requestIntegration.includes("GlobalEstimateResult") &&
+        requestIntegration.includes("buildEstimatePresentationViewModel") &&
+        (requestIntegration.includes("result.sections.flatMap") ||
+          requestIntegration.includes("presentation.sections.flatMap")),
+      "consumer repair request integration",
+    ),
     check("pdf_action_receives_structured_payload", pdfMapper.includes("estimate") || pdfMapper.includes("GlobalEstimateResult"), "estimatePdfModelMapper.ts"),
     check("source_evidence_tied_to_rows", registry.includes("sourceEvidence") || read("src/lib/ai/globalEstimate/globalEstimateCalculator.ts").includes("sourceEvidence"), "globalEstimateCalculator.ts"),
     check("tax_rule_or_warning_available", read("src/lib/ai/globalEstimate/globalTaxEngine.ts").includes("warning") || read("src/lib/ai/globalEstimate/globalTaxEngine.ts").includes("taxLabel"), "globalTaxEngine.ts"),

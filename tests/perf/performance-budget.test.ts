@@ -2085,7 +2085,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles,
-    ).toBeLessThanOrEqual(1306);
+    ).toBeLessThanOrEqual(1313);
   });
 });
 

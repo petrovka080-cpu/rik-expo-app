@@ -216,13 +216,13 @@
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_drywall_wall_cladding_equipment_KG_set_standard",
+        "id": "rate_drywall_wall_cladding_delivery_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_drywall_wall_cladding_delivery_KG_set_standard",
+        "id": "rate_drywall_wall_cladding_equipment_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
@@ -1630,25 +1630,19 @@
     "id": "036",
     "sources": [
       {
-        "id": "rate_window_installation_material_KG_sq_m_standard",
+        "id": "rate_window_installation_material_XX_sq_m_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_window_installation_auxiliary_KG_sq_m_standard",
+        "id": "rate_window_installation_auxiliary_XX_sq_m_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_window_installation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_window_installation_equipment_KG_set_standard",
+        "id": "rate_window_installation_labor_XX_sq_m_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
@@ -3129,13 +3123,13 @@
     "id": "073",
     "sources": [
       {
-        "id": "rate_micro_hydro_preparation_material_KG_set_standard",
+        "id": "rate_micro_hydro_preparation_auxiliary_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_micro_hydro_preparation_auxiliary_KG_set_standard",
+        "id": "rate_micro_hydro_preparation_material_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
@@ -3147,13 +3141,13 @@
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_micro_hydro_preparation_equipment_KG_set_standard",
+        "id": "rate_micro_hydro_preparation_delivery_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_micro_hydro_preparation_delivery_KG_set_standard",
+        "id": "rate_micro_hydro_preparation_equipment_KG_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"

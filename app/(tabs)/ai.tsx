@@ -3,6 +3,7 @@ import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 import { buildApprovalPersistenceBlockedViewModel } from "../../src/features/ai/approvalInbox/approvalInboxPersistenceBlockedViewModel";
+import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../src/shared/ui/ScreenErrorBoundary";
 
 const AIAssistantScreen = React.lazy(() => import("../../src/features/ai/AIAssistantScreen"));
@@ -59,30 +60,42 @@ function AITabScreen() {
     : params.procurementRequestId;
   if (approvalInbox === "1") {
     return (
-      <AiRouteSuspense>
-        <ApprovalInboxScreen viewModel={buildApprovalPersistenceBlockedViewModel()} />
-      </AiRouteSuspense>
+      <>
+        <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
+        <AiRouteSuspense>
+          <ApprovalInboxScreen viewModel={buildApprovalPersistenceBlockedViewModel()} />
+        </AiRouteSuspense>
+      </>
     );
   }
   if (procurementCopilot === "1" || procurementExternalIntel === "1") {
     return (
-      <AiRouteSuspense>
-        <ProcurementCopilotRuntimeSurface requestId={procurementRequestId} />
-      </AiRouteSuspense>
+      <>
+        <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
+        <AiRouteSuspense>
+          <ProcurementCopilotRuntimeSurface requestId={procurementRequestId} />
+        </AiRouteSuspense>
+      </>
     );
   }
   if (mode === "command-center") {
     return (
-      <AiRouteSuspense>
-        <AiCommandCenterScreen />
-      </AiRouteSuspense>
+      <>
+        <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
+        <AiRouteSuspense>
+          <AiCommandCenterScreen />
+        </AiRouteSuspense>
+      </>
     );
   }
 
   return (
-    <AiRouteSuspense>
-      <AIAssistantScreen />
-    </AiRouteSuspense>
+    <>
+      <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.embeddedAi} />
+      <AiRouteSuspense>
+        <AIAssistantScreen />
+      </AiRouteSuspense>
+    </>
   );
 }
 

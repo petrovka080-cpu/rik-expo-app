@@ -1,3 +1,5 @@
+import type { EstimatePresentationViewModel } from "../ai/estimatePresentation";
+
 export type ConsumerRepairRole = "consumer";
 export type ConsumerRepairContextKind = "consumer_repair_request";
 export type ConsumerRepairDataScope = "consumer_only";
@@ -174,6 +176,7 @@ export type ConsumerRepairAiDraft = {
   titleRu: string;
   summaryRu: string;
   repairType: string;
+  estimatePresentation?: EstimatePresentationViewModel;
   items: {
     itemType: ConsumerRepairItemType;
     titleRu: string;

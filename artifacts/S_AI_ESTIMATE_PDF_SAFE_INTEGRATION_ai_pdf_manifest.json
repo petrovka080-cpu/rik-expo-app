@@ -43,12 +43,12 @@
       "workKey": "drywall_wall_cladding",
       "route": "/chat",
       "path": "artifacts/pdf/ai-estimate-pdf-safe-integration/drywall_wall_cladding_352sqm.pdf",
-      "bytes": 20178,
+      "bytes": 20535,
       "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
       "documentNumber": "AI-EST-te_407650773",
       "estimateId": "global_estimate_407650773",
       "valid": true,
-      "tableRows": 10
+      "tableRows": 11
     },
     {
       "id": "carpet_laying_100sqm",

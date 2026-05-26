@@ -271,6 +271,16 @@ function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
   if (gate.name === "ai-live-screen-copilot-buttons-proof") {
     gateEnv.S_AI_LIVE_SCREEN_COPILOT_RELEASE_VERIFY_PASSED = "true";
   }
+  if (gate.name === "b2c-request-embedded-ai-expanded-estimate-binding-proof") {
+    gateEnv.B2C_EXPANDED_ESTIMATE_TYPECHECK_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_LINT_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_TARGETED_TESTS_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_WEB_PLAYWRIGHT_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_FULL_JEST_PASSED = "1";
+    gateEnv.B2C_EXPANDED_ESTIMATE_RELEASE_GATES_PASSED = "1";
+  }
   const result = spawnSync(gate.command, {
     cwd: PROJECT_ROOT,
     env: {

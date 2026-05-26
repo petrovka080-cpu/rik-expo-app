@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 
 import { ConsumerRepairRequestScreen } from "../../../src/features/consumerRepair";
+import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../../../src/lib/testing/routeReadyMarkers";
 import { withScreenErrorBoundary } from "../../../src/shared/ui/ScreenErrorBoundary";
 
 function getParam(value: string | string[] | undefined): string {
@@ -19,11 +20,14 @@ function RequestRoute() {
   const autoPdf = getParam(params.autoPdf).trim() === "1";
 
   return (
-    <ConsumerRepairRequestScreen
-      initialProblemText={prompt || undefined}
-      autoPrepare={autoPrepare || autoPdf}
-      autoPdf={autoPdf}
-    />
+    <>
+      <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.request} />
+      <ConsumerRepairRequestScreen
+        initialProblemText={prompt || undefined}
+        autoPrepare={autoPrepare || autoPdf}
+        autoPdf={autoPdf}
+      />
+    </>
   );
 }
 

@@ -15,6 +15,7 @@ import { useAuthLifecycle } from "../src/lib/auth/useAuthLifecycle";
 import { useAuthGuard } from "../src/lib/auth/useAuthGuard";
 import { initializeSentry, wrapRootComponentWithSentry } from "../src/lib/observability/sentry";
 import { recordPlatformObservability } from "../src/lib/observability/platformObservability";
+import { ROUTE_PROOF_MARKERS, RouteReadyMarker } from "../src/lib/testing/routeReadyMarkers";
 
 initializeSentry();
 
@@ -209,6 +210,7 @@ function RootLayout() {
               style={{ flex: 1, backgroundColor: APP_BG, paddingTop: 0 }}
               edges={Platform.OS === "web" ? [] : ["top"]}
             >
+              <RouteReadyMarker marker={ROUTE_PROOF_MARKERS.appRoot} />
               <DeferredPlatformOfflineStatusHost
                 enabled={
                   authState.sessionLoaded &&

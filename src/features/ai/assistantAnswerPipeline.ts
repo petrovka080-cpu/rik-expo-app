@@ -5,6 +5,7 @@ import {
   buildAiEstimatePdfSourceFromConstructionEstimate,
   buildAiEstimatePdfSourceFromGlobalEstimate,
 } from "../../lib/ai/estimatePdf";
+import { buildEstimatePresentationViewModel } from "../../lib/ai/estimatePresentation";
 import { resolveAiLiveScreenId } from "../../lib/ai/liveScreenCopilot";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
 import type { AssistantContext, AssistantMessage, AssistantRole } from "./assistant.types";
@@ -30,17 +31,20 @@ export function createBuiltInAiAssistantMessage(input: AssistantAnswerInput): As
   });
   if (!builtInAi.handled) return null;
 
-  const estimatePdfSource = builtInAi.toolResult.estimate
-    ? buildAiEstimatePdfSourceFromGlobalEstimate(builtInAi.toolResult.estimate, {
+  const estimate = builtInAi.toolResult.estimate;
+  const estimatePdfSource = estimate
+    ? buildAiEstimatePdfSourceFromGlobalEstimate(estimate, {
         userId: input.userId ?? undefined,
       })
     : undefined;
+  const estimatePresentation = estimate ? buildEstimatePresentationViewModel(estimate) : undefined;
   return createMessage(
     "assistant",
     sanitizeAssistantUserFacingCopy(builtInAi.answerTextRu),
     estimatePdfSource
       ? {
           estimatePdfSource,
+          estimatePresentation,
           actions: buildAiEstimatePdfActions(estimatePdfSource),
         }
       : {},

@@ -48,6 +48,12 @@ export type ReleaseGateName =
   | "ai-estimate-to-pdf-proof"
   | "live-ai-estimate-pdf-reality-proof"
   | "ai-estimate-core-completion-proof"
+  | "b2c-request-embedded-ai-entrypoint-audit-proof"
+  | "android-b2c-request-embedded-ai-route-bootstrap-proof"
+  | "android-app-root-ready-marker-b2c-request-embedded-ai-proof"
+  | "b2c-request-embedded-ai-expanded-estimate-binding-proof"
+  | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
+  | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
   | "ai-route-parity-proof"
   | "estimate-pdf-real-binary-proof"
@@ -303,6 +309,12 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-to-pdf-proof", command: "npx tsx scripts/e2e/runAiEstimateToPdfProof.ts" },
   { name: "live-ai-estimate-pdf-reality-proof", command: "npx tsx scripts/e2e/runLiveAiEstimatePdfRealityProof.ts" },
   { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
+  { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
+  { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
+  { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },
+  { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof", command: "npx tsx scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts" },
+  { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },
+  { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },
   { name: "estimate-pdf-real-binary-proof", command: "npx tsx scripts/e2e/runEstimatePdfRealBinaryProof.ts --final" },
@@ -790,9 +802,9 @@ export function buildReleaseGuardMigrationPolicy(params: {
   const approvalSatisfied = highRiskFiles.length === 0 || missingApprovalKeys.length === 0;
   const effectiveBlockers = approvalSatisfied
     ? blockers.filter(
-        (blocker) =>
-          !blocker.includes("contains DML or read-model rebuild behavior and requires"),
-      )
+      (blocker) =>
+        !blocker.includes("contains DML or read-model rebuild behavior and requires"),
+    )
     : blockers;
 
   return {
@@ -979,10 +991,9 @@ export function evaluateReleaseGuardReadiness(params: {
         ? ` Local branch is ahead by ${params.repo.localCommitsAheadOriginMain} commit(s) and behind by ${params.repo.originMainCommitsAheadHead} commit(s).`
         : "";
     blockers.push(
-      `HEAD does not match origin/main.${syncDetail} Next safe action: ${params.repo.syncAction}.${
-        params.repo.requiredSyncApprovalKeys.length > 0
-          ? ` Required approval keys: ${params.repo.requiredSyncApprovalKeys.join(", ")}.`
-          : ""
+      `HEAD does not match origin/main.${syncDetail} Next safe action: ${params.repo.syncAction}.${params.repo.requiredSyncApprovalKeys.length > 0
+        ? ` Required approval keys: ${params.repo.requiredSyncApprovalKeys.join(", ")}.`
+        : ""
       } Push and sync the exact release commit before publishing.`,
     );
   }

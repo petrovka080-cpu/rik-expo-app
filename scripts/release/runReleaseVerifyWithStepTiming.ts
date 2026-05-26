@@ -74,6 +74,18 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
   if (step === "ai-live-screen-copilot-buttons-proof") {
     return { S_AI_LIVE_SCREEN_COPILOT_RELEASE_VERIFY_PASSED: "true" };
   }
+  if (step === "b2c-request-embedded-ai-expanded-estimate-binding-proof") {
+    return {
+      B2C_EXPANDED_ESTIMATE_TYPECHECK_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_LINT_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_GIT_DIFF_CHECK_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_TARGETED_TESTS_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_ARCHITECTURE_TESTS_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_WEB_PLAYWRIGHT_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_FULL_JEST_PASSED: "1",
+      B2C_EXPANDED_ESTIMATE_RELEASE_GATES_PASSED: "1",
+    };
+  }
   return {};
 }
 

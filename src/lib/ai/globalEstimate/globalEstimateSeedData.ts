@@ -739,6 +739,33 @@ export const DRYWALL_PARTITION_TEMPLATE: GlobalEstimateTemplate = knownWorkTempl
   ],
 });
 
+export const DRYWALL_WALL_CLADDING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
+  workKey: "drywall_wall_cladding",
+  materialRows: [
+    { code: "drywall_wall_cladding_sheets", nameRu: "Листы ГКЛ для облицовки стен", nameEn: "Drywall sheets for wall cladding" },
+    { code: "drywall_wall_cladding_track_profile", nameRu: "Направляющий профиль", nameEn: "Track profile", rateKind: "auxiliary" },
+    { code: "drywall_wall_cladding_stud_profile", nameRu: "Стоечный профиль", nameEn: "Stud profile", rateKind: "auxiliary" },
+    { code: "drywall_wall_cladding_fasteners", nameRu: "Крепёж для ГКЛ и профиля", nameEn: "Drywall and profile fasteners", rateKind: "auxiliary" },
+    { code: "drywall_wall_cladding_joint_tape", nameRu: "Лента для швов", nameEn: "Joint tape", rateKind: "auxiliary" },
+    { code: "drywall_wall_cladding_joint_putty", nameRu: "Шпаклёвка швов", nameEn: "Joint putty", rateKind: "auxiliary" },
+  ],
+  laborRows: [
+    { code: "drywall_wall_cladding_frame_install", nameRu: "Монтаж каркаса на стены", nameEn: "Wall frame installation" },
+    { code: "drywall_wall_cladding_sheet_install", nameRu: "Обшивка ГКЛ", nameEn: "Drywall sheet lining" },
+    { code: "drywall_wall_cladding_joint_finishing", nameRu: "Заделка и шпаклёвка швов", nameEn: "Joint finishing" },
+  ],
+  assumptionsRu: [
+    "Расчёт выполнен для облицовки стен ГКЛ по каркасной системе.",
+    "Тип ГКЛ, шаг профиля, количество слоёв и подготовка основания уточняются перед договором.",
+    "Цены берутся из backend pricebook с источниками.",
+  ],
+  questionsRu: [
+    "Нужен обычный, влагостойкий или огнестойкий ГКЛ?",
+    "Сколько слоёв ГКЛ и какая высота стен?",
+    "Нужны ли утепление, звукоизоляция, демонтаж или подготовка основания?",
+  ],
+});
+
 export const DRYWALL_CEILING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "drywall_ceiling",
   materialRows: [
@@ -847,6 +874,144 @@ export const BRICK_MASONRY_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate(
     "Нужно ли армирование кладки и расшивка лицевых швов?",
   ],
 });
+
+export const WINDOW_INSTALLATION_TEMPLATE: GlobalEstimateTemplate = {
+  workKey: "window_installation",
+  inputMeasure: "count",
+  defaultUnitMetric: "pcs",
+  defaultUnitImperial: "pcs",
+  sections: [
+    {
+      type: "materials",
+      sectionNumber: "1",
+      title: { ru: "Материалы и комплектующие", en: "Materials and supplies" },
+      rows: [
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.1", code: "window_installation_window_unit", names: { ru: "Оконный блок", en: "Window unit" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.2", code: "window_installation_sill_drip", names: { ru: "Подоконник / отлив", en: "Sill and drip cap" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_auxiliary" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.3", code: "window_installation_foam_fixings", names: { ru: "Монтажная пена / крепёж", en: "Foam and fixings" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_auxiliary" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.4", code: "window_installation_slopes_warning", names: { ru: "Откосы: включить после уточнения", en: "Slopes: include after confirmation" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_auxiliary" }),
+      ],
+    },
+    {
+      type: "labor",
+      sectionNumber: "2",
+      title: { ru: "Работы / монтаж", en: "Labor and installation" },
+      rows: [
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.1", code: "window_installation_old_window_removal", names: { ru: "Демонтаж старого окна, если требуется", en: "Old window removal when required" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.2", code: "window_installation_mount", names: { ru: "Монтаж окна", en: "Window installation" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.3", code: "window_installation_sealing", names: { ru: "Герметизация монтажного шва", en: "Installation joint sealing" }, quantityFormula: "area", unitMetric: "pcs", unitImperial: "pcs", rateKey: "window_installation_labor" }),
+      ],
+    },
+    {
+      type: "delivery",
+      sectionNumber: "3",
+      title: { ru: "Доставка / доступ", en: "Delivery and access" },
+      rows: [
+        row({ sectionType: "delivery", sectionNumber: "3", rowNumber: "3.1", code: "window_installation_delivery", names: { ru: "Доставка / подъем оконного блока", en: "Delivery and lifting" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "window_installation_delivery" }),
+      ],
+    },
+  ],
+  assumptions: {
+    ru: [
+      "Расчёт выполнен для установки окон по количеству блоков.",
+      "Размеры, профиль, стеклопакет, демонтаж и откосы уточняются перед договором.",
+      "Цены берутся из backend pricebook с источниками.",
+    ],
+    en: [
+      "Estimate is based on the number of window units.",
+      "Dimensions, profile, glazing, removal and slopes are confirmed before contract.",
+      "Rates come from backend pricebook entries with source evidence.",
+    ],
+  },
+  regionalRiskKeys: ["site_access", "delivery_and_lifting", "local_tax_precision"],
+  clarifyingQuestions: {
+    ru: [
+      "Сколько окон и какие размеры?",
+      "Нужен ли демонтаж старых окон?",
+      "Входят ли откосы, подоконник, отлив и доставка?",
+    ],
+    en: [
+      "How many windows and what dimensions?",
+      "Is old window removal required?",
+      "Are slopes, sill, drip cap and delivery included?",
+    ],
+  },
+};
+
+export const MICRO_HYDRO_TURBINE_TEMPLATE: GlobalEstimateTemplate = {
+  workKey: "micro_hydro_preparation",
+  inputMeasure: "set",
+  defaultUnitMetric: "set",
+  defaultUnitImperial: "set",
+  sections: [
+    {
+      type: "materials",
+      sectionNumber: "1",
+      title: { ru: "Оборудование и материалы", en: "Equipment and materials" },
+      rows: [
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.1", code: "micro_hydro_pre_survey", names: { ru: "Предпроектное обследование", en: "Pre-design survey" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_auxiliary" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.2", code: "micro_hydro_hydraulic_calculation", names: { ru: "Гидравлический расчёт", en: "Hydraulic calculation" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_auxiliary" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.3", code: "micro_hydro_turbine", names: { ru: "Турбина для микро-ГЭС", en: "Micro hydro turbine" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.4", code: "micro_hydro_generator", names: { ru: "Генератор", en: "Generator" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.5", code: "micro_hydro_frame_coupling_mounts", names: { ru: "Рама / муфта / виброопоры", en: "Frame, coupling and vibration mounts" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.6", code: "micro_hydro_control_cabinet", names: { ru: "Шкаф управления", en: "Control cabinet" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.7", code: "micro_hydro_protection_sync", names: { ru: "Защита / синхронизация", en: "Protection and synchronization" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.8", code: "micro_hydro_cables_switchgear", names: { ru: "Кабели и щит 0,4 кВ", en: "Cables and 0.4 kV switchboard" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.9", code: "micro_hydro_hydromechanics", names: { ru: "Гидромеханика", en: "Hydromechanical items" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+        row({ sectionType: "materials", sectionNumber: "1", rowNumber: "1.10", code: "micro_hydro_metalworks", names: { ru: "Металлоконструкции", en: "Metal structures" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_material" }),
+      ],
+    },
+    {
+      type: "labor",
+      sectionNumber: "2",
+      title: { ru: "Работы / монтаж / ПНР", en: "Labor, installation and commissioning" },
+      rows: [
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.1", code: "micro_hydro_local_civil_works", names: { ru: "Подготовка машинного зала и закладных под агрегат", en: "Powerhouse preparation and embedded parts for unit" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.2", code: "micro_hydro_rigging", names: { ru: "Такелаж", en: "Rigging" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.3", code: "micro_hydro_installation", names: { ru: "Монтаж турбины и генератора", en: "Turbine and generator installation" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.4", code: "micro_hydro_commissioning", names: { ru: "ПНР", en: "Commissioning" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+        row({ sectionType: "labor", sectionNumber: "2", rowNumber: "2.5", code: "micro_hydro_training", names: { ru: "Обучение персонала", en: "Operator training" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_labor" }),
+      ],
+    },
+    {
+      type: "delivery",
+      sectionNumber: "3",
+      title: { ru: "Доставка / резерв / ограничения", en: "Delivery, contingency and exclusions" },
+      rows: [
+        row({ sectionType: "delivery", sectionNumber: "3", rowNumber: "3.1", code: "micro_hydro_delivery", names: { ru: "Доставка оборудования", en: "Equipment delivery" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_delivery" }),
+        row({ sectionType: "equipment", sectionNumber: "3", rowNumber: "3.2", code: "micro_hydro_equipment_mobilization", names: { ru: "Мобилизация техники", en: "Equipment mobilization" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_equipment" }),
+        row({ sectionType: "delivery", sectionNumber: "3", rowNumber: "3.3", code: "micro_hydro_contingency", names: { ru: "Резерв на уточнение проекта", en: "Design clarification contingency" }, quantityFormula: "1", unitMetric: "set", unitImperial: "set", rateKey: "micro_hydro_preparation_delivery" }),
+      ],
+    },
+  ],
+  assumptions: {
+    ru: [
+      "Расчёт выполнен как предварительная BOQ-смета для установки турбины микро-ГЭС.",
+      "Что не включено: земляные работы большого объёма, разрешения, сетевое присоединение и капитальные гидротехнические сооружения без обследования.",
+      "Что может увеличить стоимость: напор H, расход Q, состояние водовода, доступ, сезонность, требования к автоматике и синхронизации.",
+    ],
+    en: [
+      "Estimate is a preliminary BOQ for a micro hydro turbine installation.",
+      "Exclusions: major earthworks, permits, grid interconnection and capital hydraulic structures without survey.",
+      "Cost drivers: head H, flow Q, penstock condition, access, seasonality, automation and synchronization requirements.",
+    ],
+  },
+  regionalRiskKeys: ["site_access", "delivery_and_lifting", "local_tax_precision"],
+  clarifyingQuestions: {
+    ru: [
+      "Какие напор H и расход Q?",
+      "Какая схема водовода/трубы и состояние гидромеханики?",
+      "Нужно ли подключение к сети, автономная работа или синхронизация?",
+      "Есть ли проект, разрешения и доступ для такелажа?",
+    ],
+    en: [
+      "What are head H and flow Q?",
+      "What is the penstock/waterway configuration and hydromechanical condition?",
+      "Is grid connection, island operation or synchronization required?",
+      "Are design documents, permits and rigging access available?",
+    ],
+  },
+};
 
 function localizedWorkName(definition: GlobalWorkTypeDefinition, language: string): string {
   return definition.names[language] ?? definition.names.en ?? definition.names.ru ?? definition.workKey;
@@ -1562,17 +1727,20 @@ export const GLOBAL_ESTIMATE_TEMPLATES: readonly GlobalEstimateTemplate[] = GLOB
           definition.workKey === "ceramic_tile_floor_laying" ? CERAMIC_TILE_FLOOR_TEMPLATE :
             definition.workKey === "carpet_laying" ? CARPET_TEMPLATE :
                 definition.workKey === "drywall_partition" ? DRYWALL_PARTITION_TEMPLATE :
-                  definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
-                    definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
-                      definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
-                        definition.workKey === "roof_waterproofing" ? ROOF_WATERPROOFING_TEMPLATE :
-                          definition.workKey === "roof_membrane_waterproofing" ? ROOF_MEMBRANE_WATERPROOFING_TEMPLATE :
-                            definition.workKey === "bathroom_waterproofing" ? BATHROOM_WATERPROOFING_TEMPLATE :
-                              definition.workKey === "foundation_waterproofing" ? FOUNDATION_WATERPROOFING_TEMPLATE :
-                                definition.workKey === "basement_waterproofing" ? BASEMENT_WATERPROOFING_TEMPLATE :
-                                  definition.workKey === "pool_waterproofing" ? POOL_WATERPROOFING_TEMPLATE :
-                                    definition.workKey === "waterproofing_under_tile" ? WATERPROOFING_UNDER_TILE_TEMPLATE :
-                                      genericTemplate(definition),
+                  definition.workKey === "drywall_wall_cladding" ? DRYWALL_WALL_CLADDING_TEMPLATE :
+                    definition.workKey === "drywall_ceiling" ? DRYWALL_CEILING_TEMPLATE :
+                      definition.workKey === "window_installation" ? WINDOW_INSTALLATION_TEMPLATE :
+                        definition.workKey === "micro_hydro_preparation" ? MICRO_HYDRO_TURBINE_TEMPLATE :
+                          definition.workKey === "gable_roof_installation" ? GABLE_ROOF_TEMPLATE :
+                            definition.workKey === "brick_masonry" ? BRICK_MASONRY_TEMPLATE :
+                              definition.workKey === "roof_waterproofing" ? ROOF_WATERPROOFING_TEMPLATE :
+                                definition.workKey === "roof_membrane_waterproofing" ? ROOF_MEMBRANE_WATERPROOFING_TEMPLATE :
+                                  definition.workKey === "bathroom_waterproofing" ? BATHROOM_WATERPROOFING_TEMPLATE :
+                                    definition.workKey === "foundation_waterproofing" ? FOUNDATION_WATERPROOFING_TEMPLATE :
+                                      definition.workKey === "basement_waterproofing" ? BASEMENT_WATERPROOFING_TEMPLATE :
+                                        definition.workKey === "pool_waterproofing" ? POOL_WATERPROOFING_TEMPLATE :
+                                          definition.workKey === "waterproofing_under_tile" ? WATERPROOFING_UNDER_TILE_TEMPLATE :
+                                            genericTemplate(definition),
 );
 
 export const GLOBAL_ESTIMATE_TEMPLATE_ROWS: readonly (GlobalEstimateTemplateRowDefinition & { workKey: string })[] =

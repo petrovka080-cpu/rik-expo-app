@@ -6,6 +6,698 @@
       "titleRu": "укладку ковролина",
       "summaryRu": "Черновик сметы\n\nКоротко:\nукладку ковролина — 100 м².\nИтого: 290 468 сом.\nНалоговый статус: НДС Кыргызстан.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "repairType": "flooring",
+      "estimatePresentation": {
+        "estimateId": "global_estimate_618078260",
+        "workKey": "carpet_laying",
+        "workTitle": "укладку ковролина",
+        "workCategory": "flooring",
+        "originalText": "хочу уложить ковролин на 100 кв м",
+        "assumptions": [
+          "Расчёт выполнен для укладки ковролина по подготовленному основанию.",
+          "Демонтаж старого покрытия, выравнивание и доставка уточняются отдельно.",
+          "Материалы рассчитаны с запасом на подрезку."
+        ],
+        "sections": [
+          {
+            "sectionNumber": "1",
+            "title": "Материалы и комплектующие",
+            "type": "materials",
+            "rows": [
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.1",
+                "code": "carpet_covering",
+                "rateKey": "carpet_laying_material",
+                "materialKey": "carpet_laying",
+                "catalogItemId": null,
+                "name": "Ковролин с запасом на подрезку",
+                "quantity": 108,
+                "unit": "sq_m",
+                "displayQuantity": "108 m²",
+                "unitPrice": 1068,
+                "displayUnitPrice": "1 068 сом / m²",
+                "total": 115344,
+                "displayTotal": "115 344 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_material_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_material_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.2",
+                "code": "carpet_underlay",
+                "rateKey": "carpet_laying_auxiliary",
+                "materialKey": "carpet_laying",
+                "catalogItemId": null,
+                "name": "Подложка под ковролин",
+                "quantity": 18,
+                "unit": "sq_m",
+                "displayQuantity": "18 m²",
+                "unitPrice": 178,
+                "displayUnitPrice": "178 сом / m²",
+                "total": 3204,
+                "displayTotal": "3 204 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.3",
+                "code": "carpet_glue_tape",
+                "rateKey": "carpet_laying_auxiliary",
+                "materialKey": "carpet_laying",
+                "catalogItemId": null,
+                "name": "Клей/лента для фиксации ковролина",
+                "quantity": 18,
+                "unit": "sq_m",
+                "displayQuantity": "18 m²",
+                "unitPrice": 178,
+                "displayUnitPrice": "178 сом / m²",
+                "total": 3204,
+                "displayTotal": "3 204 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.4",
+                "code": "carpet_baseboard_thresholds",
+                "rateKey": "carpet_laying_auxiliary",
+                "materialKey": "carpet_laying",
+                "catalogItemId": null,
+                "name": "Плинтус или порожки для примыканий",
+                "quantity": 18,
+                "unit": "sq_m",
+                "displayQuantity": "18 m²",
+                "unitPrice": 178,
+                "displayUnitPrice": "178 сом / m²",
+                "total": 3204,
+                "displayTotal": "3 204 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          },
+          {
+            "sectionNumber": "2",
+            "title": "Работы / монтаж / техника",
+            "type": "labor",
+            "rows": [
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.1",
+                "code": "carpet_base_preparation",
+                "rateKey": "carpet_laying_labor",
+                "catalogItemId": null,
+                "name": "Подготовка основания",
+                "quantity": 100,
+                "unit": "sq_m",
+                "displayQuantity": "100 m²",
+                "unitPrice": 445,
+                "displayUnitPrice": "445 сом / m²",
+                "total": 44500,
+                "displayTotal": "44 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.2",
+                "code": "carpet_laying_work",
+                "rateKey": "carpet_laying_labor",
+                "catalogItemId": null,
+                "name": "Укладка ковролина",
+                "quantity": 100,
+                "unit": "sq_m",
+                "displayQuantity": "100 m²",
+                "unitPrice": 445,
+                "displayUnitPrice": "445 сом / m²",
+                "total": 44500,
+                "displayTotal": "44 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.3",
+                "code": "carpet_cutting",
+                "rateKey": "carpet_laying_labor",
+                "catalogItemId": null,
+                "name": "Подрезка и подгонка ковролина",
+                "quantity": 100,
+                "unit": "sq_m",
+                "displayQuantity": "100 m²",
+                "unitPrice": 445,
+                "displayUnitPrice": "445 сом / m²",
+                "total": 44500,
+                "displayTotal": "44 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          },
+          {
+            "sectionNumber": "3",
+            "title": "Оборудование / доставка",
+            "type": "delivery",
+            "rows": [
+              {
+                "sectionNumber": "3",
+                "sectionTitle": "Оборудование / доставка",
+                "sectionType": "delivery",
+                "rowNumber": "3.1",
+                "code": "carpet_laying_delivery_access_warning",
+                "rateKey": "carpet_laying_delivery",
+                "catalogItemId": null,
+                "name": "Доставка / подъем / доступ: требуется уточнение",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 set",
+                "unitPrice": 534,
+                "displayUnitPrice": "534 сом / set",
+                "total": 534,
+                "displayTotal": "534 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_delivery_KG_set_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_delivery_KG_set_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "3",
+                "sectionTitle": "Оборудование / доставка",
+                "sectionType": "delivery",
+                "rowNumber": "3.2",
+                "code": "carpet_laying_equipment_mobilization_warning",
+                "rateKey": "carpet_laying_equipment",
+                "catalogItemId": null,
+                "name": "Техника / инвентарь: требуется уточнение",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 set",
+                "unitPrice": 356,
+                "displayUnitPrice": "356 сом / set",
+                "total": 356,
+                "displayTotal": "356 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_carpet_laying_equipment_KG_set_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_carpet_laying_equipment_KG_set_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.1",
+            "code": "carpet_covering",
+            "rateKey": "carpet_laying_material",
+            "materialKey": "carpet_laying",
+            "catalogItemId": null,
+            "name": "Ковролин с запасом на подрезку",
+            "quantity": 108,
+            "unit": "sq_m",
+            "displayQuantity": "108 m²",
+            "unitPrice": 1068,
+            "displayUnitPrice": "1 068 сом / m²",
+            "total": 115344,
+            "displayTotal": "115 344 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_material_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_material_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.2",
+            "code": "carpet_underlay",
+            "rateKey": "carpet_laying_auxiliary",
+            "materialKey": "carpet_laying",
+            "catalogItemId": null,
+            "name": "Подложка под ковролин",
+            "quantity": 18,
+            "unit": "sq_m",
+            "displayQuantity": "18 m²",
+            "unitPrice": 178,
+            "displayUnitPrice": "178 сом / m²",
+            "total": 3204,
+            "displayTotal": "3 204 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.3",
+            "code": "carpet_glue_tape",
+            "rateKey": "carpet_laying_auxiliary",
+            "materialKey": "carpet_laying",
+            "catalogItemId": null,
+            "name": "Клей/лента для фиксации ковролина",
+            "quantity": 18,
+            "unit": "sq_m",
+            "displayQuantity": "18 m²",
+            "unitPrice": 178,
+            "displayUnitPrice": "178 сом / m²",
+            "total": 3204,
+            "displayTotal": "3 204 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.4",
+            "code": "carpet_baseboard_thresholds",
+            "rateKey": "carpet_laying_auxiliary",
+            "materialKey": "carpet_laying",
+            "catalogItemId": null,
+            "name": "Плинтус или порожки для примыканий",
+            "quantity": 18,
+            "unit": "sq_m",
+            "displayQuantity": "18 m²",
+            "unitPrice": 178,
+            "displayUnitPrice": "178 сом / m²",
+            "total": 3204,
+            "displayTotal": "3 204 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.1",
+            "code": "carpet_base_preparation",
+            "rateKey": "carpet_laying_labor",
+            "catalogItemId": null,
+            "name": "Подготовка основания",
+            "quantity": 100,
+            "unit": "sq_m",
+            "displayQuantity": "100 m²",
+            "unitPrice": 445,
+            "displayUnitPrice": "445 сом / m²",
+            "total": 44500,
+            "displayTotal": "44 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.2",
+            "code": "carpet_laying_work",
+            "rateKey": "carpet_laying_labor",
+            "catalogItemId": null,
+            "name": "Укладка ковролина",
+            "quantity": 100,
+            "unit": "sq_m",
+            "displayQuantity": "100 m²",
+            "unitPrice": 445,
+            "displayUnitPrice": "445 сом / m²",
+            "total": 44500,
+            "displayTotal": "44 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.3",
+            "code": "carpet_cutting",
+            "rateKey": "carpet_laying_labor",
+            "catalogItemId": null,
+            "name": "Подрезка и подгонка ковролина",
+            "quantity": 100,
+            "unit": "sq_m",
+            "displayQuantity": "100 m²",
+            "unitPrice": 445,
+            "displayUnitPrice": "445 сом / m²",
+            "total": 44500,
+            "displayTotal": "44 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "3",
+            "sectionTitle": "Оборудование / доставка",
+            "sectionType": "delivery",
+            "rowNumber": "3.1",
+            "code": "carpet_laying_delivery_access_warning",
+            "rateKey": "carpet_laying_delivery",
+            "catalogItemId": null,
+            "name": "Доставка / подъем / доступ: требуется уточнение",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 set",
+            "unitPrice": 534,
+            "displayUnitPrice": "534 сом / set",
+            "total": 534,
+            "displayTotal": "534 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_delivery_KG_set_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_delivery_KG_set_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "3",
+            "sectionTitle": "Оборудование / доставка",
+            "sectionType": "delivery",
+            "rowNumber": "3.2",
+            "code": "carpet_laying_equipment_mobilization_warning",
+            "rateKey": "carpet_laying_equipment",
+            "catalogItemId": null,
+            "name": "Техника / инвентарь: требуется уточнение",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 set",
+            "unitPrice": 356,
+            "displayUnitPrice": "356 сом / set",
+            "total": 356,
+            "displayTotal": "356 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_carpet_laying_equipment_KG_set_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_carpet_laying_equipment_KG_set_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          }
+        ],
+        "totals": {
+          "materialsTotal": 124956,
+          "laborTotal": 133500,
+          "equipmentTotal": 0,
+          "deliveryTotal": 890,
+          "taxTotal": 31121.52,
+          "grandTotal": 290467.52,
+          "currency": "KGS",
+          "displayMaterialsTotal": "124 956 сом",
+          "displayLaborTotal": "133 500 сом",
+          "displayTaxTotal": "31 122 сом",
+          "displayGrandTotal": "290 468 сом"
+        },
+        "tax": {
+          "taxType": "nds",
+          "taxLabel": "НДС Кыргызстан",
+          "taxRate": 0.12,
+          "taxableBase": 259346,
+          "taxAmount": 31121.52,
+          "included": false,
+          "requiresLocationPrecision": false
+        },
+        "sourceConfidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured Kyrgyzstan NDS reference"
+        ],
+        "costIncreaseFactors": [
+          "Неровное или поврежденное основание.",
+          "Удаление старых материалов.",
+          "Сложная геометрия, углы и примыкания.",
+          "Доставка, подъем и ограниченный доступ.",
+          "Срочность работ.",
+          "Локальные требования объекта."
+        ],
+        "clarifyingQuestions": [
+          "Какое текущее основание пола?",
+          "Нужен ли демонтаж старого покрытия или выравнивание?",
+          "Нужны ли плинтусы, порожки и доставка материала?"
+        ],
+        "actions": [
+          {
+            "id": "make_estimate_pdf",
+            "label": "PDF",
+            "visible": true
+          },
+          {
+            "id": "save_estimate",
+            "label": "Сохранить",
+            "visible": true
+          },
+          {
+            "id": "create_request",
+            "label": "Создать заявку",
+            "visible": true
+          },
+          {
+            "id": "update_prices",
+            "label": "Обновить цены",
+            "visible": true
+          },
+          {
+            "id": "clarify_estimate",
+            "label": "Уточнить",
+            "visible": true
+          }
+        ]
+      },
       "dangerousDiyBlocked": false,
       "missingData": [
         "Какое текущее основание пола?",
@@ -194,6 +886,698 @@
       "titleRu": "укладку кафельной плитки",
       "summaryRu": "Черновик сметы\n\nКоротко:\nукладку кафельной плитки — 174 м².\nИтого: 969 113 сом.\nНалоговый статус: НДС Кыргызстан.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "repairType": "tile",
+      "estimatePresentation": {
+        "estimateId": "global_estimate_682656730",
+        "workKey": "ceramic_tile_floor_laying",
+        "workTitle": "укладку кафельной плитки",
+        "workCategory": "tile",
+        "originalText": "смета на укладку кафельной плитки на пол 174 кв м",
+        "assumptions": [
+          "Расчет выполнен для укладки плитки по подготовленному основанию.",
+          "Плитка рассчитана с запасом на подрезку; клей, затирка и грунтовка включены отдельными строками.",
+          "Выравнивание основания, гидроизоляция и сложная раскладка уточняются перед договором."
+        ],
+        "sections": [
+          {
+            "sectionNumber": "1",
+            "title": "Материалы и комплектующие",
+            "type": "materials",
+            "rows": [
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.1",
+                "code": "ceramic_tile_floor_laying_tile_with_waste",
+                "rateKey": "ceramic_tile_floor_laying_material",
+                "materialKey": "ceramic_tile_floor_laying",
+                "catalogItemId": null,
+                "name": "Керамическая плитка с запасом на подрезку",
+                "quantity": 191.4,
+                "unit": "sq_m",
+                "displayQuantity": "191,4 m²",
+                "unitPrice": 1424,
+                "displayUnitPrice": "1 424 сом / m²",
+                "total": 272553.6,
+                "displayTotal": "272 554 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.2",
+                "code": "ceramic_tile_floor_laying_adhesive",
+                "rateKey": "ceramic_tile_floor_laying_auxiliary",
+                "materialKey": "ceramic_tile_floor_laying",
+                "catalogItemId": null,
+                "name": "Плиточный клей",
+                "quantity": 31.32,
+                "unit": "sq_m",
+                "displayQuantity": "31,32 m²",
+                "unitPrice": 356,
+                "displayUnitPrice": "356 сом / m²",
+                "total": 11149.92,
+                "displayTotal": "11 150 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.3",
+                "code": "ceramic_tile_floor_laying_grout",
+                "rateKey": "ceramic_tile_floor_laying_auxiliary",
+                "materialKey": "ceramic_tile_floor_laying",
+                "catalogItemId": null,
+                "name": "Затирка для швов",
+                "quantity": 31.32,
+                "unit": "sq_m",
+                "displayQuantity": "31,32 m²",
+                "unitPrice": 356,
+                "displayUnitPrice": "356 сом / m²",
+                "total": 11149.92,
+                "displayTotal": "11 150 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.4",
+                "code": "ceramic_tile_floor_laying_primer",
+                "rateKey": "ceramic_tile_floor_laying_auxiliary",
+                "materialKey": "ceramic_tile_floor_laying",
+                "catalogItemId": null,
+                "name": "Грунтовка основания",
+                "quantity": 31.32,
+                "unit": "sq_m",
+                "displayQuantity": "31,32 m²",
+                "unitPrice": 356,
+                "displayUnitPrice": "356 сом / m²",
+                "total": 11149.92,
+                "displayTotal": "11 150 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          },
+          {
+            "sectionNumber": "2",
+            "title": "Работы / монтаж / техника",
+            "type": "labor",
+            "rows": [
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.1",
+                "code": "ceramic_tile_floor_laying_base_preparation",
+                "rateKey": "ceramic_tile_floor_laying_labor",
+                "catalogItemId": null,
+                "name": "Подготовка основания под плитку",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 m²",
+                "unitPrice": 1068,
+                "displayUnitPrice": "1 068 сом / m²",
+                "total": 185832,
+                "displayTotal": "185 832 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.2",
+                "code": "ceramic_tile_floor_laying_tile_laying",
+                "rateKey": "ceramic_tile_floor_laying_labor",
+                "catalogItemId": null,
+                "name": "Укладка плитки",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 m²",
+                "unitPrice": 1068,
+                "displayUnitPrice": "1 068 сом / m²",
+                "total": 185832,
+                "displayTotal": "185 832 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Работы / монтаж / техника",
+                "sectionType": "labor",
+                "rowNumber": "2.3",
+                "code": "ceramic_tile_floor_laying_grout_work",
+                "rateKey": "ceramic_tile_floor_laying_labor",
+                "catalogItemId": null,
+                "name": "Затирка и очистка швов",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 m²",
+                "unitPrice": 1068,
+                "displayUnitPrice": "1 068 сом / m²",
+                "total": 185832,
+                "displayTotal": "185 832 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          },
+          {
+            "sectionNumber": "3",
+            "title": "Оборудование / доставка",
+            "type": "delivery",
+            "rows": [
+              {
+                "sectionNumber": "3",
+                "sectionTitle": "Оборудование / доставка",
+                "sectionType": "delivery",
+                "rowNumber": "3.1",
+                "code": "ceramic_tile_floor_laying_delivery_access_warning",
+                "rateKey": "ceramic_tile_floor_laying_delivery",
+                "catalogItemId": null,
+                "name": "Доставка / подъем / доступ: требуется уточнение",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 set",
+                "unitPrice": 1068,
+                "displayUnitPrice": "1 068 сом / set",
+                "total": 1068,
+                "displayTotal": "1 068 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              },
+              {
+                "sectionNumber": "3",
+                "sectionTitle": "Оборудование / доставка",
+                "sectionType": "delivery",
+                "rowNumber": "3.2",
+                "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
+                "rateKey": "ceramic_tile_floor_laying_equipment",
+                "catalogItemId": null,
+                "name": "Техника / инвентарь: требуется уточнение",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 set",
+                "unitPrice": 712,
+                "displayUnitPrice": "712 сом / set",
+                "total": 712,
+                "displayTotal": "712 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                    "sourceType": "configured_reference",
+                    "label": "Configured backend regional reference rate",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "high"
+                  }
+                ],
+                "sourceLabel": "Configured backend regional reference rate",
+                "confidence": "high"
+              }
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.1",
+            "code": "ceramic_tile_floor_laying_tile_with_waste",
+            "rateKey": "ceramic_tile_floor_laying_material",
+            "materialKey": "ceramic_tile_floor_laying",
+            "catalogItemId": null,
+            "name": "Керамическая плитка с запасом на подрезку",
+            "quantity": 191.4,
+            "unit": "sq_m",
+            "displayQuantity": "191,4 m²",
+            "unitPrice": 1424,
+            "displayUnitPrice": "1 424 сом / m²",
+            "total": 272553.6,
+            "displayTotal": "272 554 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.2",
+            "code": "ceramic_tile_floor_laying_adhesive",
+            "rateKey": "ceramic_tile_floor_laying_auxiliary",
+            "materialKey": "ceramic_tile_floor_laying",
+            "catalogItemId": null,
+            "name": "Плиточный клей",
+            "quantity": 31.32,
+            "unit": "sq_m",
+            "displayQuantity": "31,32 m²",
+            "unitPrice": 356,
+            "displayUnitPrice": "356 сом / m²",
+            "total": 11149.92,
+            "displayTotal": "11 150 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.3",
+            "code": "ceramic_tile_floor_laying_grout",
+            "rateKey": "ceramic_tile_floor_laying_auxiliary",
+            "materialKey": "ceramic_tile_floor_laying",
+            "catalogItemId": null,
+            "name": "Затирка для швов",
+            "quantity": 31.32,
+            "unit": "sq_m",
+            "displayQuantity": "31,32 m²",
+            "unitPrice": 356,
+            "displayUnitPrice": "356 сом / m²",
+            "total": 11149.92,
+            "displayTotal": "11 150 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.4",
+            "code": "ceramic_tile_floor_laying_primer",
+            "rateKey": "ceramic_tile_floor_laying_auxiliary",
+            "materialKey": "ceramic_tile_floor_laying",
+            "catalogItemId": null,
+            "name": "Грунтовка основания",
+            "quantity": 31.32,
+            "unit": "sq_m",
+            "displayQuantity": "31,32 m²",
+            "unitPrice": 356,
+            "displayUnitPrice": "356 сом / m²",
+            "total": 11149.92,
+            "displayTotal": "11 150 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.1",
+            "code": "ceramic_tile_floor_laying_base_preparation",
+            "rateKey": "ceramic_tile_floor_laying_labor",
+            "catalogItemId": null,
+            "name": "Подготовка основания под плитку",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 m²",
+            "unitPrice": 1068,
+            "displayUnitPrice": "1 068 сом / m²",
+            "total": 185832,
+            "displayTotal": "185 832 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.2",
+            "code": "ceramic_tile_floor_laying_tile_laying",
+            "rateKey": "ceramic_tile_floor_laying_labor",
+            "catalogItemId": null,
+            "name": "Укладка плитки",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 m²",
+            "unitPrice": 1068,
+            "displayUnitPrice": "1 068 сом / m²",
+            "total": 185832,
+            "displayTotal": "185 832 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Работы / монтаж / техника",
+            "sectionType": "labor",
+            "rowNumber": "2.3",
+            "code": "ceramic_tile_floor_laying_grout_work",
+            "rateKey": "ceramic_tile_floor_laying_labor",
+            "catalogItemId": null,
+            "name": "Затирка и очистка швов",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 m²",
+            "unitPrice": 1068,
+            "displayUnitPrice": "1 068 сом / m²",
+            "total": 185832,
+            "displayTotal": "185 832 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "3",
+            "sectionTitle": "Оборудование / доставка",
+            "sectionType": "delivery",
+            "rowNumber": "3.1",
+            "code": "ceramic_tile_floor_laying_delivery_access_warning",
+            "rateKey": "ceramic_tile_floor_laying_delivery",
+            "catalogItemId": null,
+            "name": "Доставка / подъем / доступ: требуется уточнение",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 set",
+            "unitPrice": 1068,
+            "displayUnitPrice": "1 068 сом / set",
+            "total": 1068,
+            "displayTotal": "1 068 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          },
+          {
+            "sectionNumber": "3",
+            "sectionTitle": "Оборудование / доставка",
+            "sectionType": "delivery",
+            "rowNumber": "3.2",
+            "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
+            "rateKey": "ceramic_tile_floor_laying_equipment",
+            "catalogItemId": null,
+            "name": "Техника / инвентарь: требуется уточнение",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 set",
+            "unitPrice": 712,
+            "displayUnitPrice": "712 сом / set",
+            "total": 712,
+            "displayTotal": "712 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+            "sourceEvidence": [
+              {
+                "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                "sourceType": "configured_reference",
+                "label": "Configured backend regional reference rate",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "high"
+              }
+            ],
+            "sourceLabel": "Configured backend regional reference rate",
+            "confidence": "high"
+          }
+        ],
+        "totals": {
+          "materialsTotal": 306003.36,
+          "laborTotal": 557496,
+          "equipmentTotal": 0,
+          "deliveryTotal": 1780,
+          "taxTotal": 103833.52,
+          "grandTotal": 969112.88,
+          "currency": "KGS",
+          "displayMaterialsTotal": "306 003 сом",
+          "displayLaborTotal": "557 496 сом",
+          "displayTaxTotal": "103 834 сом",
+          "displayGrandTotal": "969 113 сом"
+        },
+        "tax": {
+          "taxType": "nds",
+          "taxLabel": "НДС Кыргызстан",
+          "taxRate": 0.12,
+          "taxableBase": 865279.3599999999,
+          "taxAmount": 103833.52,
+          "included": false,
+          "requiresLocationPrecision": false
+        },
+        "sourceConfidence": "high",
+        "sourceLabels": [
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured backend regional reference rate",
+          "Configured Kyrgyzstan NDS reference"
+        ],
+        "costIncreaseFactors": [
+          "Неровное или поврежденное основание.",
+          "Удаление старых материалов.",
+          "Сложная геометрия, углы и примыкания.",
+          "Доставка, подъем и ограниченный доступ.",
+          "Срочность работ.",
+          "Локальные требования объекта."
+        ],
+        "clarifyingQuestions": [
+          "Какой формат плитки и схема раскладки?",
+          "Нужно ли выравнивание основания или гидроизоляция?",
+          "Есть ли пороги, примыкания, теплый пол или сложная геометрия?"
+        ],
+        "actions": [
+          {
+            "id": "make_estimate_pdf",
+            "label": "PDF",
+            "visible": true
+          },
+          {
+            "id": "save_estimate",
+            "label": "Сохранить",
+            "visible": true
+          },
+          {
+            "id": "create_request",
+            "label": "Создать заявку",
+            "visible": true
+          },
+          {
+            "id": "update_prices",
+            "label": "Обновить цены",
+            "visible": true
+          },
+          {
+            "id": "clarify_estimate",
+            "label": "Уточнить",
+            "visible": true
+          }
+        ]
+      },
       "dangerousDiyBlocked": false,
       "missingData": [
         "Какой формат плитки и схема раскладки?",

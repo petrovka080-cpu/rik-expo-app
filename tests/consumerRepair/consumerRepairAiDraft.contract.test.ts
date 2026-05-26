@@ -6,8 +6,8 @@ describe("consumer repair AI draft contract", () => {
     const answer = composeConsumerRepairDraftAnswerRu(draft);
 
     expect(draft.repairType).toBe("flooring");
-    expect(draft.items.find((item) => item.titleRu === "Ламинат")?.quantity).toBe(110);
-    expect(draft.items.find((item) => item.titleRu === "Подложка")?.quantity).toBe(105);
+    expect(draft.items.find((item) => item.titleRu.includes("Ламинат"))?.quantity).toBe(110);
+    expect(draft.items.find((item) => item.titleRu.includes("Подложка"))?.quantity).toBe(105);
     expect(answer.startsWith("Коротко:")).toBe(true);
     expect(answer).not.toMatch(/не найдено|интернет не использовался|PDF не найден/i);
   });

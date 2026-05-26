@@ -57,6 +57,10 @@ const BUILT_IN_AI_50000_PHASE3_WAVE =
 const BUILT_IN_AI_50000_PHASE4_WAVE =
   "S_AI_ESTIMATE_50000_PHASE4_CANARY_RELEASE_SAFETY_OBSERVABILITY_ROLLBACK_GATE_POINT_OF_NO_RETURN";
 const PDF_DIRECTOR_FORMAT_TYPE_RATCHET_WAVE = "S_50K_PDF_DIRECTOR_FORMAT_TYPE_RATCHET";
+const B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_WAVE =
+  "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN";
+const ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE =
+  "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -422,6 +426,55 @@ function isB2cReleaseCloseoutPath(file: string): boolean {
 
 function isAdditionalAiRuntimePath(file: string): boolean {
   return pathMatchesPrefix(file, ["src/lib/ai/alwaysOnExternalKnowledge", "src/lib/ai/estimateEngine"]);
+}
+
+function isB2cRequestEmbeddedAiExpandedEstimateBindingPath(file: string): boolean {
+  return (
+    [
+      "app/(tabs)/ai.tsx",
+      "app/(tabs)/request/index.tsx",
+      "app/+native-intent.ts",
+      "app/_layout.tsx",
+      "scripts/release/releaseGuard.shared.ts",
+      "src/lib/testing/routeReadyMarkers.tsx",
+      "tests/app/route-contract.test.ts",
+    ].includes(file) ||
+    pathMatchesPrefix(file, [
+      "src/lib/ai/estimatePresentation",
+      "tests/entrypoints",
+    ]) ||
+    file.startsWith("tests/architecture/entrypointFix") ||
+    file.startsWith("tests/e2e/b2cRequestEmbeddedAiExpandedEstimateFix") ||
+    file.startsWith("scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof") ||
+    file.startsWith("artifacts/S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX")
+  );
+}
+
+function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: string): boolean {
+  return (
+    [
+      "scripts/e2e/androidAdbDeviceHealth.ts",
+      "scripts/e2e/androidRouteBootstrapHarness.ts",
+      "scripts/e2e/ensureAndroidApi34DeviceReady.ts",
+      "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts",
+      "scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts",
+      "scripts/e2e/runAndroidB2cRequestEmbeddedAiEntrypointAuditSmoke.ts",
+      "scripts/e2e/runAndroidB2cRequestEmbeddedAiExpandedEstimateFixSmoke.ts",
+      "scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts",
+      "scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts",
+      "scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts",
+    ].includes(file) ||
+    file.startsWith("tests/architecture/androidAcceptance") ||
+    file.startsWith("tests/architecture/androidAppRootReadyMarker") ||
+    file.startsWith("tests/architecture/androidEmulatorReplay") ||
+    file.startsWith("tests/architecture/androidRouteBootstrap") ||
+    file.startsWith("tests/e2e/b2cRequestEmbeddedAi.android") ||
+    file.startsWith("tests/e2e/b2cRequestEmbeddedAiEntrypointAudit") ||
+    file.startsWith("artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING") ||
+    file.startsWith("artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI") ||
+    file.startsWith("artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP") ||
+    file.startsWith("artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX")
+  );
 }
 
 function isCoreProductGoldenPathsReleasePath(file: string): boolean {
@@ -1338,6 +1391,26 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "release closeout timeout isolation runner or test shard diagnostic",
+    };
+  }
+  if (isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(normalized)) {
+    return {
+      file: normalized,
+      category: "android_runtime_proof",
+      wave: ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "Android API34 canonical replay, route bootstrap proof, smoke runners, and evidence artifacts for expanded estimate binding",
+    };
+  }
+  if (isB2cRequestEmbeddedAiExpandedEstimateBindingPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_runtime_integration",
+      wave: B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "B2C request and embedded AI shared expanded estimate binding, presentation view model, tests, and proof artifacts",
     };
   }
   if (isUiLayoutReleasePath(normalized)) {

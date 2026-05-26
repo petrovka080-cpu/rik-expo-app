@@ -7,6 +7,16 @@ import {
   generateAiEstimatePdf,
 } from "../../lib/ai/estimatePdf";
 import type { AiEstimatePdfSource } from "../../lib/ai/estimatePdf";
+import {
+  buildEstimatePresentationRowsFromPdfSource,
+  buildEstimatePresentationViewModel,
+  formatEstimatePresentationConfidence,
+  formatEstimatePresentationMoney,
+  getEstimatePresentationQuantityText,
+  getEstimatePresentationTotalText,
+  getEstimatePresentationUnitPriceText,
+  type EstimatePresentationViewModel,
+} from "../../lib/ai/estimatePresentation";
 import { buildGeneratedPdfViewerRouteParams } from "../../lib/estimatePdf/generatedPdfViewerFile";
 import type { AssistantMessage } from "./assistant.types";
 import { createAssistantScreenMessage as createMessage } from "./AIAssistantScreen.helpers";
@@ -20,22 +30,13 @@ type Props = {
 
 type EstimateTableProps = {
   source: AiEstimatePdfSource;
+  presentation?: EstimatePresentationViewModel;
 };
 
 const activeEstimatePdfCreations = new Set<string>();
 
 function getEstimatePdfCreationKey(source: AiEstimatePdfSource) {
   return `${source.sourceType}:${source.sourceId ?? source.createdAt}:${source.title}`;
-}
-
-function formatMoney(value: number | undefined, currency: string | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "цена недоступна";
-  return `${Math.round(value).toLocaleString("ru-RU")} ${currency ?? ""}`.trim();
-}
-
-function formatQuantity(value: number | string, unit: string): string {
-  const quantity = typeof value === "number" ? value.toLocaleString("ru-RU") : value;
-  return `${quantity} ${unit}`.trim();
 }
 
 async function openEstimatePdfResult(result: ReturnType<typeof generateAiEstimatePdf>) {
@@ -119,14 +120,10 @@ export function AIAssistantEstimatePdfActions({
   );
 }
 
-export function AIAssistantEstimateTable({ source }: EstimateTableProps) {
-  const currency = source.currency ?? source.estimate.totals?.currency;
-  const rows = source.estimate.sections.flatMap((section) =>
-    section.rows.map((row) => ({
-      ...row,
-      sectionTitle: section.title,
-    })),
-  );
+export function AIAssistantEstimateTable({ source, presentation }: EstimateTableProps) {
+  const viewModel = presentation ?? (source.structuredEstimate ? buildEstimatePresentationViewModel(source.structuredEstimate) : undefined);
+  const currency = source.currency ?? source.estimate.totals?.currency ?? viewModel?.totals.currency;
+  const rows = viewModel?.rows ?? buildEstimatePresentationRowsFromPdfSource(source);
 
   if (rows.length === 0) return null;
 
@@ -135,7 +132,14 @@ export function AIAssistantEstimateTable({ source }: EstimateTableProps) {
       <View style={styles.estimateTableHeader}>
         <Text style={styles.estimateTableTitle}>{source.estimate.workTitle}</Text>
         <Text style={styles.estimateTableMeta}>
-          {rows.length} строк · {formatMoney(source.estimate.totals?.grandTotal, currency)}
+          {rows.length} строк · {viewModel?.totals.displayGrandTotal ?? formatEstimatePresentationMoney(source.estimate.totals?.grandTotal, currency)}
+        </Text>
+        <Text style={styles.estimateTableMeta} testID="ai-estimate-source-confidence">
+          Источники: {viewModel?.sourceLabels[0] ?? rows[0]?.sourceLabel ?? rows[0]?.sourceId} · уверенность: {formatEstimatePresentationConfidence(viewModel?.sourceConfidence ?? rows[0]?.confidence)}
+        </Text>
+        <Text style={styles.estimateTableMeta} testID="ai-estimate-tax-warning">
+          Налог: {viewModel?.tax.taxLabel ?? source.estimate.tax?.label ?? "требует уточнения"}
+          {viewModel?.tax.warning ?? source.estimate.tax?.warning ? ` · ${viewModel?.tax.warning ?? source.estimate.tax?.warning}` : ""}
         </Text>
       </View>
       <View style={styles.estimateTableScroller}>
@@ -157,15 +161,15 @@ export function AIAssistantEstimateTable({ source }: EstimateTableProps) {
               <View style={[styles.estimateNameCell, styles.estimateCellName]}>
                 <Text style={styles.estimateRowName}>{row.name}</Text>
                 <Text style={styles.estimateRowSource} numberOfLines={1}>
-                  {row.sourceEvidence?.[0]?.label ?? row.sourceId ?? row.sectionTitle}
+                  {row.sourceLabel ?? row.sourceEvidence?.[0]?.label ?? row.sourceId ?? row.sectionTitle}
                 </Text>
               </View>
-              <Text style={[styles.estimateCell, styles.estimateCellQty]}>{formatQuantity(row.quantity, row.unit)}</Text>
+              <Text style={[styles.estimateCell, styles.estimateCellQty]}>{getEstimatePresentationQuantityText(row)}</Text>
               <Text style={[styles.estimateCell, styles.estimateCellMoney]}>
-                {formatMoney(row.unitPrice, row.currency ?? currency)}
+                {getEstimatePresentationUnitPriceText(row, currency)}
               </Text>
               <Text style={[styles.estimateCell, styles.estimateCellMoney]}>
-                {formatMoney(row.total, row.currency ?? currency)}
+                {getEstimatePresentationTotalText(row, currency)}
               </Text>
             </View>
           ))}
