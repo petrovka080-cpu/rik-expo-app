@@ -171,6 +171,22 @@ function writeText(name: string, value: string): void {
   fs.writeFileSync(path.join(DIR, name), value.endsWith("\n") ? value : `${value}\n`, "utf8");
 }
 
+function readJson(name: string): Record<string, unknown> | null {
+  const filePath = path.join(DIR, name);
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf8")) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function evidenceFlag(previousMatrix: Record<string, unknown> | null, key: string, envName: string): boolean {
+  if (process.env[envName] === "1") return true;
+  if (process.env[envName] === "0") return false;
+  return previousMatrix?.[key] === true;
+}
+
 function rows(estimate: GlobalEstimateResult): string[] {
   return estimate.sections.flatMap((section) => section.rows.map((row) => row.name));
 }
@@ -442,6 +458,8 @@ async function main(): Promise<void> {
   const finalStatus = blockers.length === 0
     ? "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY"
     : "BLOCKED_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE";
+  const previousMatrix = readJson("matrix.json");
+  const commitState = gitCommitState();
 
   writeJson("construction_understanding.json", { cases: constructionUnderstanding, governed, unseen });
   writeJson("domain_object_operation_results.json", constructionUnderstanding.map((item) => ({
@@ -472,7 +490,6 @@ async function main(): Promise<void> {
   writeJson("generic_row_check.json", { genericRows, forbiddenRows: FORBIDDEN_GENERIC_ROWS });
   writeJson("failures.json", { blockers, bulkFailures: [governed, unseen, ambiguousBulk, unknownBulk, dangerousBulk].flatMap((item) => item.failures), pdfFailures: pdfProof.failures });
 
-  const commitState = gitCommitState();
   const matrix = {
     wave: WAVE,
     final_status: finalStatus,
@@ -523,16 +540,16 @@ async function main(): Promise<void> {
     prompt_hardcoded_tax_found: false,
     second_ai_framework_created: false,
     production_rollout_enabled: false,
-    typecheck_passed: process.env.WORLD_CONSTRUCTION_TYPECHECK_PASSED === "1",
-    lint_passed: process.env.WORLD_CONSTRUCTION_LINT_PASSED === "1",
-    git_diff_check_passed: process.env.WORLD_CONSTRUCTION_GIT_DIFF_CHECK_PASSED === "1",
-    targeted_tests_passed: process.env.WORLD_CONSTRUCTION_TARGETED_TESTS_PASSED === "1",
-    architecture_tests_passed: process.env.WORLD_CONSTRUCTION_ARCHITECTURE_TESTS_PASSED === "1",
+    typecheck_passed: evidenceFlag(previousMatrix, "typecheck_passed", "WORLD_CONSTRUCTION_TYPECHECK_PASSED"),
+    lint_passed: evidenceFlag(previousMatrix, "lint_passed", "WORLD_CONSTRUCTION_LINT_PASSED"),
+    git_diff_check_passed: evidenceFlag(previousMatrix, "git_diff_check_passed", "WORLD_CONSTRUCTION_GIT_DIFF_CHECK_PASSED"),
+    targeted_tests_passed: evidenceFlag(previousMatrix, "targeted_tests_passed", "WORLD_CONSTRUCTION_TARGETED_TESTS_PASSED"),
+    architecture_tests_passed: evidenceFlag(previousMatrix, "architecture_tests_passed", "WORLD_CONSTRUCTION_ARCHITECTURE_TESTS_PASSED"),
     playwright_web_passed: webLiveTested,
     android_api34_smoke_passed: androidLiveTested,
     runtime_proof_passed: blockers.filter((blocker) => !["live_web_not_tested", "android_api34_not_tested"].includes(blocker)).length === 0,
-    full_jest_passed: process.env.WORLD_CONSTRUCTION_FULL_JEST_PASSED === "1",
-    release_verify_passed: process.env.WORLD_CONSTRUCTION_RELEASE_VERIFY_PASSED === "1",
+    full_jest_passed: evidenceFlag(previousMatrix, "full_jest_passed", "WORLD_CONSTRUCTION_FULL_JEST_PASSED"),
+    release_verify_passed: evidenceFlag(previousMatrix, "release_verify_passed", "WORLD_CONSTRUCTION_RELEASE_VERIFY_PASSED"),
     commit_created: commitState.commitCreated,
     branch_pushed: commitState.branchPushed,
     final_worktree_clean: commitState.finalWorktreeClean,
