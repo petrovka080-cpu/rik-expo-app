@@ -34,6 +34,10 @@ type Finding = {
   allowedGuardEvidence: boolean;
 };
 
+type AuditOptions = {
+  writeArtifacts?: boolean;
+};
+
 const TEXT_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".json", ".md"]);
 const SCAN_ROOTS = ["app", "src", "tests", "scripts"] as const;
 
@@ -132,7 +136,11 @@ function writeJson(name: string, value: unknown): void {
   fs.writeFileSync(path.join(ARTIFACT_DIR, `${PREFIX}_${name}.json`), `${JSON.stringify(value, null, 2)}\n`, "utf8");
 }
 
-export function runRequestEstimateCatalogBoqNoHacksAudit() {
+function shouldWriteAuditArtifacts(options: AuditOptions): boolean {
+  return options.writeArtifacts ?? process.env.JEST_WORKER_ID == null;
+}
+
+export function runRequestEstimateCatalogBoqNoHacksAudit(options: AuditOptions = {}) {
   const result = scan();
   const forbiddenPatterns = RULES.map((rule) => ({
     id: rule.id,
@@ -163,19 +171,21 @@ export function runRequestEstimateCatalogBoqNoHacksAudit() {
     no_hacks_audit_passed: result.findings.length === 0,
     fake_green_claimed: false,
   };
-  writeJson("no_hacks_audit", audit);
-  writeJson("forbidden_patterns", {
-    wave: WAVE,
-    forbidden_patterns: forbiddenPatterns,
-    forbidden_findings: result.findings,
-    forbidden_patterns_found: result.findings.length > 0,
-    fake_green_claimed: false,
-  });
+  if (shouldWriteAuditArtifacts(options)) {
+    writeJson("no_hacks_audit", audit);
+    writeJson("forbidden_patterns", {
+      wave: WAVE,
+      forbidden_patterns: forbiddenPatterns,
+      forbidden_findings: result.findings,
+      forbidden_patterns_found: result.findings.length > 0,
+      fake_green_claimed: false,
+    });
+  }
   return audit;
 }
 
 if (require.main === module) {
-  const audit = runRequestEstimateCatalogBoqNoHacksAudit();
+  const audit = runRequestEstimateCatalogBoqNoHacksAudit({ writeArtifacts: true });
   console.log(audit.final_status);
   if (!audit.no_hacks_audit_passed) {
     console.error(JSON.stringify(audit.forbidden_findings, null, 2));
