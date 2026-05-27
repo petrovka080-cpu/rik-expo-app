@@ -11,6 +11,7 @@ import {
   GLOBAL_RATE_MATERIALS,
   type EstimateRowSourceEvidence,
 } from "../globalEstimate";
+import { runWorldConstructionEstimateEngine } from "../worldConstructionEstimateEngine";
 import type {
   BuiltInAiInput,
   BuiltInAiIntentRoute,
@@ -74,12 +75,80 @@ function buildProductSearchResult(input: BuiltInAiInput, route: BuiltInAiIntentR
   };
 }
 
-function calculateGlobalEstimate(input: BuiltInAiInput) {
+function calculateGlobalEstimate(input: BuiltInAiInput): {
+  estimate?: ReturnType<typeof calculateGlobalConstructionEstimateSync>;
+  blockedBy?: string;
+  safeMessageRu?: string;
+  worldClassification?: string;
+} {
   const estimateRoute = routeUniversalEstimateIntent(input.text);
-  return calculateGlobalConstructionEstimateSync(buildGlobalEstimateInputFromRoute(estimateRoute, {
+  const baseInput = buildGlobalEstimateInputFromRoute(estimateRoute, {
     countryCode: input.countryCode ?? estimateRoute.location?.countryCode ?? "KG",
     city: input.cityOrRegion ?? estimateRoute.location?.city ?? "Bishkek",
-  }));
+  });
+  const world = runWorldConstructionEstimateEngine({
+    ...baseInput,
+    text: input.text,
+    countryCode: baseInput.countryCode,
+    city: baseInput.city,
+  });
+  const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
+  const socketInstallIsExplicit = /(?:\u0440\u043e\u0437\u0435\u0442|socket|outlet)/i.test(input.text);
+  const genericLegacyWorkKey =
+    legacyEstimate.work.workKey === "electrical_basic" ||
+    (legacyEstimate.work.workKey === "socket_installation" && !socketInstallIsExplicit);
+  const legacyKnownWork =
+    Boolean(legacyEstimate.work.workKey) &&
+    legacyEstimate.work.workKey !== "other_construction_work" &&
+    !genericLegacyWorkKey;
+  const routeKnownWork =
+    Boolean(estimateRoute.resolvedWorkKey) &&
+    estimateRoute.resolvedWorkKey !== "other_construction_work";
+  if (legacyKnownWork && routeKnownWork) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "LEGACY_KNOWN_GLOBAL_ESTIMATE_FALLBACK",
+    };
+  }
+  if (world.interpretation.shouldAskClarifyingQuestion) {
+    return {
+      blockedBy: world.interpretation.primitive.outcome,
+      safeMessageRu: world.safeMessageRu,
+      worldClassification: world.interpretation.classification,
+    };
+  }
+  if (legacyKnownWork) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "LEGACY_KNOWN_GLOBAL_ESTIMATE_FALLBACK",
+    };
+  }
+  if (world.estimate) {
+    return {
+      estimate: world.estimate,
+      worldClassification: world.interpretation.classification,
+    };
+  }
+  if (
+    !world.interpretation.primitive.intentDetected &&
+    world.interpretation.primitive.domain === "unknown"
+  ) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "LEGACY_GLOBAL_ESTIMATE_FALLBACK",
+    };
+  }
+  if (world.interpretation.shouldAskClarifyingQuestion || world.interpretation.shouldReturnTemplateGap) {
+    return {
+      blockedBy: world.interpretation.primitive.outcome,
+      safeMessageRu: world.safeMessageRu,
+      worldClassification: world.interpretation.classification,
+    };
+  }
+  return {
+    estimate: legacyEstimate,
+    worldClassification: "LEGACY_GLOBAL_ESTIMATE_FALLBACK",
+  };
 }
 
 export function runBuiltInAiTool(input: BuiltInAiInput, route: BuiltInAiIntentRoute): BuiltInAiToolResult {
@@ -87,7 +156,13 @@ export function runBuiltInAiTool(input: BuiltInAiInput, route: BuiltInAiIntentRo
 
   if (route.intent === "estimate") {
     const estimate = calculateGlobalEstimate(input);
-    return { toolName: "calculate_global_estimate", backendCalled: true, estimate };
+    return {
+      toolName: "calculate_global_estimate",
+      backendCalled: true,
+      estimate: estimate.estimate,
+      blockedBy: estimate.blockedBy,
+      fallbackUsed: estimate.safeMessageRu,
+    };
   }
 
   if (route.intent === "product_search" || route.intent === "marketplace_lookup" || route.intent === "procurement") {
@@ -102,13 +177,21 @@ export function runBuiltInAiTool(input: BuiltInAiInput, route: BuiltInAiIntentRo
     const estimateRoute = routeUniversalEstimateIntent(input.text);
     if (estimateRoute.shouldCallEstimateTool) {
       const estimate = calculateGlobalEstimate(input);
+      if (!estimate.estimate) {
+        return {
+          toolName: "create_consumer_repair_draft",
+          backendCalled: true,
+          blockedBy: estimate.blockedBy,
+          fallbackUsed: estimate.safeMessageRu,
+        };
+      }
       const requestDraft = createConsumerRepairDraftFromGlobalEstimate({
         consumerUserId: input.userId ?? "consumer-demo-user",
-        estimate,
+        estimate: estimate.estimate,
         originalText: input.text,
-        city: input.cityOrRegion ?? estimate.locale.city ?? null,
+        city: input.cityOrRegion ?? estimate.estimate.locale.city ?? null,
       });
-      return { toolName: "create_consumer_repair_draft", backendCalled: true, estimate, requestDraft };
+      return { toolName: "create_consumer_repair_draft", backendCalled: true, estimate: estimate.estimate, requestDraft };
     }
     return { toolName: "create_consumer_repair_draft", backendCalled: false, fallbackUsed: "request_draft_without_estimate_intent" };
   }

@@ -128,6 +128,29 @@ function genericDraft(): ConsumerRepairAiDraft {
   };
 }
 
+function safeTriageDraft(problemText: string, safeMessageRu: string | undefined): ConsumerRepairAiDraft {
+  const safeMessage = safeMessageRu?.toLocaleLowerCase("ru-RU") ?? "";
+  const objectOptions =
+    safeMessage.includes("кров") && safeMessage.includes("ванн")
+      ? ["объект: кровля, ванная / санузел, фундамент, подвал или балкон / терраса"]
+      : [];
+  return {
+    titleRu: "Нужна ручная сметная проверка",
+    summaryRu: safeMessageRu ?? "По запросу нужны уточнения или governed template/source evidence. Я не подставляю generic строки и fake цены.",
+    repairType: "estimate_triage",
+    dangerousDiyBlocked: false,
+    missingData: [
+      ...objectOptions,
+      "город и страна",
+      "точный объект работ",
+      "технология / материал",
+      "объем и единицы измерения",
+      "фото или проектные данные",
+    ],
+    items: [],
+  };
+}
+
 export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairAiDraft {
   const text = problemText.trim();
   const builtInAiEstimate = answerBuiltInAi({
@@ -140,6 +163,12 @@ export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairA
   });
   if (builtInAiEstimate.toolResult.estimate) {
     return buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
+  }
+  if (
+    builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
+    builtInAiEstimate.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
+  ) {
+    return safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed);
   }
   if (isDangerousConsumerRepairProblem(text)) {
     return {

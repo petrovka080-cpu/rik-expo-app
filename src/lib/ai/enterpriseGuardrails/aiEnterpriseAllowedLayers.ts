@@ -81,6 +81,36 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "worldConstructionOntology",
+    root: "src/lib/ai/worldConstructionOntology",
+    purpose: "Open-world construction domain, object, operation, method, unit, risk, and material-system ontology.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "worldConstructionInterpreter",
+    root: "src/lib/ai/worldConstructionInterpreter",
+    purpose: "Construction prompt interpretation into governed primitives, ambiguity handling, and template-gap triage.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "professionalBoq",
+    root: "src/lib/ai/professionalBoq",
+    purpose: "Professional BOQ compiler, depth validation, work-specific rows, and no-generic-row enforcement.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "localEstimatePolicy",
+    root: "src/lib/ai/localEstimatePolicy",
+    purpose: "Country, city, currency, tax, and source-warning policy for local construction estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "catalogBinding",
+    root: "src/lib/ai/catalogBinding",
+    purpose: "Shared catalog_items candidate binding and fake catalog/stock/supplier validation for AI estimate rows.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "universalRoleQa",
     root: "src/lib/ai/universalRoleQa",
     purpose: "Question understanding, source planning, retrieval adapters, answer composition, and semantic guard.",

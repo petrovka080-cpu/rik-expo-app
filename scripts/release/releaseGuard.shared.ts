@@ -54,6 +54,7 @@ export type ReleaseGateName =
   | "b2c-request-embedded-ai-expanded-estimate-binding-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
+  | "world-construction-estimate-engine-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
   | "ai-route-parity-proof"
   | "estimate-pdf-real-binary-proof"
@@ -311,6 +312,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-core-completion-proof", command: "npx tsx scripts/e2e/runAiEstimateCoreCompletionProof.ts --require-live" },
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
+  { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },
   { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof", command: "npx tsx scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts" },
   { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },

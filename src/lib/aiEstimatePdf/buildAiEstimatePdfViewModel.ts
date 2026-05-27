@@ -62,6 +62,7 @@ function humanizeText(value: string): string {
     .replace(/\bGlobalEstimateResult\b/g, "структурированной сметы")
     .replace(/\bPDF layer\b/gi, "PDF")
     .replace(/\bConfigured backend regional reference rate\b/gi, "Региональный справочник цен")
+    .replace(/\bcatalog_items\b/gi, "каталог материалов")
     .replace(/\bbackend-справочником\b/gi, "справочником цен")
     .replace(/\bbackend pricebook\b/gi, "справочник цен")
     .replace(/\bbackend\b/gi, "серверным контуром")

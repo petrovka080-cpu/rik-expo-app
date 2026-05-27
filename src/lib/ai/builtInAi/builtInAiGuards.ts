@@ -13,6 +13,13 @@ const FORBIDDEN_ESTIMATE_PHRASES = [
 
 export function assertBuiltInAiAnswer(answer: BuiltInAiAnswer): void {
   if (answer.route.intent === "estimate") {
+    if (
+      (answer.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
+        answer.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE") &&
+      !answer.toolResult.estimate
+    ) {
+      return;
+    }
     if (answer.toolResult.toolName !== "calculate_global_estimate" || !answer.toolResult.estimate) {
       throw new Error("BUILT_IN_AI_ESTIMATE_MUST_CALL_CALCULATE_GLOBAL_ESTIMATE");
     }

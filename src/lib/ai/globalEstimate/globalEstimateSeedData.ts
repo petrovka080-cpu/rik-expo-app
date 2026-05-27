@@ -1555,10 +1555,10 @@ export const ROOF_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = knownWorkTemp
     { code: "roof_waterproofing_quality_supplies", nameRu: "Расходники для контроля качества и проверки протечек", nameEn: "Quality control and leak test supplies", rateKind: "auxiliary" },
   ],
   laborRows: [
-    { code: "roof_waterproofing_base_cleaning", nameRu: "Очистка / подготовка основания кровли", nameEn: "Roof base cleaning and preparation" },
+    { code: "roof_waterproofing_base_cleaning", nameRu: "Очистка кровли и подготовка основания", nameEn: "Roof cleaning and base preparation" },
     { code: "roof_waterproofing_detail_sealing", nameRu: "Герметизация примыканий, парапетов, ендов и проходок", nameEn: "Sealing flashings, parapets, valleys and penetrations" },
     { code: "roof_waterproofing_application", nameRu: "Нанесение / монтаж гидроизоляции кровли", nameEn: "Roof waterproofing application or installation" },
-    { code: "roof_waterproofing_leak_control", nameRu: "Контроль качества / проверка протечек", nameEn: "Quality control and leak check" },
+    { code: "roof_waterproofing_leak_control", nameRu: "Проверка герметичности и контроль протечек", nameEn: "Watertightness and leak control" },
   ],
   assumptionsRu: [
     "Расчет выполнен для гидроизоляции кровли по указанной площади.",
@@ -1581,10 +1581,10 @@ export const ROOF_MEMBRANE_WATERPROOFING_TEMPLATE: GlobalEstimateTemplate = know
     { code: "roof_membrane_waterproofing_detail_materials", nameRu: "Материалы для парапетов, ендов и проходок", nameEn: "Materials for parapets, valleys and penetrations", rateKind: "auxiliary" },
   ],
   laborRows: [
-    { code: "roof_membrane_waterproofing_base_cleaning", nameRu: "Очистка / подготовка основания кровли", nameEn: "Roof base cleaning and preparation" },
+    { code: "roof_membrane_waterproofing_base_cleaning", nameRu: "Очистка кровли и подготовка основания", nameEn: "Roof cleaning and base preparation" },
     { code: "roof_membrane_waterproofing_detail_sealing", nameRu: "Герметизация примыканий и обработка парапетов / ендов / проходок", nameEn: "Sealing flashings and treating parapets, valleys and penetrations" },
     { code: "roof_membrane_waterproofing_install", nameRu: "Монтаж мембранной гидроизоляции / сварка швов", nameEn: "Membrane waterproofing installation and seam welding" },
-    { code: "roof_membrane_waterproofing_quality_control", nameRu: "Контроль качества / проверка протечек", nameEn: "Quality control and leak check" },
+    { code: "roof_membrane_waterproofing_quality_control", nameRu: "Проверка герметичности и контроль протечек", nameEn: "Watertightness and leak control" },
   ],
   assumptionsRu: [
     "Расчет выполнен для мембранной гидроизоляции кровли по указанной площади.",

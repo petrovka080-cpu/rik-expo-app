@@ -32,6 +32,8 @@ function composeProductSearch(result: BuiltInAiProductSearchResult): string {
 export function composeBuiltInAiAnswer(route: BuiltInAiIntentRoute, result: BuiltInAiToolResult): string {
   const estimateText = builtInAiEstimateText(result);
   if (estimateText) return estimateText;
+  if (result.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" && result.fallbackUsed) return result.fallbackUsed;
+  if (result.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE" && result.fallbackUsed) return result.fallbackUsed;
   if (result.productSearch) return composeProductSearch(result.productSearch);
   if (route.intent === "pdf_action") {
     return "PDF создается только из структурированной сметы или подбора. Откройте смету и нажмите «Сделать PDF».";

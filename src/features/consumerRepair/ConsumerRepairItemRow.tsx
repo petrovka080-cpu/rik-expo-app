@@ -23,11 +23,11 @@ function itemTypeLabel(item: ConsumerRepairRequestItem): string {
 
 function bindingLabel(item: ConsumerRepairRequestItem): string | null {
   if (item.itemType !== "material") return null;
-  if (item.selectedCatalogItemId || item.catalogItemId) return "catalog_items: выбран";
-  if (item.catalogBindingStatus === "multiple_candidates") return "catalog_items: есть варианты";
-  if (item.catalogBindingStatus === "matched") return "catalog_items: найден вариант";
-  if (item.catalogBindingStatus === "no_catalog_match") return "catalog_items: нужно подобрать";
-  return "catalog_items: не проверено";
+  if (item.selectedCatalogItemId || item.catalogItemId) return "Каталог материалов: выбран";
+  if (item.catalogBindingStatus === "multiple_candidates") return "Каталог материалов: есть варианты";
+  if (item.catalogBindingStatus === "matched") return "Каталог материалов: найден вариант";
+  if (item.catalogBindingStatus === "no_catalog_match") return "Каталог материалов: нужно подобрать";
+  return "Каталог материалов: не проверено";
 }
 
 export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, onOpenCatalog }: Props): React.ReactElement {
@@ -39,14 +39,14 @@ export function ConsumerRepairItemRow({ item, onDecrease, onIncrease, onRemove, 
         <Text style={styles.title}>{item.titleRu}</Text>
         <Text style={styles.meta}>
           {itemTypeLabel(item)}
-          {item.catalogItemId ? ` · catalogItemId: ${item.catalogItemId}` : ""}
+          {item.catalogItemId ? ` · Материал из каталога: ${item.catalogItemId}` : ""}
           {item.sourceLabel ? ` · ${item.sourceLabel}` : ""}
         </Text>
         {item.totalPrice != null ? <Text style={styles.price}>{formatEstimateMoney(item.totalPrice, item.currency)}</Text> : null}
         {catalogBindingLabel ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={`Подобрать material catalog item для ${item.titleRu}`}
+            accessibilityLabel={`Подобрать материал из каталога для ${item.titleRu}`}
             onPress={() => onOpenCatalog?.(item.id)}
             style={styles.catalogBadge}
             testID={`consumer-repair-item-catalog-${item.id}`}

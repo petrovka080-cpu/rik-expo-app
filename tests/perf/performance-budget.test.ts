@@ -643,6 +643,13 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalogItemSearch.ts"),
       path.join(SRC, "lib", "catalog", "catalogItemTypes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sWorldConstructionEstimateEngineFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "worldConstructionOntology"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "worldConstructionInterpreter"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "professionalBoq"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "localEstimatePolicy"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "catalogBinding"), /\.ts$/) +
+      [path.join(SRC, "lib", "ai", "worldConstructionEstimateEngine.ts")].filter((file) => fs.existsSync(file)).length;
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -1768,6 +1775,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
+    expect(sWorldConstructionEstimateEngineFiles).toBeLessThanOrEqual(48);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
@@ -2084,7 +2092,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sAiEstimatePdfSafeIntegrationFiles -
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
-        sCatalogItemsGlobalEstimateBindingCatalogFiles,
+        sCatalogItemsGlobalEstimateBindingCatalogFiles -
+        sWorldConstructionEstimateEngineFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });

@@ -1,6 +1,7 @@
 import {
   routeUniversalEstimateIntent,
 } from "../estimateRouting";
+import { classifyConstructionWorkOutcome, detectConstructionIntent } from "../worldConstructionInterpreter";
 import { createBuiltInAiTraceId } from "./builtInAiRuntimeTrace";
 import type { BuiltInAiInput, BuiltInAiIntent, BuiltInAiIntentRoute, BuiltInAiScreenContext } from "./builtInAiTypes";
 
@@ -47,6 +48,24 @@ const PRODUCT_SEARCH_PATTERNS = [
   /купить/i,
   /закуп/i,
   /product|material|supplier/i,
+  /найд|найти|подбер|подобр|купить|закуп|поставщик|товар|материал/i,
+];
+
+const PRODUCT_SEARCH_ACTION_PATTERNS = [
+  /find\s+(product|material|supplier)/i,
+  /product\s+material/i,
+  /material\s+supplier/i,
+  /supplier\s+(quote|search|product)/i,
+  /quote\s+search/i,
+  /РЅР°Р№Рґ/i,
+  /РЅР°Р№С‚/i,
+  /РїРѕРґР±РµСЂ/i,
+  /РїРѕРґРѕР±СЂ/i,
+  /РєСѓРїРёС‚СЊ/i,
+  /Р·Р°РєСѓРї/i,
+  /РїРѕСЃС‚Р°РІС‰РёРє/i,
+  /Р В·Р В°Р С—РЎР‚Р С•РЎРѓ/i,
+  /Р С—Р С•РЎРѓРЎвЂљР В°Р Р†РЎвЂ°Р С‘Р С”/i,
 ];
 
 const MARKETPLACE_PATTERNS = [
@@ -81,6 +100,10 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
   const text = input.text.trim();
   const route = input.route?.toLowerCase() ?? "";
   const estimateRoute = routeUniversalEstimateIntent(text);
+  const worldIntent = detectConstructionIntent(text);
+  const worldRoute = worldIntent.isConstruction || worldIntent.isEstimate
+    ? classifyConstructionWorkOutcome({ text })
+    : null;
   const strongEstimate = hasAny(text, STRONG_ESTIMATE_PATTERNS);
   const productSearch = hasAny(text, PRODUCT_SEARCH_PATTERNS);
   const productSearchSurface = screenContext === "marketplace" && route.includes("/product/search");
@@ -116,6 +139,22 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
     };
   }
 
+  if (
+    productSearch &&
+    (hasAny(text, PRODUCT_SEARCH_ACTION_PATTERNS) || /найд|найти|подбер|подобр|купить|закуп|поставщик/i.test(text)) &&
+    (!strongEstimate || /find|найд|найти|подбер|подобр|купить|поставщик|supplier/i.test(text)) &&
+    !estimateProcurementList
+  ) {
+    return {
+      intent: hasAny(text, MARKETPLACE_PATTERNS) ? "marketplace_lookup" : "product_search",
+      confidence: estimateRoute.resolvedWorkKey && estimateRoute.resolvedWorkKey !== "other_construction_work" ? "high" : "medium",
+      workKey: estimateRoute.resolvedWorkKey,
+      category: estimateRoute.resolvedCategory,
+      volume: estimateRoute.volume,
+      unit: estimateRoute.unit,
+    };
+  }
+
   if (estimateRoute.shouldCallEstimateTool && (strongEstimate || !productSearch)) {
     return {
       intent: "estimate",
@@ -124,6 +163,17 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
       category: estimateRoute.resolvedCategory,
       volume: estimateRoute.volume,
       unit: estimateRoute.unit,
+    };
+  }
+
+  if (worldRoute && (worldIntent.isEstimate || screenContext === "request" || screenContext === "foreman")) {
+    return {
+      intent: "estimate",
+      confidence: worldIntent.confidence,
+      workKey: worldRoute.primitive.workKey ?? undefined,
+      category: worldRoute.primitive.workFamily,
+      volume: worldRoute.primitive.volume,
+      unit: worldRoute.primitive.unit,
     };
   }
 
