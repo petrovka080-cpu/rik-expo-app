@@ -1,11 +1,11 @@
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
 import {
   AI_ESTIMATE_CHANGE_CONTROL_ARTIFACT_DIR,
   AI_ESTIMATE_CHANGE_CONTROL_BLOCKED_STATUS,
-  AI_ESTIMATE_CHANGE_CONTROL_CLI_STATUS,
   AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS,
   AI_ESTIMATE_CHANGE_CONTROL_WAVE,
   ESTIMATE_CHANGE_ENTITY_TYPES,
@@ -56,6 +56,66 @@ export function evidenceFlag(previousMatrix: Record<string, unknown> | null, key
   return previousMatrix?.[key] === true;
 }
 
+function envEvidenceFlag(envName: string): boolean | null {
+  if (process.env[envName] === "1" || process.env[envName] === "true") return true;
+  if (process.env[envName] === "0" || process.env[envName] === "false") return false;
+  return null;
+}
+
+function evidenceFlagForCurrentSource(
+  previousMatrix: Record<string, unknown> | null,
+  key: string,
+  envName: string,
+  sameProofFingerprint: boolean,
+): boolean {
+  const explicit = envEvidenceFlag(envName);
+  if (explicit != null) return explicit;
+  return sameProofFingerprint && previousMatrix?.[key] === true;
+}
+
+function repoText(relativePath: string): string {
+  const absolutePath = path.join(process.cwd(), relativePath);
+  return fs.existsSync(absolutePath) ? fs.readFileSync(absolutePath, "utf8") : "";
+}
+
+export function detectChangeControlOperatorUiReadiness(): boolean {
+  if (process.env.AI_ESTIMATE_CHANGE_CONTROL_OPERATOR_UI_READY === "1") return true;
+  if (process.env.AI_ESTIMATE_CHANGE_CONTROL_OPERATOR_UI_READY === "0") return false;
+
+  const routeSource = repoText("app/admin/global-estimate/change-control.tsx");
+  const componentSource = repoText("src/lib/ai/globalEstimate/dataOps/AdminGlobalEstimateRoute.tsx");
+  const viewModelSource = repoText("src/lib/ai/changeControl/buildEstimateChangeControlOperatorViewModel.ts");
+
+  return [
+    "AdminGlobalEstimateRoute",
+    "change_control",
+    "ai-estimate-change-control.screen",
+    "ai-estimate-change-control.lifecycle",
+    "ai-estimate-change-control.blocking-checks",
+    "ai-estimate-change-control.governance",
+    "ai-estimate-change-control.golden-cases",
+  ].every((marker) => routeSource.includes(marker) || componentSource.includes(marker) || viewModelSource.includes(marker));
+}
+
+export function detectChangeControlWebSmokeEvidence(): boolean {
+  if (process.env.AI_ESTIMATE_CHANGE_CONTROL_WEB_SMOKE_PASSED === "1") return true;
+  if (process.env.AI_ESTIMATE_CHANGE_CONTROL_WEB_SMOKE_PASSED === "0") return false;
+
+  const evidencePath = artifactPath("web_screenshots.json");
+  if (!fs.existsSync(evidencePath)) return false;
+  try {
+    const evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8")) as Record<string, unknown>;
+    const screenshots = evidence.screenshots as Record<string, unknown> | undefined;
+    const operatorScreenshot = typeof screenshots?.operator_ui === "string" ? screenshots.operator_ui : null;
+    if (!operatorScreenshot) return false;
+    return evidence.web_change_control_smoke_passed === true
+      && evidence.operator_ui_ready === true
+      && fs.existsSync(path.join(process.cwd(), operatorScreenshot));
+  } catch {
+    return false;
+  }
+}
+
 export function gitCommitState(): { commitCreated: boolean; branchPushed: boolean; finalWorktreeClean: boolean } {
   function git(args: string[], fallback = ""): string {
     try {
@@ -78,6 +138,36 @@ export function gitCommitState(): { commitCreated: boolean; branchPushed: boolea
     branchPushed: remoteContains,
     finalWorktreeClean: git(["status", "--porcelain"]).length === 0,
   };
+}
+
+export function currentChangeControlProofFingerprint(): string {
+  function git(args: string[], fallback = ""): string {
+    try {
+      return execFileSync("git", args, {
+        cwd: process.cwd(),
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+        timeout: 10_000,
+      }).trim();
+    } catch {
+      return fallback;
+    }
+  }
+  const scopedPaths = [
+    "app",
+    "src",
+    "scripts",
+    "tests",
+    "supabase",
+    "package.json",
+    "package-lock.json",
+  ];
+  const payload = [
+    git(["rev-parse", "HEAD"]),
+    git(["diff", "--name-status", "--", ...scopedPaths]),
+    git(["status", "--porcelain", "--", ...scopedPaths]),
+  ].join("\n---\n");
+  return crypto.createHash("sha256").update(payload).digest("hex");
 }
 
 function rows(count: number, prefix: string): Array<{ name: string; unit: string; quantity: number; materialKey?: string; rateKey?: string; sourceId?: string }> {
@@ -342,6 +432,8 @@ export function buildChangeControlMatrix(
     ? JSON.parse(fs.readFileSync(artifactPath("matrix.json"), "utf8")) as Record<string, unknown>
     : null;
   const git = gitCommitState();
+  const proofSourceFingerprint = currentChangeControlProofFingerprint();
+  const sameProofFingerprint = previousMatrix?.proof_source_fingerprint === proofSourceFingerprint;
   const prerequisiteWorld = prerequisiteMatrixGreen(
     "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
     "GREEN_AI_ASSISTANT_WORLD_CONSTRUCTION_ESTIMATE_ENGINE_READY",
@@ -363,8 +455,32 @@ export function buildChangeControlMatrix(
   const validations = store.validation_runs;
   const goldenCaseBlocksPublish = store.validation_runs.some((run) => run.status === "failed" && run.failures.some((failure) => failure.code === "FORCED_GOLDEN_CASE_FAILURE"));
   const baseReady = prerequisiteWorld && prerequisite50000 && prerequisiteApi34 && blockers.length === 0 && noDirectMutation && !publishWithoutValidation && !publishWithoutApproval && !mutationWithoutAudit && rollbackWorks;
-  const finalStatus = baseReady
-    ? (options.operatorUiReady ? AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS : AI_ESTIMATE_CHANGE_CONTROL_CLI_STATUS)
+  const fullOperatorReady = options.operatorUiReady && options.webSmokePassed;
+  const typecheckPassed = evidenceFlagForCurrentSource(previousMatrix, "typecheck_passed", "AI_ESTIMATE_CHANGE_CONTROL_TYPECHECK_PASSED", sameProofFingerprint);
+  const lintPassed = evidenceFlagForCurrentSource(previousMatrix, "lint_passed", "AI_ESTIMATE_CHANGE_CONTROL_LINT_PASSED", sameProofFingerprint);
+  const gitDiffCheckPassed = evidenceFlagForCurrentSource(previousMatrix, "git_diff_check_passed", "AI_ESTIMATE_CHANGE_CONTROL_GIT_DIFF_CHECK_PASSED", sameProofFingerprint);
+  const targetedTestsPassed = evidenceFlagForCurrentSource(previousMatrix, "targeted_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_TARGETED_TESTS_PASSED", sameProofFingerprint);
+  const architectureTestsPassed = evidenceFlagForCurrentSource(previousMatrix, "architecture_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_ARCHITECTURE_TESTS_PASSED", sameProofFingerprint);
+  const goldenTestsPassed = evidenceFlagForCurrentSource(previousMatrix, "golden_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_GOLDEN_TESTS_PASSED", sameProofFingerprint);
+  const fullJestPassed = evidenceFlagForCurrentSource(previousMatrix, "full_jest_passed", "AI_ESTIMATE_CHANGE_CONTROL_FULL_JEST_PASSED", sameProofFingerprint);
+  const releaseVerifyPassed = evidenceFlagForCurrentSource(previousMatrix, "release_verify_passed", "AI_ESTIMATE_CHANGE_CONTROL_RELEASE_VERIFY_PASSED", sameProofFingerprint);
+  const commitCreated = git.commitCreated;
+  const branchPushed = git.branchPushed;
+  const finalWorktreeClean = git.finalWorktreeClean;
+  const releaseCloseoutReady =
+    typecheckPassed &&
+    lintPassed &&
+    gitDiffCheckPassed &&
+    targetedTestsPassed &&
+    architectureTestsPassed &&
+    goldenTestsPassed &&
+    fullJestPassed &&
+    releaseVerifyPassed &&
+    commitCreated &&
+    branchPushed &&
+    finalWorktreeClean;
+  const finalStatus = baseReady && fullOperatorReady && releaseCloseoutReady
+    ? AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS
     : AI_ESTIMATE_CHANGE_CONTROL_BLOCKED_STATUS;
 
   return {
@@ -401,19 +517,23 @@ export function buildChangeControlMatrix(
     operator_cli_ready: true,
     operator_ui_ready: options.operatorUiReady,
     web_change_control_smoke_passed: options.webSmokePassed,
-    typecheck_passed: evidenceFlag(previousMatrix, "typecheck_passed", "AI_ESTIMATE_CHANGE_CONTROL_TYPECHECK_PASSED"),
-    lint_passed: evidenceFlag(previousMatrix, "lint_passed", "AI_ESTIMATE_CHANGE_CONTROL_LINT_PASSED"),
-    git_diff_check_passed: evidenceFlag(previousMatrix, "git_diff_check_passed", "AI_ESTIMATE_CHANGE_CONTROL_GIT_DIFF_CHECK_PASSED"),
-    targeted_tests_passed: evidenceFlag(previousMatrix, "targeted_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_TARGETED_TESTS_PASSED"),
-    architecture_tests_passed: evidenceFlag(previousMatrix, "architecture_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_ARCHITECTURE_TESTS_PASSED"),
-    golden_tests_passed: evidenceFlag(previousMatrix, "golden_tests_passed", "AI_ESTIMATE_CHANGE_CONTROL_GOLDEN_TESTS_PASSED"),
+    typecheck_passed: typecheckPassed,
+    lint_passed: lintPassed,
+    git_diff_check_passed: gitDiffCheckPassed,
+    targeted_tests_passed: targetedTestsPassed,
+    architecture_tests_passed: architectureTestsPassed,
+    golden_tests_passed: goldenTestsPassed,
     runtime_proof_passed: blockers.length === 0,
     closeout_audit_passed: options.closeoutAuditPassed ?? evidenceFlag(previousMatrix, "closeout_audit_passed", "AI_ESTIMATE_CHANGE_CONTROL_CLOSEOUT_AUDIT_PASSED"),
-    full_jest_passed: evidenceFlag(previousMatrix, "full_jest_passed", "AI_ESTIMATE_CHANGE_CONTROL_FULL_JEST_PASSED"),
-    release_verify_passed: evidenceFlag(previousMatrix, "release_verify_passed", "AI_ESTIMATE_CHANGE_CONTROL_RELEASE_VERIFY_PASSED"),
-    commit_created: evidenceFlag(previousMatrix, "commit_created", "AI_ESTIMATE_CHANGE_CONTROL_COMMIT_CREATED") || git.commitCreated,
-    branch_pushed: evidenceFlag(previousMatrix, "branch_pushed", "AI_ESTIMATE_CHANGE_CONTROL_BRANCH_PUSHED") || git.branchPushed,
-    final_worktree_clean: evidenceFlag(previousMatrix, "final_worktree_clean", "AI_ESTIMATE_CHANGE_CONTROL_FINAL_WORKTREE_CLEAN") || git.finalWorktreeClean,
+    full_jest_passed: fullJestPassed,
+    release_verify_passed: releaseVerifyPassed,
+    commit_created: commitCreated,
+    branch_pushed: branchPushed,
+    final_worktree_clean: finalWorktreeClean,
+    proof_source_fingerprint: proofSourceFingerprint,
+    stale_previous_evidence_ignored: previousMatrix != null && !sameProofFingerprint,
+    current_git_head_pushed: git.branchPushed,
+    current_worktree_clean: git.finalWorktreeClean,
     fake_green_claimed: false,
   };
 }
@@ -469,11 +589,20 @@ export function writeScenarioArtifacts(
       failures: run.failures.map((failure) => failure.code),
     })),
   });
+  const currentWebEvidence = fs.existsSync(artifactPath("web_screenshots.json"))
+    ? JSON.parse(fs.readFileSync(artifactPath("web_screenshots.json"), "utf8")) as Record<string, unknown>
+    : {};
   writeJson(artifactPath("web_screenshots.json"), {
+    ...currentWebEvidence,
     operator_ui_ready: matrix.operator_ui_ready,
     operator_cli_ready: matrix.operator_cli_ready,
-    screenshots: [],
-    note: "Operator CLI proof is the accepted path for this wave; admin UI remains follow-up.",
+    web_change_control_smoke_passed: matrix.web_change_control_smoke_passed,
+    screenshots: matrix.web_change_control_smoke_passed
+      ? currentWebEvidence.screenshots ?? {}
+      : {},
+    note: matrix.web_change_control_smoke_passed
+      ? "Operator UI smoke proof is present."
+      : "Operator UI route exists only when operator_ui_ready is true; web smoke evidence is still required for full GREEN.",
   });
   writeJson(artifactPath("admin_or_operator_flow.json"), proof);
   writeJson(artifactPath("failures.json"), blockers);

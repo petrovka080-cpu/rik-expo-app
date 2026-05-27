@@ -223,6 +223,10 @@ export type EstimateChangeControlMatrix = {
   commit_created: boolean;
   branch_pushed: boolean;
   final_worktree_clean: boolean;
+  proof_source_fingerprint: string;
+  stale_previous_evidence_ignored: boolean;
+  current_git_head_pushed: boolean;
+  current_worktree_clean: boolean;
   fake_green_claimed: false;
 };
 

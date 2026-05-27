@@ -57,6 +57,7 @@ const ACTIVE_ADMIN_ROUTES = [
   "admin/global-estimate/coverage.tsx",
   "admin/global-estimate/qa.tsx",
   "admin/global-estimate/audit.tsx",
+  "admin/global-estimate/change-control.tsx",
 ] as const;
 
 const ACTIVE_VISIBLE_TABS = [

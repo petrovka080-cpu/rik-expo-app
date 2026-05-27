@@ -63,6 +63,8 @@ const ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN";
 const WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE =
   "S_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_PROOF_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_CHANGE_CONTROL_WAVE =
+  "S_AI_ESTIMATE_TEMPLATE_RATE_CATALOG_ONTOLOGY_CHANGE_CONTROL_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -495,6 +497,28 @@ function isWorldConstruction50000LiveRealityPath(file: string): boolean {
     file.startsWith("tests/worldConstruction50000/") ||
     file.startsWith("tests/architecture/world50000") ||
     file.startsWith("artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/")
+  );
+}
+
+function isAiEstimateChangeControlPath(file: string): boolean {
+  return (
+    [
+      "app/admin/global-estimate/change-control.tsx",
+      "scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts",
+      "scripts/e2e/aiEstimateChangeControlProof.shared.ts",
+      "scripts/e2e/runAiEstimateChangeControlProof.ts",
+      "scripts/release/releaseGuard.shared.ts",
+      "scripts/release/run-release-guard.ts",
+      "src/lib/ai/globalEstimate/dataOps/AdminGlobalEstimateRoute.tsx",
+      "tests/app/route-contract.test.ts",
+      "tests/architecture/allRoutesHaveErrorBoundary.contract.test.ts",
+      "tests/e2e/aiEstimateChangeControl.web.spec.ts",
+      "tests/scale/routeErrorBoundaryCoverage.contract.test.ts",
+    ].includes(file) ||
+    file.startsWith("src/lib/ai/changeControl/") ||
+    file.startsWith("tests/changeControl/") ||
+    file.startsWith("tests/architecture/changeControl") ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_CHANGE_CONTROL/")
   );
 }
 
@@ -1422,6 +1446,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "world construction 50000 plus sharded live reality proof, web Android API34 PDF samples, merge gate, and release guard wiring",
+    };
+  }
+  if (isAiEstimateChangeControlPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_ESTIMATE_CHANGE_CONTROL_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate template, rate, catalog, ontology change control operator UI, strict closeout proof, route contract, and release guard wiring",
     };
   }
   if (isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(normalized)) {

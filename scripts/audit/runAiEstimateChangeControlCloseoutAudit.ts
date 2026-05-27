@@ -4,12 +4,13 @@ import path from "node:path";
 import {
   AI_ESTIMATE_CHANGE_CONTROL_ARTIFACT_DIR,
   AI_ESTIMATE_CHANGE_CONTROL_BLOCKED_STATUS,
-  AI_ESTIMATE_CHANGE_CONTROL_CLI_STATUS,
   AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS,
 } from "../../src/lib/ai/changeControl";
 import {
   artifactPath,
   buildChangeControlMatrix,
+  detectChangeControlOperatorUiReadiness,
+  detectChangeControlWebSmokeEvidence,
   runChangeControlScenario,
   writeJson,
   writeScenarioArtifacts,
@@ -88,8 +89,8 @@ function main(): void {
   if (!exists("matrix.json")) {
     const { store, proof, blockers } = runChangeControlScenario();
     const matrix = buildChangeControlMatrix(store, blockers, {
-      operatorUiReady: false,
-      webSmokePassed: false,
+      operatorUiReady: detectChangeControlOperatorUiReadiness(),
+      webSmokePassed: detectChangeControlWebSmokeEvidence(),
     });
     writeScenarioArtifacts(store, proof, blockers, matrix);
   }
@@ -100,15 +101,19 @@ function main(): void {
   if (result.passed) {
     const { store, proof, blockers } = runChangeControlScenario();
     const matrix = buildChangeControlMatrix(store, blockers, {
-      operatorUiReady: false,
-      webSmokePassed: false,
+      operatorUiReady: detectChangeControlOperatorUiReadiness(),
+      webSmokePassed: detectChangeControlWebSmokeEvidence(),
       closeoutAuditPassed: true,
     });
     writeScenarioArtifacts(store, proof, blockers, matrix);
     writeJson(artifactPath("closeout_audit.json"), result.audit);
-    const accepted = matrix.final_status === AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS || matrix.final_status === AI_ESTIMATE_CHANGE_CONTROL_CLI_STATUS;
-    console.info(`${matrix.final_status}: closeout audit passed`);
-    if (!accepted) process.exitCode = 1;
+    const accepted = matrix.final_status === AI_ESTIMATE_CHANGE_CONTROL_GREEN_STATUS;
+    if (accepted) {
+      console.info(`${matrix.final_status}: closeout audit passed`);
+    } else {
+      console.error(`${matrix.final_status}: closeout audit passed, release closeout evidence still incomplete`);
+      process.exitCode = 1;
+    }
     return;
   }
 
