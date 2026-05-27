@@ -8,7 +8,7 @@
     "scripts"
   ],
   "forbidden_findings": [],
-  "guard_evidence_findings_count": 14,
+  "guard_evidence_findings_count": 17,
   "use_effect_rewrite_found": false,
   "screen_local_calculation_found": false,
   "inline_rows_in_screens_found": false,
