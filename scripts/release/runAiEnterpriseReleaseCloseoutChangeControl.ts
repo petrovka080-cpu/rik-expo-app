@@ -61,6 +61,8 @@ const B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN";
 const ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_WAVE =
   "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_POINT_OF_NO_RETURN";
+const WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE =
+  "S_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_PROOF_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -474,6 +476,25 @@ function isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(file: strin
     file.startsWith("artifacts/S_ANDROID_APP_ROOT_READY_MARKER_UNBLOCK_FOR_B2C_REQUEST_EMBEDDED_AI") ||
     file.startsWith("artifacts/S_ANDROID_B2C_REQUEST_EMBEDDED_AI_ROUTE_BOOTSTRAP") ||
     file.startsWith("artifacts/S_ANDROID_EMULATOR_ADB_UNBLOCK_REPLAY_B2C_EXPANDED_ESTIMATE_FIX")
+  );
+}
+
+function isWorldConstruction50000LiveRealityPath(file: string): boolean {
+  return (
+    [
+      "scripts/e2e/runAndroidApi34WorldConstruction50000LiveSample.ts",
+      "scripts/e2e/runWorldConstruction50000ShardMerge.ts",
+      "scripts/e2e/runWorldConstruction50000ShardProof.ts",
+      "scripts/e2e/runWorldConstructionLiveRealitySampleProof.ts",
+      "scripts/e2e/runWorldConstructionPdfExtractionSample.ts",
+      "scripts/e2e/worldConstruction50000RealityProof.shared.ts",
+      "scripts/release/releaseGuard.shared.ts",
+      "scripts/release/run-release-guard.ts",
+      "tests/e2e/worldConstruction50000LiveReality.web.spec.ts",
+    ].includes(file) ||
+    file.startsWith("tests/worldConstruction50000/") ||
+    file.startsWith("tests/architecture/world50000") ||
+    file.startsWith("artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/")
   );
 }
 
@@ -1391,6 +1412,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: false,
       reason: "release closeout timeout isolation runner or test shard diagnostic",
+    };
+  }
+  if (isWorldConstruction50000LiveRealityPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "world construction 50000 plus sharded live reality proof, web Android API34 PDF samples, merge gate, and release guard wiring",
     };
   }
   if (isAndroidApi34CanonicalReplayB2cExpandedEstimateBindingPath(normalized)) {
