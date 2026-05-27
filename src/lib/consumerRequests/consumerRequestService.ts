@@ -283,6 +283,7 @@ export function attachConsumerRepairMedia(input: {
 export function approveConsumerRepairRequestDraft(input: {
   requestDraftId: string;
   userId?: string;
+  generatedAt?: string;
 }): ConsumerRepairDraftBundle {
   let bundle = getConsumerRepairBundle(input.requestDraftId);
   const userId = input.userId ?? bundle.draft.consumerUserId;
@@ -319,7 +320,7 @@ export function approveConsumerRepairRequestDraft(input: {
 
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "approve" });
   const draft = approveDraftRecord(bundle.draft);
-  const pdf = generateConsumerRepairRequestPdf({ draft, items: bundle.items, media: bundle.media });
+  const pdf = generateConsumerRepairRequestPdf({ draft, items: bundle.items, media: bundle.media, generatedAt: input.generatedAt });
   return saveConsumerRepairBundle(withEvent(
     {
       ...bundle,
@@ -363,6 +364,7 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
   requestDraftId: string;
   userId?: string;
   supplement?: ConsumerRepairPdfSupplement;
+  generatedAt?: string;
 }): ConsumerRepairDraftBundle {
   const bundle = getConsumerRepairBundle(input.requestDraftId);
   assertConsumerRepairDraftActionAllowed({ currentStatus: bundle.draft.status, action: "generate_pdf" });
@@ -381,6 +383,7 @@ export function generateConsumerRepairRequestPdfForDraft(input: {
     items: bundle.items,
     media: bundle.media,
     supplement: input.supplement,
+    generatedAt: input.generatedAt,
   });
   return saveConsumerRepairBundle(withEvent(
     {

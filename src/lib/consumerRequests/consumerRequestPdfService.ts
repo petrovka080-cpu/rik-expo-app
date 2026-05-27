@@ -31,8 +31,9 @@ export function generateConsumerRepairRequestPdf(input: {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   supplement?: ConsumerRepairPdfSupplement;
+  generatedAt?: string;
 }): ConsumerRepairRequestPdf {
-  const createdAt = new Date().toISOString();
+  const createdAt = input.generatedAt ?? new Date().toISOString();
   const title = input.draft.title || input.draft.aiSummaryRu || "Заявка на ремонт";
   const storageBucket = "private-media";
   const storageKey = `consumer-repair/${input.draft.consumerUserId}/${safeSegment(input.draft.id)}-${createdAt.slice(0, 10)}.pdf`;

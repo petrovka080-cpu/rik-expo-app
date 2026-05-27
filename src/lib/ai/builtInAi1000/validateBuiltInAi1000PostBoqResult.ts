@@ -309,9 +309,17 @@ async function buildPayloadTrace(input: {
       contactPhone: "+996700000000",
     },
   });
-  bundle = generateConsumerRepairRequestPdfForDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+  bundle = generateConsumerRepairRequestPdfForDraft({
+    requestDraftId: bundle.draft.id,
+    userId: bundle.draft.consumerUserId,
+    generatedAt: "2026-05-26T00:00:00.000Z",
+  });
   bundle = attachConsumerRepairMedia({ requestDraftId: bundle.draft.id, mediaKind: "photo" });
-  bundle = approveConsumerRepairRequestDraft({ requestDraftId: bundle.draft.id, userId: bundle.draft.consumerUserId });
+  bundle = approveConsumerRepairRequestDraft({
+    requestDraftId: bundle.draft.id,
+    userId: bundle.draft.consumerUserId,
+    generatedAt: "2026-05-26T00:00:00.000Z",
+  });
 
   const draftSave = buildConsumerRepairCanonicalDraftPayload(bundle, "draft_save");
   const pdfGeneration = buildConsumerRepairCanonicalDraftPayload(bundle, "pdf_generation");

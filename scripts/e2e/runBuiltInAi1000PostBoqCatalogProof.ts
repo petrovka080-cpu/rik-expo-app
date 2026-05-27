@@ -217,7 +217,10 @@ async function buildPdfRegressionWithEstimate(testCase: BuiltInAi1000PostBoqCase
       blocker: "PDF_ESTIMATE_MISSING",
     };
   }
-  const source = buildAiEstimatePdfSourceFromGlobalEstimate(estimate, { userId: "ai-1000-post-boq-proof-user" });
+  const source = buildAiEstimatePdfSourceFromGlobalEstimate(estimate, {
+    userId: "ai-1000-post-boq-proof-user",
+    createdAt: "2026-05-26T00:00:00.000Z",
+  });
   const supplement = buildAiEstimatePdfSupplement(source);
   const model = mapAiEstimatePdfSourceToExistingConsumerPdfModel(source);
   const pdf = generateAiEstimatePdf({ source, userConfirmed: true });

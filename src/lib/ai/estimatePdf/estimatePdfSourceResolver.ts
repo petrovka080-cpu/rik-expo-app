@@ -12,7 +12,7 @@ function stableId(prefix: string, value: string): string {
 
 export function buildAiEstimatePdfSourceFromGlobalEstimate(
   result: GlobalEstimateResult,
-  input: { userId?: string; sourceType?: AiEstimatePdfSource["sourceType"] } = {},
+  input: { userId?: string; sourceType?: AiEstimatePdfSource["sourceType"]; createdAt?: string } = {},
 ): AiEstimatePdfSource {
   const sections = result.sections.map((section) => ({
     title: section.title,
@@ -73,7 +73,7 @@ export function buildAiEstimatePdfSourceFromGlobalEstimate(
         url: source.url,
       })),
     },
-    createdAt: nowIso(),
+    createdAt: input.createdAt ?? nowIso(),
   };
 }
 
