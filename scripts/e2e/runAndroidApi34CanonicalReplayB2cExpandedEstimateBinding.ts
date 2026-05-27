@@ -34,7 +34,7 @@ import {
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
-const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8124);
+const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 
 type Api34ReplayStatus =
   | typeof GREEN
@@ -395,9 +395,28 @@ function routeReadyForCase(testCase: Api34ReplayCase, screen: ReturnType<typeof 
     : embeddedAiRouteReady(screen) && screen.visibleText.includes(ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY);
 }
 
+async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeof captureScreenInDir>> {
+  setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
+  openDeepLink(buildDevClientUri(DEV_CLIENT_PORT));
+  return waitForAndroidScreen({
+    captureId,
+    timeoutMs: 90_000,
+    ready: (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
+  });
+}
+
 async function openCaseRoute(testCase: Api34ReplayCase): Promise<ReturnType<typeof captureScreenInDir>> {
   let last: ReturnType<typeof captureScreenInDir> | null = null;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const root = await openAppRootForReplay(`${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_root_attempt_${attempt}`);
+    if (!(appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY))) {
+      last = root;
+      if (isRuntimeLoadError(root)) {
+        dismissBlockingAndroidSurface(root);
+        await resetAndroidAppForReplay();
+      }
+      continue;
+    }
     openDeepLink(buildUri(testCase));
     last = await waitForAndroidScreen({
       captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}`,
