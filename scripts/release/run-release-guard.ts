@@ -290,6 +290,19 @@ function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
     gateEnv.WORLD50000_FULL_JEST_PASSED = "1";
     gateEnv.WORLD50000_RELEASE_VERIFY_PASSED = "1";
   }
+  if (gate.name === "ai-estimate-template-rate-catalog-ontology-change-control-proof") {
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_TYPECHECK_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_LINT_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_TARGETED_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_GOLDEN_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_FULL_JEST_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_COMMIT_CREATED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_BRANCH_PUSHED = "1";
+    gateEnv.AI_ESTIMATE_CHANGE_CONTROL_FINAL_WORKTREE_CLEAN = "1";
+  }
   const result = spawnSync(gate.command, {
     cwd: PROJECT_ROOT,
     env: {

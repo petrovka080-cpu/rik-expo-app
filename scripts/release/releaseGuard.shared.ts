@@ -56,6 +56,7 @@ export type ReleaseGateName =
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
   | "world-construction-50000-plus-sharded-live-reality-proof"
+  | "ai-estimate-template-rate-catalog-ontology-change-control-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
   | "ai-route-parity-proof"
   | "estimate-pdf-real-binary-proof"
@@ -315,6 +316,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ShardProof.ts --all-shards && npx tsx scripts/e2e/runWorldConstructionLiveRealitySampleProof.ts && npx playwright test tests/e2e/worldConstruction50000LiveReality.web.spec.ts && npx tsx scripts/e2e/runAndroidApi34WorldConstruction50000LiveSample.ts && npx tsx scripts/e2e/runWorldConstructionPdfExtractionSample.ts && npx tsx scripts/e2e/runWorldConstruction50000ShardMerge.ts --require-live-artifacts" },
+  { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },
   { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof", command: "npx tsx scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts" },
   { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },

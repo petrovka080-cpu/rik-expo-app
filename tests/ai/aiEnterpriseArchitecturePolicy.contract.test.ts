@@ -23,6 +23,7 @@ describe("AI enterprise architecture policy", () => {
       "professionalBoq",
       "localEstimatePolicy",
       "catalogBinding",
+      "changeControl",
       "universalRoleQa",
       "liveScreenCopilot",
       "domainDataGateway",

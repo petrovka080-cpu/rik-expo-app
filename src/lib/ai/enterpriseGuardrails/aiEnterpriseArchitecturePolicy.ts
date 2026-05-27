@@ -15,6 +15,7 @@ export type AiEnterpriseLayer =
   | "professionalBoq"
   | "localEstimatePolicy"
   | "catalogBinding"
+  | "changeControl"
   | "universalRoleQa"
   | "liveScreenCopilot"
   | "domainDataGateway"
@@ -95,6 +96,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "professionalBoq",
     "localEstimatePolicy",
     "catalogBinding",
+    "changeControl",
     "universalRoleQa",
     "liveScreenCopilot",
     "domainDataGateway",

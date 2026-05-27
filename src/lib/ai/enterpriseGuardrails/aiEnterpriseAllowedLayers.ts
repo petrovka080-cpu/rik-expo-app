@@ -111,6 +111,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "changeControl",
+    root: "src/lib/ai/changeControl",
+    purpose: "Versioned template, rate, catalog, ontology, formula, tax, safety, and PDF contract lifecycle control.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "universalRoleQa",
     root: "src/lib/ai/universalRoleQa",
     purpose: "Question understanding, source planning, retrieval adapters, answer composition, and semantic guard.",

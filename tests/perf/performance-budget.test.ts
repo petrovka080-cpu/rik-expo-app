@@ -650,6 +650,10 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "localEstimatePolicy"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "catalogBinding"), /\.ts$/) +
       [path.join(SRC, "lib", "ai", "worldConstructionEstimateEngine.ts")].filter((file) => fs.existsSync(file)).length;
+    const sAiEstimateChangeControlFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "changeControl"),
+      /\.ts$/,
+    );
     const sRequestEstimateStatePayloadFiles = [
       path.join(SRC, "lib", "consumerRequests", "consumerRequestDraftStateMachine.ts"),
       path.join(SRC, "lib", "consumerRequests", "consumerRequestPayloadParity.ts"),
@@ -1776,6 +1780,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
     expect(sWorldConstructionEstimateEngineFiles).toBeLessThanOrEqual(48);
+    expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
@@ -2093,7 +2098,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
-        sWorldConstructionEstimateEngineFiles,
+        sWorldConstructionEstimateEngineFiles -
+        sAiEstimateChangeControlFiles,
     ).toBeLessThanOrEqual(1313);
   });
 });
