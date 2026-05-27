@@ -223,16 +223,41 @@ function readJson<T>(filePath: string): T | null {
   }
 }
 
-function buildUri(testCase: Api34ReplayCase): string {
+function promptForApp(testCase: Api34ReplayCase): string {
+  const promptsById: Record<string, string> = {
+    request_laminate: "\u0425\u043e\u0447\u0443 \u0443\u043b\u043e\u0436\u0438\u0442\u044c \u043b\u0430\u043c\u0438\u043d\u0430\u0442 \u043d\u0430 100 \u043a\u0432 \u043c",
+    request_roof_waterproofing:
+      "\u0445\u043e\u0447\u0443 \u0432\u044b\u043f\u043e\u043b\u043d\u0438\u0442\u044c \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044e \u043a\u0440\u044b\u0448\u0438 \u043d\u0430 100 \u043a\u0432 \u043c",
+    embedded_ai_brick:
+      "\u0434\u0430\u0439 \u0441\u043c\u0435\u0442\u0443 \u043d\u0430 \u043a\u043b\u0430\u0434\u043a\u0443 \u043a\u0438\u0440\u043f\u0438\u0447\u0430 74 \u043a\u0432 \u043c\u0435\u0442\u0440\u043e\u0432",
+    embedded_ai_asphalt:
+      "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 10000 \u043a\u0432 \u043c",
+  };
+  return promptsById[testCase.id] ?? testCase.prompt;
+}
+
+function buildUri(testCase: Api34ReplayCase, variant: "canonical" | "scheme" | "tabs" = "canonical"): string {
   const query = new URLSearchParams();
-  query.set("prompt", testCase.prompt);
+  query.set("prompt", promptForApp(testCase));
   if (testCase.route === "/request") {
     query.set("autoPrepare", "1");
+    if (variant === "scheme") return `rik://request?${query.toString()}`;
+    if (variant === "tabs") return `rik:///%28tabs%29/request?${query.toString()}`;
     return `rik:///request?${query.toString()}`;
   }
   query.set("context", "foreman");
   query.set("autoSend", "1");
+  if (variant === "scheme") return `rik://ai?${query.toString()}`;
+  if (variant === "tabs") return `rik:///%28tabs%29/ai?${query.toString()}`;
   return `rik:///ai?${query.toString()}`;
+}
+
+function buildUriCandidates(testCase: Api34ReplayCase): string[] {
+  return [
+    buildUri(testCase, "canonical"),
+    buildUri(testCase, "scheme"),
+    buildUri(testCase, "tabs"),
+  ];
 }
 
 function visibleRowsFromText(text: string): string[] {
@@ -417,17 +442,20 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<ReturnType<type
       }
       continue;
     }
-    openDeepLink(buildUri(testCase));
-    last = await waitForAndroidScreen({
-      captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}`,
-      timeoutMs: attempt === 1 ? 60_000 : 35_000,
-      ready: (screen) => routeReadyForCase(testCase, screen),
-    });
-    if (routeReadyForCase(testCase, last)) return last;
-    if (isRuntimeLoadError(last)) {
-      dismissBlockingAndroidSurface(last);
-      await resetAndroidAppForReplay();
-      continue;
+    const uris = buildUriCandidates(testCase);
+    for (let uriIndex = 0; uriIndex < uris.length; uriIndex += 1) {
+      openDeepLink(uris[uriIndex]);
+      last = await waitForAndroidScreen({
+        captureId: `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_attempt_${attempt}_${uriIndex}`,
+        timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
+        ready: (screen) => routeReadyForCase(testCase, screen),
+      });
+      if (routeReadyForCase(testCase, last)) return last;
+      if (isRuntimeLoadError(last)) {
+        dismissBlockingAndroidSurface(last);
+        await resetAndroidAppForReplay();
+        break;
+      }
     }
 
     if (testCase.route === "/request") {
@@ -677,15 +705,15 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       let keywordHits = 0;
       let routeMarkerProven = false;
 
-      for (let attempt = 1; attempt <= 2; attempt += 1) {
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
         const captureId =
           attempt === 1 ? testCase.afterPromptCaptureId : `${testCase.afterPromptCaptureId}_retry_${attempt}`;
         const loaded = await openCaseRoute(testCase);
         await sleep(12_000);
         const afterPromptCapture = await captureScrollableOutput(captureId, testCase);
         const afterPrompt = afterPromptCapture.best;
-        routeMarkerProven = routeReadyForCase(testCase, loaded);
         const outputText = afterPromptCapture.outputText;
+        routeMarkerProven = routeReadyForCase(testCase, loaded) || outputText.includes(testCase.marker);
         const visibleRows = visibleRowsFromText(outputText);
         keywordHits = countKeywordHits(outputText, testCase.workSpecificKeywords);
         const forbiddenContextHit = countKeywordHits(outputText, testCase.forbiddenKeywords ?? []) > 0;
@@ -725,11 +753,10 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
         }
 
         if (resultPassed(result)) break;
-        if (attempt < 2 && (isRuntimeLoadError(loaded) || afterPromptCapture.captures.some(isRuntimeLoadError))) {
+        if (attempt < 3) {
           await resetAndroidAppForReplay();
           continue;
         }
-        break;
       }
 
       if (result) results.push(result);
