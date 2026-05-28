@@ -308,6 +308,10 @@ export type GlobalEstimateInput = {
 };
 
 export type GlobalEstimateParsedDimensions = {
+  areaSqM?: number;
+  baseAreaSqM?: number;
+  ridgeHeightM?: number;
+  roofAreaSqM?: number;
   length?: number;
   width?: number;
   height?: number;

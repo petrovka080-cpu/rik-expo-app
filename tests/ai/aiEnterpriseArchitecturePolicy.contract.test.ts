@@ -19,6 +19,8 @@ describe("AI enterprise architecture policy", () => {
       "estimatePdf",
       "globalEstimate",
       "globalLocalContext",
+      "constructionFormulas",
+      "constructionInterpreter",
       "worldConstructionOntology",
       "worldConstructionInterpreter",
       "professionalBoq",

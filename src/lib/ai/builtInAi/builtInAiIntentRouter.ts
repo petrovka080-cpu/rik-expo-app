@@ -5,8 +5,58 @@ import { classifyConstructionWorkOutcome, detectConstructionIntent } from "../wo
 import { createBuiltInAiTraceId } from "./builtInAiRuntimeTrace";
 import type { BuiltInAiInput, BuiltInAiIntent, BuiltInAiIntentRoute, BuiltInAiScreenContext } from "./builtInAiTypes";
 
+type EstimateIntentPriorityDecision = {
+  estimateIntentDetected: boolean;
+  estimateIntentWins: boolean;
+  reason: string;
+};
+
 function hasAny(text: string, patterns: readonly RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
+}
+
+const PRIORITY_ESTIMATE_WORDS = /СЃРјРµС‚|СЂР°СЃС‡РµС‚|СЂР°СЃС‡С‘С‚|СЂР°СЃСЃС‡РёС‚|РїРѕСЃС‡РёС‚Р°|СЃС‚РѕРёРјРѕСЃС‚|СЃРєРѕР»СЊРєРѕ СЃС‚РѕРёС‚|С†РµРЅР°|boq|estimate|cost|quote/i;
+const PRIORITY_CONSTRUCTION_WITH_VOLUME = /(РєРІ\.?\s*Рј|Рј2|РјВІ|sqm|РїРѕРі\.?\s*Рј|Рј3|С€С‚|РєРі|С‚РѕРЅРЅ?)/i;
+const PRIORITY_CONSTRUCTION_OBJECTS = /Р»РёРЅРѕР»РµСѓРј|Р±СЂСѓСЃС‡Р°С‚|РЅР°РІРµСЃ|РґРІСѓ(?:С…)?СЃРєР°С‚|РєСЂС‹С€|РєСЂРѕРІР»|РіРёРґСЂРѕРёР·РѕР»СЏС†|РєР°РїРёС‚Р°Р»СЊРЅ\w*\s+СЂРµРјРѕРЅС‚|РєР°РїСЂРµРјРѕРЅС‚|РєРІР°СЂС‚РёСЂ|РєРёСЂРїРёС‡|РїР»РёС‚Рє/i;
+
+function resolveEstimateIntentPriority(input: {
+  text: string;
+  screenContext: BuiltInAiScreenContext;
+}): EstimateIntentPriorityDecision {
+  const estimateWord = PRIORITY_ESTIMATE_WORDS.test(input.text);
+  const constructionQuantity = PRIORITY_CONSTRUCTION_WITH_VOLUME.test(input.text) && PRIORITY_CONSTRUCTION_OBJECTS.test(input.text);
+  const estimateIntentDetected = estimateWord || constructionQuantity;
+  return {
+    estimateIntentDetected,
+    estimateIntentWins: estimateIntentDetected && (input.screenContext === "foreman" || input.screenContext === "request"),
+    reason: estimateWord ? "explicit_estimate_word" : constructionQuantity ? "construction_object_with_quantity" : "not_estimate",
+  };
+}
+
+function resolveEstimateIntentBeforeRoleContext(
+  input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext },
+): BuiltInAiIntentRoute | null {
+  const priority = resolveEstimateIntentPriority({
+    text: input.text,
+    screenContext: input.resolvedScreenContext,
+  });
+  if (!priority.estimateIntentWins) return null;
+
+  const route = routeUniversalEstimateIntent(input.text);
+  return {
+    originalText: input.text,
+    screenContext: input.resolvedScreenContext,
+    intent: "estimate",
+    confidence: route.confidence === "low" ? "medium" : route.confidence,
+    mustUseBackendTool: true,
+    allowedTools: [],
+    forbiddenFallbacks: ["role_qa", "foreman_status", "generic_chat", "template_gap_for_known_work"],
+    traceId: createBuiltInAiTraceId(input.text, input.resolvedScreenContext),
+    workKey: route.resolvedWorkKey,
+    category: route.resolvedCategory,
+    volume: route.volume,
+    unit: route.unit,
+  };
 }
 
 const STRONG_ESTIMATE_PATTERNS = [
@@ -206,6 +256,9 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
 }
 
 export function routeBuiltInAiIntent(input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext }): BuiltInAiIntentRoute {
+  const priorityRoute = resolveEstimateIntentBeforeRoleContext(input);
+  if (priorityRoute) return priorityRoute;
+
   const resolved = intentFor(input, input.resolvedScreenContext);
   const traceId = createBuiltInAiTraceId(input.text, input.resolvedScreenContext);
   return {

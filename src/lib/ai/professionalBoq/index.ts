@@ -9,3 +9,4 @@ export * from "./buildBoqClarifyingQuestions";
 export * from "./validateBoqDepth";
 export * from "./validateWorkSpecificRows";
 export * from "./validateNoGenericRows";
+export * from "./compileBoqFromConstructionWorkPlan";

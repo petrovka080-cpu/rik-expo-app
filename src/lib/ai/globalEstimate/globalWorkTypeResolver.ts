@@ -92,6 +92,32 @@ const BASE_GLOBAL_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
 
 const CORE_COMPLETION_EXTRA_WORK_TYPE_DEFINITIONS: readonly GlobalWorkTypeDefinition[] = [
   {
+    workKey: "linoleum_laying",
+    category: "flooring",
+    names: { ru: "Укладка линолеума", en: "Linoleum installation" },
+    defaultMeasureUnit: "sq_m",
+  },
+  {
+    workKey: "paving_stone_laying",
+    category: "landscaping",
+    names: { ru: "Укладка брусчатки", en: "Paving stone laying" },
+    defaultMeasureUnit: "sq_m",
+  },
+  {
+    workKey: "metal_canopy_installation",
+    category: "metalworks",
+    names: { ru: "Металлический навес", en: "Metal canopy installation" },
+    defaultMeasureUnit: "sq_m",
+    safetyReviewRequired: true,
+  },
+  {
+    workKey: "apartment_capital_renovation",
+    category: "other",
+    names: { ru: "Капитальный ремонт квартиры", en: "Apartment capital renovation" },
+    defaultMeasureUnit: "sq_m",
+    safetyReviewRequired: true,
+  },
+  {
     workKey: "solar_panel_installation",
     category: "electrical",
     names: { ru: "Монтаж солнечных панелей", en: "Solar panel installation" },
@@ -211,6 +237,10 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "laminate_laying", language: "en", alias: "laminate installation" },
   { workKey: "laminate_laying", language: "en", alias: "laminate flooring" },
   { workKey: "laminate_laying", language: "de", alias: "laminat verlegen" },
+  { workKey: "linoleum_laying", language: "ru", alias: "линолеум" },
+  { workKey: "linoleum_laying", language: "ru", alias: "укладка линолеума" },
+  { workKey: "linoleum_laying", language: "ru", alias: "уложить линолеум" },
+  { workKey: "linoleum_laying", language: "en", alias: "linoleum installation" },
   { workKey: "carpet_laying", language: "ru", alias: "ковролин" },
   { workKey: "carpet_laying", language: "ru", alias: "уложить ковролин" },
   { workKey: "carpet_laying", language: "en", alias: "carpet flooring" },
@@ -282,6 +312,16 @@ const BASE_RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
   { workKey: "asphalt_paving", language: "en", alias: "parking lot paving" },
   { workKey: "paving_slabs", language: "ru", alias: "тротуарная плитка" },
   { workKey: "paving_slabs", language: "en", alias: "paving slabs" },
+  { workKey: "paving_stone_laying", language: "ru", alias: "брусчатка" },
+  { workKey: "paving_stone_laying", language: "ru", alias: "укладка брусчатки" },
+  { workKey: "paving_stone_laying", language: "ru", alias: "мощение брусчаткой" },
+  { workKey: "paving_stone_laying", language: "en", alias: "paving stone laying" },
+  { workKey: "metal_canopy_installation", language: "ru", alias: "металлический навес" },
+  { workKey: "metal_canopy_installation", language: "ru", alias: "монтаж металлического навеса" },
+  { workKey: "metal_canopy_installation", language: "en", alias: "metal canopy" },
+  { workKey: "apartment_capital_renovation", language: "ru", alias: "капитальный ремонт квартиры" },
+  { workKey: "apartment_capital_renovation", language: "ru", alias: "капремонт квартиры" },
+  { workKey: "apartment_capital_renovation", language: "en", alias: "apartment capital renovation" },
 ];
 
 const RAW_ALIASES: Omit<GlobalWorkAlias, "normalizedAlias">[] = [
@@ -359,6 +399,18 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/gable|двускат/i.test(normalized) && /roof|кровл|крыш/i.test(normalized)) {
     return { workKey: "gable_roof_installation", confidence: "high" };
   }
+  if (/брусчат|мощени/i.test(normalized)) {
+    return { workKey: "paving_stone_laying", confidence: "high" };
+  }
+  if (/линолеум/i.test(normalized)) {
+    return { workKey: "linoleum_laying", confidence: "high" };
+  }
+  if (/навес/i.test(normalized) && /металл|steel|metal/i.test(normalized)) {
+    return { workKey: "metal_canopy_installation", confidence: "high" };
+  }
+  if (/капитальн\w*\s+ремонт|капремонт/i.test(normalized) && /квартир/i.test(normalized)) {
+    return { workKey: "apartment_capital_renovation", confidence: "high" };
+  }
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
     return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
@@ -401,6 +453,7 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     [/door|двер/i, "door_installation"],
     [/roof|кровл|крыш/i, "roof_repair"],
     [/demolition|демонтаж/i, "demolition_flooring"],
+    [/брусчат|мощени/i, "paving_stone_laying"],
     [/paving slabs|тротуарн/i, "paving_slabs"],
     [/asphalt|paving|road paving|асфальт|асфальтобетон|дорожное покрытие/i, "asphalt_paving"],
   ];

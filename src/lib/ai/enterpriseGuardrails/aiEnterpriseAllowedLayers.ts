@@ -87,6 +87,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "constructionFormulas",
+    root: "src/lib/ai/constructionFormulas",
+    purpose: "Construction quantity formulas and unit semantics for semantic estimate work plans.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "constructionInterpreter",
+    root: "src/lib/ai/constructionInterpreter",
+    purpose: "Construction semantic work plan interpretation for domain, object, operation, method, and complexity.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "worldConstructionOntology",
     root: "src/lib/ai/worldConstructionOntology",
     purpose: "Open-world construction domain, object, operation, method, unit, risk, and material-system ontology.",

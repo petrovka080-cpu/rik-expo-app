@@ -8,7 +8,9 @@ import type {
   GlobalEstimateResult,
   GlobalEstimateSectionType,
   GlobalLocaleContext,
+  GlobalPriceSourceType,
   GlobalUnitInput,
+  SourceBackedEstimateRow,
 } from "./globalEstimateTypes";
 import { resolveGlobalRate } from "./globalRateBookService";
 import { calculateGlobalTax } from "./globalTaxEngine";
@@ -16,6 +18,10 @@ import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
 import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import { buildConstructionWorkPlan } from "../constructionInterpreter/buildConstructionWorkPlan";
+import type { ConstructionWorkPlan } from "../constructionInterpreter/constructionSemanticTypes";
+import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
+import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
   buildStripFoundationQuantityContext,
   parseStripFoundationDimensions,
@@ -195,7 +201,232 @@ function costFactors(locale: GlobalLocaleContext, dangerous: boolean): string[] 
   ];
 }
 
+const CHECKED_AT = "2026-05-22T00:00:00+06:00";
+const RATE_SOURCE = {
+  id: "src_configured_regional_reference_2026",
+  type: "configured_reference" as GlobalPriceSourceType,
+  label: "Configured regional construction reference rates",
+  checkedAt: CHECKED_AT,
+};
+
+const SECTION_TITLES_RU: Record<GlobalEstimateSectionType, string> = {
+  materials: "Материалы и комплектующие",
+  labor: "Работы и монтаж",
+  equipment: "Техника и оборудование",
+  delivery: "Доставка и логистика",
+  tax: "Налог",
+};
+
+function semanticEstimateIdFor(plan: ConstructionWorkPlan, input: GlobalEstimateInput): string {
+  const source = JSON.stringify({ text: input.text, workKey: plan.workKey, volume: plan.quantity.volume, unit: plan.quantity.unit });
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = ((hash << 5) - hash + source.charCodeAt(index)) | 0;
+  }
+  return `global_estimate_${Math.abs(hash)}`;
+}
+
+function unitLabel(unit: string): string {
+  const labels: Record<string, string> = {
+    sq_m: "м²",
+    m3: "м³",
+    linear_m: "пог.м",
+    pcs: "шт.",
+    set: "компл.",
+    kg: "кг",
+    ton: "т",
+    shift: "смена",
+    trip: "рейс",
+  };
+  return labels[unit] ?? unit;
+}
+
+function confidenceMin(values: GlobalEstimateConfidence[]): GlobalEstimateConfidence {
+  if (values.includes("low")) return "low";
+  if (values.includes("medium")) return "medium";
+  return "high";
+}
+
+function sourceEvidence(confidence: GlobalEstimateConfidence): EstimateRowSourceEvidence[] {
+  return [{
+    sourceId: RATE_SOURCE.id,
+    sourceType: "configured_reference",
+    label: RATE_SOURCE.label,
+    checkedAt: RATE_SOURCE.checkedAt,
+    freshness: "fresh",
+    confidence,
+  }];
+}
+
+function rowNumber(sectionIndex: number, rowIndex: number): string {
+  return `${sectionIndex}.${rowIndex}`;
+}
+
+function buildRows(
+  plan: ConstructionWorkPlan,
+  input: GlobalEstimateInput,
+): {
+  sections: GlobalEstimateResult["sections"];
+  assumptions: string[];
+  exclusions: string[];
+  costIncreaseFactors: string[];
+  clarifyingQuestions: string[];
+  confidences: GlobalEstimateConfidence[];
+} {
+  const compiled = compileBoqFromConstructionWorkPlan(plan);
+  const sectionTypes: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
+  const confidences: GlobalEstimateConfidence[] = [plan.confidence];
+  const sections = sectionTypes
+    .map((sectionType, sectionIndex) => {
+      const rows = compiled.rows.filter((row) => row.sectionType === sectionType);
+      if (rows.length === 0) return null;
+      const sectionNumber = String(sectionIndex + 1);
+      const mappedRows: SourceBackedEstimateRow[] = rows.map((row, index) => {
+        const confidence = row.confidence ?? "medium";
+        confidences.push(confidence);
+        const total = Math.round(row.quantity * row.unitPrice * 100) / 100;
+        const unit = unitLabel(row.unit);
+        return {
+          rowNumber: rowNumber(sectionIndex + 1, index + 1),
+          code: row.code,
+          rateKey: `${plan.workKey}_${row.code}`,
+          materialKey: row.materialKey,
+          name: row.name,
+          quantity: row.quantity,
+          unit: row.unit,
+          displayQuantity: `${formatGlobalNumber(row.quantity, resolveGlobalLocalization(input))} ${unit}`,
+          unitPrice: row.unitPrice,
+          displayUnitPrice: `${formatGlobalCurrency(row.unitPrice, resolveGlobalLocalization(input))} / ${unit}`,
+          total,
+          displayTotal: formatGlobalCurrency(total, resolveGlobalLocalization(input)),
+          currency: resolveGlobalLocalization(input).currency,
+          priceStatus: "priced",
+          sourceId: RATE_SOURCE.id,
+          sourceEvidence: sourceEvidence(confidence),
+          confidence,
+        };
+      });
+      return {
+        sectionNumber,
+        title: SECTION_TITLES_RU[sectionType],
+        type: sectionType,
+        rows: mappedRows,
+      };
+    })
+    .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
+
+  return {
+    sections,
+    assumptions: compiled.assumptions,
+    exclusions: compiled.exclusions,
+    costIncreaseFactors: compiled.costIncreaseFactors,
+    clarifyingQuestions: compiled.clarifyingQuestions,
+    confidences,
+  };
+}
+
+function sumByType(sections: GlobalEstimateResult["sections"], type: GlobalEstimateSectionType): number {
+  return Math.round(sections
+    .filter((section) => section.type === type)
+    .reduce((sum, section) => sum + section.rows.reduce((rowSum, row) => rowSum + row.total, 0), 0) * 100) / 100;
+}
+
+function buildGlobalEstimateFromConstructionWorkPlan(
+  plan: ConstructionWorkPlan,
+  input: GlobalEstimateInput,
+): GlobalEstimateResult {
+  const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru" });
+  const rowBuild = buildRows(plan, { ...input, language: locale.language, currency: locale.currency });
+  const taxResolution = input.includeTax === false
+    ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
+    : resolveGlobalTaxRule(locale, input);
+  const sources = [RATE_SOURCE];
+  if (taxResolution.source) sources.push(taxResolution.source);
+  rowBuild.confidences.push(locale.confidence, taxResolution.confidence);
+  const tax = calculateGlobalTax({ sections: rowBuild.sections, taxResolution });
+
+  const materialsTotal = sumByType(rowBuild.sections, "materials");
+  const laborTotal = sumByType(rowBuild.sections, "labor");
+  const equipmentTotal = sumByType(rowBuild.sections, "equipment");
+  const deliveryTotal = sumByType(rowBuild.sections, "delivery");
+  const taxTotal = tax.included ? 0 : tax.taxAmount;
+  const grandTotal = Math.round((materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal) * 100) / 100;
+  const result: GlobalEstimateResult = {
+    estimateId: semanticEstimateIdFor(plan, input),
+    outputContract: {
+      format: "professional_boq",
+      hasIntro: true,
+      hasAssumptions: true,
+      hasMaterialsSection: rowBuild.sections.some((section) => section.type === "materials"),
+      hasLaborSection: rowBuild.sections.some((section) => section.type === "labor"),
+      hasGrandTotal: true,
+      hasTaxStatus: true,
+      hasRegionalRisks: true,
+      hasClarifyingQuestions: true,
+    },
+    locale,
+    work: {
+      workKey: plan.workKey,
+      title: plan.titleRu.replace(/^Профессиональная смета на /, ""),
+      category: plan.workFamily,
+    },
+    input: {
+      volume: plan.quantity.volume,
+      unit: plan.quantity.unit,
+      originalText: input.text,
+      photoBased: input.photoAnalysis !== undefined,
+      dimensions: plan.quantity.dimensions,
+    },
+    assumptions: rowBuild.assumptions,
+    sections: rowBuild.sections,
+    tax,
+    totals: {
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      currency: locale.currency,
+      displayMaterialsTotal: formatGlobalCurrency(materialsTotal, locale),
+      displayLaborTotal: formatGlobalCurrency(laborTotal, locale),
+      displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
+      displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
+    },
+    regionalRisks: [
+      { title: "Локальный контекст", text: "Цены, налог и доставка требуют подтверждения по городу и доступу на объект." },
+      { title: "Состояние основания", text: "Скрытые дефекты могут изменить объем подготовки и материалов." },
+    ],
+    costIncreaseFactors: rowBuild.costIncreaseFactors,
+    clarifyingQuestions: rowBuild.clarifyingQuestions,
+    sources,
+    confidence: confidenceMin(rowBuild.confidences),
+    requiresReview: true,
+  };
+  const unitSemantics = validateConstructionUnitSemantics(result);
+  if (!unitSemantics.passed) {
+    throw new Error(`CONSTRUCTION_UNIT_SEMANTICS_FAILED:${unitSemantics.failures.join(",")}`);
+  }
+  return result;
+}
+
+
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
+  const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
+  if (
+    semanticPlan &&
+    [
+      "linoleum_laying",
+      "paving_stone_laying",
+      "metal_canopy_installation",
+      "apartment_capital_renovation",
+      "gable_roof_installation",
+      "roof_waterproofing",
+    ].includes(semanticPlan.workKey)
+  ) {
+    return buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input);
+  }
+
   const locale = resolveGlobalLocalization(input);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);

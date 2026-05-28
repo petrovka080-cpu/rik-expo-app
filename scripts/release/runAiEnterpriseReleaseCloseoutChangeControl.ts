@@ -65,6 +65,8 @@ const WORLD_CONSTRUCTION_50000_LIVE_REALITY_WAVE =
   "S_WORLD_CONSTRUCTION_50000_PLUS_SHARDED_LIVE_REALITY_PROOF_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_CHANGE_CONTROL_WAVE =
   "S_AI_ESTIMATE_TEMPLATE_RATE_CATALOG_ONTOLOGY_CHANGE_CONTROL_POINT_OF_NO_RETURN";
+const LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_WAVE =
+  "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_INTENT_SEMANTIC_BOQ_REALITY_FIX_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -1175,8 +1177,53 @@ function isBuiltInAi50000Phase4Path(file: string): boolean {
   );
 }
 
+function isLiveB2cRequestEmbeddedAiEstimateRealityPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY/") ||
+    file === "scripts/e2e/runAndroidApi34LiveB2cRequestEmbeddedAiEstimateRealitySmoke.ts" ||
+    file === "scripts/e2e/runLiveB2cRequestEmbeddedAiEstimateRealityProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "src/lib/ai/builtInAi/builtInAiIntentRouter.ts" ||
+    file === "src/lib/ai/builtInAi/estimateIntentPriority.ts" ||
+    file === "src/lib/ai/builtInAi/index.ts" ||
+    file === "src/lib/ai/builtInAi/resolveEstimateIntentBeforeRoleContext.ts" ||
+    file === "src/lib/ai/builtInAi/validateEstimateIntentPriority.ts" ||
+    file.startsWith("src/lib/ai/constructionFormulas/") ||
+    file.startsWith("src/lib/ai/constructionInterpreter/") ||
+    file.startsWith("src/lib/ai/estimatePresentation/") ||
+    file === "src/lib/ai/estimateRouting/estimateIntentClassifier.ts" ||
+    file === "src/lib/ai/globalEstimate/buildGlobalEstimateFromConstructionWorkPlan.ts" ||
+    file === "src/lib/ai/globalEstimate/globalEstimateCalculator.ts" ||
+    file === "src/lib/ai/globalEstimate/globalEstimateTypes.ts" ||
+    file === "src/lib/ai/globalEstimate/globalWorkTypeResolver.ts" ||
+    file === "src/lib/ai/globalEstimate/index.ts" ||
+    file === "src/lib/ai/professionalBoq/compileBoqFromConstructionWorkPlan.ts" ||
+    file === "src/lib/ai/professionalBoq/index.ts" ||
+    file.startsWith("tests/architecture/liveEstimate") ||
+    file.startsWith("tests/constructionFormulas/") ||
+    file.startsWith("tests/constructionInterpreter/") ||
+    file === "tests/e2e/liveB2cRequestEmbeddedAiEstimateReality.web.spec.ts" ||
+    file.startsWith("tests/entrypoints/embeddedAi") ||
+    file === "tests/entrypoints/liveB2cEstimateRealityTestHelpers.ts" ||
+    file.startsWith("tests/entrypoints/requestKnownWorkUsesGlobalEstimate") ||
+    file.startsWith("tests/entrypoints/requestLinoleumDoesNotTemplateGap") ||
+    file.startsWith("tests/pdf/liveEstimate") ||
+    file.startsWith("tests/professionalBoq/")
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isLiveB2cRequestEmbeddedAiEstimateRealityPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_runtime_integration",
+      wave: LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "live B2C request and embedded AI estimate semantic work recognition, BOQ, UI/PDF proof, and release guard wiring",
+    };
+  }
   if (isBuiltInAi10000PostBoqCatalogPath(normalized)) {
     return {
       file: normalized,

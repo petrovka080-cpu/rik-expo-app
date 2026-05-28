@@ -735,6 +735,14 @@ describe("performance budget вЂ” bundle module count", () => {
       [path.join(SRC, "features", "ai", "AIAssistantEstimatePdfActions.tsx")].filter((file) =>
         fs.existsSync(file),
       ).length;
+    const sLiveB2cRequestEmbeddedAiEstimateRealityFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "constructionFormulas"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "constructionInterpreter"), /\.ts$/) +
+      [
+        path.join(SRC, "lib", "ai", "estimatePresentation", "assertUiRowsMatchGlobalEstimate.ts"),
+        path.join(SRC, "lib", "ai", "estimatePresentation", "buildProfessionalEstimateTableViewModel.ts"),
+        path.join(SRC, "lib", "ai", "estimatePresentation", "validateProfessionalEstimateTableViewModel.ts"),
+      ].filter((file) => fs.existsSync(file)).length;
     const sLiveAiEstimatePdfRealityFiles = countFilesRecursive(
       path.join(SRC, "lib", "estimatePdf"),
       /\.ts$/,
@@ -1806,6 +1814,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sBuiltInAiRealToolArchitectureFiles).toBeLessThanOrEqual(11);
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
+    expect(sLiveB2cRequestEmbeddedAiEstimateRealityFiles).toBeLessThanOrEqual(22);
     expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);
     expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);
     expect(sGreenCloseoutLiveRouteMediaFiles).toBeLessThanOrEqual(2);
@@ -2055,6 +2064,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi10000CoverageProofFiles -
         sAiSourceIntelligenceFiles -
         sAiEstimateToExistingPdfFiles -
+        sLiveB2cRequestEmbeddedAiEstimateRealityFiles -
         sBuiltInAiAssistantIntegrationFiles -
         sGreenCloseoutLayoutPrimitiveFiles -
         sGreenCloseoutLiveRouteMediaFiles -
