@@ -643,6 +643,32 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "catalog", "catalogItemSearch.ts"),
       path.join(SRC, "lib", "catalog", "catalogItemTypes.ts"),
     ].filter((file) => fs.existsSync(file)).length;
+    const sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles = [
+      path.join(SRC, "lib", "ai", "professionalBoq", "buildAmbiguousConstructionDisambiguation.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "buildSafeUnknownConstructionTriage.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileBoqGroupsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileClarifyingQuestionsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileEquipmentRowsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileExclusionsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileLaborRowsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileLogisticsRowsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileMaterialRowsFromPrimitives.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "compileParametricBoqRecipe.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "parametricBoqRecipeTypes.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "validateNoGenericFallbackForKnownWork.ts"),
+      path.join(SRC, "lib", "ai", "professionalBoq", "validateParametricBoqRecipe.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sOpenWorldPrimitiveBoqCompilerFormulaFiles = [
+      path.join(SRC, "lib", "ai", "constructionFormulas", "constructionFormulaRegistry.ts"),
+      path.join(SRC, "lib", "ai", "constructionFormulas", "resolveFormulaFromWorkPlan.ts"),
+      path.join(SRC, "lib", "ai", "constructionFormulas", "validateFormulaInputs.ts"),
+      path.join(SRC, "lib", "ai", "constructionFormulas", "validateFormulaOutputUnits.ts"),
+      path.join(SRC, "lib", "ai", "constructionFormulas", "validateNoUnitInheritanceBug.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
+    const sOpenWorldPrimitiveBoqCompilerFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "constructionPrimitives"), /\.ts$/) +
+      sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles +
+      sOpenWorldPrimitiveBoqCompilerFormulaFiles;
     const sWorldConstructionEstimateEngineFiles =
       countFilesRecursive(path.join(SRC, "lib", "ai", "worldConstructionOntology"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "worldConstructionInterpreter"), /\.ts$/) +
@@ -742,6 +768,7 @@ describe("performance budget вЂ” bundle module count", () => {
     const sLiveB2cRequestEmbeddedAiEstimateRealityFiles =
       countFilesRecursive(path.join(SRC, "lib", "ai", "constructionFormulas"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "constructionInterpreter"), /\.ts$/) -
+      sOpenWorldPrimitiveBoqCompilerFormulaFiles -
       sOpenWorldEstimateSemanticCoverageFiles +
       [
         path.join(SRC, "lib", "ai", "estimatePresentation", "assertUiRowsMatchGlobalEstimate.ts"),
@@ -1796,7 +1823,10 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sRequestEstimateBoqCatalogViewFiles).toBeLessThanOrEqual(3);
     expect(sRequestEstimateBoqCatalogCatalogFiles).toBeLessThanOrEqual(3);
     expect(sCatalogItemsGlobalEstimateBindingCatalogFiles).toBeLessThanOrEqual(2);
-    expect(sWorldConstructionEstimateEngineFiles).toBeLessThanOrEqual(48);
+    expect(
+      sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles,
+    ).toBeLessThanOrEqual(48);
+    expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
@@ -2120,7 +2150,8 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
-        sWorldConstructionEstimateEngineFiles -
+        (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
+        sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
         sGlobalLocalEstimatePlatformFiles,
     ).toBeLessThanOrEqual(1313);

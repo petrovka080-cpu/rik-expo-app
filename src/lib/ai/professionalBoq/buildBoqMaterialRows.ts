@@ -1,11 +1,18 @@
 import type { ProfessionalBoqRow } from "./professionalBoqTypes";
 
-function material(code: string, nameRu: string, factor: number, unitPrice: number, materialKey = code): ProfessionalBoqRow {
+function material(
+  code: string,
+  nameRu: string,
+  factor: number,
+  unitPrice: number,
+  materialKey = code,
+  unit: ProfessionalBoqRow["unit"] = "sq_m",
+): ProfessionalBoqRow {
   return {
     sectionType: "materials",
     code,
     nameRu,
-    unit: "sq_m",
+    unit,
     quantityFactor: factor,
     unitPrice,
     materialKey,
@@ -41,7 +48,14 @@ export function buildBoqMaterialRows(workKey: string | null): ProfessionalBoqRow
       material("hydro_metal_structures", "Металлоконструкции", 1, 26000, "steel_structure"),
       material("hydro_anchors_embeds", "Анкера / закладные", 1, 6500, "anchor_embed"),
       material("hydro_grout_foundation", "Подливка / фундамент под агрегат", 1, 12000, "grout"),
-    ].map((row) => ({ ...row, unit: "set" }));
+    ].map((row) => ({
+      ...row,
+      unit:
+        /cable|tray|pipe|flange/i.test(row.code) ? "linear_m" :
+          /metal|frame|structure/i.test(row.code) ? "kg" :
+            /anchor|embed|valve|meter|mount/i.test(row.code) ? "pcs" :
+              "set",
+    }));
   }
 
   if (workKey === "roof_waterproofing") {
@@ -84,10 +98,10 @@ export function buildBoqMaterialRows(workKey: string | null): ProfessionalBoqRow
       material("drywall_joint_putty", "Шпаклевка швов", 0.5, 1.8, "joint_putty"),
     ],
     asphalt_paving: [
-      material("sand_base", "Песчаное основание", 1, 4, "sand"),
-      material("crushed_stone_base", "Щебеночное основание", 1, 7, "crushed_stone"),
+      material("sand_base", "Песчаное основание", 0.12, 28, "sand", "m3"),
+      material("crushed_stone_base", "Щебеночное основание", 0.18, 34, "crushed_stone", "m3"),
       material("bitumen_emulsion", "Битумная эмульсия / праймер", 1, 0.8, "bitumen_emulsion"),
-      material("asphalt_concrete", "Асфальтобетон", 1, 12, "asphalt_concrete"),
+      material("asphalt_concrete", "Асфальтобетон", 0.12, 90, "asphalt_concrete", "ton"),
       material("geotextile", "Геотекстиль", 1.05, 1.1, "geotextile"),
     ],
     window_installation: [

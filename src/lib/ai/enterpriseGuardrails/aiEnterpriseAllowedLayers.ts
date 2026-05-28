@@ -87,6 +87,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "constructionPrimitives",
+    root: "src/lib/ai/constructionPrimitives",
+    purpose: "Construction primitive graph, open-world domain/object/operation/method/material policy, and graph validation for parametric BOQ compilation.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "constructionFormulas",
     root: "src/lib/ai/constructionFormulas",
     purpose: "Construction quantity formulas and unit semantics for semantic estimate work plans.",

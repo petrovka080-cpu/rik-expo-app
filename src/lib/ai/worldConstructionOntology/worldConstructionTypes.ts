@@ -26,6 +26,7 @@ export type WorldConstructionDomain =
   | "concrete"
   | "masonry"
   | "steel_structures"
+  | "canopies"
   | "wood_structures"
   | "roofing"
   | "waterproofing"

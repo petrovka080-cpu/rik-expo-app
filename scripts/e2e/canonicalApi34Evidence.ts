@@ -30,6 +30,8 @@ export type CanonicalApi34Evidence = {
   evidence_commit: string;
   evidence_reused_for_current_head: boolean;
   reuse_allowed_because_only_closeout_harness_changed: boolean;
+  reuse_allowed_because_only_allowed_runtime_paths_changed?: boolean;
+  allowed_runtime_reuse_reason?: string;
   changed_files_since_evidence_commit: string[];
   device_id: string | null;
   android_sdk: 34;
@@ -201,7 +203,11 @@ function commitMatchesHead(evidenceCommit: string, headSha: string, headShortSha
   return Boolean(evidenceCommit) && (headSha.startsWith(evidenceCommit) || evidenceCommit.startsWith(headShortSha));
 }
 
-export function resolveCanonicalApi34Evidence(options: { write?: boolean } = {}): CanonicalApi34EvidenceResult {
+export function resolveCanonicalApi34Evidence(options: {
+  write?: boolean;
+  allowChangedFile?: (filePath: string) => boolean;
+  allowedRuntimeReuseReason?: string;
+} = {}): CanonicalApi34EvidenceResult {
   const matrixPath = path.join(ANDROID_API34_CANONICAL_REPLAY_DIR, "matrix.json");
   const screenshotPath = path.join(ANDROID_API34_CANONICAL_REPLAY_DIR, "android_screenshots.json");
   const uiDumpPath = path.join(ANDROID_API34_CANONICAL_REPLAY_DIR, "android_ui_dumps.json");
@@ -254,8 +260,11 @@ export function resolveCanonicalApi34Evidence(options: { write?: boolean } = {})
   const workingChanges = currentWorktreeFiles();
   const allChanges = Array.from(new Set([...committedChanges, ...workingChanges])).sort();
   const onlyCloseoutHarnessChanged = allChanges.every(isAllowedCloseoutHarnessPath);
+  const onlyAllowedRuntimeChanged = Boolean(options.allowChangedFile) && allChanges.every((file) =>
+    isAllowedCloseoutHarnessPath(file) || options.allowChangedFile?.(file) === true,
+  );
 
-  if (workingChanges.length > 0 && !workingChanges.every(isAllowedCloseoutHarnessPath)) {
+  if (workingChanges.length > 0 && !workingChanges.every((file) => isAllowedCloseoutHarnessPath(file) || options.allowChangedFile?.(file) === true)) {
     return {
       ok: false,
       reason: "CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE",
@@ -267,7 +276,7 @@ export function resolveCanonicalApi34Evidence(options: { write?: boolean } = {})
     };
   }
 
-  if (!commitMatched && !onlyCloseoutHarnessChanged) {
+  if (!commitMatched && !onlyCloseoutHarnessChanged && !onlyAllowedRuntimeChanged) {
     return {
       ok: false,
       reason: "CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD",
@@ -301,6 +310,8 @@ export function resolveCanonicalApi34Evidence(options: { write?: boolean } = {})
     evidence_commit: evidenceCommit || headShortSha,
     evidence_reused_for_current_head: !commitMatched,
     reuse_allowed_because_only_closeout_harness_changed: !commitMatched && onlyCloseoutHarnessChanged,
+    reuse_allowed_because_only_allowed_runtime_paths_changed: !commitMatched && onlyAllowedRuntimeChanged,
+    allowed_runtime_reuse_reason: onlyAllowedRuntimeChanged ? options.allowedRuntimeReuseReason : undefined,
     changed_files_since_evidence_commit: allChanges,
     device_id: typeof matrix.device_id === "string"
       ? matrix.device_id

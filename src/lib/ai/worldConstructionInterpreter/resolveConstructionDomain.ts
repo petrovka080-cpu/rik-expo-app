@@ -8,6 +8,7 @@ type DomainRule = {
 
 const domainRules: readonly DomainRule[] = [
   { domain: "steel_structures", tokens: ["steel frame", "metal farm storage", "farm storage", "storage buildings", "warehouse", "steel structure", "metalworks"] },
+  { domain: "canopies", tokens: ["canopy", "metal canopy", "awning", "навес", "металлический навес"] },
   { domain: "commercial_fit_out", tokens: ["fitout", "fit-out", "clinic", "school", "medical", "retail", "office", "restaurant"] },
   { domain: "renovation", tokens: ["renovation", "maintenance", "repair construction", "building maintenance", "turnkey", "emergency repair", "emergency repairs", "home repairs", "small home repairs", "home construction work", "repair emergency"] },
   { domain: "hydropower", tokens: ["гэс", "гидроэлектростанц", "гидро турбин", "hydro turbine", "hydropower"] },
@@ -65,6 +66,13 @@ export function resolveConstructionDomain(text: string): {
   }
   if (primary !== "unknown" && CONSTRUCTION_DOMAIN_MAP.some((definition) => definition.domain === primary)) {
     return { domain: primary, secondaryDomains: secondary, score: scored[0]?.score ?? 1 };
+  }
+  const namedDomain = CONSTRUCTION_DOMAIN_MAP.find((definition) => {
+    const tokens = [definition.domain, definition.domain.replace(/_/g, " ")];
+    return tokens.some((token) => normalized.includes(normalizeConstructionPrompt(token)));
+  });
+  if (namedDomain && namedDomain.domain !== "unknown") {
+    return { domain: namedDomain.domain, secondaryDomains: [], score: 1 };
   }
   return { domain: "unknown", secondaryDomains: [], score: 0 };
 }

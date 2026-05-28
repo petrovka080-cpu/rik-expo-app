@@ -69,6 +69,8 @@ const LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_WAVE =
   "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_INTENT_SEMANTIC_BOQ_REALITY_FIX_POINT_OF_NO_RETURN";
 const OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE =
   "S_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_POINT_OF_NO_RETURN";
+const OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE =
+  "S_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
 
@@ -1246,6 +1248,37 @@ function isOpenWorldEstimateSemanticCoverageLockPath(file: string): boolean {
   );
 }
 
+function isOpenWorldConstructionPrimitiveBoqCompilerPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_OPEN_WORLD_PRIMITIVE_BOQ_COMPILER/") ||
+    file.startsWith("src/lib/ai/constructionPrimitives/") ||
+    file.startsWith("src/lib/ai/constructionFormulas/") ||
+    file.startsWith("src/lib/ai/professionalBoq/") ||
+    file.startsWith("src/lib/ai/worldConstructionInterpreter/") ||
+    file.startsWith("src/lib/ai/worldConstructionOntology/") ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file === "scripts/e2e/canonicalApi34Evidence.ts" ||
+    file === "scripts/e2e/runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke.ts" ||
+    file === "scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file.startsWith("tests/architecture/primitiveBoq") ||
+    file.startsWith("tests/constructionFormulas/") ||
+    file.startsWith("tests/constructionPrimitives/") ||
+    file.startsWith("tests/entrypoints/requestUsesParametricBoqCompiler") ||
+    file.startsWith("tests/entrypoints/embeddedAiUsesParametricBoqCompiler") ||
+    file.startsWith("tests/entrypoints/requestNoGenericFallbackForKnownPrimitiveWork") ||
+    file.startsWith("tests/entrypoints/embeddedAiNoGenericFallbackForKnownPrimitiveWork") ||
+    file === "tests/e2e/openWorldPrimitiveBoqCompiler.web.spec.ts" ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file.startsWith("tests/professionalBoq/parametricCompiler")
+  );
+}
+
 function isPlatformDirectorFactContractPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_PLATFORM_DIRECTOR_FACT_CONTRACT/") ||
@@ -1261,6 +1294,16 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isOpenWorldConstructionPrimitiveBoqCompilerPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "open-world construction primitive graph, parametric BOQ compiler, formula/unit policy, tests, web Android proof, and release guard wiring",
+    };
+  }
   if (isPlatformDirectorFactContractPath(normalized)) {
     return {
       file: normalized,

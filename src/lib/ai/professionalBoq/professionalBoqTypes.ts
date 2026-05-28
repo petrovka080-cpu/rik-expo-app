@@ -1,5 +1,9 @@
 import type { GlobalEstimateSectionType, GlobalUnitInput } from "../globalEstimate";
 import type { WorldConstructionPrimitive } from "../worldConstructionOntology";
+import type {
+  PARAMETRIC_BOQ_RECIPE_COMPILER_ID,
+  ParametricBoqRecipeMode,
+} from "./parametricBoqRecipeTypes";
 
 export type ProfessionalBoqRow = {
   sectionType: GlobalEstimateSectionType;
@@ -23,6 +27,8 @@ export type ProfessionalBoqSection = {
 
 export type ProfessionalBoqResult = {
   primitive: WorldConstructionPrimitive;
+  compilerId?: typeof PARAMETRIC_BOQ_RECIPE_COMPILER_ID;
+  recipeMode?: ParametricBoqRecipeMode;
   sections: ProfessionalBoqSection[];
   assumptions: string[];
   exclusions: string[];

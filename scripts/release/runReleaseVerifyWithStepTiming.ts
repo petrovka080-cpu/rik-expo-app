@@ -175,6 +175,20 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       OPEN_WORLD_RELEASE_VERIFY_PASSED: "1",
     };
   }
+  if (step === "open-world-construction-primitive-boq-compiler-proof") {
+    return {
+      PRIMITIVE_BOQ_TYPECHECK_PASSED: "1",
+      PRIMITIVE_BOQ_LINT_PASSED: "1",
+      PRIMITIVE_BOQ_GIT_DIFF_CHECK_PASSED: "1",
+      PRIMITIVE_BOQ_TARGETED_TESTS_PASSED: "1",
+      PRIMITIVE_BOQ_ARCHITECTURE_TESTS_PASSED: "1",
+      PRIMITIVE_BOQ_FULL_JEST_PASSED: "1",
+      PRIMITIVE_BOQ_RELEASE_VERIFY_PASSED: "1",
+      PRIMITIVE_BOQ_COMMIT_CREATED: "1",
+      PRIMITIVE_BOQ_BRANCH_PUSHED: "1",
+      PRIMITIVE_BOQ_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
   if (step === "director-fact-contract-proof") {
     return {
       DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED: "1",

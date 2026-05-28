@@ -404,6 +404,7 @@ const coveredDomains = new Set(CONSTRUCTION_DOMAIN_DEFINITIONS.map((item) => ite
 
 const macroDomains = [
   "steel_structures",
+  "canopies",
   "wood_structures",
   "facade",
   "insulation",
@@ -447,6 +448,7 @@ export const CONSTRUCTION_DOMAIN_MAP: readonly WorldConstructionDomainDefinition
                     domainName === "doors" ? "doors_windows" :
                       domainName === "ceilings" ? "ceiling" :
                         domainName === "steel_structures" ? "metalworks" :
+                          domainName === "canopies" ? "metalworks" :
                           domainName === "wood_structures" ? "carpentry" :
                             domainName === "insulation" ? "insulation" :
                               "other",

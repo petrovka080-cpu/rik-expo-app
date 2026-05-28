@@ -116,7 +116,7 @@ export function classifyConstructionWorkOutcome(
   const domainDefinition = getConstructionDomainDefinition(domain.domain);
   const risk = classifyConstructionRisk({ domain: domain.domain, objectScope: object.objectScope, text: input.text });
   const materialSystem = getConstructionMaterialSystem(materialSystemKeyFor(workKey, domain.domain, object.objectScope));
-  const unknown = !intent.isConstruction || domain.domain === "unknown" || (!workKey && !domainDefinition.dangerousOrRegulated);
+  const unknown = !intent.isConstruction || domain.domain === "unknown";
   const outcome: WorldConstructionOutcome =
     disambiguation.ambiguous || object.ambiguous ? "AMBIGUOUS_NEEDS_DISAMBIGUATION" :
       unknown ? "TEMPLATE_GAP_SAFE_TRIAGE" :

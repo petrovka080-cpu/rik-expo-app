@@ -13,6 +13,7 @@ export const CONSTRUCTION_MATERIAL_SYSTEMS: readonly WorldConstructionMaterialSy
   { key: "ventilation_system", labelRu: "Вентиляция", materialKeys: ["duct", "grille", "fan", "damper", "insulation"], catalogPolicy: "candidate_or_gap_warning" },
   { key: "solar_pv_system", labelRu: "Солнечная электростанция", materialKeys: ["solar_panel", "inverter", "mounting", "dc_cable", "protection"], catalogPolicy: "candidate_or_gap_warning" },
   { key: "well_drilling_system", labelRu: "Скважина", materialKeys: ["casing", "filter", "pump", "gravel_pack", "head"], catalogPolicy: "candidate_or_gap_warning" },
+  { key: "industrial_equipment", labelRu: "Industrial equipment", materialKeys: ["equipment", "controls", "cable", "mounting", "protection"], catalogPolicy: "candidate_or_gap_warning" },
   { key: "concrete_rebar", labelRu: "Бетон и арматура", materialKeys: ["concrete", "rebar", "formwork", "wire", "spacers"], catalogPolicy: "candidate_or_gap_warning" },
   { key: "general_building", labelRu: "Общестроительные материалы", materialKeys: ["main_material", "auxiliary_material", "fasteners"], catalogPolicy: "candidate_or_gap_warning" },
   { key: "earthworks", labelRu: "Земляные работы", materialKeys: ["geotextile", "sand", "crushed_stone"], catalogPolicy: "candidate_or_gap_warning" },

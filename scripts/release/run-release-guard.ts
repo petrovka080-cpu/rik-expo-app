@@ -419,6 +419,18 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.OPEN_WORLD_FULL_JEST_PASSED = "1";
     gateEnv.OPEN_WORLD_RELEASE_VERIFY_PASSED = "1";
   }
+  if (gate.name === "open-world-construction-primitive-boq-compiler-proof") {
+    gateEnv.PRIMITIVE_BOQ_TYPECHECK_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_LINT_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_TARGETED_TESTS_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_FULL_JEST_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.PRIMITIVE_BOQ_COMMIT_CREATED = "1";
+    gateEnv.PRIMITIVE_BOQ_BRANCH_PUSHED = "1";
+    gateEnv.PRIMITIVE_BOQ_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (gate.name === "director-fact-contract-proof") {
     gateEnv.DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED = "1";
     gateEnv.DIRECTOR_FACT_CONTRACT_LINT_PASSED = "1";

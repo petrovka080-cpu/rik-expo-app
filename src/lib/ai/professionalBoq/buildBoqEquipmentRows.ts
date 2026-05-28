@@ -30,7 +30,7 @@ export function buildBoqEquipmentRows(workKey: string | null): ProfessionalBoqRo
       equipment("paver", "Асфальтоукладчик / техника", 1, 0.9),
       equipment("roller", "Каток для уплотнения", 1, 0.8),
       equipment("loader", "Погрузчик / доставка смеси", 1, 0.5),
-    ].map((row) => ({ ...row, unit: "sq_m" }));
+    ];
   }
   if (workKey === "roof_waterproofing" || workKey === "gable_roof_installation") {
     return [
