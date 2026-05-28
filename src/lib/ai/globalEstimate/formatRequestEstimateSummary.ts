@@ -18,6 +18,41 @@ function taxStatusRu(result: GlobalEstimateResult): string {
   return formatEstimateUserTextRu(result.tax.taxLabel || "требует уточнения");
 }
 
+function sourceLabelRu(label?: string | null): string {
+  if (!label) return "ставки требуют локального подтверждения";
+  if (/configured backend regional reference rate/i.test(label)) return "справочник региональных ставок";
+  if (/backend|pricebook|reference rate/i.test(label)) return "справочник ставок";
+  return formatEstimateUserTextRu(label);
+}
+
+function countryLabelRu(result: GlobalEstimateResult): string | null {
+  const labels: Record<string, string> = {
+    KG: "Кыргызстан",
+    KZ: "Казахстан",
+    US: "США",
+    GB: "Великобритания",
+    DE: "Германия",
+    FR: "Франция",
+  };
+  if (result.locale.countryCode === "XX" || result.locale.addressPrecision === "unknown") return null;
+  return labels[result.locale.countryCode] ?? result.locale.countryCode;
+}
+
+function localContextLine(result: GlobalEstimateResult): string {
+  const location = [
+    countryLabelRu(result),
+    result.locale.stateOrRegion,
+    result.locale.city,
+  ].filter(Boolean).join(", ") || "регион не указан";
+  const rateSource = result.sources.find((source) => !/tax|vat|gst|nds|sales/i.test(`${source.id} ${source.label}`));
+  return [
+    `Локальный контекст: регион ${location}`,
+    `валюта ${result.totals.currency}`,
+    `источник ставок: ${sourceLabelRu(rateSource?.label ?? result.sources[0]?.label)}`,
+    `уверенность ${confidenceRu(result.confidence)}`,
+  ].join("; ") + ".";
+}
+
 function dimensionsLine(result: GlobalEstimateResult): string | null {
   const dimensions = result.input.dimensions;
   if (!dimensions?.length || !dimensions.width || !dimensions.height) return null;
@@ -48,6 +83,7 @@ export function formatRequestEstimateSummary(result: GlobalEstimateResult): stri
     volumeLine(result),
     `Итого: ${formatEstimateMoney(result.totals.grandTotal, result.totals.currency)}.`,
     `Налоговый статус: ${taxStatusRu(result)}.`,
+    localContextLine(result),
     `Точность расчёта: ${confidenceRu(result.confidence)}.`,
     "Перед отправкой заявки проверьте объёмы и контакты.",
   ].filter((line): line is string => typeof line === "string");

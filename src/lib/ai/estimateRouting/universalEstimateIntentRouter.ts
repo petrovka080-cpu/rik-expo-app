@@ -45,20 +45,20 @@ export function buildGlobalEstimateInputFromRoute(route: EstimateIntentRoute, in
     ? (route.confidence === "high" ? "medium" : route.confidence)
     : undefined;
   return {
+    ...input,
     text: route.originalText,
     explicitWorkKey: fallbackWorkKeyForEstimateRoute(route),
-    volume: route.volume,
-    unit: route.unit,
-    language: route.language,
+    volume: route.volume ?? input.volume,
+    unit: route.unit ?? input.unit,
+    language: route.language ?? input.language,
     countryCode: route.location?.countryCode ?? input.countryCode ?? "KG",
     stateOrRegion: route.location?.stateOrRegion ?? input.stateOrRegion,
     city: route.location?.city ?? input.city,
     postalCode: route.location?.postalCode ?? input.postalCode,
-    includeMaterials: true,
-    includeLabor: true,
-    includeTax: true,
-    confidenceOverride,
-    ...input,
+    includeMaterials: input.includeMaterials ?? true,
+    includeLabor: input.includeLabor ?? true,
+    includeTax: input.includeTax ?? true,
+    confidenceOverride: confidenceOverride ?? input.confidenceOverride,
   };
 }
 

@@ -1,3 +1,4 @@
+import { resolveCountryRegionCity } from "../globalLocalContext";
 import type { EstimateIntentExtraction } from "./estimateRoutingTypes";
 
 export function normalizeEstimatePromptText(value: string): string {
@@ -34,6 +35,14 @@ export function extractEstimateVolume(text: string): { volume?: number; unit?: s
 
 export function extractEstimateLocation(text: string): EstimateIntentExtraction["location"] {
   const normalized = normalizeEstimatePromptText(text);
+  const localContext = resolveCountryRegionCity({ prompt: text });
+  if (localContext.source === "explicit_prompt" && localContext.countryCode) {
+    return {
+      countryCode: localContext.countryCode,
+      stateOrRegion: localContext.region,
+      city: localContext.city,
+    };
+  }
   if (/(бишкек|кыргыз|kg|kgs)/.test(normalized)) return { countryCode: "KG", city: "Bishkek" };
   if (/(дубай|dubai|uae|оаэ)/.test(normalized)) return { countryCode: "AE", city: "Dubai" };
   if (/(dallas|texas|tx|сша|usa|us)/.test(normalized)) return { countryCode: "US", stateOrRegion: "TX", city: "Dallas" };

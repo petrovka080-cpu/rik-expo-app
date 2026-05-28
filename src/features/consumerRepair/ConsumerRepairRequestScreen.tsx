@@ -130,7 +130,7 @@ export class ConsumerRepairRequestScreen extends React.Component<ConsumerRepairR
   }
 
   private buildDraftBundle(): ConsumerRepairDraftBundle {
-    const aiDraft = buildConsumerRepairAiDraft(this.state.problemText);
+    const aiDraft = buildConsumerRepairAiDraft(this.state.problemText, { city: this.state.city || undefined });
     const bundle = createConsumerRepairRequestDraft({
       consumerUserId: CONSUMER_USER_ID,
       problemText: this.state.problemText,

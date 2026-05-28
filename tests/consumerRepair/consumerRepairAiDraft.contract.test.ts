@@ -11,4 +11,13 @@ describe("consumer repair AI draft contract", () => {
     expect(answer.startsWith("Коротко:")).toBe(true);
     expect(answer).not.toMatch(/не найдено|интернет не использовался|PDF не найден/i);
   });
+
+  it("keeps missing-location warning visible when request form has no city", () => {
+    const draft = buildConsumerRepairAiDraft("смета на кладку кирпича 74 кв метров", { city: "" });
+    const visibleText = [draft.summaryRu, ...draft.missingData].join("\n").toLocaleLowerCase("ru-RU");
+
+    expect(visibleText).toContain("регион не указан");
+    expect(visibleText).toContain("уточните страну/город");
+    expect(visibleText).not.toContain("точная локальная цена");
+  });
 });

@@ -50,12 +50,22 @@ export type EstimatePresentationSection = {
   rows: EstimatePresentationRow[];
 };
 
+export type EstimatePresentationLocalContext = {
+  countryCode: string;
+  locationLabel: string;
+  currency: string;
+  taxLabel: string;
+  confidence: GlobalEstimateConfidence;
+  displayLine: string;
+};
+
 export type EstimatePresentationViewModel = {
   estimateId: string;
   workKey: string;
   workTitle: string;
   workCategory: string;
   originalText?: string;
+  localContext: EstimatePresentationLocalContext;
   assumptions: string[];
   sections: EstimatePresentationSection[];
   rows: EstimatePresentationRow[];

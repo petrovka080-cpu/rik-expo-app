@@ -43,40 +43,40 @@ const CASES: AndroidGlobalLocalCase[] = [
   {
     id: "request_roof_waterproofing_bishkek",
     route: "/request",
-    prompt: "смета на гидроизоляцию крыши 100 кв м в Бишкеке",
+    prompt: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044e \u043a\u0440\u044b\u0448\u0438 100 \u043a\u0432 \u043c \u0432 \u0411\u0438\u0448\u043a\u0435\u043a\u0435",
     mode: "estimate",
-    workTokens: ["кров", "праймер", "гидроизоляц", "мембран", "примыкан"],
-    localTokens: ["Бишкек", "KGS", "регион", "налог", "источник"],
+    workTokens: ["\u043a\u0440\u043e\u0432", "\u043f\u0440\u0430\u0439\u043c\u0435\u0440", "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446", "\u043c\u0435\u043c\u0431\u0440\u0430\u043d", "\u043f\u0440\u0438\u043c\u044b\u043a\u0430\u043d"],
+    localTokens: ["\u0411\u0438\u0448\u043a\u0435\u043a", "KGS", "\u0440\u0435\u0433\u0438\u043e\u043d", "\u043d\u0430\u043b\u043e\u0433", "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a"],
     minWorkMatches: 4,
     minLocalMatches: 3,
   },
   {
     id: "request_hydro_turbine_kyrgyzstan",
     route: "/request",
-    prompt: "смета на установку турбины на ГЭС 100 кВт в Кыргызстане",
+    prompt: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u043a\u0443 \u0442\u0443\u0440\u0431\u0438\u043d\u044b \u043d\u0430 \u0413\u042d\u0421 100 \u043a\u0412\u0442 \u0432 \u041a\u044b\u0440\u0433\u044b\u0437\u0441\u0442\u0430\u043d\u0435",
     mode: "estimate",
-    workTokens: ["турбин", "генератор", "шкаф", "кабель", "ПНР"],
-    localTokens: ["Кыргызстан", "KGS", "НДС", "источник", "валюта"],
+    workTokens: ["\u0442\u0443\u0440\u0431\u0438\u043d", "\u0433\u0435\u043d\u0435\u0440\u0430\u0442\u043e\u0440", "\u0448\u043a\u0430\u0444", "\u043a\u0430\u0431\u0435\u043b", "\u041f\u041d\u0420"],
+    localTokens: ["\u041a\u044b\u0440\u0433\u044b\u0437\u0441\u0442\u0430\u043d", "KGS", "\u041d\u0414\u0421", "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a", "\u0432\u0430\u043b\u044e\u0442\u0430"],
     minWorkMatches: 4,
     minLocalMatches: 3,
   },
   {
     id: "request_missing_location_brick",
     route: "/request",
-    prompt: "смета на кладку кирпича 74 кв метров",
+    prompt: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u043a\u043b\u0430\u0434\u043a\u0443 \u043a\u0438\u0440\u043f\u0438\u0447\u0430 74 \u043a\u0432 \u043c\u0435\u0442\u0440\u043e\u0432",
     mode: "missing_location",
-    workTokens: ["кирпич", "раствор", "кладк", "армирован"],
-    localTokens: ["регион", "уточните", "страна", "город", "ориентировоч"],
+    workTokens: ["\u043a\u0438\u0440\u043f\u0438\u0447", "\u0440\u0430\u0441\u0442\u0432\u043e\u0440", "\u043a\u043b\u0430\u0434\u043a", "\u0430\u0440\u043c\u0438\u0440\u043e\u0432\u0430\u043d"],
+    localTokens: ["\u0440\u0435\u0433\u0438\u043e\u043d", "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0435", "\u0441\u0442\u0440\u0430\u043d\u0430", "\u0433\u043e\u0440\u043e\u0434", "\u043e\u0440\u0438\u0435\u043d\u0442\u0438\u0440\u043e\u0432\u043e\u0447"],
     minWorkMatches: 3,
     minLocalMatches: 2,
   },
   {
     id: "embedded_asphalt_almaty",
     route: "/ai?context=foreman",
-    prompt: "смета на асфальтирование 10000 кв м в Алматы",
+    prompt: "\u0441\u043c\u0435\u0442\u0430 \u043d\u0430 \u0430\u0441\u0444\u0430\u043b\u044c\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 10000 \u043a\u0432 \u043c \u0432 \u0410\u043b\u043c\u0430\u0442\u044b",
     mode: "estimate",
-    workTokens: ["песок", "щеб", "битум", "асфальтобетон", "уплотн"],
-    localTokens: ["Алматы", "KZT", "Казахстан", "VAT", "источник"],
+    workTokens: ["\u043f\u0435\u0441\u043e\u043a", "\u0449\u0435\u0431", "\u0431\u0438\u0442\u0443\u043c", "\u0430\u0441\u0444\u0430\u043b\u044c\u0442\u043e\u0431\u0435\u0442\u043e\u043d", "\u0443\u043f\u043b\u043e\u0442\u043d"],
+    localTokens: ["\u0410\u043b\u043c\u0430\u0442\u044b", "KZT", "\u041a\u0430\u0437\u0430\u0445\u0441\u0442\u0430\u043d", "VAT", "\u0438\u0441\u0442\u043e\u0447\u043d\u0438\u043a"],
     minWorkMatches: 4,
     minLocalMatches: 3,
   },
@@ -93,10 +93,10 @@ const CASES: AndroidGlobalLocalCase[] = [
   {
     id: "embedded_ambiguous_waterproofing",
     route: "/ai?context=foreman",
-    prompt: "гидроизоляция 100 кв м",
+    prompt: "\u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f 100 \u043a\u0432 \u043c",
     mode: "ambiguous",
-    workTokens: ["уточ", "кров", "ванн", "фундамент"],
-    localTokens: ["регион", "город", "страна", "уточните"],
+    workTokens: ["\u0443\u0442\u043e\u0447", "\u043a\u0440\u043e\u0432", "\u0432\u0430\u043d\u043d", "\u0444\u0443\u043d\u0434\u0430\u043c\u0435\u043d\u0442"],
+    localTokens: ["\u0440\u0435\u0433\u0438\u043e\u043d", "\u0433\u043e\u0440\u043e\u0434", "\u0441\u0442\u0440\u0430\u043d\u0430", "\u0443\u0442\u043e\u0447\u043d\u0438\u0442\u0435"],
     minWorkMatches: 3,
     minLocalMatches: 2,
   },
@@ -125,16 +125,28 @@ function hasGenericRows(text: string): boolean {
   return /(^|\n)\s*(Строительные работы|Осмотр|Ремонтные работы|Материалы по согласованию|Работы по согласованию|Construction work|Repair work)\s*(\n|$)/i.test(text);
 }
 
-function buildRouteUri(testCase: AndroidGlobalLocalCase): string {
+function buildRouteUri(testCase: AndroidGlobalLocalCase, variant: "canonical" | "scheme" | "tabs" = "canonical"): string {
   const query = new URLSearchParams();
   query.set("prompt", testCase.prompt);
   if (testCase.route === "/request") {
     query.set("autoPrepare", "1");
+    if (variant === "scheme") return `rik://request?${query.toString()}`;
+    if (variant === "tabs") return `rik:///%28tabs%29/request?${query.toString()}`;
     return `rik:///request?${query.toString()}`;
   }
   query.set("context", "foreman");
   query.set("autoSend", "1");
+  if (variant === "scheme") return `rik://ai?${query.toString()}`;
+  if (variant === "tabs") return `rik:///%28tabs%29/ai?${query.toString()}`;
   return `rik:///ai?${query.toString()}`;
+}
+
+function buildRouteUriCandidates(testCase: AndroidGlobalLocalCase): string[] {
+  return [
+    buildRouteUri(testCase, "canonical"),
+    buildRouteUri(testCase, "scheme"),
+    buildRouteUri(testCase, "tabs"),
+  ];
 }
 
 function routeReady(testCase: AndroidGlobalLocalCase, screen: ReturnType<typeof captureScreenInDir>): boolean {
@@ -162,7 +174,16 @@ async function waitForScreen(
 
 async function captureScrollableText(id: string): Promise<ReturnType<typeof captureScreenInDir>[]> {
   const captures = [captureScreenInDir(`${id}_top`, ARTIFACT_DIR)];
-  for (let index = 1; index <= 6; index += 1) {
+  for (let index = 1; index <= 5; index += 1) {
+    try {
+      runAdb(["shell", "input", "swipe", "540", "650", "540", "1600", "500"], 8000);
+    } catch {
+      // The next UI dump records the actual Android state.
+    }
+    await sleep(800);
+    captures.push(captureScreenInDir(`${id}_reverse_${index}`, ARTIFACT_DIR));
+  }
+  for (let index = 1; index <= 8; index += 1) {
     try {
       runAdb(["shell", "input", "swipe", "540", "1500", "540", "540", "450"], 8000);
     } catch {
@@ -177,9 +198,20 @@ async function captureScrollableText(id: string): Promise<ReturnType<typeof capt
 async function runCase(testCase: AndroidGlobalLocalCase, device: Awaited<ReturnType<typeof ensureAndroidApi34DeviceReady>>) {
   setupAndroidRuntime(PORT, APP_PACKAGE);
   openDeepLink(buildDevClientUri(PORT));
-  const root = await waitForScreen(`${testCase.id}_root`, (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY), 90_000);
+  let root = await waitForScreen(`${testCase.id}_root`, (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY), 90_000);
   const screenshots = [root.screenshot_path].filter((item): item is string => Boolean(item));
   const uiDumps = [root.ui_dump_path].filter((item): item is string => Boolean(item));
+  if (!root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
+    setupAndroidRuntime(PORT, APP_PACKAGE);
+    openDeepLink(buildDevClientUri(PORT));
+    root = await waitForScreen(
+      `${testCase.id}_root_retry`,
+      (screen) => screen.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY),
+      75_000,
+    );
+    if (root.screenshot_path) screenshots.push(root.screenshot_path);
+    if (root.ui_dump_path) uiDumps.push(root.ui_dump_path);
+  }
 
   if (!root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY)) {
     return {
@@ -203,10 +235,49 @@ async function runCase(testCase: AndroidGlobalLocalCase, device: Awaited<ReturnT
     };
   }
 
-  openDeepLink(buildRouteUri(testCase));
-  const loaded = await waitForScreen(`${testCase.id}_loaded`, (screen) => routeReady(testCase, screen), 60_000);
+  let loaded: ReturnType<typeof captureScreenInDir> | null = null;
+  const routeUris = buildRouteUriCandidates(testCase);
+  for (let uriIndex = 0; uriIndex < routeUris.length; uriIndex += 1) {
+    openDeepLink(routeUris[uriIndex]);
+    loaded = await waitForScreen(
+      `${testCase.id}_loaded_${uriIndex + 1}`,
+      (screen) => routeReady(testCase, screen),
+      uriIndex === 0 ? 60_000 : 35_000,
+    );
+    if (routeReady(testCase, loaded)) break;
+  }
+  loaded = loaded ?? captureScreenInDir(`${testCase.id}_loaded_failed`, ARTIFACT_DIR);
   if (loaded.screenshot_path) screenshots.push(loaded.screenshot_path);
   if (loaded.ui_dump_path) uiDumps.push(loaded.ui_dump_path);
+  if (!routeReady(testCase, loaded)) {
+    return {
+      id: testCase.id,
+      route: testCase.route,
+      prompt: testCase.prompt,
+      mode: testCase.mode,
+      device_id: device.device_id,
+      avd_name: device.avd_name,
+      android_sdk: device.android_sdk,
+      cpu_abi: device.cpu_abi,
+      route_marker_visible: false,
+      prompt_submitted: true,
+      response_visible: false,
+      work_specific_rows_found: false,
+      local_context_visible: false,
+      source_confidence_visible: /источник|source|confidence|уверенн/i.test(loaded.visibleText),
+      tax_or_warning_visible: false,
+      pdf_action_visible: false,
+      generic_known_work_rows_found: hasGenericRows(loaded.visibleText),
+      screenshot_path: screenshots.find((item) => fileIsReal(item, 1000)) ?? null,
+      ui_dump_path: uiDumps.find((item) => fileIsReal(item, 1000)) ?? null,
+      visible_rows: loaded.visibleText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(0, 80),
+      screenshots,
+      uiDumps,
+      error: "ROUTE_MARKER_NOT_VISIBLE_AFTER_DEEP_LINK",
+      error_if_any: "ROUTE_MARKER_NOT_VISIBLE_AFTER_DEEP_LINK",
+      passed: false,
+    };
+  }
   await sleep(9000);
   const captures = await captureScrollableText(`${testCase.id}_after_prompt`);
   screenshots.push(...captures.map((capture) => capture.screenshot_path).filter((item): item is string => Boolean(item)));

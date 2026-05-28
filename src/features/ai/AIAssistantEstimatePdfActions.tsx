@@ -134,6 +134,11 @@ export function AIAssistantEstimateTable({ source, presentation }: EstimateTable
         <Text style={styles.estimateTableMeta}>
           {rows.length} строк · {viewModel?.totals.displayGrandTotal ?? formatEstimatePresentationMoney(source.estimate.totals?.grandTotal, currency)}
         </Text>
+        {viewModel?.localContext.displayLine ? (
+          <Text style={styles.estimateTableMeta} testID="ai-estimate-local-context">
+            {viewModel.localContext.displayLine}
+          </Text>
+        ) : null}
         <Text style={styles.estimateTableMeta} testID="ai-estimate-source-confidence">
           Источники: {viewModel?.sourceLabels[0] ?? rows[0]?.sourceLabel ?? rows[0]?.sourceId} · уверенность: {formatEstimatePresentationConfidence(viewModel?.sourceConfidence ?? rows[0]?.confidence)}
         </Text>

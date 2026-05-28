@@ -3,6 +3,7 @@ import {
   type ConsumerRepairAiDraft,
 } from "../../lib/consumerRequests";
 import { answerBuiltInAi } from "../../lib/ai/builtInAi";
+import { resolveCountryRegionCity, type GlobalLocalContext } from "../../lib/ai/globalLocalContext";
 import { formatEstimateUnitLabel, formatEstimateUserTextRu } from "../../lib/ai/globalEstimate";
 
 const DANGEROUS_PATTERNS = [
@@ -18,6 +19,14 @@ export const CONSUMER_REPAIR_DANGEROUS_COPY =
   "Это может быть опасно. Не выполняйте ремонт самостоятельно. Я подготовлю заявку для специалиста.";
 
 const CONSUMER_REPAIR_DANGEROUS_UI_COPY = CONSUMER_REPAIR_DANGEROUS_COPY;
+
+export type ConsumerRepairAiDraftOptions = {
+  countryCode?: string | null;
+  city?: string | null;
+  region?: string | null;
+  userLocale?: string | null;
+  currency?: string | null;
+};
 
 export function isDangerousConsumerRepairProblem(problemText: string): boolean {
   return DANGEROUS_PATTERNS.some((pattern) => pattern.test(problemText));
@@ -151,42 +160,93 @@ function safeTriageDraft(problemText: string, safeMessageRu: string | undefined)
   };
 }
 
-export function buildConsumerRepairAiDraft(problemText: string): ConsumerRepairAiDraft {
+function compactText(value: string | null | undefined): string | undefined {
+  const compacted = String(value ?? "").trim();
+  return compacted.length > 0 ? compacted : undefined;
+}
+
+function unique(items: string[]): string[] {
+  return [...new Set(items.map((item) => item.trim()).filter(Boolean))];
+}
+
+function resolveRequestLocalContext(
+  text: string,
+  options: ConsumerRepairAiDraftOptions | undefined,
+): GlobalLocalContext | null {
+  if (!options) return null;
+  const locationPrompt = unique([text, compactText(options.city) ?? "", compactText(options.region) ?? ""]).join(" ");
+  return resolveCountryRegionCity({
+    prompt: locationPrompt,
+    countryCode: compactText(options.countryCode),
+    city: compactText(options.city),
+    region: compactText(options.region),
+    userLocale: compactText(options.userLocale),
+    currency: compactText(options.currency),
+  });
+}
+
+function applyLocalContextWarnings(
+  draft: ConsumerRepairAiDraft,
+  context: GlobalLocalContext | null,
+): ConsumerRepairAiDraft {
+  if (!context?.warnings.length) return draft;
+  const warning = context.warnings[0];
+  return {
+    ...draft,
+    summaryRu: draft.summaryRu.includes(warning) ? draft.summaryRu : `${draft.summaryRu} ${warning}`,
+    missingData: unique([...context.warnings, ...draft.missingData, "страна и город объекта"]),
+  };
+}
+
+export function buildConsumerRepairAiDraft(
+  problemText: string,
+  options?: ConsumerRepairAiDraftOptions,
+): ConsumerRepairAiDraft {
   const text = problemText.trim();
+  const localContext = resolveRequestLocalContext(text, options);
+  const aiCountryCode = localContext
+    ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? "XX" : localContext.countryCode ?? "XX"
+    : "KG";
+  const aiCity = localContext
+    ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
+    : "Bishkek";
   const builtInAiEstimate = answerBuiltInAi({
     text,
     screenContext: "request",
     route: "/request",
     role: "consumer",
-    countryCode: "KG",
-    cityOrRegion: "Bishkek",
+    countryCode: aiCountryCode,
+    cityOrRegion: aiCity,
   });
   if (builtInAiEstimate.toolResult.estimate) {
-    return buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate);
+    return applyLocalContextWarnings(
+      buildConsumerRepairAiDraftFromGlobalEstimate(builtInAiEstimate.toolResult.estimate),
+      localContext,
+    );
   }
   if (
     builtInAiEstimate.toolResult.blockedBy === "AMBIGUOUS_NEEDS_DISAMBIGUATION" ||
     builtInAiEstimate.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE"
   ) {
-    return safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed);
+    return applyLocalContextWarnings(safeTriageDraft(text, builtInAiEstimate.toolResult.fallbackUsed), localContext);
   }
   if (isDangerousConsumerRepairProblem(text)) {
-    return {
+    return applyLocalContextWarnings({
       ...genericDraft(),
       titleRu: "Заявка специалисту",
       summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
-    };
+    }, localContext);
   }
   const lowercaseText = text.toLocaleLowerCase("ru-RU");
-  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442");
-  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442");
-  if (/ламинат/i.test(text)) return flooringDraft(text, "ламинат");
-  if (/паркет|инженерн/i.test(text)) return flooringDraft(text, "паркет");
-  if (/пол|плинтус|подложк/i.test(text)) return flooringDraft(text, "пол");
-  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return plumbingDraft();
-  return genericDraft();
+  if (lowercaseText.includes("\u043b\u0430\u043c\u0438\u043d\u0430\u0442")) return applyLocalContextWarnings(flooringDraft(text, "\u043b\u0430\u043c\u0438\u043d\u0430\u0442"), localContext);
+  if (lowercaseText.includes("\u043f\u0430\u0440\u043a\u0435\u0442") || lowercaseText.includes("\u0438\u043d\u0436\u0435\u043d\u0435\u0440\u043d")) return applyLocalContextWarnings(flooringDraft(text, "\u043f\u0430\u0440\u043a\u0435\u0442"), localContext);
+  if (/ламинат/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "ламинат"), localContext);
+  if (/паркет|инженерн/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "паркет"), localContext);
+  if (/пол|плинтус|подложк/i.test(text)) return applyLocalContextWarnings(flooringDraft(text, "пол"), localContext);
+  if (/сантех|смесител|труб|протеч|кран/i.test(text)) return applyLocalContextWarnings(plumbingDraft(), localContext);
+  return applyLocalContextWarnings(genericDraft(), localContext);
 }
 
 export function composeConsumerRepairDraftAnswerRu(draft: ConsumerRepairAiDraft): string {

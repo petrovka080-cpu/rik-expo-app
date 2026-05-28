@@ -11,6 +11,7 @@ import {
   GLOBAL_RATE_MATERIALS,
   type EstimateRowSourceEvidence,
 } from "../globalEstimate";
+import { buildLocalContextWarning, resolveCountryRegionCity } from "../globalLocalContext";
 import { runWorldConstructionEstimateEngine } from "../worldConstructionEstimateEngine";
 import type {
   BuiltInAiInput,
@@ -75,6 +76,17 @@ function buildProductSearchResult(input: BuiltInAiInput, route: BuiltInAiIntentR
   };
 }
 
+function withPromptLocalContextWarning(prompt: string, safeMessageRu: string | undefined): string | undefined {
+  const localContext = resolveCountryRegionCity({ prompt });
+  const warning = buildLocalContextWarning(localContext);
+  const governanceLine =
+    "После уточнения локальная смета покажет валюту, налог/VAT/GST, catalog/catalog gap, источник и уверенность; fake catalog items и fake prices запрещены.";
+  const parts = [safeMessageRu];
+  if (warning && !safeMessageRu?.includes(warning)) parts.push(warning);
+  if (!safeMessageRu?.includes(governanceLine)) parts.push(governanceLine);
+  return parts.filter(Boolean).join("\n");
+}
+
 function calculateGlobalEstimate(input: BuiltInAiInput): {
   estimate?: ReturnType<typeof calculateGlobalConstructionEstimateSync>;
   blockedBy?: string;
@@ -83,8 +95,8 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
 } {
   const estimateRoute = routeUniversalEstimateIntent(input.text);
   const baseInput = buildGlobalEstimateInputFromRoute(estimateRoute, {
-    countryCode: input.countryCode ?? estimateRoute.location?.countryCode ?? "KG",
-    city: input.cityOrRegion ?? estimateRoute.location?.city ?? "Bishkek",
+    countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
+    city: estimateRoute.location?.city ?? input.cityOrRegion ?? "Bishkek",
   });
   const world = runWorldConstructionEstimateEngine({
     ...baseInput,
@@ -113,7 +125,7 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   if (world.interpretation.shouldAskClarifyingQuestion) {
     return {
       blockedBy: world.interpretation.primitive.outcome,
-      safeMessageRu: world.safeMessageRu,
+      safeMessageRu: withPromptLocalContextWarning(input.text, world.safeMessageRu),
       worldClassification: world.interpretation.classification,
     };
   }
@@ -141,7 +153,7 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
   if (world.interpretation.shouldAskClarifyingQuestion || world.interpretation.shouldReturnTemplateGap) {
     return {
       blockedBy: world.interpretation.primitive.outcome,
-      safeMessageRu: world.safeMessageRu,
+      safeMessageRu: withPromptLocalContextWarning(input.text, world.safeMessageRu),
       worldClassification: world.interpretation.classification,
     };
   }

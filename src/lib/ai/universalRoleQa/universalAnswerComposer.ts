@@ -385,8 +385,8 @@ export function answerUniversalRoleQa(input: UniversalRoleQaOrchestratorInput): 
   const shouldUseGlobalEstimate = estimateRoute.shouldCallEstimateTool;
   const globalEstimateResult = shouldUseGlobalEstimate
     ? calculateGlobalConstructionEstimateSync(buildGlobalEstimateInputFromRoute(estimateRoute, {
-      countryCode: input.countryCode ?? estimateRoute.location?.countryCode ?? "KG",
-      city: input.cityOrRegion ?? estimateRoute.location?.city,
+      countryCode: estimateRoute.location?.countryCode ?? input.countryCode ?? "KG",
+      city: estimateRoute.location?.city ?? input.cityOrRegion,
     }))
     : undefined;
   const sourcePlan = planUniversalRoleQaSources({
