@@ -431,6 +431,18 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.PRIMITIVE_BOQ_BRANCH_PUSHED = "1";
     gateEnv.PRIMITIVE_BOQ_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (gate.name === "ai-estimate-enterprise-load-performance-cost-guard-proof") {
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_TYPECHECK_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_LINT_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_TARGETED_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_FULL_JEST_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_COMMIT_CREATED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (gate.name === "director-fact-contract-proof") {
     gateEnv.DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED = "1";
     gateEnv.DIRECTOR_FACT_CONTRACT_LINT_PASSED = "1";

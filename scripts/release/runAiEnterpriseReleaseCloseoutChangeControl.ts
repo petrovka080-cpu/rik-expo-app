@@ -71,6 +71,8 @@ const OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE =
   "S_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_POINT_OF_NO_RETURN";
 const OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE =
   "S_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
+  "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
 
@@ -1279,6 +1281,27 @@ function isOpenWorldConstructionPrimitiveBoqCompilerPath(file: string): boolean 
   );
 }
 
+function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/") ||
+    file === "src/lib/ai/globalEstimate/estimatePerformanceCostPolicy.ts" ||
+    file === "src/lib/ai/globalEstimate/evaluateEstimatePerformanceCost.ts" ||
+    file === "src/lib/ai/globalEstimate/index.ts" ||
+    file === "scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/performance/aiEstimateEnterpriseLoadPerformanceCostPolicy.contract.test.ts" ||
+    file === "tests/performance/aiEstimateEnterpriseLoadBudget.contract.test.ts" ||
+    file === "tests/architecture/aiEstimateEnterpriseNoNetworkCostInSyncPath.contract.test.ts" ||
+    file === "tests/architecture/aiEstimateEnterpriseNoUnboundedLoops.contract.test.ts" ||
+    file === "tests/architecture/androidRouteBootstrapNoEstimateEngineChange.contract.test.ts" ||
+    file === "tests/architecture/androidAppRootReadyMarkerNoEstimateEngineChange.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts"
+  );
+}
+
 function isPlatformDirectorFactContractPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_PLATFORM_DIRECTOR_FACT_CONTRACT/") ||
@@ -1294,6 +1317,16 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isAiEstimateEnterpriseLoadPerformanceCostGuardPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized === "tests/perf/performance-budget.test.ts" ? "performance_budget" : "ai_wave_file",
+      wave: AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate enterprise load, latency, heap, zero provider cost, static runtime scan, proof runner, and release guard wiring",
+    };
+  }
   if (isOpenWorldConstructionPrimitiveBoqCompilerPath(normalized)) {
     return {
       file: normalized,

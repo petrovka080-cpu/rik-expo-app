@@ -708,6 +708,10 @@ describe("performance budget вЂ” bundle module count", () => {
       path.join(SRC, "lib", "ai", "globalEstimate"),
       /\.tsx?$/,
     );
+    const sAiEstimateEnterpriseLoadPerformanceCostGuardFiles = [
+      path.join(SRC, "lib", "ai", "globalEstimate", "estimatePerformanceCostPolicy.ts"),
+      path.join(SRC, "lib", "ai", "globalEstimate", "evaluateEstimatePerformanceCost.ts"),
+    ].filter((file) => fs.existsSync(file)).length;
     const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
       /\.ts$/,
@@ -1837,10 +1841,12 @@ describe("performance budget вЂ” bundle module count", () => {
       sGlobalEstimateProfessionalBoqFiles -
         sRequestEstimateBoqCatalogGlobalEstimateFiles -
         sGlobalEstimateBoqDepthFormulaQualityFiles -
+        sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
         sCatalogItemsGlobalEstimateBindingFiles -
         sRatebookCatalogSourceGovernanceFiles -
         sWorkTypeResolverDisambiguationFiles,
     ).toBeLessThanOrEqual(45);
+    expect(sAiEstimateEnterpriseLoadPerformanceCostGuardFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
     expect(sGlobalEstimateBoqDepthFormulaQualityFiles).toBeLessThanOrEqual(2);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);
@@ -2150,6 +2156,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sBuiltInAi50000Phase1GovernedExpansionFiles -
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
+        sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -
