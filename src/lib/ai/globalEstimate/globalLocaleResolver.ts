@@ -13,6 +13,7 @@ const COUNTRY_DEFAULTS: Record<string, CountryDefaults> = {
   KG: { locale: "ru-KG", language: "ru", currency: "KGS", unitSystem: "metric", taxMode: "nds", taxIncludedByDefault: false },
   US: { locale: "en-US", language: "en", currency: "USD", unitSystem: "imperial", taxMode: "sales_tax", taxIncludedByDefault: false },
   CA: { locale: "en-CA", language: "en", currency: "CAD", unitSystem: "imperial", taxMode: "gst", taxIncludedByDefault: false },
+  KZ: { locale: "ru-KZ", language: "ru", currency: "KZT", unitSystem: "metric", taxMode: "vat", taxIncludedByDefault: false },
   DE: { locale: "de-DE", language: "de", currency: "EUR", unitSystem: "metric", taxMode: "vat", taxIncludedByDefault: true },
   FR: { locale: "fr-FR", language: "fr", currency: "EUR", unitSystem: "metric", taxMode: "vat", taxIncludedByDefault: true },
   GB: { locale: "en-GB", language: "en", currency: "GBP", unitSystem: "metric", taxMode: "vat", taxIncludedByDefault: true },
@@ -33,7 +34,12 @@ function inferLanguage(text?: string): string | undefined {
 function inferLocation(text?: string): Partial<Pick<GlobalLocaleContext, "countryCode" | "stateOrRegion" | "city" | "postalCode">> {
   const value = text ?? "";
   const postal = value.match(/\b\d{5}(?:-\d{4})?\b/)?.[0];
-  if (/бишкек|bishkek|kyrgyz/i.test(value)) return { countryCode: "KG", city: "Bishkek", postalCode: postal };
+  if (/чуй|chui|chuy/i.test(value)) return { countryCode: "KG", stateOrRegion: "Chuy", postalCode: postal };
+  if (/бишкек|bishkek|кыргыз|киргиз|kyrgyz/i.test(value)) return { countryCode: "KG", city: /бишкек|bishkek/i.test(value) ? "Bishkek" : undefined, postalCode: postal };
+  if (/алматы|almaty/i.test(value)) return { countryCode: "KZ", city: "Almaty", postalCode: postal };
+  if (/астана|astana/i.test(value)) return { countryCode: "KZ", city: "Astana", postalCode: postal };
+  if (/казахстан|kazakhstan/i.test(value)) return { countryCode: "KZ", postalCode: postal };
+  if (/austin/i.test(value)) return { countryCode: "US", stateOrRegion: "TX", city: "Austin", postalCode: postal };
   if (/dallas/i.test(value)) return { countryCode: "US", stateOrRegion: "TX", city: "Dallas", postalCode: postal };
   if (/texas|\btx\b/i.test(value)) return { countryCode: "US", stateOrRegion: "TX", postalCode: postal };
   if (/california|\bca\b/i.test(value)) return { countryCode: "US", stateOrRegion: "CA", postalCode: postal };

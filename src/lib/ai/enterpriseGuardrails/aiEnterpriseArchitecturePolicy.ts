@@ -10,10 +10,13 @@ export type AiEnterpriseLayer =
   | "estimatePresentation"
   | "estimatePdf"
   | "globalEstimate"
+  | "globalLocalContext"
   | "worldConstructionOntology"
   | "worldConstructionInterpreter"
   | "professionalBoq"
   | "localEstimatePolicy"
+  | "localRateSources"
+  | "globalCatalogPolicy"
   | "catalogBinding"
   | "changeControl"
   | "universalRoleQa"
@@ -91,10 +94,13 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "estimatePresentation",
     "estimatePdf",
     "globalEstimate",
+    "globalLocalContext",
     "worldConstructionOntology",
     "worldConstructionInterpreter",
     "professionalBoq",
     "localEstimatePolicy",
+    "localRateSources",
+    "globalCatalogPolicy",
     "catalogBinding",
     "changeControl",
     "universalRoleQa",

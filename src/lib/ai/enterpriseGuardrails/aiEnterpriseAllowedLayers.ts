@@ -81,6 +81,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "globalLocalContext",
+    root: "src/lib/ai/globalLocalContext",
+    purpose: "Country, city, currency, units, tax warning, and local-context completeness policy for global local estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "worldConstructionOntology",
     root: "src/lib/ai/worldConstructionOntology",
     purpose: "Open-world construction domain, object, operation, method, unit, risk, and material-system ontology.",
@@ -102,6 +108,18 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     layer: "localEstimatePolicy",
     root: "src/lib/ai/localEstimatePolicy",
     purpose: "Country, city, currency, tax, and source-warning policy for local construction estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "localRateSources",
+    root: "src/lib/ai/localRateSources",
+    purpose: "Local rate/source hierarchy and priced-row source evidence validation for AI estimates.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "globalCatalogPolicy",
+    root: "src/lib/ai/globalCatalogPolicy",
+    purpose: "Region-aware catalog_items candidate policy, catalog-gap warnings, and fake supplier/stock/availability guard.",
     screenMayImportDirectly: false,
   },
   {
