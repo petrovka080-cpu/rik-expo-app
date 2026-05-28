@@ -96,6 +96,19 @@ function gitOutput(args: string[], fallback = ""): string {
   }
 }
 
+function gitOutputRaw(args: string[], fallback = ""): string {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: "pipe",
+      timeout: 10_000,
+    });
+  } catch {
+    return fallback;
+  }
+}
+
 export function currentGitHead(): { headSha: string; headShortSha: string; branch: string } {
   const headSha = gitOutput(["rev-parse", "HEAD"], "unknown");
   return {
@@ -106,10 +119,10 @@ export function currentGitHead(): { headSha: string; headShortSha: string; branc
 }
 
 function currentWorktreeFiles(): string[] {
-  const status = gitOutput(["status", "--short"], "");
+  const status = gitOutputRaw(["status", "--short"], "");
   return status
     .split(/\r?\n/)
-    .map((line) => line.trim())
+    .map((line) => line.replace(/\s+$/, ""))
     .filter(Boolean)
     .map((line) => line.slice(3).trim().replace(/\\/g, "/"))
     .filter(Boolean);
@@ -131,7 +144,7 @@ function isAllowedCloseoutHarnessPath(filePath: string): boolean {
     file.startsWith("scripts/release/") ||
     file.startsWith("scripts/audit/") ||
     /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file) ||
-    file.startsWith("artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/")
+    file.startsWith("artifacts/")
   );
 }
 

@@ -364,7 +364,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts" },
   { name: "built-in-ai-live-acceptance-baseline-proof", command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts" },
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
-  { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/release/runBuiltInAiReleaseEvidenceGate.ts --gate built-in-ai-1000-work-types-proof" },
+  { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
   { name: "built-in-ai-1000-post-boq-catalog-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts" },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
   { name: "built-in-ai-10000-post-boq-catalog-domain-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts" },
