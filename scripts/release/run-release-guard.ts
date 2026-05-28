@@ -591,7 +591,10 @@ function buildBaseReport(
 
 function runRequiredGates(repo: ReleaseRepoState): ReleaseGateResult[] {
   const releaseGuardEnv = buildInitialGateEnv(repo);
-  return REQUIRED_RELEASE_GATES.map((gate) => runGate(gate, releaseGuardEnv));
+  const cleanSnapshotGateNames = new Set<ReleaseGateDefinition["name"]>(["tsc", "expo-lint", "jest-run-in-band"]);
+  const cleanSnapshotGates = REQUIRED_RELEASE_GATES.filter((gate) => cleanSnapshotGateNames.has(gate.name));
+  const remainingGates = REQUIRED_RELEASE_GATES.filter((gate) => !cleanSnapshotGateNames.has(gate.name));
+  return [...cleanSnapshotGates, ...remainingGates].map((gate) => runGate(gate, releaseGuardEnv));
 }
 
 function main() {
