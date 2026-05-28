@@ -26,6 +26,10 @@ const WAVE = "S_AI_ESTIMATE_GLOBAL_LOCAL_CONTEXT_RATE_SOURCE_PLATFORM_POINT_OF_N
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts/S_GLOBAL_LOCAL_ESTIMATE_PLATFORM");
 
 type MatrixLike = Record<string, unknown>;
+type ArtifactLike = Record<string, unknown> | unknown[];
+
+const FOUNDATION_ONLY = process.argv.includes("--foundation-only");
+const REQUIRE_LIVE = process.argv.includes("--require-live") || process.env.GLOBAL_LOCAL_REQUIRE_LIVE === "1";
 
 function writeJson(name: string, value: unknown): void {
   fs.mkdirSync(ARTIFACT_DIR, { recursive: true });
@@ -38,8 +42,26 @@ function readMatrix(relativePath: string): MatrixLike | null {
   return JSON.parse(fs.readFileSync(absolutePath, "utf8")) as MatrixLike;
 }
 
+function readArtifact(name: string): ArtifactLike | null {
+  const artifact = path.join(ARTIFACT_DIR, name);
+  if (!fs.existsSync(artifact)) return null;
+  return JSON.parse(fs.readFileSync(artifact, "utf8")) as ArtifactLike;
+}
+
 function isGreen(matrix: MatrixLike | null, status: string): boolean {
   return matrix?.final_status === status && matrix.fake_green_claimed === false;
+}
+
+function envFlag(name: string): boolean {
+  return process.env[name] === "1" || process.env[name] === "true";
+}
+
+function boolField(value: ArtifactLike | null, field: string): boolean {
+  return !Array.isArray(value) && value?.[field] === true;
+}
+
+function nonEmptyArray(value: ArtifactLike | null): boolean {
+  return Array.isArray(value) && value.length > 0;
 }
 
 function proofCase(prompt: string, materialKey: string, unit = "sq_m") {
@@ -121,6 +143,47 @@ function main() {
   ];
   const failures = cases.flatMap((item) => item.failures.map((failure) => ({ prompt: item.prompt, failure })));
   const foundationReady = Object.values(prerequisites).every(Boolean) && failures.length === 0;
+  const webResults = readArtifact("web_results.json");
+  const androidResults = readArtifact("android_api34_results.json");
+  const pdfTextExtract = readArtifact("pdf_text_extract.json");
+  const webScreenshots = readArtifact("web_screenshots.json");
+  const androidScreenshots = readArtifact("android_screenshots.json");
+  const androidUiDumps = readArtifact("android_ui_dumps.json");
+
+  const liveEvidence = {
+    web_live_app_tested: boolField(webResults, "web_live_app_tested") || boolField(webResults, "playwright_web_passed"),
+    android_api34_tested: boolField(androidResults, "android_api34_tested") || boolField(androidResults, "android_api34_smoke_passed"),
+    api36_rejected: boolField(androidResults, "api36_rejected"),
+    pdf_text_extractable_sample:
+      boolField(pdfTextExtract, "pdf_text_extractable_sample") ||
+      (Array.isArray(pdfTextExtract) && pdfTextExtract.length > 0 && pdfTextExtract.every((item) => {
+        return typeof item === "object" && item != null && "pdf_text_extractable" in item && item.pdf_text_extractable === true;
+      })),
+    web_screenshots_present: nonEmptyArray(webScreenshots) || boolField(webResults, "web_screenshots_real"),
+    android_screenshots_present: nonEmptyArray(androidScreenshots) || boolField(androidResults, "android_screenshots_real"),
+    android_ui_dumps_present: nonEmptyArray(androidUiDumps) || boolField(androidResults, "android_ui_dumps_real"),
+  };
+  const liveReady = Object.values(liveEvidence).every(Boolean);
+  const closeout = {
+    typecheck_passed: envFlag("GLOBAL_LOCAL_TYPECHECK_PASSED"),
+    lint_passed: envFlag("GLOBAL_LOCAL_LINT_PASSED"),
+    git_diff_check_passed: envFlag("GLOBAL_LOCAL_GIT_DIFF_CHECK_PASSED"),
+    targeted_tests_passed: envFlag("GLOBAL_LOCAL_TARGETED_TESTS_PASSED"),
+    architecture_tests_passed: envFlag("GLOBAL_LOCAL_ARCHITECTURE_TESTS_PASSED"),
+    full_jest_passed: envFlag("GLOBAL_LOCAL_FULL_JEST_PASSED"),
+    release_verify_passed: envFlag("GLOBAL_LOCAL_RELEASE_VERIFY_PASSED"),
+    commit_created: envFlag("GLOBAL_LOCAL_COMMIT_CREATED"),
+    branch_pushed: envFlag("GLOBAL_LOCAL_BRANCH_PUSHED"),
+    final_worktree_clean: envFlag("GLOBAL_LOCAL_FINAL_WORKTREE_CLEAN"),
+  };
+  const closeoutReady = Object.values(closeout).every(Boolean);
+  const finalStatus = !foundationReady
+    ? "BLOCKED_GLOBAL_LOCAL_FOUNDATION_FAILED"
+    : !liveReady
+      ? "BLOCKED_GLOBAL_LOCAL_LIVE_WEB_ANDROID_PDF_NOT_RUN"
+      : !closeoutReady
+        ? "BLOCKED_GLOBAL_LOCAL_CLOSEOUT_NOT_RUN"
+        : "GREEN_AI_ESTIMATE_GLOBAL_LOCAL_CONTEXT_RATE_SOURCE_PLATFORM_READY";
 
   writeJson("local_context_results", cases.map(({ prompt, context }) => ({ prompt, context })));
   writeJson("currency_policy_results", cases.map(({ prompt, currency, units }) => ({ prompt, currency, units })));
@@ -136,9 +199,7 @@ function main() {
 
   const matrix = {
     wave: WAVE,
-    final_status: foundationReady
-      ? "BLOCKED_GLOBAL_LOCAL_LIVE_WEB_ANDROID_PDF_NOT_RUN"
-      : "BLOCKED_GLOBAL_LOCAL_FOUNDATION_FAILED",
+    final_status: finalStatus,
     ...prerequisites,
     production_rollout_enabled: false,
     global_local_context_resolver_ready: cases.every((item) => item.context.completeness !== "LOCAL_CONTEXT_MISSING" || item.context.warnings.length > 0),
@@ -156,13 +217,8 @@ function main() {
     fake_stock_found: false,
     fake_supplier_found: false,
     fake_availability_found: false,
-    web_live_app_tested: false,
-    android_api34_tested: false,
-    pdf_text_extractable_sample: false,
-    release_verify_passed: false,
-    commit_created: false,
-    branch_pushed: false,
-    final_worktree_clean: false,
+    ...liveEvidence,
+    ...closeout,
     fake_green_claimed: false,
   };
   writeJson("matrix", matrix);
@@ -174,10 +230,14 @@ function main() {
       `Status: ${matrix.final_status}`,
       "",
       `Foundation ready: ${foundationReady}`,
+      `Live evidence ready: ${liveReady}`,
+      `Closeout ready: ${closeoutReady}`,
       `Cases tested: ${cases.length}`,
       `Failures: ${failures.length}`,
       "",
-      "Live web, Android API34, PDF extraction, full Jest, release:verify are intentionally not claimed by this foundation replay.",
+      FOUNDATION_ONLY
+        ? "Foundation-only mode was requested. Live web, Android API34, PDF extraction, full Jest, release:verify are not claimed."
+        : "Production proof mode requires live web, Android API34, PDF extraction, full Jest, release:verify, commit, push, and clean worktree evidence.",
       "",
     ].join("\n"),
     "utf8",
@@ -187,6 +247,10 @@ function main() {
   if (!foundationReady) {
     console.error(JSON.stringify(failures, null, 2));
     process.exitCode = 1;
+  } else if (!FOUNDATION_ONLY && matrix.final_status !== "GREEN_AI_ESTIMATE_GLOBAL_LOCAL_CONTEXT_RATE_SOURCE_PLATFORM_READY") {
+    if (REQUIRE_LIVE || !liveReady || !closeoutReady) {
+      process.exitCode = 1;
+    }
   }
 }
 
