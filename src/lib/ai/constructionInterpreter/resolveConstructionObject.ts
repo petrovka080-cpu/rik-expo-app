@@ -12,7 +12,7 @@ function normalizeConstructionSemanticText(value: string): string {
 export function resolveConstructionObject(input: { text: string; domain?: ConstructionDomain }): ConstructionObject {
   const normalized = normalizeConstructionSemanticText(input.text);
 
-  if (/брусчат|тротуарн\w*\s+плит|мощени/.test(normalized)) return "paving_stone_surface";
+  if (/брусчат|тротуарн[а-яё]*\s+плит|мощени/.test(normalized)) return "paving_stone_surface";
   if (/кирпич/.test(normalized)) return "brick_wall";
   if (/линолеум/.test(normalized)) return "linoleum_floor";
   if (/навес/.test(normalized)) return "metal_canopy";

@@ -15,9 +15,10 @@ function hasAny(text: string, patterns: readonly RegExp[]): boolean {
   return patterns.some((pattern) => pattern.test(text));
 }
 
-const PRIORITY_ESTIMATE_WORDS = /СЃРјРµС‚|СЂР°СЃС‡РµС‚|СЂР°СЃС‡С‘С‚|СЂР°СЃСЃС‡РёС‚|РїРѕСЃС‡РёС‚Р°|СЃС‚РѕРёРјРѕСЃС‚|СЃРєРѕР»СЊРєРѕ СЃС‚РѕРёС‚|С†РµРЅР°|boq|estimate|cost|quote/i;
-const PRIORITY_CONSTRUCTION_WITH_VOLUME = /(РєРІ\.?\s*Рј|Рј2|РјВІ|sqm|РїРѕРі\.?\s*Рј|Рј3|С€С‚|РєРі|С‚РѕРЅРЅ?)/i;
-const PRIORITY_CONSTRUCTION_OBJECTS = /Р»РёРЅРѕР»РµСѓРј|Р±СЂСѓСЃС‡Р°С‚|РЅР°РІРµСЃ|РґРІСѓ(?:С…)?СЃРєР°С‚|РєСЂС‹С€|РєСЂРѕРІР»|РіРёРґСЂРѕРёР·РѕР»СЏС†|РєР°РїРёС‚Р°Р»СЊРЅ\w*\s+СЂРµРјРѕРЅС‚|РєР°РїСЂРµРјРѕРЅС‚|РєРІР°СЂС‚РёСЂ|РєРёСЂРїРёС‡|РїР»РёС‚Рє/i;
+const PRIORITY_ESTIMATE_WORDS = /смет|расчет|расчёт|рассчит|посчита|стоимост|сколько стоит|цена|boq|estimate|cost|quote/i;
+const PRIORITY_CONSTRUCTION_WITH_VOLUME = /(кв\.?\s*м|м2|м²|sqm|пог\.?\s*м|м3|шт|кг|тонн?)/i;
+const PRIORITY_CONSTRUCTION_OBJECTS = /линолеум|брусчат|тротуарн[а-яё]*\s+плит|навес|дву(?:х)?скат|крыш|кровл|гидроизоляц|капитальн[а-яё]*\s+ремонт|капремонт|квартир|кирпич|плитк|кафел|сануз|ванн/i;
+const PRIORITY_CONSTRUCTION_ACTIONS = /улож|постел|уклад|мощен|клад|установ|монтаж|устройств|ремонт|гидроизоляц/i;
 
 function resolveEstimateIntentPriority(input: {
   text: string;
@@ -25,11 +26,13 @@ function resolveEstimateIntentPriority(input: {
 }): EstimateIntentPriorityDecision {
   const estimateWord = PRIORITY_ESTIMATE_WORDS.test(input.text);
   const constructionQuantity = PRIORITY_CONSTRUCTION_WITH_VOLUME.test(input.text) && PRIORITY_CONSTRUCTION_OBJECTS.test(input.text);
-  const estimateIntentDetected = estimateWord || constructionQuantity;
+  const constructionAction = PRIORITY_CONSTRUCTION_ACTIONS.test(input.text) && PRIORITY_CONSTRUCTION_OBJECTS.test(input.text);
+  const namedCanopySystem = /навес/i.test(input.text) && /металл|каркас|профнастил/i.test(input.text);
+  const estimateIntentDetected = estimateWord || constructionQuantity || constructionAction || namedCanopySystem;
   return {
     estimateIntentDetected,
     estimateIntentWins: estimateIntentDetected && (input.screenContext === "foreman" || input.screenContext === "request"),
-    reason: estimateWord ? "explicit_estimate_word" : constructionQuantity ? "construction_object_with_quantity" : "not_estimate",
+    reason: estimateWord ? "explicit_estimate_word" : constructionQuantity ? "construction_object_with_quantity" : constructionAction ? "construction_object_with_action" : namedCanopySystem ? "named_canopy_system" : "not_estimate",
   };
 }
 

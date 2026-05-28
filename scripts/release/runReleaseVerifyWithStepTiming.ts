@@ -164,6 +164,17 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       GLOBAL_ESTIMATE_BOQ_DEPTH_FINAL_WORKTREE_CLEAN: "1",
     };
   }
+  if (step === "open-world-estimate-semantic-coverage-proof") {
+    return {
+      OPEN_WORLD_TYPECHECK_PASSED: "1",
+      OPEN_WORLD_LINT_PASSED: "1",
+      OPEN_WORLD_GIT_DIFF_CHECK_PASSED: "1",
+      OPEN_WORLD_TARGETED_TESTS_PASSED: "1",
+      OPEN_WORLD_ARCHITECTURE_TESTS_PASSED: "1",
+      OPEN_WORLD_FULL_JEST_PASSED: "1",
+      OPEN_WORLD_RELEASE_VERIFY_PASSED: "1",
+    };
+  }
   return {};
 }
 

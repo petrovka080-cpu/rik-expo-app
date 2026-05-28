@@ -255,6 +255,18 @@ export function resolveCanonicalApi34Evidence(options: { write?: boolean } = {})
   const allChanges = Array.from(new Set([...committedChanges, ...workingChanges])).sort();
   const onlyCloseoutHarnessChanged = allChanges.every(isAllowedCloseoutHarnessPath);
 
+  if (workingChanges.length > 0 && !workingChanges.every(isAllowedCloseoutHarnessPath)) {
+    return {
+      ok: false,
+      reason: "CANONICAL_API34_EVIDENCE_STALE_FOR_DIRTY_PRODUCT_WORKTREE",
+      details: {
+        evidence_commit: evidenceCommit,
+        head_sha: headSha,
+        working_changes: workingChanges,
+      },
+    };
+  }
+
   if (!commitMatched && !onlyCloseoutHarnessChanged) {
     return {
       ok: false,

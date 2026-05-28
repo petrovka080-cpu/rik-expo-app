@@ -67,6 +67,8 @@ const AI_ESTIMATE_CHANGE_CONTROL_WAVE =
   "S_AI_ESTIMATE_TEMPLATE_RATE_CATALOG_ONTOLOGY_CHANGE_CONTROL_POINT_OF_NO_RETURN";
 const LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_WAVE =
   "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_INTENT_SEMANTIC_BOQ_REALITY_FIX_POINT_OF_NO_RETURN";
+const OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE =
+  "S_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -1228,8 +1230,32 @@ function isLiveB2cEstimateRealityReleaseCloseoutPath(file: string): boolean {
   );
 }
 
+function isOpenWorldEstimateSemanticCoverageLockPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE/") ||
+    file === "scripts/e2e/runAndroidApi34OpenWorldEstimateSemanticCoverage.ts" ||
+    file === "scripts/e2e/runOpenWorldEstimateSemanticCoverageProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "tests/architecture/openWorldSemanticNoExactPromptLookup.contract.test.ts" ||
+    file === "tests/e2e/openWorldEstimateSemanticCoverage.web.spec.ts" ||
+    file.startsWith("tests/semanticRegression/")
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isOpenWorldEstimateSemanticCoverageLockPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "open-world estimate semantic coverage lock fixtures, tests, web Android proof, and release guard wiring",
+    };
+  }
   if (isLiveB2cEstimateRealityReleaseCloseoutPath(normalized)) {
     return {
       file: normalized,

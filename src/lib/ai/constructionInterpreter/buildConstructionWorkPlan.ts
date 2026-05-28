@@ -23,9 +23,16 @@ export function normalizeConstructionSemanticText(value: string): string {
 }
 
 function hasEstimateIntent(normalized: string): boolean {
-  return /смет|рассчит|расчет|посчита|стоимост|сколько стоит|цена|boq|estimate|cost/.test(normalized)
-    || (/(кв\.?\s*м|м2|м²|sqm|шт|пог\.?\s*м|м3|кг|тонн?)/.test(normalized)
-      && /(улож|уклад|установ|монтаж|устройств|ремонт|гидроизоляц|навес|крыш|кровл|брусчат|линолеум|квартир)/.test(normalized));
+  const explicitEstimateIntent =
+    /смет|рассчит|расчет|посчита|стоимост|сколько стоит|цена|boq|estimate|cost/.test(normalized);
+  const hasQuantity = /(кв\.?\s*м|м2|м²|sqm|шт|пог\.?\s*м|м3|кг|тонн?)/.test(normalized);
+  const hasConstructionAction =
+    /(улож|постел|уклад|мощен|клад|установ|монтаж|устройств|ремонт|гидроизоляц)/.test(normalized);
+  const hasKnownEstimateObject =
+    /(брусчат|тротуарн[а-яё]*\s+плит|кирпич|линолеум|навес|дву(?:х)?скат|крыш|кровл|ванн|сануз|квартир|плитк|кафел)/.test(normalized);
+  const hasNamedCanopySystem = /навес/.test(normalized) && /металл|каркас|профнастил/.test(normalized);
+
+  return explicitEstimateIntent || (hasQuantity && (hasConstructionAction || hasKnownEstimateObject)) || (hasKnownEstimateObject && hasConstructionAction) || hasNamedCanopySystem;
 }
 
 function workKeyFor(input: {
@@ -33,7 +40,12 @@ function workKeyFor(input: {
   object: ConstructionObject;
   operation: ConstructionOperation;
 }): ConstructionWorkKey | null {
-  if (input.object === "paving_stone_surface") return "paving_stone_laying";
+  if (input.object === "paving_stone_surface") {
+    const isCatalogOnlyPavingSlabPrompt =
+      /тротуарн[а-яё]*\s+плит/.test(input.normalized) && !/(брусчат|мощени|улож|уклад)/.test(input.normalized);
+    const isMoreSpecificPavingCatalogPrompt = /заезд|бетон/.test(input.normalized);
+    return isCatalogOnlyPavingSlabPrompt || isMoreSpecificPavingCatalogPrompt ? null : "paving_stone_laying";
+  }
   if (input.object === "brick_wall") return "brick_masonry";
   if (input.object === "linoleum_floor") return "linoleum_laying";
   if (input.object === "metal_canopy") {
@@ -43,7 +55,7 @@ function workKeyFor(input: {
   if (input.object === "gable_roof") return "gable_roof_installation";
   if (input.object === "roof" && input.operation === "waterproofing") {
     if (!/гидроизоляц/.test(input.normalized)) return null;
-    if (/мембран|мастик|плоск/.test(input.normalized)) return null;
+    if (/мембран|мастик|битум|пвх|тпо|эпдм|плоск[а-яё]*\s+кровл/.test(input.normalized)) return null;
     return "roof_waterproofing";
   }
   if (input.object === "bathroom" && input.operation === "waterproofing") return "bathroom_waterproofing";

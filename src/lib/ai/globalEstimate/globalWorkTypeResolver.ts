@@ -400,6 +400,8 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
     return { workKey: "gable_roof_installation", confidence: "high" };
   }
   if (/брусчат|мощени/i.test(normalized)) {
+    if (/заезд/i.test(normalized)) return { workKey: "paving_stone_driveway", confidence: "high" };
+    if (/бетон/i.test(normalized)) return { workKey: "concrete_paving", confidence: "high" };
     return { workKey: "paving_stone_laying", confidence: "high" };
   }
   if (/линолеум/i.test(normalized)) {

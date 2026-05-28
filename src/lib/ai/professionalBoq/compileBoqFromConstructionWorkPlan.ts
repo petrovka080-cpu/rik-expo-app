@@ -119,7 +119,7 @@ function buildMetalCanopyBoq(plan: ConstructionWorkPlan): ProfessionalConstructi
     { sectionType: "materials", code: "canopy_anticorrosion_primer", name: "Антикоррозионная грунтовка металла", unit: "kg", quantity: roundQuantity(steelKg * 0.025), unitPrice: 260, comment: "Грунт по металлу.", materialKey: "primer" },
     { sectionType: "labor", code: "canopy_metal_painting", name: "Окраска металла", unit: "kg", quantity: steelKg, unitPrice: 24, comment: "Окраска каркаса после подготовки." },
     { sectionType: "labor", code: "canopy_column_install", name: "Монтаж стоек металлического навеса", unit: "pcs", quantity: columns, unitPrice: 1800, comment: "Установка и выверка стоек." },
-    { sectionType: "labor", code: "canopy_truss_install", name: "Монтаж ферм / балок навеса", unit: "kg", quantity: roundQuantity(steelKg * 0.38), unitPrice: 32, comment: "Подъем и закрепление несущих элементов." },
+    { sectionType: "labor", code: "canopy_truss_install", name: "Монтаж металлокаркаса: ферм / балок навеса", unit: "kg", quantity: roundQuantity(steelKg * 0.38), unitPrice: 32, comment: "Подъем и закрепление несущих элементов." },
     { sectionType: "labor", code: "canopy_purlin_install", name: "Монтаж прогонов", unit: "linear_m", quantity: beamsLm, unitPrice: 160, comment: "Монтаж прогонов по фермам." },
     { sectionType: "labor", code: "canopy_roof_install", name: "Монтаж кровельного покрытия навеса", unit: "sq_m", quantity: area, unitPrice: 360, comment: "Крепление листов и доборов." },
     { sectionType: "equipment", code: "canopy_lift_crane", name: "Кран / автовышка для монтажа навеса", unit: "shift", quantity: Math.max(1, Math.ceil(area / 220)), unitPrice: 18000, comment: "Механизация подъема элементов." },

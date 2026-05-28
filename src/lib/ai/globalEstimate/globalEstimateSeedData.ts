@@ -861,7 +861,7 @@ export const BRICK_MASONRY_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate(
   laborRows: [
     { code: "brick_masonry_laying", nameRu: "Кладка кирпича", nameEn: "Brick laying" },
     { code: "brick_masonry_jointing", nameRu: "Расшивка / перевязка швов", nameEn: "Jointing and bond work" },
-    { code: "brick_masonry_lift_warning", nameRu: "Доставка/подъём: требуется уточнение перед сметой", nameEn: "Delivery/lifting to be confirmed" },
+    { code: "brick_masonry_access_scaffold", nameRu: "Подмости для кирпичной кладки", nameEn: "Access scaffold for brick masonry" },
   ],
   assumptionsRu: [
     "Расчёт выполнен для кирпичной кладки по площади.",
@@ -1030,7 +1030,23 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
   const laborRate = `${definition.workKey}_labor`;
   const workRu = localizedWorkName(definition, "ru");
   const workEn = localizedWorkName(definition, "en");
-  const boqHints = GLOBAL_150_WORK_TYPE_BOQ_HINTS[definition.workKey] ?? BUILT_IN_AI_1000_BOQ_HINTS[definition.workKey] ?? [];
+  const baseBoqHints = GLOBAL_150_WORK_TYPE_BOQ_HINTS[definition.workKey] ?? BUILT_IN_AI_1000_BOQ_HINTS[definition.workKey] ?? [];
+  const boqHints = definition.workKey === "ventilation_installation"
+    ? [
+        "Воздуховоды оцинкованные",
+        "Фасонные части воздуховодов",
+        "Решётки и диффузоры",
+        "Вентилятор / вентиляционная установка",
+        "Клапаны, шумоглушители и гибкие вставки",
+        "Крепления и подвесы воздуховодов",
+        "Разметка трасс вентиляции",
+        "Монтаж воздуховодов",
+        "Монтаж вентилятора / установки",
+        "Тепло/шумоизоляция воздуховодов",
+        "Пусконаладка и балансировка",
+        "Проверка расхода воздуха и приемка",
+      ]
+    : baseBoqHints;
   const splitIndex = Math.max(1, Math.ceil(boqHints.length / 2));
   const materialHints = boqHints.length > 0 ? boqHints.slice(0, splitIndex) : [`Основной материал: ${workRu}`, "Расходные материалы и крепёж"];
   const laborHints = boqHints.length > 0 ? boqHints.slice(splitIndex) : [`Подготовка: ${workRu}`, workRu];
