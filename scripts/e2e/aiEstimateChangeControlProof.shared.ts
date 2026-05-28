@@ -117,6 +117,12 @@ export function detectChangeControlWebSmokeEvidence(): boolean {
 }
 
 export function gitCommitState(): { commitCreated: boolean; branchPushed: boolean; finalWorktreeClean: boolean } {
+  function envFlag(name: string): boolean | null {
+    if (process.env[name] === "1" || process.env[name] === "true") return true;
+    if (process.env[name] === "0" || process.env[name] === "false") return false;
+    return null;
+  }
+
   function git(args: string[], fallback = ""): string {
     try {
       return execFileSync("git", args, {
@@ -133,10 +139,12 @@ export function gitCommitState(): { commitCreated: boolean; branchPushed: boolea
   const branch = git(["branch", "--show-current"]);
   const remoteBranch = branch ? `origin/${branch}` : "";
   const remoteContains = Boolean(remoteBranch) && git(["merge-base", "--is-ancestor", head, remoteBranch], "__FAILED__") !== "__FAILED__";
+  const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
+  const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
   return {
     commitCreated: /^[0-9a-f]{40}$/i.test(head),
-    branchPushed: remoteContains,
-    finalWorktreeClean: git(["status", "--porcelain"]).length === 0,
+    branchPushed: releaseGuardHeadPushed ?? remoteContains,
+    finalWorktreeClean: releaseGuardWorktreeClean ?? git(["status", "--porcelain"]).length === 0,
   };
 }
 

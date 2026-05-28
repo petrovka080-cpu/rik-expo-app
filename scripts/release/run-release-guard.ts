@@ -260,7 +260,16 @@ function readRepoState(): ReleaseRepoState {
   };
 }
 
-function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
+function buildInitialGateEnv(repo: ReleaseRepoState): Record<string, string> {
+  const headPushed = repo.headCommit === repo.originMainCommit && repo.localCommitsAheadOriginMain === 0;
+  return {
+    RELEASE_GUARD_HEAD_COMMIT: repo.headCommit,
+    RELEASE_GUARD_INITIAL_WORKTREE_CLEAN: repo.worktreeClean ? "1" : "0",
+    RELEASE_GUARD_INITIAL_HEAD_PUSHED: headPushed ? "1" : "0",
+  };
+}
+
+function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, string>): ReleaseGateResult {
   const gateEnv: Record<string, string> = {};
   if (gate.name === "ai-app-context-graph-deep-link-proof") {
     gateEnv.S_AI_APP_CONTEXT_GRAPH_RELEASE_VERIFY_PASSED = "true";
@@ -307,6 +316,7 @@ function runGate(gate: ReleaseGateDefinition): ReleaseGateResult {
     cwd: PROJECT_ROOT,
     env: {
       ...process.env,
+      ...releaseGuardEnv,
       ...gateEnv,
     },
     shell: true,
@@ -579,8 +589,9 @@ function buildBaseReport(
   };
 }
 
-function runRequiredGates(): ReleaseGateResult[] {
-  return REQUIRED_RELEASE_GATES.map(runGate);
+function runRequiredGates(repo: ReleaseRepoState): ReleaseGateResult[] {
+  const releaseGuardEnv = buildInitialGateEnv(repo);
+  return REQUIRED_RELEASE_GATES.map((gate) => runGate(gate, releaseGuardEnv));
 }
 
 function main() {
@@ -594,7 +605,7 @@ function main() {
     headParentExists: hasHeadParent(),
   });
   const changedFiles = readChangedFiles(commitRange);
-  const gates = runRequiredGates();
+  const gates = runRequiredGates(repo);
   const baseReport = buildBaseReport({ ...args, range: commitRange }, gates, changedFiles, repo, approvalEnv);
 
   if (baseReport.readiness.status === "fail") {

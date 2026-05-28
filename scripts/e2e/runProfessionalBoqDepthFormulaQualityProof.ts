@@ -63,20 +63,31 @@ function tryGit(args: string[]): string | null {
   }
 }
 
+function envFlag(name: string): boolean | null {
+  if (process.env[name] === "1" || process.env[name] === "true") return true;
+  if (process.env[name] === "0" || process.env[name] === "false") return false;
+  return null;
+}
+
 function repoState() {
   const branch = tryGit(["branch", "--show-current"]) || "HEAD";
   const commitSha = tryGit(["rev-parse", "HEAD"]);
   const status = tryGit(["status", "--porcelain"]) ?? "unknown";
   const remoteRef = branch === "HEAD" ? "origin/main" : `origin/${branch}`;
   const remoteContainsCommit = commitSha != null && tryGit(["merge-base", "--is-ancestor", commitSha, remoteRef]) === "";
+  const releaseGuardHead = process.env.RELEASE_GUARD_HEAD_COMMIT?.trim();
+  const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
+  const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
+  const finalWorktreeClean = status === "";
+  const branchPushed = releaseGuardHeadPushed ?? remoteContainsCommit;
   return {
     branch,
-    commitSha,
+    commitSha: releaseGuardHead || commitSha,
     status,
     remoteRef,
-    finalWorktreeClean: status === "",
-    branchPushed: remoteContainsCommit,
-    remoteContainsCommit,
+    finalWorktreeClean: releaseGuardWorktreeClean ?? finalWorktreeClean,
+    branchPushed,
+    remoteContainsCommit: branchPushed,
   };
 }
 

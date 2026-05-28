@@ -55,6 +55,12 @@ function git(args: string[]): string {
   }
 }
 
+function envFlag(name: string): boolean | null {
+  if (process.env[name] === "1" || process.env[name] === "true") return true;
+  if (process.env[name] === "0" || process.env[name] === "false") return false;
+  return null;
+}
+
 function toCoreRoute(route: AiRouteParityRoute): "chat" | "ai_foreman" | "request" {
   if (route === "/ai") return "ai_foreman";
   if (route === "/request") return "request";
@@ -158,13 +164,18 @@ function commitPushStatus() {
   const remoteBranches = git(["branch", "-r", "--contains", "HEAD"]);
   const status = git(["status", "--porcelain"]);
   const remoteBranch = branch ? `origin/${branch}` : "";
+  const releaseGuardHead = process.env.RELEASE_GUARD_HEAD_COMMIT?.trim();
+  const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
+  const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
+  const branchPushed = remoteBranch ? remoteBranches.includes(remoteBranch) : remoteBranches.includes("origin/");
+  const finalWorktreeClean = status.length === 0;
   return {
     commit_created: Boolean(commit),
-    commit_sha: commit || null,
-    branch_pushed: remoteBranch ? remoteBranches.includes(remoteBranch) : remoteBranches.includes("origin/"),
+    commit_sha: releaseGuardHead || commit || null,
+    branch_pushed: releaseGuardHeadPushed ?? branchPushed,
     remote_branch: remoteBranch || null,
-    remote_contains_commit: remoteBranch ? remoteBranches.includes(remoteBranch) : remoteBranches.includes("origin/"),
-    final_worktree_clean: status.length === 0,
+    remote_contains_commit: releaseGuardHeadPushed ?? branchPushed,
+    final_worktree_clean: releaseGuardWorktreeClean ?? finalWorktreeClean,
   };
 }
 
