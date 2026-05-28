@@ -167,15 +167,17 @@ function commitPushStatus() {
   const releaseGuardHead = process.env.RELEASE_GUARD_HEAD_COMMIT?.trim();
   const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
   const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
+  const explicitBranchPushed = envFlag("AI_ROUTE_PARITY_BRANCH_PUSHED");
+  const explicitWorktreeClean = envFlag("AI_ROUTE_PARITY_FINAL_WORKTREE_CLEAN");
   const branchPushed = remoteBranch ? remoteBranches.includes(remoteBranch) : remoteBranches.includes("origin/");
   const finalWorktreeClean = status.length === 0;
   return {
     commit_created: Boolean(commit),
     commit_sha: releaseGuardHead || commit || null,
-    branch_pushed: releaseGuardHeadPushed ?? branchPushed,
+    branch_pushed: explicitBranchPushed ?? releaseGuardHeadPushed ?? branchPushed,
     remote_branch: remoteBranch || null,
-    remote_contains_commit: releaseGuardHeadPushed ?? branchPushed,
-    final_worktree_clean: releaseGuardWorktreeClean ?? finalWorktreeClean,
+    remote_contains_commit: explicitBranchPushed ?? releaseGuardHeadPushed ?? branchPushed,
+    final_worktree_clean: explicitWorktreeClean ?? releaseGuardWorktreeClean ?? finalWorktreeClean,
   };
 }
 

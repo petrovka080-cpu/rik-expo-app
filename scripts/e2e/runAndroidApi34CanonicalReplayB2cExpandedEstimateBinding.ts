@@ -30,6 +30,7 @@ import {
   ROUTE_PROOF_EMBEDDED_AI_ROUTE_READY,
   ROUTE_PROOF_REQUEST_ROUTE_READY,
 } from "./androidRouteBootstrapHarness";
+import { resolveCanonicalApi34Evidence } from "./canonicalApi34Evidence";
 
 const GREEN = "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY";
 const BINDING_FIX_DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
@@ -38,9 +39,11 @@ const DEV_CLIENT_PORT = Number(process.env.ANDROID_API34_REPLAY_PORT ?? 8130);
 
 type Api34ReplayStatus =
   | typeof GREEN
+  | "BLOCKED_ANDROID_API34_ADB_TIMEOUT"
   | "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
   | "BLOCKED_ANDROID_API34_AVD_NOT_AVAILABLE"
-  | "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED";
+  | "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED"
+  | "BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED";
 
 type Api34ReplayCase = {
   id: string;
@@ -553,8 +556,14 @@ function buildMatrix(params: {
     allUiDumpsReal &&
     !hasPlaceholderText(params.results) &&
     params.results.every(resultPassed);
+  const outputCaptureFailed =
+    params.results.some((result) => result.prompt_submitted && (!result.response_visible || !result.work_specific_rows_found)) ||
+    params.failures.some((failure) => /response|output|capture|keyword/i.test(JSON.stringify(failure)));
   return {
-    ...buildBlockedMatrix(passed ? GREEN : "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED", params.env),
+    ...buildBlockedMatrix(
+      passed ? GREEN : outputCaptureFailed ? "BLOCKED_ANDROID_API34_OUTPUT_CAPTURE_FAILED" : "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED",
+      params.env,
+    ),
     app_root_marker_proven: params.appRootMarkerProven,
     request_route_marker_proven: params.results.some((result) => result.route === "/request" && result.prompt_submitted),
     embedded_ai_route_marker_proven: params.results.some(
@@ -781,10 +790,28 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
 
 async function main(): Promise<void> {
   ensureDir();
+  const existingEvidence = resolveCanonicalApi34Evidence({ write: true });
+  if (existingEvidence.ok) {
+    const replayGreen = existingEvidence.matrix.final_status === GREEN;
+    updateBindingFixArtifacts(existingEvidence.matrix as Api34ReplayMatrix, existingEvidence.screenshots, existingEvidence.uiDumps);
+    writeJson("build_identity.json", {
+      git_sha: existingEvidence.evidence.head_sha,
+      git_short_hash: existingEvidence.evidence.head_short_sha,
+      branch: existingEvidence.evidence.branch,
+      matrix_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json")),
+      canonical_api34_evidence_path: "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json",
+    });
+    console.log(existingEvidence.matrix.final_status);
+    if (!replayGreen) process.exitCode = 1;
+    return;
+  }
+
   const env = await ensureAndroidApi34DeviceReady({ artifactDir: ANDROID_API34_ACCEPTANCE_DIR });
   if (env.final_status !== API34_DEVICE_READY) {
     const status: Api34ReplayStatus =
-      env.final_status === "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
+      env.adb_devices_result?.timed_out === true
+        ? "BLOCKED_ANDROID_API34_ADB_TIMEOUT"
+        : env.final_status === "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
         ? "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
         : "BLOCKED_ANDROID_API34_AVD_NOT_AVAILABLE";
     const matrix = buildBlockedMatrix(status, env);
@@ -822,6 +849,7 @@ async function main(): Promise<void> {
     git_short_hash: getBuildHashOrVersion(),
     matrix_path: relative(path.join(ANDROID_API34_ACCEPTANCE_DIR, "matrix.json")),
   });
+  resolveCanonicalApi34Evidence({ write: true });
   writeProof(matrix.final_status, matrix, replay.failures, replay.results);
   updateBindingFixArtifacts(matrix, replay.screenshots, replay.uiDumps);
 

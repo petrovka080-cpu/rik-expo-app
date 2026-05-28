@@ -25,6 +25,7 @@ function runAdb(args: string[], encoding: "utf8" | "buffer" = "utf8") {
     cwd: process.cwd(),
     encoding: encoding === "utf8" ? "utf8" : "buffer",
     stdio: ["ignore", "pipe", "pipe"],
+    timeout: 8000,
   });
 }
 

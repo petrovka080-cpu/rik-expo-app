@@ -39,16 +39,12 @@ import {
   writeWaveJson,
   writeWaveText,
 } from "./androidRouteBootstrapHarness";
+import { requireCanonicalApi34EvidenceForGate } from "./canonicalApi34Evidence";
 
 const APP_PACKAGE = "com.azisbek_dzhantaev.rikexpoapp";
 const DEV_CLIENT_PORT = Number(process.env.ANDROID_ROUTE_BOOTSTRAP_PORT ?? 8108);
 const SCREENSHOT_MIN_BYTES = 1000;
 const XML_MIN_BYTES = 200;
-const API34_REPLAY_DIR = path.join(
-  process.cwd(),
-  "artifacts",
-  "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING",
-);
 
 type ProofFailure = {
   code: AndroidRouteBootstrapStatus | "PLACEHOLDER_ARTIFACT_FOUND" | "PRODUCT_LOGIC_CHANGED";
@@ -77,37 +73,9 @@ function rel(filePath: string): string {
   return path.relative(process.cwd(), filePath).replace(/\\/g, "/");
 }
 
-function readJsonFile(filePath: string): unknown {
-  if (!fs.existsSync(filePath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, ""));
-  } catch {
-    return null;
-  }
-}
-
-function existingFiles(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string" && fs.existsSync(path.resolve(process.cwd(), item)));
-}
-
 function api34CanonicalReplayReady(): { matrix: Record<string, unknown>; screenshots: string[]; uiDumps: string[] } | null {
-  const matrix = readJsonFile(path.join(API34_REPLAY_DIR, "matrix.json"));
-  if (!matrix || typeof matrix !== "object") return null;
-  const matrixRecord = matrix as Record<string, unknown>;
-  const screenshots = existingFiles(readJsonFile(path.join(API34_REPLAY_DIR, "android_screenshots.json")));
-  const uiDumps = existingFiles(readJsonFile(path.join(API34_REPLAY_DIR, "android_ui_dumps.json")));
-  const ready =
-    matrixRecord.final_status === "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY" &&
-    matrixRecord.avd_name === "Pixel_7_API_34" &&
-    matrixRecord.android_sdk === 34 &&
-    matrixRecord.cpu_abi === "x86_64" &&
-    matrixRecord.app_root_marker_proven === true &&
-    matrixRecord.request_route_marker_proven === true &&
-    matrixRecord.embedded_ai_route_marker_proven === true &&
-    screenshots.length > 0 &&
-    uiDumps.length > 0;
-  return ready ? { matrix: matrixRecord, screenshots, uiDumps } : null;
+  const result = requireCanonicalApi34EvidenceForGate("android-b2c-request-embedded-ai-route-bootstrap-proof");
+  return result.ok ? { matrix: result.matrix, screenshots: result.screenshots, uiDumps: result.uiDumps } : null;
 }
 
 function mapFilesByBaseName(files: string[]): Record<string, string> {
@@ -177,7 +145,9 @@ function writeApi34ResolvedArtifacts(api34: { matrix: Record<string, unknown>; s
     android_ui_dumps_real: dumpsReal,
     placeholder_artifacts_found: placeholderFound,
     resolved_by_api34_replay: true,
-    api34_matrix_path: rel(path.join(API34_REPLAY_DIR, "matrix.json")),
+    api34_matrix_path: String(
+      api34.matrix.canonical_matrix_path ?? "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
+    ),
     avd_name: api34.matrix.avd_name,
     android_sdk: api34.matrix.android_sdk,
     cpu_abi: api34.matrix.cpu_abi,
@@ -252,7 +222,7 @@ function writeApi34ResolvedArtifacts(api34: { matrix: Record<string, unknown>; s
       "",
       `Status: ${ANDROID_ROUTE_BOOTSTRAP_GREEN}`,
       "Resolved by canonical Pixel_7_API_34 replay evidence.",
-      `API34 matrix: ${rel(path.join(API34_REPLAY_DIR, "matrix.json"))}`,
+      `API34 matrix: ${String(api34.matrix.canonical_matrix_path ?? "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json")}`,
       `App root ready marker proven: ${String(matrix.app_root_ready_marker_proven)}`,
       `Request route opened: ${String(matrix.request_route_opened)}`,
       `Embedded AI route opened: ${String(matrix.embedded_ai_route_opened)}`,
@@ -584,6 +554,28 @@ export async function runAndroidB2cRequestEmbeddedAiRouteBootstrapProof(): Promi
     writeApi34ResolvedArtifacts(api34);
     return ANDROID_ROUTE_BOOTSTRAP_GREEN;
   }
+  writeArtifacts(
+    {
+      emulatorId: null,
+      metroStarted: false,
+      rootReady: false,
+      rootScreens: [],
+      attempts: [],
+      requestProofs: [],
+      embeddedAiProofs: [],
+      failures: [
+        {
+          code: "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+          step: "canonical API34 evidence bridge",
+          artifact: relativeArtifact("failures.json"),
+          reason:
+            "Canonical Pixel_7_API_34 replay evidence is missing, stale, or not tied to current HEAD; legacy Android route bootstrap path is retired for release:verify.",
+        },
+      ],
+    },
+    "BLOCKED_ANDROID_ROUTE_OPEN_FAILED",
+  );
+  return "BLOCKED_ANDROID_ROUTE_OPEN_FAILED";
 
   const emulators = detectEmulators();
   const emulatorId = emulators[0]?.split(/\s+/)[0] ?? null;
@@ -606,8 +598,9 @@ export async function runAndroidB2cRequestEmbeddedAiRouteBootstrapProof(): Promi
       return finalStatus;
     }
 
-    metro = await ensureMetro(DEV_CLIENT_PORT);
-    state.metroStarted = metro.started || true;
+    const startedMetro = await ensureMetro(DEV_CLIENT_PORT);
+    metro = startedMetro;
+    state.metroStarted = true;
     setupAndroidRuntime(DEV_CLIENT_PORT, APP_PACKAGE);
     state.rootScreens = await waitForAppRoot(emulatorId);
     state.rootReady = state.rootScreens.some(appRootReady);
@@ -657,7 +650,8 @@ export async function runAndroidB2cRequestEmbeddedAiRouteBootstrapProof(): Promi
     writeArtifacts(state, finalStatus);
     return finalStatus;
   } finally {
-    if (metro?.started) stopMetro(metro);
+    const metroToStop = metro as NonNullable<typeof metro> | null;
+    if (metroToStop?.started) stopMetro(metroToStop!);
   }
 }
 

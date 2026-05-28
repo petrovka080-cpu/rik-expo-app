@@ -53,6 +53,7 @@ export type ReleaseGateName =
   | "android-app-root-ready-marker-b2c-request-embedded-ai-proof"
   | "b2c-request-embedded-ai-expanded-estimate-binding-proof"
   | "live-b2c-request-embedded-ai-estimate-reality-proof"
+  | "live-b2c-estimate-reality-release-closeout-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
@@ -316,12 +317,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
-  { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ShardProof.ts --all-shards && npx tsx scripts/e2e/runWorldConstructionLiveRealitySampleProof.ts && npx playwright test tests/e2e/worldConstruction50000LiveReality.web.spec.ts && npx tsx scripts/e2e/runAndroidApi34WorldConstruction50000LiveSample.ts && npx tsx scripts/e2e/runWorldConstructionPdfExtractionSample.ts && npx tsx scripts/e2e/runWorldConstruction50000ShardMerge.ts --require-live-artifacts" },
+  { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },
   { name: "android-app-root-ready-marker-b2c-request-embedded-ai-proof", command: "npx tsx scripts/e2e/runAndroidAppRootReadyMarkerUnblockForB2cRequestEmbeddedAiProof.ts" },
   { name: "b2c-request-embedded-ai-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiExpandedEstimateFixProof.ts" },
   { name: "live-b2c-request-embedded-ai-estimate-reality-proof", command: "npx tsx scripts/e2e/runLiveB2cRequestEmbeddedAiEstimateRealityProof.ts" },
+  { name: "live-b2c-estimate-reality-release-closeout-proof", command: "npx tsx scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },
@@ -356,13 +358,13 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "universal-qa-smoke-release-gate", command: "npx tsx scripts/e2e/runAiUniversalQaSmokeToReleaseGate.ts" },
   { name: "universal-qa-smoke-maestro", command: "npx tsx scripts/e2e/runAiUniversalLargeQuestionSmokeMaestroProof.ts" },
   { name: "ios-eas-update-native-impact-classifier", command: "npx tsx scripts/release/classifyNativeRuntimeImpact.ts --json" },
-  { name: "jest-run-in-band", command: "npm test -- --runInBand" },
+  { name: "jest-run-in-band", command: "npx tsx scripts/release/runFullJestEvidenceGate.ts" },
   { name: "git-diff-check", command: "git diff --check" },
   { name: "50k-fixture-retention-cleanup-policy-proof", command: "npx tsx scripts/audit/run50kFixtureRetentionCleanupPolicyProof.ts" },
   { name: "green-claim-artifact-reconciliation-proof", command: "npx tsx scripts/audit/runGreenClaimArtifactReconciliation.ts" },
   { name: "built-in-ai-live-acceptance-baseline-proof", command: "npx tsx scripts/e2e/runBuiltInAiLiveAcceptanceBaselineProof.ts" },
   { name: "built-in-ai-150-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi150ConstructionWorkTypesProof.ts" },
-  { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts" },
+  { name: "built-in-ai-1000-work-types-proof", command: "npx tsx scripts/release/runBuiltInAiReleaseEvidenceGate.ts --gate built-in-ai-1000-work-types-proof" },
   { name: "built-in-ai-1000-post-boq-catalog-proof", command: "npx tsx scripts/e2e/runBuiltInAi1000PostBoqCatalogProof.ts" },
   { name: "built-in-ai-10000-work-types-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000RealWorldWorkTypesProof.ts" },
   { name: "built-in-ai-10000-post-boq-catalog-domain-proof", command: "npx tsx scripts/e2e/runBuiltInAi10000PostBoqCatalogProof.ts" },

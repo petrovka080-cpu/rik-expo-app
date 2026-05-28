@@ -16,7 +16,7 @@ const prompts = [
 ] as const;
 
 function adb(args: string[], encoding: BufferEncoding = "utf8"): string {
-  return execFileSync("adb", args, { encoding }).toString().trim();
+  return execFileSync("adb", args, { encoding, timeout: 8000 }).toString().trim();
 }
 
 function firstDevice(): string {
@@ -34,7 +34,7 @@ function main() {
   if (sdk !== "34") throw new Error(`ANDROID_API34_REQUIRED_GOT_${sdk}`);
   if (avdRaw !== "Pixel_7_API_34") throw new Error(`ANDROID_AVD_REQUIRED_Pixel_7_API_34_GOT_${avdRaw}`);
 
-  const png = execFileSync("adb", ["-s", serial, "exec-out", "screencap", "-p"]);
+  const png = execFileSync("adb", ["-s", serial, "exec-out", "screencap", "-p"], { timeout: 8000 });
   const screenshotPath = path.join(screenshotDir, "api34_current_screen.png");
   fs.writeFileSync(screenshotPath, png);
   adb(["-s", serial, "shell", "uiautomator", "dump", "/sdcard/live_b2c_estimate_api34.xml"]);

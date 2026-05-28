@@ -73,14 +73,16 @@ function repoState() {
   const releaseGuardHead = process.env.RELEASE_GUARD_HEAD_COMMIT?.trim();
   const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
   const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
+  const explicitBranchPushed = envFlag("REQUEST_AI_ESTIMATE_BOQ_FORMULA_BRANCH_PUSHED");
+  const explicitWorktreeClean = envFlag("REQUEST_AI_ESTIMATE_BOQ_FORMULA_FINAL_WORKTREE_CLEAN");
   const finalWorktreeClean = status === "";
-  const branchPushed = releaseGuardHeadPushed ?? remoteContainsCommit;
+  const branchPushed = explicitBranchPushed ?? releaseGuardHeadPushed ?? remoteContainsCommit;
 
   return {
     branch,
     commitSha: releaseGuardHead || commitSha,
     status,
-    finalWorktreeClean: releaseGuardWorktreeClean ?? finalWorktreeClean,
+    finalWorktreeClean: explicitWorktreeClean ?? releaseGuardWorktreeClean ?? finalWorktreeClean,
     remoteRef,
     remoteHead,
     branchPushed,

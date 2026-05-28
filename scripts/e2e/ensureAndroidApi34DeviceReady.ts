@@ -18,6 +18,7 @@ export const API34_DEVICE_READY = "GREEN_ANDROID_API34_DEVICE_READY";
 
 export type AndroidApi34DeviceStatus =
   | typeof API34_DEVICE_READY
+  | "BLOCKED_ANDROID_API34_ADB_TIMEOUT"
   | "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
   | "BLOCKED_ANDROID_API34_AVD_NOT_AVAILABLE"
   | "BLOCKED_ANDROID_API34_DEVICE_NOT_READY";
@@ -430,6 +431,7 @@ export async function ensureAndroidApi34DeviceReady(
     sysBootCompleted === "1" &&
     androidSdk === 34 &&
     cpuAbi === "x86_64";
+  const adbTimedOut = deviceWait.adbDevicesResult?.timed_out === true;
 
   const result: AndroidApi34DeviceReadyResult = {
     ...buildBaseResult({
@@ -437,12 +439,16 @@ export async function ensureAndroidApi34DeviceReady(
       availableAvds,
       sdkmanagerInstallResult,
       avdmanagerCreateResult,
-      finalStatus: api36DeviceDetected
+      finalStatus: adbTimedOut
+        ? "BLOCKED_ANDROID_API34_ADB_TIMEOUT"
+        : api36DeviceDetected
         ? "BLOCKED_ANDROID_API36_NOT_ALLOWED_FOR_ACCEPTANCE"
         : healthy
           ? API34_DEVICE_READY
           : "BLOCKED_ANDROID_API34_DEVICE_NOT_READY",
-      failureReason: api36DeviceDetected
+      failureReason: adbTimedOut
+        ? "ADB_DEVICES_TIMED_OUT_DURING_API34_DEVICE_READY_CHECK"
+        : api36DeviceDetected
         ? "API36_OR_16K_DEVICE_DETECTED_FOR_ACCEPTANCE"
         : healthy
           ? null

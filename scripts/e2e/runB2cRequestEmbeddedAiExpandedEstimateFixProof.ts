@@ -10,6 +10,7 @@ import {
   validateEstimatePresentationViewModel,
 } from "../../src/lib/ai/estimatePresentation";
 import type { GlobalEstimateResult } from "../../src/lib/ai/globalEstimate/globalEstimateTypes";
+import { requireCanonicalApi34EvidenceForGate } from "./canonicalApi34Evidence";
 
 const WAVE = "S_B2C_REQUEST_EMBEDDED_AI_SHARED_EXPANDED_ESTIMATE_BINDING_FIX_POINT_OF_NO_RETURN";
 const DIR = path.join(process.cwd(), "artifacts", "S_B2C_REQUEST_EMBEDDED_AI_EXPANDED_ESTIMATE_FIX");
@@ -237,7 +238,8 @@ function main(): void {
   const androidArtifactsPresent = artifactExists("android_screenshots.json") && artifactExists("android_ui_dumps.json");
   const existingMatrix = readArtifactJson<Record<string, unknown>>("matrix.json") ?? {};
   const androidSmoke = readArtifactJson<Record<string, unknown>>("android_smoke_passed.json") ?? {};
-  const api34ReplayPassed = existingMatrix.api34_replay_passed === true || androidSmoke.api34_replay_passed === true;
+  const api34Evidence = requireCanonicalApi34EvidenceForGate("b2c-request-embedded-ai-expanded-estimate-binding-proof");
+  const api34ReplayPassed = api34Evidence.ok || existingMatrix.api34_replay_passed === true || androidSmoke.api34_replay_passed === true;
   const androidPassed = androidArtifactsPresent && fs.existsSync(path.join(DIR, "android_smoke_passed.json")) && api34ReplayPassed;
   const webPlaywrightPassed =
     envOrPrevious("B2C_EXPANDED_ESTIMATE_WEB_PLAYWRIGHT_PASSED", existingMatrix, "web_playwright_passed") ||
@@ -337,9 +339,13 @@ function main(): void {
     web_playwright_passed: webPlaywrightPassed,
     android_emulator_passed: androidPassed,
     api34_replay_passed: api34ReplayPassed,
-    api34_replay_status: existingMatrix.api34_replay_status ?? androidSmoke.api34_replay_status ?? null,
-    api34_replay_matrix_path: existingMatrix.api34_replay_matrix_path ?? null,
-    resolved_by_api34_replay: existingMatrix.resolved_by_api34_replay === true || androidSmoke.api34_replay_passed === true,
+    api34_replay_status: api34Evidence.ok
+      ? api34Evidence.matrix.final_status
+      : existingMatrix.api34_replay_status ?? androidSmoke.api34_replay_status ?? null,
+    api34_replay_matrix_path: api34Evidence.ok
+      ? api34Evidence.evidence.canonical_matrix_path
+      : existingMatrix.api34_replay_matrix_path ?? null,
+    resolved_by_api34_replay: api34Evidence.ok || existingMatrix.resolved_by_api34_replay === true || androidSmoke.api34_replay_passed === true,
     previous_blocker: existingMatrix.previous_blocker ?? "BLOCKED_ADB_DEVICES_HANG",
     root_cause: existingMatrix.root_cause ?? "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
     typecheck_passed: typecheckPassed,

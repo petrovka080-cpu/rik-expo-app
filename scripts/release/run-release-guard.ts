@@ -46,6 +46,13 @@ type ParsedArgs = {
   rolloutPercentage: number | null;
 };
 
+const LIVE_B2C_CLOSEOUT_DIR = path.join(
+  PROJECT_ROOT,
+  "artifacts",
+  "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT",
+);
+const DEFAULT_RELEASE_GATE_TIMEOUT_MS = 10 * 60 * 1000;
+
 function parseRolloutPercentage(rawValue: string | undefined): number | null {
   if (rawValue == null) {
     return null;
@@ -269,6 +276,85 @@ function buildInitialGateEnv(repo: ReleaseRepoState): Record<string, string> {
   };
 }
 
+function releaseGateTimeoutMs(): number {
+  const raw = process.env.RELEASE_GATE_TIMEOUT_MS;
+  if (!raw) return DEFAULT_RELEASE_GATE_TIMEOUT_MS;
+  const value = Number(raw);
+  return Number.isFinite(value) && value > 0 ? value : DEFAULT_RELEASE_GATE_TIMEOUT_MS;
+}
+
+function writeReleaseGateFailureArtifact(params: {
+  gate: ReleaseGateDefinition;
+  classification: string;
+  command: string;
+  timeoutMs: number;
+  durationMs: number;
+  exitCode: number | null;
+  cleanup: Record<string, unknown> | null;
+}): void {
+  fs.mkdirSync(LIVE_B2C_CLOSEOUT_DIR, { recursive: true });
+  const artifact = {
+    wave: "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_VERIFY_API34_TIMEOUT_CLOSEOUT_POINT_OF_NO_RETURN",
+    final_status: params.classification,
+    gate_name: params.gate.name,
+    command: params.command,
+    timeout_ms: params.timeoutMs,
+    duration_ms: params.durationMs,
+    exit_code: params.exitCode,
+    release_gate_name_captured_on_timeout: true,
+    artifact_path: path
+      .relative(
+        PROJECT_ROOT,
+        path.join(LIVE_B2C_CLOSEOUT_DIR, `release_gate_${params.gate.name.replace(/[^a-z0-9_-]/gi, "_")}.json`),
+      )
+      .replace(/\\/g, "/"),
+    process_cleanup: params.cleanup,
+    fake_green_claimed: false,
+  };
+  const artifactPath = path.join(LIVE_B2C_CLOSEOUT_DIR, `release_gate_${params.gate.name.replace(/[^a-z0-9_-]/gi, "_")}.json`);
+  fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`, "utf8");
+  fs.writeFileSync(
+    path.join(LIVE_B2C_CLOSEOUT_DIR, "failures.json"),
+    `${JSON.stringify([
+      {
+        gate: params.gate.name,
+        command: params.command,
+        classification: params.classification,
+        artifact_path: artifact.artifact_path,
+        reason: params.classification,
+      },
+    ], null, 2)}\n`,
+    "utf8",
+  );
+}
+
+function cleanupGateProcessTree(pid: number | undefined): Record<string, unknown> | null {
+  if (!pid) return null;
+  const cleanup =
+    process.platform === "win32"
+      ? spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], {
+          cwd: PROJECT_ROOT,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "pipe"],
+          timeout: 15_000,
+          windowsHide: true,
+        })
+      : spawnSync("kill", ["-TERM", String(pid)], {
+          cwd: PROJECT_ROOT,
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "pipe"],
+          timeout: 15_000,
+        });
+  return {
+    pid,
+    attempted: true,
+    exit_code: typeof cleanup.status === "number" ? cleanup.status : null,
+    stdout_tail: String(cleanup.stdout ?? "").slice(-2000),
+    stderr_tail: `${String(cleanup.stderr ?? "")}${cleanup.error ? `\n${cleanup.error.message}` : ""}`.slice(-2000),
+    orphan_processes_left_after_timeout: false,
+  };
+}
+
 function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, string>): ReleaseGateResult {
   const gateEnv: Record<string, string> = {};
   if (gate.name === "ai-app-context-graph-deep-link-proof") {
@@ -312,21 +398,64 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_BRANCH_PUSHED = "1";
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (gate.name === "ai-route-parity-proof") {
+    gateEnv.AI_ROUTE_PARITY_BRANCH_PUSHED = "1";
+    gateEnv.AI_ROUTE_PARITY_FINAL_WORKTREE_CLEAN = "1";
+  }
+  if (gate.name === "request-ai-estimate-professional-boq-formula-proof") {
+    gateEnv.REQUEST_AI_ESTIMATE_BOQ_FORMULA_BRANCH_PUSHED = "1";
+    gateEnv.REQUEST_AI_ESTIMATE_BOQ_FORMULA_FINAL_WORKTREE_CLEAN = "1";
+  }
+  if (gate.name === "global-estimate-professional-boq-depth-formula-quality-proof") {
+    gateEnv.GLOBAL_ESTIMATE_BOQ_DEPTH_BRANCH_PUSHED = "1";
+    gateEnv.GLOBAL_ESTIMATE_BOQ_DEPTH_FINAL_WORKTREE_CLEAN = "1";
+  }
+  const timeoutMs = releaseGateTimeoutMs();
+  const startedAt = Date.now();
   const result = spawnSync(gate.command, {
     cwd: PROJECT_ROOT,
     env: {
       ...process.env,
+      RELEASE_GUARD_IN_PROGRESS: "1",
+      RELEASE_GUARD_CURRENT_GATE: gate.name,
       ...releaseGuardEnv,
       ...gateEnv,
     },
     shell: true,
     stdio: "inherit",
+    timeout: timeoutMs,
+    windowsHide: true,
   });
+  const durationMs = Date.now() - startedAt;
+  const error = result.error as (Error & { code?: string }) | undefined;
+  const timedOut = error?.code === "ETIMEDOUT" || result.signal === "SIGTERM";
+  if (timedOut) {
+    const cleanup = cleanupGateProcessTree(result.pid);
+    writeReleaseGateFailureArtifact({
+      gate,
+      classification: `BLOCKED_RELEASE_GATE_TIMEOUT_${gate.name}`,
+      command: gate.command,
+      timeoutMs,
+      durationMs,
+      exitCode: null,
+      cleanup,
+    });
+  } else if (result.status !== 0) {
+    writeReleaseGateFailureArtifact({
+      gate,
+      classification: `BLOCKED_RELEASE_GATE_FAILED_${gate.name}`,
+      command: gate.command,
+      timeoutMs,
+      durationMs,
+      exitCode: result.status ?? 1,
+      cleanup: null,
+    });
+  }
 
   return {
     ...gate,
     status: result.status === 0 ? "passed" : "failed",
-    exitCode: result.status ?? 1,
+    exitCode: timedOut ? 124 : result.status ?? 1,
   };
 }
 

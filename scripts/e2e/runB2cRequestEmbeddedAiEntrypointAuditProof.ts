@@ -2,10 +2,11 @@ import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
+import { requireCanonicalApi34EvidenceForGate } from "./canonicalApi34Evidence";
+
 const ARTIFACT_DIR = path.resolve(process.cwd(), "artifacts");
 const SCREENSHOT_DIR = path.join(ARTIFACT_DIR, "screenshots", "b2c-request-embedded-ai-entrypoint-audit");
 const PREFIX = "S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT";
-const API34_REPLAY_DIR = path.join(ARTIFACT_DIR, "S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING");
 const WAVE = "S_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_EXACT_REPRO_ANDROID_POINT_OF_NO_RETURN";
 const GREEN = "GREEN_B2C_REQUEST_EMBEDDED_AI_ENTRYPOINT_AUDIT_CLOSEOUT_READY";
 const ANDROID_ROUTE_BOOTSTRAP_BLOCKED = "BLOCKED_ANDROID_ROUTE_BOOTSTRAP_FAILED";
@@ -56,37 +57,10 @@ function readJson(name: string): JsonRecord {
   }
 }
 
-function readJsonPath(filePath: string): unknown {
-  if (!fs.existsSync(filePath)) return null;
-  try {
-    return JSON.parse(fs.readFileSync(filePath, "utf8").replace(/^\uFEFF/, ""));
-  } catch {
-    return null;
-  }
-}
-
-function fileListExists(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === "string" && fs.existsSync(path.resolve(process.cwd(), item)));
-}
-
 function api34ReplayAndroidArtifact(): JsonRecord | null {
-  const matrix = readJsonPath(path.join(API34_REPLAY_DIR, "matrix.json"));
-  if (!matrix || typeof matrix !== "object") return null;
-  const matrixRecord = matrix as JsonRecord;
-  const screenshots = fileListExists(readJsonPath(path.join(API34_REPLAY_DIR, "android_screenshots.json")));
-  const nativeDumps = fileListExists(readJsonPath(path.join(API34_REPLAY_DIR, "android_ui_dumps.json")));
-  const api34Green =
-    matrixRecord.final_status === "GREEN_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING_READY" &&
-    matrixRecord.android_sdk === 34 &&
-    matrixRecord.avd_name === "Pixel_7_API_34" &&
-    matrixRecord.app_root_marker_proven === true &&
-    matrixRecord.request_route_marker_proven === true &&
-    matrixRecord.embedded_ai_route_marker_proven === true &&
-    matrixRecord.api34_android_replay_passed === true &&
-    screenshots.length > 0 &&
-    nativeDumps.length > 0;
-  if (!api34Green) return null;
+  const result = requireCanonicalApi34EvidenceForGate("b2c-request-embedded-ai-entrypoint-audit-proof");
+  if (!result.ok) return null;
+  const matrixRecord = result.matrix as JsonRecord;
 
   return {
     wave: WAVE,
@@ -100,22 +74,22 @@ function api34ReplayAndroidArtifact(): JsonRecord | null {
     resolved_by_api34_replay: true,
     previous_blocker: ANDROID_ROUTE_BOOTSTRAP_BLOCKED,
     root_cause: matrixRecord.root_cause ?? "API36_16K_EMULATOR_ADB_TRANSPORT_BUG",
-    api34_matrix_path: path.join(API34_REPLAY_DIR, "matrix.json"),
+    api34_matrix_path: matrixRecord.canonical_matrix_path ?? "artifacts/S_ANDROID_API34_CANONICAL_REPLAY_B2C_EXPANDED_ESTIMATE_BINDING/matrix.json",
     avd_name: matrixRecord.avd_name,
     android_sdk: matrixRecord.android_sdk,
     cpu_abi: matrixRecord.cpu_abi,
     app_root_marker_proven: matrixRecord.app_root_marker_proven,
     request_route_marker_proven: matrixRecord.request_route_marker_proven,
     embedded_ai_route_marker_proven: matrixRecord.embedded_ai_route_marker_proven,
-    screenshots,
-    native_dumps: nativeDumps,
+    screenshots: result.screenshots,
+    native_dumps: result.uiDumps,
     fake_green_claimed: false,
   };
 }
 
 function adbDevices(): string[] {
   try {
-    return execFileSync("adb", ["devices", "-l"], { cwd: process.cwd(), encoding: "utf8", stdio: "pipe" })
+    return execFileSync("adb", ["devices", "-l"], { cwd: process.cwd(), encoding: "utf8", stdio: "pipe", timeout: 8000 })
       .split(/\r?\n/)
       .map((line) => line.trim())
       .filter((line) => /^emulator-\d+\s+device\b/.test(line));

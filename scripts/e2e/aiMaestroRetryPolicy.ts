@@ -57,6 +57,7 @@ export function prepareAndroidDeviceForAiMaestroRetry(params: {
     encoding: "utf8",
     stdio: "ignore",
     shell: process.platform === "win32",
+    timeout: 30_000,
   });
 
   const bootArgs = params.deviceId
@@ -67,6 +68,7 @@ export function prepareAndroidDeviceForAiMaestroRetry(params: {
     encoding: "utf8",
     stdio: "ignore",
     shell: process.platform === "win32",
+    timeout: 8_000,
   });
 }
 

@@ -543,6 +543,7 @@ function listConnectedAndroidDeviceIds(): string[] {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
     shell: process.platform === "win32",
+    timeout: 8_000,
   });
   if (result.status !== 0) {
     return [];

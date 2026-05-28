@@ -141,10 +141,12 @@ export function gitCommitState(): { commitCreated: boolean; branchPushed: boolea
   const remoteContains = Boolean(remoteBranch) && git(["merge-base", "--is-ancestor", head, remoteBranch], "__FAILED__") !== "__FAILED__";
   const releaseGuardHeadPushed = envFlag("RELEASE_GUARD_INITIAL_HEAD_PUSHED");
   const releaseGuardWorktreeClean = envFlag("RELEASE_GUARD_INITIAL_WORKTREE_CLEAN");
+  const explicitBranchPushed = envFlag("AI_ESTIMATE_CHANGE_CONTROL_BRANCH_PUSHED");
+  const explicitWorktreeClean = envFlag("AI_ESTIMATE_CHANGE_CONTROL_FINAL_WORKTREE_CLEAN");
   return {
     commitCreated: /^[0-9a-f]{40}$/i.test(head),
-    branchPushed: releaseGuardHeadPushed ?? remoteContains,
-    finalWorktreeClean: releaseGuardWorktreeClean ?? git(["status", "--porcelain"]).length === 0,
+    branchPushed: explicitBranchPushed ?? releaseGuardHeadPushed ?? remoteContains,
+    finalWorktreeClean: explicitWorktreeClean ?? releaseGuardWorktreeClean ?? git(["status", "--porcelain"]).length === 0,
   };
 }
 

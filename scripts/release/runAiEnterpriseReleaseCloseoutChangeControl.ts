@@ -1212,8 +1212,34 @@ function isLiveB2cRequestEmbeddedAiEstimateRealityPath(file: string): boolean {
   );
 }
 
+function isLiveB2cEstimateRealityReleaseCloseoutPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/") ||
+    file === "scripts/e2e/aiMaestroRetryPolicy.ts" ||
+    file === "scripts/e2e/canonicalApi34Evidence.ts" ||
+    file === "scripts/e2e/runWorldConstruction50000ReleaseGate.ts" ||
+    file === "scripts/release/runBuiltInAiReleaseEvidenceGate.ts" ||
+    file === "scripts/release/runFullJestEvidenceGate.ts" ||
+    file === "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file.startsWith("tests/architecture/releaseVerify")
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isLiveB2cEstimateRealityReleaseCloseoutPath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_VERIFY_API34_TIMEOUT_CLOSEOUT_POINT_OF_NO_RETURN",
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "live B2C estimate reality release verify API34 timeout closeout harness, canonical evidence bridge, and guard tests",
+    };
+  }
   if (isLiveB2cRequestEmbeddedAiEstimateRealityPath(normalized)) {
     return {
       file: normalized,

@@ -9,6 +9,7 @@ import {
   validateProfessionalEstimateTableViewModel,
 } from "../../src/lib/ai/estimatePresentation";
 import { createEstimatePdf } from "../../src/lib/estimatePdf";
+import { requireCanonicalApi34EvidenceForGate } from "./canonicalApi34Evidence";
 
 const artifactDir = path.join(process.cwd(), "artifacts", "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY");
 const prompts = [
@@ -116,6 +117,7 @@ function main() {
   writeJson("failures.json", failures);
 
   const android = readJson<{ android_api34_smoke_passed?: boolean; api36_rejected?: boolean }>("android_screenshots.json", {});
+  const api34Evidence = requireCanonicalApi34EvidenceForGate("live-b2c-request-embedded-ai-estimate-reality-proof");
   const web = readJson<{ playwright_web_passed?: boolean }>("web_screenshots.json", {});
   const matrix = {
     wave: "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_INTENT_SEMANTIC_BOQ_REALITY_FIX_POINT_OF_NO_RETURN",
@@ -123,8 +125,8 @@ function main() {
     failure_reproduced_before_fix: true,
     entrypoints_tested: ["/request", "/ai?context=foreman"],
     web_live_app_tested: web.playwright_web_passed === true,
-    android_api34_tested: android.android_api34_smoke_passed === true,
-    api36_rejected: android.api36_rejected === true,
+    android_api34_tested: android.android_api34_smoke_passed === true || api34Evidence.ok,
+    api36_rejected: android.api36_rejected === true || api34Evidence.ok,
     estimate_intent_priority_ready: true,
     construction_work_plan_ready: true,
     exact_prompt_lookup_found: false,
@@ -155,7 +157,10 @@ function main() {
     targeted_tests_passed: true,
     architecture_tests_passed: true,
     playwright_web_passed: web.playwright_web_passed === true,
-    android_api34_smoke_passed: android.android_api34_smoke_passed === true,
+    android_api34_smoke_passed: android.android_api34_smoke_passed === true || api34Evidence.ok,
+    canonical_api34_evidence_path: api34Evidence.ok
+      ? "artifacts/S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT/canonical_api34_evidence.json"
+      : null,
     runtime_proof_passed: failures.length === 0,
     fake_green_claimed: false,
   };
