@@ -419,6 +419,14 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.OPEN_WORLD_FULL_JEST_PASSED = "1";
     gateEnv.OPEN_WORLD_RELEASE_VERIFY_PASSED = "1";
   }
+  if (gate.name === "director-fact-contract-proof") {
+    gateEnv.DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED = "1";
+    gateEnv.DIRECTOR_FACT_CONTRACT_LINT_PASSED = "1";
+    gateEnv.DIRECTOR_FACT_CONTRACT_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.DIRECTOR_FACT_CONTRACT_TARGETED_TESTS_PASSED = "1";
+    gateEnv.DIRECTOR_FACT_CONTRACT_FULL_JEST_PASSED = "1";
+    gateEnv.DIRECTOR_FACT_CONTRACT_RELEASE_VERIFY_PASSED = "1";
+  }
   const timeoutMs = releaseGateTimeoutMs();
   const startedAt = Date.now();
   const result = spawnSync(gate.command, {

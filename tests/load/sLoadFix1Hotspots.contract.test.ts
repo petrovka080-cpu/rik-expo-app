@@ -312,6 +312,18 @@ const isApprovedAiSupplierContractorMarketplaceIntakePatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPlatformDirectorFactContractPatch = (file: string) =>
+  [
+    "src/lib/api/director_reports.aggregation.contracts.ts",
+    "scripts/release/runDirectorFactContractProof.ts",
+    "scripts/release/releaseGuard.shared.ts",
+    "scripts/release/run-release-guard.ts",
+    "scripts/release/runReleaseVerifyWithStepTiming.ts",
+    "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts",
+    "tests/api/directorFactContract.contract.test.ts",
+    "tests/load/sLoadFix1Hotspots.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 const isApprovedAiLiveUiRealAnswersRecoveryPatch = (file: string) => {
   const normalized = normalizePath(file);
   return (
@@ -1027,6 +1039,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
+        !isApprovedPlatformDirectorFactContractPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),
         ) ||

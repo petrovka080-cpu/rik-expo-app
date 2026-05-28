@@ -7,6 +7,29 @@ import type {
 export type DirectorReportsAggregationContractId = "director_report_transport_scope_v1";
 export type DirectorReportsAggregationContractVersion = "v1";
 export type DirectorReportsAggregationDocumentType = "director_report_transport_scope";
+export type DirectorReportsFactContractId = "director_fact_context_contract_v1";
+
+export type DirectorReportsFactContextField =
+  | "object_id_resolved"
+  | "object_name_resolved"
+  | "work_name_resolved"
+  | "level_name_resolved"
+  | "system_name_resolved"
+  | "zone_name_resolved"
+  | "is_without_request";
+
+export type DirectorReportsFactContract = {
+  contractId: DirectorReportsFactContractId;
+  owner: "director_report_transport_scope_v1";
+  version: DirectorReportsAggregationContractVersion;
+  requiredResolvedFields: readonly DirectorReportsFactContextField[];
+  sourcePriority: {
+    objectIdentity: readonly string[];
+    workIdentity: readonly string[];
+    locationIdentity: readonly string[];
+  };
+  forbiddenClientResponsibilities: readonly string[];
+};
 
 export type DirectorReportsAggregationRequestDto = {
   contractId: DirectorReportsAggregationContractId;
@@ -46,6 +69,54 @@ export type DirectorReportsAggregationRpcEnvelopeV1 = {
   canonical_diagnostics?: unknown;
   priced_stage?: "base" | "priced" | null;
 };
+
+export const DIRECTOR_REPORTS_FACT_CONTEXT_CONTRACT = {
+  contractId: "director_fact_context_contract_v1",
+  owner: "director_report_transport_scope_v1",
+  version: "v1",
+  requiredResolvedFields: [
+    "object_id_resolved",
+    "object_name_resolved",
+    "work_name_resolved",
+    "level_name_resolved",
+    "system_name_resolved",
+    "zone_name_resolved",
+    "is_without_request",
+  ],
+  sourcePriority: {
+    objectIdentity: [
+      "request.object_identity_key",
+      "request.object_identity_name",
+      "request.object_id",
+      "request.object_name",
+      "warehouse_issue.target_object_id",
+      "warehouse_issue.object_name",
+      "free_issue_note.object_name_when_no_request_only",
+    ],
+    workIdentity: [
+      "warehouse_issue.work_name",
+      "free_issue_note.work_name",
+      "request.system_code",
+      "request.zone_code",
+      "request_item.item_kind",
+    ],
+    locationIdentity: [
+      "request.level_code",
+      "free_issue_note.level_name",
+      "request.zone_code",
+      "free_issue_note.zone_name",
+      "request.system_code",
+      "free_issue_note.system_name",
+    ],
+  },
+  forbiddenClientResponsibilities: [
+    "client_full_table_fact_aggregation",
+    "client_report_kpi_recompute",
+    "client_purchase_cost_object_matching",
+    "client_warehouse_issue_note_as_primary_schema",
+    "ui_screen_local_report_calculation",
+  ],
+} as const satisfies DirectorReportsFactContract;
 
 export type DirectorReportsAggregationResponseDto = {
   document_type: DirectorReportsAggregationDocumentType;
@@ -102,6 +173,7 @@ export const DIRECTOR_REPORTS_SERVER_AGGREGATION_CONTRACT = {
     discipline: "server-side work/location/material aggregation with optional cost enrichment",
     options: "server-side object option projection for the requested period",
   },
+  factContextContract: DIRECTOR_REPORTS_FACT_CONTEXT_CONTRACT,
   listOutput: "full_aggregate_rows_not_preview",
   noSilentTruncation: true,
   fullReportTotalsServerSide: true,

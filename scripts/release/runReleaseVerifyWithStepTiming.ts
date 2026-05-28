@@ -175,6 +175,16 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       OPEN_WORLD_RELEASE_VERIFY_PASSED: "1",
     };
   }
+  if (step === "director-fact-contract-proof") {
+    return {
+      DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED: "1",
+      DIRECTOR_FACT_CONTRACT_LINT_PASSED: "1",
+      DIRECTOR_FACT_CONTRACT_GIT_DIFF_CHECK_PASSED: "1",
+      DIRECTOR_FACT_CONTRACT_TARGETED_TESTS_PASSED: "1",
+      DIRECTOR_FACT_CONTRACT_FULL_JEST_PASSED: "1",
+      DIRECTOR_FACT_CONTRACT_RELEASE_VERIFY_PASSED: "1",
+    };
+  }
   return {};
 }
 

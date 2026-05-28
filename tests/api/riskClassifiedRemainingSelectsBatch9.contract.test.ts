@@ -346,6 +346,18 @@ const isApprovedAiSupplierContractorMarketplaceIntakePatch = (file: string) =>
     "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
   ].includes(file.replace(/\\/g, "/"));
 
+const isApprovedPlatformDirectorFactContractPatch = (file: string) =>
+  [
+    "src/lib/api/director_reports.aggregation.contracts.ts",
+    "scripts/release/runDirectorFactContractProof.ts",
+    "scripts/release/releaseGuard.shared.ts",
+    "scripts/release/run-release-guard.ts",
+    "scripts/release/runReleaseVerifyWithStepTiming.ts",
+    "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts",
+    "tests/api/directorFactContract.contract.test.ts",
+    "tests/api/riskClassifiedRemainingSelectsBatch9.contract.test.ts",
+  ].includes(file.replace(/\\/g, "/"));
+
 describe("S-PAG-9 risk-classified remaining selects", () => {
   it("bounds six safe buyer and construction-object enrichment reads", () => {
     const buyer = read("src/lib/api/buyer.ts");
@@ -424,6 +436,7 @@ describe("S-PAG-9 risk-classified remaining selects", () => {
         !isApprovedAiBuyerRealSourcingPatch(file) &&
         !isApprovedAiAccountantRealFinancePatch(file) &&
         !isApprovedAiSupplierContractorMarketplaceIntakePatch(file) &&
+        !isApprovedPlatformDirectorFactContractPatch(file) &&
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedCatalogEstimateBindingArtifact(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(

@@ -81,6 +81,7 @@ export type ReleaseGateName =
   | "all-screens-pdf-open-proof"
   | "all-screens-bottom-nav-proof"
   | "all-screens-backend-boundary-proof"
+  | "director-fact-contract-proof"
   | "all-screens-role-ai-proof"
   | "all-screens-no-overlap-proof"
   | "enterprise-release-candidate-proof"
@@ -348,6 +349,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "all-screens-pdf-open-proof", command: "npx tsx scripts/e2e/runAllScreensPdfOpenProof.ts" },
   { name: "all-screens-bottom-nav-proof", command: "npx tsx scripts/e2e/runAllScreensBottomNavProof.ts" },
   { name: "all-screens-backend-boundary-proof", command: "npx tsx scripts/e2e/runAllScreensBackendBoundaryProof.ts" },
+  { name: "director-fact-contract-proof", command: "npx tsx scripts/release/runDirectorFactContractProof.ts" },
   { name: "all-screens-role-ai-proof", command: "npx tsx scripts/e2e/runAllScreensRoleAiProof.ts" },
   { name: "all-screens-no-overlap-proof", command: "npx tsx scripts/e2e/runAllScreensNoOverlapProof.ts" },
   { name: "enterprise-release-candidate-proof", command: "npx tsx scripts/e2e/runEnterpriseReleaseCandidateProof.ts" },

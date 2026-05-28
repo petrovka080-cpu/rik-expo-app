@@ -69,6 +69,8 @@ const LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY_WAVE =
   "S_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_INTENT_SEMANTIC_BOQ_REALITY_FIX_POINT_OF_NO_RETURN";
 const OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE =
   "S_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_POINT_OF_NO_RETURN";
+const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
+  "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
 
 type DirtyFileStatus = {
   file: string;
@@ -1244,8 +1246,31 @@ function isOpenWorldEstimateSemanticCoverageLockPath(file: string): boolean {
   );
 }
 
+function isPlatformDirectorFactContractPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_PLATFORM_DIRECTOR_FACT_CONTRACT/") ||
+    file === "src/lib/api/director_reports.aggregation.contracts.ts" ||
+    file === "tests/api/directorFactContract.contract.test.ts" ||
+    file === "scripts/release/runDirectorFactContractProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts"
+  );
+}
+
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isPlatformDirectorFactContractPath(normalized)) {
+    return {
+      file: normalized,
+      category: "release_closeout",
+      wave: PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "director fact context contract, backend-owned report truth guard, proof runner, and release gate wiring",
+    };
+  }
   if (isOpenWorldEstimateSemanticCoverageLockPath(normalized)) {
     return {
       file: normalized,
