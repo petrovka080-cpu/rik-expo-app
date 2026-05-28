@@ -433,11 +433,17 @@ async function openAppRootForReplay(captureId: string): Promise<ReturnType<typeo
   });
 }
 
-async function openCaseRoute(testCase: Api34ReplayCase): Promise<ReturnType<typeof captureScreenInDir>> {
+type OpenCaseRouteResult = {
+  screen: ReturnType<typeof captureScreenInDir>;
+  appRootMarkerProven: boolean;
+};
+
+async function openCaseRoute(testCase: Api34ReplayCase): Promise<OpenCaseRouteResult> {
   let last: ReturnType<typeof captureScreenInDir> | null = null;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     const root = await openAppRootForReplay(`${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_root_attempt_${attempt}`);
-    if (!(appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY))) {
+    const rootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY);
+    if (!rootMarkerProven) {
       last = root;
       if (isRuntimeLoadError(root)) {
         dismissBlockingAndroidSurface(root);
@@ -453,7 +459,7 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<ReturnType<type
         timeoutMs: attempt === 1 && uriIndex === 0 ? 60_000 : 35_000,
         ready: (screen) => routeReadyForCase(testCase, screen),
       });
-      if (routeReadyForCase(testCase, last)) return last;
+      if (routeReadyForCase(testCase, last)) return { screen: last, appRootMarkerProven: rootMarkerProven };
       if (isRuntimeLoadError(last)) {
         dismissBlockingAndroidSurface(last);
         await resetAndroidAppForReplay();
@@ -470,7 +476,15 @@ async function openCaseRoute(testCase: Api34ReplayCase): Promise<ReturnType<type
       await sleep(1000);
     }
   }
-  return last ?? captureScreenInDir(`${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_failed`, ANDROID_API34_ACCEPTANCE_DIR);
+  return {
+    screen:
+      last ??
+      captureScreenInDir(
+        `${testCase.afterPromptCaptureId.replace("_after_prompt", "")}_loaded_failed`,
+        ANDROID_API34_ACCEPTANCE_DIR,
+      ),
+    appRootMarkerProven: false,
+  };
 }
 
 function buildBlockedMatrix(status: Api34ReplayStatus, env: AndroidApi34DeviceReadyResult): Api34ReplayMatrix {
@@ -679,6 +693,7 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
   const uiDumps: string[] = [];
   const failures: unknown[] = [];
   let appRootMarkerProven = false;
+  let initialRootFailure: unknown | null = null;
 
   try {
     let root: ReturnType<typeof captureScreenInDir> | null = null;
@@ -699,14 +714,14 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
     root = root ?? captureScreenInDir("app_root_loaded_failed", ANDROID_API34_ACCEPTANCE_DIR);
     appRootMarkerProven = appRootReady(root) && root.visibleText.includes(ROUTE_PROOF_APP_ROOT_READY);
     if (!appRootMarkerProven) {
-      failures.push({
+      initialRootFailure = {
         status: "BLOCKED_ANDROID_API34_ROUTE_REPLAY_FAILED",
         step: "app_root_marker",
         screenshot_path: root.screenshot_path,
         ui_dump_path: root.ui_dump_path,
         visible_text_sample: root.visibleText.slice(0, 500),
         error: root.error,
-      });
+      };
     }
 
     for (const testCase of CASES) {
@@ -717,7 +732,9 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         const captureId =
           attempt === 1 ? testCase.afterPromptCaptureId : `${testCase.afterPromptCaptureId}_retry_${attempt}`;
-        const loaded = await openCaseRoute(testCase);
+        const opened = await openCaseRoute(testCase);
+        const loaded = opened.screen;
+        appRootMarkerProven = appRootMarkerProven || opened.appRootMarkerProven;
         await sleep(12_000);
         const afterPromptCapture = await captureScrollableOutput(captureId, testCase);
         const afterPrompt = afterPromptCapture.best;
@@ -780,6 +797,10 @@ async function replayAndroidRoutes(env: AndroidApi34DeviceReadyResult): Promise<
           result,
         });
       }
+    }
+
+    if (!appRootMarkerProven && initialRootFailure) {
+      failures.push(initialRootFailure);
     }
   } finally {
     stopMetro(metro);
