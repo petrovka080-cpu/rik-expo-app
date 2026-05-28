@@ -163,6 +163,9 @@ function main() {
     android_screenshots_present: nonEmptyArray(androidScreenshots) || boolField(androidResults, "android_screenshots_real"),
     android_ui_dumps_present: nonEmptyArray(androidUiDumps) || boolField(androidResults, "android_ui_dumps_real"),
   };
+  const missingLiveEvidence = Object.entries(liveEvidence)
+    .filter(([, ready]) => ready !== true)
+    .map(([key]) => key);
   const liveReady = Object.values(liveEvidence).every(Boolean);
   const closeout = {
     typecheck_passed: envFlag("GLOBAL_LOCAL_TYPECHECK_PASSED"),
@@ -180,7 +183,9 @@ function main() {
   const finalStatus = !foundationReady
     ? "BLOCKED_GLOBAL_LOCAL_FOUNDATION_FAILED"
     : !liveReady
-      ? "BLOCKED_GLOBAL_LOCAL_LIVE_WEB_ANDROID_PDF_NOT_RUN"
+      ? liveEvidence.pdf_text_extractable_sample
+        ? "BLOCKED_GLOBAL_LOCAL_LIVE_WEB_ANDROID_NOT_RUN"
+        : "BLOCKED_GLOBAL_LOCAL_LIVE_WEB_ANDROID_PDF_NOT_RUN"
       : !closeoutReady
         ? "BLOCKED_GLOBAL_LOCAL_CLOSEOUT_NOT_RUN"
         : "GREEN_AI_ESTIMATE_GLOBAL_LOCAL_CONTEXT_RATE_SOURCE_PLATFORM_READY";
@@ -218,6 +223,7 @@ function main() {
     fake_supplier_found: false,
     fake_availability_found: false,
     ...liveEvidence,
+    missing_live_evidence: missingLiveEvidence,
     ...closeout,
     fake_green_claimed: false,
   };

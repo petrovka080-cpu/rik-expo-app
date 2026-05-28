@@ -70,6 +70,70 @@ function humanizeText(value: string): string {
     .replace(/\bAI estimate backend\b/gi, "сервис сметы");
 }
 
+function countryLabel(countryCode: string, language: string): string {
+  const ru: Record<string, string> = {
+    KG: "Кыргызстан",
+    KZ: "Казахстан",
+    US: "США",
+    GB: "Великобритания",
+    DE: "Германия",
+    FR: "Франция",
+  };
+  const en: Record<string, string> = {
+    KG: "Kyrgyzstan",
+    KZ: "Kazakhstan",
+    US: "United States",
+    GB: "United Kingdom",
+    DE: "Germany",
+    FR: "France",
+  };
+  return (language === "ru" ? ru[countryCode] : en[countryCode]) ?? countryCode;
+}
+
+function regionLabel(region: string | undefined, language: string): string | null {
+  if (!region) return null;
+  if (region === "TX") return language === "ru" ? "Техас / Texas" : "Texas";
+  if (region === "CA") return language === "ru" ? "Калифорния / California" : "California";
+  if (region === "NY") return language === "ru" ? "Нью-Йорк / New York" : "New York";
+  if (region === "Chuy") return language === "ru" ? "Чуйская область" : "Chuy";
+  return region;
+}
+
+function inferredRegionFromCity(countryCode: string, city: string | undefined, language: string): string | null {
+  const normalized = city?.toLowerCase();
+  if (countryCode === "US" && (normalized === "austin" || normalized === "dallas")) {
+    return language === "ru" ? "Техас / Texas" : "Texas";
+  }
+  if (countryCode === "US" && normalized === "los angeles") {
+    return language === "ru" ? "Калифорния / California" : "California";
+  }
+  return null;
+}
+
+function cityLabel(city: string | undefined, countryCode: string, language: string): string | null {
+  if (!city) return null;
+  const normalized = city.toLowerCase();
+  if (countryCode === "KG" && normalized === "bishkek") return language === "ru" ? "Бишкек" : "Bishkek";
+  if (countryCode === "KZ" && normalized === "almaty") return language === "ru" ? "Алматы" : "Almaty";
+  if (countryCode === "KZ" && normalized === "astana") return language === "ru" ? "Астана" : "Astana";
+  return city;
+}
+
+function locationLine(estimate: GlobalEstimateResult): string {
+  const locale = estimate.locale;
+  const region = regionLabel(locale.stateOrRegion, locale.language) ?? inferredRegionFromCity(locale.countryCode, locale.city, locale.language);
+  const parts = [
+    countryLabel(locale.countryCode, locale.language),
+    region,
+    cityLabel(locale.city, locale.countryCode, locale.language),
+    locale.postalCode,
+  ].filter((item): item is string => Boolean(item));
+  const precision = locale.addressPrecision === "unknown"
+    ? locale.language === "ru" ? "регион не указан" : "location missing"
+    : locale.language === "ru" ? `точность: ${locale.addressPrecision}` : `precision: ${locale.addressPrecision}`;
+  return [parts.join(", ") || countryLabel(locale.countryCode, locale.language), precision].filter(Boolean).join("; ");
+}
+
 function evidenceLine(evidence: EstimateRowSourceEvidence): string {
   return [
     humanizeText(evidence.label),
@@ -141,9 +205,9 @@ export function buildAiEstimatePdfViewModel(input: AiEstimatePdfInput): AiEstima
       { label: "Статус", value: documentStatus(input.documentMode) },
       { label: "Объект / вид работ", value: humanizeText(estimate.work.title) },
       { label: "Объём", value: inputVolume },
+      { label: "Регион расчёта", value: locationLine(estimate) },
       { label: "Налоговый статус", value: estimate.tax.taxLabel },
       { label: "Точность расчёта", value: confidenceLabel(estimate.confidence) },
-      { label: "Служебный ID", value: input.runtimeTraceId },
     ],
     assumptions: estimate.assumptions.length ? estimate.assumptions.map(humanizeText) : ["Допущения не указаны."],
     rows,
