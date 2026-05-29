@@ -28,4 +28,16 @@ describe("release verify canonical API34 evidence", () => {
       expect(source).toContain(gate);
     }
   });
+
+  it("runs canonical API34 replay before old Android evidence consumers", () => {
+    const releaseGuard = fs.readFileSync(path.join(process.cwd(), "scripts/release/releaseGuard.shared.ts"), "utf8");
+    const releaseGates = releaseGuard.slice(releaseGuard.indexOf("export const REQUIRED_RELEASE_GATES"));
+    const canonicalIndex = releaseGates.indexOf('"android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"');
+    expect(canonicalIndex).toBeGreaterThanOrEqual(0);
+
+    for (const [, gate] of OLD_ANDROID_GATES) {
+      const gateIndex = releaseGates.indexOf(`"${gate}"`);
+      expect(gateIndex).toBeGreaterThan(canonicalIndex);
+    }
+  });
 });
