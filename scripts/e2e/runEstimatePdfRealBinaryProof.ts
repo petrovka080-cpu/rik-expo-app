@@ -129,6 +129,19 @@ function buildPdfProof() {
     "Подписание",
     estimate.clarifyingQuestions[0] ?? "",
   ].filter(Boolean).map(normalizeRequiredText);
+  requiredText.splice(0, requiredText.length, ...[
+    "\u0421\u043c\u0435\u0442\u043d\u043e\u0435 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0435 / \u0421\u043c\u0435\u0442\u0430 \u0440\u0430\u0431\u043e\u0442",
+    "\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442 \u2116",
+    estimate.work.title,
+    estimate.sections.find((section) => section.type === "materials")?.rows[0]?.name ?? "",
+    estimate.sections.find((section) => section.type === "labor")?.rows[0]?.name ?? "",
+    estimate.totals.displayGrandTotal,
+    estimate.tax.taxLabel,
+    "\u0418\u0441\u0442\u043e\u0447\u043d\u0438\u043a\u0438",
+    "\u0422\u043e\u0447\u043d\u043e\u0441\u0442\u044c \u0440\u0430\u0441\u0447\u0451\u0442\u0430",
+    "\u041f\u043e\u0434\u043f\u0438\u0441\u0430\u043d\u0438\u0435",
+    estimate.clarifyingQuestions[0] ?? "",
+  ].filter(Boolean).map(normalizeRequiredText));
   const extraction = extractEstimatePdfTextForProof({
     pdf: pdf.access.uri,
     knownWorkKey: estimate.work.workKey,
