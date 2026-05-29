@@ -17,10 +17,13 @@ import { calculateGlobalTax } from "./globalTaxEngine";
 import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
-import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import { GLOBAL_WORK_TYPE_DEFINITIONS, getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
 import { buildConstructionWorkPlan } from "../constructionInterpreter/buildConstructionWorkPlan";
 import type { ConstructionWorkPlan } from "../constructionInterpreter/constructionSemanticTypes";
 import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
+import { resolveEstimatorOutcome } from "../estimatorKernel";
+import type { DynamicProfessionalBoq, EstimatorReasoningPlan } from "../estimatorKernel";
+import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
   buildStripFoundationQuantityContext,
@@ -410,6 +413,157 @@ function buildGlobalEstimateFromConstructionWorkPlan(
   return result;
 }
 
+function dynamicEstimateIdFor(plan: EstimatorReasoningPlan, input: GlobalEstimateInput): string {
+  const source = JSON.stringify({ text: input.text, workKey: plan.workKey, quantities: plan.quantities });
+  let hash = 0;
+  for (let index = 0; index < source.length; index += 1) {
+    hash = ((hash << 5) - hash + source.charCodeAt(index)) | 0;
+  }
+  return `universal_estimator_${Math.abs(hash)}`;
+}
+
+function buildGlobalEstimateFromEstimatorKernel(
+  plan: EstimatorReasoningPlan,
+  boq: DynamicProfessionalBoq,
+  input: GlobalEstimateInput,
+  canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] },
+): GlobalEstimateResult {
+  const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru", currency: input.currency ?? plan.pricingPolicy.currency });
+  const resultWorkKey = canonicalWork?.workKey ?? plan.workKey;
+  const resultWorkTitle = canonicalWork?.title ?? plan.titleRu.replace(/^Профессиональная предварительная смета на /, "");
+  const resultWorkCategory = canonicalWork?.category ?? plan.category;
+  const sourceMap = new Map<string, GlobalEstimateResult["sources"][number]>();
+  const confidences: GlobalEstimateConfidence[] = [plan.confidence, locale.confidence];
+  const sectionTypes: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
+  const sections = sectionTypes
+    .map((sectionType, sectionIndex) => {
+      const rows = boq.rows.filter((row) => row.sectionType === sectionType);
+      if (rows.length === 0) return null;
+      const mappedRows: SourceBackedEstimateRow[] = rows.map((row, rowIndex) => {
+        const rowConfidence: GlobalEstimateConfidence = row.sourcePolicy === "manual_review" ? "low" : "medium";
+        confidences.push(rowConfidence);
+        const evidence = sourceEvidence(rowConfidence)[0];
+        const total = Math.round(row.quantity * row.unitPrice * 100) / 100;
+        sourceMap.set(evidence.sourceId, {
+          id: evidence.sourceId,
+          type: evidence.sourceType,
+          label: evidence.label,
+          checkedAt: evidence.checkedAt,
+          url: evidence.url,
+        });
+        return {
+          rowNumber: rowNumber(sectionIndex + 1, rowIndex + 1),
+          code: row.code,
+          rateKey: row.rateKey ?? `${resultWorkKey}_${row.code}`,
+          materialKey: row.materialKey,
+          name: row.name,
+          quantity: row.quantity,
+          unit: row.unit,
+          displayQuantity: `${formatGlobalNumber(row.quantity, locale)} ${unitLabel(row.unit)}`,
+          unitPrice: row.unitPrice,
+          displayUnitPrice: `${formatGlobalCurrency(row.unitPrice, locale)} / ${unitLabel(row.unit)}`,
+          total,
+          displayTotal: formatGlobalCurrency(total, locale),
+          currency: locale.currency,
+          priceStatus: row.sourcePolicy === "manual_review" ? "manual_fallback" : "priced",
+          sourceId: evidence.sourceId,
+          sourceEvidence: [evidence],
+          confidence: rowConfidence,
+        };
+      });
+      return {
+        sectionNumber: String(sectionIndex + 1),
+        title: SECTION_TITLES_RU[sectionType],
+        type: sectionType,
+        rows: mappedRows,
+      };
+    })
+    .filter((section): section is GlobalEstimateResult["sections"][number] => Boolean(section));
+
+  const taxResolution = input.includeTax === false
+    ? { confidence: "high" as const, requiresLocationPrecision: false, warning: "Tax excluded by request." }
+    : resolveGlobalTaxRule(locale, input);
+  if (taxResolution.source) sourceMap.set(taxResolution.source.id, taxResolution.source);
+  confidences.push(taxResolution.confidence);
+  const tax = calculateGlobalTax({ sections, taxResolution });
+  const materialsTotal = sumByType(sections, "materials");
+  const laborTotal = sumByType(sections, "labor");
+  const equipmentTotal = sumByType(sections, "equipment");
+  const deliveryTotal = sumByType(sections, "delivery");
+  const taxTotal = tax.included ? 0 : tax.taxAmount;
+  const grandTotal = Math.round((materialsTotal + laborTotal + equipmentTotal + deliveryTotal + taxTotal) * 100) / 100;
+  const result: GlobalEstimateResult = {
+    estimateId: dynamicEstimateIdFor(plan, input),
+    outputContract: {
+      format: "professional_boq",
+      hasIntro: true,
+      hasAssumptions: boq.assumptions.length > 0,
+      hasMaterialsSection: sections.some((section) => section.type === "materials"),
+      hasLaborSection: sections.some((section) => section.type === "labor"),
+      hasGrandTotal: true,
+      hasTaxStatus: true,
+      hasRegionalRisks: true,
+      hasClarifyingQuestions: true,
+    },
+    locale,
+    work: {
+      workKey: resultWorkKey,
+      title: resultWorkTitle,
+      category: resultWorkCategory,
+    },
+    input: {
+      volume: plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.floorCount ?? 1,
+      unit: plan.quantities.areaM2 !== undefined ? "sq_m" :
+        plan.quantities.lengthM !== undefined ? "linear_m" :
+          plan.quantities.powerKw !== undefined ? "kw" :
+            plan.quantities.floorCount !== undefined || plan.quantities.count !== undefined ? "pcs" : "set",
+      originalText: input.text,
+      photoBased: input.photoAnalysis !== undefined,
+      dimensions: {
+        areaSqM: plan.quantities.areaM2,
+        length: plan.quantities.lengthM,
+        width: plan.quantities.widthM,
+        height: plan.quantities.heightM,
+        concreteVolumeM3: plan.formulas[0]?.outputs.volumeTotalM3,
+      },
+    },
+    assumptions: [
+      ...boq.assumptions,
+      ...plan.formulas.flatMap((formula) => formula.assumptions),
+    ],
+    sections,
+    tax,
+    totals: {
+      materialsTotal,
+      laborTotal,
+      equipmentTotal,
+      deliveryTotal,
+      taxTotal,
+      grandTotal,
+      currency: locale.currency,
+      displayMaterialsTotal: formatGlobalCurrency(materialsTotal, locale),
+      displayLaborTotal: formatGlobalCurrency(laborTotal, locale),
+      displayTaxTotal: formatGlobalCurrency(taxTotal, locale),
+      displayGrandTotal: formatGlobalCurrency(grandTotal, locale),
+    },
+    regionalRisks: [
+      { title: "Estimator kernel", text: "Смета собрана из semantic frame, quantity formulas и dynamic professional BOQ; exact template не требуется для parsable работы." },
+      { title: "Локальный контекст", text: "Цены, налог и источники требуют подтверждения по городу, поставщику и дате закупки." },
+      ...(plan.semanticFrame.regulated ? [{ title: "Регулируемая работа", text: "Нужны лицензированный подрядчик, допуски, местные требования и инспекция; DIY-инструкции не выдаются." }] : []),
+    ],
+    costIncreaseFactors: boq.costIncreaseFactors,
+    clarifyingQuestions: boq.clarifyingQuestions,
+    sources: [...sourceMap.values()],
+    confidence: confidenceMin(confidences),
+    requiresReview: true,
+  };
+  const unitSemantics = validateConstructionUnitSemantics(result);
+  if (!unitSemantics.passed) {
+    throw new Error(`UNIVERSAL_ESTIMATOR_UNIT_SEMANTICS_FAILED:${unitSemantics.failures.join(",")}`);
+  }
+  return result;
+}
+
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
@@ -429,6 +583,40 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
 
   const locale = resolveGlobalLocalization(input);
   const work = resolveGlobalWorkType({ ...input, language: locale.language });
+  const governedWorkTypeAvailable = work.workKey !== "other_construction_work" &&
+    GLOBAL_WORK_TYPE_DEFINITIONS.some((definition) => definition.workKey === work.workKey);
+  const estimatorOutcome = input.text
+    ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
+    : null;
+  const estimatorMayOverrideBroadGovernedWork =
+    estimatorOutcome?.plan?.workKey === "concrete_pedestal_pour" ||
+    estimatorOutcome?.plan?.workKey === "electrical_area_installation" ||
+    estimatorOutcome?.plan?.workKey === "hydro_turbine_installation";
+  if (
+    estimatorOutcome?.plan &&
+    (!governedWorkTypeAvailable || estimatorMayOverrideBroadGovernedWork) &&
+    estimatorOutcome.parsableWorkDetected &&
+    estimatorOutcome.dynamicBoqUsed &&
+    !estimatorOutcome.failures.length
+  ) {
+    const canonicalWorkForEstimator =
+      estimatorOutcome.plan.workKey === "hydro_turbine_installation" && work.workKey === "micro_hydro_preparation"
+        ? { workKey: work.workKey, title: work.title, category: work.category }
+        : estimatorOutcome.plan.workKey === "drainage_channel_installation" && /\bdrainage\b/i.test(input.text ?? "")
+          ? {
+              workKey: "world_drainage",
+              title: estimatorOutcome.plan.titleRu.replace(/^Профессиональная предварительная смета на /, ""),
+              category: estimatorOutcome.plan.category,
+            }
+          : undefined;
+    return buildGlobalEstimateFromEstimatorKernel(
+      estimatorOutcome.plan,
+      compileDynamicProfessionalBoq(estimatorOutcome.plan),
+      input,
+      canonicalWorkForEstimator,
+    );
+  }
+
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);
   const stripFoundationDimensions = work.workKey === "strip_foundation"
     ? parseStripFoundationDimensions(input.text)

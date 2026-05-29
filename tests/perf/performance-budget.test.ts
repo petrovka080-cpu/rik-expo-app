@@ -785,6 +785,13 @@ describe("performance budget вЂ” bundle module count", () => {
         path.join(SRC, "lib", "ai", "estimatePresentation", "buildProfessionalEstimateTableViewModel.ts"),
         path.join(SRC, "lib", "ai", "estimatePresentation", "validateProfessionalEstimateTableViewModel.ts"),
       ].filter((file) => fs.existsSync(file)).length;
+    const sUniversalEstimatorKernelFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "estimatorKernel"), /\.ts$/) +
+      [
+        path.join(SRC, "lib", "ai", "estimatePresentation", "validateNoMojibakeInEstimateViewModel.ts"),
+        path.join(SRC, "lib", "estimatePdf", "estimatePdfEncodingPolicy.ts"),
+        path.join(SRC, "lib", "estimatePdf", "validateNoPdfMojibake.ts"),
+      ].filter((file) => fs.existsSync(file)).length;
     const sLiveAiEstimatePdfRealityFiles = countFilesRecursive(
       path.join(SRC, "lib", "estimatePdf"),
       /\.ts$/,
@@ -1862,6 +1869,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
     expect(sLiveB2cRequestEmbeddedAiEstimateRealityFiles).toBeLessThanOrEqual(22);
+    expect(sUniversalEstimatorKernelFiles).toBeLessThanOrEqual(14);
     expect(sOpenWorldEstimateSemanticCoverageFiles).toBeLessThanOrEqual(2);
     expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);
     expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);
@@ -2163,6 +2171,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
         sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
+        sUniversalEstimatorKernelFiles -
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
         sAiEstimateChangeControlFiles -

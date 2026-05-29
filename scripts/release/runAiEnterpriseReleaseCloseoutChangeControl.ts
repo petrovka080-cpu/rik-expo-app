@@ -71,6 +71,8 @@ const OPEN_WORLD_ESTIMATE_SEMANTIC_COVERAGE_LOCK_WAVE =
   "S_LIVE_ESTIMATE_OPEN_WORLD_SEMANTIC_COVERAGE_LOCK_POINT_OF_NO_RETURN";
 const OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE =
   "S_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_WAVE =
+  "S_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_FOR_PARSABLE_WORK_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
@@ -1283,6 +1285,44 @@ function isOpenWorldConstructionPrimitiveBoqCompilerPath(file: string): boolean 
   );
 }
 
+function isAiEstimateUniversalEstimatorKernelPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_UNIVERSAL_ESTIMATOR_KERNEL/") ||
+    file.startsWith("src/lib/ai/estimatorKernel/") ||
+    file === "src/lib/ai/builtInAi/builtInAiIntentRouter.ts" ||
+    file === "src/lib/ai/builtInAi/index.ts" ||
+    file.startsWith("src/lib/ai/constructionFormulas/") ||
+    file === "src/lib/ai/estimatePresentation/index.ts" ||
+    file === "src/lib/ai/estimatePresentation/validateNoMojibakeInEstimateViewModel.ts" ||
+    file === "src/lib/ai/globalEstimate/globalEstimateCalculator.ts" ||
+    file === "src/lib/ai/professionalBoq/index.ts" ||
+    file === "src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts" ||
+    file === "src/lib/estimatePdf/buildEstimatePdfViewModel.ts" ||
+    file === "src/lib/estimatePdf/estimatePdfTypes.ts" ||
+    file === "src/lib/estimatePdf/index.ts" ||
+    file === "src/lib/estimatePdf/estimatePdfEncodingPolicy.ts" ||
+    file === "src/lib/estimatePdf/validateNoPdfMojibake.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file === "scripts/e2e/runAndroidApi34UniversalEstimatorKernelSmoke.ts" ||
+    file === "scripts/e2e/runUniversalEstimatorKernelFailureReproduction.ts" ||
+    file === "scripts/e2e/runUniversalEstimatorKernelProof.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "tests/perf/performance-budget.test.ts" ||
+    file.startsWith("tests/estimatorKernel/") ||
+    file.startsWith("tests/constructionFormulas/") ||
+    file.startsWith("tests/professionalBoq/") ||
+    file.startsWith("tests/catalogBinding/dynamicBoq") ||
+    file.startsWith("tests/pdf/universalEstimator") ||
+    file.startsWith("tests/architecture/universalEstimator") ||
+    file === "tests/e2e/universalEstimatorKernel.web.spec.ts"
+  );
+}
+
 function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/") ||
@@ -1374,6 +1414,17 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isAiEstimateUniversalEstimatorKernelPath(normalized)) {
+    return {
+      file: normalized,
+      category: normalized === "tests/perf/performance-budget.test.ts" ? "performance_budget" : "ai_wave_file",
+      wave: AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "universal estimator kernel, dynamic BOQ for parsable work, formula/unit parsing, regulated safe estimates, PDF/UI proof, Android API34 proof, and release guard wiring",
+    };
+  }
   if (isAiEstimateEnterpriseLoadPerformanceCostGuardPath(normalized)) {
     return {
       file: normalized,

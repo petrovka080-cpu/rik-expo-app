@@ -12,7 +12,7 @@ export type RuntimeTrace = {
 
 export type EstimatePdfInput = {
   estimate: GlobalEstimateResult;
-  runtimeTrace: RuntimeTrace;
+  runtimeTrace?: RuntimeTrace;
   generatedAt: string;
   language: "ru" | "en" | string;
 };

@@ -57,6 +57,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "estimatorKernel",
+    root: "src/lib/ai/estimatorKernel",
+    purpose: "Universal estimator reasoning plan for parsable construction work, regulated safe estimate policy, and dynamic BOQ kernel orchestration.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "estimateRouting",
     root: "src/lib/ai/estimateRouting",
     purpose: "Universal estimate intent routing, priority guard, prompt extraction, and backend estimate tool dispatch.",

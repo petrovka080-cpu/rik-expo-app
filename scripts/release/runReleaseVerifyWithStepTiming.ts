@@ -189,6 +189,21 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       PRIMITIVE_BOQ_FINAL_WORKTREE_CLEAN: "1",
     };
   }
+  if (step === "universal-estimator-kernel-dynamic-boq-proof") {
+    return {
+      UNIVERSAL_ESTIMATOR_TYPECHECK_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_LINT_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_GIT_DIFF_CHECK_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_TARGETED_TESTS_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_ARCHITECTURE_TESTS_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_PLAYWRIGHT_WEB_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_FULL_JEST_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_RELEASE_VERIFY_PASSED: "1",
+      UNIVERSAL_ESTIMATOR_COMMIT_CREATED: "1",
+      UNIVERSAL_ESTIMATOR_BRANCH_PUSHED: "1",
+      UNIVERSAL_ESTIMATOR_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
   if (
     step === "ai-estimate-enterprise-load-performance-cost-guard-proof" ||
     step === "ai-estimate-enterprise-load-performance-cost-proof"

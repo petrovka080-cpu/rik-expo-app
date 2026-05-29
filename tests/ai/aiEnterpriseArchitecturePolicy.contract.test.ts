@@ -14,6 +14,7 @@ describe("AI enterprise architecture policy", () => {
       "alwaysOnExternalKnowledge",
       "appContextGraph",
       "estimateEngine",
+      "estimatorKernel",
       "estimateRouting",
       "estimatePresentation",
       "estimatePdf",

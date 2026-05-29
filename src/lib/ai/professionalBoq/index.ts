@@ -23,3 +23,4 @@ export * from "./validateParametricBoqRecipe";
 export * from "./buildSafeUnknownConstructionTriage";
 export * from "./buildAmbiguousConstructionDisambiguation";
 export * from "./validateNoGenericFallbackForKnownWork";
+export * from "./compileDynamicProfessionalBoq";

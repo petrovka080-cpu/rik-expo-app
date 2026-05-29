@@ -6,6 +6,7 @@ export type AiEnterpriseLayer =
   | "alwaysOnExternalKnowledge"
   | "appContextGraph"
   | "estimateEngine"
+  | "estimatorKernel"
   | "estimateRouting"
   | "estimatePresentation"
   | "estimatePdf"
@@ -99,6 +100,7 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "alwaysOnExternalKnowledge",
     "appContextGraph",
     "estimateEngine",
+    "estimatorKernel",
     "estimateRouting",
     "estimatePresentation",
     "estimatePdf",

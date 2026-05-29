@@ -16,6 +16,7 @@ function sourceLine(source: EstimatePdfInput["estimate"]["sources"][number]): st
 
 export function buildEstimatePdfViewModel(input: EstimatePdfInput): EstimatePdfViewModel {
   const estimate = input.estimate;
+  const runtimeTrace = input.runtimeTrace ?? {};
   return {
     estimateId: estimate.estimateId,
     title: `Смета: ${estimate.work.title}`,
@@ -64,8 +65,8 @@ export function buildEstimatePdfViewModel(input: EstimatePdfInput): EstimatePdfV
     clarifyingQuestions: estimate.clarifyingQuestions,
     sources: estimate.sources.map(sourceLine),
     runtimeTrace: {
-      ...input.runtimeTrace,
-      workKey: input.runtimeTrace.workKey ?? estimate.work.workKey,
+      ...runtimeTrace,
+      workKey: runtimeTrace.workKey ?? estimate.work.workKey,
     },
   };
 }

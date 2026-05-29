@@ -6,3 +6,4 @@ export * from "./validateEstimatePresentationViewModel";
 export * from "./buildProfessionalEstimateTableViewModel";
 export * from "./validateProfessionalEstimateTableViewModel";
 export * from "./assertUiRowsMatchGlobalEstimate";
+export * from "./validateNoMojibakeInEstimateViewModel";

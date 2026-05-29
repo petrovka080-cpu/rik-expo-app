@@ -1,9 +1,10 @@
 import {
   routeUniversalEstimateIntent,
 } from "../estimateRouting";
+import { buildEstimatorReasoningPlan, estimateIntentTokenDetected, isParsableConstructionWork } from "../estimatorKernel";
 import { classifyConstructionWorkOutcome, detectConstructionIntent } from "../worldConstructionInterpreter";
 import { createBuiltInAiTraceId } from "./builtInAiRuntimeTrace";
-import type { BuiltInAiInput, BuiltInAiIntent, BuiltInAiIntentRoute, BuiltInAiScreenContext } from "./builtInAiTypes";
+import type { BuiltInAiAnswer, BuiltInAiInput, BuiltInAiIntent, BuiltInAiIntentRoute, BuiltInAiScreenContext } from "./builtInAiTypes";
 
 type EstimateIntentPriorityDecision = {
   estimateIntentDetected: boolean;
@@ -60,6 +61,61 @@ function resolveEstimateIntentBeforeRoleContext(
     volume: route.volume,
     unit: route.unit,
   };
+}
+
+export function resolveEstimateIntentBeforeScreenRole(
+  input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext },
+): BuiltInAiIntentRoute | null {
+  const estimateIntentDetected = estimateIntentTokenDetected(input.text) || isParsableConstructionWork(input.text);
+  if (!estimateIntentDetected) return null;
+  if (input.resolvedScreenContext !== "request" && input.resolvedScreenContext !== "foreman") return null;
+
+  const route = routeUniversalEstimateIntent(input.text);
+  const plan = buildEstimatorReasoningPlan({ text: input.text });
+  const exactGovernedRoute =
+    route.shouldCallEstimateTool &&
+    route.confidence === "high" &&
+    route.resolvedWorkKey !== "other_construction_work";
+  const activePlan = exactGovernedRoute ? null : plan;
+  const quantity =
+    activePlan?.quantities.areaM2 ??
+    activePlan?.quantities.lengthM ??
+    activePlan?.quantities.count ??
+    activePlan?.quantities.powerKw ??
+    activePlan?.quantities.floorCount ??
+    route.volume;
+  const unit =
+    activePlan?.quantities.areaM2 !== undefined ? "sq_m" :
+      activePlan?.quantities.lengthM !== undefined ? "linear_m" :
+        activePlan?.quantities.powerKw !== undefined ? "kw" :
+          activePlan?.quantities.floorCount !== undefined || activePlan?.quantities.count !== undefined ? "pcs" :
+            route.unit;
+  return {
+    originalText: input.text,
+    screenContext: input.resolvedScreenContext,
+    intent: "estimate",
+    confidence: activePlan ? "high" : route.confidence === "low" ? "medium" : route.confidence,
+    mustUseBackendTool: true,
+    allowedTools: [],
+    forbiddenFallbacks: ["role_qa", "foreman_status", "request_status", "generic_chat", "template_gap_for_parsable_work"],
+    traceId: createBuiltInAiTraceId(input.text, input.resolvedScreenContext),
+    workKey: activePlan?.workKey ?? route.resolvedWorkKey,
+    category: activePlan?.category ?? route.resolvedCategory,
+    volume: quantity,
+    unit,
+  };
+}
+
+export function validateEstimateIntentPriority(answer: BuiltInAiAnswer): { passed: boolean; failures: string[] } {
+  const failures: string[] = [];
+  const text = answer.route.originalText.toLocaleLowerCase("ru-RU");
+  const explicitEstimate = /СЃРјРµС‚|СЂР°СЃС‡РµС‚|СЂР°СЃС‡[РµС‘]С‚|СЃС‚РѕРёРј|estimate|boq|cost/.test(text);
+  if (explicitEstimate && (answer.route.screenContext === "request" || answer.route.screenContext === "foreman")) {
+    if (answer.route.intent !== "estimate") failures.push(`estimate_intent_lost:${answer.route.intent}`);
+    if (!answer.route.mustUseBackendTool) failures.push("backend_tool_not_required_for_estimate");
+    if (answer.toolResult.blockedBy === "TEMPLATE_GAP_SAFE_TRIAGE") failures.push("template_gap_for_estimate_intent");
+  }
+  return { passed: failures.length === 0, failures };
 }
 
 const STRONG_ESTIMATE_PATTERNS = [
@@ -259,6 +315,9 @@ function intentFor(input: BuiltInAiInput, screenContext: BuiltInAiScreenContext)
 }
 
 export function routeBuiltInAiIntent(input: BuiltInAiInput & { resolvedScreenContext: BuiltInAiScreenContext }): BuiltInAiIntentRoute {
+  const estimatorKernelPriorityRoute = resolveEstimateIntentBeforeScreenRole(input);
+  if (estimatorKernelPriorityRoute) return estimatorKernelPriorityRoute;
+
   const priorityRoute = resolveEstimateIntentBeforeRoleContext(input);
   if (priorityRoute) return priorityRoute;
 
