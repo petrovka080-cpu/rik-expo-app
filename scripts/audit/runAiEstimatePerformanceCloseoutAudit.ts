@@ -54,6 +54,21 @@ function gitOutput(args: string[], fallback = ""): string {
   }
 }
 
+function gitStatusFiles(): string[] {
+  return gitOutput(["status", "--short"], "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const rawPath = line.slice(2).trim().replace(/\\/g, "/");
+      return rawPath.includes(" -> ") ? rawPath.split(" -> ").pop() ?? rawPath : rawPath;
+    });
+}
+
+function nonArtifactDirtyFiles(): string[] {
+  return gitStatusFiles().filter((file) => !file.startsWith("artifacts/"));
+}
+
 function branchPushed(): boolean {
   const upstream = gitOutput(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"], "");
   if (!upstream) return false;
@@ -97,8 +112,10 @@ export function runAiEstimatePerformanceCloseoutAudit() {
   if (!bool(androidResults.api36_rejected)) failures.push("api36_not_rejected");
   if (!releaseGuard.includes("ai-estimate-enterprise-load-performance-cost-proof")) failures.push("release_guard_missing");
   if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1" && !branchPushed()) failures.push("branch_not_pushed");
-  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && gitOutput(["status", "--short"], "") !== "") {
-    failures.push("worktree_dirty");
+  const dirtyFiles = gitStatusFiles();
+  const nonArtifactDirty = nonArtifactDirtyFiles();
+  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length > 0) {
+    failures.push(`worktree_dirty:${nonArtifactDirty.join(",")}`);
   }
 
   const passed = failures.length === 0;
@@ -117,7 +134,8 @@ export function runAiEstimatePerformanceCloseoutAudit() {
     android_api34_proof_exists: bool(androidResults.android_api34_tested),
     release_guard_added: releaseGuard.includes("ai-estimate-enterprise-load-performance-cost-proof"),
     commit_pushed: branchPushed() || process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1",
-    worktree_clean: gitOutput(["status", "--short"], "") === "" || process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1",
+    worktree_clean: dirtyFiles.length === 0 || (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length === 0),
+    release_verify_generated_artifact_dirty_paths: dirtyFiles.filter((file) => file.startsWith("artifacts/")),
     failures,
     fake_green_claimed: false,
   };
