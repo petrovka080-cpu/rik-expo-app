@@ -62,6 +62,7 @@ export type ReleaseGateName =
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
   | "ai-estimate-enterprise-load-performance-cost-proof"
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
+  | "ai-estimate-production-canary-control-plane-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
@@ -341,6 +342,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
+  { name: "ai-estimate-production-canary-control-plane-proof", command: "npx tsx scripts/e2e/runAiEstimateProductionCanaryProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },

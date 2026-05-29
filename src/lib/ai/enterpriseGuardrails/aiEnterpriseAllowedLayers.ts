@@ -111,6 +111,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "productionCanary",
+    root: "src/lib/ai/productionCanary",
+    purpose: "Default-off internal AI estimate canary policy, eligibility, feedback, replay, and error-budget contracts.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "observability",
     root: "src/lib/ai/observability",
     purpose: "Safe AI estimate telemetry event contracts and redaction validation for final readiness.",

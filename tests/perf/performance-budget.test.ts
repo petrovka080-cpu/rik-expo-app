@@ -718,6 +718,13 @@ describe("performance budget вЂ” bundle module count", () => {
       countFilesRecursive(path.join(SRC, "lib", "ai", "performance"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "cost"), /\.ts$/) +
       countFilesRecursive(path.join(SRC, "lib", "ai", "rateLimit"), /\.ts$/);
+    const sAiEstimateProductionCanaryControlPlaneFiles =
+      countFilesRecursive(path.join(SRC, "lib", "ai", "productionCanary"), /\.ts$/) +
+      [
+        path.join(SRC, "lib", "ai", "observability", "aiEstimateTelemetryTypes.ts"),
+        path.join(SRC, "lib", "ai", "observability", "redactAiEstimateTelemetry.ts"),
+        path.join(SRC, "lib", "ai", "observability", "validateAiEstimateTelemetryEvent.ts"),
+      ].filter((file) => fs.existsSync(file)).length;
     const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
       /\.ts$/,
@@ -1846,6 +1853,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
+    expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(12);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
@@ -2171,6 +2179,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sRequestEstimateBoqCatalogCatalogFiles -
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
         sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
+        sAiEstimateProductionCanaryControlPlaneFiles -
         sUniversalEstimatorKernelFiles -
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -
