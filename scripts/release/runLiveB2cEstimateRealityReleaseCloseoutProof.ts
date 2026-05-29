@@ -45,6 +45,11 @@ function writeText(name: string, value: string): void {
   fs.writeFileSync(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, name), value.endsWith("\n") ? value : `${value}\n`, "utf8");
 }
 
+function writeTargetWaveMatrix(value: JsonRecord): void {
+  fs.mkdirSync(TARGET_WAVE_DIR, { recursive: true });
+  fs.writeFileSync(path.join(TARGET_WAVE_DIR, "matrix.json"), `${JSON.stringify(value, null, 2)}\n`, "utf8");
+}
+
 function gitOutput(args: string[], fallback = ""): string {
   try {
     return execFileSync("git", args, {
@@ -163,7 +168,7 @@ function main(): void {
   const releaseTiming = readJson<JsonRecord>(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_timing.json"));
   const processCleanup = readJson<JsonRecord>(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "process_cleanup.json"));
   const bridge = readJson<JsonRecord>(path.join(LIVE_B2C_RELEASE_CLOSEOUT_DIR, "release_gate_bridge_results.json"));
-  const targetMatrix = readJson<JsonRecord>(path.join(TARGET_WAVE_DIR, "matrix.json"));
+  const targetMatrixRaw = readJson<JsonRecord>(path.join(TARGET_WAVE_DIR, "matrix.json"));
   const evidence = resolveCanonicalApi34Evidence({ write: true });
   const dirtyFiles = changedFiles();
   const productLogicChanged = !onlyCloseoutHarnessFiles(dirtyFiles);
@@ -174,6 +179,19 @@ function main(): void {
   const orphanProcesses = processCleanup?.orphan_processes_left_after_timeout === true;
   const bridgesReady = bridgeGatesPassed(bridge);
   const releasePassed = releaseVerifyPassed();
+  const targetMatrix =
+    releasePassed && targetMatrixRaw?.final_status === TARGET_GREEN
+      ? {
+          ...targetMatrixRaw,
+          previous_status: "BLOCKED_LIVE_B2C_REQUEST_EMBEDDED_AI_ESTIMATE_REALITY",
+          previous_blocker: "RELEASE_VERIFY_TIMEOUT",
+          resolved_by: LIVE_B2C_RELEASE_CLOSEOUT_WAVE,
+          release_verify_passed: true,
+        }
+      : targetMatrixRaw;
+  if (targetMatrix !== targetMatrixRaw && targetMatrix) {
+    writeTargetWaveMatrix(targetMatrix);
+  }
   const pushed = branchPushed(headSha);
   const insideReleaseVerify = process.env.RELEASE_GUARD_IN_PROGRESS === "1";
   const clean = worktreeClean(insideReleaseVerify);

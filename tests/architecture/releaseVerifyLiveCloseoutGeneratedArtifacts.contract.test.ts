@@ -27,4 +27,16 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(guardSource).toContain("LIVE_B2C_CLOSEOUT_RELEASE_VERIFY_PASSED");
     expect(proofSource).not.toContain("typecheck_passed: false");
   });
+
+  it("marks the target live reality matrix as resolved by the closeout after release passes", () => {
+    const proofSource = fs.readFileSync(
+      path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
+      "utf8",
+    );
+
+    expect(proofSource).toContain("writeTargetWaveMatrix");
+    expect(proofSource).toContain("resolved_by: LIVE_B2C_RELEASE_CLOSEOUT_WAVE");
+    expect(proofSource).toContain('previous_blocker: "RELEASE_VERIFY_TIMEOUT"');
+    expect(proofSource).toContain("targetMatrix?.resolved_by === LIVE_B2C_RELEASE_CLOSEOUT_WAVE");
+  });
 });
