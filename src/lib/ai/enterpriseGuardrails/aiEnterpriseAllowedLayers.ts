@@ -105,6 +105,24 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "observability",
+    root: "src/lib/ai/observability",
+    purpose: "Safe AI estimate telemetry event contracts and redaction validation for final readiness.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "killSwitch",
+    root: "src/lib/ai/killSwitch",
+    purpose: "AI estimate kill-switch policy for disabling embedded estimates, request drafts, PDF, catalog, source refresh, and canary cohorts.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "rollback",
+    root: "src/lib/ai/rollback",
+    purpose: "AI estimate rollback readiness plan and validation for safe final readiness and canary reversal.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "constructionPrimitives",
     root: "src/lib/ai/constructionPrimitives",
     purpose: "Construction primitive graph, open-world domain/object/operation/method/material policy, and graph validation for parametric BOQ compilation.",

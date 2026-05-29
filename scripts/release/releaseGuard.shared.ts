@@ -334,7 +334,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "open-world-construction-primitive-boq-compiler-proof", command: "npx tsx scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
-  { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" },
+  { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },

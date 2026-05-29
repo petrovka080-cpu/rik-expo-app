@@ -1330,13 +1330,30 @@ function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boole
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_FINAL_READINESS/") ||
+    file === "src/lib/ai/observability" ||
+    file.startsWith("src/lib/ai/observability/") ||
+    file === "src/lib/ai/killSwitch" ||
+    file.startsWith("src/lib/ai/killSwitch/") ||
+    file === "src/lib/ai/rollback" ||
+    file.startsWith("src/lib/ai/rollback/") ||
     file === "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" ||
+    file === "scripts/audit/runAiEstimateFinalReadinessMatrixLedgerAudit.ts" ||
+    file === "scripts/audit/runAiEstimateObservabilityAudit.ts" ||
+    file === "scripts/audit/runAiEstimateRollbackKillSwitchAudit.ts" ||
+    file === "scripts/audit/runAiEstimateCanaryReadinessAudit.ts" ||
+    file === "scripts/audit/runAiEstimateSafetyAbuseAudit.ts" ||
+    file === "scripts/e2e/runAndroidApi34AiEstimateFinalReadinessSmoke.ts" ||
+    file === "scripts/e2e/runAiEstimateFinalReadinessPdfProof.ts" ||
+    file === "scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" ||
     file === "scripts/release/releaseGuard.shared.ts" ||
     file === "scripts/release/run-release-guard.ts" ||
     file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
     file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     file === "tests/finalReadiness" ||
     file.startsWith("tests/finalReadiness/") ||
+    file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
+    file.startsWith("tests/architecture/finalReadiness") ||
     file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
     file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts"
   );

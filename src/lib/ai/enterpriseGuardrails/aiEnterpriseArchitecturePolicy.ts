@@ -14,6 +14,9 @@ export type AiEnterpriseLayer =
   | "performance"
   | "cost"
   | "rateLimit"
+  | "observability"
+  | "killSwitch"
+  | "rollback"
   | "constructionPrimitives"
   | "constructionFormulas"
   | "constructionInterpreter"
@@ -104,6 +107,9 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "performance",
     "cost",
     "rateLimit",
+    "observability",
+    "killSwitch",
+    "rollback",
     "constructionPrimitives",
     "constructionFormulas",
     "constructionInterpreter",

@@ -12,6 +12,10 @@ describe("AI estimate final readiness rollout boundary", () => {
         gitDiffCheckPassed: true,
         targetedTestsPassed: true,
         architectureTestsPassed: true,
+        playwrightWebPassed: true,
+        androidApi34SmokePassed: true,
+        pdfFinalProofPassed: true,
+        runtimeProofPassed: true,
         fullJestPassed: true,
         releaseVerifyPassed: true,
         commitCreated: true,
@@ -23,8 +27,8 @@ describe("AI estimate final readiness rollout boundary", () => {
     });
 
     expect(report.matrix.production_rollout_enabled).toBe(false);
-    expect(report.matrix.go_no_go_decision).toBe("GO_INTERNAL_CANARY_NO_PRODUCTION_ROLLOUT");
-    expect(report.release_candidate.kill_switches_ready).toBe(true);
+    expect(report.matrix.go_no_go_decision).toBe("GO_INTERNAL_CANARY_ONLY");
+    expect(report.release_candidate.kill_switch_ready).toBe(true);
     expect(report.release_candidate.rollback_ready).toBe(true);
   });
 
