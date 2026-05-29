@@ -75,6 +75,8 @@ const AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_WAVE =
   "S_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_FOR_PARSABLE_WORK_POINT_OF_NO_RETURN";
 const REAL_500_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
+const REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE =
+  "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
@@ -1385,6 +1387,25 @@ function isReal500DiverseConstructionWorksPath(file: string): boolean {
   );
 }
 
+function isReal10000DiverseConstructionWorksPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/") ||
+    file.startsWith("artifacts/pdf/real-10000-diverse-construction-works/") ||
+    file === "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts" ||
+    file === "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts" ||
+    file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+    file === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
+    file === "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts" ||
+    file === "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts" ||
+    file === "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts" ||
+    file === "tests/e2e/real10000DiverseConstructionWorks.web.spec.ts" ||
+    file === "tests/real10000" ||
+    file.startsWith("tests/real10000/") ||
+    file.startsWith("tests/architecture/real10000")
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1432,6 +1453,17 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isReal10000DiverseConstructionWorksPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "real 10000 diverse construction works expanded estimate acceptance fixture, sharded runtime, web Android PDF proof, artifacts, and release guard wiring",
+    };
+  }
   if (isReal500DiverseConstructionWorksPath(normalized)) {
     return {
       file: normalized,

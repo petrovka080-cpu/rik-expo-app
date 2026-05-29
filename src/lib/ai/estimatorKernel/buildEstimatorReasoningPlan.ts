@@ -270,7 +270,7 @@ export function buildEstimatorReasoningPlan(input: {
     quantities,
     formulas: [],
     boqPlan: {
-      complexity: signature.complexity,
+      complexity: regulated.regulated && signature.complexity !== "infrastructure" ? "complex" : signature.complexity,
       sections,
       requiredMaterials: signature.requiredMaterials,
       requiredLabor: signature.requiredLabor,

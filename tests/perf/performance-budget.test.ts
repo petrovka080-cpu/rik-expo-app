@@ -1869,7 +1869,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiSourceIntelligenceFiles).toBeLessThanOrEqual(7);
     expect(sAiEstimateToExistingPdfFiles).toBeLessThanOrEqual(7);
     expect(sLiveB2cRequestEmbeddedAiEstimateRealityFiles).toBeLessThanOrEqual(22);
-    expect(sUniversalEstimatorKernelFiles).toBeLessThanOrEqual(16);
+    expect(sUniversalEstimatorKernelFiles).toBeLessThanOrEqual(17);
     expect(sOpenWorldEstimateSemanticCoverageFiles).toBeLessThanOrEqual(2);
     expect(sBuiltInAiAssistantIntegrationFiles).toBeLessThanOrEqual(1);
     expect(sGreenCloseoutLayoutPrimitiveFiles).toBeLessThanOrEqual(13);

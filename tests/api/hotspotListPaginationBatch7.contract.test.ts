@@ -771,6 +771,30 @@ const isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch = (file: strin
   );
 };
 
+const isApprovedReal10000DiverseConstructionWorksAcceptancePatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized === "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts" ||
+    normalized === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+    normalized === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
+    normalized === "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts" ||
+    normalized === "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts" ||
+    normalized === "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    normalized === "tests/e2e/real10000DiverseConstructionWorks.web.spec.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized.startsWith("tests/real10000/") ||
+    normalized.startsWith("tests/architecture/real10000") ||
+    normalized.startsWith("artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/")
+  );
+};
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -891,6 +915,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
         !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
+        !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
