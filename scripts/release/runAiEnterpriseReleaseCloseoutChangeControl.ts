@@ -73,6 +73,8 @@ const OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE =
   "S_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
+const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
+  "S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
   "S_PLATFORM_DIRECTOR_FACT_CONTRACT_POINT_OF_NO_RETURN";
 
@@ -1325,6 +1327,21 @@ function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boole
   );
 }
 
+function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
+    file === "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/finalReadiness" ||
+    file.startsWith("tests/finalReadiness/") ||
+    file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
+    file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts"
+  );
+}
+
 function isPlatformDirectorFactContractPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_PLATFORM_DIRECTOR_FACT_CONTRACT/") ||
@@ -1348,6 +1365,16 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "AI estimate enterprise load, latency, heap, zero provider cost, static runtime scan, proof runner, and release guard wiring",
+    };
+  }
+  if (isAiEstimateEnterpriseFinalReadinessGoNoGoPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "AI estimate enterprise final readiness GO/NO-GO audit, release guard wiring, and no-rollout proof",
     };
   }
   if (isOpenWorldConstructionPrimitiveBoqCompilerPath(normalized)) {
