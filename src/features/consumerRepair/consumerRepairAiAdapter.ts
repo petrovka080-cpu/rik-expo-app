@@ -32,6 +32,10 @@ export function isDangerousConsumerRepairProblem(problemText: string): boolean {
   return DANGEROUS_PATTERNS.some((pattern) => pattern.test(problemText));
 }
 
+function isExplicitDangerousDiyAttempt(problemText: string): boolean {
+  return isDangerousConsumerRepairProblem(problemText) && /сам|сама|самостоятель|своими\s+руками|diy/i.test(problemText);
+}
+
 function extractArea(text: string): number {
   const match = text.match(/(\d+(?:[,.]\d+)?)\s*(?:кв\.?\s*м|кв|квадрат|метр|м2|м²|sqm|sq\.?\s*m)/i);
   if (!match) return 20;
@@ -210,6 +214,15 @@ export function buildConsumerRepairAiDraft(
   const aiCity = localContext
     ? localContext.completeness === "LOCAL_CONTEXT_MISSING" ? undefined : localContext.city
     : "Bishkek";
+  if (isExplicitDangerousDiyAttempt(text)) {
+    return applyLocalContextWarnings({
+      ...genericDraft(),
+      titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
+      summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
+      dangerousDiyBlocked: true,
+      safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
+    }, localContext);
+  }
   const builtInAiEstimate = answerBuiltInAi({
     text,
     screenContext: "request",
@@ -233,7 +246,7 @@ export function buildConsumerRepairAiDraft(
   if (isDangerousConsumerRepairProblem(text)) {
     return applyLocalContextWarnings({
       ...genericDraft(),
-      titleRu: "Заявка специалисту",
+      titleRu: "\u0417\u0430\u044f\u0432\u043a\u0430 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0443",
       summaryRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,
       dangerousDiyBlocked: true,
       safetyMessageRu: CONSUMER_REPAIR_DANGEROUS_UI_COPY,

@@ -7,6 +7,7 @@ import type {
   GlobalEstimateInput,
   GlobalEstimateResult,
   GlobalEstimateSectionType,
+  GlobalEstimateTemplateRowDefinition,
   GlobalLocaleContext,
   GlobalPriceSourceType,
   GlobalUnitInput,
@@ -17,12 +18,12 @@ import { calculateGlobalTax } from "./globalTaxEngine";
 import { resolveGlobalTaxRule } from "./globalTaxRuleService";
 import { convertGlobalUnit, normalizeGlobalUnitForLocale } from "./globalUnitConversionEngine";
 import { displayUnitFor, normalizeGlobalUnit } from "./globalUnitNormalizer";
-import { GLOBAL_WORK_TYPE_DEFINITIONS, getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
+import { getGlobalWorkTypeDefinition, resolveGlobalWorkType } from "./globalWorkTypeResolver";
 import { buildConstructionWorkPlan } from "../constructionInterpreter/buildConstructionWorkPlan";
 import type { ConstructionWorkPlan } from "../constructionInterpreter/constructionSemanticTypes";
 import { validateConstructionUnitSemantics } from "../constructionFormulas/validateConstructionUnitSemantics";
 import { resolveEstimatorOutcome } from "../estimatorKernel";
-import type { DynamicProfessionalBoq, EstimatorReasoningPlan } from "../estimatorKernel";
+import type { DynamicProfessionalBoq, DynamicProfessionalBoqRow, EstimatorReasoningPlan } from "../estimatorKernel";
 import { compileDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { compileBoqFromConstructionWorkPlan } from "../professionalBoq/compileBoqFromConstructionWorkPlan";
 import {
@@ -214,7 +215,7 @@ const RATE_SOURCE = {
 
 const SECTION_TITLES_RU: Record<GlobalEstimateSectionType, string> = {
   materials: "Материалы и комплектующие",
-  labor: "Работы и монтаж",
+  labor: "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
   equipment: "Техника и оборудование",
   delivery: "Доставка и логистика",
   tax: "Налог",
@@ -422,12 +423,140 @@ function dynamicEstimateIdFor(plan: EstimatorReasoningPlan, input: GlobalEstimat
   return `universal_estimator_${Math.abs(hash)}`;
 }
 
+function estimatorKernelInputQuantity(plan: EstimatorReasoningPlan): { value: number; unit: GlobalUnitInput["normalizedUnit"] } {
+  if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
+    return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
+  }
+  if (plan.quantities.areaM2 !== undefined) return { value: plan.quantities.areaM2, unit: "sq_m" };
+  const formulaVolume = plan.formulas
+    .map((formula) => formula.outputs.volumeTotalM3 ?? formula.outputs.volumeEachM3)
+    .find((value): value is number => Number.isFinite(value));
+  if (formulaVolume !== undefined) return { value: formulaVolume, unit: "m3" };
+  if (plan.quantities.lengthM !== undefined) return { value: plan.quantities.lengthM, unit: "linear_m" };
+  if (plan.quantities.count !== undefined) return { value: plan.quantities.count, unit: "pcs" };
+  if (plan.quantities.floorCount !== undefined) return { value: plan.quantities.floorCount, unit: "pcs" };
+  return { value: Math.max(1, plan.quantities.powerKw ?? 1), unit: "set" };
+}
+
+function safeTemplateQuantity(params: {
+  templateRow: GlobalEstimateTemplateRowDefinition;
+  inputQuantity: { value: number; unit: GlobalUnitInput["normalizedUnit"] };
+  outputContext: Record<string, number>;
+  rowUnit: GlobalUnitInput["normalizedUnit"];
+  locale: GlobalLocaleContext;
+}): number {
+  try {
+    const normalizedInput = normalizeGlobalUnitForLocale({
+      value: params.inputQuantity.value,
+      unit: params.inputQuantity.unit,
+      unitSystem: params.locale.unitSystem,
+    });
+    const area = rowAreaValue({
+      inputValue: normalizedInput.normalizedValue,
+      inputUnit: normalizedInput.normalizedUnit,
+      rowUnit: params.rowUnit,
+    });
+    return Math.max(0.01, round2(evalQuantityFormula(params.templateRow.quantityFormula, area, params.outputContext)));
+  } catch {
+    return Math.max(1, round2(params.inputQuantity.value));
+  }
+}
+
+function semanticTemplateRowUnit(
+  name: string,
+  sectionType: DynamicProfessionalBoqRow["sectionType"],
+  fallbackUnit: GlobalUnitInput["normalizedUnit"],
+): GlobalUnitInput["normalizedUnit"] {
+  const normalized = name.toLocaleLowerCase("ru-RU");
+  if (/доставка|вывоз|логист/.test(normalized)) return "set";
+  if (sectionType === "delivery") return "set";
+  if (/плинтус|бордюр|водосток|прогон|труб|кабел|трасс|лотк|канал|дренаж|рельс|перил/.test(normalized)) {
+    return "linear_m";
+  }
+  if (/стойк|анкер|закладн|двер|окн|датчик|камера|радиатор|панел|насос|клапан|розет|светильник|точк/.test(normalized)) {
+    return "pcs";
+  }
+  if (/ферм|балк|связ|раскос|металл|сталь|арматур/.test(normalized) && !/монтаж|доставка|окраск|стойк/.test(normalized)) {
+    return "kg";
+  }
+  if (/бетон|фундамент/.test(normalized) && !/монтаж|установ|устройств/.test(normalized)) {
+    return "m3";
+  }
+  return fallbackUnit;
+}
+
+function canonicalTemplateRowsForEstimatorKernel(params: {
+  canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] };
+  plan: EstimatorReasoningPlan;
+  input: GlobalEstimateInput;
+  locale: GlobalLocaleContext;
+  existingRows: readonly DynamicProfessionalBoqRow[];
+}): DynamicProfessionalBoqRow[] {
+  if (!params.canonicalWork) return [];
+  const canonicalWork = params.canonicalWork;
+  const template = getGlobalEstimateTemplate(canonicalWork.workKey);
+  if (template.workKey !== canonicalWork.workKey) return [];
+
+  const existingNames = new Set(params.existingRows.map((item) => item.name.toLocaleLowerCase("ru-RU")));
+  const inputQuantity = estimatorKernelInputQuantity(params.plan);
+  const outputContext = Object.fromEntries(params.plan.formulas.flatMap((formula) => Object.entries(formula.outputs)));
+
+  return template.sections
+    .flatMap((section) => {
+      if (section.type !== "materials" && section.type !== "labor") return [];
+      const sectionType = section.type;
+      return section.rows.map((templateRow): DynamicProfessionalBoqRow | null => {
+      const name = localizedText(templateRow.names, params.locale);
+      const normalizedName = name.toLocaleLowerCase("ru-RU");
+      if (/_extra_|_equipment$|_delivery$|_access_warning$/.test(templateRow.code)) return null;
+      if (/доставка|вывоз|логист/.test(normalizedName) || /delivery|logistics|removal/.test(templateRow.code)) return null;
+      if (/^(материал|работы|монтаж|крепёж|прочее|дополнительные материалы|дополнительные работы|строительные работы|бетонные работы)$/i.test(normalizedName)) return null;
+      const shouldPreserveCanonicalDuplicate = canonicalWork.workKey === "asphalt_paving";
+      if (existingNames.has(normalizedName) && !shouldPreserveCanonicalDuplicate) return null;
+      const unit = semanticTemplateRowUnit(
+        name,
+        sectionType,
+        localRowUnit(templateRow.unitMetric, templateRow.unitImperial, params.locale),
+      );
+      const quantity = safeTemplateQuantity({
+        templateRow,
+        inputQuantity,
+        outputContext,
+        rowUnit: unit,
+        locale: params.locale,
+      });
+      const rate = resolveGlobalRate({
+        rateKey: templateRow.rateKey,
+        sectionType,
+        unit,
+        locale: params.locale,
+        priceTier: params.input.priceTier,
+      });
+      existingNames.add(normalizedName);
+      return {
+        sectionType,
+        code: templateRow.code,
+        name,
+        unit,
+        quantity,
+        unitPrice: rate.rate.priceDefault,
+        comment: "Governed recipe row blended into dynamic estimator output.",
+        materialKey: materialKeyForEstimateRow(section.type, templateRow.rateKey),
+        rateKey: templateRow.rateKey,
+        sourcePolicy: "configured_reference",
+      };
+      });
+    })
+    .filter((item): item is DynamicProfessionalBoqRow => Boolean(item));
+}
+
 function buildGlobalEstimateFromEstimatorKernel(
   plan: EstimatorReasoningPlan,
   boq: DynamicProfessionalBoq,
   input: GlobalEstimateInput,
   canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] },
 ): GlobalEstimateResult {
+  const inputQuantity = estimatorKernelInputQuantity(plan);
   const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru", currency: input.currency ?? plan.pricingPolicy.currency });
   const resultWorkKey = canonicalWork?.workKey ?? plan.workKey;
   const resultWorkTitle = canonicalWork?.title ?? plan.titleRu.replace(/^Профессиональная предварительная смета на /, "");
@@ -435,9 +564,13 @@ function buildGlobalEstimateFromEstimatorKernel(
   const sourceMap = new Map<string, GlobalEstimateResult["sources"][number]>();
   const confidences: GlobalEstimateConfidence[] = [plan.confidence, locale.confidence];
   const sectionTypes: GlobalEstimateSectionType[] = ["materials", "labor", "equipment", "delivery"];
+  const dynamicRows = [
+    ...boq.rows,
+    ...canonicalTemplateRowsForEstimatorKernel({ canonicalWork, plan, input, locale, existingRows: boq.rows }),
+  ];
   const sections = sectionTypes
     .map((sectionType, sectionIndex) => {
-      const rows = boq.rows.filter((row) => row.sectionType === sectionType);
+      const rows = dynamicRows.filter((row) => row.sectionType === sectionType);
       if (rows.length === 0) return null;
       const mappedRows: SourceBackedEstimateRow[] = rows.map((row, rowIndex) => {
         const rowConfidence: GlobalEstimateConfidence = row.sourcePolicy === "manual_review" ? "low" : "medium";
@@ -512,11 +645,8 @@ function buildGlobalEstimateFromEstimatorKernel(
       category: resultWorkCategory,
     },
     input: {
-      volume: plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.floorCount ?? 1,
-      unit: plan.quantities.areaM2 !== undefined ? "sq_m" :
-        plan.quantities.lengthM !== undefined ? "linear_m" :
-          plan.quantities.powerKw !== undefined ? "kw" :
-            plan.quantities.floorCount !== undefined || plan.quantities.count !== undefined ? "pcs" : "set",
+      volume: inputQuantity.value,
+      unit: inputQuantity.unit,
       originalText: input.text,
       photoBased: input.photoAnalysis !== undefined,
       dimensions: {
@@ -564,9 +694,88 @@ function buildGlobalEstimateFromEstimatorKernel(
   return result;
 }
 
+const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
+  "linoleum_laying",
+  "paving_stone_laying",
+  "metal_canopy_installation",
+  "apartment_capital_renovation",
+  "gable_roof_installation",
+  "roof_waterproofing",
+]);
+
+function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null): {
+  workKey: string;
+  title: string;
+  category: GlobalEstimateResult["work"]["category"];
+} | undefined {
+  if (semanticPlan && SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(semanticPlan.workKey)) {
+    return {
+      workKey: semanticPlan.workKey,
+      title: semanticPlan.titleRu.replace(/^РџСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅР°СЏ СЃРјРµС‚Р° РЅР° /, ""),
+      category: semanticPlan.workFamily,
+    };
+  }
+
+  const locale = resolveGlobalLocalization(input);
+  const work = resolveGlobalWorkType({ ...input, language: locale.language });
+  if (work.workKey === "other_construction_work") return undefined;
+  return {
+    workKey: work.workKey,
+    title: work.title,
+    category: work.category,
+  };
+}
+
+function numericAreaFromText(text: string | undefined): number | null {
+  const match = (text ?? "").match(/(\d+(?:[,.]\d+)?)\s*(?:кв\.?\s*м|м2|м²|sqm|sq[_\s-]?m)/i);
+  if (!match) return null;
+  const value = Number(match[1].replace(",", "."));
+  return Number.isFinite(value) ? value : null;
+}
+
+function shouldPreferGovernedTemplate(input: GlobalEstimateInput, workKey: string): boolean {
+  const text = input.text ?? "";
+  if (workKey === "strip_foundation") {
+    return /ширин|глубин|высот|width|depth|height/i.test(text);
+  }
+  if (workKey === "asphalt_paving") {
+    const area = input.volume ?? numericAreaFromText(text) ?? 0;
+    return area >= 1000 && !/площадк|парковк|дорог|ямоч|основан/i.test(text);
+  }
+  if (workKey === "laminate_laying") {
+    return !/настил|монтаж\s+пвх|замен[аы]\s+напольн/i.test(text);
+  }
+  if (workKey === "drywall_partition") {
+    return /перегородк[а-яё]*\s+из\s+гкл/i.test(text);
+  }
+  return false;
+}
+
 
 export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInput): GlobalEstimateResult {
   const semanticPlan = input.text ? buildConstructionWorkPlan(input.text) : null;
+  const locale = resolveGlobalLocalization(input);
+  const work = resolveGlobalWorkType({ ...input, language: locale.language });
+  const preferGovernedTemplate = shouldPreferGovernedTemplate(input, work.workKey);
+
+  const estimatorOutcome = input.text
+    ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
+    : null;
+  if (
+    !preferGovernedTemplate &&
+    estimatorOutcome?.plan &&
+    estimatorOutcome.parsableWorkDetected &&
+    estimatorOutcome.dynamicBoqUsed &&
+    !estimatorOutcome.failures.length
+  ) {
+    return buildGlobalEstimateFromEstimatorKernel(
+      estimatorOutcome.plan,
+      compileDynamicProfessionalBoq(estimatorOutcome.plan),
+      input,
+      canonicalWorkForEstimatorKernel(input, semanticPlan),
+    );
+  }
+
   if (
     semanticPlan &&
     [
@@ -579,42 +788,6 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     ].includes(semanticPlan.workKey)
   ) {
     return buildGlobalEstimateFromConstructionWorkPlan(semanticPlan, input);
-  }
-
-  const locale = resolveGlobalLocalization(input);
-  const work = resolveGlobalWorkType({ ...input, language: locale.language });
-  const governedWorkTypeAvailable = work.workKey !== "other_construction_work" &&
-    GLOBAL_WORK_TYPE_DEFINITIONS.some((definition) => definition.workKey === work.workKey);
-  const estimatorOutcome = input.text
-    ? resolveEstimatorOutcome({ text: input.text, currency: input.currency })
-    : null;
-  const estimatorMayOverrideBroadGovernedWork =
-    estimatorOutcome?.plan?.workKey === "concrete_pedestal_pour" ||
-    estimatorOutcome?.plan?.workKey === "electrical_area_installation" ||
-    estimatorOutcome?.plan?.workKey === "hydro_turbine_installation";
-  if (
-    estimatorOutcome?.plan &&
-    (!governedWorkTypeAvailable || estimatorMayOverrideBroadGovernedWork) &&
-    estimatorOutcome.parsableWorkDetected &&
-    estimatorOutcome.dynamicBoqUsed &&
-    !estimatorOutcome.failures.length
-  ) {
-    const canonicalWorkForEstimator =
-      estimatorOutcome.plan.workKey === "hydro_turbine_installation" && work.workKey === "micro_hydro_preparation"
-        ? { workKey: work.workKey, title: work.title, category: work.category }
-        : estimatorOutcome.plan.workKey === "drainage_channel_installation" && /\bdrainage\b/i.test(input.text ?? "")
-          ? {
-              workKey: "world_drainage",
-              title: estimatorOutcome.plan.titleRu.replace(/^Профессиональная предварительная смета на /, ""),
-              category: estimatorOutcome.plan.category,
-            }
-          : undefined;
-    return buildGlobalEstimateFromEstimatorKernel(
-      estimatorOutcome.plan,
-      compileDynamicProfessionalBoq(estimatorOutcome.plan),
-      input,
-      canonicalWorkForEstimator,
-    );
   }
 
   const workDefinition = getGlobalWorkTypeDefinition(work.workKey);

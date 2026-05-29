@@ -3,6 +3,7 @@ export * from "./buildEstimatorReasoningPlan";
 export * from "./validateEstimatorReasoningPlan";
 export * from "./isParsableConstructionWork";
 export * from "./resolveEstimatorOutcome";
+export * from "./constructionDomainLexicon";
 export * from "./regulatedWorkTypes";
 export * from "./detectRegulatedConstructionWork";
 export * from "./buildRegulatedSafeEstimatePlan";

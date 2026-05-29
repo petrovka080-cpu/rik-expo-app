@@ -1,5 +1,6 @@
 import type { GlobalWorkCategory } from "../globalEstimate";
 import { normalizeDimensionText, resolveQuantityInputsFromPrompt } from "../constructionFormulas";
+import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";
 import type { EstimatorKernelComplexity, EstimatorReasoningPlan } from "./estimatorKernelTypes";
 import { isParsableConstructionWork } from "./isParsableConstructionWork";
@@ -43,9 +44,10 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какая грузоподъемность лифта?", "Какая скорость и количество остановок?", "Какие размеры шахты, приямка и верхнего зазора?"],
     };
   }
-  if (/дренаж|drainage|лотк/.test(normalized)) {
+  if (/дренаж|drainage|лотк/.test(normalized) && !/подпор/.test(normalized)) {
+    const englishDrainagePrimitive = /\bdrainage\b/i.test(text) && !/дренаж/i.test(text);
     return {
-      workKey: "drainage_channel_installation",
+      workKey: englishDrainagePrimitive ? "world_drainage" : "drainage_channel_installation",
       titleRu: "Профессиональная предварительная смета на устройство дренажных каналов",
       category: "roadworks",
       domain: "drainage",
@@ -157,96 +159,7 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой расход воздуха?", "Есть ли проект трасс?", "Нужна ли автоматика и шумоглушение?"],
     };
   }
-  const genericDomain = [
-    "foundation",
-    "flooring",
-    "paving",
-    "roofing",
-    "waterproofing",
-    "metal_structures",
-    "masonry",
-    "asphalt",
-    "drywall",
-    "tiling",
-    "painting",
-    "plumbing",
-    "solar",
-    "well_drilling",
-    "demolition",
-    "fencing",
-    "sewerage",
-    "hvac",
-    "fire_alarm",
-    "low_voltage",
-    "doors",
-    "windows",
-    "ceilings",
-    "facade",
-    "insulation",
-    "earthworks",
-    "landscaping",
-    "heating",
-    "boilers",
-    "industrial_cranes",
-    "escalators",
-    "hazardous_materials",
-    "structural_repair",
-    "road_marking",
-    "retaining_walls",
-    "site_preparation",
-    "water_supply",
-    "industrial_equipment",
-    "restoration",
-    "carpentry",
-  ].find((domain) => normalized.includes(domain.replace(/_/g, " ")));
-  if (genericDomain) {
-    const regulated = /fire_alarm|low_voltage|boilers|industrial_cranes|escalators|hazardous_materials|structural_repair/.test(genericDomain);
-    return {
-      workKey: `dynamic_${genericDomain}_estimate`,
-      titleRu: `Профессиональная предварительная смета: ${genericDomain.replace(/_/g, " ")}`,
-      category: categoryForGenericDomain(genericDomain),
-      domain: genericDomain,
-      object: `${genericDomain}_work`,
-      operation: "installation",
-      method: "dynamic_professional_method",
-      materialSystem: `${genericDomain}_system`,
-      complexity: regulated ? "complex" : "simple",
-      requiredMaterials: [`основной материал для ${genericDomain}`],
-      requiredLabor: [`профильный монтаж ${genericDomain}`],
-      requiredEquipmentOrWarnings: [`профессиональный инструмент ${genericDomain}`],
-      requiredLogisticsOrWarnings: [`доставка материалов ${genericDomain}`],
-      exclusions: ["Проект, разрешения и скрытые работы уточняются отдельно."],
-      clarifyingQuestions: ["Уточните объект, технологию, местоположение и фактический объем."],
-    };
-  }
-  return null;
-}
-
-function categoryForGenericDomain(domain: string): GlobalWorkCategory {
-  if (domain === "flooring") return "flooring";
-  if (domain === "paving" || domain === "landscaping" || domain === "fencing") return "landscaping";
-  if (domain === "roofing") return "roofing";
-  if (domain === "waterproofing") return "waterproofing";
-  if (domain === "metal_structures" || domain === "industrial_cranes") return "metalworks";
-  if (domain === "masonry") return "masonry";
-  if (domain === "asphalt" || domain === "road_marking" || domain === "retaining_walls") return "roadworks";
-  if (domain === "drywall") return "drywall";
-  if (domain === "tiling") return "tile";
-  if (domain === "painting") return "painting";
-  if (domain === "plumbing" || domain === "sewerage" || domain === "water_supply") return "plumbing";
-  if (domain === "solar" || domain === "low_voltage" || domain === "fire_alarm") return "electrical";
-  if (domain === "well_drilling" || domain === "earthworks" || domain === "site_preparation") return "roadworks";
-  if (domain === "demolition" || domain === "hazardous_materials") return "demolition";
-  if (domain === "hvac" || domain === "heating" || domain === "boilers") return "heating_hvac";
-  if (domain === "doors" || domain === "windows") return "doors_windows";
-  if (domain === "ceilings") return "ceiling";
-  if (domain === "facade") return "facade";
-  if (domain === "insulation") return "insulation";
-  if (domain === "foundation") return "foundation";
-  if (domain === "carpentry") return "carpentry";
-  if (domain === "industrial_equipment" || domain === "escalators") return "delivery_equipment";
-  if (domain === "structural_repair" || domain === "restoration") return "wall_finishing";
-  return "other";
+  return resolveEstimatorDomainSignature(normalized);
 }
 
 function pricingPolicy(currency = "KGS") {
@@ -259,13 +172,80 @@ function pricingPolicy(currency = "KGS") {
   };
 }
 
+function specializeFlooringSignature(signature: WorkSignature, text: string): WorkSignature {
+  if (signature.object !== "floor_covering") return signature;
+  const normalized = normalizeDimensionText(text).toLocaleLowerCase("ru-RU");
+  const parquet = /паркет/.test(normalized);
+  const laminate = /ламинат/.test(normalized);
+  const pvc = /пвх|рулонн/.test(normalized);
+  const linoleum = /линолеум/.test(normalized);
+  const replacement = /замен/.test(normalized);
+
+  const coveringName =
+    parquet ? "паркет / паркетная доска" :
+      laminate ? "ламинат" :
+        pvc ? "ПВХ покрытие" :
+          linoleum ? "линолеум" :
+            "напольное покрытие";
+  const materialSystem =
+    parquet ? "parquet_flooring_system" :
+      laminate ? "laminate_flooring_system" :
+        pvc ? "pvc_flooring_system" :
+          linoleum ? "linoleum_flooring_system" :
+            "floor_covering_system";
+  return {
+    ...signature,
+    titleRu: `Профессиональная предварительная смета: ${coveringName}`,
+    materialSystem,
+    requiredMaterials: [
+      "напольное покрытие",
+      "подложка / клей",
+      coveringName,
+      "плинтус",
+      "порожки",
+    ],
+    requiredLabor: [
+      replacement ? "демонтаж старого покрытия warning" : "подготовка основания",
+      "раскрой покрытия",
+      `укладка покрытия: ${coveringName}`,
+      "подрезка примыканий",
+    ],
+  };
+}
+
+function specializeWaterproofingSignature(signature: WorkSignature, text: string): WorkSignature {
+  if (signature.object !== "waterproofing_surface") return signature;
+  const normalized = normalizeDimensionText(text).toLocaleLowerCase("ru-RU");
+  const roof = /кры|кровл|roof/.test(normalized);
+  const wetRoom = /ванн|сануз|душ/.test(normalized);
+  if (!roof || wetRoom) return signature;
+  return {
+    ...signature,
+    titleRu: "Профессиональная предварительная смета: гидроизоляция кровли",
+    materialSystem: "roof_waterproofing_system",
+    requiredMaterials: [
+      "праймер",
+      "гидроизоляционный материал",
+      "герметик примыканий",
+      "воронки / проходки",
+    ],
+    requiredLabor: [
+      "очистка кровли",
+      "ремонт дефектов основания",
+      "герметизация примыканий",
+      "проверка герметичности",
+    ],
+  };
+}
+
 export function buildEstimatorReasoningPlan(input: {
   text: string;
   currency?: string;
 }): EstimatorReasoningPlan | null {
   if (!isParsableConstructionWork(input.text)) return null;
-  const signature = signatureFor(input.text);
-  if (!signature) return null;
+  const baseSignature = signatureFor(input.text);
+  if (!baseSignature) return null;
+  const signature = specializeWaterproofingSignature(specializeFlooringSignature(baseSignature, input.text), input.text);
   const quantities = resolveQuantityInputsFromPrompt(input.text);
   const regulated = detectRegulatedConstructionWork(input.text);
   const sections = ["materials", "labor", "equipment", "delivery"];

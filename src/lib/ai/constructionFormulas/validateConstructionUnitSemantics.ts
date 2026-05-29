@@ -18,22 +18,38 @@ export function validateConstructionUnitSemantics(result: GlobalEstimateResult):
     failures.push(`unit_variety_too_low:${result.work.workKey}:${[...units].join(",")}`);
   }
 
-  for (const { row } of rows) {
+  for (const { section, row } of rows) {
     const name = row.name.toLocaleLowerCase("ru-RU");
+    const deliveryOrLogisticsRow = /доставка|вывоз|логист|подъем|подъём/.test(name);
     const expectsPieces = /стойк|анкер|закладн/.test(name) && !/фундамент|бетон/.test(name);
     if (expectsPieces && row.unit !== "pcs") failures.push(`pcs_expected:${row.code}:${row.unit}`);
     const metalStructuralRow = /ферм|балк|связ|раскос/.test(name)
       || (/металл/.test(name) && !/обмер|схем|доставка|окраск|монтаж стоек|стойк/.test(name));
-    if (metalStructuralRow && row.unit !== "kg" && row.unit !== "ton" && row.unit !== "linear_m") {
+    if (!deliveryOrLogisticsRow && metalStructuralRow && row.unit !== "kg" && row.unit !== "ton" && row.unit !== "linear_m") {
       failures.push(`metal_unit_expected:${row.code}:${row.unit}`);
     }
-    if (/бетон|фундамент/.test(name) && row.unit !== "m3" && !/монтаж|установ|устройств/.test(name)) {
+    const reinforcementOrMetalQuantityRow =
+      /арматур|металл|сталь|сетк|проволок/.test(name) ||
+      /rebar|steel|metal|mesh/.test(row.code);
+    if (!deliveryOrLogisticsRow &&
+      section.type !== "equipment" &&
+      !reinforcementOrMetalQuantityRow &&
+      /бетон|фундамент/.test(name) &&
+      row.unit !== "m3" &&
+      row.unit !== "kg" &&
+      row.unit !== "ton" &&
+      !/монтаж|установ|устройств/.test(name)) {
       failures.push(`concrete_m3_expected:${row.code}:${row.unit}`);
     }
     if (!expectsPieces && !/бетон/.test(name) && /бордюр|водосток|прогон|плинтус/.test(name) && row.unit !== "linear_m") {
       failures.push(`linear_m_expected:${row.code}:${row.unit}`);
     }
-    if (/кран|автовыш|виброплит/.test(name) && row.unit !== "shift") failures.push(`shift_expected:${row.code}:${row.unit}`);
+    const liftingEquipmentRow =
+      /автовыш|виброплит/.test(name) ||
+      (/кран/.test(name) &&
+        !/radiator|valve|faucet|plumbing|boiler|heating/.test(row.code) &&
+        !/маевск|шаров|запор|смесит|радиатор|водоразбор/.test(name));
+    if (liftingEquipmentRow && row.unit !== "shift") failures.push(`shift_expected:${row.code}:${row.unit}`);
     if (/доставка/.test(name) && row.unit !== "trip" && row.unit !== "set") failures.push(`delivery_unit_expected:${row.code}:${row.unit}`);
   }
 

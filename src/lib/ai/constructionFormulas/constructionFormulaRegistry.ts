@@ -72,7 +72,7 @@ export function normalizeDimensionText(value: string): string {
     .normalize("NFKC")
     .toLocaleLowerCase("ru-RU")
     .replace(/,/g, ".")
-    .replace(/[×х*]/g, " x ")
+    .replace(/(\d)\s*[×х*]\s*(?=\d)/g, "$1 x ")
     .replace(/[(){}\[\];:!?]/g, " ")
     .replace(/\s+/g, " ")
     .trim();

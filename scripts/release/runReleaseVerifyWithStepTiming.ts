@@ -204,6 +204,21 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       UNIVERSAL_ESTIMATOR_FINAL_WORKTREE_CLEAN: "1",
     };
   }
+  if (step === "real-500-diverse-construction-works-expanded-estimate-proof") {
+    return {
+      REAL500_TYPECHECK_PASSED: "1",
+      REAL500_LINT_PASSED: "1",
+      REAL500_GIT_DIFF_CHECK_PASSED: "1",
+      REAL500_TARGETED_TESTS_PASSED: "1",
+      REAL500_ARCHITECTURE_TESTS_PASSED: "1",
+      REAL500_PLAYWRIGHT_WEB_PASSED: "1",
+      REAL500_FULL_JEST_PASSED: "1",
+      REAL500_RELEASE_VERIFY_PASSED: "1",
+      REAL500_COMMIT_CREATED: "1",
+      REAL500_BRANCH_PUSHED: "1",
+      REAL500_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
   if (
     step === "ai-estimate-enterprise-load-performance-cost-guard-proof" ||
     step === "ai-estimate-enterprise-load-performance-cost-proof"

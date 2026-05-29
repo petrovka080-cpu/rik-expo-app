@@ -57,6 +57,7 @@ export type ReleaseGateName =
   | "open-world-estimate-semantic-coverage-proof"
   | "open-world-construction-primitive-boq-compiler-proof"
   | "universal-estimator-kernel-dynamic-boq-proof"
+  | "real-500-diverse-construction-works-expanded-estimate-proof"
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
   | "ai-estimate-enterprise-load-performance-cost-proof"
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
@@ -334,6 +335,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "open-world-estimate-semantic-coverage-proof", command: "npx tsx scripts/e2e/runOpenWorldEstimateSemanticCoverageProof.ts" },
   { name: "open-world-construction-primitive-boq-compiler-proof", command: "npx tsx scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts" },
   { name: "universal-estimator-kernel-dynamic-boq-proof", command: "npx tsx scripts/e2e/runUniversalEstimatorKernelProof.ts" },
+  { name: "real-500-diverse-construction-works-expanded-estimate-proof", command: "npx tsx scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },

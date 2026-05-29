@@ -73,6 +73,8 @@ const OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_WAVE =
   "S_OPEN_WORLD_CONSTRUCTION_PRIMITIVE_BOQ_COMPILER_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_WAVE =
   "S_AI_ESTIMATE_UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ_FOR_PARSABLE_WORK_POINT_OF_NO_RETURN";
+const REAL_500_DIVERSE_CONSTRUCTION_WORKS_WAVE =
+  "S_REAL_500_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
@@ -1367,6 +1369,22 @@ function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boole
   );
 }
 
+function isReal500DiverseConstructionWorksPath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_REAL_500_DIVERSE_CONSTRUCTION_WORKS/") ||
+    file.startsWith("artifacts/pdf/real-500-diverse-construction-works/") ||
+    file === "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts" ||
+    file === "src/lib/ai/estimatorKernel/fixtures/realDiverse500ConstructionWorks.ts" ||
+    file === "scripts/e2e/real500AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAndroidApi34Real500DiverseConstructionWorksSample.ts" ||
+    file === "scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" ||
+    file === "tests/e2e/real500DiverseConstructionWorks.web.spec.ts" ||
+    file === "tests/real500" ||
+    file.startsWith("tests/real500/") ||
+    file.startsWith("tests/architecture/real500")
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1414,6 +1432,17 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isReal500DiverseConstructionWorksPath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: REAL_500_DIVERSE_CONSTRUCTION_WORKS_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "real 500 diverse construction works expanded estimate acceptance fixture, web Android PDF proof, artifacts, and release guard wiring",
+    };
+  }
   if (isAiEstimateUniversalEstimatorKernelPath(normalized)) {
     return {
       file: normalized,

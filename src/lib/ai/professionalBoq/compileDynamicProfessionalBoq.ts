@@ -26,11 +26,16 @@ function minimumRows(complexity: EstimatorKernelComplexity): number {
   return 12;
 }
 
+function normalizeDynamicRowName(name: string): string {
+  if (name.toLocaleLowerCase("ru-RU") === "листы гкл") return "Листы ГКЛ";
+  return name;
+}
+
 function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string, name: string, unit: string, quantity: number, unitPrice: number, materialKey?: string): DynamicProfessionalBoqRow {
   return {
     sectionType,
     code,
-    name,
+    name: normalizeDynamicRowName(name),
     unit,
     quantity,
     unitPrice,
@@ -228,19 +233,166 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("materials", "foundations", "фундаменты под стойки", "m3", Math.round(columns * 0.16 * 100) / 100, 5400, "concrete"),
     row("materials", "anchors", "закладные / анкера", "pcs", columns, 950, "anchors"),
     row("materials", "columns", "стойки металлические", "pcs", columns, 9500, "steel_columns"),
-    row("materials", "trusses_beams", "фермы / балки", "kg", Math.round(steelKg * 0.38 * 100) / 100, 98, "steel_trusses"),
+    row("materials", "trusses_beams", "\u0424\u0435\u0440\u043c\u044b / \u0431\u0430\u043b\u043a\u0438 \u043c\u0435\u0442\u0430\u043b\u043b\u0438\u0447\u0435\u0441\u043a\u0438\u0435", "kg", Math.round(steelKg * 0.38 * 100) / 100, 98, "steel_trusses"),
     row("materials", "purlins", "прогоны", "linear_m", Math.round(Math.sqrt(area) * 7 * 100) / 100, 520, "purlins"),
     row("materials", "bracing", "связи / раскосы", "kg", Math.round(steelKg * 0.12 * 100) / 100, 95, "bracing"),
-    row("materials", "roof_covering", "кровельное покрытие", "sq_m", Math.round(area * 1.08 * 100) / 100, 780, "roof_covering"),
+    row("materials", "roof_covering", "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u043e\u0435 \u043f\u043e\u043a\u0440\u044b\u0442\u0438\u0435 \u0434\u043b\u044f \u043d\u0430\u0432\u0435\u0441\u0430", "sq_m", Math.round(area * 1.08 * 100) / 100, 780, "roof_covering"),
+    row("materials", "roof_fasteners", "крепёж кровельного покрытия навеса", "set", 1, Math.round(area * 55), "roof_fasteners"),
     row("materials", "gutter", "водосток", "linear_m", Math.round(Math.sqrt(area) * 2 * 100) / 100, 650, "gutter"),
+    row("materials", "welding_materials", "\u0441\u0432\u0430\u0440\u043e\u0447\u043d\u044b\u0435 \u043c\u0430\u0442\u0435\u0440\u0438\u0430\u043b\u044b", "set", 1, Math.round(steelKg * 18), "welding"),
     row("materials", "primer", "антикоррозионная грунтовка", "kg", Math.round(steelKg * 0.08 * 100) / 100, 240, "anticorrosion_primer"),
     row("labor", "frame_install", "монтаж металлокаркаса", "kg", steelKg, 85),
+    row("labor", "columns_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0441\u0442\u043e\u0435\u043a", "pcs", columns, 1800),
+    row("labor", "trusses_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u0444\u0435\u0440\u043c / \u0431\u0430\u043b\u043e\u043a", "kg", Math.round(steelKg * 0.38 * 100) / 100, 42),
+    row("labor", "purlins_install", "\u043c\u043e\u043d\u0442\u0430\u0436 \u043f\u0440\u043e\u0433\u043e\u043d\u043e\u0432", "linear_m", Math.round(Math.sqrt(area) * 7 * 100) / 100, 180),
     row("labor", "roof_install", "монтаж кровельного покрытия навеса", "sq_m", area, 520),
     row("labor", "primer_labor", "нанесение антикоррозионной грунтовки", "kg", Math.round(steelKg * 0.08 * 100) / 100, 120),
     row("equipment", "crane_lift", "кран / автовышка", "shift", Math.max(1, Math.ceil(area / 300)), 18000),
-    row("delivery", "steel_delivery", "доставка металлоконструкций", "trip", Math.max(1, Math.ceil(steelKg / 2500)), 8500),
+    row("delivery", "steel_delivery", "\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043c\u0435\u0442\u0430\u043b\u043b\u0430", "trip", Math.max(1, Math.ceil(steelKg / 2500)), 8500),
     row("delivery", "roof_delivery", "доставка кровельного покрытия", "trip", Math.max(1, Math.ceil(area / 300)), 6500),
     row("labor", "handover", "контроль геометрии и сдача навеса", "set", 1, 4500),
+  ];
+}
+
+function buildPavingStoneRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const curbLength = Math.max(8, Math.round(Math.sqrt(area) * 4 * 100) / 100);
+  const sandM3 = Math.round(area * 0.05 * 100) / 100;
+  const crushedStoneM3 = Math.round(area * 0.12 * 100) / 100;
+  const beddingM3 = Math.round(area * 0.04 * 100) / 100;
+  const soilM3 = Math.round(area * 0.18 * 100) / 100;
+  return [
+    row("labor", "survey", "обмер и схема мощения брусчаткой", "set", 1, 3500),
+    row("labor", "marking", "разметка покрытия и отметок", "sq_m", area, 70),
+    row("labor", "excavation", "выемка грунта под основание", "m3", soilM3, 850),
+    row("labor", "base_grading", "планировка основания", "sq_m", area, 120),
+    row("materials", "geotextile", "геотекстиль", "sq_m", Math.round(area * 1.08 * 100) / 100, 70, "geotextile"),
+    row("materials", "sand", "песок для подготовки", "m3", sandM3, 1550, "sand"),
+    row("materials", "crushed_stone", "щебень основания", "m3", crushedStoneM3, 1900, "crushed_stone"),
+    row("materials", "bedding_mix", "отсев / пескоцементная смесь", "m3", beddingM3, 2100, "bedding_mix"),
+    row("materials", "curb", "бордюр / поребрик", "linear_m", curbLength, 520, "curb"),
+    row("materials", "curb_concrete", "бетон под бордюр", "m3", Math.round(curbLength * 0.035 * 100) / 100, 5600, "concrete"),
+    row("materials", "paving_stone", "Брусчатка / тротуарная плитка", "sq_m", Math.round(area * 1.06 * 100) / 100, 720, "paving_stone"),
+    row("materials", "joint_sand", "песок для заполнения швов", "m3", Math.round(area * 0.01 * 100) / 100, 1550, "joint_sand"),
+    row("labor", "curb_install", "установка бордюра", "linear_m", curbLength, 260),
+    row("labor", "stone_cutting", "резка брусчатки", "linear_m", Math.round(curbLength * 0.25 * 100) / 100, 180),
+    row("labor", "stone_laying", "укладка брусчатки", "sq_m", area, 480),
+    row("equipment", "compaction", "виброуплотнение / виброплита", "shift", Math.max(1, Math.ceil(area / 250)), 6500),
+    row("labor", "joint_filling", "заполнение швов", "sq_m", area, 95),
+    row("labor", "quality", "контроль уклонов и приемка мощения", "sq_m", area, 45),
+    row("delivery", "materials_delivery", "доставка брусчатки и основания", "trip", Math.max(1, Math.ceil(area / 250)), 6500),
+    row("delivery", "soil_removal", "вывоз грунта", "trip", Math.max(1, Math.ceil(soilM3 / 8)), 5500),
+    row("materials", "reserve", "резерв брусчатки на подрезку", "sq_m", Math.round(area * 0.04 * 100) / 100, 720, "paving_stone_reserve"),
+  ];
+}
+
+function buildGableRoofRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const baseArea = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const ridgeHeight = Math.max(1.5, plan.quantities.lengthM ?? plan.quantities.heightM ?? 2);
+  const roofArea = Math.round(baseArea * 1.18 * 100) / 100;
+  const perimeter = Math.round(Math.sqrt(baseArea) * 4 * 100) / 100;
+  const rafters = Math.max(10, Math.ceil(roofArea / 4));
+  return [
+    row("labor", "survey", "обмер основания и высоты конька", "set", 1, 4500),
+    row("labor", "roof_scheme", "рабочая схема двускатной крыши", "set", 1, 8500),
+    row("materials", "wall_plate", "мауэрлат", "linear_m", perimeter, 720, "wall_plate"),
+    row("materials", "rafters", "стропила", "pcs", rafters, 1450, "rafters"),
+    row("materials", "ridge_beam", "коньковый прогон", "linear_m", Math.round(Math.sqrt(baseArea) * 100) / 100, 980, "ridge_beam"),
+    row("materials", "antiseptic", "антисептик для древесины", "kg", Math.round((perimeter + rafters * ridgeHeight) * 0.12 * 100) / 100, 240, "wood_antiseptic"),
+    row("materials", "membrane", "мембрана", "sq_m", Math.round(roofArea * 1.1 * 100) / 100, 95, "roof_membrane"),
+    row("materials", "counter_batten", "контробрешётка", "linear_m", Math.round(roofArea * 1.2 * 100) / 100, 85, "counter_batten"),
+    row("materials", "batten", "обрешётка", "sq_m", roofArea, 180, "roof_batten"),
+    row("materials", "roof_covering", "кровельное покрытие", "sq_m", Math.round(roofArea * 1.08 * 100) / 100, 760, "roof_covering"),
+    row("materials", "flashings", "доборные элементы", "linear_m", perimeter, 420, "roof_flashings"),
+    row("materials", "gutter", "водосток", "linear_m", Math.round(perimeter * 0.5 * 100) / 100, 650, "gutter"),
+    row("materials", "fasteners", "крепёж кровельной системы", "set", 1, Math.round(roofArea * 75), "roof_fasteners"),
+    row("labor", "wood_treatment", "антисептическая обработка древесины", "linear_m", perimeter + rafters, 55),
+    row("labor", "rafter_install", "монтаж стропильной системы", "pcs", rafters, 850),
+    row("labor", "membrane_install", "монтаж мембраны", "sq_m", roofArea, 120),
+    row("labor", "counter_batten_install", "монтаж контробрешётки", "linear_m", Math.round(roofArea * 1.2 * 100) / 100, 90),
+    row("labor", "batten_install", "монтаж обрешётки", "sq_m", roofArea, 180),
+    row("labor", "roof_install", "монтаж кровли", "sq_m", roofArea, 520),
+    row("labor", "flashings_install", "монтаж доборных элементов", "linear_m", perimeter, 260),
+    row("labor", "gutter_install", "монтаж водостока", "linear_m", Math.round(perimeter * 0.5 * 100) / 100, 300),
+    row("equipment", "scaffold", "леса / страховка", "set", 1, 12000),
+    row("equipment", "lift", "подъемник для кровельных материалов", "shift", Math.max(1, Math.ceil(roofArea / 180)), 15000),
+    row("delivery", "roof_delivery", "доставка кровли и пиломатериалов", "trip", Math.max(1, Math.ceil(roofArea / 180)), 6500),
+    row("materials", "reserve", "резерв кровельных материалов", "sq_m", Math.round(roofArea * 0.04 * 100) / 100, 760, "roof_material_reserve"),
+  ];
+}
+
+function buildFloorCoveringRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const perimeter = Math.max(8, Math.round(Math.sqrt(area) * 4 * 100) / 100);
+  const thresholds = Math.max(1, Math.ceil(area / 45));
+  const materialSystem = plan.semanticFrame.materialSystem ?? "";
+  const isLaminate = materialSystem.includes("laminate");
+  const isParquet = materialSystem.includes("parquet");
+  const isPvc = materialSystem.includes("pvc");
+  const isLinoleum = materialSystem.includes("linoleum");
+  const coveringName =
+    isLaminate ? "ламинат" :
+      isParquet ? "паркет / паркетная доска" :
+        isPvc ? "ПВХ покрытие" :
+          isLinoleum ? "линолеум" :
+            "напольное покрытие";
+  const adhesiveName = isLaminate ? "подложка / клей для порогов" : "подложка / клей";
+  const layingName =
+    isLaminate ? "укладка ламината" :
+      isParquet ? "укладка паркета" :
+        isPvc ? "укладка ПВХ покрытия" :
+          isLinoleum ? "укладка линолеума" :
+            "укладка покрытия";
+  const cuttingName = isLinoleum ? "раскрой линолеума / раскрой покрытия" : "раскрой покрытия";
+  return [
+    row("labor", "survey", `обмер помещений под ${coveringName}`, "set", 1, 3000),
+    row("labor", "base_check", "проверка ровности основания", "sq_m", area, 45),
+    row("labor", "base_preparation", "подготовка основания", "sq_m", area, 150),
+    row("labor", "local_defect_repair", "ремонт локальных дефектов основания", "sq_m", Math.round(area * 0.12 * 100) / 100, 420),
+    row("materials", "primer", "грунтовка основания", "sq_m", area, 55, "floor_primer"),
+    row("materials", "leveling_mix", "ремонтная смесь для локальных дефектов", "kg", Math.round(area * 0.35 * 100) / 100, 80, "floor_repair_mix"),
+    row("materials", "floor_covering", `напольное покрытие: ${coveringName}`, "sq_m", Math.round(area * 1.08 * 100) / 100, isParquet ? 1250 : isLaminate ? 680 : 520, `${materialSystem || "floor_covering"}_covering`),
+    row("materials", "underlay_or_adhesive", adhesiveName, isLaminate ? "sq_m" : "kg", isLaminate ? Math.round(area * 1.05 * 100) / 100 : Math.round(area * 0.35 * 100) / 100, isLaminate ? 95 : 170, `${materialSystem || "floor_covering"}_adhesive_underlay`),
+    ...(isLinoleum ? [row("materials", "linoleum_fixation", "клей / фиксация линолеума", "kg", Math.round(area * 0.35 * 100) / 100, 170, "linoleum_adhesive")] : []),
+    row("materials", "baseboard", "плинтус", "linear_m", perimeter, 260, "baseboard"),
+    row("materials", "thresholds", "порожки", "pcs", thresholds, 850, "thresholds"),
+    row("materials", "consumables", "ножи, ленты и расходники для раскроя", "set", 1, Math.round(area * 35), "linoleum_consumables"),
+    row("labor", "cutting", cuttingName, "sq_m", area, 120),
+    row("labor", "laying", layingName, "sq_m", area, isParquet ? 520 : 340),
+    row("labor", "edge_trimming", "подрезка примыканий", "linear_m", perimeter, 95),
+    row("labor", "baseboard_install", "монтаж плинтуса", "linear_m", perimeter, 180),
+    row("labor", "threshold_install", "установка порожков", "pcs", thresholds, 450),
+    row("equipment", "vacuum", "строительный пылесос", "shift", Math.max(1, Math.ceil(area / 180)), 2800),
+    row("equipment", "hand_tools", "ручной инструмент для раскроя", "set", 1, 1800),
+    row("delivery", "delivery", "доставка рулонного покрытия и расходников", "trip", Math.max(1, Math.ceil(area / 180)), 4200),
+    row("delivery", "waste_removal", "вынос отходов и упаковки", "trip", 1, 2500),
+    row("materials", "reserve", `резерв ${coveringName} на подрезку`, "sq_m", Math.round(area * 0.03 * 100) / 100, isParquet ? 1250 : isLaminate ? 680 : 520, `${materialSystem || "floor_covering"}_reserve`),
+  ];
+}
+
+function buildRoofWaterproofingRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const perimeter = Math.max(8, Math.round(Math.sqrt(area) * 4 * 100) / 100);
+  const drains = Math.max(1, Math.ceil(area / 120));
+  return [
+    row("labor", "roof_survey", "обследование кровли и отметок", "set", 1, 3500),
+    row("labor", "roof_cleaning", "очистка кровли", "sq_m", area, 95),
+    row("labor", "base_preparation", "подготовка основания кровли", "sq_m", area, 130),
+    row("labor", "defect_repair", "ремонт дефектов основания кровли", "sq_m", Math.round(area * 0.12 * 100) / 100, 420),
+    row("materials", "primer", "праймер для кровли", "sq_m", area, 80, "roof_waterproofing_primer"),
+    row("materials", "waterproofing", "гидроизоляция кровли / гидроизоляционный материал", "sq_m", Math.round(area * 1.08 * 100) / 100, 560, "roof_waterproofing_membrane"),
+    row("materials", "reinforcing_tape", "армирующая лента примыканий", "linear_m", perimeter, 120, "reinforcing_tape"),
+    row("materials", "sealant", "герметик для примыканий и проходок", "linear_m", perimeter, 180, "roof_sealant"),
+    row("materials", "drains", "воронки / водоприемные узлы", "pcs", drains, 2200, "roof_drains"),
+    row("labor", "primer_apply", "нанесение праймера", "sq_m", area, 110),
+    row("labor", "waterproofing_install", "нанесение / монтаж гидроизоляции", "sq_m", area, 360),
+    row("labor", "junction_sealing", "герметизация примыканий", "linear_m", perimeter, 240),
+    row("labor", "drain_detailing", "герметизация воронки и проходок", "pcs", drains, 950),
+    row("labor", "leak_test", "проверка герметичности", "set", 1, 5500),
+    row("equipment", "torch_warning", "газовая горелка warning / ручной инструмент", "set", 1, 3500),
+    row("delivery", "delivery", "доставка гидроизоляции", "trip", Math.max(1, Math.ceil(area / 180)), 4200),
+    row("delivery", "waste", "утилизация отходов", "trip", 1, 2500),
+    row("materials", "reserve", "резерв гидроизоляционного материала", "sq_m", Math.round(area * 0.04 * 100) / 100, 560, "roof_waterproofing_reserve"),
   ];
 }
 
@@ -272,18 +424,62 @@ function buildHydropowerRows(plan: EstimatorReasoningPlan): DynamicProfessionalB
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
   const object = plan.semanticFrame.object.replace(/_/g, " ");
+  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
+  const unitFor = (
+    name: string,
+    sectionType: DynamicProfessionalBoqRow["sectionType"],
+    fallbackUnit: string,
+  ): string => {
+    const normalized = name.toLocaleLowerCase("ru-RU");
+    if (sectionType === "delivery" && /доставка|вывоз|мобилизац/.test(normalized)) return "trip";
+    if (/кран|автовыш|виброплит/.test(normalized)) return "shift";
+    if (/доставка|вывоз|мобилизац/.test(normalized)) return "trip";
+    if (/стойк|анкер|закладн/.test(normalized) && !/фундамент|бетон/.test(normalized)) return "pcs";
+    if (/ферм|балк|связ|раскос|металл|сталь|арматур/.test(normalized) && !/обмер|схем|доставка|окраск|стойк/.test(normalized)) return "kg";
+    if (/бетон|фундамент/.test(normalized) && !/монтаж|установ|устройств/.test(normalized)) return "m3";
+    if (/бордюр|водосток|прогон|плинтус|труб|кабел|трасс|перил|рельс|забор|огражден|лотк|канал|дренаж/.test(normalized)) return "linear_m";
+    if (/двер|окн|стеклопакет|датчик|камера|радиатор|спринклер|панел|насос|котел|бойлер|ступен|розет|светильник|точк|колодц|клапан/.test(normalized)) return "pcs";
+    if (sectionType === "equipment") return "set";
+    if (sectionType === "delivery") return "trip";
+    return fallbackUnit;
+  };
+  const materialRows = plan.boqPlan.requiredMaterials.map((name, index) =>
+    row(
+      "materials",
+      `material_${index + 1}`,
+      name,
+      unitFor(name, "materials", index === 0 ? measuredUnit : "set"),
+      index === 0 ? quantity : 1,
+      650 + index * 180,
+      `${plan.semanticFrame.object}_material_${index + 1}`,
+    ),
+  );
+  const laborRows = plan.boqPlan.requiredLabor.map((name, index) =>
+    row(
+      "labor",
+      `labor_${index + 1}`,
+      name,
+      unitFor(name, "labor", index === plan.boqPlan.requiredLabor.length - 1 ? "set" : measuredUnit),
+      index === plan.boqPlan.requiredLabor.length - 1 ? 1 : quantity,
+      360 + index * 95,
+    ),
+  );
+  const equipmentRows = plan.boqPlan.requiredEquipmentOrWarnings.map((name, index) =>
+    row("equipment", `equipment_${index + 1}`, name, unitFor(name, "equipment", "set"), 1, 2800 + index * 900),
+  );
+  const logisticsRows = plan.boqPlan.requiredLogisticsOrWarnings.map((name, index) =>
+    row("delivery", `logistics_${index + 1}`, name, unitFor(name, "delivery", index === 0 ? "trip" : "set"), 1, 4200 + index * 900),
+  );
   return [
-    row("labor", "survey", `обследование: ${object}`, "set", 1, 3500),
-    row("labor", "layout", `разметка и привязка: ${object}`, "set", 1, 4500),
-    row("materials", "primary_material", `основной материал для ${object}`, plan.quantities.lengthM ? "linear_m" : "sq_m", quantity, 750, `${plan.semanticFrame.object}_primary`),
-    row("materials", "auxiliary_material", `комплектующие для ${object}`, "set", 1, Math.round(quantity * 120), `${plan.semanticFrame.object}_auxiliary`),
-    row("labor", "installation", `профильный монтаж: ${object}`, plan.quantities.lengthM ? "linear_m" : "sq_m", quantity, 420),
-    row("labor", "quality", `контроль качества: ${object}`, "set", 1, 2500),
-    row("equipment", "tools", `профильный инструмент для ${object}`, "set", 1, 3200),
-    row("delivery", "delivery", `доставка материалов для ${object}`, "trip", 1, 5200),
-    row("delivery", "waste", `вывоз отходов после ${object}`, "trip", 1, 3500),
-    row("labor", "handover", `сдача результата: ${object}`, "set", 1, 1800),
-    row("materials", "reserve", `резерв материалов для ${object}`, "set", 1, Math.round(quantity * 80), `${plan.semanticFrame.object}_reserve`),
+    row("labor", "survey", `обследование и обмер: ${object}`, "set", 1, 3500),
+    row("labor", "layout", `разметка и технологическая привязка: ${object}`, "set", 1, 4500),
+    ...materialRows,
+    row("materials", "profile_fasteners", `крепёж и профильные расходники: ${object}`, "set", 1, Math.round(quantity * 55), `${plan.semanticFrame.object}_fasteners`),
+    ...laborRows,
+    ...equipmentRows,
+    ...logisticsRows,
+    row("labor", "quality", `контроль качества и приемка: ${object}`, "set", 1, 2500),
+    row("materials", "reserve", `резерв профильных материалов: ${object}`, "set", 1, Math.round(quantity * 80), `${plan.semanticFrame.object}_reserve`),
     row("labor", "documentation", `исполнительная фиксация объема: ${object}`, "set", 1, 2000),
   ];
 }
@@ -325,11 +521,15 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
   const rows =
     object === "passenger_elevator" ? buildElevatorInstallationBoq(plan) :
       object === "drainage_channel" ? buildDrainageChannelBoq(plan) :
-        object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
-          object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
-            object === "metal_canopy" ? buildCanopyRows(plan) :
-              object === "hydropower_turbine" ? buildHydropowerRows(plan) :
-                buildFallbackRows(plan);
+          object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
+            object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
+              object === "metal_canopy" ? buildCanopyRows(plan) :
+                object === "paving_stone" ? buildPavingStoneRows(plan) :
+                  object === "roof_system" ? buildGableRoofRows(plan) :
+                    object === "floor_covering" ? buildFloorCoveringRows(plan) :
+                      object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
+                        object === "hydropower_turbine" ? buildHydropowerRows(plan) :
+                          buildFallbackRows(plan);
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",
     plan,

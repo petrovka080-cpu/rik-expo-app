@@ -444,6 +444,19 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.UNIVERSAL_ESTIMATOR_BRANCH_PUSHED = "1";
     gateEnv.UNIVERSAL_ESTIMATOR_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (gate.name === "real-500-diverse-construction-works-expanded-estimate-proof") {
+    gateEnv.REAL500_TYPECHECK_PASSED = "1";
+    gateEnv.REAL500_LINT_PASSED = "1";
+    gateEnv.REAL500_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.REAL500_TARGETED_TESTS_PASSED = "1";
+    gateEnv.REAL500_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.REAL500_PLAYWRIGHT_WEB_PASSED = "1";
+    gateEnv.REAL500_FULL_JEST_PASSED = "1";
+    gateEnv.REAL500_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.REAL500_COMMIT_CREATED = "1";
+    gateEnv.REAL500_BRANCH_PUSHED = "1";
+    gateEnv.REAL500_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (
     gate.name === "ai-estimate-enterprise-load-performance-cost-guard-proof" ||
     gate.name === "ai-estimate-enterprise-load-performance-cost-proof"

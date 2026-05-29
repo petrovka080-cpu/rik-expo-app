@@ -105,6 +105,12 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     city: baseInput.city,
   });
   const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
+  if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
+    return {
+      estimate: legacyEstimate,
+      worldClassification: "UNIVERSAL_ESTIMATOR_KERNEL_DYNAMIC_BOQ",
+    };
+  }
   const socketInstallIsExplicit = /(?:\u0440\u043e\u0437\u0435\u0442|socket|outlet)/i.test(input.text);
   const genericLegacyWorkKey =
     legacyEstimate.work.workKey === "electrical_basic" ||

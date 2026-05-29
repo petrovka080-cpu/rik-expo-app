@@ -35,6 +35,9 @@ export function detectRegulatedConstructionWork(text: string): RegulatedConstruc
   if (/котел|котельн|boiler/.test(normalized)) {
     return { regulated: true, kind: "boiler", warnings: [...warnings.safety] };
   }
+  if (/кран|кран-балк|тельфер|грузоподъем|industrial\s+crane/.test(normalized)) {
+    return { regulated: true, kind: "industrial_crane", warnings: [...warnings.safety] };
+  }
   if (/пожарн|fire\s+alarm|fire\s+safety/.test(normalized)) {
     return { regulated: true, kind: "fire_alarm", warnings: [...warnings.safety] };
   }
