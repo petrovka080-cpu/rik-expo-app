@@ -141,8 +141,16 @@ function branchPushed(headSha: string): boolean {
   return Boolean(headSha && originMain && headSha === originMain);
 }
 
-function worktreeClean(): boolean {
-  return gitOutput(["status", "--short"], "").trim().length === 0;
+function releaseGeneratedArtifactOnlyChanges(files: string[]): boolean {
+  return files.length > 0 && files.every((raw) => raw.replace(/\\/g, "/").startsWith("artifacts/"));
+}
+
+function worktreeClean(allowReleaseGeneratedArtifacts = false): boolean {
+  const dirtyFiles = gitOutput(["status", "--short"], "")
+    .split(/\r?\n/)
+    .map((line) => line.slice(3).trim().replace(/\\/g, "/"))
+    .filter(Boolean);
+  return dirtyFiles.length === 0 || (allowReleaseGeneratedArtifacts && releaseGeneratedArtifactOnlyChanges(dirtyFiles));
 }
 
 function main(): void {
@@ -163,8 +171,8 @@ function main(): void {
   const bridgesReady = bridgeGatesPassed(bridge);
   const releasePassed = releaseVerifyPassed();
   const pushed = branchPushed(headSha);
-  const clean = worktreeClean();
   const insideReleaseVerify = process.env.RELEASE_GUARD_IN_PROGRESS === "1";
+  const clean = worktreeClean(insideReleaseVerify);
 
   const failures = [
     ...(!evidence.ok ? [{ code: "BLOCKED_CANONICAL_API34_EVIDENCE_MISSING", reason: evidence.reason, details: evidence.details }] : []),
