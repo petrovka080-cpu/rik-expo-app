@@ -136,6 +136,10 @@ function releaseVerifyPassed(): boolean {
   );
 }
 
+function boolEnv(name: string): boolean {
+  return process.env[name] === "1" || process.env[name] === "true";
+}
+
 function branchPushed(headSha: string): boolean {
   const originMain = gitOutput(["rev-parse", "origin/main"], "");
   return Boolean(headSha && originMain && headSha === originMain);
@@ -220,11 +224,11 @@ function main(): void {
     old_android_gates_consume_canonical_api34_evidence: bridgesReady,
     process_cleanup_ready: cleanupReady,
     orphan_processes_left_after_timeout: orphanProcesses,
-    typecheck_passed: false,
-    lint_passed: false,
-    git_diff_check_passed: false,
-    targeted_tests_passed: false,
-    architecture_tests_passed: false,
+    typecheck_passed: boolEnv("LIVE_B2C_CLOSEOUT_TYPECHECK_PASSED"),
+    lint_passed: boolEnv("LIVE_B2C_CLOSEOUT_LINT_PASSED"),
+    git_diff_check_passed: boolEnv("LIVE_B2C_CLOSEOUT_GIT_DIFF_CHECK_PASSED"),
+    targeted_tests_passed: boolEnv("LIVE_B2C_CLOSEOUT_TARGETED_TESTS_PASSED"),
+    architecture_tests_passed: boolEnv("LIVE_B2C_CLOSEOUT_ARCHITECTURE_TESTS_PASSED"),
     release_verify_passed: releasePassed,
     target_wave_matrix_updated: targetMatrix?.resolved_by === LIVE_B2C_RELEASE_CLOSEOUT_WAVE,
     target_wave_final_status: targetMatrix?.final_status ?? null,

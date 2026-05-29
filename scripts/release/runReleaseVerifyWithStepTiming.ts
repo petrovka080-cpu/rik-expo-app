@@ -236,6 +236,16 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       REAL10000_FINAL_WORKTREE_CLEAN: "1",
     };
   }
+  if (step === "live-b2c-estimate-reality-release-closeout-proof") {
+    return {
+      LIVE_B2C_CLOSEOUT_TYPECHECK_PASSED: "1",
+      LIVE_B2C_CLOSEOUT_LINT_PASSED: "1",
+      LIVE_B2C_CLOSEOUT_GIT_DIFF_CHECK_PASSED: "1",
+      LIVE_B2C_CLOSEOUT_TARGETED_TESTS_PASSED: "1",
+      LIVE_B2C_CLOSEOUT_ARCHITECTURE_TESTS_PASSED: "1",
+      LIVE_B2C_CLOSEOUT_RELEASE_VERIFY_PASSED: "1",
+    };
+  }
   if (
     step === "ai-estimate-enterprise-load-performance-cost-guard-proof" ||
     step === "ai-estimate-enterprise-load-performance-cost-proof"
