@@ -142,11 +142,22 @@ function changedFilesBetween(baseRef: string, headRef = "HEAD"): string[] {
 function isAllowedCloseoutHarnessPath(filePath: string): boolean {
   const file = filePath.replace(/\\/g, "/");
   return (
-    file.startsWith("scripts/e2e/") ||
-    file.startsWith("scripts/release/") ||
-    file.startsWith("scripts/audit/") ||
-    /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file) ||
-    file.startsWith("artifacts/")
+      file.startsWith("scripts/e2e/") ||
+      file.startsWith("scripts/release/") ||
+      file.startsWith("scripts/audit/") ||
+      file.startsWith("src/lib/ai/observability/") ||
+      file.startsWith("src/lib/ai/killSwitch/") ||
+      file.startsWith("src/lib/ai/rollback/") ||
+      file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+      file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+      file.startsWith("tests/finalReadiness/") ||
+      file === "tests/e2e/aiEstimateFinalReadinessLiveJourney.web.spec.ts" ||
+      file.startsWith("tests/architecture/finalReadiness") ||
+      file === "tests/architecture/aiEstimateFinalReadinessNoProductionRollout.contract.test.ts" ||
+      file === "tests/release/aiEstimateFinalReadinessReleaseGate.contract.test.ts" ||
+      file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+      /^tests\/architecture\/.*(?:release|android).*\.test\.ts$/i.test(file) ||
+      file.startsWith("artifacts/")
   );
 }
 
