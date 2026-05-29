@@ -42,7 +42,13 @@ export type ExternalLiveProofCloseoutPlan = {
 
 export type ExternalLiveProofStepResult = ExternalLiveProofStepPlan & {
   exit_code: number | null;
-  status: "passed" | "blocked" | "failed" | "not_run";
+  status: "passed" | "blocked" | "failed" | "timeout" | "not_run";
+  timeout_ms: number;
+  timed_out: boolean;
+  cleanup_command: string | null;
+  cleanup_exit_code: number | null;
+  cleanup_stdout_tail: string;
+  cleanup_stderr_tail: string;
   stdout_tail: string;
   stderr_tail: string;
 };

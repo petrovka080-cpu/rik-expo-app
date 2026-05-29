@@ -79,6 +79,9 @@ describe("external live proof closeout harness", () => {
     expect(sharedSource).toContain("runWholeApp50kExplainP95LiveProof.ts");
     expect(sharedSource).toContain("runFinal50k92ScoreReaudit.ts");
     expect(cliSource).toContain("fake_green_claimed");
+    expect(cliSource).toContain("EXTERNAL_LIVE_PROOF_STEP_TIMEOUT_MS");
+    expect(cliSource).toContain("BLOCKED_EXTERNAL_LIVE_PROOF_TIMEOUT");
+    expect(cliSource).toContain("taskkill");
     expect(cliSource).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
 });
