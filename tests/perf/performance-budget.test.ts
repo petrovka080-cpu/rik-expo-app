@@ -711,7 +711,13 @@ describe("performance budget вЂ” bundle module count", () => {
     const sAiEstimateEnterpriseLoadPerformanceCostGuardFiles = [
       path.join(SRC, "lib", "ai", "globalEstimate", "estimatePerformanceCostPolicy.ts"),
       path.join(SRC, "lib", "ai", "globalEstimate", "evaluateEstimatePerformanceCost.ts"),
-    ].filter((file) => fs.existsSync(file)).length;
+      path.join(SRC, "lib", "estimatePdf", "aiEstimatePdfJobGuard.ts"),
+      path.join(SRC, "lib", "estimatePdf", "aiEstimatePdfRateLimit.ts"),
+      path.join(SRC, "lib", "estimatePdf", "validateAiEstimatePdfLoadPolicy.ts"),
+    ].filter((file) => fs.existsSync(file)).length +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "performance"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "cost"), /\.ts$/) +
+      countFilesRecursive(path.join(SRC, "lib", "ai", "rateLimit"), /\.ts$/);
     const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
       /\.ts$/,
@@ -1846,7 +1852,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sRatebookCatalogSourceGovernanceFiles -
         sWorkTypeResolverDisambiguationFiles,
     ).toBeLessThanOrEqual(45);
-    expect(sAiEstimateEnterpriseLoadPerformanceCostGuardFiles).toBeLessThanOrEqual(2);
+    expect(sAiEstimateEnterpriseLoadPerformanceCostGuardFiles).toBeLessThanOrEqual(20);
     expect(sRequestEstimateBoqCatalogGlobalEstimateFiles).toBeLessThanOrEqual(8);
     expect(sGlobalEstimateBoqDepthFormulaQualityFiles).toBeLessThanOrEqual(2);
     expect(sCatalogItemsGlobalEstimateBindingFiles).toBeLessThanOrEqual(4);

@@ -4,3 +4,6 @@ export * from "./estimatePdfTypes";
 export * from "./extractEstimatePdfTextForProof";
 export * from "./renderEstimatePdfDocument";
 export * from "./validateEstimatePdf";
+export * from "./aiEstimatePdfJobGuard";
+export * from "./aiEstimatePdfRateLimit";
+export * from "./validateAiEstimatePdfLoadPolicy";

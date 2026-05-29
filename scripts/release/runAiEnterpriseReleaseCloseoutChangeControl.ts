@@ -1284,16 +1284,39 @@ function isOpenWorldConstructionPrimitiveBoqCompilerPath(file: string): boolean 
 function isAiEstimateEnterpriseLoadPerformanceCostGuardPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD/") ||
+    file.startsWith("artifacts/S_AI_ESTIMATE_PERFORMANCE/") ||
     file === "src/lib/ai/globalEstimate/estimatePerformanceCostPolicy.ts" ||
     file === "src/lib/ai/globalEstimate/evaluateEstimatePerformanceCost.ts" ||
     file === "src/lib/ai/globalEstimate/index.ts" ||
+    file === "src/lib/ai/performance" ||
+    file.startsWith("src/lib/ai/performance/") ||
+    file === "src/lib/ai/cost" ||
+    file.startsWith("src/lib/ai/cost/") ||
+    file === "src/lib/ai/rateLimit" ||
+    file.startsWith("src/lib/ai/rateLimit/") ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
+    file.startsWith("src/lib/estimatePdf/aiEstimatePdf") ||
+    file === "src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy.ts" ||
+    file === "src/lib/estimatePdf/index.ts" ||
     file === "scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" ||
+    file === "scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts" ||
+    file === "scripts/e2e/runAndroidApi34AiEstimatePerformanceCostSmoke.ts" ||
+    file === "scripts/e2e/runAiEstimateProofRunnerIsolationCheck.ts" ||
+    file === "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" ||
     file === "scripts/release/releaseGuard.shared.ts" ||
     file === "scripts/release/run-release-guard.ts" ||
     file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
     file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     file === "tests/performance/aiEstimateEnterpriseLoadPerformanceCostPolicy.contract.test.ts" ||
     file === "tests/performance/aiEstimateEnterpriseLoadBudget.contract.test.ts" ||
+    file === "tests/performance" ||
+    file.startsWith("tests/performance/") ||
+    file === "tests/cost" ||
+    file.startsWith("tests/cost/") ||
+    file.startsWith("tests/architecture/performance") ||
+    file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
+    file === "tests/e2e/aiEstimatePerformanceCost.web.spec.ts" ||
     file === "tests/architecture/aiEstimateEnterpriseNoNetworkCostInSyncPath.contract.test.ts" ||
     file === "tests/architecture/aiEstimateEnterpriseNoUnboundedLoops.contract.test.ts" ||
     file === "tests/architecture/androidRouteBootstrapNoEstimateEngineChange.contract.test.ts" ||

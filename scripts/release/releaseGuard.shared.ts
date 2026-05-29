@@ -57,6 +57,7 @@ export type ReleaseGateName =
   | "open-world-estimate-semantic-coverage-proof"
   | "open-world-construction-primitive-boq-compiler-proof"
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
+  | "ai-estimate-enterprise-load-performance-cost-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
@@ -331,6 +332,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "open-world-estimate-semantic-coverage-proof", command: "npx tsx scripts/e2e/runOpenWorldEstimateSemanticCoverageProof.ts" },
   { name: "open-world-construction-primitive-boq-compiler-proof", command: "npx tsx scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
+  { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },

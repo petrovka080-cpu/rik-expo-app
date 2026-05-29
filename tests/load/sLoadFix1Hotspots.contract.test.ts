@@ -922,6 +922,26 @@ const isApprovedRatebookCatalogSourceGovernancePatch = (file: string) => {
   );
 };
 
+const isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch = (file: string) => {
+  const normalized = normalizePath(file);
+  return (
+    normalized.startsWith("src/lib/ai/performance/") ||
+    normalized.startsWith("src/lib/ai/cost/") ||
+    normalized.startsWith("src/lib/ai/rateLimit/") ||
+    normalized.startsWith("src/lib/estimatePdf/aiEstimatePdf") ||
+    normalized === "src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy.ts" ||
+    normalized === "src/lib/estimatePdf/index.ts" ||
+    normalized.startsWith("scripts/e2e/runAiEstimate") ||
+    normalized.startsWith("scripts/e2e/runAndroidApi34AiEstimatePerformanceCost") ||
+    normalized === "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" ||
+    normalized.startsWith("tests/performance/") ||
+    normalized.startsWith("tests/cost/") ||
+    normalized.startsWith("tests/architecture/performance") ||
+    normalized === "tests/e2e/aiEstimatePerformanceCost.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_AI_ESTIMATE_PERFORMANCE/")
+  );
+};
+
 describe("S-LOAD-FIX-1 hotspot contract", () => {
   it("keeps the S-LOAD-3 staging evidence valid and focused on optimize_next targets", () => {
     const live = readJson("artifacts/S_LOAD_3_live_staging_load_matrix.json");
@@ -1039,6 +1059,7 @@ describe("S-LOAD-FIX-1 hotspot contract", () => {
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
+        !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|ios\/|android\/|supabase\/migrations\/|maestro\/|node_modules\/|android\/app\/build\/)/.test(
           file.replace(/\\/g, "/"),

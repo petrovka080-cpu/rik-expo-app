@@ -87,6 +87,24 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
+    layer: "performance",
+    root: "src/lib/ai/performance",
+    purpose: "AI estimate latency measurement, performance budgets, metric collection, and budget validation without prompt or private payload leakage.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "cost",
+    root: "src/lib/ai/cost",
+    purpose: "AI estimate cost guard, proof-runner isolation, retry-loop prevention, and bounded user-visible degradation policy.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "rateLimit",
+    root: "src/lib/ai/rateLimit",
+    purpose: "Shared AI estimate rate-limit policy for request, PDF, catalog, source, and proof workloads.",
+    screenMayImportDirectly: false,
+  },
+  {
     layer: "constructionPrimitives",
     root: "src/lib/ai/constructionPrimitives",
     purpose: "Construction primitive graph, open-world domain/object/operation/method/material policy, and graph validation for parametric BOQ compilation.",

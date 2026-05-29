@@ -17,6 +17,10 @@ const PERFORMANCE_COST_GUARD_GLOBAL_ESTIMATE_FILES = new Set([
   "src/lib/ai/globalEstimate/index.ts",
   "src/lib/ai/globalEstimate/estimatePerformanceCostPolicy.ts",
   "src/lib/ai/globalEstimate/evaluateEstimatePerformanceCost.ts",
+  "src/lib/estimatePdf/index.ts",
+  "src/lib/estimatePdf/aiEstimatePdfJobGuard.ts",
+  "src/lib/estimatePdf/aiEstimatePdfRateLimit.ts",
+  "src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy.ts",
 ]);
 
 describe("Android app root ready marker unblock wave: no estimate engine change", () => {

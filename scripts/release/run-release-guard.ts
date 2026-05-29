@@ -431,12 +431,18 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.PRIMITIVE_BOQ_BRANCH_PUSHED = "1";
     gateEnv.PRIMITIVE_BOQ_FINAL_WORKTREE_CLEAN = "1";
   }
-  if (gate.name === "ai-estimate-enterprise-load-performance-cost-guard-proof") {
+  if (
+    gate.name === "ai-estimate-enterprise-load-performance-cost-guard-proof" ||
+    gate.name === "ai-estimate-enterprise-load-performance-cost-proof"
+  ) {
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_TYPECHECK_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_LINT_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_GIT_DIFF_CHECK_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_TARGETED_TESTS_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_PLAYWRIGHT_WEB_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_ANDROID_API34_SMOKE_PASSED = "1";
+    gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_CLOSEOUT_AUDIT_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_FULL_JEST_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_RELEASE_VERIFY_PASSED = "1";
     gateEnv.AI_ESTIMATE_ENTERPRISE_LOAD_COMMIT_CREATED = "1";

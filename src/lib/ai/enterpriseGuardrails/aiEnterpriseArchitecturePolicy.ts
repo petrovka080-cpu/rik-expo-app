@@ -11,6 +11,9 @@ export type AiEnterpriseLayer =
   | "estimatePdf"
   | "globalEstimate"
   | "globalLocalContext"
+  | "performance"
+  | "cost"
+  | "rateLimit"
   | "constructionPrimitives"
   | "constructionFormulas"
   | "constructionInterpreter"
@@ -98,6 +101,9 @@ export const AI_ENTERPRISE_ARCHITECTURE_POLICY: AiEnterpriseArchitecturePolicy =
     "estimatePdf",
     "globalEstimate",
     "globalLocalContext",
+    "performance",
+    "cost",
+    "rateLimit",
     "constructionPrimitives",
     "constructionFormulas",
     "constructionInterpreter",

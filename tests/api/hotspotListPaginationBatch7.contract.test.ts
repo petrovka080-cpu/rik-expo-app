@@ -751,6 +751,26 @@ const isApprovedRatebookCatalogSourceGovernancePatch = (file: string) => {
   );
 };
 
+const isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/performance/") ||
+    normalized.startsWith("src/lib/ai/cost/") ||
+    normalized.startsWith("src/lib/ai/rateLimit/") ||
+    normalized.startsWith("src/lib/estimatePdf/aiEstimatePdf") ||
+    normalized === "src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy.ts" ||
+    normalized === "src/lib/estimatePdf/index.ts" ||
+    normalized.startsWith("scripts/e2e/runAiEstimate") ||
+    normalized.startsWith("scripts/e2e/runAndroidApi34AiEstimatePerformanceCost") ||
+    normalized === "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" ||
+    normalized.startsWith("tests/performance/") ||
+    normalized.startsWith("tests/cost/") ||
+    normalized.startsWith("tests/architecture/performance") ||
+    normalized === "tests/e2e/aiEstimatePerformanceCost.web.spec.ts" ||
+    normalized.startsWith("artifacts/S_AI_ESTIMATE_PERFORMANCE/")
+  );
+};
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -870,6 +890,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
+        !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
