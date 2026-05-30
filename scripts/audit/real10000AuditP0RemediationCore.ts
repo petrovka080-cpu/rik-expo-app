@@ -363,6 +363,12 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
   const afterP0 = afterHoles.filter((item) => item.severity === "P0").length;
   const typeRatchetBefore = readRemediationJson<JsonRecord>("type_ratchet_before.json", {});
   const typeRatchetAfter = readRemediationJson<JsonRecord>("type_ratchet_after.json", {});
+  const typeRatchetRemediation = readRemediationJson<JsonRecord>("unsafe_cast_remediation.json", {});
+  const ratchetThresholdIncreased = typeRatchetRemediation.ratchet_threshold_increased === true;
+  const scannerExclusionAdded =
+    typeRatchetRemediation.scanner_exclusion_added === true ||
+    typeRatchetRemediation.scanner_exclusions_added === true ||
+    typeRatchetAfter.scanner_exclusion_added === true;
   const typecheckPassed = boolEnv("REAL10000_P0_REMEDIATION_TYPECHECK_PASSED");
   const lintPassed = boolEnv("REAL10000_P0_REMEDIATION_LINT_PASSED");
   const gitDiffCheckPassed = boolEnv("REAL10000_P0_REMEDIATION_GIT_DIFF_CHECK_PASSED");
@@ -380,6 +386,11 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
     ...(exactPrompt.exact_prompt_lookup_found_after_fix === false ? [] : ["EXACT_PROMPT_LOOKUP_REMAINS"]),
     ...(selfValidating.self_validating_matrix_found_after_fix === false ? [] : ["SELF_VALIDATING_MATRIX_REMAINS"]),
     ...(afterP0 === 0 ? [] : ["REAL10000_AUDIT_P0_HOLES_REMAIN"]),
+    ...(typeRatchetAfter.after_unsafe_cast_total_lte_allowed === true ? [] : ["ARCHITECTURE_RATCHET_REMAINING"]),
+    ...(typeRatchetAfter.as_any_regression_found === false ? [] : ["AS_ANY_REGRESSION_FOUND"]),
+    ...(typeRatchetAfter.test_as_any_regression_found === false ? [] : ["TEST_AS_ANY_REGRESSION_FOUND"]),
+    ...(ratchetThresholdIncreased ? ["RATCHET_THRESHOLD_INCREASED"] : []),
+    ...(scannerExclusionAdded ? ["SCANNER_EXCLUSION_ADDED"] : []),
   ];
   const matrix = {
     wave: "S_REAL_10000_AUDIT_P0_HOLES_REMEDIATION_POINT_OF_NO_RETURN",
@@ -407,7 +418,8 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
     after_unsafe_cast_total_lte_allowed: typeRatchetAfter.after_unsafe_cast_total_lte_allowed === true,
     as_any_regression_found: typeRatchetAfter.as_any_regression_found === true,
     test_as_any_regression_found: typeRatchetAfter.test_as_any_regression_found === true,
-    ratchet_threshold_increased: false,
+    ratchet_threshold_increased: ratchetThresholdIncreased,
+    scanner_exclusion_added: scannerExclusionAdded,
     real_external_user_traffic_proven: false,
     real_user_traffic_claimed: false,
     screen_local_calculation_found: false,
@@ -460,6 +472,8 @@ export function runReal10000AuditP0RemediationProof(): JsonRecord {
     after_unsafe_cast_total_lte_allowed: typeRatchetAfter.after_unsafe_cast_total_lte_allowed === true,
     as_any_regression_found: typeRatchetAfter.as_any_regression_found === true,
     test_as_any_regression_found: typeRatchetAfter.test_as_any_regression_found === true,
+    ratchet_threshold_increased: ratchetThresholdIncreased,
+    scanner_exclusion_added: scannerExclusionAdded,
     real_external_user_traffic_proven: false,
     real_user_traffic_claimed: false,
     fake_green_claimed: false,

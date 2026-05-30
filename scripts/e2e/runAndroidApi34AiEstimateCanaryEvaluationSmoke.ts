@@ -11,9 +11,12 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
     allowChangedFile: (file) =>
       file.startsWith("src/lib/ai/productionCanary/") ||
       file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+      file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
       file === "scripts/audit/real10000EstimateAuditCore.ts" ||
+      file === "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts" ||
       file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
       file.startsWith("tests/real10000Audit/") ||
+      file.startsWith("tests/architecture/real10000Remediation") ||
       file.startsWith("tests/architecture/real10000P1") ||
       file.startsWith("tests/canaryEvaluation/") ||
       file.startsWith("tests/architecture/canaryEvaluation") ||
