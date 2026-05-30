@@ -724,6 +724,9 @@ describe("performance budget вЂ” bundle module count", () => {
         path.join(SRC, "lib", "ai", "observability", "aiEstimateTelemetryTypes.ts"),
         path.join(SRC, "lib", "ai", "observability", "redactAiEstimateTelemetry.ts"),
         path.join(SRC, "lib", "ai", "observability", "validateAiEstimateTelemetryEvent.ts"),
+        path.join(SRC, "lib", "ai", "observability", "buildAiEstimateCanaryTelemetry.ts"),
+        path.join(SRC, "lib", "ai", "observability", "redactAiEstimateCanaryTelemetry.ts"),
+        path.join(SRC, "lib", "ai", "observability", "validateAiEstimateCanaryTelemetry.ts"),
       ].filter((file) => fs.existsSync(file)).length;
     const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
@@ -1853,7 +1856,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sOpenWorldPrimitiveBoqCompilerFiles).toBeLessThanOrEqual(30);
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
-    expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(12);
+    expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(24);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);

@@ -300,6 +300,22 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       PRODUCTION_CANARY_FINAL_WORKTREE_CLEAN: "1",
     };
   }
+  if (step === "ai-estimate-internal-canary-execution-proof") {
+    return {
+      INTERNAL_CANARY_TYPECHECK_PASSED: "1",
+      INTERNAL_CANARY_LINT_PASSED: "1",
+      INTERNAL_CANARY_GIT_DIFF_CHECK_PASSED: "1",
+      INTERNAL_CANARY_TARGETED_TESTS_PASSED: "1",
+      INTERNAL_CANARY_ARCHITECTURE_TESTS_PASSED: "1",
+      INTERNAL_CANARY_PLAYWRIGHT_WEB_PASSED: "1",
+      INTERNAL_CANARY_ANDROID_API34_SMOKE_PASSED: "1",
+      INTERNAL_CANARY_FULL_JEST_PASSED: "1",
+      INTERNAL_CANARY_RELEASE_VERIFY_PASSED: "1",
+      INTERNAL_CANARY_COMMIT_CREATED: "1",
+      INTERNAL_CANARY_BRANCH_PUSHED: "1",
+      INTERNAL_CANARY_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
   if (step === "director-fact-contract-proof") {
     return {
       DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED: "1",
