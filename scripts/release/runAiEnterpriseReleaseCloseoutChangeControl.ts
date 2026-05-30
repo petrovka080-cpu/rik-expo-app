@@ -1399,12 +1399,18 @@ function isReal10000DiverseConstructionWorksPath(file: string): boolean {
     file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
     file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
     file === "scripts/audit/real10000EstimateAuditCore.ts" ||
+    file === "scripts/audit/real10000P1EvidenceRefreshCore.ts" ||
     file === "scripts/audit/runReal10000AuditP0RemediationProof.ts" ||
     file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+    file === "scripts/audit/runReal10000AndroidEvidenceAuthenticityAudit.ts" ||
     file === "scripts/audit/runReal10000EstimateAudit.ts" ||
+    file === "scripts/audit/runReal10000EvidenceLedgerMerge.ts" ||
+    file === "scripts/audit/runReal10000PdfEvidenceFreshnessAudit.ts" ||
     file === "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts" ||
+    file === "scripts/audit/runReal10000WebEvidenceFreshnessAudit.ts" ||
     file === "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts" ||
     file === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAndroidApi34Real10000PerCaseEvidenceRefresh.ts" ||
     file === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
     file === "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts" ||
     file === "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts" ||

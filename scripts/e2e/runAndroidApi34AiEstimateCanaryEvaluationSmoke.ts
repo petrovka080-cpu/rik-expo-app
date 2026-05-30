@@ -13,8 +13,14 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
       file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
       file === "scripts/audit/real10000EstimateAuditCore.ts" ||
+      file === "scripts/audit/real10000P1EvidenceRefreshCore.ts" ||
       file === "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts" ||
       file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+      file === "scripts/audit/runReal10000AndroidEvidenceAuthenticityAudit.ts" ||
+      file === "scripts/audit/runReal10000WebEvidenceFreshnessAudit.ts" ||
+      file === "scripts/audit/runReal10000PdfEvidenceFreshnessAudit.ts" ||
+      file === "scripts/audit/runReal10000EvidenceLedgerMerge.ts" ||
+      file === "scripts/e2e/runAndroidApi34Real10000PerCaseEvidenceRefresh.ts" ||
       file.startsWith("tests/real10000Audit/") ||
       file.startsWith("tests/architecture/real10000Remediation") ||
       file.startsWith("tests/architecture/real10000P1") ||

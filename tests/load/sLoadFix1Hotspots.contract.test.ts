@@ -947,7 +947,14 @@ const isApprovedReal10000DiverseConstructionWorksAcceptancePatch = (file: string
   return (
     normalized === "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts" ||
     normalized === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+    normalized === "scripts/audit/real10000P1EvidenceRefreshCore.ts" ||
+    normalized === "scripts/audit/runReal10000AndroidEvidenceAuthenticityAudit.ts" ||
+    normalized === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+    normalized === "scripts/audit/runReal10000EvidenceLedgerMerge.ts" ||
+    normalized === "scripts/audit/runReal10000PdfEvidenceFreshnessAudit.ts" ||
+    normalized === "scripts/audit/runReal10000WebEvidenceFreshnessAudit.ts" ||
     normalized === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34Real10000PerCaseEvidenceRefresh.ts" ||
     normalized === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
     normalized === "scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts" ||
     normalized === "scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts" ||
@@ -961,7 +968,11 @@ const isApprovedReal10000DiverseConstructionWorksAcceptancePatch = (file: string
     normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
     normalized.startsWith("tests/real10000/") ||
+    normalized.startsWith("tests/real10000Audit/") ||
     normalized.startsWith("tests/architecture/real10000") ||
+    normalized.startsWith("artifacts/S_REAL_10000_AUDIT/") ||
+    normalized.startsWith("artifacts/S_REAL_10000_AUDIT_P0_REMEDIATION/") ||
+    normalized.startsWith("artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/") ||
     normalized.startsWith("artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/")
   );
 };
