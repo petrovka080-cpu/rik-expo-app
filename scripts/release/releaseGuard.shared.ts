@@ -64,7 +64,7 @@ export type ReleaseGateName =
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
   | "ai-estimate-production-canary-control-plane-proof"
   | "ai-estimate-internal-canary-execution-proof"
-  | "ai-estimate-canary-evaluation-public-rollout-decision-proof"
+  | "ai-estimate-canary-evaluation-rollout-decision-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
@@ -346,7 +346,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
   { name: "ai-estimate-production-canary-control-plane-proof", command: "npx tsx scripts/e2e/runAiEstimateProductionCanaryProof.ts" },
   { name: "ai-estimate-internal-canary-execution-proof", command: "npx tsx scripts/e2e/runAiEstimateInternalCanaryExecutionProof.ts" },
-  { name: "ai-estimate-canary-evaluation-public-rollout-decision-proof", command: "npx tsx scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" },
+  { name: "ai-estimate-canary-evaluation-rollout-decision-proof", command: "npx tsx scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },

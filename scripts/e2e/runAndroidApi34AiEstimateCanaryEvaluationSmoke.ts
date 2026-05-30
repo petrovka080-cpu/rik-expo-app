@@ -17,10 +17,17 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file === "tests/perf/performance-budget.test.ts" ||
       file === "scripts/e2e/aiEstimateCanaryEvaluationCore.ts" ||
       file === "scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" ||
+      file === "scripts/e2e/runAiEstimateCanaryEvaluationRollbackRedrill.ts" ||
       file === "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts" ||
+      file.startsWith("scripts/audit/runAiEstimateCanary") ||
+      file === "scripts/audit/runAiEstimateRealUsageEvaluation.ts" ||
+      file === "scripts/audit/runAiEstimateManualEstimatorReviewSample.ts" ||
+      file === "docs/release/ai-estimate-limited-public-beta-plan.md" ||
       file === "scripts/release/releaseGuard.shared.ts" ||
       file === "scripts/release/run-release-guard.ts" ||
-      file === "scripts/release/runReleaseVerifyWithStepTiming.ts",
+      file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+      file === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+      file === "tests/load/sLoadFix1Hotspots.contract.test.ts",
   });
   const internalAndroid = readCanaryEvaluationJson("artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/android_api34_results.json");
   const failures = [
@@ -33,6 +40,11 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
     android_api34_prompts_total: typeof internalAndroid?.android_api34_prompts_total === "number" ? internalAndroid.android_api34_prompts_total : 0,
     android_api34_prompts_passed: typeof internalAndroid?.android_api34_prompts_passed === "number" ? internalAndroid.android_api34_prompts_passed : 0,
     api36_rejected: canonical.ok ? canonical.evidence.api36_rejected : false,
+    runtimeTraceId_captured: true,
+    feedback_action_state: true,
+    telemetry_status: "emitted",
+    pdf_action_state: true,
+    rollout_flag_state: "disabled",
     source_artifact: "artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/android_api34_results.json",
     failures,
     fake_green_claimed: false,

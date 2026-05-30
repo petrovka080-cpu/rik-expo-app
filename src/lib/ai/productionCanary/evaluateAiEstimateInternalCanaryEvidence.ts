@@ -1,5 +1,5 @@
 import {
-  AI_ESTIMATE_CANARY_EVALUATION_REQUIRED_INTERNAL_CANARY,
+  AI_ESTIMATE_CANARY_EVALUATION_REQUIRED_PREREQUISITES,
   type AiEstimateCanaryEvaluationEvidenceSummary,
 } from "./canaryEvaluationTypes";
 
@@ -40,10 +40,14 @@ function str(record: JsonRecord | null, key: string): string | null {
 export function evaluateAiEstimateInternalCanaryEvidence(
   evidence: AiEstimateInternalCanaryEvidence,
 ): AiEstimateInternalCanaryEvidenceEvaluation {
+  const internalCanaryPrerequisite = AI_ESTIMATE_CANARY_EVALUATION_REQUIRED_PREREQUISITES.find(
+    (item) => item.key === "internal_canary_execution",
+  );
   const summary: AiEstimateCanaryEvaluationEvidenceSummary = {
+    all_prerequisites_green: false,
     internal_canary_green:
       str(evidence.matrix, "final_status") ===
-      AI_ESTIMATE_CANARY_EVALUATION_REQUIRED_INTERNAL_CANARY.expectedStatus,
+      internalCanaryPrerequisite?.expectedStatus,
     internal_canary_decision: str(evidence.matrix, "decision"),
     replay_sessions_total: num(evidence.matrix, "replay_sessions_total"),
     replay_sessions_passed: num(evidence.matrix, "replay_sessions_passed"),

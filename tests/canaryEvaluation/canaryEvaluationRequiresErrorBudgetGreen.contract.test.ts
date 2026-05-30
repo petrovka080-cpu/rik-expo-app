@@ -8,6 +8,7 @@ function evaluationWithIssues(issues: string[]): AiEstimateInternalCanaryEvidenc
     valid: issues.length === 0,
     issues,
     summary: {
+      all_prerequisites_green: true,
       internal_canary_green: true,
       internal_canary_decision: "GO_NEXT_INTERNAL_CANARY_STAGE",
       replay_sessions_total: 2000,
@@ -45,8 +46,8 @@ function evaluationWithIssues(issues: string[]): AiEstimateInternalCanaryEvidenc
 
 test("canary evaluation blocks the next stage when error budget evidence fails", () => {
   expect(buildAiEstimatePublicRolloutDecision({ evidence: evaluationWithIssues([]) }).decision)
-    .toBe("GO_NEXT_CONTROLLED_PUBLIC_CANARY_STAGE");
+    .toBe("GO_LIMITED_PUBLIC_BETA");
   expect(buildAiEstimatePublicRolloutDecision({
     evidence: evaluationWithIssues(["WEAK_GENERIC_ROWS_RATE_NON_ZERO"]),
-  }).decision).toBe("NO_GO_ERROR_BUDGET_EXCEEDED");
+  }).decision).toBe("NO_GO_ROLLBACK_AND_FIX");
 });

@@ -316,7 +316,7 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       INTERNAL_CANARY_FINAL_WORKTREE_CLEAN: "1",
     };
   }
-  if (step === "ai-estimate-canary-evaluation-public-rollout-decision-proof") {
+  if (step === "ai-estimate-canary-evaluation-rollout-decision-proof") {
     return {
       CANARY_EVALUATION_TYPECHECK_PASSED: "1",
       CANARY_EVALUATION_LINT_PASSED: "1",

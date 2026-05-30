@@ -542,7 +542,7 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.INTERNAL_CANARY_BRANCH_PUSHED = "1";
     gateEnv.INTERNAL_CANARY_FINAL_WORKTREE_CLEAN = "1";
   }
-  if (gate.name === "ai-estimate-canary-evaluation-public-rollout-decision-proof") {
+  if (gate.name === "ai-estimate-canary-evaluation-rollout-decision-proof") {
     gateEnv.CANARY_EVALUATION_TYPECHECK_PASSED = "1";
     gateEnv.CANARY_EVALUATION_LINT_PASSED = "1";
     gateEnv.CANARY_EVALUATION_GIT_DIFF_CHECK_PASSED = "1";

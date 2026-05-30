@@ -1,24 +1,51 @@
 import {
   buildCanaryEvaluationProofMatrix,
+  runCanaryEvaluationRollbackRedrill,
   writeCanaryEvaluationDecisionPolicyArtifacts,
+  writeCanaryEvaluationEvidenceLedgerAudit,
   writeCanaryEvaluationEvidenceArtifacts,
+  writeCanaryEvaluationFeedbackEvaluation,
   writeCanaryEvaluationJson,
+  writeCanaryEvaluationManualEstimatorReviewSample,
   writeCanaryEvaluationPrerequisiteLedger,
+  writeCanaryEvaluationRealUsageEvaluation,
+  writeCanaryEvaluationRolloutDecision,
   writeCanaryEvaluationText,
   writeCanaryEvaluationWebArtifacts,
+  writeLimitedPublicBetaPlanArtifacts,
 } from "./aiEstimateCanaryEvaluationCore";
 import { runAndroidApi34AiEstimateCanaryEvaluationSmoke } from "./runAndroidApi34AiEstimateCanaryEvaluationSmoke";
 
 export function runAiEstimateCanaryEvaluationProof() {
   const prerequisiteLedger = writeCanaryEvaluationPrerequisiteLedger();
-  const policy = writeCanaryEvaluationDecisionPolicyArtifacts();
-  const evaluation = writeCanaryEvaluationEvidenceArtifacts();
+  const evidenceLedger = writeCanaryEvaluationEvidenceLedgerAudit();
+  const realUsage = writeCanaryEvaluationRealUsageEvaluation();
+  const feedback = writeCanaryEvaluationFeedbackEvaluation();
+  const manualReview = writeCanaryEvaluationManualEstimatorReviewSample();
+  const limitedPublicBetaPlan = writeLimitedPublicBetaPlanArtifacts();
+  const rollbackRedrill = runCanaryEvaluationRollbackRedrill();
+  const rolloutDecision = writeCanaryEvaluationRolloutDecision({
+    prerequisiteLedger,
+    evidenceLedger,
+    realUsage,
+    feedback,
+    manualReview,
+    limitedPublicBetaPlan,
+    rollbackRedrill,
+  });
+  writeCanaryEvaluationDecisionPolicyArtifacts();
+  writeCanaryEvaluationEvidenceArtifacts();
   const web = writeCanaryEvaluationWebArtifacts();
   const android = runAndroidApi34AiEstimateCanaryEvaluationSmoke().matrix;
   const proof = buildCanaryEvaluationProofMatrix({
     prerequisiteLedger,
-    policy,
-    evaluation,
+    evidenceLedger,
+    realUsage,
+    feedback,
+    manualReview,
+    rolloutDecision,
+    limitedPublicBetaPlan,
+    rollbackRedrill,
     web,
     android,
   });
@@ -32,11 +59,15 @@ export function runAiEstimateCanaryEvaluationProof() {
       "",
       `Status: ${proof.matrix.final_status}`,
       `Decision: ${proof.matrix.decision}`,
-      `Internal canary green: ${String(proof.matrix.internal_canary_green)}`,
+      `All prerequisites green: ${String(proof.matrix.all_prerequisites_green)}`,
       `Production rollout enabled: ${String(proof.matrix.production_rollout_enabled)}`,
-      `Public canary enabled: ${String(proof.matrix.public_canary_enabled)}`,
-      `Public rollout authorized: ${String(proof.matrix.public_rollout_authorized)}`,
-      `Replay: ${proof.matrix.replay_sessions_passed}/${proof.matrix.replay_sessions_total}`,
+      `Public beta enabled: ${String(proof.matrix.public_beta_enabled)}`,
+      `Limited public beta ready: ${String(proof.matrix.limited_public_beta_ready)}`,
+      `Evidence ledger passed: ${String(proof.matrix.evidence_ledger_passed)}`,
+      `Real usage evaluation passed: ${String(proof.matrix.real_usage_evaluation_passed)}`,
+      `Feedback evaluation passed: ${String(proof.matrix.feedback_evaluation_passed)}`,
+      `Manual estimator review passed: ${String(proof.matrix.manual_estimator_review_passed)}`,
+      `Rollback redrill passed: ${String(proof.matrix.rollback_redrill_passed)}`,
       `Android API34: ${String(proof.matrix.android_api34_tested)}`,
       `Fake green claimed: ${String(proof.matrix.fake_green_claimed)}`,
       "",

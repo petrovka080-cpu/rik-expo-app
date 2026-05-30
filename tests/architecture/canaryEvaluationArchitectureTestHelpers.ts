@@ -5,7 +5,13 @@ export const CANARY_EVALUATION_ARCHITECTURE_ROOTS = [
   "src/lib/ai/productionCanary",
   "scripts/e2e/aiEstimateCanaryEvaluationCore.ts",
   "scripts/e2e/runAiEstimateCanaryEvaluationProof.ts",
+  "scripts/e2e/runAiEstimateCanaryEvaluationRollbackRedrill.ts",
   "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts",
+  "scripts/audit/runAiEstimateCanaryEvidenceLedgerAudit.ts",
+  "scripts/audit/runAiEstimateCanaryFeedbackEvaluation.ts",
+  "scripts/audit/runAiEstimateCanaryRolloutDecision.ts",
+  "scripts/audit/runAiEstimateManualEstimatorReviewSample.ts",
+  "scripts/audit/runAiEstimateRealUsageEvaluation.ts",
   "tests/e2e/aiEstimateCanaryEvaluation.web.spec.ts",
 ];
 

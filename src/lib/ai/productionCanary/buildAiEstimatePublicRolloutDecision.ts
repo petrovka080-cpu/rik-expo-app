@@ -22,7 +22,7 @@ export type AiEstimatePublicRolloutDecision = {
 
 function classifyDecision(issues: readonly string[]): AiEstimateCanaryEvaluationDecision {
   if (issues.includes("INTERNAL_CANARY_NOT_GREEN") || issues.includes("INTERNAL_CANARY_MATRIX_MISSING")) {
-    return "NO_GO_INTERNAL_CANARY_NOT_GREEN";
+    return "NO_GO_PREREQUISITE_NOT_GREEN";
   }
   if (
     issues.includes("INTERNAL_CANARY_SUCCESS_RATE_BUDGET_FAILED") ||
@@ -32,14 +32,14 @@ function classifyDecision(issues: readonly string[]): AiEstimateCanaryEvaluation
     issues.includes("WEAK_GENERIC_ROWS_RATE_NON_ZERO") ||
     issues.includes("REGULATED_SAFETY_MISSING_RATE_NON_ZERO")
   ) {
-    return "NO_GO_ERROR_BUDGET_EXCEEDED";
+    return "NO_GO_ROLLBACK_AND_FIX";
   }
   if (
     issues.includes("TELEMETRY_NOT_READY") ||
     issues.includes("TELEMETRY_LEAK_FOUND") ||
     issues.includes("FEEDBACK_NOT_READY")
   ) {
-    return "NO_GO_TELEMETRY_OR_FEEDBACK_NOT_READY";
+    return "NO_GO_MORE_INTERNAL_CANARY_REQUIRED";
   }
   if (
     issues.includes("PRODUCTION_ROLLOUT_ENABLED") ||
@@ -47,17 +47,17 @@ function classifyDecision(issues: readonly string[]): AiEstimateCanaryEvaluation
     issues.includes("PUBLIC_ROLLOUT_AUTHORIZED_TOO_EARLY") ||
     issues.includes("PUBLIC_ROLLOUT_ENABLED")
   ) {
-    return "NO_GO_PUBLIC_ROLLOUT_ENABLED";
+    return "NO_GO_PUBLIC_ROLLOUT_ENABLED_TOO_EARLY";
   }
   if (
     issues.includes("KILL_SWITCH_OR_ROLLBACK_NOT_READY") ||
     issues.includes("KILL_SWITCH_NOT_REQUIRED") ||
     issues.includes("ROLLBACK_NOT_REQUIRED")
   ) {
-    return "NO_GO_KILL_SWITCH_OR_ROLLBACK_NOT_READY";
+    return "NO_GO_ERROR_BUDGET_EXCEEDED";
   }
-  if (issues.includes("ANDROID_API34_PROOF_MISSING")) return "NO_GO_ANDROID_API34_MISSING";
-  return issues.length === 0 ? "GO_NEXT_CONTROLLED_PUBLIC_CANARY_STAGE" : "NO_GO_CANARY_EVALUATION";
+  if (issues.includes("ANDROID_API34_PROOF_MISSING")) return "NO_GO_EVIDENCE_MISSING";
+  return issues.length === 0 ? "GO_LIMITED_PUBLIC_BETA" : "UNKNOWN_NEEDS_TRACE";
 }
 
 export function buildAiEstimatePublicRolloutDecision(params: {
@@ -71,7 +71,7 @@ export function buildAiEstimatePublicRolloutDecision(params: {
 
   return {
     decision,
-    ready: decision === "GO_NEXT_CONTROLLED_PUBLIC_CANARY_STAGE",
+    ready: decision === "GO_LIMITED_PUBLIC_BETA",
     issues,
     production_rollout_enabled: policyValidation.production_rollout_enabled,
     public_canary_enabled: policyValidation.public_canary_enabled,

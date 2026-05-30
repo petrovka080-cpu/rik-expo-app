@@ -7,6 +7,7 @@ const baseEvaluation: AiEstimateInternalCanaryEvidenceEvaluation = {
   valid: false,
   issues: ["TELEMETRY_LEAK_FOUND"],
   summary: {
+    all_prerequisites_green: true,
     internal_canary_green: true,
     internal_canary_decision: "GO_NEXT_INTERNAL_CANARY_STAGE",
     replay_sessions_total: 2000,
@@ -43,5 +44,5 @@ const baseEvaluation: AiEstimateInternalCanaryEvidenceEvaluation = {
 
 test("canary evaluation blocks telemetry and feedback readiness failures", () => {
   expect(buildAiEstimatePublicRolloutDecision({ evidence: baseEvaluation }).decision)
-    .toBe("NO_GO_TELEMETRY_OR_FEEDBACK_NOT_READY");
+    .toBe("NO_GO_MORE_INTERNAL_CANARY_REQUIRED");
 });

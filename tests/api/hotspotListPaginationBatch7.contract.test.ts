@@ -795,6 +795,28 @@ const isApprovedReal10000DiverseConstructionWorksAcceptancePatch = (file: string
   );
 };
 
+const isApprovedAiEstimateCanaryEvaluationRolloutDecisionPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/productionCanary/") ||
+    normalized.startsWith("scripts/audit/runAiEstimateCanary") ||
+    normalized === "scripts/audit/runAiEstimateRealUsageEvaluation.ts" ||
+    normalized === "scripts/audit/runAiEstimateManualEstimatorReviewSample.ts" ||
+    normalized === "scripts/e2e/aiEstimateCanaryEvaluationCore.ts" ||
+    normalized === "scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" ||
+    normalized === "scripts/e2e/runAiEstimateCanaryEvaluationRollbackRedrill.ts" ||
+    normalized === "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/run-release-guard.ts" ||
+    normalized === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
+    normalized === "tests/e2e/aiEstimateCanaryEvaluation.web.spec.ts" ||
+    normalized === "tests/perf/performance-budget.test.ts" ||
+    normalized.startsWith("tests/canaryEvaluation/") ||
+    normalized.startsWith("tests/architecture/canaryEvaluation") ||
+    normalized === "docs/release/ai-estimate-limited-public-beta-plan.md"
+  );
+};
+
 describe("S-PAG-7 hotspot list read pagination", () => {
   it("bounds contractor and buyer child-list reads without clipping default callers", () => {
     const contractorData = read("src/screens/contractor/contractor.data.ts");
@@ -916,6 +938,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
         !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
         !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&
+        !isApprovedAiEstimateCanaryEvaluationRolloutDecisionPatch(file) &&
         !isApprovedPlatformDirectorFactContractPatch(file) &&
         (/^(?:\.env|app\.json|eas\.json|package(?:-lock)?\.json|android\/|ios\/|supabase\/migrations\/|maestro\/)/.test(
           file,
