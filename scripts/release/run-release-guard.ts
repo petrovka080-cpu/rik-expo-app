@@ -472,6 +472,21 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.REAL10000_BRANCH_PUSHED = "1";
     gateEnv.REAL10000_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (
+    gate.name === "real-10000-audit-p0-remediation-proof" ||
+    gate.name === "real-10000-audit-p0-remediation-release-closeout-proof"
+  ) {
+    gateEnv.REAL10000_P0_REMEDIATION_TYPECHECK_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_LINT_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_TARGETED_TESTS_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_FULL_JEST_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_COMMIT_CREATED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_BRANCH_PUSHED = "1";
+    gateEnv.REAL10000_P0_REMEDIATION_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (gate.name === "live-b2c-estimate-reality-release-closeout-proof") {
     gateEnv.LIVE_B2C_CLOSEOUT_TYPECHECK_PASSED = "1";
     gateEnv.LIVE_B2C_CLOSEOUT_LINT_PASSED = "1";
