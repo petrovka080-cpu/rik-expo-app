@@ -38,16 +38,16 @@
         "value": "100 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "низкая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:laminate_laying_100sqm"
       }
     ],
     "assumptions": [
@@ -302,16 +302,16 @@
         "value": "74 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:brick_masonry_74sqm"
       }
     ],
     "assumptions": [
@@ -398,8 +398,8 @@
       {
         "index": "3",
         "rowNumber": "2.3",
-        "code": "brick_masonry_lift_warning",
-        "name": "Доставка/подъём: требуется уточнение перед сметой",
+        "code": "brick_masonry_access_scaffold",
+        "name": "Подмости для кирпичной кладки",
         "category": "Работы / монтаж / техника",
         "quantity": "74 м²",
         "unit": "м²",
@@ -528,16 +528,16 @@
         "value": "1 000 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:asphalt_paving_1000sqm"
       }
     ],
     "assumptions": [
@@ -904,16 +904,16 @@
         "value": "352 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:drywall_wall_cladding_352sqm"
       }
     ],
     "assumptions": [
@@ -1175,16 +1175,16 @@
         "value": "100 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:carpet_laying_100sqm"
       }
     ],
     "assumptions": [
@@ -1416,16 +1416,16 @@
         "value": "174 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:ceramic_tile_floor_laying_174sqm"
       }
     ],
     "assumptions": [
@@ -1657,16 +1657,16 @@
         "value": "100 м²"
       },
       {
+        "label": "Регион расчёта",
+        "value": "Кыргызстан, Бишкек; точность: city"
+      },
+      {
         "label": "Налоговый статус",
         "value": "НДС Кыргызстан"
       },
       {
         "label": "Точность расчёта",
         "value": "высокая"
-      },
-      {
-        "label": "Служебный ID",
-        "value": "safe-integration:gable_roof_installation_100sqm"
       }
     ],
     "assumptions": [

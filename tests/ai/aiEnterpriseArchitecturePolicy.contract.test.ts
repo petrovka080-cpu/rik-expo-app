@@ -24,6 +24,7 @@ describe("AI enterprise architecture policy", () => {
       "cost",
       "rateLimit",
       "productionCanary",
+      "rolloutGovernance",
       "observability",
       "killSwitch",
       "rollback",

@@ -198,33 +198,9 @@
     "id": "004",
     "sources": [
       {
-        "id": "rate_drywall_wall_cladding_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drywall_wall_cladding_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drywall_wall_cladding_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drywall_wall_cladding_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drywall_wall_cladding_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -239,33 +215,9 @@
     "id": "005",
     "sources": [
       {
-        "id": "rate_gable_roof_installation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_gable_roof_installation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_gable_roof_installation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_gable_roof_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_gable_roof_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -280,33 +232,9 @@
     "id": "006",
     "sources": [
       {
-        "id": "rate_brick_masonry_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_brick_masonry_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_brick_masonry_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_brick_masonry_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_brick_masonry_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -321,33 +249,9 @@
     "id": "007",
     "sources": [
       {
-        "id": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -433,33 +337,9 @@
     "id": "009",
     "sources": [
       {
-        "id": "rate_wall_plastering_material_KG_pcs_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_plastering_auxiliary_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_plastering_labor_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_plastering_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_plastering_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -515,33 +395,9 @@
     "id": "011",
     "sources": [
       {
-        "id": "rate_wall_painting_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_painting_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_painting_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_painting_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_wall_painting_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -761,33 +617,9 @@
     "id": "017",
     "sources": [
       {
-        "id": "rate_roof_repair_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_repair_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_repair_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_repair_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_repair_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -802,33 +634,9 @@
     "id": "018",
     "sources": [
       {
-        "id": "rate_metal_roofing_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_roofing_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_roofing_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_roofing_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_roofing_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -843,33 +651,9 @@
     "id": "019",
     "sources": [
       {
-        "id": "rate_soft_roofing_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_soft_roofing_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_soft_roofing_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_soft_roofing_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_soft_roofing_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -884,33 +668,9 @@
     "id": "020",
     "sources": [
       {
-        "id": "rate_facade_insulation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_insulation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_insulation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_insulation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_insulation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -925,33 +685,9 @@
     "id": "021",
     "sources": [
       {
-        "id": "rate_facade_plaster_material_KG_pcs_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_plaster_auxiliary_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_plaster_labor_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_plaster_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_facade_plaster_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -966,33 +702,9 @@
     "id": "022",
     "sources": [
       {
-        "id": "rate_block_masonry_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_block_masonry_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_block_masonry_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_block_masonry_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_block_masonry_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1007,33 +719,9 @@
     "id": "023",
     "sources": [
       {
-        "id": "rate_aerated_block_masonry_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_aerated_block_masonry_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_aerated_block_masonry_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_aerated_block_masonry_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_aerated_block_masonry_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1048,33 +736,9 @@
     "id": "024",
     "sources": [
       {
-        "id": "rate_concrete_slab_material_KG_ton_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_slab_auxiliary_KG_ton_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_slab_labor_KG_ton_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_slab_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_slab_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1089,123 +753,9 @@
     "id": "025",
     "sources": [
       {
-        "id": "rate_strip_foundation_sand_cushion_KG_m3_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_crushed_stone_base_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_geotextile_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_formwork_material_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_longitudinal_rebar_KG_kg_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_stirrups_rebar_KG_kg_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_binding_wire_KG_kg_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_rebar_spacers_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_m300_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_waterproofing_material_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_excavation_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_formwork_install_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_rebar_tying_KG_kg_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_pour_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_vibration_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_curing_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_waterproofing_install_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_backfill_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_delivery_KG_m3_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_strip_foundation_concrete_pump_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1261,33 +811,9 @@
     "id": "027",
     "sources": [
       {
-        "id": "rate_concrete_columns_material_KG_ton_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_columns_auxiliary_KG_ton_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_columns_labor_KG_ton_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_columns_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_concrete_columns_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1302,33 +828,9 @@
     "id": "028",
     "sources": [
       {
-        "id": "rate_pipe_replacement_material_KG_linear_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_pipe_replacement_auxiliary_KG_linear_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_pipe_replacement_labor_KG_linear_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_pipe_replacement_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_pipe_replacement_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1343,33 +845,9 @@
     "id": "029",
     "sources": [
       {
-        "id": "rate_plumbing_rough_in_material_KG_set_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_plumbing_rough_in_auxiliary_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_plumbing_rough_in_labor_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_plumbing_rough_in_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_plumbing_rough_in_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1507,33 +985,9 @@
     "id": "033",
     "sources": [
       {
-        "id": "rate_distribution_panel_installation_material_KG_pcs_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_distribution_panel_installation_auxiliary_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_distribution_panel_installation_labor_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_distribution_panel_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_distribution_panel_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1548,33 +1002,9 @@
     "id": "034",
     "sources": [
       {
-        "id": "rate_ventilation_installation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ventilation_installation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ventilation_installation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ventilation_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_ventilation_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1589,33 +1019,9 @@
     "id": "035",
     "sources": [
       {
-        "id": "rate_air_conditioner_installation_material_KG_pcs_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_air_conditioner_installation_auxiliary_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_air_conditioner_installation_labor_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_air_conditioner_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_air_conditioner_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1747,33 +1153,9 @@
     "id": "039",
     "sources": [
       {
-        "id": "rate_flooring_demolition_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_flooring_demolition_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_flooring_demolition_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_flooring_demolition_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_flooring_demolition_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1829,33 +1211,9 @@
     "id": "041",
     "sources": [
       {
-        "id": "rate_paving_slabs_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_paving_slabs_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_paving_slabs_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_paving_slabs_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_paving_slabs_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1911,33 +1269,9 @@
     "id": "043",
     "sources": [
       {
-        "id": "rate_drainage_lot_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drainage_lot_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drainage_lot_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drainage_lot_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_drainage_lot_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1952,33 +1286,9 @@
     "id": "044",
     "sources": [
       {
-        "id": "rate_landscaping_leveling_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_landscaping_leveling_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_landscaping_leveling_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_landscaping_leveling_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_landscaping_leveling_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1993,33 +1303,9 @@
     "id": "045",
     "sources": [
       {
-        "id": "rate_lawn_installation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_lawn_installation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_lawn_installation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_lawn_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_lawn_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2034,33 +1320,9 @@
     "id": "046",
     "sources": [
       {
-        "id": "rate_fence_installation_material_KG_linear_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_fence_installation_auxiliary_KG_linear_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_fence_installation_labor_KG_linear_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_fence_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_fence_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2116,33 +1378,9 @@
     "id": "048",
     "sources": [
       {
-        "id": "rate_metal_stairs_material_KG_pcs_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_stairs_auxiliary_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_stairs_labor_KG_pcs_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_stairs_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_metal_stairs_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2157,33 +1395,9 @@
     "id": "049",
     "sources": [
       {
-        "id": "rate_canopy_installation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_canopy_installation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_canopy_installation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_canopy_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_canopy_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2526,27 +1740,9 @@
     "id": "058",
     "sources": [
       {
-        "id": "rate_roof_project_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_project_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_project_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_roof_project_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2561,27 +1757,9 @@
     "id": "059",
     "sources": [
       {
-        "id": "rate_foundation_project_material_KG_set_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_foundation_project_labor_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_foundation_project_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_foundation_project_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2596,27 +1774,9 @@
     "id": "060",
     "sources": [
       {
-        "id": "rate_electrical_project_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_project_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_project_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_project_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2672,33 +1832,9 @@
     "id": "062",
     "sources": [
       {
-        "id": "rate_bathroom_turnkey_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_bathroom_turnkey_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_bathroom_turnkey_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_bathroom_turnkey_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_bathroom_turnkey_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2713,33 +1849,9 @@
     "id": "063",
     "sources": [
       {
-        "id": "rate_apartment_turnkey_renovation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_apartment_turnkey_renovation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_apartment_turnkey_renovation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_apartment_turnkey_renovation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_apartment_turnkey_renovation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2754,33 +1866,9 @@
     "id": "064",
     "sources": [
       {
-        "id": "rate_house_turnkey_renovation_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_house_turnkey_renovation_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_house_turnkey_renovation_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_house_turnkey_renovation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_house_turnkey_renovation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -2795,33 +1883,9 @@
     "id": "065",
     "sources": [
       {
-        "id": "rate_office_fitout_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_office_fitout_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_office_fitout_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_office_fitout_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_office_fitout_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -3041,33 +2105,9 @@
     "id": "071",
     "sources": [
       {
-        "id": "rate_boiler_room_piping_material_KG_set_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_boiler_room_piping_auxiliary_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_boiler_room_piping_labor_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_boiler_room_piping_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_boiler_room_piping_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -3164,39 +2204,33 @@
     "id": "074",
     "sources": [
       {
-        "id": "rate_greenhouse_installation_material_KG_sq_m_standard",
+        "id": "rate_greenhouse_installation_material_US_sq_ft_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_greenhouse_installation_auxiliary_KG_sq_m_standard",
+        "id": "rate_greenhouse_installation_auxiliary_US_sq_ft_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_greenhouse_installation_labor_KG_sq_m_standard",
+        "id": "rate_greenhouse_installation_labor_US_sq_ft_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_greenhouse_installation_equipment_KG_set_standard",
+        "id": "rate_greenhouse_installation_equipment_US_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
-        "id": "rate_greenhouse_installation_delivery_KG_set_standard",
+        "id": "rate_greenhouse_installation_delivery_US_set_standard",
         "type": "configured_reference",
         "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "tax_us_tx_dallas_75201_sales_tax_configured",
-        "type": "configured_reference",
-        "label": "Configured US sales tax reference; validate with address-based tax provider before billing",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       }
     ]
@@ -3369,33 +2403,9 @@
     "id": "079",
     "sources": [
       {
-        "id": "rate_smart_home_basic_material_KG_set_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_smart_home_basic_auxiliary_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_smart_home_basic_labor_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_smart_home_basic_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_smart_home_basic_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {

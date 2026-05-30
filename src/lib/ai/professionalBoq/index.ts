@@ -24,3 +24,6 @@ export * from "./buildSafeUnknownConstructionTriage";
 export * from "./buildAmbiguousConstructionDisambiguation";
 export * from "./validateNoGenericFallbackForKnownWork";
 export * from "./compileDynamicProfessionalBoq";
+export * from "../constructionPrimitives/buildInfrastructureBoqDepthPolicy";
+export * from "../constructionPrimitives/expandInfrastructureBoqRows";
+export * from "../constructionPrimitives/validateInfrastructureBoqDepth";

@@ -6,7 +6,7 @@
       "expectedWorkKey": "roof_waterproofing",
       "actualWorkKey": "roof_waterproofing",
       "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf",
-      "documentNumber": "AI-EST-te_214206846",
+      "documentNumber": "AI-EST-e_1054540641",
       "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
       "passed": true
     },
@@ -36,7 +36,7 @@
       "expectedWorkKey": "gable_roof_installation",
       "actualWorkKey": "gable_roof_installation",
       "pdfPath": "artifacts/pdf/ai-estimate-pdf-tabular-regression/gable_roof_installation.pdf",
-      "documentNumber": "AI-EST-e_1408661527",
+      "documentNumber": "AI-EST-e_1483985539",
       "rendererPath": "OPTION_B_ISOLATED_AI_ESTIMATE_RENDERER",
       "passed": true
     },

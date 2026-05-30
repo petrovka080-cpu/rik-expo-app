@@ -728,6 +728,10 @@ describe("performance budget вЂ” bundle module count", () => {
         path.join(SRC, "lib", "ai", "observability", "redactAiEstimateCanaryTelemetry.ts"),
         path.join(SRC, "lib", "ai", "observability", "validateAiEstimateCanaryTelemetry.ts"),
       ].filter((file) => fs.existsSync(file)).length;
+    const sAiEstimateLimitedPublicBetaGovernanceFiles = countFilesRecursive(
+      path.join(SRC, "lib", "ai", "rolloutGovernance"),
+      /\.ts$/,
+    );
     const sCatalogItemsGlobalEstimateBindingFiles = countFilesRecursive(
       path.join(SRC, "lib", "ai", "globalEstimate", "catalogBinding"),
       /\.ts$/,
@@ -1857,6 +1861,7 @@ describe("performance budget вЂ” bundle module count", () => {
     expect(sAiEstimateChangeControlFiles).toBeLessThanOrEqual(26);
     expect(sGlobalLocalEstimatePlatformFiles).toBeLessThanOrEqual(28);
     expect(sAiEstimateProductionCanaryControlPlaneFiles).toBeLessThanOrEqual(34);
+    expect(sAiEstimateLimitedPublicBetaGovernanceFiles).toBeLessThanOrEqual(11);
     expect(sRequestEstimateStatePayloadFiles).toBeLessThanOrEqual(2);
     expect(sRequestEstimateFeatureStateMachineFiles).toBeLessThanOrEqual(6);
     expect(sAiAlwaysOnExternalKnowledgeFiles).toBeLessThanOrEqual(4);
@@ -2183,6 +2188,7 @@ describe("performance budget вЂ” bundle module count", () => {
         sCatalogItemsGlobalEstimateBindingCatalogFiles -
         sAiEstimateEnterpriseLoadPerformanceCostGuardFiles -
         sAiEstimateProductionCanaryControlPlaneFiles -
+        sAiEstimateLimitedPublicBetaGovernanceFiles -
         sUniversalEstimatorKernelFiles -
         (sWorldConstructionEstimateEngineFiles - sOpenWorldPrimitiveBoqCompilerProfessionalBoqFiles) -
         sOpenWorldPrimitiveBoqCompilerFiles -

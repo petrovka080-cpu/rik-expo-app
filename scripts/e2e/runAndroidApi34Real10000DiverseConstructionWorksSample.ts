@@ -16,11 +16,15 @@ export function runAndroidApi34Real10000DiverseConstructionWorksSample() {
       file.startsWith("src/lib/ai/builtInAi/") ||
       file.startsWith("src/lib/ai/globalEstimate/") ||
       file.startsWith("src/lib/ai/estimatePresentation/") ||
+      file.startsWith("src/lib/ai/productionCanary/") ||
       file.startsWith("src/lib/estimatePdf/") ||
       file === "src/features/consumerRepair/consumerRepairAiAdapter.ts" ||
       file.startsWith("tests/real10000/") ||
       file.startsWith("tests/architecture/real10000") ||
+      file.startsWith("tests/architecture/limitedPublicBeta") ||
+      file.startsWith("tests/limitedPublicBeta/") ||
       file === "tests/e2e/real10000DiverseConstructionWorks.web.spec.ts" ||
+      file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||
       file === "scripts/release/releaseGuard.shared.ts" ||
       file === "scripts/release/run-release-guard.ts" ||
       file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||

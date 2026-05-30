@@ -71,14 +71,18 @@ export function runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke() {
       file.startsWith("src/lib/ai/worldConstructionInterpreter/") ||
       file.startsWith("src/lib/ai/worldConstructionOntology/") ||
       file.startsWith("src/lib/ai/enterpriseGuardrails/") ||
+      file.startsWith("src/lib/ai/productionCanary/") ||
       file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
       file.startsWith("tests/constructionPrimitives/") ||
       file.startsWith("tests/constructionFormulas/") ||
       file.startsWith("tests/professionalBoq/") ||
       file.startsWith("tests/entrypoints/") ||
       file.startsWith("tests/architecture/primitiveBoq") ||
+      file.startsWith("tests/architecture/limitedPublicBeta") ||
+      file.startsWith("tests/limitedPublicBeta/") ||
       file === "tests/perf/performance-budget.test.ts" ||
       file === "tests/e2e/openWorldPrimitiveBoqCompiler.web.spec.ts" ||
+      file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||
       file === "scripts/e2e/runAndroidApi34OpenWorldPrimitiveBoqCompilerSmoke.ts" ||
       file === "scripts/e2e/runOpenWorldPrimitiveBoqCompilerProof.ts",
   });

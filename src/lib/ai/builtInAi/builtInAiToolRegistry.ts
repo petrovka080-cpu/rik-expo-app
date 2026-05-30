@@ -87,6 +87,17 @@ function withPromptLocalContextWarning(prompt: string, safeMessageRu: string | u
   return parts.filter(Boolean).join("\n");
 }
 
+function isAmbiguousWaterproofingSurfacePrompt(text: string): boolean {
+  if (/\u043c\u0435\u043c\u0431\u0440\u0430\u043d|\u0431\u0430\u0441\u0441\u0435\u0439\u043d|membrane|pool/i.test(text)) {
+    return false;
+  }
+  const mentionsWaterproofing = /гидроизоляц|waterproofing/i.test(text);
+  const mentionsObject =
+    /крыш|кровл|ванн|сануз|душ|фундамент|подвал|цокол|балкон|террас|roof|bath|shower|foundation|basement|balcony|terrace/i
+      .test(text);
+  return mentionsWaterproofing && !mentionsObject;
+}
+
 function calculateGlobalEstimate(input: BuiltInAiInput): {
   estimate?: ReturnType<typeof calculateGlobalConstructionEstimateSync>;
   blockedBy?: string;
@@ -104,6 +115,16 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     countryCode: baseInput.countryCode,
     city: baseInput.city,
   });
+  if (isAmbiguousWaterproofingSurfacePrompt(input.text)) {
+    return {
+      blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
+      safeMessageRu: withPromptLocalContextWarning(
+        input.text,
+        "Уточните объект гидроизоляции: крыша, ванная, фундамент, подвал, балкон или другой участок.",
+      ),
+      worldClassification: "AMBIGUOUS_WATERPROOFING_SURFACE",
+    };
+  }
   const legacyEstimate = calculateGlobalConstructionEstimateSync(baseInput);
   if (legacyEstimate.estimateId.startsWith("universal_estimator_")) {
     return {

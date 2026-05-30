@@ -41,8 +41,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1147494.8,
-      "taxAmount": 137699.38,
+      "taxableBase": 1914193.64,
+      "taxAmount": 229703.24,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -53,8 +53,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 872556,
-      "taxAmount": 104706.72,
+      "taxableBase": 548470.9,
+      "taxAmount": 65816.51,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -65,8 +65,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 514797.36,
-      "taxAmount": 61775.68,
+      "taxableBase": 703202.36,
+      "taxAmount": 84384.28,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -77,8 +77,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 865279.3599999999,
-      "taxAmount": 103833.52,
+      "taxableBase": 1072592.44,
+      "taxAmount": 128711.09,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -101,8 +101,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 342632.2,
-      "taxAmount": 41115.86,
+      "taxableBase": 289975,
+      "taxAmount": 34797,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -125,8 +125,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 138199.2,
-      "taxAmount": 16583.9,
+      "taxableBase": 260935,
+      "taxAmount": 31312.2,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -197,8 +197,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 525794.2,
-      "taxAmount": 63095.3,
+      "taxableBase": 767796.97,
+      "taxAmount": 92135.64,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -209,8 +209,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1398207.8,
-      "taxAmount": 167784.94,
+      "taxableBase": 1364200.27,
+      "taxAmount": 163704.03,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -221,8 +221,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1124159,
-      "taxAmount": 134899.08,
+      "taxableBase": 1457894.67,
+      "taxAmount": 174947.36,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -233,8 +233,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 955771,
-      "taxAmount": 114692.52,
+      "taxableBase": 882055,
+      "taxAmount": 105846.6,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -245,8 +245,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 836297.4,
-      "taxAmount": 100355.69,
+      "taxableBase": 923925.4,
+      "taxAmount": 110871.05,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -257,8 +257,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1057854,
-      "taxAmount": 126942.48,
+      "taxableBase": 947863,
+      "taxAmount": 113743.56,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -269,8 +269,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 881990,
-      "taxAmount": 105838.8,
+      "taxableBase": 817535,
+      "taxAmount": 98104.2,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -281,8 +281,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 5987920,
-      "taxAmount": 718550.4,
+      "taxableBase": 1316375,
+      "taxAmount": 157965,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -293,8 +293,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 119557.13,
-      "taxAmount": 14346.86,
+      "taxableBase": 1031658.5,
+      "taxAmount": 123799.02,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -317,8 +317,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 485584,
-      "taxAmount": 58270.08,
+      "taxableBase": 134727,
+      "taxAmount": 16167.24,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -329,8 +329,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1172308,
-      "taxAmount": 140676.96,
+      "taxableBase": 371695,
+      "taxAmount": 44603.4,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -341,8 +341,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 34514.2,
-      "taxAmount": 4141.7,
+      "taxableBase": 63031,
+      "taxAmount": 7563.72,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -389,8 +389,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 27821.4,
-      "taxAmount": 3338.57,
+      "taxableBase": 209800.2,
+      "taxAmount": 25176.02,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -401,8 +401,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 483626,
-      "taxAmount": 58035.12,
+      "taxableBase": 1055674,
+      "taxAmount": 126680.88,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -413,8 +413,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 16981.2,
-      "taxAmount": 2037.74,
+      "taxableBase": 66747.8,
+      "taxAmount": 8009.74,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -461,8 +461,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 262817,
-      "taxAmount": 31538.04,
+      "taxableBase": 324077,
+      "taxAmount": 38889.24,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -485,8 +485,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 3077620,
-      "taxAmount": 369314.4,
+      "taxableBase": 3610756,
+      "taxAmount": 433290.72,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -509,8 +509,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 5939860,
-      "taxAmount": 712783.2,
+      "taxableBase": 4411995,
+      "taxAmount": 529439.4,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -521,8 +521,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 3219130,
-      "taxAmount": 386295.6,
+      "taxableBase": 3805945,
+      "taxAmount": 456713.4,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -533,8 +533,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 2012290,
-      "taxAmount": 241474.8,
+      "taxableBase": 2410895,
+      "taxAmount": 289307.4,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -545,8 +545,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 403170,
-      "taxAmount": 48380.4,
+      "taxableBase": 361695,
+      "taxAmount": 43403.4,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -569,8 +569,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 4912.8,
-      "taxAmount": 589.54,
+      "taxableBase": 57345.8,
+      "taxAmount": 6881.5,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -581,8 +581,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 121574,
-      "taxAmount": 14588.88,
+      "taxableBase": 322641.5,
+      "taxAmount": 38716.98,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -689,8 +689,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 965988.2,
-      "taxAmount": 115918.58,
+      "taxableBase": 1432887.6,
+      "taxAmount": 171946.51,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -701,8 +701,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 3556440,
-      "taxAmount": 426772.8,
+      "taxableBase": 2383775,
+      "taxAmount": 286053,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -713,8 +713,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 2038456,
-      "taxAmount": 244614.72,
+      "taxableBase": 2007204,
+      "taxAmount": 240864.48,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -737,8 +737,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 25026.8,
-      "taxAmount": 3003.22,
+      "taxableBase": 78302.2,
+      "taxAmount": 9396.26,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -749,8 +749,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 322714,
-      "taxAmount": 38725.68,
+      "taxableBase": 374391,
+      "taxAmount": 44926.92,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -761,8 +761,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 604310,
-      "taxAmount": 72517.2,
+      "taxableBase": 654475,
+      "taxAmount": 78537,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -773,8 +773,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 1207730,
-      "taxAmount": 144927.6,
+      "taxableBase": 1254655,
+      "taxAmount": 150558.6,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -845,8 +845,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 4912.8,
-      "taxAmount": 589.54,
+      "taxableBase": 58120.2,
+      "taxAmount": 6974.42,
       "included": false,
       "requiresLocationPrecision": false
     }
@@ -878,14 +878,14 @@
   {
     "id": "074",
     "tax": {
-      "taxType": "sales_tax",
-      "taxLabel": "Estimated Dallas TX sales tax",
-      "taxRate": 0.0825,
-      "taxableBase": 62264.4,
-      "taxAmount": 5136.81,
+      "taxType": "unknown",
+      "taxLabel": "Tax not calculated",
+      "taxableBase": 0,
+      "taxAmount": 0,
       "included": false,
       "requiresLocationPrecision": true,
-      "requiredPrecision": "postal_code"
+      "requiredPrecision": "postal_code",
+      "warning": "Precise US sales tax is not calculated from country or state alone; ZIP or address is required."
     }
   },
   {
@@ -942,8 +942,8 @@
       "taxType": "nds",
       "taxLabel": "НДС Кыргызстан",
       "taxRate": 0.12,
-      "taxableBase": 27821.4,
-      "taxAmount": 3338.57,
+      "taxableBase": 62623.8,
+      "taxAmount": 7514.86,
       "included": false,
       "requiresLocationPrecision": false
     }

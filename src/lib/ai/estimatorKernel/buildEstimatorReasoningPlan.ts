@@ -55,13 +55,32 @@ function signatureFor(text: string): WorkSignature | null {
       operation: "installation",
       method: "length_based_drainage_channel",
       materialSystem: "drainage_channel_system",
-      complexity: "medium",
+      complexity: "infrastructure",
       requiredMaterials: ["геотекстиль", "песчаная подготовка", "щебеночное основание", "дренажные лотки / каналы", "решетки"],
       requiredLabor: ["разметка трассы", "проверка уклонов", "выемка грунта", "стыковка лотков"],
       requiredEquipmentOrWarnings: ["мини-экскаватор / ручная выемка", "виброплита", "проверка проливом"],
       requiredLogisticsOrWarnings: ["вывоз грунта", "доставка материалов"],
       exclusions: ["ливневая сеть за пределами подключения", "геодезический проект", "восстановление покрытия вне трассы"],
       clarifyingQuestions: ["Какая глубина и класс нагрузки лотков?", "Куда подключается выпуск?", "Какие уклоны и отметки заданы?"],
+    };
+  }
+  if (/промышленн[а-яё]*\s+пол|industrial\s+floor|топпинг|бетонн[а-яё]*\s+пол/.test(normalized)) {
+    return {
+      workKey: "industrial_floor_concrete_system",
+      titleRu: "Профессиональная предварительная смета на промышленный бетонный пол",
+      category: "concrete",
+      domain: "industrial_flooring",
+      object: "industrial_floor",
+      operation: "concrete_floor_installation",
+      method: "industrial_concrete_floor_system",
+      materialSystem: "industrial_floor_concrete_system",
+      complexity: "complex",
+      requiredMaterials: ["бетон", "арматурная сетка / фибра", "топпинг", "швы и герметик", "грунтовка / пропитка"],
+      requiredLabor: ["обследование основания", "подготовка основания", "устройство бетонного пола", "нарезка швов", "контроль ровности"],
+      requiredEquipmentOrWarnings: ["бетононасос / подача бетона", "виброрейка", "затирочные машины", "лазерный уровень"],
+      requiredLogisticsOrWarnings: ["доставка бетона", "доставка топпинга", "вывоз отходов"],
+      exclusions: ["Проект КЖ и расчет основания уточняются отдельно.", "Демонтаж старого пола не включен без явного запроса.", "Полимерное покрытие сверх топпинга считается отдельно."],
+      clarifyingQuestions: ["Какая расчетная нагрузка на пол?", "Нужен топпинг, полимер или полировка?", "Есть ли требования по ровности, швам и пылеотделению?"],
     };
   }
   if (/тумб|пьедестал|pedestal/.test(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {

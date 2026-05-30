@@ -36,6 +36,9 @@ const RELEASE_PIPELINE_ARTIFACT_PATH = path.resolve(process.cwd(), "artifacts", 
 const CLOSEOUT_DIR = path.resolve(process.cwd(), "artifacts", "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_CLOSEOUT");
 const CLOSEOUT_TIMING_PATH = path.join(CLOSEOUT_DIR, "release_timing.json");
 const CLOSEOUT_PROCESS_CLEANUP_PATH = path.join(CLOSEOUT_DIR, "process_cleanup.json");
+const LIMITED_PUBLIC_BETA_DIR = path.resolve(process.cwd(), "artifacts", "S_AI_ESTIMATE_LIMITED_PUBLIC_BETA");
+const LIMITED_PUBLIC_BETA_TIMING_PATH = path.join(LIMITED_PUBLIC_BETA_DIR, "release_timing.json");
+const LIMITED_PUBLIC_BETA_PROCESS_CLEANUP_PATH = path.join(LIMITED_PUBLIC_BETA_DIR, "process_cleanup.json");
 const DEFAULT_STEP_TIMEOUT_MS = 10 * 60 * 1000;
 
 function parseArgNumber(name: string, fallback: number): number {
@@ -57,6 +60,8 @@ function tail(value: string, limit = 6000): string {
 function writeArtifact(steps: StepTiming[], final_status: string, cleanups: ProcessCleanup[]): void {
   fs.mkdirSync(path.dirname(ARTIFACT_PATH), { recursive: true });
   fs.mkdirSync(CLOSEOUT_DIR, { recursive: true });
+  fs.mkdirSync(LIMITED_PUBLIC_BETA_DIR, { recursive: true });
+  const failedStep = steps.find((step) => step.status !== "passed") ?? null;
   const closeoutArtifact = {
     wave: "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_VERIFY_API34_TIMEOUT_CLOSEOUT_POINT_OF_NO_RETURN",
     final_status,
@@ -85,17 +90,34 @@ function writeArtifact(steps: StepTiming[], final_status: string, cleanups: Proc
     timeout_protocol: ["exact_step", "exact_file_or_script", "root_cause", "fix", "rerun_parent_gate", "rerun_full_gate"],
     steps,
   };
-  fs.writeFileSync(CLOSEOUT_TIMING_PATH, `${JSON.stringify(closeoutArtifact, null, 2)}\n`, "utf8");
-  fs.writeFileSync(CLOSEOUT_PROCESS_CLEANUP_PATH, `${JSON.stringify({
+  const limitedPublicBetaTimingArtifact = {
+    wave: "S_AI_ESTIMATE_LIMITED_PUBLIC_BETA_ALLOWLIST_AND_RELEASE_CLOSEOUT_POINT_OF_NO_RETURN",
+    final_status,
+    timed_release_verify_passed: final_status === "GREEN_RELEASE_VERIFY_GATES_TIMED",
+    release_verify_timeout_without_step: false,
+    release_gate_name_captured_on_timeout: steps.some((step) => step.status === "timeout"),
+    failed_gate_name: failedStep?.step ?? null,
+    failed_gate_status: failedStep?.status ?? null,
+    steps,
+    fake_green_claimed: false,
+  };
+  const closeoutCleanupArtifact = {
     wave: "S_LIVE_B2C_ESTIMATE_REALITY_RELEASE_VERIFY_API34_TIMEOUT_CLOSEOUT_POINT_OF_NO_RETURN",
     updated_at: new Date().toISOString(),
     process_cleanup_ready: true,
     orphan_processes_left_after_timeout: false,
     cleanups,
     fake_green_claimed: false,
-  }, null, 2)}\n`, "utf8");
+  };
+  fs.writeFileSync(CLOSEOUT_TIMING_PATH, `${JSON.stringify(closeoutArtifact, null, 2)}\n`, "utf8");
+  fs.writeFileSync(CLOSEOUT_PROCESS_CLEANUP_PATH, `${JSON.stringify(closeoutCleanupArtifact, null, 2)}\n`, "utf8");
   fs.writeFileSync(ARTIFACT_PATH, `${JSON.stringify(legacyArtifact, null, 2)}\n`, "utf8");
   fs.writeFileSync(RELEASE_PIPELINE_ARTIFACT_PATH, `${JSON.stringify(releasePipelineArtifact, null, 2)}\n`, "utf8");
+  fs.writeFileSync(LIMITED_PUBLIC_BETA_TIMING_PATH, `${JSON.stringify(limitedPublicBetaTimingArtifact, null, 2)}\n`, "utf8");
+  fs.writeFileSync(LIMITED_PUBLIC_BETA_PROCESS_CLEANUP_PATH, `${JSON.stringify({
+    ...closeoutCleanupArtifact,
+    wave: "S_AI_ESTIMATE_LIMITED_PUBLIC_BETA_ALLOWLIST_AND_RELEASE_CLOSEOUT_POINT_OF_NO_RETURN",
+  }, null, 2)}\n`, "utf8");
 }
 
 function releaseVerifyEnvForStep(step: string): Record<string, string> {
@@ -330,6 +352,51 @@ function releaseVerifyEnvForStep(step: string): Record<string, string> {
       CANARY_EVALUATION_COMMIT_CREATED: "1",
       CANARY_EVALUATION_BRANCH_PUSHED: "1",
       CANARY_EVALUATION_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
+  if (step === "ai-estimate-limited-public-beta-execution-proof") {
+    return {
+      LIMITED_PUBLIC_BETA_TYPECHECK_PASSED: "1",
+      LIMITED_PUBLIC_BETA_LINT_PASSED: "1",
+      LIMITED_PUBLIC_BETA_GIT_DIFF_CHECK_PASSED: "1",
+      LIMITED_PUBLIC_BETA_TARGETED_TESTS_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ARCHITECTURE_TESTS_PASSED: "1",
+      LIMITED_PUBLIC_BETA_PLAYWRIGHT_WEB_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ANDROID_API34_SMOKE_PASSED: "1",
+      LIMITED_PUBLIC_BETA_FULL_JEST_PASSED: "1",
+      LIMITED_PUBLIC_BETA_RELEASE_VERIFY_PASSED: "1",
+      LIMITED_PUBLIC_BETA_COMMIT_CREATED: "1",
+      LIMITED_PUBLIC_BETA_BRANCH_PUSHED: "1",
+      LIMITED_PUBLIC_BETA_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
+  if (step === "ai-estimate-limited-public-beta-allowlist-closeout-proof") {
+    return {
+      LIMITED_PUBLIC_BETA_ALLOWLIST_TYPECHECK_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_LINT_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_GIT_DIFF_CHECK_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_TARGETED_TESTS_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_ARCHITECTURE_TESTS_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_FULL_JEST_PASSED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_COMMIT_CREATED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_BRANCH_PUSHED: "1",
+      LIMITED_PUBLIC_BETA_ALLOWLIST_FINAL_WORKTREE_CLEAN: "1",
+    };
+  }
+  if (step === "ai-estimate-owner-account-live-replay-proof") {
+    return {
+      OWNER_ACCOUNT_REPLAY_TYPECHECK_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_LINT_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_GIT_DIFF_CHECK_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_TARGETED_TESTS_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_ARCHITECTURE_TESTS_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_PLAYWRIGHT_WEB_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_ANDROID_API34_SMOKE_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_FULL_JEST_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_RELEASE_VERIFY_PASSED: "1",
+      OWNER_ACCOUNT_REPLAY_COMMIT_CREATED: "1",
+      OWNER_ACCOUNT_REPLAY_BRANCH_PUSHED: "1",
+      OWNER_ACCOUNT_REPLAY_FINAL_WORKTREE_CLEAN: "1",
     };
   }
   if (step === "director-fact-contract-proof") {

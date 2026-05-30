@@ -1,0 +1,202 @@
+import type { AiEstimateOwnerAccountReplayIdentity } from "../../src/lib/ai/productionCanary";
+import {
+  buildAiEstimateOwnerAccountReplayPolicy,
+  recordLimitedPublicBetaFeedback,
+  redactOwnerAccountReplayIdentity,
+  resolveOwnerAccountReplayEligibility,
+  validateOwnerAccountReplayPolicy,
+} from "../../src/lib/ai/productionCanary";
+import { buildAiEstimateTelemetryEvent } from "../../src/lib/ai/observability/buildAiEstimateTelemetryEvent";
+import { buildOwnerAccountReplayMatrix } from "../../scripts/e2e/aiEstimateOwnerAccountLiveReplayCore";
+
+type OwnerReplayMatrixParams = Parameters<typeof buildOwnerAccountReplayMatrix>[0];
+
+export function ownerReplayIdentity(
+  overrides: Partial<AiEstimateOwnerAccountReplayIdentity> = {},
+): AiEstimateOwnerAccountReplayIdentity {
+  return {
+    source: "env",
+    ownerUserId: "owner-user-live-replay-001",
+    ownerAccountId: "owner-account-live-replay-001",
+    ownerOrganizationId: "owner-org-live-replay-001",
+    authenticatedSessionUserId: "owner-session-live-replay-001",
+    testOwnerEmailHash: "sha256:owner-email-hash-for-contract-tests",
+    ...overrides,
+  };
+}
+
+export function buildOwnerReplayMatrixForRuntimeFindings(findings: string[]) {
+  const identity = ownerReplayIdentity();
+  const policy = buildAiEstimateOwnerAccountReplayPolicy();
+  const validation = validateOwnerAccountReplayPolicy(policy);
+  const redacted = redactOwnerAccountReplayIdentity(identity);
+  const eligibility = resolveOwnerAccountReplayEligibility({ identity, policy });
+  const ownerReplayResult = {
+    caseId: "owner-replay-contract-case",
+    route: "/request" as const,
+    prompt: "owner replay contract prompt",
+    macroDomain: "residential",
+    domain: "test",
+    expectedResolvedDomain: "test",
+    object: "test_object",
+    operation: "test_operation",
+    method: null,
+    classification: findings.length === 0 ? "EXPANDED_PROFESSIONAL_ESTIMATE_OK" : findings[0] ?? "UNKNOWN_NEEDS_TRACE",
+    semanticFrame: { ok: true },
+    constructionWorkPlan: { ok: true },
+    formulaResult: { ok: true },
+    rowCount: 30,
+    requiredRowsFound: ["row"],
+    requiredRowsMissing: [],
+    forbiddenRowsFound: [],
+    unitSemanticsPassed: true,
+    catalogBindingPassed: true,
+    sourceEvidencePassed: true,
+    taxWarningPassed: true,
+    regulatedSafetyPassed: true,
+    uiTableVisible: true,
+    pdfChecked: false,
+    pdfPassed: false,
+    runtimeTraceId: "trace_owner_replay_test",
+    failures: findings,
+    visibleRows: ["row"],
+    authenticated_owner_account_present: true,
+    estimateIntentDetected: true,
+    EstimatorReasoningPlan: true,
+    ConstructionWorkPlan: true,
+    GlobalEstimateResult: true,
+    EstimatePresentationViewModel: true,
+    professionalBoqTableVisible: true,
+    PDFActionVisible: true,
+    feedbackActionVisible: true,
+    telemetryEmitted: true,
+    telemetryValid: true,
+    ownerReplayFailures: findings,
+  };
+  const telemetryEvent = buildAiEstimateTelemetryEvent({
+    runtimeTraceId: ownerReplayResult.runtimeTraceId,
+    route: ownerReplayResult.route,
+    entrypoint: "request",
+    intent: "estimate",
+    domain: ownerReplayResult.domain,
+    object: ownerReplayResult.object,
+    operation: ownerReplayResult.operation,
+    classification: ownerReplayResult.classification,
+    estimateMode: "dynamic_boq",
+    rowCount: ownerReplayResult.rowCount,
+    qualityScore: 100,
+    pdfActionVisible: true,
+    pdfGenerated: false,
+    catalogBindingStatus: "bound",
+    sourceEvidenceStatus: "present",
+    taxWarningStatus: "present",
+    latencyMs: 1,
+  });
+  const feedback = recordLimitedPublicBetaFeedback({
+    runtimeTraceId: ownerReplayResult.runtimeTraceId,
+    entrypoint: ownerReplayResult.route,
+    userCohort: "beta_residential_small",
+    domain: ownerReplayResult.domain,
+    object: ownerReplayResult.object,
+    operation: ownerReplayResult.operation,
+    workTitle: "Owner replay contract work",
+    rowCount: ownerReplayResult.rowCount,
+    pdfGenerated: false,
+    feedbackCategory: "other",
+    optionalComment: "owner replay contract feedback",
+    createdAt: "2026-05-30T00:00:00.000Z",
+  });
+  const policyArtifact = {
+    ...policy,
+    validation,
+    eligibility,
+    owner_account_identity_present: redacted.owner_account_identity_present,
+    owner_account_session_present: redacted.owner_account_session_present,
+    real_external_user_traffic_proven: false,
+    real_user_traffic_claimed: false,
+    fake_green_claimed: false,
+  };
+  const params: OwnerReplayMatrixParams = {
+    policyArtifacts: { policy, validation, identity, redacted, eligibility, policyArtifact },
+    runtime: {
+      final_status: findings.length === 0 ? "OWNER_ACCOUNT_RUNTIME_REPLAY_OK" : "BLOCKED_WEB_OWNER_REPLAY_FAILED",
+      prompts_total: 1,
+      prompts_passed: findings.length === 0 ? 1 : 0,
+      entrypoints_tested: ["/request", "/ai?context=foreman", "/ai?context=request"],
+      results: [ownerReplayResult],
+      failures: findings,
+      fake_green_claimed: false,
+    },
+    web: {
+      final_status: "OWNER_ACCOUNT_WEB_REPLAY_OK",
+      reason: "OWNER_ACCOUNT_WEB_REPLAY_OK",
+      failures: [],
+      owner_account_session_detected: true,
+      public_beta_disabled: true,
+      production_rollout_disabled: true,
+      owner_replay_enabled: true,
+      request_works: true,
+      ai_foreman_works: true,
+      ai_request_works: true,
+      professional_boq_visible: true,
+      pdf_generated_for_selected_cases: true,
+      feedback_action_works: true,
+      telemetry_emitted: true,
+      runtimeTraceId_captured: true,
+      web_live_app_tested: true,
+      fake_green_claimed: false,
+    },
+    android: {
+      final_status: "OWNER_ACCOUNT_ANDROID_API34_REPLAY_OK",
+      android_api34_tested: true,
+      api36_rejected: true,
+      avd_name: "Pixel_7_API_34",
+      android_sdk: 34,
+      cpu_abi: "x86_64",
+      owner_account_state_redacted: true,
+      prompts_total: 4,
+      prompts_passed: 4,
+      failures: [],
+      fake_green_claimed: false,
+    },
+    pdf: {
+      final_status: "OWNER_ACCOUNT_PDF_EXTRACTION_OK",
+      pdf_extraction_cases_total: 20,
+      pdf_extraction_cases_passed: 20,
+      pdf_mojibake_found: false,
+      pdf_uses_structured_payload: true,
+      pdf_rows_match_ui_rows: true,
+      failures: [],
+      fake_green_claimed: false,
+    },
+    telemetry: {
+      final_status: "OWNER_ACCOUNT_TELEMETRY_PRIVACY_OK",
+      telemetry_ready: true,
+      telemetry_redacted: true,
+      personal_data_leak_found: false,
+      missing_fields: [],
+      forbidden_patterns_found: [],
+      owner_identity: redacted,
+      event: telemetryEvent,
+      fake_green_claimed: false,
+    },
+    feedback: {
+      final_status: "OWNER_ACCOUNT_FEEDBACK_CAPTURE_OK",
+      feedback_capture_ready: true,
+      feedback,
+      raw_debug_labels_visible: false,
+      secrets_found: false,
+      unredacted_personal_data_found: false,
+      fake_green_claimed: false,
+    },
+    killSwitch: {
+      final_status: "OWNER_ACCOUNT_KILL_SWITCH_OK",
+      kill_switch_proof_passed: true,
+      checks: [],
+      manual_request_creation_still_works: true,
+      manual_catalog_material_picker_still_works: true,
+      fake_green_claimed: false,
+    },
+  };
+  return buildOwnerAccountReplayMatrix(params);
+}

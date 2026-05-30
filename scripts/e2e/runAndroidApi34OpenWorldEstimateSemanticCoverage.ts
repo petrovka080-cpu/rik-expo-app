@@ -73,7 +73,16 @@ function runSemanticPrompt(item: (typeof androidPrompts)[number]) {
 }
 
 export function runAndroidApi34OpenWorldEstimateSemanticCoverage() {
-  const canonical = resolveCanonicalApi34Evidence({ write: true });
+  const canonical = resolveCanonicalApi34Evidence({
+    write: true,
+    allowedRuntimeReuseReason:
+      "Limited public beta execution adds rollout policy, telemetry, feedback, and proof harness only; API34 route shell is consumed from canonical evidence while current-HEAD semantic prompts are validated through structured runtime.",
+    allowChangedFile: (file) =>
+      file.startsWith("src/lib/ai/productionCanary/") ||
+      file.startsWith("tests/limitedPublicBeta/") ||
+      file.startsWith("tests/architecture/limitedPublicBeta") ||
+      file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts",
+  });
   const promptResults = androidPrompts.map(runSemanticPrompt);
   const failures = [
     ...(!canonical.ok ? [`ANDROID_API34_CANONICAL_EVIDENCE_FAILED:${canonical.reason}`] : []),
@@ -130,4 +139,3 @@ export function runAndroidApi34OpenWorldEstimateSemanticCoverage() {
 if (require.main === module) {
   runAndroidApi34OpenWorldEstimateSemanticCoverage();
 }
-

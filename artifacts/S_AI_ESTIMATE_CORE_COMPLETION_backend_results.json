@@ -5200,7 +5200,7 @@
       "workKey": "boiler_room_piping",
       "category": "heating_hvac",
       "volume": 1,
-      "unit": "set",
+      "unit": "pcs",
       "backendCalled": true,
       "outputContract": {
         "hasTable": true,
@@ -5792,7 +5792,7 @@
       "workKey": "smart_home_basic",
       "category": "electrical",
       "volume": 1,
-      "unit": "set",
+      "unit": "pcs",
       "backendCalled": true,
       "outputContract": {
         "hasTable": true,

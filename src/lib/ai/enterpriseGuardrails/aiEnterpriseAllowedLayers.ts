@@ -278,6 +278,12 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     purpose: "Architecture scanners, anti-kostyl policy, and release gate matrix.",
     screenMayImportDirectly: false,
   },
+  {
+    layer: "rolloutGovernance",
+    root: "src/lib/ai/rolloutGovernance",
+    purpose: "Limited public beta allowlist, rollout policy, and feedback governance separated from canary execution.",
+    screenMayImportDirectly: false,
+  },
 ];
 
 export const AI_ENTERPRISE_GRANDFATHERED_LEGACY_LAYERS: AiEnterpriseLegacyLayerDefinition[] = [

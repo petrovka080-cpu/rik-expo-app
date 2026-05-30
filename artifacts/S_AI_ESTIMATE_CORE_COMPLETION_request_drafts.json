@@ -4,14 +4,22 @@
     "prompt": "хочу уложить ковролин на 100 кв м",
     "draft": {
       "titleRu": "укладку ковролина",
-      "summaryRu": "Черновик сметы\n\nКоротко:\nукладку ковролина — 100 м².\nИтого: 290 468 сом.\nНалоговый статус: НДС Кыргызстан.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
+      "summaryRu": "Черновик сметы\n\nКоротко:\nукладку ковролина — 100 м².\nИтого: 290 468 сом.\nНалоговый статус: НДС Кыргызстан.\nЛокальный контекст: регион Кыргызстан, Bishkek; валюта KGS; источник ставок: справочник региональных ставок; уверенность высокая.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "repairType": "flooring",
       "estimatePresentation": {
-        "estimateId": "global_estimate_618078260",
+        "estimateId": "global_estimate_1004598580",
         "workKey": "carpet_laying",
         "workTitle": "укладку ковролина",
         "workCategory": "flooring",
         "originalText": "хочу уложить ковролин на 100 кв м",
+        "localContext": {
+          "countryCode": "KG",
+          "locationLabel": "Кыргызстан, Бишкек",
+          "currency": "KGS",
+          "taxLabel": "НДС",
+          "confidence": "high",
+          "displayLine": "Локальный контекст: Кыргызстан, Бишкек; валюта KGS; налог НДС."
+        },
         "assumptions": [
           "Расчёт выполнен для укладки ковролина по подготовленному основанию.",
           "Демонтаж старого покрытия, выравнивание и доставка уточняются отдельно.",
@@ -53,7 +61,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -86,7 +94,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -119,7 +127,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -152,7 +160,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               }
             ]
@@ -191,7 +199,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -223,7 +231,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -255,7 +263,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               }
             ]
@@ -294,7 +302,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               },
               {
@@ -326,7 +334,7 @@
                     "confidence": "high"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
+                "sourceLabel": "Источник: справочник региональных ставок",
                 "confidence": "high"
               }
             ]
@@ -363,7 +371,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -396,7 +404,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -429,7 +437,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -462,7 +470,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -494,7 +502,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -526,7 +534,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -558,7 +566,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -590,7 +598,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           },
           {
@@ -622,7 +630,7 @@
                 "confidence": "high"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
+            "sourceLabel": "Источник: справочник региональных ставок",
             "confidence": "high"
           }
         ],
@@ -650,11 +658,11 @@
         },
         "sourceConfidence": "high",
         "sourceLabels": [
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
+          "Источник: справочник региональных ставок",
+          "Источник: справочник региональных ставок",
+          "Источник: справочник региональных ставок",
+          "Источник: справочник региональных ставок",
+          "Источник: справочник региональных ставок",
           "Configured Kyrgyzstan NDS reference"
         ],
         "costIncreaseFactors": [
@@ -884,18 +892,26 @@
     "prompt": "смета на укладку кафельной плитки на пол 174 кв м",
     "draft": {
       "titleRu": "укладку кафельной плитки",
-      "summaryRu": "Черновик сметы\n\nКоротко:\nукладку кафельной плитки — 174 м².\nИтого: 969 113 сом.\nНалоговый статус: НДС Кыргызстан.\nТочность расчёта: высокая.\nПеред отправкой заявки проверьте объёмы и контакты.",
+      "summaryRu": "Черновик сметы\n\nКоротко:\nукладку кафельной плитки — 174 м².\nИтого: 1 201 304 сом.\nНалоговый статус: НДС Кыргызстан.\nЛокальный контекст: регион Кыргызстан, Bishkek; валюта KGS; источник ставок: справочник ставок; уверенность средняя.\nТочность расчёта: средняя.\nПеред отправкой заявки проверьте объёмы и контакты.",
       "repairType": "tile",
       "estimatePresentation": {
-        "estimateId": "global_estimate_682656730",
+        "estimateId": "universal_estimator_1518120804",
         "workKey": "ceramic_tile_floor_laying",
         "workTitle": "укладку кафельной плитки",
         "workCategory": "tile",
         "originalText": "смета на укладку кафельной плитки на пол 174 кв м",
+        "localContext": {
+          "countryCode": "KG",
+          "locationLabel": "Кыргызстан, Бишкек",
+          "currency": "KGS",
+          "taxLabel": "НДС",
+          "confidence": "high",
+          "displayLine": "Локальный контекст: Кыргызстан, Бишкек; валюта KGS; налог НДС."
+        },
         "assumptions": [
-          "Расчет выполнен для укладки плитки по подготовленному основанию.",
-          "Плитка рассчитана с запасом на подрезку; клей, затирка и грунтовка включены отдельными строками.",
-          "Выравнивание основания, гидроизоляция и сложная раскладка уточняются перед договором."
+          "Смета предварительная и собрана из строительных примитивов, а не exact prompt шаблона.",
+          "Цены являются ориентировочными configured reference до подтверждения catalog/source по региону.",
+          "Использован первичный измеримый объем из запроса."
         ],
         "sections": [
           {
@@ -908,6 +924,204 @@
                 "sectionTitle": "Материалы и комплектующие",
                 "sectionType": "materials",
                 "rowNumber": "1.1",
+                "code": "material_1",
+                "rateKey": "dynamic_universal_material_1",
+                "materialKey": "tile_surface_material_1",
+                "catalogItemId": null,
+                "name": "плитка / керамогранит",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 м²",
+                "unitPrice": 650,
+                "displayUnitPrice": "650 сом / м²",
+                "total": 113100,
+                "displayTotal": "113 100 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.2",
+                "code": "material_2",
+                "rateKey": "dynamic_universal_material_2",
+                "materialKey": "tile_surface_material_2",
+                "catalogItemId": null,
+                "name": "плиточный клей",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 830,
+                "displayUnitPrice": "830 сом / компл.",
+                "total": 830,
+                "displayTotal": "830 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.3",
+                "code": "material_3",
+                "rateKey": "dynamic_universal_material_3",
+                "materialKey": "tile_surface_material_3",
+                "catalogItemId": null,
+                "name": "затирка",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 1010,
+                "displayUnitPrice": "1 010 сом / компл.",
+                "total": 1010,
+                "displayTotal": "1 010 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.4",
+                "code": "material_4",
+                "rateKey": "dynamic_universal_material_4",
+                "materialKey": "tile_surface_material_4",
+                "catalogItemId": null,
+                "name": "крестики / СВП",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 1190,
+                "displayUnitPrice": "1 190 сом / компл.",
+                "total": 1190,
+                "displayTotal": "1 190 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.5",
+                "code": "profile_fasteners",
+                "rateKey": "dynamic_universal_profile_fasteners",
+                "materialKey": "tile_surface_fasteners",
+                "catalogItemId": null,
+                "name": "крепёж и профильные расходники: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 9570,
+                "displayUnitPrice": "9 570 сом / компл.",
+                "total": 9570,
+                "displayTotal": "9 570 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.6",
+                "code": "reserve",
+                "rateKey": "dynamic_universal_reserve",
+                "materialKey": "tile_surface_reserve",
+                "catalogItemId": null,
+                "name": "резерв профильных материалов: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 13920,
+                "displayUnitPrice": "13 920 сом / компл.",
+                "total": 13920,
+                "displayTotal": "13 920 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "1",
+                "sectionTitle": "Материалы и комплектующие",
+                "sectionType": "materials",
+                "rowNumber": "1.7",
                 "code": "ceramic_tile_floor_laying_tile_with_waste",
                 "rateKey": "ceramic_tile_floor_laying_material",
                 "materialKey": "ceramic_tile_floor_laying",
@@ -915,65 +1129,32 @@
                 "name": "Керамическая плитка с запасом на подрезку",
                 "quantity": 191.4,
                 "unit": "sq_m",
-                "displayQuantity": "191,4 m²",
+                "displayQuantity": "191,4 м²",
                 "unitPrice": 1424,
-                "displayUnitPrice": "1 424 сом / m²",
+                "displayUnitPrice": "1 424 сом / м²",
                 "total": 272553.6,
                 "displayTotal": "272 554 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               },
               {
                 "sectionNumber": "1",
                 "sectionTitle": "Материалы и комплектующие",
                 "sectionType": "materials",
-                "rowNumber": "1.2",
-                "code": "ceramic_tile_floor_laying_adhesive",
-                "rateKey": "ceramic_tile_floor_laying_auxiliary",
-                "materialKey": "ceramic_tile_floor_laying",
-                "catalogItemId": null,
-                "name": "Плиточный клей",
-                "quantity": 31.32,
-                "unit": "sq_m",
-                "displayQuantity": "31,32 m²",
-                "unitPrice": 356,
-                "displayUnitPrice": "356 сом / m²",
-                "total": 11149.92,
-                "displayTotal": "11 150 сом",
-                "currency": "KGS",
-                "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-                "sourceEvidence": [
-                  {
-                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-                    "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
-                    "checkedAt": "2026-05-22T00:00:00+06:00",
-                    "freshness": "fresh",
-                    "confidence": "high"
-                  }
-                ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
-              },
-              {
-                "sectionNumber": "1",
-                "sectionTitle": "Материалы и комплектующие",
-                "sectionType": "materials",
-                "rowNumber": "1.3",
+                "rowNumber": "1.8",
                 "code": "ceramic_tile_floor_laying_grout",
                 "rateKey": "ceramic_tile_floor_laying_auxiliary",
                 "materialKey": "ceramic_tile_floor_laying",
@@ -981,32 +1162,32 @@
                 "name": "Затирка для швов",
                 "quantity": 31.32,
                 "unit": "sq_m",
-                "displayQuantity": "31,32 m²",
+                "displayQuantity": "31,32 м²",
                 "unitPrice": 356,
-                "displayUnitPrice": "356 сом / m²",
+                "displayUnitPrice": "356 сом / м²",
                 "total": 11149.92,
                 "displayTotal": "11 150 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               },
               {
                 "sectionNumber": "1",
                 "sectionTitle": "Материалы и комплектующие",
                 "sectionType": "materials",
-                "rowNumber": "1.4",
+                "rowNumber": "1.9",
                 "code": "ceramic_tile_floor_laying_primer",
                 "rateKey": "ceramic_tile_floor_laying_auxiliary",
                 "materialKey": "ceramic_tile_floor_laying",
@@ -1014,200 +1195,495 @@
                 "name": "Грунтовка основания",
                 "quantity": 31.32,
                 "unit": "sq_m",
-                "displayQuantity": "31,32 m²",
+                "displayQuantity": "31,32 м²",
                 "unitPrice": 356,
-                "displayUnitPrice": "356 сом / m²",
+                "displayUnitPrice": "356 сом / м²",
                 "total": 11149.92,
                 "displayTotal": "11 150 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               }
             ]
           },
           {
             "sectionNumber": "2",
-            "title": "Работы / монтаж / техника",
+            "title": "Строительные работы",
             "type": "labor",
             "rows": [
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Работы / монтаж / техника",
+                "sectionTitle": "Строительные работы",
                 "sectionType": "labor",
                 "rowNumber": "2.1",
+                "code": "survey",
+                "rateKey": "dynamic_universal_survey",
+                "catalogItemId": null,
+                "name": "обследование и обмер: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 3500,
+                "displayUnitPrice": "3 500 сом / компл.",
+                "total": 3500,
+                "displayTotal": "3 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.2",
+                "code": "layout",
+                "rateKey": "dynamic_universal_layout",
+                "catalogItemId": null,
+                "name": "разметка и технологическая привязка: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 4500,
+                "displayUnitPrice": "4 500 сом / компл.",
+                "total": 4500,
+                "displayTotal": "4 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.3",
+                "code": "labor_1",
+                "rateKey": "dynamic_universal_labor_1",
+                "catalogItemId": null,
+                "name": "подготовка основания",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 м²",
+                "unitPrice": 360,
+                "displayUnitPrice": "360 сом / м²",
+                "total": 62640,
+                "displayTotal": "62 640 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.4",
+                "code": "labor_2",
+                "rateKey": "dynamic_universal_labor_2",
+                "catalogItemId": null,
+                "name": "раскладка плитки",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 м²",
+                "unitPrice": 455,
+                "displayUnitPrice": "455 сом / м²",
+                "total": 79170,
+                "displayTotal": "79 170 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.5",
+                "code": "labor_3",
+                "rateKey": "dynamic_universal_labor_3",
+                "catalogItemId": null,
+                "name": "укладка плитки",
+                "quantity": 174,
+                "unit": "sq_m",
+                "displayQuantity": "174 м²",
+                "unitPrice": 550,
+                "displayUnitPrice": "550 сом / м²",
+                "total": 95700,
+                "displayTotal": "95 700 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.6",
+                "code": "labor_4",
+                "rateKey": "dynamic_universal_labor_4",
+                "catalogItemId": null,
+                "name": "затирка швов",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 645,
+                "displayUnitPrice": "645 сом / компл.",
+                "total": 645,
+                "displayTotal": "645 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.7",
+                "code": "quality",
+                "rateKey": "dynamic_universal_quality",
+                "catalogItemId": null,
+                "name": "контроль качества и приемка: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 2500,
+                "displayUnitPrice": "2 500 сом / компл.",
+                "total": 2500,
+                "displayTotal": "2 500 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.8",
+                "code": "documentation",
+                "rateKey": "dynamic_universal_documentation",
+                "catalogItemId": null,
+                "name": "исполнительная фиксация объема: tile surface",
+                "quantity": 1,
+                "unit": "set",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 2000,
+                "displayUnitPrice": "2 000 сом / компл.",
+                "total": 2000,
+                "displayTotal": "2 000 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "2",
+                "sectionTitle": "Строительные работы",
+                "sectionType": "labor",
+                "rowNumber": "2.9",
                 "code": "ceramic_tile_floor_laying_base_preparation",
                 "rateKey": "ceramic_tile_floor_laying_labor",
                 "catalogItemId": null,
                 "name": "Подготовка основания под плитку",
                 "quantity": 174,
                 "unit": "sq_m",
-                "displayQuantity": "174 m²",
+                "displayQuantity": "174 м²",
                 "unitPrice": 1068,
-                "displayUnitPrice": "1 068 сом / m²",
+                "displayUnitPrice": "1 068 сом / м²",
                 "total": 185832,
                 "displayTotal": "185 832 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Работы / монтаж / техника",
+                "sectionTitle": "Строительные работы",
                 "sectionType": "labor",
-                "rowNumber": "2.2",
-                "code": "ceramic_tile_floor_laying_tile_laying",
-                "rateKey": "ceramic_tile_floor_laying_labor",
-                "catalogItemId": null,
-                "name": "Укладка плитки",
-                "quantity": 174,
-                "unit": "sq_m",
-                "displayQuantity": "174 m²",
-                "unitPrice": 1068,
-                "displayUnitPrice": "1 068 сом / m²",
-                "total": 185832,
-                "displayTotal": "185 832 сом",
-                "currency": "KGS",
-                "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-                "sourceEvidence": [
-                  {
-                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-                    "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
-                    "checkedAt": "2026-05-22T00:00:00+06:00",
-                    "freshness": "fresh",
-                    "confidence": "high"
-                  }
-                ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
-              },
-              {
-                "sectionNumber": "2",
-                "sectionTitle": "Работы / монтаж / техника",
-                "sectionType": "labor",
-                "rowNumber": "2.3",
+                "rowNumber": "2.10",
                 "code": "ceramic_tile_floor_laying_grout_work",
                 "rateKey": "ceramic_tile_floor_laying_labor",
                 "catalogItemId": null,
                 "name": "Затирка и очистка швов",
                 "quantity": 174,
                 "unit": "sq_m",
-                "displayQuantity": "174 m²",
+                "displayQuantity": "174 м²",
                 "unitPrice": 1068,
-                "displayUnitPrice": "1 068 сом / m²",
+                "displayUnitPrice": "1 068 сом / м²",
                 "total": 185832,
                 "displayTotal": "185 832 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               }
             ]
           },
           {
             "sectionNumber": "3",
-            "title": "Оборудование / доставка",
-            "type": "delivery",
+            "title": "Техника и оборудование",
+            "type": "equipment",
             "rows": [
               {
                 "sectionNumber": "3",
-                "sectionTitle": "Оборудование / доставка",
-                "sectionType": "delivery",
+                "sectionTitle": "Техника и оборудование",
+                "sectionType": "equipment",
                 "rowNumber": "3.1",
-                "code": "ceramic_tile_floor_laying_delivery_access_warning",
-                "rateKey": "ceramic_tile_floor_laying_delivery",
+                "code": "equipment_1",
+                "rateKey": "dynamic_universal_equipment_1",
                 "catalogItemId": null,
-                "name": "Доставка / подъем / доступ: требуется уточнение",
+                "name": "плиткорез",
                 "quantity": 1,
                 "unit": "set",
-                "displayQuantity": "1 set",
-                "unitPrice": 1068,
-                "displayUnitPrice": "1 068 сом / set",
-                "total": 1068,
-                "displayTotal": "1 068 сом",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 2800,
+                "displayUnitPrice": "2 800 сом / компл.",
+                "total": 2800,
+                "displayTotal": "2 800 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               },
               {
                 "sectionNumber": "3",
-                "sectionTitle": "Оборудование / доставка",
-                "sectionType": "delivery",
+                "sectionTitle": "Техника и оборудование",
+                "sectionType": "equipment",
                 "rowNumber": "3.2",
-                "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
-                "rateKey": "ceramic_tile_floor_laying_equipment",
+                "code": "equipment_2",
+                "rateKey": "dynamic_universal_equipment_2",
                 "catalogItemId": null,
-                "name": "Техника / инвентарь: требуется уточнение",
+                "name": "миксер для клея",
                 "quantity": 1,
                 "unit": "set",
-                "displayQuantity": "1 set",
-                "unitPrice": 712,
-                "displayUnitPrice": "712 сом / set",
-                "total": 712,
-                "displayTotal": "712 сом",
+                "displayQuantity": "1 компл.",
+                "unitPrice": 3700,
+                "displayUnitPrice": "3 700 сом / компл.",
+                "total": 3700,
+                "displayTotal": "3 700 сом",
                 "currency": "KGS",
                 "priceStatus": "priced",
-                "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceEvidence": [
                   {
-                    "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                    "sourceId": "src_configured_regional_reference_2026",
                     "sourceType": "configured_reference",
-                    "label": "Configured backend regional reference rate",
+                    "label": "Configured regional construction reference rates",
                     "checkedAt": "2026-05-22T00:00:00+06:00",
                     "freshness": "fresh",
-                    "confidence": "high"
+                    "confidence": "medium"
                   }
                 ],
-                "sourceLabel": "Configured backend regional reference rate",
-                "confidence": "high"
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              }
+            ]
+          },
+          {
+            "sectionNumber": "4",
+            "title": "Доставка и логистика",
+            "type": "delivery",
+            "rows": [
+              {
+                "sectionNumber": "4",
+                "sectionTitle": "Доставка и логистика",
+                "sectionType": "delivery",
+                "rowNumber": "4.1",
+                "code": "logistics_1",
+                "rateKey": "dynamic_universal_logistics_1",
+                "catalogItemId": null,
+                "name": "доставка плитки",
+                "quantity": 1,
+                "unit": "trip",
+                "displayQuantity": "1 рейс",
+                "unitPrice": 4200,
+                "displayUnitPrice": "4 200 сом / рейс",
+                "total": 4200,
+                "displayTotal": "4 200 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
+              },
+              {
+                "sectionNumber": "4",
+                "sectionTitle": "Доставка и логистика",
+                "sectionType": "delivery",
+                "rowNumber": "4.2",
+                "code": "logistics_2",
+                "rateKey": "dynamic_universal_logistics_2",
+                "catalogItemId": null,
+                "name": "резерв на бой и подрезку",
+                "quantity": 1,
+                "unit": "trip",
+                "displayQuantity": "1 рейс",
+                "unitPrice": 5100,
+                "displayUnitPrice": "5 100 сом / рейс",
+                "total": 5100,
+                "displayTotal": "5 100 сом",
+                "currency": "KGS",
+                "priceStatus": "priced",
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceEvidence": [
+                  {
+                    "sourceId": "src_configured_regional_reference_2026",
+                    "sourceType": "configured_reference",
+                    "label": "Configured regional construction reference rates",
+                    "checkedAt": "2026-05-22T00:00:00+06:00",
+                    "freshness": "fresh",
+                    "confidence": "medium"
+                  }
+                ],
+                "sourceLabel": "Источник: справочник ставок",
+                "confidence": "medium"
               }
             ]
           }
@@ -1218,6 +1694,204 @@
             "sectionTitle": "Материалы и комплектующие",
             "sectionType": "materials",
             "rowNumber": "1.1",
+            "code": "material_1",
+            "rateKey": "dynamic_universal_material_1",
+            "materialKey": "tile_surface_material_1",
+            "catalogItemId": null,
+            "name": "плитка / керамогранит",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 м²",
+            "unitPrice": 650,
+            "displayUnitPrice": "650 сом / м²",
+            "total": 113100,
+            "displayTotal": "113 100 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.2",
+            "code": "material_2",
+            "rateKey": "dynamic_universal_material_2",
+            "materialKey": "tile_surface_material_2",
+            "catalogItemId": null,
+            "name": "плиточный клей",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 830,
+            "displayUnitPrice": "830 сом / компл.",
+            "total": 830,
+            "displayTotal": "830 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.3",
+            "code": "material_3",
+            "rateKey": "dynamic_universal_material_3",
+            "materialKey": "tile_surface_material_3",
+            "catalogItemId": null,
+            "name": "затирка",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 1010,
+            "displayUnitPrice": "1 010 сом / компл.",
+            "total": 1010,
+            "displayTotal": "1 010 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.4",
+            "code": "material_4",
+            "rateKey": "dynamic_universal_material_4",
+            "materialKey": "tile_surface_material_4",
+            "catalogItemId": null,
+            "name": "крестики / СВП",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 1190,
+            "displayUnitPrice": "1 190 сом / компл.",
+            "total": 1190,
+            "displayTotal": "1 190 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.5",
+            "code": "profile_fasteners",
+            "rateKey": "dynamic_universal_profile_fasteners",
+            "materialKey": "tile_surface_fasteners",
+            "catalogItemId": null,
+            "name": "крепёж и профильные расходники: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 9570,
+            "displayUnitPrice": "9 570 сом / компл.",
+            "total": 9570,
+            "displayTotal": "9 570 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.6",
+            "code": "reserve",
+            "rateKey": "dynamic_universal_reserve",
+            "materialKey": "tile_surface_reserve",
+            "catalogItemId": null,
+            "name": "резерв профильных материалов: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 13920,
+            "displayUnitPrice": "13 920 сом / компл.",
+            "total": 13920,
+            "displayTotal": "13 920 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "1",
+            "sectionTitle": "Материалы и комплектующие",
+            "sectionType": "materials",
+            "rowNumber": "1.7",
             "code": "ceramic_tile_floor_laying_tile_with_waste",
             "rateKey": "ceramic_tile_floor_laying_material",
             "materialKey": "ceramic_tile_floor_laying",
@@ -1225,65 +1899,32 @@
             "name": "Керамическая плитка с запасом на подрезку",
             "quantity": 191.4,
             "unit": "sq_m",
-            "displayQuantity": "191,4 m²",
+            "displayQuantity": "191,4 м²",
             "unitPrice": 1424,
-            "displayUnitPrice": "1 424 сом / m²",
+            "displayUnitPrice": "1 424 сом / м²",
             "total": 272553.6,
             "displayTotal": "272 554 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "1",
             "sectionTitle": "Материалы и комплектующие",
             "sectionType": "materials",
-            "rowNumber": "1.2",
-            "code": "ceramic_tile_floor_laying_adhesive",
-            "rateKey": "ceramic_tile_floor_laying_auxiliary",
-            "materialKey": "ceramic_tile_floor_laying",
-            "catalogItemId": null,
-            "name": "Плиточный клей",
-            "quantity": 31.32,
-            "unit": "sq_m",
-            "displayQuantity": "31,32 m²",
-            "unitPrice": 356,
-            "displayUnitPrice": "356 сом / m²",
-            "total": 11149.92,
-            "displayTotal": "11 150 сом",
-            "currency": "KGS",
-            "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-            "sourceEvidence": [
-              {
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-                "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
-                "checkedAt": "2026-05-22T00:00:00+06:00",
-                "freshness": "fresh",
-                "confidence": "high"
-              }
-            ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
-          },
-          {
-            "sectionNumber": "1",
-            "sectionTitle": "Материалы и комплектующие",
-            "sectionType": "materials",
-            "rowNumber": "1.3",
+            "rowNumber": "1.8",
             "code": "ceramic_tile_floor_laying_grout",
             "rateKey": "ceramic_tile_floor_laying_auxiliary",
             "materialKey": "ceramic_tile_floor_laying",
@@ -1291,32 +1932,32 @@
             "name": "Затирка для швов",
             "quantity": 31.32,
             "unit": "sq_m",
-            "displayQuantity": "31,32 m²",
+            "displayQuantity": "31,32 м²",
             "unitPrice": 356,
-            "displayUnitPrice": "356 сом / m²",
+            "displayUnitPrice": "356 сом / м²",
             "total": 11149.92,
             "displayTotal": "11 150 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "1",
             "sectionTitle": "Материалы и комплектующие",
             "sectionType": "materials",
-            "rowNumber": "1.4",
+            "rowNumber": "1.9",
             "code": "ceramic_tile_floor_laying_primer",
             "rateKey": "ceramic_tile_floor_laying_auxiliary",
             "materialKey": "ceramic_tile_floor_laying",
@@ -1324,231 +1965,511 @@
             "name": "Грунтовка основания",
             "quantity": 31.32,
             "unit": "sq_m",
-            "displayQuantity": "31,32 m²",
+            "displayQuantity": "31,32 м²",
             "unitPrice": 356,
-            "displayUnitPrice": "356 сом / m²",
+            "displayUnitPrice": "356 сом / м²",
             "total": 11149.92,
             "displayTotal": "11 150 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Работы / монтаж / техника",
+            "sectionTitle": "Строительные работы",
             "sectionType": "labor",
             "rowNumber": "2.1",
+            "code": "survey",
+            "rateKey": "dynamic_universal_survey",
+            "catalogItemId": null,
+            "name": "обследование и обмер: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 3500,
+            "displayUnitPrice": "3 500 сом / компл.",
+            "total": 3500,
+            "displayTotal": "3 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.2",
+            "code": "layout",
+            "rateKey": "dynamic_universal_layout",
+            "catalogItemId": null,
+            "name": "разметка и технологическая привязка: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 4500,
+            "displayUnitPrice": "4 500 сом / компл.",
+            "total": 4500,
+            "displayTotal": "4 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.3",
+            "code": "labor_1",
+            "rateKey": "dynamic_universal_labor_1",
+            "catalogItemId": null,
+            "name": "подготовка основания",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 м²",
+            "unitPrice": 360,
+            "displayUnitPrice": "360 сом / м²",
+            "total": 62640,
+            "displayTotal": "62 640 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.4",
+            "code": "labor_2",
+            "rateKey": "dynamic_universal_labor_2",
+            "catalogItemId": null,
+            "name": "раскладка плитки",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 м²",
+            "unitPrice": 455,
+            "displayUnitPrice": "455 сом / м²",
+            "total": 79170,
+            "displayTotal": "79 170 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.5",
+            "code": "labor_3",
+            "rateKey": "dynamic_universal_labor_3",
+            "catalogItemId": null,
+            "name": "укладка плитки",
+            "quantity": 174,
+            "unit": "sq_m",
+            "displayQuantity": "174 м²",
+            "unitPrice": 550,
+            "displayUnitPrice": "550 сом / м²",
+            "total": 95700,
+            "displayTotal": "95 700 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.6",
+            "code": "labor_4",
+            "rateKey": "dynamic_universal_labor_4",
+            "catalogItemId": null,
+            "name": "затирка швов",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 645,
+            "displayUnitPrice": "645 сом / компл.",
+            "total": 645,
+            "displayTotal": "645 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.7",
+            "code": "quality",
+            "rateKey": "dynamic_universal_quality",
+            "catalogItemId": null,
+            "name": "контроль качества и приемка: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 2500,
+            "displayUnitPrice": "2 500 сом / компл.",
+            "total": 2500,
+            "displayTotal": "2 500 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.8",
+            "code": "documentation",
+            "rateKey": "dynamic_universal_documentation",
+            "catalogItemId": null,
+            "name": "исполнительная фиксация объема: tile surface",
+            "quantity": 1,
+            "unit": "set",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 2000,
+            "displayUnitPrice": "2 000 сом / компл.",
+            "total": 2000,
+            "displayTotal": "2 000 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "2",
+            "sectionTitle": "Строительные работы",
+            "sectionType": "labor",
+            "rowNumber": "2.9",
             "code": "ceramic_tile_floor_laying_base_preparation",
             "rateKey": "ceramic_tile_floor_laying_labor",
             "catalogItemId": null,
             "name": "Подготовка основания под плитку",
             "quantity": 174,
             "unit": "sq_m",
-            "displayQuantity": "174 m²",
+            "displayQuantity": "174 м²",
             "unitPrice": 1068,
-            "displayUnitPrice": "1 068 сом / m²",
+            "displayUnitPrice": "1 068 сом / м²",
             "total": 185832,
             "displayTotal": "185 832 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Работы / монтаж / техника",
+            "sectionTitle": "Строительные работы",
             "sectionType": "labor",
-            "rowNumber": "2.2",
-            "code": "ceramic_tile_floor_laying_tile_laying",
-            "rateKey": "ceramic_tile_floor_laying_labor",
-            "catalogItemId": null,
-            "name": "Укладка плитки",
-            "quantity": 174,
-            "unit": "sq_m",
-            "displayQuantity": "174 m²",
-            "unitPrice": 1068,
-            "displayUnitPrice": "1 068 сом / m²",
-            "total": 185832,
-            "displayTotal": "185 832 сом",
-            "currency": "KGS",
-            "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-            "sourceEvidence": [
-              {
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-                "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
-                "checkedAt": "2026-05-22T00:00:00+06:00",
-                "freshness": "fresh",
-                "confidence": "high"
-              }
-            ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
-          },
-          {
-            "sectionNumber": "2",
-            "sectionTitle": "Работы / монтаж / техника",
-            "sectionType": "labor",
-            "rowNumber": "2.3",
+            "rowNumber": "2.10",
             "code": "ceramic_tile_floor_laying_grout_work",
             "rateKey": "ceramic_tile_floor_laying_labor",
             "catalogItemId": null,
             "name": "Затирка и очистка швов",
             "quantity": 174,
             "unit": "sq_m",
-            "displayQuantity": "174 m²",
+            "displayQuantity": "174 м²",
             "unitPrice": 1068,
-            "displayUnitPrice": "1 068 сом / m²",
+            "displayUnitPrice": "1 068 сом / м²",
             "total": 185832,
             "displayTotal": "185 832 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "3",
-            "sectionTitle": "Оборудование / доставка",
-            "sectionType": "delivery",
+            "sectionTitle": "Техника и оборудование",
+            "sectionType": "equipment",
             "rowNumber": "3.1",
-            "code": "ceramic_tile_floor_laying_delivery_access_warning",
-            "rateKey": "ceramic_tile_floor_laying_delivery",
+            "code": "equipment_1",
+            "rateKey": "dynamic_universal_equipment_1",
             "catalogItemId": null,
-            "name": "Доставка / подъем / доступ: требуется уточнение",
+            "name": "плиткорез",
             "quantity": 1,
             "unit": "set",
-            "displayQuantity": "1 set",
-            "unitPrice": 1068,
-            "displayUnitPrice": "1 068 сом / set",
-            "total": 1068,
-            "displayTotal": "1 068 сом",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 2800,
+            "displayUnitPrice": "2 800 сом / компл.",
+            "total": 2800,
+            "displayTotal": "2 800 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           },
           {
             "sectionNumber": "3",
-            "sectionTitle": "Оборудование / доставка",
-            "sectionType": "delivery",
+            "sectionTitle": "Техника и оборудование",
+            "sectionType": "equipment",
             "rowNumber": "3.2",
-            "code": "ceramic_tile_floor_laying_equipment_mobilization_warning",
-            "rateKey": "ceramic_tile_floor_laying_equipment",
+            "code": "equipment_2",
+            "rateKey": "dynamic_universal_equipment_2",
             "catalogItemId": null,
-            "name": "Техника / инвентарь: требуется уточнение",
+            "name": "миксер для клея",
             "quantity": 1,
             "unit": "set",
-            "displayQuantity": "1 set",
-            "unitPrice": 712,
-            "displayUnitPrice": "712 сом / set",
-            "total": 712,
-            "displayTotal": "712 сом",
+            "displayQuantity": "1 компл.",
+            "unitPrice": 3700,
+            "displayUnitPrice": "3 700 сом / компл.",
+            "total": 3700,
+            "displayTotal": "3 700 сом",
             "currency": "KGS",
             "priceStatus": "priced",
-            "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+            "sourceId": "src_configured_regional_reference_2026",
             "sourceEvidence": [
               {
-                "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
+                "sourceId": "src_configured_regional_reference_2026",
                 "sourceType": "configured_reference",
-                "label": "Configured backend regional reference rate",
+                "label": "Configured regional construction reference rates",
                 "checkedAt": "2026-05-22T00:00:00+06:00",
                 "freshness": "fresh",
-                "confidence": "high"
+                "confidence": "medium"
               }
             ],
-            "sourceLabel": "Configured backend regional reference rate",
-            "confidence": "high"
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "4",
+            "sectionTitle": "Доставка и логистика",
+            "sectionType": "delivery",
+            "rowNumber": "4.1",
+            "code": "logistics_1",
+            "rateKey": "dynamic_universal_logistics_1",
+            "catalogItemId": null,
+            "name": "доставка плитки",
+            "quantity": 1,
+            "unit": "trip",
+            "displayQuantity": "1 рейс",
+            "unitPrice": 4200,
+            "displayUnitPrice": "4 200 сом / рейс",
+            "total": 4200,
+            "displayTotal": "4 200 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
+          },
+          {
+            "sectionNumber": "4",
+            "sectionTitle": "Доставка и логистика",
+            "sectionType": "delivery",
+            "rowNumber": "4.2",
+            "code": "logistics_2",
+            "rateKey": "dynamic_universal_logistics_2",
+            "catalogItemId": null,
+            "name": "резерв на бой и подрезку",
+            "quantity": 1,
+            "unit": "trip",
+            "displayQuantity": "1 рейс",
+            "unitPrice": 5100,
+            "displayUnitPrice": "5 100 сом / рейс",
+            "total": 5100,
+            "displayTotal": "5 100 сом",
+            "currency": "KGS",
+            "priceStatus": "priced",
+            "sourceId": "src_configured_regional_reference_2026",
+            "sourceEvidence": [
+              {
+                "sourceId": "src_configured_regional_reference_2026",
+                "sourceType": "configured_reference",
+                "label": "Configured regional construction reference rates",
+                "checkedAt": "2026-05-22T00:00:00+06:00",
+                "freshness": "fresh",
+                "confidence": "medium"
+              }
+            ],
+            "sourceLabel": "Источник: справочник ставок",
+            "confidence": "medium"
           }
         ],
         "totals": {
-          "materialsTotal": 306003.36,
-          "laborTotal": 557496,
-          "equipmentTotal": 0,
-          "deliveryTotal": 1780,
-          "taxTotal": 103833.52,
-          "grandTotal": 969112.88,
+          "materialsTotal": 434473.44,
+          "laborTotal": 622319,
+          "equipmentTotal": 6500,
+          "deliveryTotal": 9300,
+          "taxTotal": 128711.09,
+          "grandTotal": 1201303.53,
           "currency": "KGS",
-          "displayMaterialsTotal": "306 003 сом",
-          "displayLaborTotal": "557 496 сом",
-          "displayTaxTotal": "103 834 сом",
-          "displayGrandTotal": "969 113 сом"
+          "displayMaterialsTotal": "434 473 сом",
+          "displayLaborTotal": "622 319 сом",
+          "displayTaxTotal": "128 711 сом",
+          "displayGrandTotal": "1 201 304 сом"
         },
         "tax": {
           "taxType": "nds",
           "taxLabel": "НДС Кыргызстан",
           "taxRate": 0.12,
-          "taxableBase": 865279.3599999999,
-          "taxAmount": 103833.52,
+          "taxableBase": 1072592.44,
+          "taxAmount": 128711.09,
           "included": false,
           "requiresLocationPrecision": false
         },
-        "sourceConfidence": "high",
+        "sourceConfidence": "medium",
         "sourceLabels": [
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
-          "Configured backend regional reference rate",
+          "Источник: справочник ставок",
           "Configured Kyrgyzstan NDS reference"
         ],
         "costIncreaseFactors": [
-          "Неровное или поврежденное основание.",
-          "Удаление старых материалов.",
-          "Сложная геометрия, углы и примыкания.",
-          "Доставка, подъем и ограниченный доступ.",
-          "Срочность работ.",
-          "Локальные требования объекта."
+          "Скрытые дефекты и фактический доступ к объекту.",
+          "Изменение проектных требований, объема и местных норм.",
+          "Срочность, ночные смены, подъем и логистика."
         ],
         "clarifyingQuestions": [
-          "Какой формат плитки и схема раскладки?",
-          "Нужно ли выравнивание основания или гидроизоляция?",
-          "Есть ли пороги, примыкания, теплый пол или сложная геометрия?"
+          "Укажите город, адрес и доступ к объекту для локальной ставки.",
+          "Подтвердите фактический объем, основание и требования к материалам."
         ],
         "actions": [
           {
@@ -1580,23 +2501,136 @@
       },
       "dangerousDiyBlocked": false,
       "missingData": [
-        "Какой формат плитки и схема раскладки?",
-        "Нужно ли выравнивание основания или гидроизоляция?",
-        "Есть ли пороги, примыкания, теплый пол или сложная геометрия?"
+        "Укажите город, адрес и доступ к объекту для локальной ставки.",
+        "Подтвердите фактический объем, основание и требования к материалам."
       ],
       "items": [
         {
           "itemType": "material",
-          "titleRu": "1.1 Керамическая плитка с запасом на подрезку",
+          "titleRu": "1.1 плитка / керамогранит",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitLabel": "м²",
+          "unitPrice": 650,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_material_1",
+          "rateKey": "dynamic_universal_material_1",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.2 плиточный клей",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 830,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_material_2",
+          "rateKey": "dynamic_universal_material_2",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.3 затирка",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 1010,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_material_3",
+          "rateKey": "dynamic_universal_material_3",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.4 крестики / СВП",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 1190,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_material_4",
+          "rateKey": "dynamic_universal_material_4",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.5 крепёж и профильные расходники: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 9570,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_fasteners",
+          "rateKey": "dynamic_universal_profile_fasteners",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.6 резерв профильных материалов: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 13920,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": "tile_surface_reserve",
+          "rateKey": "dynamic_universal_reserve",
+          "catalogBindingStatus": "no_catalog_match",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "material",
+          "titleRu": "1.7 Керамическая плитка с запасом на подрезку",
           "quantity": 191.4,
           "unit": "sq_m",
           "unitLabel": "м²",
           "unitPrice": 1424,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_material_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": "ceramic_tile_floor_laying",
           "rateKey": "ceramic_tile_floor_laying_material",
@@ -1606,16 +2640,16 @@
         },
         {
           "itemType": "material",
-          "titleRu": "1.2 Плиточный клей",
+          "titleRu": "1.8 Затирка для швов",
           "quantity": 31.32,
           "unit": "sq_m",
           "unitLabel": "м²",
           "unitPrice": 356,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": "ceramic_tile_floor_laying",
           "rateKey": "ceramic_tile_floor_laying_auxiliary",
@@ -1625,35 +2659,16 @@
         },
         {
           "itemType": "material",
-          "titleRu": "1.3 Затирка для швов",
+          "titleRu": "1.9 Грунтовка основания",
           "quantity": 31.32,
           "unit": "sq_m",
           "unitLabel": "м²",
           "unitPrice": 356,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
-          "addedBy": "ai",
-          "materialKey": "ceramic_tile_floor_laying",
-          "rateKey": "ceramic_tile_floor_laying_auxiliary",
-          "catalogBindingStatus": "no_catalog_match",
-          "catalogCandidates": [],
-          "selectedCatalogItemId": null
-        },
-        {
-          "itemType": "material",
-          "titleRu": "1.4 Грунтовка основания",
-          "quantity": 31.32,
-          "unit": "sq_m",
-          "unitLabel": "м²",
-          "unitPrice": 356,
-          "currency": "KGS",
-          "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_auxiliary_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": "ceramic_tile_floor_laying",
           "rateKey": "ceramic_tile_floor_laying_auxiliary",
@@ -1663,16 +2678,168 @@
         },
         {
           "itemType": "work",
-          "titleRu": "2.1 Подготовка основания под плитку",
+          "titleRu": "2.1 обследование и обмер: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 3500,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_survey",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.2 разметка и технологическая привязка: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 4500,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_layout",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.3 подготовка основания",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitLabel": "м²",
+          "unitPrice": 360,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_labor_1",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.4 раскладка плитки",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitLabel": "м²",
+          "unitPrice": 455,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_labor_2",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.5 укладка плитки",
+          "quantity": 174,
+          "unit": "sq_m",
+          "unitLabel": "м²",
+          "unitPrice": 550,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_labor_3",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.6 затирка швов",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 645,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_labor_4",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.7 контроль качества и приемка: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 2500,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_quality",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.8 исполнительная фиксация объема: tile surface",
+          "quantity": 1,
+          "unit": "set",
+          "unitLabel": "компл.",
+          "unitPrice": 2000,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_documentation",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "work",
+          "titleRu": "2.9 Подготовка основания под плитку",
           "quantity": 174,
           "unit": "sq_m",
           "unitLabel": "м²",
           "unitPrice": 1068,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": null,
           "rateKey": "ceramic_tile_floor_laying_labor",
@@ -1682,35 +2849,16 @@
         },
         {
           "itemType": "work",
-          "titleRu": "2.2 Укладка плитки",
+          "titleRu": "2.10 Затирка и очистка швов",
           "quantity": 174,
           "unit": "sq_m",
           "unitLabel": "м²",
           "unitPrice": 1068,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
-          "addedBy": "ai",
-          "materialKey": null,
-          "rateKey": "ceramic_tile_floor_laying_labor",
-          "catalogBindingStatus": "not_material_row",
-          "catalogCandidates": [],
-          "selectedCatalogItemId": null
-        },
-        {
-          "itemType": "work",
-          "titleRu": "2.3 Затирка и очистка швов",
-          "quantity": 174,
-          "unit": "sq_m",
-          "unitLabel": "м²",
-          "unitPrice": 1068,
-          "currency": "KGS",
-          "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_labor_KG_sq_m_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": null,
           "rateKey": "ceramic_tile_floor_laying_labor",
@@ -1720,38 +2868,76 @@
         },
         {
           "itemType": "service",
-          "titleRu": "3.1 Доставка / подъем / доступ: требуется уточнение",
+          "titleRu": "3.1 плиткорез",
           "quantity": 1,
           "unit": "set",
           "unitLabel": "компл.",
-          "unitPrice": 1068,
+          "unitPrice": 2800,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_delivery_KG_set_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": null,
-          "rateKey": "ceramic_tile_floor_laying_delivery",
+          "rateKey": "dynamic_universal_equipment_1",
           "catalogBindingStatus": "not_material_row",
           "catalogCandidates": [],
           "selectedCatalogItemId": null
         },
         {
           "itemType": "service",
-          "titleRu": "3.2 Техника / инвентарь: требуется уточнение",
+          "titleRu": "3.2 миксер для клея",
           "quantity": 1,
           "unit": "set",
           "unitLabel": "компл.",
-          "unitPrice": 712,
+          "unitPrice": 3700,
           "currency": "KGS",
           "source": "reference_price_book",
-          "sourceId": "rate_ceramic_tile_floor_laying_equipment_KG_set_standard",
-          "sourceLabel": "Встроенный справочник цен",
-          "confidence": "high",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
           "addedBy": "ai",
           "materialKey": null,
-          "rateKey": "ceramic_tile_floor_laying_equipment",
+          "rateKey": "dynamic_universal_equipment_2",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "service",
+          "titleRu": "4.1 доставка плитки",
+          "quantity": 1,
+          "unit": "trip",
+          "unitLabel": "trip",
+          "unitPrice": 4200,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_logistics_1",
+          "catalogBindingStatus": "not_material_row",
+          "catalogCandidates": [],
+          "selectedCatalogItemId": null
+        },
+        {
+          "itemType": "service",
+          "titleRu": "4.2 резерв на бой и подрезку",
+          "quantity": 1,
+          "unit": "trip",
+          "unitLabel": "trip",
+          "unitPrice": 5100,
+          "currency": "KGS",
+          "source": "reference_price_book",
+          "sourceId": "src_configured_regional_reference_2026",
+          "sourceLabel": "Справочник цен",
+          "confidence": "medium",
+          "addedBy": "ai",
+          "materialKey": null,
+          "rateKey": "dynamic_universal_logistics_2",
           "catalogBindingStatus": "not_material_row",
           "catalogCandidates": [],
           "selectedCatalogItemId": null

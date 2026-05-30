@@ -59,12 +59,18 @@ export type ReleaseGateName =
   | "universal-estimator-kernel-dynamic-boq-proof"
   | "real-500-diverse-construction-works-expanded-estimate-proof"
   | "real-10000-diverse-construction-works-expanded-estimate-proof"
+  | "real-10000-estimate-provenance-diversity-output-quality-audit-proof"
+  | "real-10000-audit-p0-remediation-proof"
+  | "real-10000-audit-p0-remediation-release-closeout-proof"
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
   | "ai-estimate-enterprise-load-performance-cost-proof"
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
   | "ai-estimate-production-canary-control-plane-proof"
   | "ai-estimate-internal-canary-execution-proof"
   | "ai-estimate-canary-evaluation-rollout-decision-proof"
+  | "ai-estimate-limited-public-beta-execution-proof"
+  | "ai-estimate-limited-public-beta-allowlist-closeout-proof"
+  | "ai-estimate-owner-account-live-replay-proof"
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
@@ -341,12 +347,16 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "universal-estimator-kernel-dynamic-boq-proof", command: "npx tsx scripts/e2e/runUniversalEstimatorKernelProof.ts" },
   { name: "real-500-diverse-construction-works-expanded-estimate-proof", command: "npx tsx scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" },
   { name: "real-10000-diverse-construction-works-expanded-estimate-proof", command: "npx tsx scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts" },
+  { name: "real-10000-estimate-provenance-diversity-output-quality-audit-proof", command: "npx tsx scripts/audit/runReal10000EstimateAudit.ts" },
+  { name: "real-10000-audit-p0-remediation-proof", command: "npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
+  { name: "real-10000-audit-p0-remediation-release-closeout-proof", command: "npx tsx scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts && npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },
   { name: "ai-estimate-production-canary-control-plane-proof", command: "npx tsx scripts/e2e/runAiEstimateProductionCanaryProof.ts" },
   { name: "ai-estimate-internal-canary-execution-proof", command: "npx tsx scripts/e2e/runAiEstimateInternalCanaryExecutionProof.ts" },
   { name: "ai-estimate-canary-evaluation-rollout-decision-proof", command: "npx tsx scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" },
+  { name: "ai-estimate-limited-public-beta-allowlist-closeout-proof", command: "npx tsx scripts/e2e/runAiEstimateLimitedPublicBetaAllowlistCloseoutProof.ts" },
   { name: "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof", command: "npx tsx scripts/e2e/runAndroidEmulatorAdbUnblockReplayB2cExpandedEstimateFix.ts" },
   { name: "global-estimate-template-ratebook-reconciliation-proof", command: "npx tsx scripts/e2e/runGlobalEstimateTemplateRatebookReconciliationProof.ts" },
   { name: "ai-route-parity-proof", command: "npx tsx scripts/e2e/runAiRouteParityProof.ts --require-live" },

@@ -1,0 +1,18 @@
+import { resolveLimitedPublicBetaAllowlistEligibility } from "../../src/lib/ai/productionCanary";
+import { allowlistWithEntries, LIMITED_BETA_TEST_NOW, realExternalAllowlistEntry } from "./betaAllowlistTestHelpers";
+
+test("limited public beta excludes regulated high risk work by default", () => {
+  const result = resolveLimitedPublicBetaAllowlistEligibility({
+    allowlist: allowlistWithEntries([realExternalAllowlistEntry()]),
+    userId: "usr_01J0REALALLOWLIST0001",
+    country: "Kyrgyzstan",
+    city: "Bishkek",
+    manualEnable: true,
+    regulatedHighRisk: true,
+    now: LIMITED_BETA_TEST_NOW,
+  });
+
+  expect(result.eligible).toBe(false);
+  expect(result.status).toBe("blocked_regulated_high_risk");
+});
+

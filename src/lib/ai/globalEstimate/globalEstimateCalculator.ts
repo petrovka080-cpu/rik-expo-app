@@ -423,7 +423,25 @@ function dynamicEstimateIdFor(plan: EstimatorReasoningPlan, input: GlobalEstimat
   return `universal_estimator_${Math.abs(hash)}`;
 }
 
-function estimatorKernelInputQuantity(plan: EstimatorReasoningPlan): { value: number; unit: GlobalUnitInput["normalizedUnit"] } {
+function estimatorKernelInputQuantity(
+  plan: EstimatorReasoningPlan,
+  input?: GlobalEstimateInput,
+): { value: number; unit: GlobalUnitInput["normalizedUnit"] } {
+  if (input?.volume !== undefined && input.unit) {
+    const explicitUnit = normalizeGlobalUnit(input.unit);
+    if (explicitUnit === "m3" || explicitUnit === "cu_ft") {
+      return { value: input.volume, unit: explicitUnit };
+    }
+    if ((explicitUnit === "linear_m" || explicitUnit === "linear_ft") && plan.quantities.lengthM !== undefined && plan.quantities.areaM2 === undefined) {
+      return { value: input.volume, unit: explicitUnit };
+    }
+    if ((explicitUnit === "sq_m" || explicitUnit === "sq_ft") && plan.quantities.areaM2 === undefined) {
+      return { value: input.volume, unit: explicitUnit };
+    }
+    if (explicitUnit === "pcs" && plan.quantities.count === undefined && plan.quantities.floorCount === undefined) {
+      return { value: input.volume, unit: explicitUnit };
+    }
+  }
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
   }
@@ -498,7 +516,7 @@ function canonicalTemplateRowsForEstimatorKernel(params: {
   if (template.workKey !== canonicalWork.workKey) return [];
 
   const existingNames = new Set(params.existingRows.map((item) => item.name.toLocaleLowerCase("ru-RU")));
-  const inputQuantity = estimatorKernelInputQuantity(params.plan);
+  const inputQuantity = estimatorKernelInputQuantity(params.plan, params.input);
   const outputContext = Object.fromEntries(params.plan.formulas.flatMap((formula) => Object.entries(formula.outputs)));
 
   return template.sections
@@ -556,7 +574,7 @@ function buildGlobalEstimateFromEstimatorKernel(
   input: GlobalEstimateInput,
   canonicalWork?: { workKey: string; title: string; category: GlobalEstimateResult["work"]["category"] },
 ): GlobalEstimateResult {
-  const inputQuantity = estimatorKernelInputQuantity(plan);
+  const inputQuantity = estimatorKernelInputQuantity(plan, input);
   const locale = resolveGlobalLocalization({ ...input, language: input.language ?? "ru", currency: input.currency ?? plan.pricingPolicy.currency });
   const resultWorkKey = canonicalWork?.workKey ?? plan.workKey;
   const resultWorkTitle = canonicalWork?.title ?? plan.titleRu.replace(/^Профессиональная предварительная смета на /, "");

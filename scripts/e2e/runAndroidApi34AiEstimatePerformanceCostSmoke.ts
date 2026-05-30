@@ -51,6 +51,7 @@ function allowPerformanceWaveChangedFile(file: string): boolean {
     file.startsWith("src/lib/ai/rateLimit/") ||
     file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseAllowedLayers.ts" ||
     file === "src/lib/ai/enterpriseGuardrails/aiEnterpriseArchitecturePolicy.ts" ||
+    file.startsWith("src/lib/ai/productionCanary/") ||
     file.startsWith("src/lib/estimatePdf/aiEstimatePdf") ||
     file.startsWith("src/lib/estimatePdf/validateAiEstimatePdfLoadPolicy") ||
     file === "src/lib/estimatePdf/index.ts" ||
@@ -62,6 +63,8 @@ function allowPerformanceWaveChangedFile(file: string): boolean {
     file.startsWith("tests/performance/") ||
     file.startsWith("tests/cost/") ||
     file.startsWith("tests/architecture/performance") ||
+    file.startsWith("tests/architecture/limitedPublicBeta") ||
+    file.startsWith("tests/limitedPublicBeta/") ||
     file === "tests/ai/aiEnterpriseArchitecturePolicy.contract.test.ts" ||
     file === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
     file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
@@ -69,6 +72,7 @@ function allowPerformanceWaveChangedFile(file: string): boolean {
     file === "tests/architecture/androidRouteBootstrapNoEstimateEngineChange.contract.test.ts" ||
     file === "tests/architecture/androidAppRootReadyMarkerNoEstimateEngineChange.contract.test.ts" ||
     file === "tests/e2e/aiEstimatePerformanceCost.web.spec.ts" ||
+    file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||
     file.startsWith("artifacts/")
   );
 }

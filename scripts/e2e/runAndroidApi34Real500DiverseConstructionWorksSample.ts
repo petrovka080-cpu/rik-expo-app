@@ -24,19 +24,30 @@ export function runAndroidApi34Real500DiverseConstructionWorksSample() {
       file.startsWith("src/lib/ai/builtInAi/") ||
       file.startsWith("src/lib/ai/globalEstimate/") ||
       file.startsWith("src/lib/ai/estimatePresentation/") ||
+      file.startsWith("src/lib/ai/productionCanary/") ||
+      file.startsWith("src/lib/ai/observability/") ||
+      file.startsWith("src/lib/ai/killSwitch/") ||
+      file.startsWith("src/lib/ai/rollback/") ||
       file.startsWith("src/lib/estimatePdf/") ||
       file === "src/features/consumerRepair/consumerRepairAiAdapter.ts" ||
       file.startsWith("tests/real500/") ||
+      file.startsWith("tests/limitedPublicBeta/") ||
       file.startsWith("tests/architecture/real500") ||
+      file.startsWith("tests/architecture/limitedPublicBeta") ||
       file === "tests/perf/performance-budget.test.ts" ||
       file === "tests/e2e/real500DiverseConstructionWorks.web.spec.ts" ||
+      file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||
       file === "scripts/release/releaseGuard.shared.ts" ||
       file === "scripts/release/run-release-guard.ts" ||
       file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
       file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
       file === "scripts/e2e/real500AcceptanceCore.ts" ||
       file === "scripts/e2e/runAndroidApi34Real500DiverseConstructionWorksSample.ts" ||
-      file === "scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts",
+      file === "scripts/e2e/runReal500DiverseConstructionWorksExpandedEstimateProof.ts" ||
+      file.startsWith("scripts/e2e/aiEstimateLimitedPublicBeta") ||
+      file.startsWith("scripts/e2e/runAiEstimateLimitedPublicBeta") ||
+      file === "scripts/e2e/runAndroidApi34AiEstimateLimitedPublicBetaSmoke.ts" ||
+      file === "scripts/audit/runAiEstimateLimitedPublicBetaDailyMonitor.ts",
   });
   const results = sampleCases().map((item) => {
     const result = evaluateReal500Case(item);

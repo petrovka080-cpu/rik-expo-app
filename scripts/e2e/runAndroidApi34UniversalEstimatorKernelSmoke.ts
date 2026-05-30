@@ -29,18 +29,31 @@ export function runAndroidApi34UniversalEstimatorKernelSmoke() {
       file.startsWith("src/lib/ai/builtInAi/") ||
       file.startsWith("src/lib/ai/globalEstimate/") ||
       file.startsWith("src/lib/ai/estimatePresentation/") ||
+      file.startsWith("src/lib/ai/productionCanary/") ||
+      file.startsWith("src/lib/ai/observability/") ||
+      file.startsWith("src/lib/ai/killSwitch/") ||
+      file.startsWith("src/lib/ai/rollback/") ||
       file.startsWith("src/lib/estimatePdf/") ||
       file.startsWith("tests/estimatorKernel/") ||
       file.startsWith("tests/constructionFormulas/") ||
       file.startsWith("tests/professionalBoq/") ||
       file.startsWith("tests/catalogBinding/") ||
       file.startsWith("tests/pdf/") ||
+      file.startsWith("tests/limitedPublicBeta/") ||
       file.startsWith("tests/architecture/universalEstimator") ||
+      file.startsWith("tests/architecture/limitedPublicBeta") ||
       file === "tests/perf/performance-budget.test.ts" ||
       file === "tests/e2e/universalEstimatorKernel.web.spec.ts" ||
+      file === "tests/e2e/aiEstimateLimitedPublicBeta.web.spec.ts" ||
       file === "scripts/e2e/runAndroidApi34UniversalEstimatorKernelSmoke.ts" ||
       file === "scripts/e2e/runUniversalEstimatorKernelFailureReproduction.ts" ||
-      file === "scripts/e2e/runUniversalEstimatorKernelProof.ts",
+      file === "scripts/e2e/runUniversalEstimatorKernelProof.ts" ||
+      file.startsWith("scripts/e2e/aiEstimateLimitedPublicBeta") ||
+      file.startsWith("scripts/e2e/runAiEstimateLimitedPublicBeta") ||
+      file === "scripts/e2e/runAndroidApi34AiEstimateLimitedPublicBetaSmoke.ts" ||
+      file === "scripts/audit/runAiEstimateLimitedPublicBetaDailyMonitor.ts" ||
+      file === "scripts/release/releaseGuard.shared.ts" ||
+      file === "scripts/release/run-release-guard.ts",
   });
   const results = prompts.map((item) => {
     const answer = answerBuiltInAi({

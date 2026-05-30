@@ -8,14 +8,14 @@
     },
     {
       "prompt": "смета на кладку кирпича 74 м2",
-      "workKey": "other_construction_work",
-      "rowCount": 10,
+      "workKey": "dynamic_masonry_estimate",
+      "rowCount": 18,
       "failures": []
     },
     {
       "prompt": "смета на двускатную кровлю 100 м2",
       "workKey": "gable_roof_installation",
-      "rowCount": 11,
+      "rowCount": 32,
       "failures": []
     }
   ]

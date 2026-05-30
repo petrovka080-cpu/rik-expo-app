@@ -14,6 +14,7 @@ import {
   loginWithTempUser,
   maybeConfirmFio,
   poll,
+  type PlatformObservabilityEvent,
   waitForObservability,
   writeArtifact,
 } from "./_shared/realtimeWebRuntime";
@@ -66,7 +67,9 @@ async function waitForAccountantSurface(page: Page) {
   await poll(
     "accountant:surface_ready",
     async () => {
-      const events = await getObservabilityEvents(page).catch(() => []);
+      const events: PlatformObservabilityEvent[] = await getObservabilityEvents(page).catch(
+        (): PlatformObservabilityEvent[] => [],
+      );
       const observedSurface = events.some(
         (event) =>
           event.screen === "accountant" &&

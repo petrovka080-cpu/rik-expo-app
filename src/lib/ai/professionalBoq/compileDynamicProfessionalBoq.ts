@@ -5,6 +5,8 @@ import type {
   EstimatorKernelComplexity,
   EstimatorReasoningPlan,
 } from "../estimatorKernel/estimatorKernelTypes";
+import { expandInfrastructureBoqRows } from "../constructionPrimitives/expandInfrastructureBoqRows";
+import { validateInfrastructureBoqDepth } from "../constructionPrimitives/validateInfrastructureBoqDepth";
 
 const forbiddenStandalone = new Set([
   "материал",
@@ -421,6 +423,48 @@ function buildHydropowerRows(plan: EstimatorReasoningPlan): DynamicProfessionalB
   return baseRows;
 }
 
+function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const perimeter = Math.max(8, Math.round(Math.sqrt(area) * 4 * 100) / 100);
+  const concreteM3 = Math.round(area * 0.16 * 100) / 100;
+  return [
+    row("labor", "industrial_floor_survey", "обследование основания промышленного пола", "set", 1, 8500),
+    row("labor", "industrial_floor_load_review", "уточнение расчетной нагрузки и класса пола", "set", 1, 12000),
+    row("labor", "industrial_floor_level_marks", "разбивка высотных отметок лазерным уровнем", "sq_m", area, 38),
+    row("labor", "industrial_floor_base_cleaning", "очистка основания перед устройством пола", "sq_m", area, 45),
+    row("labor", "industrial_floor_base_milling", "локальная фрезеровка / подготовка слабых зон", "sq_m", Math.round(area * 0.12 * 100) / 100, 220),
+    row("materials", "industrial_floor_geotextile_warning", "разделительный слой / пленка под плиту пола", "sq_m", Math.round(area * 1.05 * 100) / 100, 45, "floor_membrane"),
+    row("materials", "industrial_floor_sand_leveling", "песчаная подготовка под плиту пола", "m3", Math.round(area * 0.04 * 100) / 100, 1550, "sand"),
+    row("materials", "industrial_floor_crushed_stone", "щебеночная подготовка под промышленный пол", "m3", Math.round(area * 0.08 * 100) / 100, 1900, "crushed_stone"),
+    row("equipment", "industrial_floor_base_compaction", "уплотнение основания виброкатком", "shift", Math.max(1, Math.ceil(area / 700)), 18000),
+    row("materials", "industrial_floor_vapor_barrier", "пароизоляция / полиэтиленовая мембрана", "sq_m", Math.round(area * 1.08 * 100) / 100, 55, "vapor_barrier"),
+    row("materials", "industrial_floor_dowel_bars", "штырьевые соединения в рабочих швах", "set", Math.max(1, Math.ceil(perimeter / 6)), 850, "dowel_bars"),
+    row("materials", "industrial_floor_rebar_mesh", "арматурная сетка промышленного пола", "sq_m", Math.round(area * 1.05 * 100) / 100, 280, "rebar_mesh"),
+    row("materials", "industrial_floor_fiber", "фибра для бетонного пола", "kg", Math.round(concreteM3 * 25 * 100) / 100, 160, "fiber"),
+    row("materials", "industrial_floor_concrete", "бетон для промышленного пола", "m3", concreteM3, 5600, "concrete"),
+    row("materials", "industrial_floor_hardener", "топпинг / упрочнитель поверхности", "kg", Math.round(area * 4.5 * 100) / 100, 75, "dry_shake_hardener"),
+    row("materials", "industrial_floor_curing_compound", "состав для ухода за покрытием пола", "sq_m", area, 65, "curing_compound"),
+    row("labor", "industrial_floor_rebar_laying", "укладка арматурной сетки и фиксаторов", "sq_m", area, 120),
+    row("labor", "industrial_floor_concrete_acceptance", "приемка бетона и контроль подвижности смеси", "m3", concreteM3, 120),
+    row("labor", "industrial_floor_concrete_pour", "заливка бетонной плиты промышленного пола", "m3", concreteM3, 720),
+    row("equipment", "industrial_floor_pump", "подача бетона / бетононасос", "shift", Math.max(1, Math.ceil(concreteM3 / 80)), 28000),
+    row("equipment", "industrial_floor_laser_screed", "виброрейка / лазерный укладчик", "shift", Math.max(1, Math.ceil(area / 1000)), 42000),
+    row("labor", "industrial_floor_vibration", "виброуплотнение и протяжка смеси пола", "sq_m", area, 95),
+    row("labor", "industrial_floor_hardener_broadcast", "нанесение топпинга по свежему слою пола", "sq_m", area, 140),
+    row("equipment", "industrial_floor_power_trowel", "затирочные машины для промышленного пола", "shift", Math.max(1, Math.ceil(area / 600)), 16500),
+    row("labor", "industrial_floor_troweling", "затирка и финишная обработка поверхности", "sq_m", area, 160),
+    row("labor", "industrial_floor_curing", "уход за покрытием после заливки", "sq_m", area, 45),
+    row("labor", "industrial_floor_joint_cutting", "нарезка усадочных швов", "linear_m", Math.round(area / 12 * 100) / 100, 180),
+    row("materials", "industrial_floor_joint_sealant", "герметик для швов промышленного пола", "linear_m", Math.round(area / 12 * 100) / 100, 220, "joint_sealant"),
+    row("labor", "industrial_floor_joint_sealing", "заполнение и герметизация швов", "linear_m", Math.round(area / 12 * 100) / 100, 160),
+    row("labor", "industrial_floor_flatness_control", "контроль ровности и перепадов поверхности", "sq_m", area, 32),
+    row("labor", "industrial_floor_strength_protocol", "оформление протокола контроля и сдачи пола", "set", 1, 6500),
+    row("delivery", "industrial_floor_material_delivery", "доставка бетона, топпинга и расходников", "trip", Math.max(1, Math.ceil(concreteM3 / 8)), 6200),
+    row("delivery", "industrial_floor_cleanup", "уборка и вывоз отходов после устройства пола", "trip", Math.max(1, Math.ceil(area / 1200)), 5200),
+    row("materials", "industrial_floor_reserve", "резерв расходных материалов промышленного пола", "set", 1, Math.round(area * 45), "industrial_floor_reserve"),
+  ];
+}
+
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
   const object = plan.semanticFrame.object.replace(/_/g, " ");
@@ -518,7 +562,7 @@ export function validateDynamicProfessionalBoq(boq: DynamicProfessionalBoq): Dyn
 
 export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoq {
   const object = plan.semanticFrame.object;
-  const rows =
+  const baseRows =
     object === "passenger_elevator" ? buildElevatorInstallationBoq(plan) :
       object === "drainage_channel" ? buildDrainageChannelBoq(plan) :
           object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
@@ -529,7 +573,9 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
                     object === "floor_covering" ? buildFloorCoveringRows(plan) :
                       object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
                         object === "hydropower_turbine" ? buildHydropowerRows(plan) :
+                          object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
                           buildFallbackRows(plan);
+  const rows = expandInfrastructureBoqRows(plan, baseRows);
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",
     plan,
@@ -551,8 +597,13 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
     ],
   };
   const validation = validateDynamicProfessionalBoq(boq);
-  if (!validation.passed) {
-    throw new Error(`DYNAMIC_PROFESSIONAL_BOQ_INVALID:${validation.failures.join(",")}`);
+  const infrastructureValidation = validateInfrastructureBoqDepth(boq);
+  const failures = [
+    ...validation.failures,
+    ...infrastructureValidation.blockers,
+  ];
+  if (failures.length > 0) {
+    throw new Error(`DYNAMIC_PROFESSIONAL_BOQ_INVALID:${failures.join(",")}`);
   }
   return boq;
 }
