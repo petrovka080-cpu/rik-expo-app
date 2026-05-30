@@ -24,6 +24,8 @@ export type Real10000ConstructionWorkCase = {
   expectedResolvedDomain: string;
   expectedObject: string;
   expectedOperation: string;
+  workObjectVariant: string;
+  workOperationVariant: string;
   expectedMethod?: string;
   complexity: "simple" | "medium" | "complex" | "infrastructure" | "regulated";
   quantityExpectation: {
@@ -263,8 +265,125 @@ const locations = [
   "в магазине",
   "на производстве",
 ];
+const workObjectZones = [
+  { key: "main_area", prompt: "основная зона" },
+  { key: "perimeter", prompt: "периметр" },
+  { key: "junctions", prompt: "узлы примыкания" },
+  { key: "entrance_group", prompt: "входная группа" },
+  { key: "service_zone", prompt: "сервисная зона" },
+  { key: "technical_room", prompt: "техническое помещение" },
+  { key: "external_loop", prompt: "наружный контур" },
+  { key: "wet_zone", prompt: "мокрая зона" },
+  { key: "load_zone", prompt: "нагруженный участок" },
+  { key: "finish_zone", prompt: "чистовая зона" },
+] as const;
+const workObjectConditions = [
+  { key: "new_build", prompt: "новое строительство" },
+  { key: "renovation", prompt: "ремонт действующего объекта" },
+  { key: "replacement", prompt: "замена существующей системы" },
+  { key: "reinforcement", prompt: "усиление и восстановление" },
+  { key: "phased_access", prompt: "работа по этапам" },
+  { key: "occupied_site", prompt: "объект частично эксплуатируется" },
+  { key: "restricted_hours", prompt: "ограниченные часы работ" },
+  { key: "weather_exposed", prompt: "открытая площадка" },
+  { key: "tight_logistics", prompt: "стесненная логистика" },
+  { key: "quality_handover", prompt: "подготовка к сдаче" },
+] as const;
+const workAccessContexts = [
+  { key: "street_access", prompt: "доступ с улицы" },
+  { key: "yard_access", prompt: "доступ через двор" },
+  { key: "upper_floor", prompt: "верхний этаж" },
+  { key: "basement", prompt: "подвал или цоколь" },
+  { key: "warehouse_gate", prompt: "ворота склада" },
+  { key: "manual_carry", prompt: "ручной занос" },
+  { key: "hoist_required", prompt: "нужен подъем" },
+  { key: "night_window", prompt: "ночное окно" },
+  { key: "traffic_control", prompt: "схема движения" },
+  { key: "clean_zone", prompt: "чистая зона" },
+] as const;
+const workOperationVariants = [
+  { key: "survey", prompt: "обследование" },
+  { key: "measurement", prompt: "обмер" },
+  { key: "markup", prompt: "разметку" },
+  { key: "temporary_protection", prompt: "временную защиту" },
+  { key: "demolition", prompt: "демонтаж" },
+  { key: "base_preparation", prompt: "подготовку основания" },
+  { key: "leveling", prompt: "выравнивание" },
+  { key: "earthmoving", prompt: "земляные работы" },
+  { key: "reinforcement", prompt: "армирование" },
+  { key: "formwork", prompt: "опалубку" },
+  { key: "installation", prompt: "монтаж" },
+  { key: "assembly", prompt: "сборку" },
+  { key: "laying", prompt: "укладку" },
+  { key: "fixing", prompt: "крепление" },
+  { key: "sealing", prompt: "герметизацию" },
+  { key: "insulation", prompt: "изоляцию" },
+  { key: "waterproofing", prompt: "гидроизоляцию" },
+  { key: "connection", prompt: "подключение" },
+  { key: "commissioning", prompt: "пусконаладку" },
+  { key: "testing", prompt: "испытания" },
+  { key: "quality_control", prompt: "контроль качества" },
+  { key: "handover_docs", prompt: "исполнительную документацию" },
+  { key: "material_delivery", prompt: "доставку материалов" },
+  { key: "mechanized_work", prompt: "работу техники" },
+  { key: "manual_labor", prompt: "ручные работы" },
+  { key: "waste_removal", prompt: "вывоз отходов" },
+  { key: "surface_finish", prompt: "финишную отделку" },
+  { key: "joint_treatment", prompt: "обработку стыков" },
+  { key: "edge_detailing", prompt: "узлы кромок" },
+  { key: "slope_control", prompt: "контроль уклонов" },
+  { key: "fire_safety", prompt: "пожарную безопасность" },
+  { key: "electrical_safety", prompt: "электробезопасность" },
+  { key: "load_check", prompt: "проверку нагрузок" },
+  { key: "anchoring", prompt: "анкеровку" },
+  { key: "grouting", prompt: "заполнение швов" },
+  { key: "priming", prompt: "грунтование" },
+  { key: "painting", prompt: "окраску" },
+  { key: "cladding", prompt: "облицовку" },
+  { key: "pipework", prompt: "трубопроводы" },
+  { key: "cable_routing", prompt: "прокладку кабеля" },
+  { key: "equipment_setting", prompt: "установку оборудования" },
+  { key: "calibration", prompt: "калибровку" },
+  { key: "balancing", prompt: "балансировку" },
+  { key: "pressure_test", prompt: "опрессовку" },
+  { key: "flush_test", prompt: "пролив" },
+  { key: "thermal_check", prompt: "теплотехническую проверку" },
+  { key: "acoustic_check", prompt: "акустическую проверку" },
+  { key: "cleaning", prompt: "уборку" },
+  { key: "restoration", prompt: "восстановление покрытия" },
+  { key: "traffic_management", prompt: "организацию движения" },
+  { key: "site_fencing", prompt: "ограждение площадки" },
+  { key: "geodesy", prompt: "геодезию" },
+  { key: "scaffolding", prompt: "леса и подмости" },
+  { key: "lifting", prompt: "такелаж" },
+  { key: "weather_protection", prompt: "защиту от погоды" },
+  { key: "storage", prompt: "складирование" },
+  { key: "supplier_coordination", prompt: "координацию поставок" },
+  { key: "permit_support", prompt: "сопровождение разрешений" },
+  { key: "risk_allowance", prompt: "резерв рисков" },
+  { key: "final_inspection", prompt: "финальную приемку" },
+] as const;
 const lengthDomains = new Set(["fencing", "well_drilling", "sewerage", "drainage", "retaining_walls", "irrigation", "water_supply", "gas_regulated"]);
 const countDomains = new Set(["doors", "windows", "security_systems", "industrial_equipment", "staircases", "boilers_regulated", "cranes_regulated", "elevators_regulated"]);
+
+function neutralOperationPromptCode(index: number): string {
+  const alphabet = "abcdefghijklmnopqrstuvwxyz";
+  const first = alphabet[Math.floor(index / alphabet.length) % alphabet.length];
+  const second = alphabet[index % alphabet.length];
+  return `stage_${first}${second}`;
+}
+
+function diversityDescriptor(definition: AcceptanceDomainDefinition, variant: number, globalIndex: number) {
+  const zone = workObjectZones[variant % workObjectZones.length];
+  const condition = workObjectConditions[Math.floor(variant / workObjectZones.length) % workObjectConditions.length];
+  const access = workAccessContexts[Math.floor(variant / (workObjectZones.length * workObjectConditions.length)) % workAccessContexts.length];
+  const operation = workOperationVariants[globalIndex % workOperationVariants.length];
+  return {
+    workObjectVariant: `${definition.domain}_${zone.key}_${condition.key}`,
+    workOperationVariant: `${operation.key}_${access.key}`,
+    promptDetail: `зона работ ${zone.prompt}, условие ${condition.prompt}, детализация этапа ${neutralOperationPromptCode(globalIndex % workOperationVariants.length)}, доступ ${access.prompt}`,
+  };
+}
 
 function quantityFor(entry: EstimatorDomainLexiconEntry, definition: AcceptanceDomainDefinition, variant: number) {
   const valueIndex = variant % areaValues.length;
@@ -368,9 +487,10 @@ function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
 function caseFor(definition: AcceptanceDomainDefinition, variant: number, globalIndex: number): Real10000ConstructionWorkCase {
   const entry = lexiconEntry(definition.lexiconDomain);
   const rawPromptRu = promptFor(definition, entry, variant);
+  const diversity = diversityDescriptor(definition, variant, globalIndex);
   const promptRu = keepsExactMandatoryPrompt(definition, variant)
     ? rawPromptRu
-    : `${rawPromptRu} пакет работ ${globalIndex + 1}`;
+    : `${rawPromptRu}, ${diversity.promptDetail}, пакет работ ${globalIndex + 1}`;
   const quantity = quantityFor(entry, definition, variant);
   const forceConcretePedestal = entry.domain === "concrete" && /тумб|С‚СѓРјР±/.test(promptRu.toLocaleLowerCase("ru-RU"));
   const regulated = definition.regulated === true || entry.regulatedSafetyRequired === true;
@@ -388,6 +508,8 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     expectedResolvedDomain,
     expectedObject: forceConcretePedestal ? "concrete_pedestal" : entry.domain === "elevators_regulated" ? "passenger_elevator" : entry.object,
     expectedOperation: forceConcretePedestal ? "concrete_pour" : entry.operation,
+    workObjectVariant: diversity.workObjectVariant,
+    workOperationVariant: diversity.workOperationVariant,
     expectedMethod: forceConcretePedestal ? "rectangular_concrete_element" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,

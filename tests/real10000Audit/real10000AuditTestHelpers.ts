@@ -10,6 +10,8 @@ export function auditCase(overrides: Partial<Real10000ConstructionWorkCase> = {}
     expectedResolvedDomain: "audit_domain",
     expectedObject: "audit_object",
     expectedOperation: "installation",
+    workObjectVariant: "audit_domain_main_area_new_build",
+    workOperationVariant: "installation_street_access",
     complexity: "medium",
     quantityExpectation: { areaM2: 100 },
     expectedMinimumRows: 18,

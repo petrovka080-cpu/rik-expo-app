@@ -62,6 +62,7 @@ export type ReleaseGateName =
   | "real-10000-estimate-provenance-diversity-output-quality-audit-proof"
   | "real-10000-audit-p0-remediation-proof"
   | "real-10000-audit-p0-remediation-release-closeout-proof"
+  | "real-10000-audit-p1-evidence-refresh-proof"
   | "ai-estimate-enterprise-load-performance-cost-guard-proof"
   | "ai-estimate-enterprise-load-performance-cost-proof"
   | "ai-estimate-enterprise-final-readiness-go-no-go-proof"
@@ -350,6 +351,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "real-10000-estimate-provenance-diversity-output-quality-audit-proof", command: "npx tsx scripts/audit/runReal10000EstimateAudit.ts" },
   { name: "real-10000-audit-p0-remediation-proof", command: "npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
   { name: "real-10000-audit-p0-remediation-release-closeout-proof", command: "npx tsx scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts && npx tsx scripts/audit/runReal10000AuditP0RemediationProof.ts" },
+  { name: "real-10000-audit-p1-evidence-refresh-proof", command: "npx tsx scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-guard-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseLoadPerformanceCostGuardProof.ts" },
   { name: "ai-estimate-enterprise-load-performance-cost-proof", command: "npx tsx scripts/e2e/runAiEstimateLoadPerformanceCostProof.ts && npx tsx scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts" },
   { name: "ai-estimate-enterprise-final-readiness-go-no-go-proof", command: "npx tsx scripts/e2e/runAiEstimateEnterpriseFinalReadinessProof.ts" },

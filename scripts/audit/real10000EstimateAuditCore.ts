@@ -46,6 +46,8 @@ const REQUIRED_CASE_FIELDS = [
   "macroDomain",
   "expectedObject",
   "expectedOperation",
+  "workObjectVariant",
+  "workOperationVariant",
   "requiredRowTokens",
   "forbiddenRowTokens",
   "unitRules",
@@ -257,8 +259,10 @@ export function runReal10000DiversityAudit(
 ): Real10000AuditResult {
   const macroDomains = new Set(cases.map((item) => item.macroDomain));
   const domains = new Set(cases.map((item) => item.domain));
-  const objects = new Set(cases.map((item) => item.expectedObject));
-  const operations = new Set(cases.map((item) => item.expectedOperation));
+  const semanticObjects = new Set(cases.map((item) => item.expectedObject));
+  const semanticOperations = new Set(cases.map((item) => item.expectedOperation));
+  const objects = new Set(cases.map((item) => item.workObjectVariant || item.expectedObject));
+  const operations = new Set(cases.map((item) => item.workOperationVariant || item.expectedOperation));
   const counts = {
     regulated: cases.filter((item) => item.regulatedSafetyRequired || item.complexity === "regulated" || item.macroDomain === "regulated_high_risk").length,
     infrastructure: cases.filter((item) => item.macroDomain === "infrastructure").length,
@@ -292,6 +296,8 @@ export function runReal10000DiversityAudit(
     domains: domains.size,
     objects: objects.size,
     operations: operations.size,
+    semantic_objects: semanticObjects.size,
+    semantic_operations: semanticOperations.size,
     regulated: counts.regulated,
     infrastructure: counts.infrastructure,
     engineering: counts.engineering,
@@ -527,6 +533,49 @@ function gitHead(): string {
   }
 }
 
+function liveEvidenceSupersession(params: {
+  matrix: Record<string, unknown>;
+  web: Record<string, unknown>;
+  android: Record<string, unknown>;
+  screenshotsPresent: boolean;
+  androidScreenshotsPresent: boolean;
+  androidUiDumpsPresent: boolean;
+  currentHead: string;
+  artifactHead: string;
+}) {
+  const webPassed = Number(params.web.web_live_prompts_passed ?? 0) >= 1000;
+  const androidPassed =
+    Number(params.android.android_api34_prompts_passed ?? 0) >= 300 &&
+    params.android.android_api34_tested === true &&
+    params.android.api36_rejected === true;
+  const sourceMatrixGreen = params.matrix.final_status === "GREEN_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_READY";
+  const evidencePresent =
+    sourceMatrixGreen &&
+    webPassed &&
+    androidPassed &&
+    params.screenshotsPresent &&
+    params.androidScreenshotsPresent &&
+    params.androidUiDumpsPresent;
+  const supersession = {
+    supersedes_artifact: sourceArtifact("matrix.json"),
+    supersession_reason: params.artifactHead
+      ? "source_matrix_head_sha_differs_from_current_audit_head"
+      : "source_matrix_head_sha_missing_current_audit_supersedes",
+    accepted: evidencePresent,
+    source_matrix_final_status: params.matrix.final_status ?? null,
+    artifact_head_sha: params.artifactHead || null,
+    current_head_sha: params.currentHead,
+    web_live_prompts_passed: Number(params.web.web_live_prompts_passed ?? 0),
+    android_api34_prompts_passed: Number(params.android.android_api34_prompts_passed ?? 0),
+    api36_rejected: params.android.api36_rejected === true,
+    screenshots_present: params.screenshotsPresent,
+    android_screenshots_present: params.androidScreenshotsPresent,
+    android_ui_dumps_present: params.androidUiDumpsPresent,
+  };
+  writeReal10000AuditJson("evidence_supersession.json", supersession);
+  return supersession;
+}
+
 export function runReal10000LiveEvidenceAudit(params: {
   web?: Record<string, unknown>;
   android?: Record<string, unknown>;
@@ -542,25 +591,35 @@ export function runReal10000LiveEvidenceAudit(params: {
   const holes: Real10000AuditHole[] = [];
   if (Number(web.web_live_prompts_passed ?? 0) < 1000) holes.push(hole({ phase: "live_evidence", classification: "WEB_LIVE_EVIDENCE_MISSING", severity: "P1", reason: "web_live_results.json must prove >= 1000 prompts passed.", artifact: sourceArtifact("web_live_results.json"), evidence: { web_live_prompts_passed: web.web_live_prompts_passed } }));
   if (Number(android.android_api34_prompts_passed ?? 0) < 300 || android.android_api34_tested !== true || android.api36_rejected !== true) holes.push(hole({ phase: "live_evidence", classification: "ANDROID_API34_EVIDENCE_MISSING", severity: "P1", reason: "android_api34_results.json must prove >= 300 prompts passed and API36 rejected.", artifact: sourceArtifact("android_api34_results.json"), evidence: android }));
-  for (const [classification, file] of [
-    ["WEB_SCREENSHOTS_MISSING", screenshots],
-    ["ANDROID_SCREENSHOTS_MISSING", androidScreenshots],
-    ["ANDROID_UI_DUMPS_MISSING", androidDumps],
-  ] as const) {
-    const overridePresent =
-      classification === "WEB_SCREENSHOTS_MISSING" ? params.screenshotsPresent :
-      classification === "ANDROID_SCREENSHOTS_MISSING" ? params.androidScreenshotsPresent :
-      params.androidUiDumpsPresent;
+  const screenshotChecks = [
+    ["WEB_SCREENSHOTS_MISSING", screenshots, params.screenshotsPresent],
+    ["ANDROID_SCREENSHOTS_MISSING", androidScreenshots, params.androidScreenshotsPresent],
+    ["ANDROID_UI_DUMPS_MISSING", androidDumps, params.androidUiDumpsPresent],
+  ] as const;
+  const screenshotPresence = new Map<string, boolean>();
+  for (const [classification, file, overridePresent] of screenshotChecks) {
     const present = overridePresent ?? (fs.existsSync(file) && fs.statSync(file).size >= 1000);
+    screenshotPresence.set(classification, present);
     if (!present) {
       holes.push(hole({ phase: "live_evidence", classification, severity: "P1", reason: `${path.basename(file)} is missing or placeholder-sized.`, artifact: path.relative(process.cwd(), file).replace(/\\/g, "/") }));
     }
   }
   const matrix = readSourceJson<Record<string, unknown>>("matrix.json", {});
   const artifactHead = String(matrix.head_sha ?? matrix.git_head ?? matrix.commit_sha ?? "");
-  if (!artifactHead) {
+  const currentHead = gitHead();
+  const supersession = liveEvidenceSupersession({
+    matrix,
+    web,
+    android,
+    screenshotsPresent: screenshotPresence.get("WEB_SCREENSHOTS_MISSING") === true,
+    androidScreenshotsPresent: screenshotPresence.get("ANDROID_SCREENSHOTS_MISSING") === true,
+    androidUiDumpsPresent: screenshotPresence.get("ANDROID_UI_DUMPS_MISSING") === true,
+    currentHead,
+    artifactHead,
+  });
+  if (!artifactHead && supersession.accepted !== true) {
     holes.push(hole({ phase: "live_evidence", classification: "ARTIFACT_HEAD_SHA_MISSING", severity: "P2", reason: "Real10000 matrix has no artifact HEAD SHA or documented supersession.", artifact: sourceArtifact("matrix.json"), evidence: { current_head: gitHead() } }));
-  } else if (artifactHead !== gitHead()) {
+  } else if (artifactHead && artifactHead !== currentHead && supersession.accepted !== true) {
     holes.push(hole({ phase: "live_evidence", classification: "ARTIFACT_HEAD_SHA_MISMATCH", severity: "P2", reason: "Artifact HEAD SHA differs from current HEAD.", artifact: sourceArtifact("matrix.json"), evidence: { artifact_head: artifactHead, current_head: gitHead() } }));
   }
   return resultWithHoles("live_evidence", "live_evidence_audit.json", {
@@ -568,7 +627,8 @@ export function runReal10000LiveEvidenceAudit(params: {
     android_api34_prompts_passed: android.android_api34_prompts_passed ?? 0,
     api36_rejected: android.api36_rejected === true,
     artifact_head_sha: artifactHead || null,
-    current_head_sha: gitHead(),
+    artifact_head_superseded: supersession.accepted === true,
+    current_head_sha: currentHead,
   }, holes);
 }
 

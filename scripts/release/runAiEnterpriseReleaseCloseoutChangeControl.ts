@@ -1390,10 +1390,19 @@ function isReal500DiverseConstructionWorksPath(file: string): boolean {
 function isReal10000DiverseConstructionWorksPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS/") ||
+    file.startsWith("artifacts/S_REAL_10000_AUDIT/") ||
+    file.startsWith("artifacts/S_REAL_10000_AUDIT_P0_REMEDIATION/") ||
+    file.startsWith("artifacts/S_REAL_10000_AUDIT_P1_EVIDENCE_REFRESH/") ||
     file.startsWith("artifacts/pdf/real-10000-diverse-construction-works/") ||
     file === "src/lib/ai/estimatorKernel/constructionDomainLexicon.ts" ||
     file === "src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts" ||
     file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+    file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
+    file === "scripts/audit/real10000EstimateAuditCore.ts" ||
+    file === "scripts/audit/runReal10000AuditP0RemediationProof.ts" ||
+    file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+    file === "scripts/audit/runReal10000EstimateAudit.ts" ||
+    file === "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts" ||
     file === "scripts/e2e/real10000AcceptanceCore.ts" ||
     file === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
     file === "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts" ||
@@ -1402,6 +1411,8 @@ function isReal10000DiverseConstructionWorksPath(file: string): boolean {
     file === "tests/e2e/real10000DiverseConstructionWorks.web.spec.ts" ||
     file === "tests/real10000" ||
     file.startsWith("tests/real10000/") ||
+    file === "tests/real10000Audit" ||
+    file.startsWith("tests/real10000Audit/") ||
     file.startsWith("tests/architecture/real10000")
   );
 }
