@@ -7,9 +7,14 @@ import {
 export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Canary evaluation changes rollout decision proof, release guard wiring, tests, and evidence aggregation only; API34 route shell evidence is reused while internal canary runtime artifacts remain current.",
+    allowedRuntimeReuseReason: "Canary evaluation or Real10000 audit evidence changes do not alter Android route shell runtime; API34 route shell evidence is reused while internal canary runtime artifacts remain current.",
     allowChangedFile: (file) =>
       file.startsWith("src/lib/ai/productionCanary/") ||
+      file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
+      file === "scripts/audit/real10000EstimateAuditCore.ts" ||
+      file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+      file.startsWith("tests/real10000Audit/") ||
+      file.startsWith("tests/architecture/real10000P1") ||
       file.startsWith("tests/canaryEvaluation/") ||
       file.startsWith("tests/architecture/canaryEvaluation") ||
       file === "tests/architecture/canaryEvaluationArchitectureTestHelpers.ts" ||

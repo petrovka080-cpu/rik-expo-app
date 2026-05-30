@@ -1403,6 +1403,7 @@ function isReal10000DiverseConstructionWorksPath(file: string): boolean {
     file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
     file === "scripts/audit/runReal10000EstimateAudit.ts" ||
     file === "scripts/audit/runReal10000P0RemediationTypeRatchetAudit.ts" ||
+    file === "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts" ||
     file === "scripts/e2e/real10000AcceptanceCore.ts" ||
     file === "scripts/e2e/runAndroidApi34Real10000DiverseConstructionWorksSample.ts" ||
     file === "scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts" ||
