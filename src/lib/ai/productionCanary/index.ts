@@ -15,3 +15,7 @@ export * from "./recordAiEstimateUserFeedback";
 export * from "./validateAiEstimateUserFeedback";
 export * from "./internalCanaryErrorBudget";
 export * from "./evaluateInternalCanaryErrorBudget";
+export * from "./canaryEvaluationTypes";
+export * from "./validateAiEstimateRolloutDecisionPolicy";
+export * from "./evaluateAiEstimateInternalCanaryEvidence";
+export * from "./buildAiEstimatePublicRolloutDecision";

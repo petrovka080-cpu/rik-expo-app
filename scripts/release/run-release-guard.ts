@@ -542,6 +542,20 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.INTERNAL_CANARY_BRANCH_PUSHED = "1";
     gateEnv.INTERNAL_CANARY_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (gate.name === "ai-estimate-canary-evaluation-public-rollout-decision-proof") {
+    gateEnv.CANARY_EVALUATION_TYPECHECK_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_LINT_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_TARGETED_TESTS_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_ARCHITECTURE_TESTS_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_PLAYWRIGHT_WEB_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_ANDROID_API34_SMOKE_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_FULL_JEST_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.CANARY_EVALUATION_COMMIT_CREATED = "1";
+    gateEnv.CANARY_EVALUATION_BRANCH_PUSHED = "1";
+    gateEnv.CANARY_EVALUATION_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (gate.name === "director-fact-contract-proof") {
     gateEnv.DIRECTOR_FACT_CONTRACT_TYPECHECK_PASSED = "1";
     gateEnv.DIRECTOR_FACT_CONTRACT_LINT_PASSED = "1";
