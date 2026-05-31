@@ -86,6 +86,7 @@ export type ReleaseGateName =
   | "ai-estimate-pdf-safe-integration-proof"
   | "ai-estimate-pdf-tabular-regression-proof"
   | "request-ai-estimate-boq-catalog-proof"
+  | "live-request-embedded-ai-professional-boq-pdf-catalog-proof"
   | "request-ai-estimate-professional-boq-formula-proof"
   | "global-estimate-professional-boq-depth-formula-quality-proof"
   | "catalog-items-global-estimate-binding-proof"
@@ -369,6 +370,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "ai-estimate-pdf-safe-integration-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfSafeIntegrationProof.ts" },
   { name: "ai-estimate-pdf-tabular-regression-proof", command: "npx tsx scripts/e2e/runAiEstimatePdfTabularRegressionProof.ts" },
   { name: "request-ai-estimate-boq-catalog-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateBoqCatalogProof.ts" },
+  { name: "live-request-embedded-ai-professional-boq-pdf-catalog-proof", command: "npx tsx scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" },
   { name: "request-ai-estimate-professional-boq-formula-proof", command: "npx tsx scripts/e2e/runRequestAiEstimateProfessionalBoqFormulaProof.ts" },
   { name: "global-estimate-professional-boq-depth-formula-quality-proof", command: "npx tsx scripts/e2e/runProfessionalBoqDepthFormulaQualityProof.ts" },
   { name: "catalog-items-global-estimate-binding-proof", command: "npx tsx scripts/e2e/runCatalogItemsGlobalEstimateBindingProof.ts" },

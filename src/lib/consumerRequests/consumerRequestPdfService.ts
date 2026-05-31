@@ -13,7 +13,12 @@ import {
 import { formatEstimateMoney } from "../ai/globalEstimate/formatEstimateMoney";
 import { formatEstimateUnitLabel } from "../ai/globalEstimate/formatEstimateUnitLabel";
 import { formatEstimateUserTextRu } from "../ai/globalEstimate/formatEstimateUserTextRu";
-import { renderTextPdfDocument } from "../estimatePdf";
+import { calculateGlobalConstructionEstimateSync } from "../ai/globalEstimate";
+import {
+  buildGlobalEstimateInputFromRoute,
+  routeUniversalEstimateIntent,
+} from "../ai/estimateRouting";
+import { createEstimatePdf, renderTextPdfDocument } from "../estimatePdf";
 
 const id = (prefix: string) => `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 
@@ -37,7 +42,7 @@ export function generateConsumerRepairRequestPdf(input: {
   const title = input.draft.title || input.draft.aiSummaryRu || "Заявка на ремонт";
   const storageBucket = "private-media";
   const storageKey = `consumer-repair/${input.draft.consumerUserId}/${safeSegment(input.draft.id)}-${createdAt.slice(0, 10)}.pdf`;
-  const pdfBody = buildConsumerRepairPdfBody(input);
+  const pdfBody = buildConsumerRepairPdfBody({ ...input, generatedAt: createdAt });
   const uploaded = uploadConsumerRepairPdfObject({
     storageBucket,
     storageKey,
@@ -67,13 +72,46 @@ function buildConsumerRepairPdfBody(input: {
   items: ConsumerRepairRequestItem[];
   media: ConsumerRepairRequestMedia[];
   supplement?: ConsumerRepairPdfSupplement;
+  generatedAt: string;
 }): string {
+  const structuredEstimatePdfBody = buildStructuredEstimatePdfBody(input);
+  if (structuredEstimatePdfBody) return structuredEstimatePdfBody;
+
   return renderTextPdfDocument({
     pdfId: input.draft.id,
     title: input.draft.title || input.draft.aiSummaryRu || "Заявка на ремонт",
     fileName: `${safeSegment(input.draft.id)}.pdf`,
     lines: buildConsumerRepairPdfSummary(input).split("\n"),
   }).body;
+}
+
+function buildStructuredEstimatePdfBody(input: {
+  draft: ConsumerRepairRequestDraft;
+  generatedAt: string;
+}): string | null {
+  const prompt = input.draft.problemText?.trim();
+  if (!prompt) return null;
+  const route = routeUniversalEstimateIntent(prompt);
+  if (!route.shouldCallEstimateTool) return null;
+  const estimateInput = buildGlobalEstimateInputFromRoute(route, {
+    countryCode: "KG",
+    city: input.draft.city || "Bishkek",
+  });
+  const estimate = calculateGlobalConstructionEstimateSync(estimateInput);
+  const pdf = createEstimatePdf({
+    estimate,
+    generatedAt: input.generatedAt,
+    language: estimate.locale.language,
+    runtimeTrace: {
+      traceId: `consumer_request_pdf:${input.draft.id}`,
+      input: prompt,
+      screenContext: "request",
+      selectedRoute: "/request",
+      selectedTool: "calculate_global_estimate",
+      workKey: estimate.work.workKey,
+    },
+  });
+  return pdf.body;
 }
 
 export function buildConsumerRepairPdfSummary(input: {

@@ -102,7 +102,45 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Есть ли рабочая схема КЖ?", "Какая марка бетона и армирование?", "Как подается бетон на высоту?"],
     };
   }
-  if (/электромонтаж|electrical/.test(normalized)) {
+  if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {
+    return {
+      workKey: "low_voltage_cabling_installation",
+      titleRu: "Профессиональная предварительная смета на слаботочные кабельные сети",
+      category: "electrical",
+      domain: "low_voltage",
+      object: "low_voltage_system",
+      operation: "installation",
+      method: "low_voltage_cabling",
+      materialSystem: "low_voltage_system",
+      complexity: "medium",
+      requiredMaterials: ["UTP кабель", "патч-панель", "розетки RJ45", "кабель-канал", "маркировка линий"],
+      requiredLabor: ["разметка слаботочных трасс", "прокладка кабеля", "оконцевание линий", "тестирование сети"],
+      requiredEquipmentOrWarnings: ["кабельный тестер", "обжимной инструмент", "тон-генератор"],
+      requiredLogisticsOrWarnings: ["доставка кабеля", "маркировка и ведомость портов"],
+      exclusions: ["проект СКС", "активное сетевое оборудование сверх перечня", "интернет-провайдер и внешняя линия связи"],
+      clarifyingQuestions: ["Сколько портов RJ45 и рабочих мест?", "Нужен ли шкаф, патч-панель и маркировка?", "Открытая прокладка в кабель-канале или скрытая трасса?"],
+    };
+  }
+  if (/солнеч|фотоэлектр|фотовольт|сэс|solar|pv\s+panel|photovoltaic|инвертор/.test(normalized) && /панел|станц|инвертор|квт|kw|solar|photovoltaic|фотоэлектр/.test(normalized)) {
+    return {
+      workKey: "solar_panel_installation",
+      titleRu: "Профессиональная предварительная смета на солнечную электростанцию",
+      category: "electrical",
+      domain: "solar",
+      object: "solar_power_system",
+      operation: "installation",
+      method: "solar_pv_install",
+      materialSystem: "solar_pv_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["солнечные панели", "инвертор", "крепежная система", "DC/AC кабели", "защита и коммутация"],
+      requiredLabor: ["обследование крыши", "монтаж креплений", "монтаж солнечных панелей", "подключение инвертора", "пусконаладка"],
+      requiredEquipmentOrWarnings: ["страховка на крыше", "электроизмерения", "подъем панелей"],
+      requiredLogisticsOrWarnings: ["доставка панелей", "подъем на кровлю", "резерв на кабельные трассы"],
+      exclusions: ["технические условия и сетевое согласование", "аккумуляторы сверх явного запроса", "усиление кровли без обследования"],
+      clarifyingQuestions: ["Какая мощность станции и схема подключения?", "Тип кровли, угол и несущая способность подтверждены?", "Нужна ли сетевая, гибридная или автономная система?"],
+    };
+  }
+  if (/электромонтаж|электр|электрокаб|кабел|проводк|розет|выключател|electrical|wiring|cable|socket|outlet|switch/.test(normalized)) {
     return {
       workKey: "electrical_area_installation",
       titleRu: "Профессиональная предварительная смета на электромонтаж",
@@ -113,10 +151,25 @@ function signatureFor(text: string): WorkSignature | null {
       method: "area_points_preliminary",
       materialSystem: "electrical_installation",
       complexity: "complex",
-      requiredMaterials: ["кабельные линии", "щит и автоматика", "розеточные группы", "освещение"],
-      requiredLabor: ["разметка трасс", "штробление / прокладка", "подключение щита", "проверка цепей"],
-      requiredEquipmentOrWarnings: ["тестер", "штроборез", "электробезопасность"],
-      requiredLogisticsOrWarnings: ["доставка кабеля и щита", "вывоз мусора"],
+      requiredMaterials: [
+        "кабельные линии",
+        "гофра / кабель-канал",
+        "подрозетники",
+        "розетки",
+        "выключатели",
+        "щит и автоматика",
+      ],
+      requiredLabor: [
+        "схема электрики",
+        "разметка трасс",
+        "штробление / прокладка кабеля",
+        "монтаж подрозетников",
+        "монтаж розеток",
+        "монтаж выключателей",
+        "проверка цепей",
+      ],
+      requiredEquipmentOrWarnings: ["тестер", "измеритель сопротивления изоляции", "штроборез", "электробезопасность"],
+      requiredLogisticsOrWarnings: ["доставка кабеля, розеток и щита", "вывоз мусора", "заделка штроб уточняется по отделке"],
       exclusions: ["проект электрики", "вводной кабель и согласования", "скрытые дефекты существующей сети"],
       clarifyingQuestions: ["Сколько точек, групп и фаз?", "Нужны ли слаботочные сети?", "Есть ли проект и выделенная мощность?"],
     };
@@ -253,6 +306,11 @@ function specializeWaterproofingSignature(signature: WorkSignature, text: string
       "ремонт дефектов основания",
       "герметизация примыканий",
       "проверка герметичности",
+    ],
+    clarifyingQuestions: [
+      "Какая кровля: плоская или скатная?",
+      "Какой материал выбран: рулонная мембрана, мастика или наплавляемая гидроизоляция?",
+      "Есть ли проходки, воронки и примыкания, которые нужно включить в объем?",
     ],
   };
 }

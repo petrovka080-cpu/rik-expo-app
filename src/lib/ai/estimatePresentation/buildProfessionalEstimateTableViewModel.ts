@@ -37,7 +37,7 @@ export function buildProfessionalEstimateTableViewModel(result: GlobalEstimateRe
       notIncluded: result.regionalRisks.map((risk) => risk.text),
       costIncreaseFactors: viewModel.costIncreaseFactors,
       clarifyingQuestions: viewModel.clarifyingQuestions,
-      taxWarning: result.tax.warning ?? `${result.tax.taxLabel}: ${result.tax.included ? "включен" : "проверьте начисление"}`,
+      taxWarning: viewModel.tax.warning ?? `${viewModel.tax.taxLabel}: ${viewModel.tax.included ? "включен" : "проверьте начисление"}`,
     },
   };
 }

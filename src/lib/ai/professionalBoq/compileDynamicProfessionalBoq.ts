@@ -208,6 +208,7 @@ function mepRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: str
 function buildMepAreaBasedBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const area = Math.max(1, plan.quantities.areaM2 ?? 1);
   const electrical = plan.semanticFrame.object === "electrical_network";
+  if (electrical) return buildElectricalInstallationRows(plan);
   const prefix = electrical ? "электромонтаж" : "вентиляция";
   return [
     mepRow("labor", "survey", `${prefix}: обследование и схема трасс`, "set", 1, 6000),
@@ -253,6 +254,136 @@ function buildCanopyRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRo
     row("delivery", "steel_delivery", "\u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0430 \u043c\u0435\u0442\u0430\u043b\u043b\u0430", "trip", Math.max(1, Math.ceil(steelKg / 2500)), 8500),
     row("delivery", "roof_delivery", "доставка кровельного покрытия", "trip", Math.max(1, Math.ceil(area / 300)), 6500),
     row("labor", "handover", "контроль геометрии и сдача навеса", "set", 1, 4500),
+  ];
+}
+
+function buildElectricalInstallationRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const points = Math.max(plan.quantities.count ?? 0, Math.ceil(area / 6), 10);
+  const outlets = Math.max(plan.quantities.count ?? 0, Math.ceil(points * 0.55), 10);
+  const switches = Math.max(2, Math.ceil(points * 0.45));
+  const cableLength = Math.round(area * 2.4 * 100) / 100;
+  const lightingCableLength = Math.round(area * 0.85 * 100) / 100;
+  const trunkLength = Math.round(area * 0.45 * 100) / 100;
+  const groups = Math.max(4, Math.ceil(points / 8));
+  return [
+    mepRow("labor", "electrical_survey", "обследование объекта и схема электрики", "set", 1, 7200),
+    mepRow("labor", "electrical_load_groups", "разбивка розеточных и осветительных групп", "set", 1, 6800),
+    mepRow("labor", "electrical_route_marking", "разметка электрических трасс кабеля, розеток и выключателей", "sq_m", area, 62),
+    mepRow("labor", "electrical_wall_scanning", "проверка скрытых коммуникаций перед штроблением", "sq_m", area, 34),
+    mepRow("labor", "electrical_dust_protection", "защита помещений от пыли перед электромонтажом", "sq_m", area, 28),
+    mepRow("materials", "electrical_power_cable", "кабельные линии ВВГнг-LS / аналог для розеточных линий", "linear_m", cableLength, 118, "electrical_cable_power"),
+    mepRow("materials", "electrical_lighting_cable", "кабель для осветительных и выключательных линий", "linear_m", lightingCableLength, 82, "electrical_cable_lighting"),
+    mepRow("materials", "electrical_corrugation_channel", "гофра / кабель-канал для прокладки кабеля", "linear_m", Math.round((cableLength + lightingCableLength) * 0.65 * 100) / 100, 46, "electrical_corrugation"),
+    mepRow("materials", "electrical_socket_boxes", "подрозетники", "pcs", outlets + switches, 72, "socket_boxes"),
+    mepRow("materials", "electrical_outlets", "розетки", "pcs", outlets, 420, "electrical_outlets"),
+    mepRow("materials", "electrical_switches", "выключатели", "pcs", switches, 360, "electrical_switches"),
+    mepRow("materials", "electrical_junction_boxes", "распределительные коробки", "pcs", Math.max(3, groups), 260, "junction_boxes"),
+    mepRow("materials", "electrical_panel", "щит и автоматика / квартирный щит", "set", 1, 42000, "electrical_panel"),
+    mepRow("materials", "electrical_breakers", "автоматы, УЗО / дифзащита по группам", "pcs", groups + 2, 1850, "electrical_breakers"),
+    mepRow("materials", "electrical_ground_bus", "шина PE/N и маркировка групп", "set", 1, 3800, "electrical_panel_accessories"),
+    mepRow("materials", "electrical_fasteners", "крепеж кабеля, клипсы и расходники электромонтажа", "set", 1, Math.round(area * 85), "electrical_fasteners"),
+    mepRow("labor", "electrical_chasing_or_channel", "штробление или монтаж кабель-канала по трассам", "linear_m", trunkLength, 260),
+    mepRow("labor", "electrical_cable_laying", "прокладка кабеля и кабельных линий", "linear_m", cableLength + lightingCableLength, 145),
+    mepRow("labor", "electrical_socket_box_install", "монтаж подрозетников", "pcs", outlets + switches, 320),
+    mepRow("labor", "electrical_junction_box_install", "монтаж распределительных коробок", "pcs", Math.max(3, groups), 520),
+    mepRow("labor", "electrical_panel_mount", "монтаж и расключение электрического щита", "set", 1, 28000),
+    mepRow("labor", "electrical_outlet_install", "монтаж розеток", "pcs", outlets, 620),
+    mepRow("labor", "electrical_switch_install", "монтаж выключателей", "pcs", switches, 580),
+    mepRow("labor", "electrical_line_continuity", "прозвонка линий и проверка цепей", "set", 1, 6800),
+    mepRow("labor", "electrical_insulation_test", "проверка сопротивления изоляции", "set", 1, 9200),
+    mepRow("labor", "electrical_group_labeling", "маркировка групп в щите и на линиях", "set", 1, 4200),
+    mepRow("labor", "electrical_chase_repair_warning", "заделка штроб warning: объем зависит от отделки", "linear_m", trunkLength, 190),
+    mepRow("equipment", "electrical_chaser", "штроборез и пылеудаление", "shift", Math.max(1, Math.ceil(area / 90)), 6800),
+    mepRow("equipment", "electrical_testing_tools", "тестер, мегаомметр и измерительный инструмент", "set", 1, 5200),
+    mepRow("delivery", "electrical_material_delivery", "доставка кабеля, розеток, выключателей и щита", "trip", Math.max(1, Math.ceil(area / 140)), 5200),
+    mepRow("delivery", "electrical_waste_removal", "вынос и вывоз мусора после штробления", "trip", Math.max(1, Math.ceil(area / 160)), 3800),
+    mepRow("materials", "electrical_reserve", "резерв кабеля и электроустановочных изделий", "set", 1, Math.round((cableLength + lightingCableLength) * 12), "electrical_reserve"),
+  ];
+}
+
+function buildLowVoltageCablingRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? 1);
+  const ports = Math.max(plan.quantities.count ?? 0, Math.ceil(area / 10), 8);
+  const cableLength = Math.round(area * 1.7 * 100) / 100;
+  const traysLength = Math.round(area * 0.35 * 100) / 100;
+  const racks = Math.max(1, Math.ceil(ports / 48));
+  return [
+    mepRow("labor", "low_voltage_survey", "обследование помещений и схема слаботочных трасс", "set", 1, 6200),
+    mepRow("labor", "low_voltage_ports_schedule", "ведомость портов RJ45 и точек подключения", "pcs", ports, 180),
+    mepRow("labor", "low_voltage_route_marking", "разметка слаботочных трасс", "sq_m", area, 48),
+    mepRow("materials", "low_voltage_utp_cable", "UTP кабель Cat.6 / аналог", "linear_m", cableLength, 78, "low_voltage_utp_cable"),
+    mepRow("materials", "low_voltage_patch_panel", "патч-панель", "pcs", racks, 12500, "low_voltage_patch_panel"),
+    mepRow("materials", "low_voltage_rj45_outlets", "розетки RJ45 и информационные модули", "pcs", ports, 520, "low_voltage_rj45_outlets"),
+    mepRow("materials", "low_voltage_cable_channel", "кабель-канал / лоток для слаботочных линий", "linear_m", traysLength, 260, "low_voltage_cable_channel"),
+    mepRow("materials", "low_voltage_cabinet", "слаботочный шкаф / коммутационная зона", "pcs", racks, 28000, "low_voltage_cabinet"),
+    mepRow("materials", "low_voltage_patch_cords", "патч-корды и маркировочные элементы", "pcs", ports, 220, "low_voltage_patch_cords"),
+    mepRow("materials", "low_voltage_fasteners", "крепеж кабель-канала и расходники СКС", "set", 1, Math.round(area * 65), "low_voltage_fasteners"),
+    mepRow("labor", "low_voltage_channel_install", "монтаж кабель-канала / лотка для СКС", "linear_m", traysLength, 180),
+    mepRow("labor", "low_voltage_cable_laying", "прокладка кабеля", "linear_m", cableLength, 95),
+    mepRow("labor", "low_voltage_outlet_mount", "монтаж розеток RJ45", "pcs", ports, 420),
+    mepRow("labor", "low_voltage_patch_panel_mount", "монтаж и расключение патч-панели", "pcs", racks, 6500),
+    mepRow("labor", "low_voltage_line_termination", "оконцевание линий и обжим коннекторов", "pcs", ports * 2, 160),
+    mepRow("labor", "low_voltage_labeling", "маркировка портов и кабельного журнала", "pcs", ports, 120),
+    mepRow("equipment", "low_voltage_cable_tester", "кабельный тестер для проверки линий", "set", 1, 3600),
+    mepRow("equipment", "low_voltage_crimp_tool", "обжимной инструмент и тон-генератор", "set", 1, 2400),
+    mepRow("labor", "low_voltage_network_testing", "тестирование сети и проверка распиновки", "pcs", ports, 260),
+    mepRow("delivery", "low_voltage_delivery", "доставка кабеля, патч-панели и розеток RJ45", "trip", Math.max(1, Math.ceil(area / 180)), 4200),
+    mepRow("materials", "low_voltage_reserve", "резерв UTP кабеля и модулей RJ45", "set", 1, Math.round(cableLength * 12), "low_voltage_reserve"),
+  ];
+}
+
+function buildSolarPowerSystemRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const powerKw = Math.max(1, plan.quantities.powerKw ?? 30);
+  const panelCount = Math.max(4, Math.ceil(powerKw / 0.55));
+  const roofArea = Math.round(panelCount * 2.4 * 100) / 100;
+  const dcCableLength = Math.round(powerKw * 5.2 * 100) / 100;
+  return [
+    row("labor", "solar_site_survey", "обследование крыши и точки подключения", "set", 1, 12000),
+    row("labor", "solar_roof_capacity_check", "проверка несущей способности кровли warning", "set", 1, 16000),
+    row("labor", "solar_shading_layout", "обмер затенения и схема раскладки солнечных панелей", "set", 1, 9500),
+    row("labor", "solar_power_scheme", "расчет мощности, строк и электрической схемы", "set", 1, 14000),
+    row("materials", "solar_panels", "солнечные панели", "pcs", panelCount, 15500, "solar_panels"),
+    row("materials", "solar_inverter", "инвертор сетевой / гибридный", "set", 1, powerKw * 11500, "solar_inverter"),
+    row("materials", "solar_mounting_rails", "крепежная система и направляющие", "sq_m", roofArea, 950, "solar_mounting"),
+    row("materials", "solar_roof_hooks", "кровельные крюки / анкера креплений", "pcs", panelCount * 2, 420, "solar_mounting_hooks"),
+    row("materials", "solar_clamps", "прижимы и межпанельные зажимы", "pcs", panelCount * 4, 160, "solar_clamps"),
+    row("materials", "solar_dc_cable", "DC кабели солнечной станции", "linear_m", dcCableLength, 260, "solar_dc_cable"),
+    row("materials", "solar_ac_cable", "AC кабель от инвертора до щита", "linear_m", Math.max(15, powerKw * 1.8), 360, "solar_ac_cable"),
+    row("materials", "solar_connectors", "MC4 коннекторы и кабельные вводы", "set", Math.max(1, Math.ceil(panelCount / 8)), 2800, "solar_connectors"),
+    row("materials", "solar_dc_protection", "DC защита, предохранители и разъединитель", "set", 1, powerKw * 1800, "solar_dc_protection"),
+    row("materials", "solar_ac_protection", "AC защита и автоматика подключения", "set", 1, powerKw * 1600, "solar_ac_protection"),
+    row("materials", "solar_grounding", "заземление и уравнивание потенциалов", "set", 1, powerKw * 950, "solar_grounding"),
+    row("materials", "solar_metering", "узел учета / мониторинг генерации warning", "set", 1, 18000, "solar_monitoring"),
+    row("materials", "solar_labels", "маркировка кабелей и предупреждающие таблички", "set", 1, 3200, "solar_labels"),
+    row("labor", "solar_safety_setup", "организация страховки на крыше", "set", 1, 8500),
+    row("labor", "solar_material_lift", "подъем солнечных панелей на кровлю", "pcs", panelCount, 280),
+    row("labor", "solar_mount_layout", "разметка креплений солнечной станции", "sq_m", roofArea, 75),
+    row("labor", "solar_mounting_install", "монтаж креплений и направляющих", "sq_m", roofArea, 380),
+    row("labor", "solar_panel_mount", "монтаж солнечных панелей", "pcs", panelCount, 650),
+    row("labor", "solar_dc_cabling", "прокладка DC кабелей по кровле", "linear_m", dcCableLength, 180),
+    row("labor", "solar_string_termination", "оконцевание строк и подключение MC4", "set", Math.max(1, Math.ceil(panelCount / 12)), 3200),
+    row("labor", "solar_inverter_mount", "монтаж инвертора", "set", 1, 12000),
+    row("labor", "solar_ac_cabling", "прокладка AC кабеля до точки подключения", "linear_m", Math.max(15, powerKw * 1.8), 240),
+    row("labor", "solar_protection_install", "монтаж DC/AC защиты и автоматики", "set", 1, 15000),
+    row("labor", "solar_grounding_install", "монтаж заземления солнечной станции", "set", 1, 8500),
+    row("labor", "solar_monitoring_setup", "настройка мониторинга инвертора", "set", 1, 6500),
+    row("labor", "solar_insulation_measurement", "электроизмерения и проверка изоляции", "set", 1, 9500),
+    row("labor", "solar_commissioning", "пусконаладка солнечной электростанции", "set", 1, powerKw * 850),
+    row("labor", "solar_documentation", "исполнительная схема и маркировочная ведомость", "set", 1, 6500),
+    row("equipment", "solar_roof_safety", "страховка на крыше и временные ограждения", "set", 1, 12000),
+    row("equipment", "solar_lift", "подъемник / такелаж для панелей", "shift", Math.max(1, Math.ceil(panelCount / 36)), 16500),
+    row("equipment", "solar_electrical_meter", "мегаомметр, мультиметр и клещи постоянного тока", "set", 1, 6200),
+    row("equipment", "solar_torque_tools", "динамометрический инструмент для креплений", "set", 1, 4200),
+    row("delivery", "solar_panel_delivery", "доставка солнечных панелей", "trip", Math.max(1, Math.ceil(panelCount / 60)), 18500),
+    row("delivery", "solar_inverter_delivery", "доставка инвертора и автоматики", "trip", 1, 6500),
+    row("delivery", "solar_roof_logistics", "перемещение панелей по кровле", "set", 1, Math.round(panelCount * 160)),
+    row("delivery", "solar_waste_removal", "вывоз упаковки и отходов монтажа", "trip", 1, 4200),
+    row("labor", "solar_quality_fasteners", "контроль затяжки креплений", "pcs", panelCount * 4, 45),
+    row("labor", "solar_quality_strings", "проверка полярности и напряжения строк", "set", Math.max(1, Math.ceil(panelCount / 12)), 1800),
+    row("labor", "solar_grid_sync_warning", "синхронизация с сетью warning: по условиям энергоснабжающей организации", "set", 1, 12000),
+    row("labor", "solar_owner_training", "инструктаж владельца по эксплуатации и отключению", "set", 1, 4500),
+    row("materials", "solar_reserve", "резерв кабеля, коннекторов и крепежа", "set", 1, Math.round(powerKw * 1250), "solar_reserve"),
   ];
 }
 
@@ -566,15 +697,17 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
     object === "passenger_elevator" ? buildElevatorInstallationBoq(plan) :
       object === "drainage_channel" ? buildDrainageChannelBoq(plan) :
           object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
-            object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
-              object === "metal_canopy" ? buildCanopyRows(plan) :
-                object === "paving_stone" ? buildPavingStoneRows(plan) :
-                  object === "roof_system" ? buildGableRoofRows(plan) :
-                    object === "floor_covering" ? buildFloorCoveringRows(plan) :
-                      object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
-                        object === "hydropower_turbine" ? buildHydropowerRows(plan) :
-                          object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
-                          buildFallbackRows(plan);
+            object === "low_voltage_system" ? buildLowVoltageCablingRows(plan) :
+              object === "solar_power_system" ? buildSolarPowerSystemRows(plan) :
+                object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
+                  object === "metal_canopy" ? buildCanopyRows(plan) :
+                    object === "paving_stone" ? buildPavingStoneRows(plan) :
+                      object === "roof_system" ? buildGableRoofRows(plan) :
+                        object === "floor_covering" ? buildFloorCoveringRows(plan) :
+                          object === "waterproofing_surface" && plan.semanticFrame.materialSystem === "roof_waterproofing_system" ? buildRoofWaterproofingRows(plan) :
+                            object === "hydropower_turbine" ? buildHydropowerRows(plan) :
+                              object === "industrial_floor" ? buildIndustrialFloorRows(plan) :
+                                buildFallbackRows(plan);
   const rows = expandInfrastructureBoqRows(plan, baseRows);
   const boq: DynamicProfessionalBoq = {
     compilerId: "DynamicProfessionalBoqCompiler",

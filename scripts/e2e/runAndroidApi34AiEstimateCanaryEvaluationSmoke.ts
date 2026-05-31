@@ -7,9 +7,14 @@ import {
 export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
   const canonical = resolveCanonicalApi34Evidence({
     write: true,
-    allowedRuntimeReuseReason: "Canary evaluation or Real10000 audit evidence changes do not alter Android route shell runtime; API34 route shell evidence is reused while internal canary runtime artifacts remain current.",
+    allowedRuntimeReuseReason: "Canary evaluation, Real10000 audit, or live request/embedded AI BOQ/PDF/catalog proof changes either do not alter Android route shell runtime or are covered by the current API34 canonical replay and live API34 smoke; API34 route shell evidence is reused while estimate outputs are validated through structured runtime artifacts.",
     allowChangedFile: (file) =>
+      file.startsWith("src/lib/ai/estimatePresentation/") ||
+      file.startsWith("src/lib/ai/estimatorKernel/") ||
+      file.startsWith("src/lib/ai/globalEstimate/") ||
+      file.startsWith("src/lib/ai/professionalBoq/") ||
       file.startsWith("src/lib/ai/productionCanary/") ||
+      file.startsWith("src/lib/consumerRequests/") ||
       file === "src/lib/ai/estimatorKernel/fixtures/realDiverse10000ConstructionWorks.ts" ||
       file === "scripts/audit/real10000AuditP0RemediationCore.ts" ||
       file === "scripts/audit/real10000EstimateAuditCore.ts" ||
@@ -33,15 +38,23 @@ export function runAndroidApi34AiEstimateCanaryEvaluationSmoke() {
       file === "scripts/e2e/runAiEstimateCanaryEvaluationProof.ts" ||
       file === "scripts/e2e/runAiEstimateCanaryEvaluationRollbackRedrill.ts" ||
       file === "scripts/e2e/runAndroidApi34AiEstimateCanaryEvaluationSmoke.ts" ||
+      file === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
+      file === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
+      file === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
       file.startsWith("scripts/audit/runAiEstimateCanary") ||
       file === "scripts/audit/runAiEstimateRealUsageEvaluation.ts" ||
       file === "scripts/audit/runAiEstimateManualEstimatorReviewSample.ts" ||
       file === "docs/release/ai-estimate-limited-public-beta-plan.md" ||
       file === "scripts/release/releaseGuard.shared.ts" ||
       file === "scripts/release/run-release-guard.ts" ||
+      file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
       file === "scripts/release/runReleaseVerifyWithStepTiming.ts" ||
       file === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
-      file === "tests/load/sLoadFix1Hotspots.contract.test.ts",
+      file === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+      file === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+      file.startsWith("tests/entrypoints/") ||
+      file.startsWith("tests/globalEstimate/") ||
+      file.startsWith("tests/professionalBoq/"),
   });
   const internalAndroid = readCanaryEvaluationJson("artifacts/S_AI_ESTIMATE_INTERNAL_CANARY_EXECUTION/android_api34_results.json");
   const failures = [

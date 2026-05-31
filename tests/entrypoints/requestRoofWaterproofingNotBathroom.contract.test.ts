@@ -12,5 +12,8 @@ describe("/request roof waterproofing disambiguation", () => {
     expect(estimate.work.workKey).toBe("roof_waterproofing");
     expectRowsContain(viewModel, ["кровли", "праймер", "примыканий", "герметизация"]);
     expect(viewModel.rows.map((row) => row.name).join("\n").toLocaleLowerCase("ru-RU")).not.toContain("ванн");
+    const clarifyingQuestions = estimate.clarifyingQuestions.join("\n").toLocaleLowerCase("ru-RU");
+    expect(clarifyingQuestions).toMatch(/кровл|кры/);
+    expect(clarifyingQuestions).not.toMatch(/ванн|сануз|душ/);
   });
 });

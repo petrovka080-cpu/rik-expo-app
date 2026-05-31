@@ -726,6 +726,33 @@ const isApprovedRequestAiEstimateBoqCatalogPatch = (file: string) => {
   );
 };
 
+const isApprovedLiveRequestEmbeddedAiProfessionalBoqPdfCatalogPatch = (file: string) => {
+  const normalized = file.replace(/\\/g, "/");
+  return (
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized.startsWith("src/lib/ai/estimatorKernel/") ||
+    normalized.startsWith("src/lib/ai/professionalBoq/") ||
+    normalized.startsWith("src/lib/ai/estimatePresentation/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
+    normalized === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
+    normalized === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
+    normalized.startsWith("tests/catalogBinding/") ||
+    normalized.startsWith("tests/entrypoints/") ||
+    normalized.startsWith("tests/professionalBoq/") ||
+    normalized.startsWith("tests/pdf/") ||
+    normalized.startsWith("tests/estimatePresentation/") ||
+    normalized.startsWith("tests/architecture/liveBoqPdfCatalog") ||
+    normalized === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized.startsWith("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/") ||
+    normalized.startsWith("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/")
+  );
+};
+
 const isApprovedRatebookCatalogSourceGovernancePatch = (file: string) => {
   const normalized = file.replace(/\\/g, "/");
   return (
@@ -946,6 +973,7 @@ describe("S-PAG-7 hotspot list read pagination", () => {
         !isApprovedGreenCloseoutCurrentWavePatch(file) &&
         !isApprovedBuiltInAi50000Phase1Patch(file) &&
         !isApprovedRequestAiEstimateBoqCatalogPatch(file) &&
+        !isApprovedLiveRequestEmbeddedAiProfessionalBoqPdfCatalogPatch(file) &&
         !isApprovedRatebookCatalogSourceGovernancePatch(file) &&
         !isApprovedAiEstimateEnterpriseLoadPerformanceCostGuardPatch(file) &&
         !isApprovedReal10000DiverseConstructionWorksAcceptancePatch(file) &&

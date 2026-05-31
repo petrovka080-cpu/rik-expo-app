@@ -79,6 +79,8 @@ const REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
+const LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE =
+  "S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_TABLE_CATALOG_FIX_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_GO_NO_GO_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS_AUDIT_GO_NO_GO_POINT_OF_NO_RETURN";
 const PLATFORM_DIRECTOR_FACT_CONTRACT_WAVE =
@@ -103,6 +105,7 @@ export type CloseoutOwnershipEntry = {
     | "ai_runtime_integration"
     | "b2c_consumer_repair"
     | "request_estimate_boq_catalog"
+    | "live_request_embedded_ai_professional_boq_pdf_catalog"
     | "request_estimate_boq_formula_quality"
     | "request_estimate_draft_state_payload_parity"
     | "request_estimate_draft_state_machine_payload_parity"
@@ -2259,6 +2262,38 @@ function classifyFile(file: string): CloseoutOwnershipEntry {
       include_in_commit: true,
       force_add: normalized.startsWith("artifacts/"),
       reason: "request estimate draft state machine and save/PDF/send payload parity gate",
+    };
+  }
+  if (
+    normalized.startsWith("src/lib/ai/globalEstimate/") ||
+    normalized.startsWith("src/lib/ai/estimatorKernel/") ||
+    normalized.startsWith("src/lib/ai/professionalBoq/") ||
+    normalized.startsWith("src/lib/ai/estimatePresentation/") ||
+    normalized.startsWith("src/lib/consumerRequests/") ||
+    normalized === "scripts/e2e/runAndroidApi34LiveRequestEmbeddedAiProfessionalBoqPdfCatalogSmoke.ts" ||
+    normalized === "scripts/e2e/runLiveRequestEmbeddedAiPdfBoqCatalogFailureReproduction.ts" ||
+    normalized === "scripts/e2e/runLiveRequestEmbeddedAiProfessionalBoqPdfCatalogProof.ts" ||
+    normalized.startsWith("tests/catalogBinding/") ||
+    normalized.startsWith("tests/entrypoints/") ||
+    normalized.startsWith("tests/professionalBoq/") ||
+    normalized.startsWith("tests/pdf/") ||
+    normalized.startsWith("tests/estimatePresentation/") ||
+    normalized.startsWith("tests/architecture/liveBoqPdfCatalog") ||
+    normalized === "tests/e2e/liveRequestEmbeddedAiProfessionalBoqPdfCatalog.web.spec.ts" ||
+    normalized === "tests/api/hotspotListPaginationBatch7.contract.test.ts" ||
+    normalized === "tests/load/sLoadFix1Hotspots.contract.test.ts" ||
+    normalized === "scripts/release/releaseGuard.shared.ts" ||
+    normalized === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    normalized.startsWith("artifacts/S_LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG/") ||
+    normalized.startsWith("artifacts/pdf/live-request-embedded-ai-professional-boq-pdf-catalog/")
+  ) {
+    return {
+      file: normalized,
+      category: "live_request_embedded_ai_professional_boq_pdf_catalog",
+      wave: LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason: "live /request and embedded AI professional BOQ, PDF table, catalog reality fix",
     };
   }
   if (

@@ -1269,7 +1269,7 @@ function genericTemplate(definition: GlobalWorkTypeDefinition): GlobalEstimateTe
       {
         type: "labor",
         sectionNumber: "2",
-        title: { ru: "Строительные работы", en: "Labor and installation" },
+        title: { ru: "Трудозатраты и операции", en: "Labor and installation" },
         rows: [
           row({
             sectionType: "labor",
@@ -1392,7 +1392,7 @@ export const LAMINATE_TEMPLATE: GlobalEstimateTemplate = {
     {
       type: "labor",
       sectionNumber: "2",
-      title: { ru: "Строительные работы", en: "Labor and installation", de: "Arbeitsleistungen" },
+      title: { ru: "Трудозатраты и операции", en: "Labor and installation", de: "Arbeitsleistungen" },
       rows: laminateRows.filter((item) => item.sectionType === "labor"),
     },
   ],

@@ -215,7 +215,7 @@ const RATE_SOURCE = {
 
 const SECTION_TITLES_RU: Record<GlobalEstimateSectionType, string> = {
   materials: "Материалы и комплектующие",
-  labor: "\u0421\u0442\u0440\u043e\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+  labor: "Трудозатраты и операции",
   equipment: "Техника и оборудование",
   delivery: "Доставка и логистика",
   tax: "Налог",

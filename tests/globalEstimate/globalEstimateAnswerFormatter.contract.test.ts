@@ -5,7 +5,8 @@ describe("global estimate answer formatter", () => {
     const { answer } = await buildGlobalEstimateFixture({ text: "дай смету на укладку ламината 100 м² в Бишкеке", language: "ru" });
     expectProfessionalBoqShape(answer);
     expect(answer).toContain("Материалы");
-    expect(answer).toContain("Строительные работы");
+    expect(answer).toContain("Трудозатраты и операции");
+    expect(answer).not.toContain("Строительные работы");
     expect(answer).not.toMatch(/уточните всё, потом посчитаю/i);
     expect(answer).not.toMatch(/не найдено/i);
   });

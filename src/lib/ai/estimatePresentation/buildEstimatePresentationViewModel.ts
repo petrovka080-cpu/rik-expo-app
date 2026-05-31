@@ -70,6 +70,15 @@ function taxLabelForUser(taxMode: string, language: string): string {
   return language === "ru" ? "\u043d\u0430\u043b\u043e\u0433 \u0442\u0440\u0435\u0431\u0443\u0435\u0442 \u0443\u0442\u043e\u0447\u043d\u0435\u043d\u0438\u044f" : "tax requires clarification";
 }
 
+function taxWarningForUser(warning: string | undefined, language: string): string | undefined {
+  if (!warning) return undefined;
+  if (language !== "ru") return warning;
+  return warning
+    .replace(/Precise local tax was not calculated\./gi, "\u0422\u043e\u0447\u043d\u044b\u0439 \u043c\u0435\u0441\u0442\u043d\u044b\u0439 \u043d\u0430\u043b\u043e\u0433 \u043d\u0435 \u0440\u0430\u0441\u0441\u0447\u0438\u0442\u0430\u043d.")
+    .replace(/Precise US sales tax is not calculated from country or state alone; ZIP or address is required\./gi, "\u0414\u043b\u044f \u0442\u043e\u0447\u043d\u043e\u0433\u043e \u043d\u0430\u043b\u043e\u0433\u0430 \u043d\u0443\u0436\u0435\u043d \u043f\u043e\u0447\u0442\u043e\u0432\u044b\u0439 \u0438\u043d\u0434\u0435\u043a\u0441 \u0438\u043b\u0438 \u0430\u0434\u0440\u0435\u0441.")
+    .replace(/Local tax rule is not configured for this location; estimate is returned before tax\./gi, "\u041c\u0435\u0441\u0442\u043d\u043e\u0435 \u043d\u0430\u043b\u043e\u0433\u043e\u0432\u043e\u0435 \u043f\u0440\u0430\u0432\u0438\u043b\u043e \u0434\u043b\u044f \u044d\u0442\u043e\u0439 \u043b\u043e\u043a\u0430\u0446\u0438\u0438 \u043d\u0435 \u043d\u0430\u0441\u0442\u0440\u043e\u0435\u043d\u043e; \u0441\u043c\u0435\u0442\u0430 \u043f\u043e\u043a\u0430\u0437\u0430\u043d\u0430 \u0431\u0435\u0437 \u043d\u0430\u043b\u043e\u0433\u0430.");
+}
+
 function buildEstimatePresentationLocalContext(result: GlobalEstimateResult): EstimatePresentationLocalContext {
   const language = result.locale.language;
   const locationParts = [
@@ -129,6 +138,11 @@ export function buildEstimatePresentationViewModel(
     workKey: result.work.workKey,
     rows,
   });
+  const localizedTax = {
+    ...result.tax,
+    taxLabel: taxLabelForUser(result.locale.taxMode, result.locale.language),
+    warning: taxWarningForUser(result.tax.warning, result.locale.language),
+  };
 
   return {
     estimateId: result.estimateId,
@@ -141,7 +155,7 @@ export function buildEstimatePresentationViewModel(
     sections,
     rows,
     totals: result.totals,
-    tax: result.tax,
+    tax: localizedTax,
     sourceConfidence: result.confidence,
     sourceLabels: result.sources
       .map((source) => sourceLabelForUser(source.label, result.locale.language))
