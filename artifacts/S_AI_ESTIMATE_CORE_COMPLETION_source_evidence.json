@@ -903,33 +903,9 @@
     "id": "031",
     "sources": [
       {
-        "id": "rate_electrical_wiring_material_KG_sq_m_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_wiring_auxiliary_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_wiring_labor_KG_sq_m_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_wiring_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_electrical_wiring_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {
@@ -1982,33 +1958,9 @@
     "id": "068",
     "sources": [
       {
-        "id": "rate_solar_panel_installation_material_KG_set_standard",
+        "id": "src_configured_regional_reference_2026",
         "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_solar_panel_installation_auxiliary_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_solar_panel_installation_labor_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_solar_panel_installation_equipment_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
-        "checkedAt": "2026-05-22T00:00:00+06:00"
-      },
-      {
-        "id": "rate_solar_panel_installation_delivery_KG_set_standard",
-        "type": "configured_reference",
-        "label": "Configured backend regional reference rate",
+        "label": "Configured regional construction reference rates",
         "checkedAt": "2026-05-22T00:00:00+06:00"
       },
       {

@@ -649,7 +649,7 @@
         },
         "tax": {
           "taxType": "nds",
-          "taxLabel": "НДС Кыргызстан",
+          "taxLabel": "НДС",
           "taxRate": 0.12,
           "taxableBase": 259346,
           "taxAmount": 31121.52,
@@ -1220,12 +1220,12 @@
           },
           {
             "sectionNumber": "2",
-            "title": "Строительные работы",
+            "title": "Трудозатраты и операции",
             "type": "labor",
             "rows": [
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.1",
                 "code": "survey",
@@ -1257,7 +1257,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.2",
                 "code": "layout",
@@ -1289,7 +1289,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.3",
                 "code": "labor_1",
@@ -1321,7 +1321,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.4",
                 "code": "labor_2",
@@ -1353,7 +1353,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.5",
                 "code": "labor_3",
@@ -1385,7 +1385,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.6",
                 "code": "labor_4",
@@ -1417,7 +1417,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.7",
                 "code": "quality",
@@ -1449,7 +1449,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.8",
                 "code": "documentation",
@@ -1481,7 +1481,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.9",
                 "code": "ceramic_tile_floor_laying_base_preparation",
@@ -1513,7 +1513,7 @@
               },
               {
                 "sectionNumber": "2",
-                "sectionTitle": "Строительные работы",
+                "sectionTitle": "Трудозатраты и операции",
                 "sectionType": "labor",
                 "rowNumber": "2.10",
                 "code": "ceramic_tile_floor_laying_grout_work",
@@ -1988,7 +1988,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.1",
             "code": "survey",
@@ -2020,7 +2020,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.2",
             "code": "layout",
@@ -2052,7 +2052,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.3",
             "code": "labor_1",
@@ -2084,7 +2084,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.4",
             "code": "labor_2",
@@ -2116,7 +2116,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.5",
             "code": "labor_3",
@@ -2148,7 +2148,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.6",
             "code": "labor_4",
@@ -2180,7 +2180,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.7",
             "code": "quality",
@@ -2212,7 +2212,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.8",
             "code": "documentation",
@@ -2244,7 +2244,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.9",
             "code": "ceramic_tile_floor_laying_base_preparation",
@@ -2276,7 +2276,7 @@
           },
           {
             "sectionNumber": "2",
-            "sectionTitle": "Строительные работы",
+            "sectionTitle": "Трудозатраты и операции",
             "sectionType": "labor",
             "rowNumber": "2.10",
             "code": "ceramic_tile_floor_laying_grout_work",
@@ -2450,7 +2450,7 @@
         },
         "tax": {
           "taxType": "nds",
-          "taxLabel": "НДС Кыргызстан",
+          "taxLabel": "НДС",
           "taxRate": 0.12,
           "taxableBase": 1072592.44,
           "taxAmount": 128711.09,
