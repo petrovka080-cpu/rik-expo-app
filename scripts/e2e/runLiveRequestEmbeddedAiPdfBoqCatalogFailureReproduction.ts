@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -580,6 +581,28 @@ function currentHead(): string | null {
   return fs.existsSync(refPath) ? fs.readFileSync(refPath, "utf8").trim() : null;
 }
 
+function gitLines(args: string[]): string[] {
+  try {
+    return execFileSync("git", args, {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: "pipe",
+      timeout: 10_000,
+    })
+      .split(/\r?\n/)
+      .map((line) => line.trim().replace(/\\/g, "/"))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function evidenceHeadMatchesOrArtifactOnlySuperseded(evidenceHead: string | null, currentHeadSha: string | null): boolean {
+  if (!evidenceHead || !currentHeadSha || evidenceHead === currentHeadSha) return true;
+  const changedFiles = gitLines(["diff", "--name-only", `${evidenceHead}..${currentHeadSha}`]);
+  return changedFiles.length > 0 && changedFiles.every((file) => file.startsWith("artifacts/"));
+}
+
 function caseById(cases: readonly LiveCaseResult[], caseId: string): LiveCaseResult | undefined {
   return cases.find((item) => item.caseId === caseId);
 }
@@ -602,8 +625,8 @@ function buildMatrix(cases: readonly LiveCaseResult[]): ReleaseMatrix {
   const androidEvidence = readArtifactJson("android_api34_results.json");
   const webHead = getStringField(webEvidence, "head");
   const androidHead = getStringField(androidEvidence, "head");
-  const webHeadOk = !webHead || !currentHeadSha || webHead === currentHeadSha;
-  const androidHeadOk = !androidHead || !currentHeadSha || androidHead === currentHeadSha;
+  const webHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(webHead, currentHeadSha);
+  const androidHeadOk = evidenceHeadMatchesOrArtifactOnlySuperseded(androidHead, currentHeadSha);
   const webLiveAppTested =
     getBooleanField(webEvidence, "web_live_app_tested") === true &&
     getBooleanField(webEvidence, "playwright_web_passed") === true &&
