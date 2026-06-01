@@ -18,11 +18,14 @@ import {
   type AiEstimateInternalCanaryEvidence,
 } from "../../src/lib/ai/productionCanary";
 import { validateAiEstimateRollbackPlan } from "../../src/lib/ai/rollback/aiEstimateRollbackPlan";
+import { readCurrentReleaseWaveScopeArtifact } from "../release/currentReleaseWaveScope";
 
 export const CANARY_EVALUATION_ARTIFACT_DIR = path.join(
   process.cwd(),
   AI_ESTIMATE_CANARY_EVALUATION_ARTIFACT_DIR,
 );
+const IOS_TESTFLIGHT_SCOPED_OUT_STATUS =
+  "SCOPED_NOT_REQUIRED_FOR_IOS_INTERNAL_TESTFLIGHT";
 
 export type CanaryEvaluationFailure = {
   classification: string;
@@ -396,6 +399,47 @@ export function evaluateManualEstimatorReviewFromSessions(sessions: readonly Rep
 }
 
 export function writeCanaryEvaluationManualEstimatorReviewSample() {
+  if (readCurrentReleaseWaveScopeArtifact() !== null) {
+    const artifact = {
+      sample_total: 0,
+      acceptable_total: 0,
+      minor_clarification_total: 0,
+      not_acceptable_total: 0,
+      acceptable_rate: 0,
+      wrong_work_count: 0,
+      pdf_bad_count: 0,
+      unsafe_count: 0,
+      passed: false,
+      issues: ["MANUAL_REVIEW_SAMPLE_NOT_300"],
+      wave: IOS_TESTFLIGHT_SCOPED_OUT_STATUS,
+      status: IOS_TESTFLIGHT_SCOPED_OUT_STATUS,
+      required_for_current_wave: false,
+      reviewer_rubric: [
+        "correct work identified",
+        "BOQ sufficiently detailed",
+        "materials specific",
+        "labor specific",
+        "equipment/logistics present",
+        "units correct",
+        "formula reasonable",
+        "local/tax/source warning present",
+        "PDF readable",
+        "safe warnings present where needed",
+      ],
+      split: {
+        residential_repair_fit_out: 0,
+        engineering_communications: 0,
+        infrastructure_landscaping: 0,
+        industrial_agricultural: 0,
+        regulated_high_risk: 0,
+      },
+      samples: [],
+      fake_green_claimed: false,
+    };
+    writeCanaryEvaluationJson("manual_estimator_review.json", artifact);
+    return artifact;
+  }
+
   const sessions = readInternalReplaySessions();
   const sample = pickReviewSample(sessions);
   const evaluation = evaluateManualEstimatorReviewFromSessions(sessions);

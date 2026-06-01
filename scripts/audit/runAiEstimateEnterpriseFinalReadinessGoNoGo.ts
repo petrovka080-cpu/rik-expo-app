@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { readCurrentReleaseWaveScopeArtifact } from "../release/currentReleaseWaveScope";
 import { releaseVerifyAllowedDirtyFiles, releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
 
 type JsonRecord = Record<string, unknown>;
@@ -13,6 +14,8 @@ export const AI_ESTIMATE_FINAL_READINESS_GREEN_STATUS =
 export const AI_ESTIMATE_FINAL_READINESS_GO_DECISION = "GO_INTERNAL_CANARY_ONLY";
 export const AI_ESTIMATE_FINAL_READINESS_ARTIFACT_DIR =
   "artifacts/S_AI_ESTIMATE_FINAL_READINESS";
+const IOS_TESTFLIGHT_SCOPED_OUT_STATUS =
+  "SCOPED_NOT_REQUIRED_FOR_IOS_INTERNAL_TESTFLIGHT";
 
 type RequiredMatrix = {
   key: string;
@@ -318,6 +321,7 @@ function architectureScan() {
 }
 
 export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalReadinessOptions = {}) {
+  const iosTestFlightScopedOut = readCurrentReleaseWaveScopeArtifact() !== null;
   const matrices = matrixStatus();
   const candidate = releaseCandidate();
   const guard = releaseGuardStatus();
@@ -394,32 +398,39 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
           ? "NO_GO_ROLLBACK_OR_KILL_SWITCH_NOT_READY"
           : candidate.production_rollout_enabled
             ? "NO_GO_PRODUCTION_ROLLOUT_ENABLED_TOO_EARLY"
-            : "NO_GO_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS";
+      : "NO_GO_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS";
+  const matrixBlockers = iosTestFlightScopedOut
+    ? [IOS_TESTFLIGHT_SCOPED_OUT_STATUS]
+    : blockers;
 
   const matrix = {
-    wave: AI_ESTIMATE_FINAL_READINESS_WAVE,
-    final_status: finalStatus,
-    go_no_go_decision: blockers.length === 0 ? AI_ESTIMATE_FINAL_READINESS_GO_DECISION : "NO_GO",
+    wave: iosTestFlightScopedOut ? IOS_TESTFLIGHT_SCOPED_OUT_STATUS : AI_ESTIMATE_FINAL_READINESS_WAVE,
+    final_status: iosTestFlightScopedOut ? IOS_TESTFLIGHT_SCOPED_OUT_STATUS : finalStatus,
+    go_no_go_decision: iosTestFlightScopedOut
+      ? "NO_GO"
+      : blockers.length === 0
+        ? AI_ESTIMATE_FINAL_READINESS_GO_DECISION
+        : "NO_GO",
     production_rollout_enabled: false,
     public_rollout_enabled: false,
     internal_canary_enabled: false,
-    internal_canary_ready: candidate.canary_plan_ready,
-    all_prerequisites_green: allPrerequisitesGreen,
-    matrix_ledger_passed: matrixLedgerPassed,
-    live_web_journey_passed: proof.live_web_journey_passed,
-    android_api34_passed: proof.android_api34_passed,
-    api36_rejected: proof.api36_rejected,
-    pdf_final_proof_passed: proof.pdf_final_proof_passed && !proof.pdf_mojibake_found,
+    internal_canary_ready: iosTestFlightScopedOut ? false : candidate.canary_plan_ready,
+    all_prerequisites_green: iosTestFlightScopedOut ? false : allPrerequisitesGreen,
+    matrix_ledger_passed: iosTestFlightScopedOut ? false : matrixLedgerPassed,
+    live_web_journey_passed: iosTestFlightScopedOut ? false : proof.live_web_journey_passed,
+    android_api34_passed: iosTestFlightScopedOut ? false : proof.android_api34_passed,
+    api36_rejected: iosTestFlightScopedOut ? false : proof.api36_rejected,
+    pdf_final_proof_passed: iosTestFlightScopedOut ? false : proof.pdf_final_proof_passed && !proof.pdf_mojibake_found,
     semantic_coverage_lock_green: matrices.find((item) => item.key === "semantic_coverage_lock")?.green === true,
     primitive_boq_compiler_green: matrices.find((item) => item.key === "primitive_boq_compiler")?.green === true,
     global_local_platform_green: matrices.find((item) => item.key === "global_local_platform")?.green === true,
     change_control_green: matrices.find((item) => item.key === "change_control")?.green === true,
     performance_cost_green: matrices.find((item) => item.key === "performance_cost_guard")?.green === true,
-    observability_ready: candidate.observability_ready,
-    rollback_ready: candidate.rollback_ready,
-    kill_switch_ready: candidate.kill_switch_ready,
-    canary_plan_ready: candidate.canary_plan_ready,
-    safety_abuse_audit_passed: true,
+    observability_ready: iosTestFlightScopedOut ? false : candidate.observability_ready,
+    rollback_ready: iosTestFlightScopedOut ? false : candidate.rollback_ready,
+    kill_switch_ready: iosTestFlightScopedOut ? false : candidate.kill_switch_ready,
+    canary_plan_ready: iosTestFlightScopedOut ? false : candidate.canary_plan_ready,
+    safety_abuse_audit_passed: iosTestFlightScopedOut ? false : true,
     pdf_mojibake_found: proof.pdf_mojibake_found,
     generic_known_work_rows_found: proof.generic_known_work_rows_found,
     weak_boq_rows_found: proof.weak_boq_rows_found,
@@ -441,13 +452,13 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
     android_api34_smoke_passed: verification.androidApi34SmokePassed,
     pdf_final_proof_command_passed: verification.pdfFinalProofPassed,
     runtime_proof_passed: verification.runtimeProofPassed,
-    full_jest_passed: verification.fullJestPassed,
-    release_verify_passed: verification.releaseVerifyPassed,
-    commit_created: verification.commitCreated,
-    branch_pushed: verification.branchPushed,
-    final_worktree_clean: verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0,
+    full_jest_passed: iosTestFlightScopedOut ? false : verification.fullJestPassed,
+    release_verify_passed: iosTestFlightScopedOut ? false : verification.releaseVerifyPassed,
+    commit_created: iosTestFlightScopedOut ? false : verification.commitCreated,
+    branch_pushed: iosTestFlightScopedOut ? false : verification.branchPushed,
+    final_worktree_clean: iosTestFlightScopedOut ? false : verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0,
     fake_green_claimed: false,
-    blockers,
+    blockers: matrixBlockers,
   };
 
   return {
