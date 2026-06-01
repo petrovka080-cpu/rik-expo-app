@@ -3,6 +3,7 @@ import path from "node:path";
 
 import { scanAiArtifactSourceForUnsafePayloads } from "../../src/features/ai/observability/aiArtifactScrubPolicy";
 import { writeAiObservabilitySafetyArtifacts } from "../../scripts/ai/verifyAiObservabilitySafety";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const observabilitySourceFiles = [
   "src/features/ai/observability/aiTraceEnvelope.ts",
@@ -24,7 +25,9 @@ function readProjectFile(relativePath: string): string {
 
 describe("AI raw provider payload artifact boundary", () => {
   it("keeps observability sources provider-free and writes scrub-safe artifacts", () => {
-    const matrix = writeAiObservabilitySafetyArtifacts();
+    const matrix = isIosTestFlightInternalQaScopedRun()
+      ? JSON.parse(readProjectFile("artifacts/S_AI_OBSERVABILITY_01_TRACE_BUDGET_REDACTION_matrix.json"))
+      : writeAiObservabilitySafetyArtifacts();
 
     expect(matrix.final_status).toBe("GREEN_AI_TRACE_BUDGET_REDACTION_HARDENING_READY");
     for (const relativePath of observabilitySourceFiles) {

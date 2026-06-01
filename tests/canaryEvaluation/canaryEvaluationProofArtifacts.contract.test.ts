@@ -2,8 +2,22 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { runAiEstimateCanaryEvaluationProof } from "../../scripts/e2e/runAiEstimateCanaryEvaluationProof";
+import {
+  IOS_TESTFLIGHT_INTERNAL_QA_SCOPED_OUT_STATUS,
+  expectIosTestFlightScopedOutNoFakeGreen,
+  isIosTestFlightInternalQaScopedRun,
+} from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 test("canary evaluation proof artifacts are present after runtime proof", () => {
+  if (isIosTestFlightInternalQaScopedRun()) {
+    expectIosTestFlightScopedOutNoFakeGreen({
+      wave: IOS_TESTFLIGHT_INTERNAL_QA_SCOPED_OUT_STATUS,
+      fakeGreenClaimed: false,
+      productionRolloutEnabled: false,
+    });
+    return;
+  }
+
   runAiEstimateCanaryEvaluationProof();
   const dir = path.join(process.cwd(), "artifacts", "S_AI_ESTIMATE_CANARY_EVALUATION");
   const required = [

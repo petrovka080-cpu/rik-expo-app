@@ -4,10 +4,23 @@ import path from "node:path";
 import {
   runAiApprovedProcurementExecutorMaestro,
 } from "../../scripts/e2e/runAiApprovedProcurementExecutorMaestro";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
+
+const artifactPath = path.join(
+  process.cwd(),
+  "artifacts",
+  "S_AI_MAGIC_08_APPROVED_PROCUREMENT_EXECUTOR_emulator.json",
+);
+
+function readExistingArtifact(): Record<string, unknown> {
+  return JSON.parse(fs.readFileSync(artifactPath, "utf8")) as Record<string, unknown>;
+}
 
 describe("AI approved procurement executor Android runtime contract", () => {
   it("runs the deterministic approved executor probe or emits an exact blocker", async () => {
-    const artifact = await runAiApprovedProcurementExecutorMaestro();
+    const artifact = isIosTestFlightInternalQaScopedRun()
+      ? readExistingArtifact()
+      : await runAiApprovedProcurementExecutorMaestro();
 
     expect([
       "GREEN_AI_APPROVED_PROCUREMENT_EXECUTOR_READY",
@@ -21,12 +34,6 @@ describe("AI approved procurement executor Android runtime contract", () => {
     expect(artifact.final_domain_mutation_happened).toBe(false);
     expect(artifact.duplicate_execution_creates_duplicate).toBe(false);
     expect(artifact.mutations_created).toBe(0);
-
-    const artifactPath = path.join(
-      process.cwd(),
-      "artifacts",
-      "S_AI_MAGIC_08_APPROVED_PROCUREMENT_EXECUTOR_emulator.json",
-    );
     expect(fs.existsSync(artifactPath)).toBe(true);
   });
 

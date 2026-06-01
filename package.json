@@ -45,7 +45,7 @@
     "release:verify:core": "tsx scripts/release/runReleaseVerifyCore.ts --json",
     "release:verify:owner": "tsx scripts/release/runReleaseVerifyOwner.ts --json",
     "release:verify:mobile": "tsx scripts/release/runReleaseVerifyMobile.ts --json",
-    "release:verify": "tsx scripts/release/runReleaseVerifyCore.ts --json",
+    "release:verify": "tsx scripts/release/run-release-guard.ts verify --json",
     "release:ota": "tsx scripts/release/run-release-guard.ts ota",
     "release:sentry:sourcemaps": "sentry-expo-upload-sourcemaps dist",
     "preflight:prod": "node scripts/preflight-prod.js",

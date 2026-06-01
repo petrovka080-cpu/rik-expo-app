@@ -20,7 +20,7 @@ describe("final readiness release verify dirty scope", () => {
   it("keeps the shared scope narrow and blocks arbitrary product paths", () => {
     const source = fs.readFileSync(path.join(process.cwd(), "scripts/release/releaseVerifyDirtyScope.ts"), "utf8");
 
-    expect(source).toContain("isOwnerQualityValidatedCanonicalApi34ChangedFile");
+    expect(source).toContain("isCanonicalApi34EvidencePath");
     expect(source).toContain('file.startsWith("scripts/e2e/")');
     expect(source).toContain('file.startsWith("scripts/release/")');
     expect(source).toContain('file.startsWith("tests/architecture/ownerQuality")');

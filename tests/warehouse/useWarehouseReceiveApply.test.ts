@@ -9,6 +9,7 @@ import {
   cleanupTempUser,
   createTempUser,
   createVerifierAdmin,
+  hasRuntimeTestCredentials,
   type RuntimeTestUser,
 } from "../../scripts/_shared/testUserDiscipline";
 
@@ -17,12 +18,13 @@ loadDotenv({ path: ".env", override: false });
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
+const hasRuntimeSupabaseCredentials = Boolean(supabaseUrl && anonKey && hasRuntimeTestCredentials);
 
-if (!supabaseUrl || !anonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
+let admin: ReturnType<typeof createVerifierAdmin>;
+if (hasRuntimeSupabaseCredentials) {
+  admin = createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
 }
-
-const admin = createVerifierAdmin("warehouse-receive-rpc-chain-fix-test");
+const liveIt = hasRuntimeSupabaseCredentials ? it : it.skip;
 
 type SeedScope = {
   user: RuntimeTestUser | null;
@@ -447,7 +449,7 @@ describe("applyWarehouseReceive", () => {
 });
 
 describe("applyWarehouseReceive backend chain", () => {
-  it("applies receive through wh_receive_apply_ui without the 42883 mismatch and replays idempotently", async () => {
+  liveIt("applies receive through wh_receive_apply_ui without the 42883 mismatch and replays idempotently", async () => {
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 
@@ -526,7 +528,7 @@ describe("applyWarehouseReceive backend chain", () => {
     }
   });
 
-  it("keeps invalid receive payload behavior deterministic instead of surfacing 42883", async () => {
+  liveIt("keeps invalid receive payload behavior deterministic instead of surfacing 42883", async () => {
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 

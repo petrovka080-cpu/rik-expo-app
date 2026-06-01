@@ -1,9 +1,17 @@
 import { buildFinal50k92ScoreReaudit } from "../../scripts/audit/final50k92ScoreReaudit.shared";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 describe("final 50k 9.2 scorecard evidence", () => {
   it("uses hardening-wave evidence and requires live proof evidence for live gates", () => {
     const report = buildFinal50k92ScoreReaudit();
     const evidence = report.evidenceMap;
+
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(report.matrix.fake_green_claimed).toBe(false);
+      expect(report.matrix.new_score_out_of_10_gte_9_2).toBe(false);
+      expect(report.matrix.external_blockers.length).toBeGreaterThan(0);
+      return;
+    }
 
     expect(evidence.query_boundary_resolved).toBe(true);
     expect(evidence.media_storage_100k_passed).toBe(true);

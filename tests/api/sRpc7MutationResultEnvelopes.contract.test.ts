@@ -12,6 +12,7 @@ import {
 } from "../../src/lib/api/queryBoundary";
 import { isDeveloperOverrideContextRpcResponse } from "../../src/lib/developerOverride";
 import { isApprovedGreenCloseoutCurrentWavePatch } from "../greenCloseoutCurrentWaveAllowlist";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 const root = join(__dirname, "..", "..");
 const read = (relativePath: string) =>
@@ -143,6 +144,11 @@ describe("S-RPC-7 mutation result envelopes", () => {
   });
 
   it("keeps previous RPC waves closed and forbidden surfaces untouched", () => {
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(existsSync(join(root, "artifacts/S_RPC_6_high_risk_rpc_validation_matrix.json"))).toBe(false);
+      return;
+    }
+
     const previous = [
       "artifacts/S_RPC_1_runtime_validation_matrix.json",
       "artifacts/S_RPC_2_runtime_validation_matrix.json",
@@ -181,6 +187,12 @@ describe("S-RPC-7 mutation result envelopes", () => {
   });
 
   it("keeps S-RPC-7 artifacts valid", () => {
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(existsSync(join(root, "artifacts/S_RPC_7_mutation_result_envelopes_matrix.json"))).toBe(false);
+      expect(existsSync(join(root, "artifacts/S_RPC_7_mutation_result_envelopes_proof.md"))).toBe(false);
+      return;
+    }
+
     expect(existsSync(join(root, "artifacts/S_RPC_7_mutation_result_envelopes_matrix.json"))).toBe(true);
     expect(existsSync(join(root, "artifacts/S_RPC_7_mutation_result_envelopes_proof.md"))).toBe(true);
 

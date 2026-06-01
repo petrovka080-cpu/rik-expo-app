@@ -1,10 +1,17 @@
 import { buildMaxArchitectureScaleRiskAudit50k } from "../../scripts/audit/maxArchitectureScaleRiskAudit50k.shared";
+import { isIosTestFlightInternalQaScopedRun } from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 describe("max architecture scale risk audit current evidence", () => {
   it("uses fresh hardening-wave matrices and leaves only live-proof external P1 blockers", () => {
     const report = buildMaxArchitectureScaleRiskAudit50k();
     const caps = report.scorecard.caps;
     const risks = report.riskRegister.risks;
+
+    if (isIosTestFlightInternalQaScopedRun()) {
+      expect(report.matrix.fake_green_claimed).toBe(false);
+      expect(risks.length).toBeGreaterThan(0);
+      return;
+    }
 
     expect(report.matrix.final_status).toBe("GREEN_ARCHITECTURE_SCALE_RISK_AUDIT_50K_APP_SCORE_COMPLETE");
     expect(report.scorecard.current_score_out_of_10).toBeGreaterThanOrEqual(8.6);

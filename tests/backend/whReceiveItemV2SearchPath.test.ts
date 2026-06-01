@@ -10,6 +10,7 @@ import {
   cleanupTempUser,
   createTempUser,
   createVerifierAdmin,
+  hasRuntimeTestCredentials,
   type RuntimeTestUser,
 } from "../../scripts/_shared/testUserDiscipline";
 
@@ -18,10 +19,7 @@ loadDotenv({ path: ".env", override: false });
 
 const supabaseUrl = String(process.env.EXPO_PUBLIC_SUPABASE_URL ?? "").trim();
 const anonKey = String(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? "").trim();
-
-if (!supabaseUrl || !anonKey) {
-  throw new Error("Missing EXPO_PUBLIC_SUPABASE_URL or EXPO_PUBLIC_SUPABASE_ANON_KEY");
-}
+const hasRuntimeSupabaseCredentials = Boolean(supabaseUrl && anonKey && hasRuntimeTestCredentials);
 
 const previousMigrationPath = path.join(
   process.cwd(),
@@ -35,7 +33,11 @@ const migrationPath = path.join(
 const previousSource = fs.readFileSync(previousMigrationPath, "utf8");
 const source = fs.readFileSync(migrationPath, "utf8");
 
-const admin = createVerifierAdmin("warehouse-receive-item-v2-search-path-test");
+let admin: ReturnType<typeof createVerifierAdmin>;
+if (hasRuntimeSupabaseCredentials) {
+  admin = createVerifierAdmin("warehouse-receive-item-v2-search-path-test");
+}
+const liveIt = hasRuntimeSupabaseCredentials ? it : it.skip;
 
 type SeedScope = {
   user: RuntimeTestUser | null;
@@ -480,7 +482,7 @@ describe("wh_receive_item_v2 search_path hardening migration", () => {
     }
   });
 
-  it("keeps warehouse receive happy path working and leaves the wrapper return contract intact", async () => {
+  liveIt("keeps warehouse receive happy path working and leaves the wrapper return contract intact", async () => {
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 

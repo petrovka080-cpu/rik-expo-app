@@ -12,7 +12,7 @@ describe("performance closeout release verify dirty scope", () => {
     expect(auditSource).toContain("worktree_dirty");
     expect(scopeSource).toContain("releaseVerifyAllowedDirtyFile");
     expect(scopeSource).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
-    expect(scopeSource).toContain("isOwnerQualityValidatedCanonicalApi34ChangedFile");
+    expect(scopeSource).toContain("isCanonicalApi34EvidencePath");
     expect(scopeSource).toContain('file.startsWith("scripts/e2e/")');
     expect(scopeSource).toContain('file.startsWith("scripts/release/")');
     expect(scopeSource).toContain('file.startsWith("tests/architecture/real10000")');

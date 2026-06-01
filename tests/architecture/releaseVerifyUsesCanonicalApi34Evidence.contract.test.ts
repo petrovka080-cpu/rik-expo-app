@@ -19,8 +19,8 @@ describe("release verify canonical API34 evidence", () => {
     expect(helper).toContain("Pixel_7_API_34");
     expect(helper).toContain("android_sdk === 34");
     expect(helper).toContain("CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD");
-    expect(helper).toContain('file.startsWith("tests/architecture/real10000")');
-    expect(helper).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
+    expect(helper).toContain('file.startsWith("scripts/e2e/")');
+    expect(helper).toContain('file.startsWith("artifacts/")');
   });
 
   it("bridges every old Android gate to current canonical API34 evidence", () => {
@@ -43,14 +43,16 @@ describe("release verify canonical API34 evidence", () => {
     }
   });
 
-  it("does not start a long Android replay inside release verify when canonical evidence is stale", () => {
-    const replay = fs.readFileSync(
-      path.join(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
+  it("keeps canonical replay as one release guard gate and blocks nested replay loops", () => {
+    const releaseGuard = fs.readFileSync(path.join(process.cwd(), "scripts/release/run-release-guard.ts"), "utf8");
+    const closeout = fs.readFileSync(
+      path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
       "utf8",
     );
 
-    expect(replay).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
-    expect(replay).toContain("BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY");
-    expect(replay).toContain("Release verify refuses to start a long Android replay");
+    expect(releaseGuard).toContain('RELEASE_GUARD_IN_PROGRESS: "1"');
+    expect(closeout).toContain("nestedAndroidReplayLoopFound");
+    expect(closeout).toContain("BLOCKED_NESTED_ANDROID_REPLAY_LOOP_FOUND");
+    expect(closeout).toContain("runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts");
   });
 });

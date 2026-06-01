@@ -418,10 +418,18 @@ export function buildEnterpriseReleaseCandidateReport() {
     rollback.rollback_proof_passed,
     canary.canary_plan_ready,
   ]);
+  const blockers = [
+    ...(!previous.previous_wave_green ? previous.blockers : []),
+    ...(!migrationSafety.migration_safe_to_apply ? ["destructive_migration_sql_found"] : []),
+    ...(!ota.ota_runtime_compatible ? ["BLOCKED_OTA_RUNTIME_CHANNEL_MISMATCH"] : []),
+    ...(!proofRunnersPassed ? ["release_candidate_proof_runner_not_green"] : []),
+  ];
 
   const matrix = {
     wave: ENTERPRISE_RELEASE_CANDIDATE_WAVE,
-    final_status: ENTERPRISE_RELEASE_CANDIDATE_GREEN_STATUS,
+    final_status: blockers.length === 0
+      ? ENTERPRISE_RELEASE_CANDIDATE_GREEN_STATUS
+      : "BLOCKED_ENTERPRISE_RELEASE_CANDIDATE_NOT_READY",
     previous_wave_checked: previous.previous_wave_checked,
     previous_wave_green_or_blocker_included: previous.previous_wave_green,
     release_inventory_completed: true,
@@ -466,12 +474,7 @@ export function buildEnterpriseReleaseCandidateReport() {
     full_jest_passed: false,
     release_verify_passed: false,
     fake_green_claimed: false,
-    blockers: [
-      ...(!previous.previous_wave_green ? previous.blockers : []),
-      ...(!migrationSafety.migration_safe_to_apply ? ["destructive_migration_sql_found"] : []),
-      ...(!ota.ota_runtime_compatible ? ["BLOCKED_OTA_RUNTIME_CHANNEL_MISMATCH"] : []),
-      ...(!proofRunnersPassed ? ["release_candidate_proof_runner_not_green"] : []),
-    ],
+    blockers,
   };
 
   return {

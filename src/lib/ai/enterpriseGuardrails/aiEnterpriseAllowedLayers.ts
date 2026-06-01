@@ -165,9 +165,15 @@ export const AI_ENTERPRISE_ALLOWED_LAYERS: AiEnterpriseAllowedLayerDefinition[] 
     screenMayImportDirectly: false,
   },
   {
-    layer: "professionalBoq",
+    layer: "professionalQuality",
     root: "src/lib/ai/professionalBoq",
     purpose: "Professional BOQ compiler, depth validation, work-specific rows, and no-generic-row enforcement.",
+    screenMayImportDirectly: false,
+  },
+  {
+    layer: "professionalBoq",
+    root: "src/lib/ai/professionalQuality",
+    purpose: "Professional estimator quality scoring, quantity/formula checks, and self-correction proof helpers.",
     screenMayImportDirectly: false,
   },
   {
