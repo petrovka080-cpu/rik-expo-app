@@ -1,0 +1,15 @@
+{
+  "final_status": "GREEN_LAYOUT_TYPECHECK_HOTFIX_READY",
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "layout_typecheck_no_behavior_rewrite_contract_passed": true,
+  "release_verify_passed": true,
+  "layout_files_changed_only": true,
+  "ui_redesign_found": false,
+  "product_logic_changed": false,
+  "estimate_engine_changed": false,
+  "boq_compiler_changed": false,
+  "pdf_renderer_changed": false,
+  "fake_green_claimed": false
+}
