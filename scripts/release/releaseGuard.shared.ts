@@ -127,6 +127,8 @@ export type ReleaseGateName =
   | "built-in-ai-50000-phase3-live-app-domain-sample-proof"
   | "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof"
   | "final-50k-92-external-live-proof-closeout"
+  | "ios-testflight-release-scope-proof"
+  | "ios-testflight-test-weakening-scan"
   | "mobile-ios-asc-submit-android-apk-build-proof"
   | "mobile-installed-artifact-acceptance-proof"
   | "jest"
