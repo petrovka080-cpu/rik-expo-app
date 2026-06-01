@@ -416,6 +416,9 @@ function resolveByText(text: string | undefined): { workKey: string; confidence:
   if (/tile|плитк/i.test(normalized) && /floor|пол/i.test(normalized)) {
     return { workKey: "ceramic_tile_floor_laying", confidence: "high" };
   }
+  if (/стяжк|floor\s+screed|screed/i.test(normalized) && /пол|floor/i.test(normalized)) {
+    return { workKey: "floor_screed", confidence: "high" };
+  }
 
   const exact = [...GLOBAL_WORK_ALIASES]
     .sort((left, right) => right.normalizedAlias.length - left.normalizedAlias.length)

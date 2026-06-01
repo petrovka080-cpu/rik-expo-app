@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "case": {
+    "id": "concrete_pedestal_request",
+    "route": "/request",
+    "prompt": "смета на заливку бетонных тумб 12 шт",
+    "expectedWorkKey": "concrete_pedestal_pour",
+    "actualWorkKey": "concrete_pedestal_pour",
+    "passed": true,
+    "rowCount": 38,
+    "blockers": []
+  }
+}

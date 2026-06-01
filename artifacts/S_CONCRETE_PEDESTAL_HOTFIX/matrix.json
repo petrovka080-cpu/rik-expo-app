@@ -1,0 +1,7 @@
+{
+  "final_status": "GREEN_CONCRETE_PEDESTAL_HOTFIX_READY",
+  "concrete_pedestal_maps_to": "concrete_pedestal_pour",
+  "concrete_pedestal_wrongly_mapped_to_slab": false,
+  "concrete_default_volume_m3": 1.24,
+  "fake_green_claimed": false
+}

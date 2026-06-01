@@ -1,0 +1,82 @@
+[
+  {
+    "id": "concrete_pedestal_request",
+    "route": "/request",
+    "prompt": "смета на заливку бетонных тумб 12 шт",
+    "expectedWorkKey": "concrete_pedestal_pour",
+    "actualWorkKey": "concrete_pedestal_pour",
+    "passed": true,
+    "rowCount": 38,
+    "blockers": []
+  },
+  {
+    "id": "concrete_pedestal_foreman",
+    "route": "/ai?context=foreman",
+    "prompt": "смета на заливку бетонных тумб 12 шт",
+    "expectedWorkKey": "concrete_pedestal_pour",
+    "actualWorkKey": "concrete_pedestal_pour",
+    "passed": true,
+    "rowCount": 38,
+    "blockers": []
+  },
+  {
+    "id": "linoleum",
+    "route": "/request",
+    "prompt": "Хочу уложить линолеум на 100 кв м",
+    "expectedWorkKey": "linoleum_laying",
+    "actualWorkKey": "linoleum_laying",
+    "passed": true,
+    "rowCount": 26,
+    "blockers": []
+  },
+  {
+    "id": "drainage_channel",
+    "route": "/request",
+    "prompt": "смета на устройство дренажных каналов 80 пог м",
+    "expectedWorkKey": "drainage_channel_installation",
+    "actualWorkKey": "drainage_channel_installation",
+    "passed": true,
+    "rowCount": 60,
+    "blockers": []
+  },
+  {
+    "id": "passenger_elevator",
+    "route": "/request",
+    "prompt": "смета на пассажирский лифт 1 комплект",
+    "expectedWorkKey": "passenger_elevator_installation",
+    "actualWorkKey": "passenger_elevator_installation",
+    "passed": true,
+    "rowCount": 36,
+    "blockers": []
+  },
+  {
+    "id": "metal_canopy",
+    "route": "/request",
+    "prompt": "смета на металлический навес на площади 647 кв метров",
+    "expectedWorkKey": "metal_canopy_installation",
+    "actualWorkKey": "metal_canopy_installation",
+    "passed": true,
+    "rowCount": 38,
+    "blockers": []
+  },
+  {
+    "id": "paving_stone",
+    "route": "/request",
+    "prompt": "укладка брусчатки 587 кв м",
+    "expectedWorkKey": "paving_stone_laying",
+    "actualWorkKey": "paving_stone_laying",
+    "passed": true,
+    "rowCount": 67,
+    "blockers": []
+  },
+  {
+    "id": "roof_waterproofing",
+    "route": "/request",
+    "prompt": "гидроизоляция крыши 100 кв м",
+    "expectedWorkKey": "roof_waterproofing",
+    "actualWorkKey": "roof_waterproofing",
+    "passed": true,
+    "rowCount": 38,
+    "blockers": []
+  }
+]

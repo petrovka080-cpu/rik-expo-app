@@ -199,36 +199,49 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
   const count = Math.max(1, plan.quantities.count ?? 1);
   const concrete = output(plan, "concreteWithWasteM3", count);
   const formwork = output(plan, "formworkTotalM2", count * 4);
+  const excavation = output(plan, "excavationM3", count * 0.13);
+  const cushion = output(plan, "sandGravelM3", count * 0.04);
+  const rebar = output(plan, "rebarKg", concrete * 95);
+  const anchors = output(plan, "anchorsPcs", count * 4);
+  const laborHours = output(plan, "laborManHours", count * 2.2);
   return [
     concreteRow("labor", "survey", "обмер / осмотр", "set", 1, 3500),
-    concreteRow("labor", "axis_marking", "разметка осей", "pcs", count, 1200),
+    concreteRow("labor", "axis_marking", "разметка осей и мест установки тумб", "pcs", count, 1200),
     concreteRow("labor", "kj_warning", "рабочая схема / КЖ warning", "set", 1, 9500),
-    concreteRow("materials", "concrete", "бетон", "m3", concrete, 5600, "concrete"),
-    concreteRow("materials", "rebar", "арматура", "kg", Math.round(concrete * 95 * 100) / 100, 78, "rebar"),
-    concreteRow("materials", "tie_wire", "вязальная проволока", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
+    concreteRow("labor", "excavation", "выемка грунта под отдельные тумбы", "m3", excavation, 900),
+    concreteRow("labor", "base_leveling", "планировка дна выемок под тумбы", "pcs", count, 340),
+    concreteRow("labor", "base_compaction", "уплотнение основания под тумбы", "pcs", count, 420),
+    concreteRow("materials", "geotextile_warning", "геотекстиль, если требуется по грунту warning", "sq_m", Math.round(count * 0.36 * 100) / 100, 70, "geotextile"),
+    concreteRow("materials", "sand_gravel_cushion", "песчано-щебеночная подушка под тумбы", "m3", cushion, 1900, "sand_gravel_mix"),
+    concreteRow("labor", "cushion_install", "устройство песчано-щебеночной подушки", "m3", cushion, 850),
+    concreteRow("materials", "concrete", "бетон B20/B25 с запасом для тумб", "m3", concrete, 5600, "concrete"),
+    concreteRow("materials", "rebar", "арматурный каркас тумб", "kg", Math.round(rebar * 100) / 100, 78, "rebar"),
+    concreteRow("materials", "tie_wire", "вязальная проволока / фиксаторы защитного слоя", "kg", Math.round(concrete * 2.5 * 100) / 100, 120, "tie_wire"),
     concreteRow("materials", "spacers", "фиксаторы защитного слоя", "pcs", count * 16, 18, "rebar_spacers"),
-    concreteRow("materials", "formwork", "опалубка", "sq_m", formwork, 650, "formwork"),
+    concreteRow("materials", "formwork", "опалубка тумб", "sq_m", formwork, 650, "formwork"),
     concreteRow("materials", "formwork_fasteners", "крепёж опалубки", "set", count, 850, "formwork_fasteners"),
     concreteRow("materials", "formwork_release_oil", "\u0441\u043c\u0430\u0437\u043a\u0430 \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "sq_m", formwork, 45, "formwork_release_oil"),
     concreteRow("materials", "chamfer_strips", "\u0444\u0430\u0441\u043a\u0438 / \u0440\u0435\u0439\u043a\u0438 \u0434\u043b\u044f \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "linear_m", count * 4, 140, "formwork_chamfer_strips"),
-    concreteRow("materials", "anchor_bolts_warning", "\u0430\u043d\u043a\u0435\u0440\u043d\u044b\u0435 \u0431\u043e\u043b\u0442\u044b warning", "pcs", count * 4, 320, "anchor_bolts"),
+    concreteRow("materials", "anchor_bolts_warning", "закладные детали / анкерные болты warning", "pcs", anchors, 320, "anchor_bolts"),
     concreteRow("labor", "base_preparation", "\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0442\u0443\u043c\u0431\u044b", "sq_m", formwork, 180),
-    concreteRow("labor", "rebar_cutting", "\u0440\u0435\u0437\u043a\u0430 \u0438 \u0433\u0438\u0431\u043a\u0430 \u0430\u0440\u043c\u0430\u0442\u0443\u0440\u044b", "kg", Math.round(concrete * 95 * 100) / 100, 38),
+    concreteRow("labor", "rebar_cutting", "\u0440\u0435\u0437\u043a\u0430 \u0438 \u0433\u0438\u0431\u043a\u0430 \u0430\u0440\u043c\u0430\u0442\u0443\u0440\u044b", "kg", Math.round(rebar * 100) / 100, 38),
     concreteRow("labor", "embedded_parts_check", "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0437\u0430\u043a\u043b\u0430\u0434\u043d\u044b\u0445 \u0434\u0435\u0442\u0430\u043b\u0435\u0439", "pcs", count, 950),
-    concreteRow("labor", "rebar_tying", "вязка арматуры", "kg", Math.round(concrete * 95 * 100) / 100, 45),
-    concreteRow("labor", "formwork_install", "монтаж опалубки", "sq_m", formwork, 420),
+    concreteRow("labor", "rebar_tying", "вязка арматуры тумб", "kg", Math.round(rebar * 100) / 100, 45),
+    concreteRow("labor", "formwork_install", "изготовление и установка опалубки тумб", "sq_m", formwork, 420),
     concreteRow("labor", "concrete_acceptance", "приёмка бетона", "m3", concrete, 120),
-    concreteRow("labor", "concrete_pour", "заливка бетона", "m3", concrete, 650),
-    concreteRow("equipment", "vibration", "вибрирование", "m3", concrete, 260),
-    concreteRow("labor", "deformwork", "распалубка", "sq_m", formwork, 210),
+    concreteRow("labor", "concrete_pour", "подача / укладка бетона в тумбы", "m3", concrete, 650),
+    concreteRow("equipment", "vibration", "вибрирование бетона глубинным вибратором", "m3", concrete, 260),
+    concreteRow("labor", "deformwork", "распалубка и зачистка граней тумб", "sq_m", formwork, 210),
     concreteRow("labor", "curing", "уход за бетоном", "m3", concrete, 180),
-    concreteRow("labor", "level_control", "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043e\u0442\u043c\u0435\u0442\u043e\u043a \u0442\u0443\u043c\u0431", "pcs", count, 420),
-    concreteRow("labor", "surface_finish", "\u0437\u0430\u0442\u0438\u0440\u043a\u0430 \u0432\u0435\u0440\u0445\u0430 \u0442\u0443\u043c\u0431", "pcs", count, 380),
-    concreteRow("equipment", "concrete_pump_warning", "подача бетона warning", "m3", concrete, 1800),
+    concreteRow("labor", "level_control", "контроль геометрии и отметок тумб", "pcs", count, 420),
+    concreteRow("labor", "surface_finish", "выравнивание верха тумб по отметке", "pcs", count, 380),
+    concreteRow("labor", "backfill_cleanup", "обратная засыпка / зачистка вокруг тумб", "m3", Math.max(0.01, Math.round((excavation - concrete) * 100) / 100), 620),
+    concreteRow("equipment", "concrete_pump_warning", "средство подачи бетона к тумбам warning", "m3", concrete, 1800),
     concreteRow("equipment", "scaffold_warning", "леса / подмости warning", "set", 1, 12000),
     concreteRow("equipment", "laser_level", "\u043b\u0430\u0437\u0435\u0440\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c", "shift", 1, 1800),
-    concreteRow("delivery", "materials_delivery", "доставка материалов", "trip", Math.max(1, Math.ceil(concrete / 8)), 6500),
+    concreteRow("delivery", "materials_delivery", "доставка материалов для бетонных тумб", "trip", Math.max(1, Math.ceil(concrete / 8)), 6500),
     concreteRow("labor", "handover_scheme", "\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0445\u0435\u043c\u0430 \u0442\u0443\u043c\u0431", "set", 1, 2500),
+    concreteRow("labor", "labor_allowance", "трудозатраты на комплекс тумб", "set", Math.max(1, Math.ceil(laborHours / 8)), 1920),
     concreteRow("delivery", "reserve", "резерв на добор материалов и расходники", "set", 1, Math.round(concrete * 900)),
   ];
 }
@@ -786,4 +799,3 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
   }
   return boq;
 }
-
