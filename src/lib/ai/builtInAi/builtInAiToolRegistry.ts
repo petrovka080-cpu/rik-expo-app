@@ -87,7 +87,13 @@ function withPromptLocalContextWarning(prompt: string, safeMessageRu: string | u
   return parts.filter(Boolean).join("\n");
 }
 
-function isAmbiguousWaterproofingSurfacePrompt(text: string): boolean {
+function isAmbiguousWaterproofingSurfacePrompt(text: string, resolvedWorkKey: string | undefined): boolean {
+  const hasSpecificWaterproofingWorkKey =
+    Boolean(resolvedWorkKey) &&
+    resolvedWorkKey !== "other_construction_work" &&
+    /waterproof/i.test(resolvedWorkKey ?? "");
+  if (hasSpecificWaterproofingWorkKey) return false;
+
   if (/\u043c\u0435\u043c\u0431\u0440\u0430\u043d|\u0431\u0430\u0441\u0441\u0435\u0439\u043d|membrane|pool/i.test(text)) {
     return false;
   }
@@ -115,7 +121,7 @@ function calculateGlobalEstimate(input: BuiltInAiInput): {
     countryCode: baseInput.countryCode,
     city: baseInput.city,
   });
-  if (isAmbiguousWaterproofingSurfacePrompt(input.text)) {
+  if (isAmbiguousWaterproofingSurfacePrompt(input.text, estimateRoute.resolvedWorkKey)) {
     return {
       blockedBy: "AMBIGUOUS_NEEDS_DISAMBIGUATION",
       safeMessageRu: withPromptLocalContextWarning(
