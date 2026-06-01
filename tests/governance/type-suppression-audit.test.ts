@@ -8,36 +8,86 @@
  * BASELINES updated after GOVERNANCE CLOSEOUT package (2026-04-15).
  */
 
-import { execSync } from "child_process";
+import * as fs from "fs";
 import * as path from "path";
 
-const SRC_DIR = path.resolve(__dirname, "../src");
-const APP_DIR = path.resolve(__dirname, "../app");
+const PROJECT_ROOT = path.resolve(__dirname, "../..");
+const SRC_DIR = path.join(PROJECT_ROOT, "src");
+const APP_DIR = path.join(PROJECT_ROOT, "app");
 
-function countPattern(pattern: string, dir: string, excludeTests = true): number {
-  try {
-    const excludeFlag = excludeTests ? "--glob=!*.test.*" : "";
-    const cmd = `npx rg -c "${pattern}" ${excludeFlag} --glob="*.ts" --glob="*.tsx" "${dir}" 2>nul`;
-    const output = execSync(cmd, { encoding: "utf8", timeout: 10000 });
-    return output
-      .split("\n")
-      .filter(Boolean)
-      .reduce((sum, line) => {
-        const count = parseInt(line.split(":").pop() || "0", 10);
-        return sum + (Number.isFinite(count) ? count : 0);
-      }, 0);
-  } catch {
-    // rg returns exit code 1 when no matches found
-    return 0;
+type CountPatternOptions = {
+  excludeDevGuardedLines?: boolean;
+};
+
+function isTrackedSourceFile(filePath: string, excludeTests: boolean): boolean {
+  if (!/\.(ts|tsx)$/.test(filePath)) {
+    return false;
   }
+
+  if (!excludeTests) {
+    return true;
+  }
+
+  const normalized = filePath.replace(/\\/g, "/");
+  return !/(\.test\.|\.spec\.|\/__tests__\/)/.test(normalized);
 }
 
-function countPatternSrc(pattern: string, excludeTests = true): number {
-  return countPattern(pattern, SRC_DIR, excludeTests);
+function listSourceFiles(dir: string, excludeTests: boolean): string[] {
+  if (!fs.existsSync(dir)) {
+    return [];
+  }
+
+  const files: string[] = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...listSourceFiles(fullPath, excludeTests));
+      continue;
+    }
+
+    if (entry.isFile() && isTrackedSourceFile(fullPath, excludeTests)) {
+      files.push(fullPath);
+    }
+  }
+  return files;
 }
 
-function countPatternAll(pattern: string, excludeTests = true): number {
-  return countPatternSrc(pattern, excludeTests) + countPattern(pattern, APP_DIR, excludeTests);
+function countMatches(source: string, pattern: string): number {
+  return source.match(new RegExp(pattern, "g"))?.length ?? 0;
+}
+
+function countPattern(
+  pattern: string,
+  dir: string,
+  excludeTests = true,
+  options: CountPatternOptions = {},
+): number {
+  return listSourceFiles(dir, excludeTests).reduce((sum, filePath) => {
+    const source = fs.readFileSync(filePath, "utf8");
+    const searchableSource = options.excludeDevGuardedLines
+      ? source
+        .split(/\r?\n/)
+        .filter((line) => !line.includes("__DEV__"))
+        .join("\n")
+      : source;
+    return sum + countMatches(searchableSource, pattern);
+  }, 0);
+}
+
+function countPatternSrc(
+  pattern: string,
+  excludeTests = true,
+  options: CountPatternOptions = {},
+): number {
+  return countPattern(pattern, SRC_DIR, excludeTests, options);
+}
+
+function countPatternAll(
+  pattern: string,
+  excludeTests = true,
+  options: CountPatternOptions = {},
+): number {
+  return countPatternSrc(pattern, excludeTests, options) + countPattern(pattern, APP_DIR, excludeTests, options);
 }
 
 describe("governance: type-suppression debt tracking", () => {
@@ -69,15 +119,9 @@ describe("governance: type-suppression debt tracking", () => {
       "src/screens/director/hooks/useDirectorReportOptionsQuery.ts",
     ];
     for (const file of files) {
-      const fullPath = path.resolve(__dirname, "..", file);
-      try {
-        const cmd = `npx rg -c " as any" "${fullPath}" 2>nul`;
-        const output = execSync(cmd, { encoding: "utf8", timeout: 5000 }).trim();
-        const count = parseInt(output.split(":").pop() || "0", 10);
-        expect(count).toBe(0);
-      } catch {
-        // No matches = pass
-      }
+      const fullPath = path.join(PROJECT_ROOT, file);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      expect(countMatches(fs.readFileSync(fullPath, "utf8"), " as any")).toBe(0);
     }
   });
 
@@ -91,15 +135,9 @@ describe("governance: type-suppression debt tracking", () => {
       "src/lib/pdf/pdfViewer.components.tsx",
     ];
     for (const file of files) {
-      const fullPath = path.resolve(__dirname, "..", file);
-      try {
-        const cmd = `npx rg -c " as any" "${fullPath}" 2>nul`;
-        const output = execSync(cmd, { encoding: "utf8", timeout: 5000 }).trim();
-        const count = parseInt(output.split(":").pop() || "0", 10);
-        expect(count).toBe(0);
-      } catch {
-        // No matches = pass
-      }
+      const fullPath = path.join(PROJECT_ROOT, file);
+      expect(fs.existsSync(fullPath)).toBe(true);
+      expect(countMatches(fs.readFileSync(fullPath, "utf8"), " as any")).toBe(0);
     }
   });
 });
@@ -110,9 +148,10 @@ describe("governance: raw console.* baseline tracking", () => {
 
   it("raw console.* count in src (non-test, excluding __DEV__ guards) does not exceed baseline", () => {
     // Count console calls NOT guarded by __DEV__
-    const count = countPatternSrc("console\\.(log|warn|error|info|debug)");
+    const count = countPatternSrc("console\\.(log|warn|error|info|debug)", true, {
+      excludeDevGuardedLines: true,
+    });
     const BASELINE = 150; // measured: ~145 after audit. Mechanical replacement is a separate pass.
     expect(count).toBeLessThanOrEqual(BASELINE);
   });
 });
-
