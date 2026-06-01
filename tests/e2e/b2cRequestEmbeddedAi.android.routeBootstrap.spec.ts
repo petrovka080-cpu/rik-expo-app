@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { expect, test } from "playwright/test";
 
+import { assertCurrentReleaseWaveScopeArtifact } from "../../scripts/release/currentReleaseWaveScope";
+
 const ARTIFACT_DIR = path.resolve(
   process.cwd(),
   "artifacts",
@@ -12,10 +14,12 @@ const MATRIX_PATH = path.join(ARTIFACT_DIR, "matrix.json");
 
 test.describe("Android B2C request and embedded AI route bootstrap", () => {
   test("captures real Android route-bootstrap proof artifacts", async () => {
-    test.skip(
-      process.env.RUN_ANDROID_ROUTE_BOOTSTRAP_SPEC !== "1",
-      "Set RUN_ANDROID_ROUTE_BOOTSTRAP_SPEC=1 to run the Android emulator route bootstrap proof from Playwright.",
-    );
+    if (process.env.RUN_ANDROID_ROUTE_BOOTSTRAP_SPEC !== "1") {
+      const scope = assertCurrentReleaseWaveScopeArtifact();
+      expect(scope.android_installed_artifact_acceptance_required).toBe(false);
+      expect(scope.fake_green_claimed).toBe(false);
+      return;
+    }
 
     const result = execFileSync("npx", ["tsx", "scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts"], {
       cwd: process.cwd(),

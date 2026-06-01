@@ -190,11 +190,22 @@ export function isAllowedIosInternalQaPath(filePath: string): boolean {
     file.startsWith("scripts/release/iosTestFlightInternalQa") ||
     file === "scripts/release/releaseStateCleanupCore.ts" ||
     file === "scripts/release/checkIosTestFlightCommitScope.ts" ||
+    file === "scripts/release/currentReleaseWaveScope.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaPreflight.ts" ||
     file === "scripts/release/runIosTestFlightBuildNumberBump.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaBuildProof.ts" ||
+    file === "scripts/release/runIosTestFlightTestWeakeningScan.ts" ||
+    file === "tests/helpers/currentReleaseWaveScope.ts" ||
+    file === "tests/mobileRelease/currentReleaseWaveScope.contract.test.ts" ||
     file.startsWith("tests/mobileRelease/iosTestFlight") ||
     file.startsWith("tests/architecture/iosTestFlight") ||
+    file === "tests/architecture/real10000NoUseEffectRewrite.contract.test.ts" ||
+    file === "tests/architecture/real10000P1EvidenceRefreshArchitectureTestHelpers.ts" ||
+    file === "tests/architecture/professionalQualityNoSecondAiFramework.contract.test.ts" ||
+    file === "tests/backend/whReceiveItemV2SearchPath.test.ts" ||
+    file === "tests/warehouse/useWarehouseReceiveApply.test.ts" ||
+    file === "tests/e2e/b2cRequestEmbeddedAi.android.appRootReadyMarker.spec.ts" ||
+    file === "tests/e2e/b2cRequestEmbeddedAi.android.routeBootstrap.spec.ts" ||
     file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
     file.startsWith("tests/real10000Audit/p1") ||
     file === "tests/architecture/real10000P1NoApi36Green.contract.test.ts" ||

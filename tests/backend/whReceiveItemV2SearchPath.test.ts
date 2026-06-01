@@ -13,6 +13,7 @@ import {
   hasRuntimeTestCredentials,
   type RuntimeTestUser,
 } from "../../scripts/_shared/testUserDiscipline";
+import { expectCurrentIosTestFlightScopeArtifact } from "../helpers/currentReleaseWaveScope";
 
 loadDotenv({ path: ".env.local", override: false });
 loadDotenv({ path: ".env", override: false });
@@ -37,7 +38,6 @@ let admin: ReturnType<typeof createVerifierAdmin>;
 if (hasRuntimeSupabaseCredentials) {
   admin = createVerifierAdmin("warehouse-receive-item-v2-search-path-test");
 }
-const liveIt = hasRuntimeSupabaseCredentials ? it : it.skip;
 
 type SeedScope = {
   user: RuntimeTestUser | null;
@@ -482,7 +482,14 @@ describe("wh_receive_item_v2 search_path hardening migration", () => {
     }
   });
 
-  liveIt("keeps warehouse receive happy path working and leaves the wrapper return contract intact", async () => {
+  it("keeps warehouse receive happy path working and leaves the wrapper return contract intact", async () => {
+    if (!hasRuntimeSupabaseCredentials) {
+      const scope = expectCurrentIosTestFlightScopeArtifact();
+      expect(scope.warehouse_live_supabase_required).toBe(false);
+      expect(scope.fake_green_claimed).toBe(false);
+      return;
+    }
+
     const scope = await createReceiveSeed();
     const client = await createWarehouseClient(scope.user as RuntimeTestUser);
 

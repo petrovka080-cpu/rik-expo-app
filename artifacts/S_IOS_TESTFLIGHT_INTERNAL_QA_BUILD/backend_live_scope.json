@@ -1,0 +1,14 @@
+{
+  "srpc_required_for_ios_testflight_internal_qa": false,
+  "srt_required_for_ios_testflight_internal_qa": false,
+  "warehouse_live_supabase_required_for_ios_testflight_internal_qa": false,
+  "static_sql_contract_tests_ran": true,
+  "static_client_contract_tests_ran": true,
+  "live_supabase_credentials_present": false,
+  "live_supabase_tests_import_safe": true,
+  "live_supabase_green_claimed": false,
+  "backend_live_green_claimed": false,
+  "supabase_service_role_key_written": false,
+  "secrets_written_to_artifacts": false,
+  "fake_green_claimed": false
+}

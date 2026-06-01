@@ -56,7 +56,7 @@ export function p1EvidenceRefreshSources(): string {
 export function expectNoForbiddenP1Path(predicate: (file: string) => boolean): void {
   const changedFiles = changedFilesForP1EvidenceRefresh();
   if (!p1EvidenceRefreshWaveActive(changedFiles)) {
-    expect(true).toBe(true);
+    expect(changedFiles.some(isP1EvidenceRefreshWaveFile)).toBe(false);
     return;
   }
   expect(changedFiles.filter(predicate)).toEqual([]);

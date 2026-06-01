@@ -1,0 +1,20 @@
+{
+  "wave": "IOS_TESTFLIGHT_INTERNAL_QA",
+  "internal_testflight_only": true,
+  "real10000_required": false,
+  "canary_required": false,
+  "release_candidate_required": false,
+  "final_readiness_required": false,
+  "srpc_required": false,
+  "srt_required": false,
+  "warehouse_live_supabase_required": false,
+  "android_installed_artifact_acceptance_required": false,
+  "owner_replay_required": false,
+  "eas_build_allowed_after_green_prebuild": true,
+  "asc_upload_allowed_after_green_build": true,
+  "app_review_submitted": false,
+  "external_beta_review_submitted": false,
+  "public_beta_enabled": false,
+  "production_rollout_enabled": false,
+  "fake_green_claimed": false
+}

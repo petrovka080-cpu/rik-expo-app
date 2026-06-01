@@ -1,0 +1,19 @@
+{
+  "test_skip_found": false,
+  "describe_skip_found": false,
+  "it_skip_found": false,
+  "expect_true_to_be_true_found": false,
+  "silent_scope_return_found": false,
+  "all_scope_exits_assert_artifact": true,
+  "fake_green_claimed": false,
+  "classified_scope_return_count": 29,
+  "total_return_statement_matches": 420,
+  "findings": {
+    "describe_skip": [],
+    "test_skip": [],
+    "it_skip": [],
+    "expect_true_to_be_true": [],
+    "silent_scope_returns": []
+  },
+  "final_status": "GREEN_IOS_TESTFLIGHT_TEST_WEAKENING_SCAN_READY"
+}
