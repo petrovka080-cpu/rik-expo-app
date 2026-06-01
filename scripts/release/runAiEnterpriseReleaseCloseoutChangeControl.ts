@@ -81,6 +81,8 @@ const AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
   "S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
 const AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
   "S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE =
@@ -1456,6 +1458,18 @@ function isAi3000AdditionalRealWorkEstimateAcceptancePath(file: string): boolean
   );
 }
 
+function isAi5000NextRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi5000NextRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai5000NextRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1503,6 +1517,17 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isAi5000NextRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_5000_NEXT_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 5000 next real-work acceptance proof, cumulative 10000 corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
   if (isAi3000AdditionalRealWorkEstimateAcceptancePath(normalized)) {
     return {
       file: normalized,
