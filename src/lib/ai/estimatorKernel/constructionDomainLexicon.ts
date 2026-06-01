@@ -110,12 +110,15 @@ export type EstimatorResolvedDomainSignature = {
 
 export function resolveEstimatorDomainSignature(text: string): EstimatorResolvedDomainSignature | null {
   const normalized = normalizeDimensionText(text);
-  const match = ESTIMATOR_DOMAIN_LEXICON
+  const matches = ESTIMATOR_DOMAIN_LEXICON
     .flatMap((item) =>
       [...item.terms, ...item.casePhrases]
         .map((term) => ({ item, term: normalizeDimensionText(term) }))
         .filter(({ term }) => term.length > 0 && normalized.includes(term)),
-    )
+    );
+  const demolitionDominant = /^(?:смета\s+на\s+)?(?:демонтаж|снос|разборк)/.test(normalized);
+  const primaryWorkMatches = demolitionDominant ? matches : matches.filter(({ item }) => item.domain !== "demolition");
+  const match = (primaryWorkMatches.length > 0 ? primaryWorkMatches : matches)
     .sort((left, right) => right.term.length - left.term.length)[0];
   if (!match) return null;
   const entry = match.item;

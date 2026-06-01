@@ -48,6 +48,38 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
   };
 }
 
+const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
+  concrete_pedestal: "\u0431\u0435\u0442\u043e\u043d\u043d\u044b\u0435 \u0442\u0443\u043c\u0431\u044b",
+  demolition_scope: "\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+  drywall_system: "\u043e\u0431\u043b\u0438\u0446\u043e\u0432\u043a\u0430 \u0441\u0442\u0435\u043d \u0413\u041a\u041b",
+  industrial_floor: "\u043f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u043f\u043e\u043b",
+  masonry_wall: "\u043a\u0438\u0440\u043f\u0438\u0447\u043d\u0430\u044f \u043a\u043b\u0430\u0434\u043a\u0430",
+  passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
+  roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
+};
+
+function userVisibleObjectLabel(plan: EstimatorReasoningPlan): string {
+  return USER_VISIBLE_OBJECT_LABELS_RU[plan.semanticFrame.object] ?? plan.semanticFrame.object.replace(/_/g, " ");
+}
+
+function buildFallbackObjectSpecificRows(plan: EstimatorReasoningPlan, quantity: number): DynamicProfessionalBoqRow[] {
+  if (plan.semanticFrame.object === "drywall_system") {
+    return [
+      row(
+        "materials",
+        "drywall_screws",
+        "\u0441\u0430\u043c\u043e\u0440\u0435\u0437\u044b \u0434\u043b\u044f \u0413\u041a\u041b \u0438 \u043f\u0440\u043e\u0444\u0438\u043b\u044f",
+        "pcs",
+        Math.max(100, Math.ceil(quantity * 18)),
+        2,
+        "drywall_screws",
+      ),
+    ];
+  }
+  return [];
+}
+
 function elevatorRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string, name: string, unit: string, quantity: number, unitPrice: number, materialKey?: string): DynamicProfessionalBoqRow {
   return {
     sectionType,
@@ -94,6 +126,7 @@ function buildElevatorInstallationBoq(plan: EstimatorReasoningPlan): DynamicProf
     elevatorRow("labor", "electrical_install", "электромонтаж лифтового оборудования", "set", 1, 120000),
     elevatorRow("labor", "commissioning", "ПНР", "set", 1, 95000),
     elevatorRow("labor", "testing", "испытания", "set", 1, 65000),
+    elevatorRow("labor", "safety_chain_check", "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0446\u0435\u043f\u0435\u0439 \u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\u0438 \u043b\u0438\u0444\u0442\u0430", "set", 1, 52000),
     elevatorRow("labor", "inspection_handover", "инспекция / сдача", "set", 1, 55000),
     elevatorRow("delivery", "equipment_delivery", "доставка / логистика лифтового оборудования", "trip", 2, 85000),
     elevatorRow("equipment", "rigging", "такелаж и подъем оборудования", "set", 1, 120000),
@@ -176,6 +209,12 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("materials", "spacers", "фиксаторы защитного слоя", "pcs", count * 16, 18, "rebar_spacers"),
     concreteRow("materials", "formwork", "опалубка", "sq_m", formwork, 650, "formwork"),
     concreteRow("materials", "formwork_fasteners", "крепёж опалубки", "set", count, 850, "formwork_fasteners"),
+    concreteRow("materials", "formwork_release_oil", "\u0441\u043c\u0430\u0437\u043a\u0430 \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "sq_m", formwork, 45, "formwork_release_oil"),
+    concreteRow("materials", "chamfer_strips", "\u0444\u0430\u0441\u043a\u0438 / \u0440\u0435\u0439\u043a\u0438 \u0434\u043b\u044f \u043e\u043f\u0430\u043b\u0443\u0431\u043a\u0438", "linear_m", count * 4, 140, "formwork_chamfer_strips"),
+    concreteRow("materials", "anchor_bolts_warning", "\u0430\u043d\u043a\u0435\u0440\u043d\u044b\u0435 \u0431\u043e\u043b\u0442\u044b warning", "pcs", count * 4, 320, "anchor_bolts"),
+    concreteRow("labor", "base_preparation", "\u043f\u043e\u0434\u0433\u043e\u0442\u043e\u0432\u043a\u0430 \u043e\u0441\u043d\u043e\u0432\u0430\u043d\u0438\u044f \u043f\u043e\u0434 \u0442\u0443\u043c\u0431\u044b", "sq_m", formwork, 180),
+    concreteRow("labor", "rebar_cutting", "\u0440\u0435\u0437\u043a\u0430 \u0438 \u0433\u0438\u0431\u043a\u0430 \u0430\u0440\u043c\u0430\u0442\u0443\u0440\u044b", "kg", Math.round(concrete * 95 * 100) / 100, 38),
+    concreteRow("labor", "embedded_parts_check", "\u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0437\u0430\u043a\u043b\u0430\u0434\u043d\u044b\u0445 \u0434\u0435\u0442\u0430\u043b\u0435\u0439", "pcs", count, 950),
     concreteRow("labor", "rebar_tying", "вязка арматуры", "kg", Math.round(concrete * 95 * 100) / 100, 45),
     concreteRow("labor", "formwork_install", "монтаж опалубки", "sq_m", formwork, 420),
     concreteRow("labor", "concrete_acceptance", "приёмка бетона", "m3", concrete, 120),
@@ -183,9 +222,13 @@ function buildConcreteElementBoq(plan: EstimatorReasoningPlan): DynamicProfessio
     concreteRow("equipment", "vibration", "вибрирование", "m3", concrete, 260),
     concreteRow("labor", "deformwork", "распалубка", "sq_m", formwork, 210),
     concreteRow("labor", "curing", "уход за бетоном", "m3", concrete, 180),
+    concreteRow("labor", "level_control", "\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c \u043e\u0442\u043c\u0435\u0442\u043e\u043a \u0442\u0443\u043c\u0431", "pcs", count, 420),
+    concreteRow("labor", "surface_finish", "\u0437\u0430\u0442\u0438\u0440\u043a\u0430 \u0432\u0435\u0440\u0445\u0430 \u0442\u0443\u043c\u0431", "pcs", count, 380),
     concreteRow("equipment", "concrete_pump_warning", "подача бетона warning", "m3", concrete, 1800),
     concreteRow("equipment", "scaffold_warning", "леса / подмости warning", "set", 1, 12000),
+    concreteRow("equipment", "laser_level", "\u043b\u0430\u0437\u0435\u0440\u043d\u044b\u0439 \u0443\u0440\u043e\u0432\u0435\u043d\u044c", "shift", 1, 1800),
     concreteRow("delivery", "materials_delivery", "доставка материалов", "trip", Math.max(1, Math.ceil(concrete / 8)), 6500),
+    concreteRow("labor", "handover_scheme", "\u0438\u0441\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0445\u0435\u043c\u0430 \u0442\u0443\u043c\u0431", "set", 1, 2500),
     concreteRow("delivery", "reserve", "резерв на добор материалов и расходники", "set", 1, Math.round(concrete * 900)),
   ];
 }
@@ -598,7 +641,7 @@ function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessi
 
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
   const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
-  const object = plan.semanticFrame.object.replace(/_/g, " ");
+  const object = userVisibleObjectLabel(plan);
   const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
   const unitFor = (
     name: string,
@@ -645,10 +688,12 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
   const logisticsRows = plan.boqPlan.requiredLogisticsOrWarnings.map((name, index) =>
     row("delivery", `logistics_${index + 1}`, name, unitFor(name, "delivery", index === 0 ? "trip" : "set"), 1, 4200 + index * 900),
   );
+  const objectSpecificRows = buildFallbackObjectSpecificRows(plan, quantity);
   return [
     row("labor", "survey", `обследование и обмер: ${object}`, "set", 1, 3500),
     row("labor", "layout", `разметка и технологическая привязка: ${object}`, "set", 1, 4500),
     ...materialRows,
+    ...objectSpecificRows,
     row("materials", "profile_fasteners", `крепёж и профильные расходники: ${object}`, "set", 1, Math.round(quantity * 55), `${plan.semanticFrame.object}_fasteners`),
     ...laborRows,
     ...equipmentRows,
@@ -661,12 +706,13 @@ function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoq
 
 function padRows(plan: EstimatorReasoningPlan, rows: DynamicProfessionalBoqRow[]): DynamicProfessionalBoqRow[] {
   const result = [...rows];
+  const object = userVisibleObjectLabel(plan);
   let index = 0;
   while (result.length < minimumRows(plan.boqPlan.complexity)) {
     result.push(row(
       index % 4 === 0 ? "labor" : index % 4 === 1 ? "materials" : index % 4 === 2 ? "equipment" : "delivery",
       `assurance_${index + 1}`,
-      `контроль сметного объема ${plan.semanticFrame.object.replace(/_/g, " ")} ${index + 1}`,
+      `контроль сметного объема ${object} ${index + 1}`,
       "set",
       1,
       1200 + index * 120,
