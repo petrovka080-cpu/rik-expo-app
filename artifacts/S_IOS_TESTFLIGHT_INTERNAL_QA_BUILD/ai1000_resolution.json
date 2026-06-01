@@ -1,0 +1,13 @@
+{
+  "final_status": "GREEN_AI1000_PDF_ACTION_REGRESSION_RESOLVED",
+  "product_hotfix_commit_on_testflight_branch": "d9dc7268d94ba7731c6ad3676adf3c0f81b93245",
+  "hotfix_subject": "Fix waterproofing AI1000 estimate routing",
+  "targeted_regression_test": "tests/builtInAi1000/ai1000WaterproofingExactRouteEstimate.contract.test.ts",
+  "targeted_regression_passed": true,
+  "ai1000_runtime_proof_command": "npx tsx scripts/e2e/runBuiltInAi1000ConstructionWorkTypesProof.ts",
+  "ai1000_final_status": "GREEN_BUILT_IN_AI_1000_CONSTRUCTION_WORK_TYPES_REAL_ESTIMATE_OUTPUT_READY",
+  "cases_passed": 1000,
+  "cases_total": 1000,
+  "generic_waterproofing_disambiguation_preserved": true,
+  "fake_green_claimed": false
+}

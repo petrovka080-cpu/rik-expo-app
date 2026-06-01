@@ -7,13 +7,18 @@
   "architecture_tests_passed": true,
   "product_quality_mainline_acceptance_passed": true,
   "professional_quality_proof_passed": true,
-  "release_verify_passed": true,
+  "full_jest_passed": false,
+  "release_verify_passed": false,
   "typecheck_command": "npx tsc --noEmit --pretty false",
   "lint_command": "npx expo lint",
   "git_diff_check_command": "git diff --check",
-  "targeted_tests_command": "npm test -- --runInBand tests/mobileRelease tests/architecture/iosTestFlightNoProductLogicChange.contract.test.ts tests/architecture/iosTestFlightNoSecretsInArtifacts.contract.test.ts tests/architecture/iosTestFlightNoGitAddDot.contract.test.ts tests/architecture/iosTestFlightNoAppReviewSubmit.contract.test.ts tests/architecture/iosTestFlightNoPublicRollout.contract.test.ts",
+  "targeted_tests_command": "npm test -- --runInBand tests/mobileRelease && npm test -- --runInBand tests/architecture/iosTestFlightNoGitAddDot.contract.test.ts tests/architecture/iosTestFlightNoAppReviewSubmit.contract.test.ts tests/architecture/iosTestFlightNoProductLogicChange.contract.test.ts tests/architecture/iosTestFlightNoGlobalNodeModulesJunctionFallback.contract.test.ts tests/architecture/iosTestFlightNoPublicRollout.contract.test.ts tests/architecture/iosTestFlightNoSecretsInArtifacts.contract.test.ts && npm test -- --runInBand tests/builtInAi1000/ai1000PdfActionRequired.contract.test.ts tests/real10000Audit/p1EvidenceRefreshProofZeroHoles.contract.test.ts",
   "product_quality_command": "npx tsx scripts/e2e/runProductQualityPr1MainlineAcceptanceProof.ts",
   "professional_quality_command": "npx tsx scripts/e2e/runProfessionalEstimatorQualityProof.ts",
+  "full_jest_command": "$env:CI='1'; npm test -- --runInBand --forceExit --json --outputFile artifacts/full-jest-ios-testflight.json",
   "release_verify_command": "npm run release:verify -- --json",
+  "full_jest_blockers": [
+    "clean full Jest rerun is required after scoped commit because app.json is intentionally dirty until committed"
+  ],
   "fake_green_claimed": false
 }

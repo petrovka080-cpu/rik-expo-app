@@ -12,6 +12,7 @@ describe("iOS TestFlight internal QA EAS auth gate", () => {
         easCliAvailable: true,
         easAuthenticated: false,
         appStoreConnectAccessAvailable: true,
+        localDependencyResolutionReady: true,
         bundleIdentifierPresent: true,
         iosBuildNumberBumpReady: true,
         internalProfilePresent: true,

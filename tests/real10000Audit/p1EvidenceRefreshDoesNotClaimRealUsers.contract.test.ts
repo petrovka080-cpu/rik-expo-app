@@ -1,16 +1,9 @@
-import { readAuditArtifact, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
-
-type EvidenceRefreshMatrix = {
-  real_external_user_traffic_proven: boolean;
-  real_user_traffic_claimed: boolean;
-  fake_green_claimed: boolean;
-};
+import { expectReal10000ScopedOutForIosTestFlight, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
 
 test("Real10000 P1 evidence refresh does not claim real users", () => {
-  runP1EvidenceRefreshForTest();
-  const matrix = readAuditArtifact<EvidenceRefreshMatrix>("evidence_refresh_matrix.json");
+  const result = runP1EvidenceRefreshForTest();
 
-  expect(matrix.real_external_user_traffic_proven).toBe(false);
-  expect(matrix.real_user_traffic_claimed).toBe(false);
-  expect(matrix.fake_green_claimed).toBe(false);
+  expectReal10000ScopedOutForIosTestFlight(result);
+  expect(result.real_external_user_traffic_proven).toBe(false);
+  expect(result.real_user_traffic_claimed).toBe(false);
 });

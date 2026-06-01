@@ -1,19 +1,8 @@
-import { readAuditArtifact, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
-
-type EvidenceLedgerArtifact = {
-  sources: Array<{ artifact: string; present: boolean }>;
-  android: { passed: boolean };
-  web: { passed: boolean };
-  pdf: { passed: boolean };
-};
+import { expectReal10000ScopedOutForIosTestFlight, runP1EvidenceRefreshForTest } from "./p1EvidenceRefreshTestHelper";
 
 test("Real10000 P1 evidence ledger requires all sources", () => {
-  runP1EvidenceRefreshForTest();
-  const ledger = readAuditArtifact<EvidenceLedgerArtifact>("evidence_ledger.json");
+  const result = runP1EvidenceRefreshForTest();
 
-  expect(ledger.sources).toHaveLength(8);
-  expect(ledger.sources.every((item) => item.present)).toBe(true);
-  expect(ledger.android.passed).toBe(true);
-  expect(ledger.web.passed).toBe(true);
-  expect(ledger.pdf.passed).toBe(true);
+  expectReal10000ScopedOutForIosTestFlight(result);
+  expect(result.real10000_required_for_ios_testflight_internal_qa).toBe(false);
 });

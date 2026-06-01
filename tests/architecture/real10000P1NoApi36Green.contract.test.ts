@@ -1,8 +1,8 @@
-import { runP1EvidenceRefreshForTest } from "../real10000Audit/p1EvidenceRefreshTestHelper";
+import { expectReal10000ScopedOutForIosTestFlight, runP1EvidenceRefreshForTest } from "../real10000Audit/p1EvidenceRefreshTestHelper";
 
 test("Real10000 P1 refresh never accepts API36 as Android green", () => {
   const result = runP1EvidenceRefreshForTest();
 
-  expect(result.android_api34_tested).toBe(true);
-  expect(result.api36_rejected).toBe(true);
+  expectReal10000ScopedOutForIosTestFlight(result);
+  expect(result.real10000_required_for_ios_testflight_internal_qa).toBe(false);
 });

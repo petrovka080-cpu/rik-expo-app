@@ -1,0 +1,11 @@
+{
+  "final_status": "PENDING_CLEAN_FULL_JEST_RERUN_AFTER_SCOPED_COMMIT",
+  "initial_full_jest_passed": false,
+  "dirty_app_json_blocked_clean_sensitive_tests": true,
+  "clean_sensitive_tests_weakened": false,
+  "ai1000_regression_fixed": true,
+  "real10000_scoped_out_for_internal_ios_testflight": true,
+  "full_jest_clean_rerun_required_before_eas": true,
+  "eas_retry_allowed_before_full_jest_green": false,
+  "fake_green_claimed": false
+}

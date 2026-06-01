@@ -1,0 +1,20 @@
+{
+  "final_status": "BLOCKED_IOS_RUNTIME_FINGERPRINT_MISMATCH_PREVENTED_FROM_REPEAT",
+  "failed_build_id": "c81edecb-3deb-41d6-9eb0-8ceb87026dc5",
+  "failed_source_commit": "6ec9b27d727ac9672955ae4696cd447392509a1a",
+  "failed_build_number": "45",
+  "failed_phase": "Configure expo-updates",
+  "failed_local_runtime_hash": "eccb86425a9048b23106a5d56e6ba8206410190e",
+  "failed_cloud_runtime_hash": "74a280d2882c3ef76937c8704da2fba8dca7d739",
+  "current_local_runtime_hash": "289c9b69963e91081310c7f7cb5345d038a66829",
+  "runtime_fingerprint_command_ok": true,
+  "runtime_fingerprint_resolved": true,
+  "local_dependency_resolution_ready": true,
+  "local_node_modules_present": true,
+  "project_node_modules_within_worktree": true,
+  "disallowed_resolution_paths": [],
+  "resolved_paths_use_global_node_modules_junction": false,
+  "resolved_paths_use_sibling_main_checkout": false,
+  "retry_allowed_after_local_gates_green": true,
+  "fake_green_claimed": false
+}

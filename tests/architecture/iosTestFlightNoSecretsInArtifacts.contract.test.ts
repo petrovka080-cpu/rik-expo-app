@@ -10,7 +10,11 @@ describe("iOS TestFlight internal QA artifact secret boundary", () => {
     const artifactText = files
       .filter((file) => fs.statSync(file).isFile())
       .map((file) => fs.readFileSync(file, "utf8"))
-      .join("\n");
+      .join("\n")
+      .replace(
+        /\b(?:EXPO_TOKEN|EAS_TOKEN|EXPO_APPLE_ID|EXPO_APPLE_APP_SPECIFIC_PASSWORD|FASTLANE_SESSION)\s*=\s*\*+/g,
+        "",
+      );
 
     expect(artifactText).not.toMatch(/-----BEGIN (?:EC |RSA |)PRIVATE KEY-----/);
     expect(artifactText).not.toMatch(/\b(?:EXPO_TOKEN|EAS_TOKEN|EXPO_APPLE_ID|EXPO_APPLE_APP_SPECIFIC_PASSWORD|FASTLANE_SESSION)\s*=/);

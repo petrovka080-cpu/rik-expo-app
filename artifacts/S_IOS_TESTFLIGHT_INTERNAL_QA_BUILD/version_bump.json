@@ -1,7 +1,7 @@
 {
-  "ios_build_number_before": "23",
-  "remote_ios_build_number_before": "44",
-  "ios_build_number_after": "45",
+  "ios_build_number_before": "45",
+  "remote_ios_build_number_before": "45",
+  "ios_build_number_after": "46",
   "build_number_incremented": true,
   "marketing_version_before": "1.0.0",
   "marketing_version_after": "1.0.0",

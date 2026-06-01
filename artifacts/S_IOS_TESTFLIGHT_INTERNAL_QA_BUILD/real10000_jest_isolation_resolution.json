@@ -1,0 +1,11 @@
+{
+  "real10000_required_for_ios_testflight_internal_qa": false,
+  "real10000_cli_blocked_status_preserved": true,
+  "real10000_core_import_safe_for_jest": true,
+  "process_exit_called_inside_jest": false,
+  "p0_holes": 5,
+  "p1_holes": 14,
+  "p2_holes": 2,
+  "real10000_green_claimed": false,
+  "fake_green_claimed": false
+}

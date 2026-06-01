@@ -1,5 +1,6 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 
 import { calculateGlobalConstructionEstimateSync } from "../../src/lib/ai/globalEstimate";
@@ -13,6 +14,7 @@ export const REQUIRED_PR41_COMMIT = "026537d62a76cbf3cde01526af107602e777ab88";
 export const REQUIRED_MAIN_MERGE_COMMIT = "249d9e1ddee5f73cfaaf2c823af6f54a88d26e38";
 export const INTERNAL_BUILD_PROFILE = "ios-testflight-internal";
 export const INTERNAL_SUBMIT_PROFILE = "ios-testflight-internal";
+const nodeRequire = createRequire(__filename);
 
 type JsonRecord = Record<string, unknown>;
 
@@ -21,6 +23,44 @@ type CommandStatus = {
   status: number | null;
   stdout: string;
   stderr: string;
+};
+
+export type RuntimeFingerprintResolution = {
+  command: string;
+  command_ok: boolean;
+  status: number | null;
+  runtime_version: string | null;
+  fingerprint_sources_count: number;
+  stderr: string;
+};
+
+export type CriticalPackageResolution = {
+  package_name: "expo" | "@expo/fingerprint";
+  package_json_resolved: string | null;
+  package_json_realpath: string | null;
+  within_project_node_modules: boolean;
+  within_worktree: boolean;
+  uses_disallowed_node_modules_path: boolean;
+};
+
+export type LocalDependencyResolution = {
+  ready: boolean;
+  node_modules_present: boolean;
+  project_node_modules_realpath: string | null;
+  project_node_modules_within_worktree: boolean;
+  disallowed_node_modules_roots: string[];
+  disallowed_resolution_paths: string[];
+  critical_package_resolutions: CriticalPackageResolution[];
+  expo_package_json_resolved: string | null;
+  expo_package_json_within_project_node_modules: boolean;
+  fingerprint_package_json_resolved: string | null;
+  fingerprint_package_json_within_project_node_modules: boolean;
+  resolved_paths_use_global_node_modules_junction: boolean;
+  resolved_paths_use_sibling_main_checkout: boolean;
+  runtime_fingerprint_command_ok: boolean;
+  runtime_fingerprint_resolved: boolean;
+  runtime_fingerprint_hash: string | null;
+  runtime_fingerprint: RuntimeFingerprintResolution;
 };
 
 export type IosTestFlightPreflightInput = {
@@ -32,6 +72,7 @@ export type IosTestFlightPreflightInput = {
   easCliAvailable: boolean;
   easAuthenticated: boolean;
   appStoreConnectAccessAvailable: boolean;
+  localDependencyResolutionReady: boolean;
   bundleIdentifierPresent: boolean;
   iosBuildNumberBumpReady: boolean;
   internalProfilePresent: boolean;
@@ -154,6 +195,10 @@ export function isAllowedIosInternalQaPath(filePath: string): boolean {
     file === "scripts/release/runIosTestFlightInternalQaBuildProof.ts" ||
     file.startsWith("tests/mobileRelease/iosTestFlight") ||
     file.startsWith("tests/architecture/iosTestFlight") ||
+    file === "scripts/audit/runReal10000AuditP1EvidenceRefreshProof.ts" ||
+    file.startsWith("tests/real10000Audit/p1") ||
+    file === "tests/architecture/real10000P1NoApi36Green.contract.test.ts" ||
+    file === "tests/architecture/real10000P1NoPlaceholderArtifacts.contract.test.ts" ||
     file.startsWith("artifacts/S_IOS_TESTFLIGHT_PREBUILD_BLOCKER_BURNDOWN/") ||
     file.startsWith(`artifacts/${IOS_TESTFLIGHT_INTERNAL_QA_PREFIX}/`)
   );
@@ -253,6 +298,188 @@ export function readInternalTestFlightConfig(rootDir = process.cwd()): {
   };
 }
 
+function realpathOrNull(filePath: string): string | null {
+  try {
+    return fs.realpathSync.native(filePath);
+  } catch {
+    return null;
+  }
+}
+
+function normalizedPathKey(filePath: string): string {
+  return path.resolve(filePath).replace(/\\/g, "/").toLowerCase();
+}
+
+function resolvePackageJsonFromProject(rootDir: string, packageName: string): string | null {
+  try {
+    return nodeRequire.resolve(`${packageName}/package.json`, { paths: [rootDir] });
+  } catch {
+    return null;
+  }
+}
+
+function isPathWithinDirectory(childPath: string | null, parentDir: string | null): boolean {
+  if (!childPath || !parentDir) return false;
+  const relative = path.relative(parentDir, childPath);
+  return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+}
+
+function disallowedNodeModulesRoots(rootDir: string): string[] {
+  return [
+    path.join(path.parse(rootDir).root, "node_modules"),
+    path.join(path.dirname(rootDir), "rik-expo-app", "node_modules"),
+  ];
+}
+
+function pathUsesDisallowedRoot(filePath: string | null, roots: readonly string[]): boolean {
+  if (!filePath) return false;
+  const normalizedFile = normalizedPathKey(filePath);
+  return roots.some((root) => {
+    const normalizedRoot = normalizedPathKey(root);
+    return normalizedFile === normalizedRoot || normalizedFile.startsWith(`${normalizedRoot}/`);
+  });
+}
+
+export function resolveIosRuntimeFingerprint(rootDir = process.cwd()): RuntimeFingerprintResolution {
+  const args = ["expo-updates", "runtimeversion:resolve", "--platform", "ios"];
+  const result = commandStatus(rootDir, "npx", args);
+  let runtimeVersion: string | null = null;
+  let fingerprintSourcesCount = 0;
+  if (result.ok) {
+    try {
+      const parsed = parseJsonFromStdout(result.stdout);
+      runtimeVersion = isRecord(parsed) ? stringValue(parsed.runtimeVersion) : null;
+      const sources = isRecord(parsed) && Array.isArray(parsed.fingerprintSources) ? parsed.fingerprintSources : [];
+      fingerprintSourcesCount = sources.length;
+    } catch {
+      runtimeVersion = null;
+    }
+  }
+  return {
+    command: `npx ${args.join(" ")}`,
+    command_ok: result.ok,
+    status: result.status,
+    runtime_version: runtimeVersion,
+    fingerprint_sources_count: fingerprintSourcesCount,
+    stderr: result.stderr,
+  };
+}
+
+export function buildLocalDependencyResolutionReport(input: {
+  rootDir: string;
+  projectNodeModulesRealpath: string | null;
+  packageJsonResolutions: Record<"expo" | "@expo/fingerprint", string | null>;
+  runtimeFingerprint: RuntimeFingerprintResolution;
+}): LocalDependencyResolution {
+  const rootRealpath = realpathOrNull(input.rootDir) ?? path.resolve(input.rootDir);
+  const roots = disallowedNodeModulesRoots(input.rootDir);
+  const nodeModulesPresent = input.projectNodeModulesRealpath !== null;
+  const projectNodeModulesWithinWorktree = isPathWithinDirectory(input.projectNodeModulesRealpath, rootRealpath);
+  const criticalPackageResolutions: CriticalPackageResolution[] = (["expo", "@expo/fingerprint"] as const).map((packageName) => {
+    const resolved = input.packageJsonResolutions[packageName];
+    const realpath = realpathOrNull(resolved ?? "");
+    return {
+      package_name: packageName,
+      package_json_resolved: resolved,
+      package_json_realpath: realpath,
+      within_project_node_modules: isPathWithinDirectory(realpath, input.projectNodeModulesRealpath),
+      within_worktree: isPathWithinDirectory(realpath, rootRealpath),
+      uses_disallowed_node_modules_path: pathUsesDisallowedRoot(realpath ?? resolved, roots),
+    };
+  });
+  const disallowedResolutionPaths = [
+    input.projectNodeModulesRealpath,
+    ...criticalPackageResolutions.map((item) => item.package_json_realpath ?? item.package_json_resolved),
+  ].filter((item): item is string => pathUsesDisallowedRoot(item, roots));
+  const runtimeFingerprintResolved =
+    input.runtimeFingerprint.command_ok &&
+    typeof input.runtimeFingerprint.runtime_version === "string" &&
+    /^[a-f0-9]{40}$/i.test(input.runtimeFingerprint.runtime_version);
+  const resolvedPathsUseGlobalNodeModulesJunction = [
+    input.projectNodeModulesRealpath,
+    ...criticalPackageResolutions.map((item) => item.package_json_realpath ?? item.package_json_resolved),
+  ].some((item) => item !== null && normalizedPathKey(item) === normalizedPathKey(path.join(path.parse(input.rootDir).root, "node_modules")) || pathUsesDisallowedRoot(item, [path.join(path.parse(input.rootDir).root, "node_modules")]));
+  const resolvedPathsUseSiblingMainCheckout = [
+    input.projectNodeModulesRealpath,
+    ...criticalPackageResolutions.map((item) => item.package_json_realpath ?? item.package_json_resolved),
+  ].some((item) => pathUsesDisallowedRoot(item, [path.join(path.dirname(input.rootDir), "rik-expo-app", "node_modules")]));
+  const expo = criticalPackageResolutions.find((item) => item.package_name === "expo");
+  const fingerprint = criticalPackageResolutions.find((item) => item.package_name === "@expo/fingerprint");
+  const packagesReady = criticalPackageResolutions.every(
+    (item) => item.package_json_realpath !== null && item.within_project_node_modules && item.within_worktree && !item.uses_disallowed_node_modules_path,
+  );
+
+  return {
+    ready:
+      nodeModulesPresent &&
+      projectNodeModulesWithinWorktree &&
+      packagesReady &&
+      disallowedResolutionPaths.length === 0 &&
+      runtimeFingerprintResolved,
+    node_modules_present: nodeModulesPresent,
+    project_node_modules_realpath: input.projectNodeModulesRealpath,
+    project_node_modules_within_worktree: projectNodeModulesWithinWorktree,
+    disallowed_node_modules_roots: roots,
+    disallowed_resolution_paths: [...new Set(disallowedResolutionPaths)],
+    critical_package_resolutions: criticalPackageResolutions,
+    expo_package_json_resolved: expo?.package_json_resolved ?? null,
+    expo_package_json_within_project_node_modules: expo?.within_project_node_modules === true,
+    fingerprint_package_json_resolved: fingerprint?.package_json_resolved ?? null,
+    fingerprint_package_json_within_project_node_modules: fingerprint?.within_project_node_modules === true,
+    resolved_paths_use_global_node_modules_junction: resolvedPathsUseGlobalNodeModulesJunction,
+    resolved_paths_use_sibling_main_checkout: resolvedPathsUseSiblingMainCheckout,
+    runtime_fingerprint_command_ok: input.runtimeFingerprint.command_ok,
+    runtime_fingerprint_resolved: runtimeFingerprintResolved,
+    runtime_fingerprint_hash: input.runtimeFingerprint.runtime_version,
+    runtime_fingerprint: input.runtimeFingerprint,
+  };
+}
+
+export function readLocalDependencyResolution(rootDir = process.cwd()): LocalDependencyResolution {
+  const projectNodeModules = path.join(rootDir, "node_modules");
+  const projectNodeModulesRealpath =
+    fs.existsSync(projectNodeModules) && fs.statSync(projectNodeModules).isDirectory()
+      ? realpathOrNull(projectNodeModules)
+      : null;
+  return buildLocalDependencyResolutionReport({
+    rootDir,
+    projectNodeModulesRealpath,
+    packageJsonResolutions: {
+      expo: resolvePackageJsonFromProject(rootDir, "expo"),
+      "@expo/fingerprint": resolvePackageJsonFromProject(rootDir, "@expo/fingerprint"),
+    },
+    runtimeFingerprint: resolveIosRuntimeFingerprint(rootDir),
+  });
+}
+
+export function writeEasRuntimeFingerprintFailureArtifact(
+  rootDir = process.cwd(),
+  localDependencyResolution = readLocalDependencyResolution(rootDir),
+): JsonRecord {
+  const artifact = {
+    final_status: "BLOCKED_IOS_RUNTIME_FINGERPRINT_MISMATCH_PREVENTED_FROM_REPEAT",
+    failed_build_id: "c81edecb-3deb-41d6-9eb0-8ceb87026dc5",
+    failed_source_commit: "6ec9b27d727ac9672955ae4696cd447392509a1a",
+    failed_build_number: "45",
+    failed_phase: "Configure expo-updates",
+    failed_local_runtime_hash: "eccb86425a9048b23106a5d56e6ba8206410190e",
+    failed_cloud_runtime_hash: "74a280d2882c3ef76937c8704da2fba8dca7d739",
+    current_local_runtime_hash: localDependencyResolution.runtime_fingerprint_hash,
+    runtime_fingerprint_command_ok: localDependencyResolution.runtime_fingerprint_command_ok,
+    runtime_fingerprint_resolved: localDependencyResolution.runtime_fingerprint_resolved,
+    local_dependency_resolution_ready: localDependencyResolution.ready,
+    local_node_modules_present: localDependencyResolution.node_modules_present,
+    project_node_modules_within_worktree: localDependencyResolution.project_node_modules_within_worktree,
+    disallowed_resolution_paths: localDependencyResolution.disallowed_resolution_paths,
+    resolved_paths_use_global_node_modules_junction: localDependencyResolution.resolved_paths_use_global_node_modules_junction,
+    resolved_paths_use_sibling_main_checkout: localDependencyResolution.resolved_paths_use_sibling_main_checkout,
+    retry_allowed_after_local_gates_green: localDependencyResolution.ready,
+    fake_green_claimed: false,
+  };
+  writeJson(rootDir, "eas_runtime_fingerprint_failure.json", artifact);
+  return artifact;
+}
+
 function parseJsonFromStdout(stdout: string): unknown {
   const trimmed = stdout.trim();
   if (!trimmed) return null;
@@ -341,10 +568,16 @@ export function writeSourceSnapshot(rootDir = process.cwd()): JsonRecord {
 }
 
 function secretPatternMatches(value: string): boolean {
+  const withoutRedactedEnvPlaceholders = value.replace(
+    /\b(?:EXPO_TOKEN|EAS_TOKEN|EXPO_APPLE_ID|EXPO_APPLE_APP_SPECIFIC_PASSWORD|FASTLANE_SESSION)\s*=\s*\*+/g,
+    "",
+  );
   return (
-    /\b(?:EXPO_TOKEN|EAS_TOKEN|EXPO_APPLE_ID|EXPO_APPLE_APP_SPECIFIC_PASSWORD|FASTLANE_SESSION)\s*=/.test(value) ||
-    /-----BEGIN (?:EC |RSA |)PRIVATE KEY-----/.test(value) ||
-    /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/.test(value)
+    /\b(?:EXPO_TOKEN|EAS_TOKEN|EXPO_APPLE_ID|EXPO_APPLE_APP_SPECIFIC_PASSWORD|FASTLANE_SESSION)\s*=/.test(
+      withoutRedactedEnvPlaceholders,
+    ) ||
+    /-----BEGIN (?:EC |RSA |)PRIVATE KEY-----/.test(withoutRedactedEnvPlaceholders) ||
+    /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/.test(withoutRedactedEnvPlaceholders)
   );
 }
 
@@ -390,6 +623,9 @@ export function buildPreflightFinalStatus(input: IosTestFlightPreflightInput): s
   }
   if (!input.easCliAvailable) return "BLOCKED_EAS_CLI_NOT_AVAILABLE";
   if (!input.easAuthenticated) return "BLOCKED_EAS_NOT_AUTHENTICATED";
+  if (!input.localDependencyResolutionReady) {
+    return "BLOCKED_IOS_LOCAL_DEPENDENCY_RESOLUTION_OUTSIDE_WORKTREE";
+  }
   if (!input.bundleIdentifierPresent) return "BLOCKED_IOS_BUNDLE_IDENTIFIER_MISSING";
   if (!input.internalProfilePresent) return "BLOCKED_IOS_TESTFLIGHT_PROFILE_MISSING";
   if (!input.submitProfilePresent || !input.appStoreConnectAccessAvailable) {
@@ -415,6 +651,8 @@ export function writePreflight(rootDir = process.cwd()): JsonRecord {
   const easWhoami = commandStatus(rootDir, "eas", ["whoami", "--non-interactive"]);
   const remoteBuildNumber = getRemoteIosBuildNumber(rootDir, "production");
   const config = readInternalTestFlightConfig(rootDir);
+  const localDependencyResolution = readLocalDependencyResolution(rootDir);
+  const runtimeFingerprintFailure = writeEasRuntimeFingerprintFailureArtifact(rootDir, localDependencyResolution);
   const input: IosTestFlightPreflightInput = {
     sourceIncludesProductHotfix: source.includes_pr_41 === true && source.includes_concrete_pedestal_fix === true,
     worktreeClean: dirty.disallowedDirtyFiles.length === 0,
@@ -424,6 +662,7 @@ export function writePreflight(rootDir = process.cwd()): JsonRecord {
     easCliAvailable: easVersion.ok,
     easAuthenticated: easWhoami.ok,
     appStoreConnectAccessAvailable: Boolean(config.ascAppId) && remoteBuildNumber !== null,
+    localDependencyResolutionReady: localDependencyResolution.ready,
     bundleIdentifierPresent: Boolean(readBundleIdentifier(rootDir)),
     iosBuildNumberBumpReady: calculateNextIosBuildNumber(readIosBuildNumber(rootDir), remoteBuildNumber).length > 0,
     internalProfilePresent: config.buildProfilePresent && config.distribution === "store",
@@ -449,6 +688,13 @@ export function writePreflight(rootDir = process.cwd()): JsonRecord {
     apple_developer_account_available: input.easAuthenticated,
     app_store_connect_access_available: input.appStoreConnectAccessAvailable,
     asc_app_id_present: Boolean(config.ascAppId),
+    local_dependency_resolution_ready: input.localDependencyResolutionReady,
+    local_dependency_resolution: localDependencyResolution,
+    runtime_fingerprint_command_ok: localDependencyResolution.runtime_fingerprint_command_ok,
+    runtime_fingerprint_resolved: localDependencyResolution.runtime_fingerprint_resolved,
+    runtime_fingerprint_hash: localDependencyResolution.runtime_fingerprint_hash,
+    eas_runtime_fingerprint_failure_artifact_written:
+      runtimeFingerprintFailure.final_status === "BLOCKED_IOS_RUNTIME_FINGERPRINT_MISMATCH_PREVENTED_FROM_REPEAT",
     bundle_identifier_present: input.bundleIdentifierPresent,
     ios_build_number_bump_ready: input.iosBuildNumberBumpReady,
     remote_ios_build_number_before: remoteBuildNumber,
@@ -558,6 +804,7 @@ export function writePrebuildProof(rootDir = process.cwd()): JsonRecord {
     source.includes_concrete_pedestal_fix === true &&
     secret.secrets_written_to_artifacts === false &&
     preflight.final_status === "GREEN_IOS_TESTFLIGHT_INTERNAL_QA_PREFLIGHT_READY" &&
+    preflight.local_dependency_resolution_ready === true &&
     buildNumberReady;
   const matrix = {
     wave: IOS_TESTFLIGHT_INTERNAL_QA_WAVE,
@@ -570,6 +817,12 @@ export function writePrebuildProof(rootDir = process.cwd()): JsonRecord {
     product_quality_mainline_acceptance_green: preflight.product_quality_acceptance_green === true,
     release_core_baseline_green: preflight.release_core_baseline_green === true,
     internal_qa_only: true,
+    local_dependency_resolution_ready: preflight.local_dependency_resolution_ready === true,
+    runtime_fingerprint_command_ok: preflight.runtime_fingerprint_command_ok === true,
+    runtime_fingerprint_resolved: preflight.runtime_fingerprint_resolved === true,
+    runtime_fingerprint_hash: stringValue(preflight.runtime_fingerprint_hash),
+    eas_runtime_fingerprint_failure_artifact_written:
+      preflight.eas_runtime_fingerprint_failure_artifact_written === true,
     owner_gate_status: OWNER_GATE_BLOCKED_STATUS,
     owner_gate_required_for_internal_testflight: false,
     owner_gate_deleted: false,
@@ -622,7 +875,11 @@ export function writePrebuildProof(rootDir = process.cwd()): JsonRecord {
       preflight.product_quality_acceptance_green === true,
     ),
     professional_quality_proof_green: artifactBoolean(localGates, "professional_quality_proof_passed", ok),
-    release_verify_passed: preflight.release_core_baseline_green === true,
+    full_jest_passed: artifactBoolean(localGates, "full_jest_passed", false),
+    release_verify_passed: artifactBoolean(localGates, "release_verify_passed", false),
+    eas_retry_allowed_after_local_gates:
+      artifactBoolean(localGates, "full_jest_passed", false) &&
+      artifactBoolean(localGates, "release_verify_passed", false),
     commit_created: false,
     branch_pushed: false,
     final_worktree_clean: false,

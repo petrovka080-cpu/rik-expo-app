@@ -19,6 +19,7 @@ describe("iOS TestFlight internal QA dirty scope", () => {
         easCliAvailable: true,
         easAuthenticated: true,
         appStoreConnectAccessAvailable: true,
+        localDependencyResolutionReady: true,
         bundleIdentifierPresent: true,
         iosBuildNumberBumpReady: true,
         internalProfilePresent: true,

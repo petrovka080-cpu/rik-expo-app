@@ -15,6 +15,7 @@ describe("iOS TestFlight internal QA preflight contract", () => {
         easCliAvailable: true,
         easAuthenticated: true,
         appStoreConnectAccessAvailable: true,
+        localDependencyResolutionReady: true,
         bundleIdentifierPresent: true,
         iosBuildNumberBumpReady: true,
         internalProfilePresent: true,
@@ -25,6 +26,30 @@ describe("iOS TestFlight internal QA preflight contract", () => {
         externalTestflightBetaReviewSubmitted: false,
       }),
     ).toBe("GREEN_IOS_TESTFLIGHT_INTERNAL_QA_PREFLIGHT_READY");
+  });
+
+  it("blocks when Expo packages resolve outside this checkout before EAS build", () => {
+    expect(
+      buildPreflightFinalStatus({
+        sourceIncludesProductHotfix: true,
+        worktreeClean: true,
+        releaseCoreBaselineGreen: true,
+        productQualityAcceptanceGreen: true,
+        concretePedestalRegressionGreen: true,
+        easCliAvailable: true,
+        easAuthenticated: true,
+        appStoreConnectAccessAvailable: true,
+        localDependencyResolutionReady: false,
+        bundleIdentifierPresent: true,
+        iosBuildNumberBumpReady: true,
+        internalProfilePresent: true,
+        submitProfilePresent: true,
+        appReviewSubmitted: false,
+        publicBetaEnabled: false,
+        productionRolloutEnabled: false,
+        externalTestflightBetaReviewSubmitted: false,
+      }),
+    ).toBe("BLOCKED_IOS_LOCAL_DEPENDENCY_RESOLUTION_OUTSIDE_WORKTREE");
   });
 
   it("keeps the EAS profile store-distributed and internal-channel scoped", () => {
