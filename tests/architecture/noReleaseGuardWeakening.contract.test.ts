@@ -3,11 +3,16 @@ import { read } from "../releaseStateCleanup/releaseStateCleanupTestHelpers";
 it("splits release verify by scope instead of weakening release safety", () => {
   const packageJson = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
   const scopeSource = read("scripts/release/releaseTargetScope.ts");
-  const guardSource = read("scripts/release/releaseGuard.shared.ts");
+  const guardCliSource = read("scripts/release/run-release-guard.ts");
+  const guardSharedSource = read("scripts/release/releaseGuard.shared.ts");
 
-  expect(packageJson.scripts["release:verify"]).toBe("tsx scripts/release/runReleaseVerifyCore.ts --json");
+  expect(packageJson.scripts["release:verify"]).toBe("tsx scripts/release/run-release-guard.ts verify --json");
+  expect(packageJson.scripts["release:verify:core"]).toBe("tsx scripts/release/runReleaseVerifyCore.ts --json");
   expect(packageJson.scripts["release:verify:owner"]).toBe("tsx scripts/release/runReleaseVerifyOwner.ts --json");
   expect(packageJson.scripts["release:verify:mobile"]).toBe("tsx scripts/release/runReleaseVerifyMobile.ts --json");
+  expect(packageJson.scripts["release:verify"]).not.toBe(packageJson.scripts["release:verify:core"]);
+  expect(guardCliSource).toContain("runRequiredGates");
+  expect(guardCliSource).toContain('modeValue !== "preflight" && modeValue !== "verify" && modeValue !== "ota"');
   expect(scopeSource).toContain("owner_gate_required_for_production_claims");
-  expect(`${scopeSource}\n${guardSource}`).toContain("BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE");
+  expect(`${scopeSource}\n${guardSharedSource}`).toContain("BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE");
 });
