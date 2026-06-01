@@ -422,6 +422,16 @@ function runGate(gate: ReleaseGateDefinition, releaseGuardEnv: Record<string, st
     gateEnv.AI_2000_REAL_WORK_BRANCH_PUSHED = "1";
     gateEnv.AI_2000_REAL_WORK_FINAL_WORKTREE_CLEAN = "1";
   }
+  if (gate.name === "ai-3000-additional-real-work-estimate-acceptance-proof") {
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_TYPECHECK_PASSED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_LINT_PASSED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_GIT_DIFF_CHECK_PASSED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_FULL_JEST_PASSED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_RELEASE_VERIFY_PASSED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_COMMIT_CREATED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_BRANCH_PUSHED = "1";
+    gateEnv.AI_3000_ADDITIONAL_REAL_WORK_FINAL_WORKTREE_CLEAN = "1";
+  }
   if (gate.name === "ai-estimate-template-rate-catalog-ontology-change-control-proof") {
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_TYPECHECK_PASSED = "1";
     gateEnv.AI_ESTIMATE_CHANGE_CONTROL_LINT_PASSED = "1";

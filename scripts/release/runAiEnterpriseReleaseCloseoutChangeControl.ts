@@ -79,6 +79,8 @@ const REAL_10000_DIVERSE_CONSTRUCTION_WORKS_WAVE =
   "S_REAL_10000_DIVERSE_CONSTRUCTION_WORKS_EXPANDED_ESTIMATE_ACCEPTANCE_POINT_OF_NO_RETURN";
 const AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
   "S_AI_2000_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
+const AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE =
+  "S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK_POINT_OF_NO_RETURN";
 const AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_WAVE =
   "S_AI_ESTIMATE_ENTERPRISE_LOAD_PERFORMANCE_COST_GUARD_POINT_OF_NO_RETURN";
 const LIVE_REQUEST_EMBEDDED_AI_PROFESSIONAL_BOQ_PDF_CATALOG_WAVE =
@@ -1442,6 +1444,18 @@ function isAi2000RealWorkEstimateAcceptancePath(file: string): boolean {
   );
 }
 
+function isAi3000AdditionalRealWorkEstimateAcceptancePath(file: string): boolean {
+  return (
+    file.startsWith("artifacts/S_AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_PACK/") ||
+    file === "scripts/e2e/runAi3000AdditionalRealWorkEstimateAcceptanceProof.ts" ||
+    file === "scripts/release/iosTestFlightInternalQaCore.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
+    file === "tests/release/ai3000AdditionalRealWorkEstimateAcceptanceReleaseGate.contract.test.ts"
+  );
+}
+
 function isAiEstimateEnterpriseFinalReadinessGoNoGoPath(file: string): boolean {
   return (
     file.startsWith("artifacts/S_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS/") ||
@@ -1489,6 +1503,17 @@ function isPlatformDirectorFactContractPath(file: string): boolean {
 
 function classifyFile(file: string): CloseoutOwnershipEntry {
   const normalized = normalizePath(file);
+  if (isAi3000AdditionalRealWorkEstimateAcceptancePath(normalized)) {
+    return {
+      file: normalized,
+      category: "ai_wave_file",
+      wave: AI_3000_ADDITIONAL_REAL_WORK_ESTIMATE_ACCEPTANCE_WAVE,
+      include_in_commit: true,
+      force_add: normalized.startsWith("artifacts/"),
+      reason:
+        "AI 3000 additional real-work acceptance proof, non-overlap corpus evidence, release gate wiring, and contract coverage",
+    };
+  }
   if (isAi2000RealWorkEstimateAcceptancePath(normalized)) {
     return {
       file: normalized,
