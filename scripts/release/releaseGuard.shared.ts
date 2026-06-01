@@ -87,6 +87,7 @@ export type ReleaseGateName =
   | "ai-estimate-pdf-tabular-regression-proof"
   | "request-ai-estimate-boq-catalog-proof"
   | "live-request-embedded-ai-professional-boq-pdf-catalog-proof"
+  | "owner-account-live-estimate-quality-lock-proof"
   | "request-ai-estimate-professional-boq-formula-proof"
   | "global-estimate-professional-boq-depth-formula-quality-proof"
   | "catalog-items-global-estimate-binding-proof"
@@ -126,6 +127,8 @@ export type ReleaseGateName =
   | "built-in-ai-50000-phase3-live-app-domain-sample-proof"
   | "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof"
   | "final-50k-92-external-live-proof-closeout"
+  | "mobile-ios-asc-submit-android-apk-build-proof"
+  | "mobile-installed-artifact-acceptance-proof"
   | "jest"
   | "git-diff-check";
 
@@ -133,6 +136,19 @@ export type ReleaseGateDefinition = {
   name: ReleaseGateName;
   command: string;
 };
+
+export const OWNER_GATE_BLOCKED_STATUS =
+  "BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE";
+
+export const SCOPED_OWNER_RELEASE_GATES: ReleaseGateDefinition[] = [
+  {
+    name: "owner-account-live-estimate-quality-lock-proof",
+    command: "npx tsx scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts",
+  },
+];
+
+export const OWNER_SCOPED_RELEASE_GATE_BLOCKER =
+  OWNER_GATE_BLOCKED_STATUS;
 
 export type ReleaseGateResult = ReleaseGateDefinition & {
   status: "passed" | "failed";
@@ -414,6 +430,14 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
 ];
 
 export const FINAL_50K_92_GREEN_STATUS = "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY";
+export const MOBILE_RELEASE_BUILD_GATE: ReleaseGateDefinition = {
+  name: "mobile-ios-asc-submit-android-apk-build-proof",
+  command: "npx tsx scripts/release/runMobileReleaseBuildProof.ts",
+};
+export const MOBILE_INSTALLED_ARTIFACT_ACCEPTANCE_GATE: ReleaseGateDefinition = {
+  name: "mobile-installed-artifact-acceptance-proof",
+  command: "npx tsx scripts/release/runMobileInstalledArtifactAcceptanceProof.ts",
+};
 export type Final50k92EvidenceMode = "live_fixture" | "archived_evidence_only" | "missing";
 
 export type Final50k92GreenClaimEvidence = {

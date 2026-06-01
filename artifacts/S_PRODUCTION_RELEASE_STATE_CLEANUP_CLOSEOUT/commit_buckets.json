@@ -1,0 +1,1115 @@
+{
+  "wave": "S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_SPLIT_COMMIT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_COMMIT_BUCKETS_READY",
+  "dirty_files_total": 109,
+  "items": [
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/generated_artifact_hygiene.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/release_guard_consistency.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/secret_scan.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/generated_artifact_churn_diagnosis.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/release_guard_green_without_failures_diagnosis.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/commit_buckets.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/generated_artifact_churn_resolution.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/release_guard_triplet_resolution.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_allowed_paths.txt",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_tracked.patch",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/failures.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/generated_artifact_churn_resolution.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_after.txt",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_before.txt",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/matrix.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_commit_buckets_snapshot.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_diff_name_status.txt",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_git_status.txt",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/patch_manifest.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/proof.md",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/release_guard_triplet_resolution.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/secret_scan.json",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "package.json",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runProductionReleaseSecretScan.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runProductionReleaseWaveInventory.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/classifyDirtyWorktreeByWave.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/normalizeReleaseProofTriplet.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/parkBlockedWaveState.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/releaseGuard.shared.ts",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/releaseStateCleanupCore.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/releaseTargetScope.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/releaseVerifyDirtyScope.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/releaseWaveDirtyScope.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runReleaseVerifyCore.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runReleaseVerifyMobile.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/runReleaseVerifyOwner.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+      "gitStatus": "M",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    },
+    {
+      "path": "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts",
+      "gitStatus": "A",
+      "detectedWave": "RELEASE_HARNESS_WIP",
+      "mayCommitInThisWave": true,
+      "bucket": "CURRENT_RELEASE_CLEANUP_COMMIT",
+      "requiredAction": "COMMIT_CURRENT_RELEASE_CLEANUP",
+      "reason": "Release cleanup harness path is allowed in the current closeout scope."
+    }
+  ],
+  "bucket_counts": {
+    "CURRENT_RELEASE_CLEANUP_COMMIT": 109,
+    "OWNER_WAVE_PARKED_BLOCKED": 0,
+    "MOBILE_BUILD_WAVE_PARKED_BLOCKED": 0,
+    "MOBILE_INSTALLED_ARTIFACT_WAVE_PARKED_BLOCKED": 0,
+    "REAL10000_WAVE_PARKED_BLOCKED": 0,
+    "PRODUCT_ESTIMATE_WAVE_PARKED_BLOCKED": 0,
+    "GENERATED_ARTIFACT_STABILIZE_OR_IGNORE": 0,
+    "STALE_ARTIFACT_SUPERSEDED": 0,
+    "UNKNOWN_BLOCK": 0
+  },
+  "unknown_dirty_files_found": false,
+  "current_wave_commit_scope_contains_product_logic": false,
+  "mixed_wave_commit_attempt_found": false,
+  "may_commit_paths": [
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/generated_artifact_hygiene.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/release_guard_consistency.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/secret_scan.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/generated_artifact_churn_diagnosis.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/release_guard_green_without_failures_diagnosis.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/commit_buckets.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/generated_artifact_churn_resolution.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/release_guard_triplet_resolution.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_allowed_paths.txt",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_tracked.patch",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/failures.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/generated_artifact_churn_resolution.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_after.txt",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_before.txt",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/matrix.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_commit_buckets_snapshot.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_diff_name_status.txt",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_git_status.txt",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/patch_manifest.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/proof.md",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/release_guard_triplet_resolution.json",
+    "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/secret_scan.json",
+    "package.json",
+    "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+    "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+    "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+    "scripts/audit/runProductionReleaseSecretScan.ts",
+    "scripts/audit/runProductionReleaseWaveInventory.ts",
+    "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+    "scripts/release/classifyDirtyWorktreeByWave.ts",
+    "scripts/release/normalizeReleaseProofTriplet.ts",
+    "scripts/release/parkBlockedWaveState.ts",
+    "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+    "scripts/release/releaseGuard.shared.ts",
+    "scripts/release/releaseStateCleanupCore.ts",
+    "scripts/release/releaseTargetScope.ts",
+    "scripts/release/releaseVerifyDirtyScope.ts",
+    "scripts/release/releaseWaveDirtyScope.ts",
+    "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+    "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+    "scripts/release/runProductionReleaseStateCleanupProof.ts",
+    "scripts/release/runReleaseVerifyCore.ts",
+    "scripts/release/runReleaseVerifyMobile.ts",
+    "scripts/release/runReleaseVerifyOwner.ts",
+    "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+    "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+    "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+    "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+    "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+    "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+    "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+    "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+    "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+    "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+    "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+    "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+    "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+    "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+    "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+    "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+    "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+    "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+    "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+    "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+    "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+    "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+    "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+    "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+    "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+    "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+    "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+    "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+    "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+    "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+    "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+    "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+    "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+    "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+    "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+    "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+    "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+    "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+    "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+    "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+    "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+    "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+    "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+    "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+    "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+    "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+    "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+    "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+    "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts"
+  ],
+  "parked_paths": [],
+  "fake_green_claimed": false
+}
