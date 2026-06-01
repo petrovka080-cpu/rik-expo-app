@@ -25,6 +25,20 @@ type WorkSignature = {
 
 type QuantityInputs = ReturnType<typeof resolveQuantityInputsFromPrompt>;
 
+function hasConcreteSurfaceObject(normalized: string): boolean {
+  return /(плит[ауы]?|фундаментн[а-яё]*\s+плит|монолитн[а-яё]*\s+плит|стяжк|пол\s+по\s+грунт|отмостк|ростверк|ленточн[а-яё]*\s+фундамент|strip\s+foundation|slab|screed)/.test(normalized);
+}
+
+function hasConcretePedestalObject(normalized: string): boolean {
+  if (hasConcreteSurfaceObject(normalized)) return false;
+  const directPedestal =
+    /(тумб|пьедестал|постамент|стакан[а-яё]*\s+фундамент|фундаментн[а-яё]*\s+стакан|foundation\s+socket|pedestal|postament|equipment\s+base)/.test(normalized);
+  const supportBase =
+    /(бетонн[а-яё]*\s+опор|опор[ауы]?\s+под\s+(стойк|колонн|навес|оборуд)|основан[а-яё]*\s+под\s+(оборуд|станк|стойк|колонн|навес)|отдельн[а-яё]*\s+бетонн[а-яё]*\s+основан)/.test(normalized);
+  const countLike = /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?)/.test(normalized);
+  return directPedestal || (supportBase && countLike);
+}
+
 function signatureFor(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
   if (/лифт|elevator/.test(normalized)) {
@@ -85,23 +99,23 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какая расчетная нагрузка на пол?", "Нужен топпинг, полимер или полировка?", "Есть ли требования по ровности, швам и пылеотделению?"],
     };
   }
-  if (/тумб|пьедестал|pedestal/.test(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
+  if (hasConcretePedestalObject(normalized) || (/бетон/.test(normalized) && !/колонн|column/.test(normalized) && !hasConcreteSurfaceObject(normalized) && /(0\.\d+\s*x|ширина|высота|длина)/.test(normalized))) {
     return {
       workKey: "concrete_pedestal_pour",
       titleRu: "Профессиональная предварительная смета на заливку бетонных тумб",
       category: "concrete",
       domain: "concrete",
       object: "concrete_pedestal",
-      operation: "concrete_pour",
-      method: "rectangular_concrete_element",
+      operation: "pour",
+      method: "concrete_pedestal_pour",
       materialSystem: "concrete_rebar_formwork",
-      complexity: "medium",
-      requiredMaterials: ["бетон", "арматура", "вязальная проволока", "фиксаторы защитного слоя", "опалубка"],
-      requiredLabor: ["разметка осей", "вязка арматуры", "монтаж опалубки", "заливка бетона", "уход за бетоном"],
-      requiredEquipmentOrWarnings: ["вибратор", "подача бетона warning", "леса / подмости warning"],
-      requiredLogisticsOrWarnings: ["доставка материалов", "резерв"],
-      exclusions: ["проект КЖ и расчет несущей способности", "геология и усиление основания", "закладные детали сверх указанных"],
-      clarifyingQuestions: ["Есть ли рабочая схема КЖ?", "Какая марка бетона и армирование?", "Как подается бетон на высоту?"],
+      complexity: "complex",
+      requiredMaterials: ["бетон B20/B25", "арматурный каркас тумб", "опалубка тумб", "песчано-щебеночная подушка", "закладные детали / анкерные болты"],
+      requiredLabor: ["разметка осей и мест установки тумб", "выемка грунта под отдельные тумбы", "уплотнение основания", "вязка арматуры", "бетонирование тумб"],
+      requiredEquipmentOrWarnings: ["вибратор для бетона", "средство подачи бетона warning", "виброплита для основания"],
+      requiredLogisticsOrWarnings: ["доставка бетона и материалов", "вывоз лишнего грунта при необходимости", "резерв на уточнение размеров"],
+      exclusions: ["размеры тумб уточнить перед закупкой бетона и арматуры", "геология/несущая способность грунта не включена", "проект КЖ и расчет анкеров не включены"],
+      clarifyingQuestions: ["Какой точный размер одной тумбы?", "Есть ли закладные/анкера и схема их расположения?", "Какая марка бетона и нагрузка от оборудования или стоек?"],
     };
   }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {

@@ -1,0 +1,289 @@
+{
+  "final_status": "TRACE_CAPTURED_BEFORE_HOTFIX",
+  "traces": [
+    {
+      "prompt": "смета на заливку бетонных тумб 12 шт",
+      "normalizedTokens": [
+        "смета",
+        "на",
+        "заливку",
+        "бетонных",
+        "тумб",
+        "12",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 12,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "concrete_pedestal",
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": [
+        {
+          "object": "concrete_pedestal",
+          "reason": "kernel_selected_concrete_pedestal_pour_but_global_canonical_selected_concrete_slab"
+        }
+      ]
+    },
+    {
+      "prompt": "смета на бетонные тумбы под оборудование 8 шт",
+      "normalizedTokens": [
+        "смета",
+        "на",
+        "бетонные",
+        "тумбы",
+        "под",
+        "оборудование",
+        "8",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 8,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "concrete_pedestal",
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": [
+        {
+          "object": "concrete_pedestal",
+          "reason": "kernel_selected_concrete_pedestal_pour_but_global_canonical_selected_concrete_slab"
+        }
+      ]
+    },
+    {
+      "prompt": "бетонные постаменты под станки 4 шт",
+      "normalizedTokens": [
+        "бетонные",
+        "постаменты",
+        "под",
+        "станки",
+        "4",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 4,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    },
+    {
+      "prompt": "бетонные пьедесталы под колонны 16 шт",
+      "normalizedTokens": [
+        "бетонные",
+        "пьедесталы",
+        "под",
+        "колонны",
+        "16",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 16,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    },
+    {
+      "prompt": "бетонные опоры под навес 20 шт",
+      "normalizedTokens": [
+        "бетонные",
+        "опоры",
+        "под",
+        "навес",
+        "20",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 20,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "canopy_installation",
+        "canopy_installation"
+      ],
+      "selectedDomain": "metalworks",
+      "selectedObject": "canopy_installation",
+      "selectedOperation": "canopy_installation",
+      "selectedRecipe": "canopy_installation",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    },
+    {
+      "prompt": "заливка отдельных бетонных оснований под стойки 10 шт",
+      "normalizedTokens": [
+        "заливка",
+        "отдельных",
+        "бетонных",
+        "оснований",
+        "под",
+        "стойки",
+        "10",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 10,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "concrete_element",
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": [
+        {
+          "object": "concrete_element",
+          "reason": "kernel_selected_dynamic_concrete_estimate_but_global_canonical_selected_concrete_slab"
+        }
+      ]
+    },
+    {
+      "prompt": "устройство фундаментных стаканов 6 шт",
+      "normalizedTokens": [
+        "устройство",
+        "фундаментных",
+        "стаканов",
+        "6",
+        "шт"
+      ],
+      "quantityDetected": {
+        "value": 6,
+        "unit": "pcs"
+      },
+      "objectCandidates": [
+        "foundation_system",
+        "foundation_concrete",
+        "foundation_concrete"
+      ],
+      "selectedDomain": "foundation",
+      "selectedObject": "foundation_concrete",
+      "selectedOperation": "foundation_concrete",
+      "selectedRecipe": "foundation_concrete",
+      "confidence": 0.9,
+      "rejectedCandidates": [
+        {
+          "object": "foundation_system",
+          "reason": "kernel_selected_dynamic_foundation_estimate_but_global_canonical_selected_foundation_concrete"
+        }
+      ]
+    },
+    {
+      "prompt": "бетонная плита 120 м2 толщина 200 мм",
+      "normalizedTokens": [
+        "бетонная",
+        "плита",
+        "120",
+        "м2",
+        "толщина",
+        "200",
+        "мм"
+      ],
+      "quantityDetected": {
+        "value": 120,
+        "unit": "sq_m"
+      },
+      "objectCandidates": [
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    },
+    {
+      "prompt": "бетонная стяжка пола 80 м2 толщина 70 мм",
+      "normalizedTokens": [
+        "бетонная",
+        "стяжка",
+        "пола",
+        "80",
+        "м2",
+        "толщина",
+        "70",
+        "мм"
+      ],
+      "quantityDetected": {
+        "value": 80,
+        "unit": "sq_m"
+      },
+      "objectCandidates": [
+        "concrete_slab",
+        "concrete_slab"
+      ],
+      "selectedDomain": "concrete",
+      "selectedObject": "concrete_slab",
+      "selectedOperation": "concrete_slab",
+      "selectedRecipe": "concrete_slab",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    },
+    {
+      "prompt": "ленточный фундамент 48 м ширина 0.4 глубина 1.7",
+      "normalizedTokens": [
+        "ленточный",
+        "фундамент",
+        "48",
+        "м",
+        "ширина",
+        "0.4",
+        "глубина",
+        "1.7"
+      ],
+      "quantityDetected": {
+        "value": null,
+        "unit": null
+      },
+      "objectCandidates": [
+        "strip_foundation",
+        "strip_foundation"
+      ],
+      "selectedDomain": "foundation",
+      "selectedObject": "strip_foundation",
+      "selectedOperation": "strip_foundation",
+      "selectedRecipe": "strip_foundation",
+      "confidence": 0.9,
+      "rejectedCandidates": []
+    }
+  ],
+  "fake_green_claimed": false
+}

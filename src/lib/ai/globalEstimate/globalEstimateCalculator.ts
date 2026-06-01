@@ -445,6 +445,9 @@ function estimatorKernelInputQuantity(
   if (plan.semanticFrame.object === "roof_system" && plan.quantities.areaM2 !== undefined) {
     return { value: round2(plan.quantities.areaM2 * 1.18), unit: "sq_m" };
   }
+  if (plan.semanticFrame.object === "concrete_pedestal" && plan.quantities.count !== undefined) {
+    return { value: plan.quantities.count, unit: "pcs" };
+  }
   if (plan.quantities.areaM2 !== undefined) return { value: plan.quantities.areaM2, unit: "sq_m" };
   const formulaVolume = plan.formulas
     .map((formula) => formula.outputs.volumeTotalM3 ?? formula.outputs.volumeEachM3)
@@ -786,11 +789,14 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
     estimatorOutcome.dynamicBoqUsed &&
     !estimatorOutcome.failures.length
   ) {
+    const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
+      ? undefined
+      : canonicalWorkForEstimatorKernel(input, semanticPlan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
       compileDynamicProfessionalBoq(estimatorOutcome.plan),
       input,
-      canonicalWorkForEstimatorKernel(input, semanticPlan),
+      canonicalWork,
     );
   }
 
