@@ -23,6 +23,8 @@ type WorkSignature = {
   clarifyingQuestions: string[];
 };
 
+type QuantityInputs = ReturnType<typeof resolveQuantityInputsFromPrompt>;
+
 function signatureFor(text: string): WorkSignature | null {
   const normalized = normalizeDimensionText(text);
   if (/лифт|elevator/.test(normalized)) {
@@ -315,6 +317,22 @@ function specializeWaterproofingSignature(signature: WorkSignature, text: string
   };
 }
 
+function requiresComplexBoqDepth(signature: WorkSignature, quantities: QuantityInputs): boolean {
+  const areaM2 = quantities.areaM2 ?? 0;
+  return (
+    signature.workKey === "concrete_pedestal_pour" ||
+    (signature.object === "drywall_system" && areaM2 >= 100) ||
+    (signature.object === "masonry_wall" && areaM2 >= 50)
+  );
+}
+
+function resolveBoqComplexity(signature: WorkSignature, quantities: QuantityInputs, regulated: boolean): EstimatorKernelComplexity {
+  const baseComplexity = regulated && signature.complexity !== "infrastructure" ? "complex" : signature.complexity;
+  if (signature.object === "industrial_floor" && (quantities.areaM2 ?? 0) >= 1000) return "infrastructure";
+  if (baseComplexity === "medium" && requiresComplexBoqDepth(signature, quantities)) return "complex";
+  return baseComplexity;
+}
+
 export function buildEstimatorReasoningPlan(input: {
   text: string;
   currency?: string;
@@ -347,7 +365,7 @@ export function buildEstimatorReasoningPlan(input: {
     quantities,
     formulas: [],
     boqPlan: {
-      complexity: regulated.regulated && signature.complexity !== "infrastructure" ? "complex" : signature.complexity,
+      complexity: resolveBoqComplexity(signature, quantities, regulated.regulated),
       sections,
       requiredMaterials: signature.requiredMaterials,
       requiredLabor: signature.requiredLabor,

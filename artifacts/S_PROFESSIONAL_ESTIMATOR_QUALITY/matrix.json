@@ -1,0 +1,99 @@
+{
+  "wave": "S_PROFESSIONAL_ESTIMATOR_QUALITY_HARVEST_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_PROFESSIONAL_ESTIMATOR_QUALITY_GATE_READY",
+  "cases_passed": 8,
+  "cases_failed": 0,
+  "case_results": [
+    {
+      "id": "drainage_channels",
+      "prompt": "estimate drainage channels 120 meters",
+      "route": "estimator_kernel",
+      "passed": true,
+      "workKey": "world_drainage",
+      "object": "drainage_channel",
+      "rowCount": 60,
+      "blockers": []
+    },
+    {
+      "id": "passenger_elevator",
+      "prompt": "estimate passenger elevator installation 14 floors",
+      "route": "estimator_kernel",
+      "passed": true,
+      "workKey": "passenger_elevator_installation",
+      "object": "passenger_elevator",
+      "rowCount": 36,
+      "blockers": []
+    },
+    {
+      "id": "concrete_pedestals",
+      "prompt": "estimate concrete pedestals width 0.4 height 5 meters length 0.5 meters count 10",
+      "route": "estimator_kernel",
+      "passed": true,
+      "workKey": "concrete_pedestal_pour",
+      "object": "concrete_pedestal",
+      "rowCount": 30,
+      "blockers": []
+    },
+    {
+      "id": "paving_stone_not_masonry",
+      "prompt": "смета на укладку брусчатки на 587 кв м",
+      "route": "/ai?context=foreman",
+      "passed": true,
+      "workKey": "paving_stone_laying",
+      "object": null,
+      "rowCount": 67,
+      "blockers": []
+    },
+    {
+      "id": "metal_canopy_specific_rows",
+      "prompt": "смета на металлический навес на площади 647 кв метров",
+      "route": "/ai?context=foreman",
+      "passed": true,
+      "workKey": "metal_canopy_installation",
+      "object": null,
+      "rowCount": 38,
+      "blockers": []
+    },
+    {
+      "id": "roof_waterproofing_not_bathroom",
+      "prompt": "смета на гидроизоляцию крыши 100 кв м",
+      "route": "/ai?context=foreman",
+      "passed": true,
+      "workKey": "roof_waterproofing",
+      "object": null,
+      "rowCount": 38,
+      "blockers": []
+    },
+    {
+      "id": "gable_roof_table_pdf",
+      "prompt": "дай смету на установку двухскатной крыши высота конька 2,5 метра и основание 67 кв м",
+      "route": "/ai?context=foreman",
+      "passed": true,
+      "workKey": "gable_roof_installation",
+      "object": null,
+      "rowCount": 32,
+      "blockers": []
+    },
+    {
+      "id": "apartment_renovation_depth",
+      "prompt": "капитальный ремонт квартиры 36 кв м",
+      "route": "/request",
+      "passed": true,
+      "workKey": "apartment_capital_renovation",
+      "object": null,
+      "rowCount": 30,
+      "blockers": []
+    }
+  ],
+  "weak_generic_rows_blocked": true,
+  "pdf_structured_table_validated": true,
+  "pdf_markdown_as_truth_blocked": true,
+  "pdf_mojibake_blocked": true,
+  "owner_session_verified": false,
+  "mobile_build_started": false,
+  "real10000_started": false,
+  "production_rollout_enabled": false,
+  "public_beta_enabled": false,
+  "app_review_submitted": false,
+  "fake_green_claimed": false
+}

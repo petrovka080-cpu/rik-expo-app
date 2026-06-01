@@ -581,10 +581,29 @@ const stripFoundationRows: GlobalEstimateTemplateRowDefinition[] = [
   }),
 ];
 
+type KnownWorkTemplateMaterialRow = {
+  code: string;
+  nameRu: string;
+  nameEn: string;
+  formula?: string;
+  rateKind?: "material" | "auxiliary";
+  unitMetric?: GlobalUnitInput["normalizedUnit"];
+  unitImperial?: GlobalUnitInput["normalizedUnit"];
+};
+
+type KnownWorkTemplateLaborRow = {
+  code: string;
+  nameRu: string;
+  nameEn: string;
+  formula?: string;
+  unitMetric?: GlobalUnitInput["normalizedUnit"];
+  unitImperial?: GlobalUnitInput["normalizedUnit"];
+};
+
 function knownWorkTemplate(input: {
   workKey: string;
-  materialRows: { code: string; nameRu: string; nameEn: string; formula?: string; rateKind?: "material" | "auxiliary" }[];
-  laborRows: { code: string; nameRu: string; nameEn: string; formula?: string }[];
+  materialRows: KnownWorkTemplateMaterialRow[];
+  laborRows: KnownWorkTemplateLaborRow[];
   assumptionsRu: string[];
   questionsRu: string[];
 }): GlobalEstimateTemplate {
@@ -602,8 +621,8 @@ function knownWorkTemplate(input: {
     code: item.code,
     names: { ru: item.nameRu, en: item.nameEn },
     quantityFormula: materialFormula(item, index),
-    unitMetric: "sq_m",
-    unitImperial: "sq_ft",
+    unitMetric: item.unitMetric ?? "sq_m",
+    unitImperial: item.unitImperial ?? "sq_ft",
     rateKey: `${input.workKey}_${item.rateKind === "auxiliary" ? "auxiliary" : "material"}`,
   }));
   const laborRows = input.laborRows.map((item, index) => row({
@@ -613,8 +632,8 @@ function knownWorkTemplate(input: {
     code: item.code,
     names: { ru: item.nameRu, en: item.nameEn },
     quantityFormula: item.formula ?? "area",
-    unitMetric: "sq_m",
-    unitImperial: "sq_ft",
+    unitMetric: item.unitMetric ?? "sq_m",
+    unitImperial: item.unitImperial ?? "sq_ft",
     rateKey: `${input.workKey}_labor`,
   }));
   const deliveryRows = [
@@ -827,16 +846,16 @@ export const CERAMIC_TILE_FLOOR_TEMPLATE: GlobalEstimateTemplate = ceramicTileTe
 export const GABLE_ROOF_TEMPLATE: GlobalEstimateTemplate = knownWorkTemplate({
   workKey: "gable_roof_installation",
   materialRows: [
-    { code: "gable_roof_rafters", nameRu: "Стропила", nameEn: "Rafters" },
-    { code: "gable_roof_wall_plate", nameRu: "Мауэрлат / брус", nameEn: "Wall plate timber", rateKind: "auxiliary" },
-    { code: "gable_roof_membrane", nameRu: "Гидроизоляция / мембрана", nameEn: "Waterproofing membrane", rateKind: "auxiliary" },
-    { code: "gable_roof_batten", nameRu: "Обрешётка", nameEn: "Roof battens", rateKind: "auxiliary" },
+    { code: "gable_roof_rafters", nameRu: "Стропила", nameEn: "Rafters", formula: "ceil(area / 4)", unitMetric: "pcs", unitImperial: "pcs" },
+    { code: "gable_roof_wall_plate", nameRu: "Мауэрлат / брус", nameEn: "Wall plate timber", formula: "sqrt(area) * 4", unitMetric: "linear_m", unitImperial: "linear_ft", rateKind: "auxiliary" },
+    { code: "gable_roof_membrane", nameRu: "Гидроизоляция / мембрана", nameEn: "Waterproofing membrane", formula: "area * 1.15", unitMetric: "sq_m", unitImperial: "sq_ft", rateKind: "auxiliary" },
+    { code: "gable_roof_batten", nameRu: "Обрешётка", nameEn: "Roof battens", formula: "area * 1.20", unitMetric: "linear_m", unitImperial: "linear_ft", rateKind: "auxiliary" },
     { code: "gable_roof_covering", nameRu: "Кровельное покрытие", nameEn: "Roof covering" },
-    { code: "gable_roof_flashings", nameRu: "Доборные элементы", nameEn: "Flashings and trim", rateKind: "auxiliary" },
+    { code: "gable_roof_flashings", nameRu: "Доборные элементы", nameEn: "Flashings and trim", formula: "sqrt(area) * 4", unitMetric: "linear_m", unitImperial: "linear_ft", rateKind: "auxiliary" },
   ],
   laborRows: [
-    { code: "gable_roof_rafter_install", nameRu: "Монтаж стропильной системы", nameEn: "Rafter system installation" },
-    { code: "gable_roof_batten_install", nameRu: "Монтаж обрешётки", nameEn: "Batten installation" },
+    { code: "gable_roof_rafter_install", nameRu: "Монтаж стропильной системы", nameEn: "Rafter system installation", formula: "ceil(area / 4)", unitMetric: "pcs", unitImperial: "pcs" },
+    { code: "gable_roof_batten_install", nameRu: "Монтаж обрешётки", nameEn: "Batten installation", formula: "area * 1.20", unitMetric: "linear_m", unitImperial: "linear_ft" },
     { code: "gable_roof_covering_install", nameRu: "Монтаж кровли", nameEn: "Roof covering installation" },
   ],
   assumptionsRu: [
