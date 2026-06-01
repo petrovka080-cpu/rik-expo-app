@@ -49,14 +49,20 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
 }
 
 const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
+  acoustic_panel_system: "акустические панели",
   air_conditioning_system: "система кондиционирования",
   concrete_pedestal: "\u0431\u0435\u0442\u043e\u043d\u043d\u044b\u0435 \u0442\u0443\u043c\u0431\u044b",
+  bms_automation_system: "BMS автоматика",
+  cold_room_system: "холодильная камера",
   demolition_scope: "\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
+  dock_leveler: "доклевеллер",
   drywall_system: "\u043e\u0431\u043b\u0438\u0446\u043e\u0432\u043a\u0430 \u0441\u0442\u0435\u043d \u0413\u041a\u041b",
+  industrial_equipment: "промышленное оборудование",
   industrial_floor: "\u043f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u043f\u043e\u043b",
   masonry_wall: "\u043a\u0438\u0440\u043f\u0438\u0447\u043d\u0430\u044f \u043a\u043b\u0430\u0434\u043a\u0430",
   passenger_elevator: "\u043f\u0430\u0441\u0441\u0430\u0436\u0438\u0440\u0441\u043a\u0438\u0439 \u043b\u0438\u0444\u0442",
   roof_system: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0441\u0438\u0441\u0442\u0435\u043c\u0430",
+  smoke_extraction_system: "система дымоудаления",
   waterproofing_surface: "\u043a\u0440\u043e\u0432\u0435\u043b\u044c\u043d\u0430\u044f \u0433\u0438\u0434\u0440\u043e\u0438\u0437\u043e\u043b\u044f\u0446\u0438\u044f",
 };
 
@@ -709,9 +715,9 @@ function buildIndustrialFloorRows(plan: EstimatorReasoningPlan): DynamicProfessi
 }
 
 function buildFallbackRows(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
-  const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? 1;
+  const quantity = plan.quantities.areaM2 ?? plan.quantities.lengthM ?? plan.quantities.count ?? plan.quantities.powerKw ?? plan.quantities.massTon ?? 1;
   const object = userVisibleObjectLabel(plan);
-  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : "sq_m";
+  const measuredUnit = plan.quantities.lengthM ? "linear_m" : plan.quantities.count ? "pcs" : plan.quantities.powerKw ? "set" : plan.quantities.massTon ? "ton" : "sq_m";
   const unitFor = (
     name: string,
     sectionType: DynamicProfessionalBoqRow["sectionType"],

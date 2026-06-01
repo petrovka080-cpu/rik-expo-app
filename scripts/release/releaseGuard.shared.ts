@@ -75,6 +75,7 @@ export type ReleaseGateName =
   | "android-emulator-adb-unblock-replay-b2c-expanded-estimate-fix-proof"
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
+  | "universal-professional-estimate-engine-proof"
   | "world-construction-50000-plus-sharded-live-reality-proof"
   | "ai-estimate-template-rate-catalog-ontology-change-control-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
@@ -355,6 +356,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof", command: "npx tsx scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts" },
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
+  { name: "universal-professional-estimate-engine-proof", command: "npx tsx scripts/e2e/runUniversalProfessionalEstimateEngineProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },

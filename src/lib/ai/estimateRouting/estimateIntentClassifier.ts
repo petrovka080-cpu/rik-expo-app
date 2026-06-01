@@ -48,7 +48,7 @@ const CONSTRUCTION_VERBS = [
 
 const CATEGORY_KEYWORDS: Record<GlobalWorkCategory, string[]> = {
   flooring: ["пол", "ламинат", "паркет", "линолеум", "ковролин", "стяжка", "наливной"],
-  wall_finishing: ["стены", "обои", "отделка стен"],
+  wall_finishing: ["стены", "обои", "отделка стен", "акустическ", "акустические панели"],
   ceiling: ["потолок", "потолки"],
   drywall: ["гипсокартон", "гкл", "перегород"],
   painting: ["покрас", "краска", "painting"],
@@ -56,9 +56,9 @@ const CATEGORY_KEYWORDS: Record<GlobalWorkCategory, string[]> = {
   putty: ["шпаклев", "шпатлев"],
   tile: ["плитк", "кафель", "bathroom"],
   doors_windows: ["двер", "окн", "window", "door"],
-  electrical: ["электрик", "розет", "кабель", "щит", "свет", "electrical"],
+  electrical: ["электрик", "розет", "кабель", "щит", "свет", "пожарн", "апс", "bms", "автоматик", "electrical"],
   plumbing: ["сантех", "труб", "смесител", "канализац", "plumbing"],
-  heating_hvac: ["отоплен", "вентиляц", "кондиционер", "кондиционир", "hvac"],
+  heating_hvac: ["отоплен", "вентиляц", "кондиционер", "кондиционир", "холодильн", "дымоудал", "hvac"],
   roofing: ["кровл", "крыша", "крыш", "двускат", "roof"],
   facade: ["фасад", "входн"],
   foundation: ["фундамент"],
@@ -73,18 +73,18 @@ const CATEGORY_KEYWORDS: Record<GlobalWorkCategory, string[]> = {
   carpentry: ["столяр", "дерев", "carpentry"],
   documents_design: ["проект", "дизайн", "проектирован"],
   cleaning: ["уборк", "вывоз мусора", "cleaning"],
-  delivery_equipment: ["доставк", "техника", "экскаватор", "кран"],
+  delivery_equipment: ["доставк", "техника", "экскаватор", "кран", "доклевеллер", "промышленн"],
   other: ["ремонт", "строительн"],
 };
 
 const EXTRA_CATEGORY_KEYWORDS: Partial<Record<GlobalWorkCategory, string[]>> = {
   flooring: ["floor", "flooring"],
-  wall_finishing: ["wall finishing", "wallcovering", "wall panel"],
+  wall_finishing: ["wall finishing", "wallcovering", "wall panel", "acoustic panel"],
   ceiling: ["ceiling"],
   plastering: ["plaster"],
   putty: ["putty"],
   tile: ["tile", "porcelain", "ceramic"],
-  heating_hvac: ["heating", "ventilation", "air conditioning", "boiler"],
+  heating_hvac: ["heating", "ventilation", "air conditioning", "boiler", "cold room", "smoke extraction"],
   facade: ["facade", "cladding", "exterior"],
   foundation: ["foundation"],
   masonry: ["masonry", "brick", "block", "stone"],
@@ -94,7 +94,7 @@ const EXTRA_CATEGORY_KEYWORDS: Partial<Record<GlobalWorkCategory, string[]>> = {
   carpentry: ["timber", "wood", "deck"],
   documents_design: ["design", "project", "survey", "documentation", "permit"],
   cleaning: ["cleanup", "restoration"],
-  delivery_equipment: ["delivery", "crane", "equipment", "rental", "temporary"],
+  delivery_equipment: ["delivery", "crane", "equipment", "rental", "temporary", "dock leveler", "industrial equipment"],
 };
 
 function includesAny(text: string, values: readonly string[]): boolean {

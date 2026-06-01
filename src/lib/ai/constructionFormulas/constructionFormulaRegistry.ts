@@ -111,7 +111,7 @@ export function parseUniversalConstructionQuantities(text: string): UniversalCon
   const count = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:шт|штук|pcs|pieces?|ед\.?|set|компл\.?)/)
     ?? firstNumber(normalized, /(?:count|количество|надо)\s*(\d+(?:\.\d+)?)/);
   const massTon = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:тонн|тонна|т\b|ton)/);
-  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м\b|meters?|metres?|linear_m|linear\s*m)/);
+  const explicitLength = firstNumber(normalized, /(\d+(?:\.\d+)?)\s*(?:пог\.?\s*м|метров|метра|м(?![а-яёa-z])|meters?|metres?|linear_m|linear\s*m)/);
 
   return {
     areaM2,
@@ -272,7 +272,7 @@ export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): Es
       missingInputs: q.areaM2 ? ["zoneCount", "routeLengthsM", "equipmentModel"] : ["areaM2", "zoneCount", "routeLengthsM", "equipmentModel"],
     }];
   }
-  const area = q.areaM2 ?? q.lengthM ?? q.count ?? q.powerKw ?? 1;
+  const area = q.areaM2 ?? q.lengthM ?? q.count ?? q.powerKw ?? q.massTon ?? 1;
   return [{
     formulaId: "generic_parsable_work_quantity",
     inputs: { primaryQuantity: area },

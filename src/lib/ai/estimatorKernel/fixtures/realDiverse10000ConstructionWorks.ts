@@ -474,9 +474,11 @@ function promptFor(definition: AcceptanceDomainDefinition, entry: EstimatorDomai
   return `смета на ${phrase} ${quantity.prompt} ${locations[variant % locations.length]}${suffix}`;
 }
 
-function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
+function requiredTokens(definition: AcceptanceDomainDefinition, entry: EstimatorDomainLexiconEntry, forceConcretePedestal: boolean): string[] {
   const real500 = real500ByDomain.get(entry.domain);
-  if (real500?.requiredRowTokens.length) return [...real500.requiredRowTokens];
+  if (real500?.requiredRowTokens.length && (entry.domain !== "concrete" || definition.domain === "concrete_pedestals" || forceConcretePedestal)) {
+    return [...real500.requiredRowTokens];
+  }
   return [
     ...entry.requiredMaterials.slice(0, 2),
     ...entry.requiredLabor.slice(0, 2),
@@ -497,6 +499,7 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
   const complexity = regulated ? "regulated" : entry.complexity;
   const expectedResolvedDomain =
     entry.domain === "elevators_regulated" ? "vertical_transport" :
+      entry.domain === "air_conditioning" ? "hvac" :
       forceConcretePedestal ? "concrete" :
         entry.domain;
   return {
@@ -510,11 +513,11 @@ function caseFor(definition: AcceptanceDomainDefinition, variant: number, global
     expectedOperation: forceConcretePedestal ? "concrete_pour" : entry.operation,
     workObjectVariant: diversity.workObjectVariant,
     workOperationVariant: diversity.workOperationVariant,
-    expectedMethod: forceConcretePedestal ? "rectangular_concrete_element" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
+    expectedMethod: forceConcretePedestal ? "concrete_pedestal_pour" : entry.domain === "elevators_regulated" ? "licensed_elevator_installation" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokens(entry),
+    requiredRowTokens: requiredTokens(definition, entry, forceConcretePedestal),
     forbiddenRowTokens: forbiddenWeakRows,
     unitRules: [...entry.unitRules],
     pdfRequired: variant < 10,

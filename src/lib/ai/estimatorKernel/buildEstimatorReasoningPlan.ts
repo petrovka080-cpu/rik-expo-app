@@ -118,6 +118,25 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой точный размер одной тумбы?", "Есть ли закладные/анкера и схема их расположения?", "Какая марка бетона и нагрузка от оборудования или стоек?"],
     };
   }
+  if (/пожарн|апс|соуэ|fire\s+alarm/.test(normalized) && /сигнализац|датчик|оповещ|кабел|alarm|system/.test(normalized)) {
+    return {
+      workKey: "fire_alarm_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж пожарной сигнализации",
+      category: "electrical",
+      domain: "fire_alarm",
+      object: "fire_alarm_system",
+      operation: "installation",
+      method: "regulated_fire_alarm_install",
+      materialSystem: "fire_alarm_system",
+      complexity: "complex",
+      requiredMaterials: ["пожарные датчики", "прибор АПС", "кабель огнестойкий", "оповещатели", "резервное питание"],
+      requiredLabor: ["проектная привязка warning", "прокладка кабеля", "монтаж датчиков", "монтаж оповещателей", "ПНР пожарной сигнализации"],
+      requiredEquipmentOrWarnings: ["тестер линий", "лицензированный подрядчик", "измерение сопротивления линий"],
+      requiredLogisticsOrWarnings: ["доставка оборудования", "маркировка линий", "исполнительная документация"],
+      exclusions: ["проект АПС и согласования уточняются отдельно", "интеграция с существующей BMS включается после обследования", "огнезащита проходок считается по факту трасс"],
+      clarifyingQuestions: ["Сколько помещений и датчиков нужно покрыть?", "Нужны ли СОУЭ, ручные извещатели и резервное питание?", "Есть ли проект АПС и требования инспекции?"],
+    };
+  }
   if (/слаботоч|интернет\s+кабел|структурированн[а-яё]*\s+кабельн[а-яё]*\s+сет|скс|utp|rj45|патч-панел|домофон|low\s+voltage|structured\s+cabling/.test(normalized)) {
     return {
       workKey: "low_voltage_cabling_installation",
@@ -135,6 +154,120 @@ function signatureFor(text: string): WorkSignature | null {
       requiredLogisticsOrWarnings: ["доставка кабеля", "маркировка и ведомость портов"],
       exclusions: ["проект СКС", "активное сетевое оборудование сверх перечня", "интернет-провайдер и внешняя линия связи"],
       clarifyingQuestions: ["Сколько портов RJ45 и рабочих мест?", "Нужен ли шкаф, патч-панель и маркировка?", "Открытая прокладка в кабель-канале или скрытая трасса?"],
+    };
+  }
+  if (/акустич|acoustic/.test(normalized) && /панел|panel/.test(normalized)) {
+    return {
+      workKey: "acoustic_panel_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж акустических панелей",
+      category: "wall_finishing",
+      domain: "interior_acoustic_finish",
+      object: "acoustic_panel_system",
+      operation: "installation",
+      method: "acoustic_panel_mounting",
+      materialSystem: "acoustic_panel_system",
+      complexity: "complex",
+      requiredMaterials: ["акустические панели", "подсистема крепления панелей", "акустический крепеж", "кромочные профили", "виброразвязочные прокладки"],
+      requiredLabor: ["обмер и акустическая раскладка", "разметка осей панелей", "монтаж подсистемы", "монтаж акустических панелей", "контроль стыков и примыканий"],
+      requiredEquipmentOrWarnings: ["лазерный уровень", "подмости / стремянки", "пылеудаление при подрезке"],
+      requiredLogisticsOrWarnings: ["доставка панелей", "подъем и хранение без деформации", "вынос упаковки"],
+      exclusions: ["акустический проект и расчет времени реверберации уточняются отдельно", "скрытое усиление стен включается после обследования", "освещение и электрика в зоне панелей считаются отдельно"],
+      clarifyingQuestions: ["Какая высота зала и схема раскладки панелей?", "Нужны ли тканевые, деревянные или минеральные панели?", "Есть ли акустический проект или целевое время реверберации?"],
+    };
+  }
+  if (/холодильн|морозильн|cold\s+room|refrigerated\s+chamber|walk[-\s]?in\s+cooler/.test(normalized) && /камер|room|chamber|cooler/.test(normalized)) {
+    return {
+      workKey: "cold_room_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж холодильной камеры",
+      category: "heating_hvac",
+      domain: "cold_rooms",
+      object: "cold_room_system",
+      operation: "installation",
+      method: "cold_room_panel_refrigeration_install",
+      materialSystem: "cold_room_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["сэндвич-панели холодильной камеры", "холодильная дверь", "испаритель и конденсаторный блок", "фреоновая трасса", "электрощит и автоматика камеры"],
+      requiredLabor: ["обмер помещения", "монтаж панелей камеры", "монтаж двери и герметизация", "монтаж холодильного агрегата", "вакуумирование, заправка и ПНР"],
+      requiredEquipmentOrWarnings: ["вакуумный насос", "манометрический коллектор", "такелаж холодильного оборудования", "контроль герметичности warning"],
+      requiredLogisticsOrWarnings: ["доставка панелей и агрегатов", "подъем холодильного оборудования", "утилизация упаковки"],
+      exclusions: ["проект холодоснабжения и теплопритоки уточняются отдельно", "усиление электропитания здания не включено", "напольная теплоизоляция включается после обследования основания"],
+      clarifyingQuestions: ["Какая рабочая температура камеры?", "Нужна ли морозильная или среднетемпературная камера?", "Есть ли доступ для заноса панелей и агрегатов?"],
+    };
+  }
+  if (/доклевеллер|док\s*левеллер|dock\s+leveler|loading\s+dock/.test(normalized)) {
+    return {
+      workKey: "dock_leveler_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж доклевеллера",
+      category: "delivery_equipment",
+      domain: "loading_docks",
+      object: "dock_leveler",
+      operation: "installation",
+      method: "dock_leveler_installation",
+      materialSystem: "dock_leveler_system",
+      complexity: "complex",
+      requiredMaterials: ["доклевеллер", "гидравлическая станция", "закладные детали", "уплотнители дока", "шкаф управления"],
+      requiredLabor: ["обследование приямка", "проверка закладных и геометрии", "монтаж доклевеллера", "подключение гидравлики и управления", "ПНР и испытание под нагрузкой"],
+      requiredEquipmentOrWarnings: ["кран / погрузчик", "такелаж", "электроизмерения", "ограждение зоны монтажа"],
+      requiredLogisticsOrWarnings: ["доставка доклевеллера", "разгрузка и временное хранение", "вывоз упаковки"],
+      exclusions: ["устройство нового приямка считается отдельно", "усиление ворот и проема не включено", "согласование с поставщиком оборудования требуется перед заказом"],
+      clarifyingQuestions: ["Какой тип доклевеллера: откидная или выдвижная аппарель?", "Габариты приямка и нагрузка известны?", "Есть ли питание и готовые закладные?"],
+    };
+  }
+  if (/дымоудал|smoke\s+extraction|smoke\s+exhaust|smoke\s+control/.test(normalized)) {
+    return {
+      workKey: "smoke_extraction_system",
+      titleRu: "Профессиональная предварительная смета на монтаж системы дымоудаления",
+      category: "heating_hvac",
+      domain: "smoke_extraction",
+      object: "smoke_extraction_system",
+      operation: "installation",
+      method: "smoke_extraction_installation",
+      materialSystem: "smoke_extraction_system",
+      complexity: "complex",
+      requiredMaterials: ["вентиляторы дымоудаления", "огнестойкие воздуховоды", "клапаны дымоудаления", "кабель огнестойкий", "щит автоматики дымоудаления"],
+      requiredLabor: ["обследование трасс", "монтаж огнестойких воздуховодов", "монтаж клапанов и вентиляторов", "электромонтаж и автоматика", "ПНР противопожарной системы"],
+      requiredEquipmentOrWarnings: ["подъемник", "измерительные приборы", "лицензированный подрядчик warning", "испытание сценариев пожарной автоматики"],
+      requiredLogisticsOrWarnings: ["доставка воздуховодов и вентиляторов", "подъем крупного оборудования", "исполнительная документация"],
+      exclusions: ["проект ПД/РД и расчет противодымной защиты уточняются отдельно", "огнезащита конструкций считается отдельным разделом", "согласования с пожарной инспекцией не включены"],
+      clarifyingQuestions: ["Есть ли проект противодымной защиты?", "Какие зоны и сценарии пожарной автоматики нужно покрыть?", "Требуется ли интеграция с АПС/BMS?"],
+    };
+  }
+  if (/\bbms\b|диспетчеризац|автоматик[а-яё]*\s+(здан|bms)|bms\s+automation|building\s+management/.test(normalized)) {
+    return {
+      workKey: "bms_automation_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж BMS автоматики",
+      category: "electrical",
+      domain: "automation_bms",
+      object: "bms_automation_system",
+      operation: "installation",
+      method: "bms_automation_installation",
+      materialSystem: "bms_automation_system",
+      complexity: "complex",
+      requiredMaterials: ["контроллеры BMS", "шкафы автоматики", "датчики и исполнительные устройства", "кабель связи и питания", "SCADA / диспетчеризация"],
+      requiredLabor: ["обследование инженерных систем", "разработка точек подключения", "монтаж шкафов автоматики", "прокладка линий связи", "программирование и ПНР BMS"],
+      requiredEquipmentOrWarnings: ["ноутбук и конфигуратор", "сетевой тестер", "измерительные приборы", "пусконаладочная лаборатория warning"],
+      requiredLogisticsOrWarnings: ["доставка шкафов и контроллеров", "маркировка кабелей", "исполнительная документация"],
+      exclusions: ["проект автоматизации и перечень точек I/O уточняются отдельно", "лицензии SCADA включаются после выбора платформы", "интеграция сторонних протоколов требует обследования"],
+      clarifyingQuestions: ["Сколько точек I/O и какие инженерные системы подключаются?", "Какая платформа BMS/SCADA требуется?", "Нужна ли интеграция с HVAC, АПС, СКУД или электросчетчиками?"],
+    };
+  }
+  if (/промышленн[а-яё]*\s+оборуд|industrial\s+equipment/.test(normalized)) {
+    return {
+      workKey: "industrial_equipment_installation",
+      titleRu: "Профессиональная предварительная смета на монтаж промышленного оборудования",
+      category: "delivery_equipment",
+      domain: "industrial_equipment",
+      object: "industrial_equipment",
+      operation: "installation",
+      method: "industrial_equipment_install",
+      materialSystem: "industrial_equipment_system",
+      complexity: "infrastructure",
+      requiredMaterials: ["промышленное оборудование", "анкерные болты", "виброопоры", "такелажная оснастка", "кабель и подключение питания"],
+      requiredLabor: ["обследование основания", "такелаж и установка оборудования", "выверка по осям и уровню", "анкеровка и фиксация", "подключение и пусконаладка"],
+      requiredEquipmentOrWarnings: ["кран / погрузчик", "домкраты и стропы", "лазерный уровень", "план производства работ warning"],
+      requiredLogisticsOrWarnings: ["доставка и разгрузка оборудования", "такелажный план", "вывоз упаковки"],
+      exclusions: ["фундамент под оборудование считается отдельным разделом", "паспортные требования производителя уточняются перед монтажом", "силовое питание здания и вентиляция считаются отдельно"],
+      clarifyingQuestions: ["Какая масса, габариты и точки крепления оборудования?", "Готов ли фундамент или требуется отдельная смета?", "Нужны ли шеф-монтаж и гарантийная ПНР производителя?"],
     };
   }
   if (/солнеч|фотоэлектр|фотовольт|сэс|solar|pv\s+panel|photovoltaic|инвертор/.test(normalized) && /панел|станц|инвертор|квт|kw|solar|photovoltaic|фотоэлектр/.test(normalized)) {

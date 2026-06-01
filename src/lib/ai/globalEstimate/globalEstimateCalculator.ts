@@ -724,11 +724,23 @@ const SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS = new Set([
   "roof_waterproofing",
 ]);
 
-function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null): {
+const ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS = new Set([
+  "acoustic_panel_installation",
+  "bms_automation_installation",
+  "cold_room_installation",
+  "dock_leveler_installation",
+  "fire_alarm_installation",
+  "industrial_equipment_installation",
+  "smoke_extraction_system",
+]);
+
+function canonicalWorkForEstimatorKernel(input: GlobalEstimateInput, semanticPlan: ConstructionWorkPlan | null, plan: EstimatorReasoningPlan): {
   workKey: string;
   title: string;
   category: GlobalEstimateResult["work"]["category"];
 } | undefined {
+  if (ESTIMATOR_KERNEL_PRESENTATION_WORK_KEYS.has(plan.workKey)) return undefined;
+
   if (semanticPlan && SEMANTIC_CANONICAL_DYNAMIC_WORK_KEYS.has(semanticPlan.workKey)) {
     return {
       workKey: semanticPlan.workKey,
@@ -791,7 +803,7 @@ export function calculateGlobalConstructionEstimateSync(input: GlobalEstimateInp
   ) {
     const canonicalWork = estimatorOutcome.plan.workKey === "concrete_pedestal_pour"
       ? undefined
-      : canonicalWorkForEstimatorKernel(input, semanticPlan);
+      : canonicalWorkForEstimatorKernel(input, semanticPlan, estimatorOutcome.plan);
     return buildGlobalEstimateFromEstimatorKernel(
       estimatorOutcome.plan,
       compileDynamicProfessionalBoq(estimatorOutcome.plan),
