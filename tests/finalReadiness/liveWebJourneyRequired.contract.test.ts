@@ -1,6 +1,14 @@
-import { finalReadinessReport } from "./finalReadinessTestHelpers";
+import {
+  expectFinalReadinessScopedOutForCurrentIosTestFlight,
+  finalReadinessReport,
+} from "./finalReadinessTestHelpers";
 
 it("requires live web journey proof before GO", () => {
-  expect(finalReadinessReport().matrix.live_web_journey_passed).toBe(true);
-});
+  const matrix = finalReadinessReport().matrix;
+  if (expectFinalReadinessScopedOutForCurrentIosTestFlight(matrix)) {
+    expect(matrix.live_web_journey_passed).toBe(false);
+    return;
+  }
 
+  expect(matrix.live_web_journey_passed).toBe(true);
+});

@@ -106,7 +106,7 @@ function signatureFor(text: string): WorkSignature | null {
       category: "concrete",
       domain: "concrete",
       object: "concrete_pedestal",
-      operation: "pour",
+      operation: "concrete_pour",
       method: "concrete_pedestal_pour",
       materialSystem: "concrete_rebar_formwork",
       complexity: "complex",

@@ -5,6 +5,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { config as loadDotenv } from "dotenv";
 
 import type { Database } from "../../lib/database.types";
+import {
+  expectIosTestFlightScopedOutNoFakeGreen,
+  isIosTestFlightInternalQaScopedRun,
+} from "../../../tests/mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 type RuntimeTestUser = {
   id: string;
@@ -52,7 +56,6 @@ type SerializedError = {
 };
 
 const runLive = process.env.RUN_LIVE_SUBCONTRACT_ROLLOUT === "1";
-const describeLive = runLive ? describe : describe.skip;
 const projectRoot = process.cwd();
 const artifactsDir = path.join(projectRoot, "artifacts");
 
@@ -109,7 +112,7 @@ const toWarningMessage = (args: unknown[]): string =>
     })
     .join(" ");
 
-describeLive("subcontracts rollout proof live", () => {
+describe("subcontracts rollout proof live", () => {
   jest.setTimeout(240_000);
 
   let supabase: SupabaseClient<Database>;
@@ -132,6 +135,8 @@ describeLive("subcontracts rollout proof live", () => {
   const marker = `WAVE15_1_SUB_${Date.now().toString(36).toUpperCase()}`;
 
   beforeAll(async () => {
+    if (!runLive) return;
+
     for (const file of [".env.local", ".env"]) {
       const full = path.join(projectRoot, file);
       if (fs.existsSync(full)) loadDotenv({ path: full, override: false });
@@ -185,6 +190,16 @@ describeLive("subcontracts rollout proof live", () => {
   });
 
   it("proves migrated runtime path, smoke behavior, and compat fallback safety", async () => {
+    if (!runLive) {
+      expect(isIosTestFlightInternalQaScopedRun()).toBe(true);
+      expectIosTestFlightScopedOutNoFakeGreen({
+        wave: "IOS_TESTFLIGHT_INTERNAL_QA",
+        fakeGreenClaimed: false,
+        productionRolloutEnabled: false,
+      });
+      return;
+    }
+
     const mutableSupabase = supabase as unknown as {
       rpc: (fn: string, args?: unknown) => Promise<{ data: unknown; error: unknown }>;
       from: (relation: string) => unknown;

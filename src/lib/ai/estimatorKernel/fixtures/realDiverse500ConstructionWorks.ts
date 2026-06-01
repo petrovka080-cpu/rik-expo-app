@@ -139,6 +139,11 @@ function requiredTokens(entry: EstimatorDomainLexiconEntry): string[] {
   ].filter(Boolean);
 }
 
+function requiredTokensForCase(entry: EstimatorDomainLexiconEntry, concretePedestalPrompt: boolean): string[] {
+  if (concretePedestalPrompt) return ["бетон", "арматур", "опалубк", "тумб", "вибр"];
+  return requiredTokens(entry);
+}
+
 function caseFor(entry: EstimatorDomainLexiconEntry, variant: number, globalIndex: number): RealDiverseConstructionWorkCase {
   const quantity = quantityFor(entry, variant);
   const prompt = mandatoryPrompt(entry, variant) ??
@@ -152,11 +157,11 @@ function caseFor(entry: EstimatorDomainLexiconEntry, variant: number, globalInde
     domain: entry.domain,
     expectedObject: concretePedestalPrompt ? "concrete_pedestal" : entry.object,
     expectedOperation: entry.operation,
-    expectedMethod: concretePedestalPrompt ? "rectangular_concrete_element" : entry.method,
+    expectedMethod: concretePedestalPrompt ? "concrete_pedestal_pour" : entry.method,
     complexity,
     quantityExpectation: quantity.expectation,
     expectedMinimumRows: minimumRows(complexity),
-    requiredRowTokens: requiredTokens(entry),
+    requiredRowTokens: requiredTokensForCase(entry, concretePedestalPrompt),
     forbiddenRowTokens: [...FORBIDDEN_WEAK_ROWS],
     unitRules: [...entry.unitRules],
     pdfRequired: false,

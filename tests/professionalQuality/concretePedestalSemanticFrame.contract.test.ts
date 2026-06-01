@@ -11,7 +11,7 @@ describe("concrete pedestal semantic frame", () => {
     expect(plan?.workKey).toBe("concrete_pedestal_pour");
     expect(plan?.semanticFrame.domain).toBe("concrete");
     expect(plan?.semanticFrame.object).toBe("concrete_pedestal");
-    expect(plan?.semanticFrame.operation).toBe("pour");
+    expect(plan?.semanticFrame.operation).toBe("concrete_pour");
     expect(plan?.semanticFrame.method).toBe("concrete_pedestal_pour");
   });
 
@@ -21,7 +21,7 @@ describe("concrete pedestal semantic frame", () => {
 
       expect(plan?.workKey).toBe("concrete_pedestal_pour");
       expect(plan?.semanticFrame.object).toBe("concrete_pedestal");
-      expect(plan?.semanticFrame.operation).toBe("pour");
+      expect(plan?.semanticFrame.operation).toBe("concrete_pour");
     }
   });
 });

@@ -18,7 +18,7 @@ export type ProfessionalEstimateBenchmark = {
 const PEDESTAL_BASE = {
   expected_domain: "concrete",
   expected_object: "concrete_pedestal",
-  expected_operation: "pour",
+  expected_operation: "concrete_pour",
   expected_recipe: "concrete_pedestal_pour",
   expected_min_rows: 18,
   forbidden_objects: ["concrete_slab", "concrete_screed"],

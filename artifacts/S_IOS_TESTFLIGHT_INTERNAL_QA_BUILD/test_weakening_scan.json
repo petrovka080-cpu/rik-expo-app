@@ -7,7 +7,7 @@
   "all_scope_exits_assert_artifact": true,
   "fake_green_claimed": false,
   "classified_scope_return_count": 29,
-  "total_return_statement_matches": 420,
+  "total_return_statement_matches": 429,
   "findings": {
     "describe_skip": [],
     "test_skip": [],

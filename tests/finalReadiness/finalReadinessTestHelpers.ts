@@ -1,4 +1,8 @@
 import { buildAiEstimateEnterpriseFinalReadinessReport } from "../../scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo";
+import {
+  expectIosTestFlightScopedOutNoFakeGreen,
+  isIosTestFlightInternalQaScopedRun,
+} from "../mobileRelease/iosTestFlightInternalQaScopeTestHelper";
 
 export const verifiedFinalReadiness = {
   typecheckPassed: true,
@@ -25,3 +29,23 @@ export function finalReadinessReport() {
   });
 }
 
+export type FinalReadinessMatrix = ReturnType<typeof finalReadinessReport>["matrix"];
+
+export function expectFinalReadinessScopedOutForCurrentIosTestFlight(
+  matrix: FinalReadinessMatrix,
+): boolean {
+  if (!isIosTestFlightInternalQaScopedRun()) {
+    return false;
+  }
+
+  expectIosTestFlightScopedOutNoFakeGreen({
+    wave: matrix.wave,
+    fakeGreenClaimed: matrix.fake_green_claimed,
+    productionRolloutEnabled: matrix.production_rollout_enabled,
+  });
+  expect(matrix.go_no_go_decision).toBe("NO_GO");
+  expect(matrix.all_prerequisites_green).toBe(false);
+  expect(matrix.matrix_ledger_passed).toBe(false);
+  expect(matrix.blockers.length).toBeGreaterThan(0);
+  return true;
+}
