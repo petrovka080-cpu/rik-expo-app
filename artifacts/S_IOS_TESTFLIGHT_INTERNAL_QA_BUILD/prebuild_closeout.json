@@ -10,7 +10,7 @@
   "local_dependency_resolution_ready": true,
   "runtime_fingerprint_command_ok": true,
   "runtime_fingerprint_resolved": true,
-  "runtime_fingerprint_hash": "289c9b69963e91081310c7f7cb5345d038a66829",
+  "runtime_fingerprint_hash": "6d7c60ebad6a0deafbda2d6fcb2dab493d6aae68",
   "eas_runtime_fingerprint_failure_artifact_written": true,
   "owner_gate_status": "BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE",
   "owner_gate_required_for_internal_testflight": false,

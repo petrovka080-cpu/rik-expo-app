@@ -1,0 +1,15 @@
+{
+  "final_status": "GREEN_IOS_TESTFLIGHT_PRE_FULL_JEST_READY",
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "targeted_failing_suites_passed": true,
+  "ai1000_passed": true,
+  "real10000_scoped_not_required": true,
+  "canary_scoped_not_required": true,
+  "release_candidate_scoped_blocked": true,
+  "backend_live_scoped_not_required": true,
+  "artifact_churn_resolved": true,
+  "test_weakening_found": false,
+  "fake_green_claimed": false
+}

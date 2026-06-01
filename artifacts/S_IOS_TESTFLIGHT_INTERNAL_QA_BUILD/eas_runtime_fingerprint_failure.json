@@ -6,7 +6,7 @@
   "failed_phase": "Configure expo-updates",
   "failed_local_runtime_hash": "eccb86425a9048b23106a5d56e6ba8206410190e",
   "failed_cloud_runtime_hash": "74a280d2882c3ef76937c8704da2fba8dca7d739",
-  "current_local_runtime_hash": "289c9b69963e91081310c7f7cb5345d038a66829",
+  "current_local_runtime_hash": "6d7c60ebad6a0deafbda2d6fcb2dab493d6aae68",
   "runtime_fingerprint_command_ok": true,
   "runtime_fingerprint_resolved": true,
   "local_dependency_resolution_ready": true,
