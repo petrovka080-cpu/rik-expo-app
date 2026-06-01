@@ -1,0 +1,17 @@
+{
+  "ios_build_number_before": "23",
+  "remote_ios_build_number_before": "44",
+  "ios_build_number_after": "45",
+  "build_number_incremented": true,
+  "marketing_version_before": "1.0.0",
+  "marketing_version_after": "1.0.0",
+  "marketing_version_changed": false,
+  "app_version_source": "remote",
+  "remote_version_source_note": "ios.buildNumber is kept in app config for manifest visibility; EAS remote version source may still control the submitted build number.",
+  "product_logic_changed": false,
+  "estimate_engine_changed": false,
+  "boq_compiler_changed": false,
+  "pdf_renderer_changed": false,
+  "ui_rewrite_found": false,
+  "fake_green_claimed": false
+}

@@ -1,0 +1,19 @@
+{
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "targeted_tests_passed": true,
+  "ios_testflight_contracts_passed": true,
+  "architecture_tests_passed": true,
+  "product_quality_mainline_acceptance_passed": true,
+  "professional_quality_proof_passed": true,
+  "release_verify_passed": true,
+  "typecheck_command": "npx tsc --noEmit --pretty false",
+  "lint_command": "npx expo lint",
+  "git_diff_check_command": "git diff --check",
+  "targeted_tests_command": "npm test -- --runInBand tests/mobileRelease tests/architecture/iosTestFlightNoProductLogicChange.contract.test.ts tests/architecture/iosTestFlightNoSecretsInArtifacts.contract.test.ts tests/architecture/iosTestFlightNoGitAddDot.contract.test.ts tests/architecture/iosTestFlightNoAppReviewSubmit.contract.test.ts tests/architecture/iosTestFlightNoPublicRollout.contract.test.ts",
+  "product_quality_command": "npx tsx scripts/e2e/runProductQualityPr1MainlineAcceptanceProof.ts",
+  "professional_quality_command": "npx tsx scripts/e2e/runProfessionalEstimatorQualityProof.ts",
+  "release_verify_command": "npm run release:verify -- --json",
+  "fake_green_claimed": false
+}

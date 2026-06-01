@@ -1,0 +1,14 @@
+{
+  "source_ref": "origin/main",
+  "source_head": "19bf1db6318fdb7a71fe6489a8ed280f17ba1daf",
+  "branch": "mobile/ios-testflight-internal-qa",
+  "includes_pr_39": true,
+  "includes_pr_40": true,
+  "includes_pr_41": true,
+  "includes_concrete_pedestal_fix": true,
+  "concrete_pedestal_maps_to": "concrete_pedestal_pour",
+  "release_core_baseline_green": true,
+  "product_quality_acceptance_green": true,
+  "worktree_clean_before_build": false,
+  "fake_green_claimed": false
+}

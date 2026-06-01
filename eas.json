@@ -27,6 +27,15 @@
       },
       "channel": "production"
     },
+    "ios-testflight-internal": {
+      "extends": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": false
+      },
+      "channel": "testflight-internal"
+    },
     "production-emulator": {
       "distribution": "internal",
       "android": {
@@ -37,6 +46,11 @@
   },
   "submit": {
     "production": {
+      "ios": {
+        "ascAppId": "6759552514"
+      }
+    },
+    "ios-testflight-internal": {
       "ios": {
         "ascAppId": "6759552514"
       }
