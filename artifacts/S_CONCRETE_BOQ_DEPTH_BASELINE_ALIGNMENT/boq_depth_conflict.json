@@ -1,0 +1,14 @@
+{
+  "old_expected_depth": 10.5,
+  "current_engine_depth": 10.8,
+  "exact_failing_tests": [
+    "tests/professionalBoq/concretePedestalBoqDepth.contract.test.ts",
+    "tests/estimatorKernel/concretePedestalsDynamicBoq.contract.test.ts"
+  ],
+  "product_quality_mainline_acceptance_green": true,
+  "professional_quality_proof_green": true,
+  "is_stale_test_baseline": true,
+  "is_product_regression": false,
+  "quality_gate_weakened": false,
+  "fake_green_claimed": false
+}

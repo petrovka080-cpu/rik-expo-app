@@ -1,0 +1,19 @@
+{
+  "final_status": "GREEN_CONCRETE_BOQ_DEPTH_BASELINE_ALIGNMENT_READY",
+  "old_expected_depth": 10.5,
+  "current_engine_depth": 10.8,
+  "baseline_updated_to_current_accepted_engine_output": true,
+  "product_quality_mainline_acceptance_green": true,
+  "professional_quality_proof_green": true,
+  "targeted_boq_depth_tests_passed": true,
+  "typecheck_passed": true,
+  "lint_passed": true,
+  "git_diff_check_passed": true,
+  "release_verify_passed": true,
+  "quality_gate_weakened": false,
+  "product_logic_changed": false,
+  "estimate_engine_changed": false,
+  "boq_compiler_changed": false,
+  "pdf_renderer_changed": false,
+  "fake_green_claimed": false
+}

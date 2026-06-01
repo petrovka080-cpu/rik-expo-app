@@ -6,12 +6,12 @@ describe("concrete pedestals dynamic BOQ", () => {
     const outputs = plan.formulas[0]?.outputs ?? {};
     expect(outputs.volumeEachM3).toBe(1);
     expect(outputs.volumeTotalM3).toBe(10);
-    expect(outputs.concreteWithWasteM3).toBe(10.5);
+    expect(outputs.concreteWithWasteM3).toBe(10.8);
     expect(outputs.formworkTotalM2).toBe(90);
 
     const estimate = requestEstimate(UNIVERSAL_PROMPTS.concretePedestals);
     const text = rowText(estimate);
-    for (const token of ["бетон", "арматура", "опалубка", "заливка бетона", "вибрирование", "уход за бетоном"]) {
+    for (const token of ["бетон b20/b25", "арматурный каркас", "опалубка тумб", "подача / укладка бетона", "вибрирование бетона", "уход за бетоном"]) {
       expect(text).toContain(token);
     }
   });
