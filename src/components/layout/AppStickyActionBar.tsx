@@ -100,7 +100,7 @@ function StickyButton({
 
 const fixedPosition = Platform.select({
   web: {
-    position: "fixed",
+    position: "fixed" as ViewStyle["position"],
     bottom: APP_LAYOUT.bottomNavHeightPx + APP_LAYOUT.stickyActionGapPx,
   } as ViewStyle,
   default: {
