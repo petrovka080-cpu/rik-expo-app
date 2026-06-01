@@ -400,12 +400,18 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
             ? "NO_GO_PRODUCTION_ROLLOUT_ENABLED_TOO_EARLY"
       : "NO_GO_AI_ESTIMATE_ENTERPRISE_FINAL_READINESS";
   const matrixBlockers = iosTestFlightScopedOut
-    ? [IOS_TESTFLIGHT_SCOPED_OUT_STATUS]
+    ? [
+      ...blockers,
+      "BLOCKED_FINAL_READINESS_PREREQUISITE_NOT_GREEN:IOS_TESTFLIGHT_INTERNAL_QA_SCOPE",
+      IOS_TESTFLIGHT_SCOPED_OUT_STATUS,
+    ]
     : blockers;
 
   const matrix = {
-    wave: iosTestFlightScopedOut ? IOS_TESTFLIGHT_SCOPED_OUT_STATUS : AI_ESTIMATE_FINAL_READINESS_WAVE,
-    final_status: iosTestFlightScopedOut ? IOS_TESTFLIGHT_SCOPED_OUT_STATUS : finalStatus,
+    wave: AI_ESTIMATE_FINAL_READINESS_WAVE,
+    scope_status: iosTestFlightScopedOut ? IOS_TESTFLIGHT_SCOPED_OUT_STATUS : "REQUIRED_FOR_GLOBAL_FINAL_READINESS",
+    required_for_current_wave: !iosTestFlightScopedOut,
+    final_status: iosTestFlightScopedOut ? "NO_GO_PREREQUISITE_NOT_GREEN" : finalStatus,
     go_no_go_decision: iosTestFlightScopedOut
       ? "NO_GO"
       : blockers.length === 0
@@ -456,7 +462,7 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
     release_verify_passed: iosTestFlightScopedOut ? false : verification.releaseVerifyPassed,
     commit_created: iosTestFlightScopedOut ? false : verification.commitCreated,
     branch_pushed: iosTestFlightScopedOut ? false : verification.branchPushed,
-    final_worktree_clean: iosTestFlightScopedOut ? false : verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0,
+    final_worktree_clean: verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0 && !iosTestFlightScopedOut,
     fake_green_claimed: false,
     blockers: matrixBlockers,
   };
