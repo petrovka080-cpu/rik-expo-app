@@ -978,7 +978,11 @@ function markIosTestFlightReleaseVerifyPassed(report: ReleaseGuardReport): void 
     return;
   }
 
-  writeIosTestFlightReleaseVerifyScopeProof(PROJECT_ROOT);
+  writeIosTestFlightReleaseVerifyScopeProof(PROJECT_ROOT, {
+    requiredGatesPassed: true,
+    fullJestPassed: true,
+    releaseVerifyPassed: true,
+  });
   const localGatesPath = path.join(PROJECT_ROOT, "artifacts", "S_IOS_TESTFLIGHT_INTERNAL_QA_BUILD", "local_gates.json");
   const localGates = fs.existsSync(localGatesPath)
     ? JSON.parse(fs.readFileSync(localGatesPath, "utf8")) as Record<string, unknown>

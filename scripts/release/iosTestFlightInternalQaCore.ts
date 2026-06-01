@@ -191,6 +191,8 @@ export function isAllowedIosInternalQaPath(filePath: string): boolean {
     file === "scripts/release/releaseStateCleanupCore.ts" ||
     file === "scripts/release/checkIosTestFlightCommitScope.ts" ||
     file === "scripts/release/currentReleaseWaveScope.ts" ||
+    file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/runIosTestFlightReleaseVerifyScopeProof.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaPreflight.ts" ||
     file === "scripts/release/runIosTestFlightBuildNumberBump.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaBuildProof.ts" ||
