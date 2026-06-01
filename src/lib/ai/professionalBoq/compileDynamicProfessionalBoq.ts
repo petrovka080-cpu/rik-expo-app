@@ -49,6 +49,7 @@ function row(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string
 }
 
 const USER_VISIBLE_OBJECT_LABELS_RU: Record<string, string> = {
+  air_conditioning_system: "система кондиционирования",
   concrete_pedestal: "\u0431\u0435\u0442\u043e\u043d\u043d\u044b\u0435 \u0442\u0443\u043c\u0431\u044b",
   demolition_scope: "\u0434\u0435\u043c\u043e\u043d\u0442\u0430\u0436\u043d\u044b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",
   drywall_system: "\u043e\u0431\u043b\u0438\u0446\u043e\u0432\u043a\u0430 \u0441\u0442\u0435\u043d \u0413\u041a\u041b",
@@ -180,6 +181,10 @@ function output(plan: EstimatorReasoningPlan, key: string, fallback: number): nu
   return plan.formulas[0]?.outputs[key] ?? fallback;
 }
 
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
 function concreteRow(sectionType: DynamicProfessionalBoqRow["sectionType"], code: string, name: string, unit: string, quantity: number, unitPrice: number, materialKey?: string): DynamicProfessionalBoqRow {
   return {
     sectionType,
@@ -279,6 +284,57 @@ function buildMepAreaBasedBoq(plan: EstimatorReasoningPlan): DynamicProfessional
     mepRow("labor", "testing", electrical ? "испытания электросети, проверка цепей и замеры" : "пусконаладка, балансировка и замеры воздуха", "set", 1, electrical ? 12000 : 18000),
     mepRow("equipment", "tools", electrical ? "штроборез, тестер, инструмент электрика" : "подъемник и измерительный прибор", "set", 1, electrical ? 8500 : 18000),
     mepRow("delivery", "delivery", electrical ? "доставка кабеля, щита и комплектующих" : "доставка воздуховодов и оборудования", "trip", Math.max(1, Math.ceil(area / 150)), 6500),
+  ];
+}
+
+function buildAirConditioningSystemBoq(plan: EstimatorReasoningPlan): DynamicProfessionalBoqRow[] {
+  const area = Math.max(1, plan.quantities.areaM2 ?? output(plan, "areaM2", 1));
+  const coolingLoadKw = Math.max(2.5, output(plan, "coolingLoadKw", area * 0.12));
+  const indoorUnits = Math.max(1, Math.ceil(output(plan, "indoorUnitsApprox", coolingLoadKw / 5)));
+  const outdoorUnits = Math.max(1, Math.ceil(output(plan, "outdoorUnitsApprox", indoorUnits / 4)));
+  const refrigerantLineM = Math.max(5, output(plan, "refrigerantLineM", round2(area * 0.45)));
+  const condensateDrainM = Math.max(5, output(plan, "condensateDrainM", round2(area * 0.35)));
+  const controlCableM = round2(refrigerantLineM * 1.08);
+  const powerCableM = round2(area * 0.28);
+  const coreDrills = Math.max(indoorUnits, Math.ceil(refrigerantLineM / 18));
+  const commissioningZones = Math.max(indoorUnits, Math.ceil(area / 45));
+
+  return [
+    mepRow("labor", "hvac_survey", "обследование помещений и тепловых зон кондиционирования", "sq_m", area, 45),
+    mepRow("labor", "hvac_cooling_load_check", `проверка предварительной холодопроизводительности ${round2(coolingLoadKw)} кВт`, "set", 1, 8500),
+    mepRow("labor", "hvac_zoning_scheme", "схема зон, трасс и мест установки блоков кондиционирования", "set", 1, 12500),
+    mepRow("materials", "hvac_indoor_units", "внутренние блоки кондиционирования", "pcs", indoorUnits, 62000, "hvac_indoor_units"),
+    mepRow("materials", "hvac_outdoor_units", "наружные блоки кондиционирования", "pcs", outdoorUnits, 185000, "hvac_outdoor_units"),
+    mepRow("materials", "hvac_copper_line", "медная фреоновая трасса жидкость/газ", "linear_m", refrigerantLineM, 1450, "hvac_copper_line"),
+    mepRow("materials", "hvac_line_insulation", "теплоизоляция медной трассы кондиционирования", "linear_m", refrigerantLineM, 260, "hvac_line_insulation"),
+    mepRow("materials", "hvac_condensate_drain", "дренаж конденсата для системы кондиционирования", "linear_m", condensateDrainM, 320, "hvac_condensate_drain"),
+    mepRow("materials", "hvac_drain_pumps_warning", "дренажные насосы warning при невозможности самотека", "pcs", Math.max(1, Math.ceil(indoorUnits / 3)), 9800, "hvac_drain_pumps"),
+    mepRow("materials", "hvac_wall_brackets", "кронштейны наружных блоков с виброопорами", "pcs", outdoorUnits, 8200, "hvac_wall_brackets"),
+    mepRow("materials", "hvac_mounting_frames", "монтажные рамы и площадки под наружные блоки", "pcs", outdoorUnits, 12500, "hvac_mounting_frames"),
+    mepRow("materials", "hvac_control_cable", "кабель управления между блоками кондиционирования", "linear_m", controlCableM, 95, "hvac_control_cable"),
+    mepRow("materials", "hvac_power_cable", "кабель питания для групп кондиционирования", "linear_m", powerCableM, 135, "hvac_power_cable"),
+    mepRow("materials", "hvac_breakers", "автоматы защиты и сервисные выключатели кондиционирования", "pcs", Math.max(outdoorUnits + 1, 2), 1850, "hvac_breakers"),
+    mepRow("materials", "hvac_refrigerant", "хладагент для дозаправки после трасс", "kg", Math.max(1, round2(refrigerantLineM * 0.035)), 3200, "hvac_refrigerant"),
+    mepRow("materials", "hvac_vibration_mounts", "виброопоры и антивибрационные прокладки", "set", outdoorUnits, 4500, "hvac_vibration_mounts"),
+    mepRow("materials", "hvac_consumables", "азот, припой, фитинги и расходники фреоновой трассы", "set", 1, Math.round(refrigerantLineM * 420), "hvac_consumables"),
+    mepRow("labor", "hvac_route_marking", "разметка трасс кондиционирования", "sq_m", area, 42),
+    mepRow("labor", "hvac_core_drilling", "алмазное бурение проходов под фреоновую трассу", "pcs", coreDrills, 2800),
+    mepRow("labor", "hvac_indoor_mounting", "монтаж внутренних блоков кондиционирования", "pcs", indoorUnits, 6800),
+    mepRow("labor", "hvac_outdoor_mounting", "монтаж наружных блоков кондиционирования", "pcs", outdoorUnits, 18500),
+    mepRow("labor", "hvac_copper_install", "прокладка медных фреоновых трасс", "linear_m", refrigerantLineM, 680),
+    mepRow("labor", "hvac_brazing_pressure_test", "пайка, азотная продувка и опрессовка трассы", "linear_m", refrigerantLineM, 420),
+    mepRow("labor", "hvac_drain_install", "монтаж дренажа конденсата с уклонами", "linear_m", condensateDrainM, 390),
+    mepRow("labor", "hvac_electrical_connection", "подключение питания и межблочного кабеля", "pcs", indoorUnits + outdoorUnits, 2400),
+    mepRow("labor", "hvac_vacuuming", "вакуумирование фреонового контура", "circuit", Math.max(1, outdoorUnits), 7600),
+    mepRow("labor", "hvac_refrigerant_charge", "дозаправка хладагента и контроль утечек", "circuit", Math.max(1, outdoorUnits), 6200),
+    mepRow("labor", "hvac_commissioning", "пусконаладка системы кондиционирования", "zone", commissioningZones, 4800),
+    mepRow("labor", "hvac_airflow_temperature_check", "проверка температурного режима по зонам", "zone", commissioningZones, 2600),
+    mepRow("equipment", "hvac_vacuum_pump", "вакуумный насос и манометрический коллектор", "shift", Math.max(1, outdoorUnits), 6200),
+    mepRow("equipment", "hvac_core_drill", "алмазная установка для проходов трасс", "shift", Math.max(1, Math.ceil(coreDrills / 8)), 8500),
+    mepRow("equipment", "hvac_lift_warning", "подъемник / такелаж наружных блоков warning", "shift", Math.max(1, Math.ceil(outdoorUnits / 2)), 18000),
+    mepRow("delivery", "hvac_equipment_delivery", "доставка блоков кондиционирования и трассовых материалов", "trip", Math.max(1, Math.ceil((indoorUnits + outdoorUnits) / 8)), 9500),
+    mepRow("delivery", "hvac_packaging_cleanup", "вывоз упаковки и расходных остатков после монтажа", "trip", 1, 4200),
+    mepRow("labor", "hvac_handover_docs", "исполнительная схема трасс и акт запуска кондиционирования", "set", 1, 6500),
   ];
 }
 
@@ -758,7 +814,8 @@ export function compileDynamicProfessionalBoq(plan: EstimatorReasoningPlan): Dyn
           object === "concrete_pedestal" ? buildConcreteElementBoq(plan) :
             object === "low_voltage_system" ? buildLowVoltageCablingRows(plan) :
               object === "solar_power_system" ? buildSolarPowerSystemRows(plan) :
-                object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
+                object === "air_conditioning_system" ? buildAirConditioningSystemBoq(plan) :
+                  object === "electrical_network" || object === "ventilation_network" ? buildMepAreaBasedBoq(plan) :
                   object === "metal_canopy" ? buildCanopyRows(plan) :
                     object === "paving_stone" ? buildPavingStoneRows(plan) :
                       object === "roof_system" ? buildGableRoofRows(plan) :

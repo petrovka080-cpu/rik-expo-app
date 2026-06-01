@@ -2,7 +2,7 @@ import { resolveFormulaForEstimatorPlan, validateFormulaResult } from "../constr
 import { compileDynamicProfessionalBoq, validateDynamicProfessionalBoq } from "../professionalBoq/compileDynamicProfessionalBoq";
 import { buildRegulatedSafeEstimatePlan } from "./buildRegulatedSafeEstimatePlan";
 import { buildEstimatorReasoningPlan } from "./buildEstimatorReasoningPlan";
-import type { EstimatorOutcome } from "./estimatorKernelTypes";
+import type { DynamicProfessionalBoq, EstimatorOutcome, EstimatorReasoningPlan } from "./estimatorKernelTypes";
 import { validateEstimatorReasoningPlan } from "./validateEstimatorReasoningPlan";
 import { validateRegulatedSafeEstimate } from "./validateRegulatedSafeEstimate";
 
@@ -53,5 +53,49 @@ export function resolveEstimatorOutcome(input: {
     templateExactMatch: plan.templateExactMatch,
     dynamicBoqUsed,
     failures,
+  };
+}
+
+export type OpenWorldKnownWorkPolicyDecision = {
+  knownWorkDetected: boolean;
+  templateGapAllowed: boolean;
+  classification: string;
+  workKey?: string;
+};
+
+export function resolveOpenWorldKnownWorkPolicy(text: string): OpenWorldKnownWorkPolicyDecision {
+  const outcome = resolveEstimatorOutcome({ text });
+  const knownWorkDetected = Boolean(outcome.plan && outcome.parsableWorkDetected);
+  return {
+    knownWorkDetected,
+    templateGapAllowed: !knownWorkDetected,
+    classification: outcome.classification,
+    workKey: outcome.plan?.workKey,
+  };
+}
+
+export type OpenWorldConstructionComposerResult = {
+  classification: "preliminary_boq" | "template_gap";
+  plan: EstimatorReasoningPlan | null;
+  boq: DynamicProfessionalBoq | null;
+  rowCount: number;
+};
+
+export function composeOpenWorldConstructionPreliminaryBoq(text: string): OpenWorldConstructionComposerResult {
+  const outcome = resolveEstimatorOutcome({ text });
+  if (!outcome.plan || outcome.failures.length > 0) {
+    return {
+      classification: "template_gap",
+      plan: outcome.plan,
+      boq: null,
+      rowCount: 0,
+    };
+  }
+  const boq = compileDynamicProfessionalBoq(outcome.plan);
+  return {
+    classification: "preliminary_boq",
+    plan: outcome.plan,
+    boq,
+    rowCount: boq.rows.length,
   };
 }

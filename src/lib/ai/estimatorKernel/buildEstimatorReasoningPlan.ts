@@ -1,4 +1,4 @@
-import type { GlobalWorkCategory } from "../globalEstimate";
+import { GLOBAL_WORK_CATEGORIES, type GlobalWorkCategory } from "../globalEstimate";
 import { normalizeDimensionText, resolveQuantityInputsFromPrompt } from "../constructionFormulas";
 import { resolveEstimatorDomainSignature } from "./constructionDomainLexicon";
 import { detectRegulatedConstructionWork } from "./detectRegulatedConstructionWork";
@@ -45,7 +45,7 @@ function signatureFor(text: string): WorkSignature | null {
     return {
       workKey: "passenger_elevator_installation",
       titleRu: "Профессиональная предварительная смета на установку пассажирского лифта",
-      category: "other",
+      category: "delivery_equipment",
       domain: "vertical_transport",
       object: "passenger_elevator",
       operation: "installation",
@@ -228,6 +228,39 @@ function signatureFor(text: string): WorkSignature | null {
       clarifyingQuestions: ["Какой напор H и расход Q?", "Какая схема подключения?", "Какие требования инспекции?"],
     };
   }
+  if (/кондицион|кондиционер|сплит|мультисплит|vrf|vrv|чиллер|фанкойл|air\s+conditioning|cooling\s+system|refrigerant\s+line/.test(normalized)) {
+    return {
+      workKey: "air_conditioning_system_installation",
+      titleRu: "Профессиональная предварительная смета на установку системы кондиционирования",
+      category: "heating_hvac",
+      domain: "hvac",
+      object: "air_conditioning_system",
+      operation: "installation",
+      method: "air_conditioning_system_installation",
+      materialSystem: "air_conditioning_system",
+      complexity: "complex",
+      requiredMaterials: [
+        "внутренние блоки кондиционирования",
+        "наружные блоки кондиционирования",
+        "медная фреоновая трасса",
+        "теплоизоляция трассы",
+        "дренаж конденсата",
+        "кабель питания и управления",
+        "кронштейны наружных блоков",
+      ],
+      requiredLabor: [
+        "обследование помещений и тепловых зон",
+        "разметка трасс кондиционирования",
+        "монтаж внутренних и наружных блоков",
+        "прокладка медных трасс и дренажа",
+        "опрессовка, вакуумирование и запуск",
+      ],
+      requiredEquipmentOrWarnings: ["вакуумный насос", "манометрический коллектор", "алмазное бурение", "подъем наружных блоков warning"],
+      requiredLogisticsOrWarnings: ["доставка блоков кондиционирования", "подъем оборудования", "вывоз упаковки и расходных остатков"],
+      exclusions: ["проект ОВиК", "усиление электропитания здания", "скрытые строительные работы сверх трасс кондиционирования"],
+      clarifyingQuestions: ["Сколько тепловых зон и помещений?", "Есть ли проект ОВиК и допустимые места наружных блоков?", "Какие длины трасс и требования по шуму?"],
+    };
+  }
   if (/вентиляц|ventilation|duct/.test(normalized)) {
     return {
       workKey: "ventilation_area_installation",
@@ -391,4 +424,92 @@ export function buildEstimatorReasoningPlan(input: {
     pricingPolicy: pricingPolicy(input.currency),
   };
   return plan;
+}
+
+export type EstimateIntentPriorityInput = {
+  text: string;
+  selectedCategory?: GlobalWorkCategory | string | null;
+};
+
+export type EstimateIntentPriorityDecision = {
+  typedKnownWorkDetected: boolean;
+  typedWorkWins: boolean;
+  selectedCategory?: GlobalWorkCategory;
+  selectedCategoryIgnored: boolean;
+  resolvedWorkKey?: string;
+  resolvedCategory: GlobalWorkCategory;
+  reason: "typed_known_work_semantic_plan" | "selected_category_fallback" | "no_estimate_context";
+};
+
+const REQUEST_CATEGORY_LABELS_RU: Record<string, GlobalWorkCategory> = {
+  "пол": "flooring",
+  "сантехника": "plumbing",
+  "электрика": "electrical",
+  "отделка": "wall_finishing",
+  "двери/окна": "doors_windows",
+  "ремонт": "other",
+  "другое": "other",
+};
+
+function isGlobalWorkCategory(value: string): value is GlobalWorkCategory {
+  return GLOBAL_WORK_CATEGORIES.includes(value as GlobalWorkCategory);
+}
+
+export function normalizeRequestSelectedCategory(value: GlobalWorkCategory | string | null | undefined): GlobalWorkCategory | undefined {
+  const normalized = String(value ?? "").trim().toLocaleLowerCase("ru-RU");
+  if (!normalized) return undefined;
+  const labelCategory = REQUEST_CATEGORY_LABELS_RU[normalized];
+  if (labelCategory) return labelCategory;
+  return isGlobalWorkCategory(normalized) ? normalized : undefined;
+}
+
+export function resolveEstimateIntentPriority(input: EstimateIntentPriorityInput): EstimateIntentPriorityDecision {
+  const selectedCategory = normalizeRequestSelectedCategory(input.selectedCategory);
+  const plan = buildEstimatorReasoningPlan({ text: input.text });
+  if (plan) {
+    return {
+      typedKnownWorkDetected: true,
+      typedWorkWins: true,
+      selectedCategory,
+      selectedCategoryIgnored: selectedCategory !== undefined && selectedCategory !== plan.category,
+      resolvedWorkKey: plan.workKey,
+      resolvedCategory: plan.category,
+      reason: "typed_known_work_semantic_plan",
+    };
+  }
+
+  if (selectedCategory) {
+    return {
+      typedKnownWorkDetected: false,
+      typedWorkWins: false,
+      selectedCategory,
+      selectedCategoryIgnored: false,
+      resolvedCategory: selectedCategory,
+      reason: "selected_category_fallback",
+    };
+  }
+
+  return {
+    typedKnownWorkDetected: false,
+    typedWorkWins: false,
+    selectedCategoryIgnored: false,
+    resolvedCategory: "other",
+    reason: "no_estimate_context",
+  };
+}
+
+export type RequestCategoryOverridePolicyInput = EstimateIntentPriorityInput;
+
+export type RequestCategoryOverridePolicyDecision = EstimateIntentPriorityDecision & {
+  categoryOverrideAllowed: boolean;
+};
+
+export function resolveRequestCategoryOverridePolicy(
+  input: RequestCategoryOverridePolicyInput,
+): RequestCategoryOverridePolicyDecision {
+  const decision = resolveEstimateIntentPriority(input);
+  return {
+    ...decision,
+    categoryOverrideAllowed: !decision.typedWorkWins,
+  };
 }

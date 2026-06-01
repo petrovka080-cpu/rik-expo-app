@@ -5,6 +5,7 @@ import {
 } from "../constructionPrimitives";
 import type { EstimatorReasoningPlan } from "../estimatorKernel/estimatorKernelTypes";
 import type { WorldConstructionDomain } from "../worldConstructionOntology";
+import { calculateHvacCoolingLoad } from "./hvacCoolingLoadFormula";
 
 export type ConstructionFormulaPolicy = {
   domain: WorldConstructionDomain;
@@ -47,6 +48,7 @@ export const UNIVERSAL_ESTIMATOR_FORMULA_FAMILIES = [
   "solar_power_sizing",
   "hydropower_required_inputs",
   "ventilation_area_based_preliminary_estimate",
+  "hvac_cooling_load_preliminary_estimate",
   "electrical_area_points_preliminary_estimate",
 ] as const;
 
@@ -245,6 +247,29 @@ export function resolveFormulaForEstimatorPlan(plan: EstimatorReasoningPlan): Es
       outputs: { areaM2: area, ductLengthM: round2(Math.sqrt(area) * 5), airTerminals: Math.max(2, Math.ceil(area / 25)) },
       assumptions: ["Расход воздуха и трассы уточняются проектом ОВиК."],
       missingInputs: q.areaM2 ? [] : ["areaM2"],
+    }];
+  }
+  if (plan.semanticFrame.object === "air_conditioning_system") {
+    const sizing = calculateHvacCoolingLoad({ areaM2: q.areaM2 });
+    return [{
+      formulaId: "hvac_cooling_load_preliminary_estimate",
+      inputs: {
+        areaM2: sizing.areaM2,
+        wattsPerM2: sizing.wattsPerM2,
+        averageIndoorUnitKw: 5,
+        refrigerantLineFactorMPerM2: 0.45,
+        condensateDrainFactorMPerM2: 0.35,
+      },
+      outputs: {
+        areaM2: sizing.areaM2,
+        coolingLoadKw: sizing.coolingLoadKw,
+        indoorUnitsApprox: sizing.indoorUnitsApprox,
+        outdoorUnitsApprox: sizing.outdoorUnitsApprox,
+        refrigerantLineM: sizing.refrigerantLineM,
+        condensateDrainM: sizing.condensateDrainM,
+      },
+      assumptions: ["Предварительная холодопроизводительность принята 120 Вт/м2 до проекта ОВиК и теплопритоков."],
+      missingInputs: q.areaM2 ? ["zoneCount", "routeLengthsM", "equipmentModel"] : ["areaM2", "zoneCount", "routeLengthsM", "equipmentModel"],
     }];
   }
   const area = q.areaM2 ?? q.lengthM ?? q.count ?? q.powerKw ?? 1;
