@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { releaseVerifyAllowedDirtyFiles, releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
+
 type JsonRecord = Record<string, unknown>;
 
 export const AI_ESTIMATE_FINAL_READINESS_WAVE =
@@ -323,6 +325,8 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
   const architecture = architectureScan();
   const verification = buildVerification(options.verification);
   const nonArtifactDirty = options.ignoreNonArtifactDirtyPaths ? [] : nonArtifactDirtyFiles();
+  const releaseVerifyAllowedDirty = releaseVerifyAllowedDirtyFiles(nonArtifactDirty);
+  const releaseVerifyBlockingDirty = releaseVerifyBlockingDirtyFiles(nonArtifactDirty);
   const allPrerequisitesGreen = matrices.every((item) =>
     item.present &&
     item.green &&
@@ -375,7 +379,9 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
     ...(!verification.releaseVerifyPassed ? ["RELEASE_VERIFY_NOT_CONFIRMED"] : []),
     ...(!verification.commitCreated ? ["COMMIT_NOT_CREATED"] : []),
     ...(!verification.branchPushed ? ["BRANCH_NOT_PUSHED"] : []),
-    ...(!verification.finalWorktreeClean || nonArtifactDirty.length > 0 ? [`WORKTREE_NOT_CLEAN:${nonArtifactDirty.join(",")}`] : []),
+    ...(!verification.finalWorktreeClean || releaseVerifyBlockingDirty.length > 0
+      ? [`WORKTREE_NOT_CLEAN:${releaseVerifyBlockingDirty.join(",")}`]
+      : []),
   ];
 
   const finalStatus = blockers.length === 0
@@ -439,7 +445,7 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
     release_verify_passed: verification.releaseVerifyPassed,
     commit_created: verification.commitCreated,
     branch_pushed: verification.branchPushed,
-    final_worktree_clean: verification.finalWorktreeClean && nonArtifactDirty.length === 0,
+    final_worktree_clean: verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0,
     fake_green_claimed: false,
     blockers,
   };
@@ -455,6 +461,8 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
     dirty_paths: {
       non_artifact_dirty: nonArtifactDirty,
       release_verify_generated_artifact_dirty_paths: gitStatusFiles().filter((file) => file.startsWith("artifacts/")),
+      release_verify_allowed_dirty_paths: releaseVerifyAllowedDirty,
+      release_verify_blocking_dirty_paths: releaseVerifyBlockingDirty,
     },
     matrix,
   };

@@ -28,6 +28,22 @@ describe("live B2C release closeout generated artifacts", () => {
     expect(proofSource).not.toContain("typecheck_passed: false");
   });
 
+  it("reuses canonical API34 evidence only through the owner-quality guarded policy", () => {
+    const proofSource = fs.readFileSync(
+      path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
+      "utf8",
+    );
+
+    expect(proofSource).toContain("OWNER_QUALITY_CANONICAL_REUSE_REASON");
+    expect(proofSource).toContain("isOwnerQualityValidatedCanonicalApi34ChangedFile");
+    expect(proofSource).toContain("allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile");
+    expect(proofSource).toContain("allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON");
+    expect(proofSource).toContain("BLOCKED_PRODUCT_LOGIC_CHANGED");
+    expect(proofSource).toContain("old_android_gates_consume_canonical_api34_evidence");
+    expect(proofSource).toContain('file.startsWith("tests/architecture/real10000")');
+    expect(proofSource).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
+  });
+
   it("marks the target live reality matrix as resolved by the closeout after release passes", () => {
     const proofSource = fs.readFileSync(
       path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),

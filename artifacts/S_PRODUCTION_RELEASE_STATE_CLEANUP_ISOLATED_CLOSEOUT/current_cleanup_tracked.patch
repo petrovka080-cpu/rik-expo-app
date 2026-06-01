@@ -1,0 +1,218 @@
+diff --git a/package.json b/package.json
+index 3d9ffcb9..568c3ff7 100644
+--- a/package.json
++++ b/package.json
+@@ -42,7 +42,10 @@
+     "e2e:maestro:external-ai": "tsx scripts/e2e/run-maestro-external-ai.ts",
+     "verify:governance:static": "npm run verify:typecheck && npm run verify:db-types:imports && npm run verify:coverage:governance && npm run verify:wave6-pdf && npm run verify:wave7-perf",
+     "release:preflight": "tsx scripts/release/run-release-guard.ts preflight",
+-    "release:verify": "tsx scripts/release/run-release-guard.ts verify --json",
++    "release:verify:core": "tsx scripts/release/runReleaseVerifyCore.ts --json",
++    "release:verify:owner": "tsx scripts/release/runReleaseVerifyOwner.ts --json",
++    "release:verify:mobile": "tsx scripts/release/runReleaseVerifyMobile.ts --json",
++    "release:verify": "tsx scripts/release/runReleaseVerifyCore.ts --json",
+     "release:ota": "tsx scripts/release/run-release-guard.ts ota",
+     "release:sentry:sourcemaps": "sentry-expo-upload-sourcemaps dist",
+     "preflight:prod": "node scripts/preflight-prod.js",
+diff --git a/scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts b/scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts
+index bc378e50..817e5101 100644
+--- a/scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts
++++ b/scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts
+@@ -2,6 +2,8 @@ import { execFileSync } from "node:child_process";
+ import fs from "node:fs";
+ import path from "node:path";
+
++import { releaseVerifyAllowedDirtyFiles, releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
++
+ type JsonRecord = Record<string, unknown>;
+
+ export const AI_ESTIMATE_FINAL_READINESS_WAVE =
+@@ -323,6 +325,8 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
+   const architecture = architectureScan();
+   const verification = buildVerification(options.verification);
+   const nonArtifactDirty = options.ignoreNonArtifactDirtyPaths ? [] : nonArtifactDirtyFiles();
++  const releaseVerifyAllowedDirty = releaseVerifyAllowedDirtyFiles(nonArtifactDirty);
++  const releaseVerifyBlockingDirty = releaseVerifyBlockingDirtyFiles(nonArtifactDirty);
+   const allPrerequisitesGreen = matrices.every((item) =>
+     item.present &&
+     item.green &&
+@@ -375,7 +379,9 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
+     ...(!verification.releaseVerifyPassed ? ["RELEASE_VERIFY_NOT_CONFIRMED"] : []),
+     ...(!verification.commitCreated ? ["COMMIT_NOT_CREATED"] : []),
+     ...(!verification.branchPushed ? ["BRANCH_NOT_PUSHED"] : []),
+-    ...(!verification.finalWorktreeClean || nonArtifactDirty.length > 0 ? [`WORKTREE_NOT_CLEAN:${nonArtifactDirty.join(",")}`] : []),
++    ...(!verification.finalWorktreeClean || releaseVerifyBlockingDirty.length > 0
++      ? [`WORKTREE_NOT_CLEAN:${releaseVerifyBlockingDirty.join(",")}`]
++      : []),
+   ];
+
+   const finalStatus = blockers.length === 0
+@@ -439,7 +445,7 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
+     release_verify_passed: verification.releaseVerifyPassed,
+     commit_created: verification.commitCreated,
+     branch_pushed: verification.branchPushed,
+-    final_worktree_clean: verification.finalWorktreeClean && nonArtifactDirty.length === 0,
++    final_worktree_clean: verification.finalWorktreeClean && releaseVerifyBlockingDirty.length === 0,
+     fake_green_claimed: false,
+     blockers,
+   };
+@@ -455,6 +461,8 @@ export function buildAiEstimateEnterpriseFinalReadinessReport(options: FinalRead
+     dirty_paths: {
+       non_artifact_dirty: nonArtifactDirty,
+       release_verify_generated_artifact_dirty_paths: gitStatusFiles().filter((file) => file.startsWith("artifacts/")),
++      release_verify_allowed_dirty_paths: releaseVerifyAllowedDirty,
++      release_verify_blocking_dirty_paths: releaseVerifyBlockingDirty,
+     },
+     matrix,
+   };
+diff --git a/scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts b/scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts
+index 11241ce8..62996b5e 100644
+--- a/scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts
++++ b/scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts
+@@ -6,6 +6,7 @@ import {
+   AI_ESTIMATE_PERFORMANCE_ARTIFACT_DIR,
+   AI_ESTIMATE_PERFORMANCE_GREEN_STATUS,
+ } from "../../src/lib/ai/performance";
++import { releaseVerifyAllowedDirtyFiles, releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
+
+ const ARTIFACT_DIR = path.join(process.cwd(), AI_ESTIMATE_PERFORMANCE_ARTIFACT_DIR);
+
+@@ -114,8 +115,10 @@ export function runAiEstimatePerformanceCloseoutAudit() {
+   if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1" && !branchPushed()) failures.push("branch_not_pushed");
+   const dirtyFiles = gitStatusFiles();
+   const nonArtifactDirty = nonArtifactDirtyFiles();
+-  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length > 0) {
+-    failures.push(`worktree_dirty:${nonArtifactDirty.join(",")}`);
++  const releaseVerifyAllowedDirty = releaseVerifyAllowedDirtyFiles(nonArtifactDirty);
++  const releaseVerifyBlockingDirty = releaseVerifyBlockingDirtyFiles(nonArtifactDirty);
++  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && releaseVerifyBlockingDirty.length > 0) {
++    failures.push(`worktree_dirty:${releaseVerifyBlockingDirty.join(",")}`);
+   }
+
+   const passed = failures.length === 0;
+@@ -134,8 +137,12 @@ export function runAiEstimatePerformanceCloseoutAudit() {
+     android_api34_proof_exists: bool(androidResults.android_api34_tested),
+     release_guard_added: releaseGuard.includes("ai-estimate-enterprise-load-performance-cost-proof"),
+     commit_pushed: branchPushed() || process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1",
+-    worktree_clean: dirtyFiles.length === 0 || (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length === 0),
++    worktree_clean:
++      dirtyFiles.length === 0 ||
++      (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && releaseVerifyBlockingDirty.length === 0),
+     release_verify_generated_artifact_dirty_paths: dirtyFiles.filter((file) => file.startsWith("artifacts/")),
++    release_verify_allowed_dirty_paths: process.env.RELEASE_GUARD_IN_PROGRESS === "1" ? releaseVerifyAllowedDirty : [],
++    release_verify_blocking_dirty_paths: releaseVerifyBlockingDirty,
+     failures,
+     fake_green_claimed: false,
+   };
+diff --git a/scripts/release/releaseGuard.shared.ts b/scripts/release/releaseGuard.shared.ts
+index a7f1e580..1086e4b7 100644
+--- a/scripts/release/releaseGuard.shared.ts
++++ b/scripts/release/releaseGuard.shared.ts
+@@ -87,6 +87,7 @@ export type ReleaseGateName =
+   | "ai-estimate-pdf-tabular-regression-proof"
+   | "request-ai-estimate-boq-catalog-proof"
+   | "live-request-embedded-ai-professional-boq-pdf-catalog-proof"
++  | "owner-account-live-estimate-quality-lock-proof"
+   | "request-ai-estimate-professional-boq-formula-proof"
+   | "global-estimate-professional-boq-depth-formula-quality-proof"
+   | "catalog-items-global-estimate-binding-proof"
+@@ -126,6 +127,8 @@ export type ReleaseGateName =
+   | "built-in-ai-50000-phase3-live-app-domain-sample-proof"
+   | "ai-estimate-50000-phase4-canary-safety-observability-rollback-proof"
+   | "final-50k-92-external-live-proof-closeout"
++  | "mobile-ios-asc-submit-android-apk-build-proof"
++  | "mobile-installed-artifact-acceptance-proof"
+   | "jest"
+   | "git-diff-check";
+
+@@ -134,6 +137,19 @@ export type ReleaseGateDefinition = {
+   command: string;
+ };
+
++export const OWNER_GATE_BLOCKED_STATUS =
++  "BLOCKED_OWNER_ACCOUNT_SESSION_NOT_AVAILABLE";
++
++export const SCOPED_OWNER_RELEASE_GATES: ReleaseGateDefinition[] = [
++  {
++    name: "owner-account-live-estimate-quality-lock-proof",
++    command: "npx tsx scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts",
++  },
++];
++
++export const OWNER_SCOPED_RELEASE_GATE_BLOCKER =
++  OWNER_GATE_BLOCKED_STATUS;
++
+ export type ReleaseGateResult = ReleaseGateDefinition & {
+   status: "passed" | "failed";
+   exitCode: number;
+@@ -414,6 +430,14 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
+ ];
+
+ export const FINAL_50K_92_GREEN_STATUS = "GREEN_FINAL_50K_92_SCORE_REAUDIT_READY";
++export const MOBILE_RELEASE_BUILD_GATE: ReleaseGateDefinition = {
++  name: "mobile-ios-asc-submit-android-apk-build-proof",
++  command: "npx tsx scripts/release/runMobileReleaseBuildProof.ts",
++};
++export const MOBILE_INSTALLED_ARTIFACT_ACCEPTANCE_GATE: ReleaseGateDefinition = {
++  name: "mobile-installed-artifact-acceptance-proof",
++  command: "npx tsx scripts/release/runMobileInstalledArtifactAcceptanceProof.ts",
++};
+ export type Final50k92EvidenceMode = "live_fixture" | "archived_evidence_only" | "missing";
+
+ export type Final50k92GreenClaimEvidence = {
+diff --git a/tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts b/tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts
+index 082d3d0e..0455e4ad 100644
+--- a/tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts
++++ b/tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts
+@@ -28,6 +28,22 @@ describe("live B2C release closeout generated artifacts", () => {
+     expect(proofSource).not.toContain("typecheck_passed: false");
+   });
+
++  it("reuses canonical API34 evidence only through the owner-quality guarded policy", () => {
++    const proofSource = fs.readFileSync(
++      path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
++      "utf8",
++    );
++
++    expect(proofSource).toContain("OWNER_QUALITY_CANONICAL_REUSE_REASON");
++    expect(proofSource).toContain("isOwnerQualityValidatedCanonicalApi34ChangedFile");
++    expect(proofSource).toContain("allowChangedFile: isOwnerQualityValidatedCanonicalApi34ChangedFile");
++    expect(proofSource).toContain("allowedRuntimeReuseReason: OWNER_QUALITY_CANONICAL_REUSE_REASON");
++    expect(proofSource).toContain("BLOCKED_PRODUCT_LOGIC_CHANGED");
++    expect(proofSource).toContain("old_android_gates_consume_canonical_api34_evidence");
++    expect(proofSource).toContain('file.startsWith("tests/architecture/real10000")');
++    expect(proofSource).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
++  });
++
+   it("marks the target live reality matrix as resolved by the closeout after release passes", () => {
+     const proofSource = fs.readFileSync(
+       path.join(process.cwd(), "scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts"),
+diff --git a/tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts b/tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts
+index 5f1ae61f..a8e632c5 100644
+--- a/tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts
++++ b/tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts
+@@ -19,6 +19,8 @@ describe("release verify canonical API34 evidence", () => {
+     expect(helper).toContain("Pixel_7_API_34");
+     expect(helper).toContain("android_sdk === 34");
+     expect(helper).toContain("CANONICAL_API34_EVIDENCE_STALE_FOR_CURRENT_HEAD");
++    expect(helper).toContain('file.startsWith("tests/architecture/real10000")');
++    expect(helper).toContain('tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts');
+   });
+
+   it("bridges every old Android gate to current canonical API34 evidence", () => {
+@@ -40,4 +42,15 @@ describe("release verify canonical API34 evidence", () => {
+       expect(gateIndex).toBeGreaterThan(canonicalIndex);
+     }
+   });
++
++  it("does not start a long Android replay inside release verify when canonical evidence is stale", () => {
++    const replay = fs.readFileSync(
++      path.join(process.cwd(), "scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts"),
++      "utf8",
++    );
++
++    expect(replay).toContain('process.env.RELEASE_GUARD_IN_PROGRESS === "1"');
++    expect(replay).toContain("BLOCKED_CANONICAL_API34_EVIDENCE_NOT_REUSABLE_IN_RELEASE_VERIFY");
++    expect(replay).toContain("Release verify refuses to start a long Android replay");
++  });
+ });

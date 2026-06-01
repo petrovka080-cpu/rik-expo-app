@@ -6,6 +6,7 @@ import {
   AI_ESTIMATE_PERFORMANCE_ARTIFACT_DIR,
   AI_ESTIMATE_PERFORMANCE_GREEN_STATUS,
 } from "../../src/lib/ai/performance";
+import { releaseVerifyAllowedDirtyFiles, releaseVerifyBlockingDirtyFiles } from "../release/releaseVerifyDirtyScope";
 
 const ARTIFACT_DIR = path.join(process.cwd(), AI_ESTIMATE_PERFORMANCE_ARTIFACT_DIR);
 
@@ -114,8 +115,10 @@ export function runAiEstimatePerformanceCloseoutAudit() {
   if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1" && !branchPushed()) failures.push("branch_not_pushed");
   const dirtyFiles = gitStatusFiles();
   const nonArtifactDirty = nonArtifactDirtyFiles();
-  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length > 0) {
-    failures.push(`worktree_dirty:${nonArtifactDirty.join(",")}`);
+  const releaseVerifyAllowedDirty = releaseVerifyAllowedDirtyFiles(nonArtifactDirty);
+  const releaseVerifyBlockingDirty = releaseVerifyBlockingDirtyFiles(nonArtifactDirty);
+  if (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && releaseVerifyBlockingDirty.length > 0) {
+    failures.push(`worktree_dirty:${releaseVerifyBlockingDirty.join(",")}`);
   }
 
   const passed = failures.length === 0;
@@ -134,8 +137,12 @@ export function runAiEstimatePerformanceCloseoutAudit() {
     android_api34_proof_exists: bool(androidResults.android_api34_tested),
     release_guard_added: releaseGuard.includes("ai-estimate-enterprise-load-performance-cost-proof"),
     commit_pushed: branchPushed() || process.env.AI_ESTIMATE_ENTERPRISE_LOAD_BRANCH_PUSHED === "1",
-    worktree_clean: dirtyFiles.length === 0 || (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && nonArtifactDirty.length === 0),
+    worktree_clean:
+      dirtyFiles.length === 0 ||
+      (process.env.AI_ESTIMATE_ENTERPRISE_LOAD_FINAL_WORKTREE_CLEAN === "1" && releaseVerifyBlockingDirty.length === 0),
     release_verify_generated_artifact_dirty_paths: dirtyFiles.filter((file) => file.startsWith("artifacts/")),
+    release_verify_allowed_dirty_paths: process.env.RELEASE_GUARD_IN_PROGRESS === "1" ? releaseVerifyAllowedDirty : [],
+    release_verify_blocking_dirty_paths: releaseVerifyBlockingDirty,
     failures,
     fake_green_claimed: false,
   };

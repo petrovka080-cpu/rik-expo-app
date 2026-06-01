@@ -1,0 +1,237 @@
+ M artifacts/S_AI_ESTIMATE_CORE_COMPLETION_tax_trace.json
+ M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_manifest.json
+ M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_text_extract.json
+ M artifacts/S_AI_ESTIMATE_PDF_SAFE_INTEGRATION_ai_pdf_view_models.json
+ M artifacts/S_AI_ESTIMATE_PDF_TABULAR_REGRESSION_pdf_text_extract.json
+ M artifacts/pdf/ai-estimate-pdf-safe-integration/gable_roof_installation_100sqm.pdf
+ M artifacts/pdf/ai-estimate-pdf-tabular-regression/bathroom_waterproofing.pdf
+ M artifacts/pdf/ai-estimate-pdf-tabular-regression/foundation_waterproofing.pdf
+ M artifacts/pdf/ai-estimate-pdf-tabular-regression/roof_waterproofing.pdf
+ M eas.json
+ M package.json
+ M scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts
+ M scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts
+ M scripts/e2e/canonicalApi34Evidence.ts
+ M scripts/e2e/real10000AcceptanceCore.ts
+ M scripts/e2e/runAndroidApi34CanonicalReplayB2cExpandedEstimateBinding.ts
+ M scripts/e2e/runReal10000DiverseConstructionWorksExpandedEstimateProof.ts
+ M scripts/e2e/runReal10000DiverseConstructionWorksShardMerge.ts
+ M scripts/e2e/runReal10000DiverseConstructionWorksShardProof.ts
+ M scripts/e2e/runWorldConstructionEstimateEngineProof.ts
+ M scripts/release/releaseGuard.shared.ts
+ M scripts/release/runLiveB2cEstimateRealityReleaseCloseoutProof.ts
+ M src/lib/ai/estimatorKernel/buildEstimatorReasoningPlan.ts
+ M src/lib/ai/estimatorKernel/constructionDomainLexicon.ts
+ M src/lib/ai/globalEstimate/globalEstimateSeedData.ts
+ M src/lib/ai/professionalBoq/compileDynamicProfessionalBoq.ts
+ M tests/architecture/real10000NoSelfValidatingMatrix.contract.test.ts
+ M tests/architecture/real10000RequiresWebAndroidPdfEvidence.contract.test.ts
+ M tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts
+ M tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts
+?? scripts/audit/runAndroidApkArtifactIntegrityAudit.ts
+?? scripts/audit/runGeneratedArtifactHygieneAudit.ts
+?? scripts/audit/runIosAppStoreConnectSubmissionAudit.ts
+?? scripts/audit/runIosTestFlightProcessingAudit.ts
+?? scripts/audit/runMobileBuildSecretAudit.ts
+?? scripts/audit/runMobileInstalledEstimateSmokeQualityAudit.ts
+?? scripts/audit/runMobileStoreReviewSafetyAudit.ts
+?? scripts/audit/runOwnerAccountCatalogItemsRealityAudit.ts
+?? scripts/audit/runOwnerAccountFailedPromptMining.ts
+?? scripts/audit/runOwnerAccountLiveEstimateDepthAudit.ts
+?? scripts/audit/runOwnerAccountMojibakeAndLanguageAudit.ts
+?? scripts/audit/runProductionReleaseSecretScan.ts
+?? scripts/audit/runProductionReleaseWaveInventory.ts
+?? scripts/audit/runReleaseGuardConsistencyAudit.ts
+?? scripts/e2e/ownerAccountLiveQualityLockCore.ts
+?? scripts/e2e/ownerQuality/captureAndroidOwnerSessionEvidence.ts
+?? scripts/e2e/ownerQuality/index.ts
+?? scripts/e2e/ownerQuality/loadOwnerReplayEnv.ts
+?? scripts/e2e/ownerQuality/ownerAccountLiveQualityPrompts.ts
+?? scripts/e2e/ownerQuality/resolveOwnerAccountSession.ts
+?? scripts/e2e/ownerQuality/scanOwnerQualityArtifactsForSecrets.ts
+?? scripts/e2e/ownerQuality/validateLiveEstimateProfessionalDepth.ts
+?? scripts/e2e/ownerQuality/validateNoBackendLabelsVisible.ts
+?? scripts/e2e/ownerQuality/validateNoMojibake.ts
+?? scripts/e2e/runAndroidApi34OwnerAccountLiveQualityLockSmoke.ts
+?? scripts/e2e/runAndroidQaApkInstallSmoke.ts
+?? scripts/e2e/runAndroidQaApkInstalledArtifactAcceptance.ts
+?? scripts/e2e/runIosTestFlightInstalledArtifactSmoke.ts
+?? scripts/e2e/runOwnerAccountLiveEstimateQualityLockProof.ts
+?? scripts/e2e/runOwnerAccountLiveEstimateQualityReplay.ts
+?? scripts/e2e/runOwnerAccountPdfTableRealityReplay.ts
+?? scripts/release/bumpMobileBuildVersion.ts
+?? scripts/release/classifyDirtyWorktreeByWave.ts
+?? scripts/release/mobileInstalledArtifactAcceptanceCore.ts
+?? scripts/release/mobileReleaseBuildCore.ts
+?? scripts/release/normalizeReleaseProofTriplet.ts
+?? scripts/release/parkBlockedWaveState.ts
+?? scripts/release/planReleaseStateCleanupCommitBuckets.ts
+?? scripts/release/releaseStateCleanupCore.ts
+?? scripts/release/releaseTargetScope.ts
+?? scripts/release/releaseVerifyDirtyScope.ts
+?? scripts/release/releaseWaveDirtyScope.ts
+?? scripts/release/runAndroidQaApkBuild.ts
+?? scripts/release/runIosAppStoreConnectBuild.ts
+?? scripts/release/runIosAppStoreConnectSubmit.ts
+?? scripts/release/runMobileBuildPreflight.ts
+?? scripts/release/runMobileInstalledArtifactAcceptancePreflight.ts
+?? scripts/release/runMobileInstalledArtifactAcceptanceProof.ts
+?? scripts/release/runMobileReleaseBuildProof.ts
+?? scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts
+?? scripts/release/runProductionReleaseStateCleanupProof.ts
+?? scripts/release/runReleaseVerifyCore.ts
+?? scripts/release/runReleaseVerifyMobile.ts
+?? scripts/release/runReleaseVerifyOwner.ts
+?? scripts/release/stabilizeGeneratedReleaseArtifacts.ts
+?? tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts
+?? tests/architecture/mobileArtifactNoAppReviewAutoSubmit.contract.test.ts
+?? tests/architecture/mobileArtifactNoBoqCompilerChange.contract.test.ts
+?? tests/architecture/mobileArtifactNoEstimateEngineChange.contract.test.ts
+?? tests/architecture/mobileArtifactNoInlineRows.contract.test.ts
+?? tests/architecture/mobileArtifactNoPdfRendererChange.contract.test.ts
+?? tests/architecture/mobileArtifactNoProductionRollout.contract.test.ts
+?? tests/architecture/mobileArtifactNoScreenLocalCalculation.contract.test.ts
+?? tests/architecture/mobileArtifactNoSecretsInArtifacts.contract.test.ts
+?? tests/architecture/mobileArtifactNoStaleGreenPreflight.contract.test.ts
+?? tests/architecture/mobileArtifactNoUiRewrite.contract.test.ts
+?? tests/architecture/mobileArtifactNoUnguardedAdb.contract.test.ts
+?? tests/architecture/mobileArtifactNoUseEffectRewrite.contract.test.ts
+?? tests/architecture/mobileBuildNoAppReviewAutoSubmit.contract.test.ts
+?? tests/architecture/mobileBuildNoBoqCompilerChange.contract.test.ts
+?? tests/architecture/mobileBuildNoEstimateEngineChange.contract.test.ts
+?? tests/architecture/mobileBuildNoPdfRendererChange.contract.test.ts
+?? tests/architecture/mobileBuildNoProductionRollout.contract.test.ts
+?? tests/architecture/mobileBuildNoPublicBetaEnablement.contract.test.ts
+?? tests/architecture/mobileBuildNoSecretsInArtifacts.contract.test.ts
+?? tests/architecture/mobileBuildNoStaleGreenPreflight.contract.test.ts
+?? tests/architecture/mobileBuildNoUiRewrite.contract.test.ts
+?? tests/architecture/mobileBuildNoUnguardedAdb.contract.test.ts
+?? tests/architecture/noMatrixRepaintToGreen.contract.test.ts
+?? tests/architecture/noOwnerGateDeletion.contract.test.ts
+?? tests/architecture/noReleaseGuardWeakening.contract.test.ts
+?? tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts
+?? tests/architecture/ownerQualityArchitectureTestHelpers.ts
+?? tests/architecture/ownerQualityCanonicalApi34ReusePolicy.contract.test.ts
+?? tests/architecture/ownerQualityNoExactPromptLookup.contract.test.ts
+?? tests/architecture/ownerQualityNoInlineRows.contract.test.ts
+?? tests/architecture/ownerQualityNoMarkdownPdfTruth.contract.test.ts
+?? tests/architecture/ownerQualityNoProductLogicBypass.contract.test.ts
+?? tests/architecture/ownerQualityNoPublicRollout.contract.test.ts
+?? tests/architecture/ownerQualityNoScreenLocalCalculation.contract.test.ts
+?? tests/architecture/ownerQualityNoSecondAiFramework.contract.test.ts
+?? tests/architecture/ownerQualityNoSecretsInArtifacts.contract.test.ts
+?? tests/architecture/ownerQualityNoUseEffectRewrite.contract.test.ts
+?? tests/architecture/ownerSessionArtifactSecretScan.contract.test.ts
+?? tests/architecture/ownerSessionNoFakeIdentity.contract.test.ts
+?? tests/architecture/ownerSessionNoUnboundedAdb.contract.test.ts
+?? tests/architecture/ownerSessionRedactsAndroidUiXml.contract.test.ts
+?? tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts
+?? tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts
+?? tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts
+?? tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts
+?? tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts
+?? tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts
+?? tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts
+?? tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts
+?? tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts
+?? tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts
+?? tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts
+?? tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts
+?? tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts
+?? tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts
+?? tests/architecture/releaseStateNoHookBypass.contract.test.ts
+?? tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts
+?? tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts
+?? tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts
+?? tests/architecture/releaseStateNoProductLogicChange.contract.test.ts
+?? tests/architecture/releaseStateNoPublicRollout.contract.test.ts
+?? tests/architecture/releaseStateNoUiRewrite.contract.test.ts
+?? tests/architecture/worldConstructionReleaseReusePolicy.contract.test.ts
+?? tests/catalogBinding/ownerAiMaterialsUseCatalogItems.contract.test.ts
+?? tests/catalogBinding/ownerManualAndAiCatalogPathShared.contract.test.ts
+?? tests/catalogBinding/ownerNoFakeCatalogStockSupplier.contract.test.ts
+?? tests/e2e/ownerAccountLiveEstimateQualityLock.web.spec.ts
+?? tests/liveQuality/ownerLivePromptCorpusHasRequiredCases.contract.test.ts
+?? tests/liveQuality/ownerQualityTestHelpers.ts
+?? tests/liveQuality/ownerReplayBlocksEnglishBackendLabels.contract.test.ts
+?? tests/liveQuality/ownerReplayBlocksMojibake.contract.test.ts
+?? tests/liveQuality/ownerReplayBlocksShortEstimates.contract.test.ts
+?? tests/liveQuality/ownerReplayBlocksUnitSemantics.contract.test.ts
+?? tests/liveQuality/ownerReplayBlocksWeakGenericRows.contract.test.ts
+?? tests/liveQuality/ownerReplayBlocksWrongWorkObject.contract.test.ts
+?? tests/liveQuality/ownerReplayDoesNotWriteSecrets.contract.test.ts
+?? tests/liveQuality/ownerReplayLoadsLocalEnvFile.contract.test.ts
+?? tests/liveQuality/ownerReplayMinesFailedPrompts.contract.test.ts
+?? tests/liveQuality/ownerReplayRejectsPlaceholderEmail.contract.test.ts
+?? tests/liveQuality/ownerReplayRequiresCatalogBinding.contract.test.ts
+?? tests/liveQuality/ownerReplayRequiresOwnerSession.contract.test.ts
+?? tests/liveQuality/ownerReplayRequiresSourceTaxLocal.contract.test.ts
+?? tests/liveQuality/ownerReplaySemanticCloseout.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactAcceptanceTestHelpers.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactBlocksAppReviewAutoSubmit.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactDoesNotClaimPublicRollout.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactDoesNotStoreSecrets.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactDownstreamRequiresGreenPreflight.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRejectsApi36.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRejectsStalePreflight.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApi34Install.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresAndroidApkIntegrity.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresEstimateSmoke.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresIosInstalledEvidence.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresIosSubmitEvidence.contract.test.ts
+?? tests/mobileArtifactAcceptance/mobileArtifactRequiresPreviousBuildGreen.contract.test.ts
+?? tests/mobileRelease/mobileBuildDoesNotStoreSecrets.contract.test.ts
+?? tests/mobileRelease/mobileBuildDoesNotSubmitAppReviewWithoutApproval.contract.test.ts
+?? tests/mobileRelease/mobileBuildDownstreamRequiresFreshPreflight.contract.test.ts
+?? tests/mobileRelease/mobileBuildIncrementsAndroidVersionCode.contract.test.ts
+?? tests/mobileRelease/mobileBuildIncrementsIosBuildNumber.contract.test.ts
+?? tests/mobileRelease/mobileBuildRejectsStalePreflight.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresAndroidApi34InstallSmoke.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresAndroidApkArtifact.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresAndroidPackage.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresCleanWorktree.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresIosBundleId.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresIosSubmitEvidence.contract.test.ts
+?? tests/mobileRelease/mobileBuildRequiresReleaseVerifyGreen.contract.test.ts
+?? tests/mobileRelease/mobileReleaseTestHelpers.ts
+?? tests/pdf/ownerPdfNoMojibake.contract.test.ts
+?? tests/pdf/ownerPdfRejectsMarkdownTruth.contract.test.ts
+?? tests/pdf/ownerPdfRejectsPlainTextDump.contract.test.ts
+?? tests/pdf/ownerPdfRowsMatchUi.contract.test.ts
+?? tests/pdf/ownerPdfTableHasBordersAndColumns.contract.test.ts
+?? tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts
+?? tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts
+?? tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts
+?? tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts
+?? tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts
+?? tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts
+?? tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts
+?? tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts
+?? tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts
+?? tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts
+?? tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts
+?? tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts
+?? tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts
+?? tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts
+?? tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts
+?? tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts
+?? tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts
+?? tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts
+?? tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts
+?? tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts
+?? tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts
+?? tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts
+?? tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts
+?? tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts
+?? tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts
+?? tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts
+?? tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts
+?? tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts
+?? tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts
+?? tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts

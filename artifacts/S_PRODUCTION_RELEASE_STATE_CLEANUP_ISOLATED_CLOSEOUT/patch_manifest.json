@@ -1,0 +1,529 @@
+[
+    {
+        "value":  [
+                      {
+                          "path":  "package.json",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runAiEstimatePerformanceCloseoutAudit.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runGeneratedArtifactHygieneAudit.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runProductionReleaseSecretScan.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runProductionReleaseWaveInventory.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/audit/runReleaseGuardConsistencyAudit.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/classifyDirtyWorktreeByWave.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/normalizeReleaseProofTriplet.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/parkBlockedWaveState.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/planReleaseStateCleanupCommitBuckets.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/releaseGuard.shared.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/releaseStateCleanupCore.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/releaseTargetScope.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/releaseVerifyDirtyScope.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/releaseWaveDirtyScope.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/runProductionReleaseStateCleanupCloseoutProof.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/runProductionReleaseStateCleanupProof.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/runReleaseVerifyCore.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/runReleaseVerifyMobile.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/runReleaseVerifyOwner.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "scripts/release/stabilizeGeneratedReleaseArtifacts.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/finalReadinessReleaseVerifyDirtyScope.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/noMatrixRepaintToGreen.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/noOwnerGateDeletion.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/noReleaseGuardWeakening.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/noSecretsInOwnerArtifacts.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/performanceCloseoutReleaseVerifyDirtyScope.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoBoqCompilerChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoEstimateEngineChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoGitCheckoutDiscard.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoGitCleanForce.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoGitResetHard.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoMatrixRepaint.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoNoVerify.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoOwnerSecretArtifacts.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoPdfRendererChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoProductLogicChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseCloseoutNoUiRewrite.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoBoqCompilerChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoEstimateEngineChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoHookBypass.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoMatrixRepaint.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoNoVerifyBypass.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoPdfRendererChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoProductLogicChange.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoPublicRollout.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseStateNoUiRewrite.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseVerifyLiveCloseoutGeneratedArtifacts.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/architecture/releaseVerifyUsesCanonicalApi34Evidence.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/blockerReductionDirtyFilesExact.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/closeoutProofBlocksProductLogicChanges.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/closeoutProofBlocksRawCredentials.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/commitBucketsOnlyAllowCurrentCleanupScope.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimOwnerReplay.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/coreReleaseDoesNotClaimProductionRollout.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/dirtyScopeAllowsOnlyCurrentWave.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/dirtyScopeBlocksMixedWaves.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/generatedArtifactChurnDiagnosis.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/generatedArtifactsDoNotDirtyCleanRun.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/generatedArtifactSecondRunIsStable.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/generatedArtifactVolatileFieldsAreNormalized.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/installedArtifactBlockedUntilMobileBuildGreen.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/mixedWaveCommitAttemptBlocks.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/mobileBuildBlockedBeforeCleanRelease.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/mobileDoesNotDependOnOwnerUnlessConfigured.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/mobileRemainsBlockedUntilReleaseBaselineClean.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/noGenericGreenWhenOwnerGateBlocked.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/nonCurrentWavesAreParkedNotCommitted.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/ownerBlockedDoesNotClaimExternalTraffic.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/ownerGateMovedOnlyToScopedOwnerVerify.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/ownerGateNotDeletedFromReleaseSafety.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/ownerGateRemainsBlockedButScoped.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/productionClaimBlockedWhenOwnerGateBlocked.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardGreenMatrixDiagnosis.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithNonEmptyFailures.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutFailuresJson.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsGreenMatrixWithoutProof.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsMissingScripts.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsSourceFingerprintMismatch.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseGuardRejectsStaleMatrix.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseStateCleanupTestHelpers.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/releaseVerifyReportsOwnerBlockedStatus.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/scopedReleaseVerifyTestHelpers.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/secretScanBlocksRawOwnerCredentials.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      },
+                      {
+                          "path":  "tests/releaseStateCleanup/waveInventoryClassifiesGreenBlockedWip.contract.test.ts",
+                          "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+                          "copied_to_isolated_worktree":  true,
+                          "may_commit":  true
+                      }
+                  ],
+        "Count":  86
+    },
+    {
+        "path":  "scripts/release/runProductionReleaseStateCleanupIsolatedCloseoutProof.ts",
+        "source_bucket":  "CURRENT_RELEASE_CLEANUP_COMMIT",
+        "copied_to_isolated_worktree":  true,
+        "may_commit":  true
+    }
+]

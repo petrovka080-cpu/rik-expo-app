@@ -1,0 +1,26 @@
+{
+  "wave": "S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_SPLIT_COMMIT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_RELEASE_GUARD_TRIPLETS_READY",
+  "checks": [
+    {
+      "wave": "S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT",
+      "matrixPath": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/matrix.json",
+      "failuresPath": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/failures.json",
+      "proofPath": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/proof.md",
+      "matrixExists": true,
+      "failuresExists": true,
+      "proofExists": true,
+      "matrixFinalStatus": "GREEN_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT_READY",
+      "failuresIsEmptyArray": true,
+      "proofFreshForCurrentHead": true,
+      "sourceFingerprintMatches": true,
+      "acceptedAsGreen": true
+    }
+  ],
+  "release_guard_green_without_failures_found": false,
+  "green_matrix_without_failures_json_found": false,
+  "green_matrix_with_nonempty_failures_found": false,
+  "green_matrix_without_proof_found": false,
+  "stale_green_matrix_found": false,
+  "fake_green_claimed": false
+}

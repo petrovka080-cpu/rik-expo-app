@@ -1,0 +1,252 @@
+{
+  "wave": "S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT_SPLIT_COMMIT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_GENERATED_ARTIFACT_CHURN_RESOLVED",
+  "resolutions": [
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/generated_artifact_churn_diagnosis.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_BLOCKER_REDUCTION/release_guard_green_without_failures_diagnosis.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/commit_buckets.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/generated_artifact_churn_resolution.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_CLOSEOUT/release_guard_triplet_resolution.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_allowed_paths.txt",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/current_cleanup_tracked.patch",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/failures.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/generated_artifact_churn_resolution.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_after.txt",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/isolated_git_status_before.txt",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/matrix.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_commit_buckets_snapshot.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_diff_name_status.txt",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/original_dirty_git_status.txt",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/patch_manifest.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/proof.md",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/release_guard_triplet_resolution.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP_ISOLATED_CLOSEOUT/secret_scan.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/generated_artifact_hygiene.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/release_guard_consistency.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    },
+    {
+      "path": "artifacts/S_PRODUCTION_RELEASE_STATE_CLEANUP/secret_scan.json",
+      "runner": "scripts/release/runProductionReleaseStateCleanupProof.ts",
+      "currentlyDirty": true,
+      "deterministic": true,
+      "volatileFields": [],
+      "shouldBeTracked": true,
+      "shouldBeIgnored": false,
+      "action": "KEEP_TRACKED_STABLE",
+      "reason": "Current closeout proof artifact is owned by this wave."
+    }
+  ],
+  "tracked_artifact_churn_found": false,
+  "generated_artifact_second_run_stable": true,
+  "matrix_repaint_without_proof_found": false,
+  "fake_green_claimed": false
+}

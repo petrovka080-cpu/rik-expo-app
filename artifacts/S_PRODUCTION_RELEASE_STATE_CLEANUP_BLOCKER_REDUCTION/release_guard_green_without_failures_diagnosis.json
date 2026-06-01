@@ -1,0 +1,54 @@
+{
+  "wave": "S_PRODUCTION_SAFE_RELEASE_STATE_CLEANUP_WAVE_OWNERSHIP_CLOSEOUT_POINT_OF_NO_RETURN",
+  "final_status": "GREEN_RELEASE_GUARD_GREEN_MATRIX_DIAGNOSIS_READY",
+  "artifact_diagnoses": [
+    {
+      "artifact_dir": "artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY",
+      "matrix_path": "artifacts/S_WORLD_CONSTRUCTION_50000_PLUS_REALITY/matrix.json",
+      "final_status": null,
+      "is_green_matrix": false,
+      "statuses": [
+        "MATRIX_MISSING"
+      ],
+      "failures_json_exists": false,
+      "failures_json_empty_array": false,
+      "failures_json_non_empty": false,
+      "proof_md_exists": false,
+      "source_fingerprint": {
+        "status": "SOURCE_FINGERPRINT_NOT_RECORDED",
+        "recorded_source_fingerprint": null,
+        "current_source_fingerprint": null,
+        "source_fingerprint_algorithm": null,
+        "source_fingerprint_file_count": 0,
+        "missing_source_fingerprint_files": [],
+        "source_fingerprint_stale": false
+      }
+    },
+    {
+      "artifact_dir": "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE",
+      "matrix_path": "artifacts/S_WORLD_CONSTRUCTION_ESTIMATE_ENGINE/matrix.json",
+      "final_status": null,
+      "is_green_matrix": false,
+      "statuses": [
+        "MATRIX_MISSING"
+      ],
+      "failures_json_exists": false,
+      "failures_json_empty_array": false,
+      "failures_json_non_empty": false,
+      "proof_md_exists": false,
+      "source_fingerprint": {
+        "status": "SOURCE_FINGERPRINT_NOT_RECORDED",
+        "recorded_source_fingerprint": null,
+        "current_source_fingerprint": null,
+        "source_fingerprint_algorithm": null,
+        "source_fingerprint_file_count": 0,
+        "missing_source_fingerprint_files": [],
+        "source_fingerprint_stale": false
+      }
+    }
+  ],
+  "release_guard_green_without_failures_found": false,
+  "release_guard_green_without_proof_found": false,
+  "release_guard_stale_matrix_found": false,
+  "fake_green_claimed": false
+}
