@@ -76,6 +76,7 @@ export type ReleaseGateName =
   | "android-api34-canonical-replay-b2c-expanded-estimate-binding-proof"
   | "world-construction-estimate-engine-proof"
   | "universal-professional-estimate-engine-proof"
+  | "ai-2000-real-work-estimate-acceptance-proof"
   | "world-construction-50000-plus-sharded-live-reality-proof"
   | "ai-estimate-template-rate-catalog-ontology-change-control-proof"
   | "global-estimate-template-ratebook-reconciliation-proof"
@@ -357,6 +358,7 @@ export const REQUIRED_RELEASE_GATES: ReleaseGateDefinition[] = [
   { name: "b2c-request-embedded-ai-entrypoint-audit-proof", command: "npx tsx scripts/e2e/runB2cRequestEmbeddedAiEntrypointAuditProof.ts" },
   { name: "world-construction-estimate-engine-proof", command: "npx tsx scripts/e2e/runWorldConstructionEstimateEngineProof.ts" },
   { name: "universal-professional-estimate-engine-proof", command: "npx tsx scripts/e2e/runUniversalProfessionalEstimateEngineProof.ts" },
+  { name: "ai-2000-real-work-estimate-acceptance-proof", command: "npx tsx scripts/e2e/runAi2000RealWorkEstimateAcceptanceProof.ts" },
   { name: "world-construction-50000-plus-sharded-live-reality-proof", command: "npx tsx scripts/e2e/runWorldConstruction50000ReleaseGate.ts" },
   { name: "ai-estimate-template-rate-catalog-ontology-change-control-proof", command: "npx tsx scripts/e2e/runAiEstimateChangeControlProof.ts && npx tsx scripts/audit/runAiEstimateChangeControlCloseoutAudit.ts" },
   { name: "android-b2c-request-embedded-ai-route-bootstrap-proof", command: "npx tsx scripts/e2e/runAndroidB2cRequestEmbeddedAiRouteBootstrapProof.ts" },

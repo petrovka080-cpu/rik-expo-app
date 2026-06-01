@@ -46,6 +46,9 @@ export type Real10000CaseResult = {
   uiTableVisible: boolean;
   pdfChecked: boolean;
   pdfPassed: boolean;
+  toolName?: string;
+  blockedBy?: string;
+  fallbackUsed?: string;
   runtimeTraceId: string | null;
   failures: string[];
   estimate?: GlobalEstimateResult;
@@ -141,6 +144,9 @@ export function evaluateReal10000Case(
   let runtimeTrace: Parameters<typeof createEstimatePdf>[0]["runtimeTrace"] | undefined;
   let pdfText = "";
   let pdfFile: string | undefined;
+  let toolName: string | undefined;
+  let blockedBy: string | undefined;
+  let fallbackUsed: string | undefined;
 
   try {
     const context = contextFor(item.route);
@@ -154,6 +160,10 @@ export function evaluateReal10000Case(
     });
     runtimeTraceId = answer.runtimeTrace.traceId;
     runtimeTrace = answer.runtimeTrace;
+    toolName = answer.toolResult.toolName;
+    blockedBy = answer.toolResult.blockedBy;
+    fallbackUsed = answer.toolResult.fallbackUsed;
+    if (blockedBy || fallbackUsed) failures.push("MANUAL_FALLBACK_FOR_CONSTRUCTION_LIKE_WORK");
     if (answer.route.intent !== "estimate") failures.push("ESTIMATE_INTENT_LOST_TO_ROLE_CONTEXT");
     estimate = answer.toolResult.estimate;
     if (!estimate) failures.push("TEMPLATE_GAP_FOR_PARSABLE_WORK");
@@ -188,6 +198,9 @@ export function evaluateReal10000Case(
       uiTableVisible: false,
       pdfChecked: item.pdfRequired && includePdf,
       pdfPassed: false,
+      toolName,
+      blockedBy,
+      fallbackUsed,
       runtimeTraceId,
       failures: [...new Set(failures)],
     };
@@ -278,6 +291,9 @@ export function evaluateReal10000Case(
     uiTableVisible,
     pdfChecked,
     pdfPassed: pdfChecked ? pdfPassed : true,
+    toolName,
+    blockedBy,
+    fallbackUsed,
     runtimeTraceId,
     failures: [...new Set(failures)],
     estimate,

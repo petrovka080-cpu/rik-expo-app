@@ -192,9 +192,13 @@ export function isAllowedIosInternalQaPath(filePath: string): boolean {
     file === "scripts/release/checkIosTestFlightCommitScope.ts" ||
     file === "scripts/release/currentReleaseWaveScope.ts" ||
     file === "scripts/release/run-release-guard.ts" ||
+    file === "scripts/release/releaseGuard.shared.ts" ||
+    file === "scripts/release/runAiEnterpriseReleaseCloseoutChangeControl.ts" ||
     file === "scripts/release/runIosTestFlightReleaseVerifyScopeProof.ts" ||
     file === "scripts/audit/runAiEstimateEnterpriseFinalReadinessGoNoGo.ts" ||
     file === "scripts/e2e/aiEstimateCanaryEvaluationCore.ts" ||
+    file === "scripts/e2e/real10000AcceptanceCore.ts" ||
+    file === "scripts/e2e/runAi2000RealWorkEstimateAcceptanceProof.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaPreflight.ts" ||
     file === "scripts/release/runIosTestFlightBuildNumberBump.ts" ||
     file === "scripts/release/runIosTestFlightInternalQaBuildProof.ts" ||
@@ -206,6 +210,7 @@ export function isAllowedIosInternalQaPath(filePath: string): boolean {
     file === "tests/architecture/real10000NoUseEffectRewrite.contract.test.ts" ||
     file === "tests/architecture/real10000P1EvidenceRefreshArchitectureTestHelpers.ts" ||
     file === "tests/architecture/professionalQualityNoSecondAiFramework.contract.test.ts" ||
+    file === "tests/release/ai2000RealWorkEstimateAcceptanceReleaseGate.contract.test.ts" ||
     file === "tests/backend/whReceiveItemV2SearchPath.test.ts" ||
     file === "tests/warehouse/useWarehouseReceiveApply.test.ts" ||
     file === "tests/e2e/b2cRequestEmbeddedAi.android.appRootReadyMarker.spec.ts" ||
